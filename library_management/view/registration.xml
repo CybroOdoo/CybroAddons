@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <record model="ir.module.category" id="group_librarian">
+            <field name="name">Librarian group</field>
+        </record>
+        <record id="librarian_group" model="res.groups">
+            <field name="name">Librarian</field>
+            <field name="category_id" ref="group_librarian"/>
+        </record>
+        <record id="Administrator_group" model="res.groups">
+            <field name="name">Administrator</field>
+            <field name="category_id" ref="group_librarian"/>
+        </record>
+
+
+
+       
+ <!-- Sequences for card.no (Card Number) -->
+        <record id="seq_reg_no_type" model="ir.sequence.type">
+            <field name="name">Reg Number</field>
+            <field name="code">reg.no</field>
+        </record>
+
+        <record id="seq_reg_no" model="ir.sequence">
+            <field name="name">Reg Number</field>
+            <field name="code">reg.no</field>
+            <field name="prefix">R</field>
+            <field name="padding">3</field>
+        </record>
+
+
+<record id="ir_cron_registered_users_manager" model="ir.cron">
+            <field name="name">Registered users Manager</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+            <field name="model">library.registration</field>
+            <field name="function">_registered_user_manager</field>
+            <field name="args">()</field>
+      </record>
+
+
+<record id="ir_cron_library_reminder" model="ir.cron">
+            <field name="name">Library Reminder</field>
+            <field eval="True" name="active" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall" />
+            <field name="model">library.book.issue</field>
+            <field name="function">_library_reminder</field>
+            <field name="args">()</field>
+      </record>
+
+         <!-- library Registration Form View -->
+         <record model="ir.ui.view" id="view_registration_form_1">
+            <field name="name">library.registration.form.1</field>
+            <field name="model">library.registration</field>
+            <field name="arch" type="xml">
+            <form string="Registration Form" version="7.0">
+                <header>
+                        <button name="register" string="Register" type="object"  class="oe_highlight" states="draft" />
+                        <button name="create_card" string="Assign Card" type="object"  states="registered" />
+                        <button name="renew" string="Renew" type="object"  states="assigned_card" />
+                        <button name="cancel" string="Cancel" type="object"   states="draft,registered,assigned_card"
+                                confirm="Cancelling registration will delete card and cancel registration...
+                                Are you sure you want to cancel this registration?"/>
+                        <button name="draft" string="Draft" type="object"   states="cancel"/>
+                        <field name="state" widget="statusbar" align="right" readonly="1"/>
+                </header>
+                <sheet style="width: 10%%,height:10%%">
+
+                    <newline/>
+                    <separator string="Library Registration"/>
+                    <div class="oe_title oe_left">
+                        <h2>
+                        <field name="card_no" class="oe_inline" readonly="1"/>
+                        </h2>
+                         <field name="photo" widget='image' class="oe_left oe_avatar" options='{"preview_image": "image_medium", "size": [90, 90]}'/>
+                    </div>
+
+
+                    <group col="4">
+                        <group col="2" attrs="{'readonly':[('state','not in','draft')]}">
+                            <separator string="Personal Information" colspan="4"/>
+                            <field name="name" placeholder="User"  on_change="getdata(name)" style="width:40%%"/>
+                            <!--<field name="position"/>-->
+                            <field name="phone"  style="width:40%%"/>
+                            <field name="mobile"  style="width:40%%"/>
+                            <field name="user" style="width:40%%"/>
+                            <field name="book_limit"  style="width:40%%"/>
+                        </group>
+                        <group col="2"  states="cancel,registered,assigned_card" >
+                            <separator string="Registration Details" colspan="4"/>
+                            <field name="registration_date" readonly="1"/>
+                            <field name="validity" widget="selection" attrs="{'readonly':[('state','=','cancel')],'required':[('state','=','registered')]}"/>
+                            <field name="from_id"  readonly="1" />
+                            <field name="to" />
+                        </group>
+
+                    </group>                     <notebook>
+                        <page string="Remarks" states="cancel,registered,assigned_card">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                </form>
+         </field>
+      </record>
+ <!-- Library Registration Tree View -->
+        <record model="ir.ui.view" id="view_registration_tree_1">
+            <field name="name">library.registration.tree.1</field>
+            <field name="model">library.registration</field>
+            <field name="arch" type="xml">
+                <tree string="Library Register">
+                    <field name="card_no"/>
+                    <field name="name"/>
+                    <field name="registration_date" />
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+</data>
+    </openerp>
+
