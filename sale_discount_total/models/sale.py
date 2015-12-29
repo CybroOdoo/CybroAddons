@@ -41,7 +41,7 @@ class SaleOrder(osv.Model):
     _columns = {
         'discount_type': fields.selection([
             ('percent', 'Percentage'),
-            ('amount', 'Amount')], 'Discount Type'),
+            ('amount', 'Amount')], 'Discount type'),
         'discount_rate': fields.float('Discount Rate', digits_compute=dp.get_precision('Account'),
                                       readonly=True,
                                       states={'draft': [('readonly', False)], 'sent': [('readonly', False)]}, ),
