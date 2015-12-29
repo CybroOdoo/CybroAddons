@@ -1,7 +1,8 @@
 {
     'name': 'Public Library Management ',
     'version': '1.0',
-    'author' : 'Cybrosys',
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
     'category': 'Tools',
     'summary': 'book management',
     'description': """
