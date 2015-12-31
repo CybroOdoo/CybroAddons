@@ -9,13 +9,14 @@ class AccountInvoice(models.Model):
     @api.one
     @api.depends('invoice_line.price_subtotal', 'tax_line.amount')
     def _compute_amount(self):
+        disc = 0.0
+        for inv in self:
+            for line in inv.invoice_line:
+               disc += (line.quantity * line.price_unit) * line.discount / 100
         self.amount_untaxed = sum(line.price_subtotal for line in self.invoice_line)
         self.amount_tax = sum(line.amount for line in self.tax_line)
-        if self.discount_type == 'percent':
-            self.amount_discount = ((self.amount_untaxed + self.amount_tax) * self.discount_rate) / 100
-        elif self.discount_type == 'amount':
-            self.amount_discount = self.discount_rate
-        self.amount_total = self.amount_untaxed + self.amount_tax - self.amount_discount
+        self.amount_discount = round(disc)
+        self.amount_total = round(self.amount_untaxed + self.amount_tax)
 
     discount_type = fields.Selection([('percent', 'Percentage'), ('amount', 'Amount')], 'Discount Type', readonly=True,
                                      states={'draft': [('readonly', False)]})
@@ -30,23 +31,38 @@ class AccountInvoice(models.Model):
     amount_total = fields.Float(string='Total', digits=dp.get_precision('Account'),
                                 readonly=True, compute='_compute_amount')
 
+    @api.multi
+    def compute_discount(self, discount):
+        print "^^^^^^^^^^^^^^^^^^^^^compute_discount"
+        for inv in self:
+            val1 = val2 = 0.0
+            disc_amnt = 0.0
+            val2 = sum(line.amount for line in self.tax_line)
+            for line in inv.invoice_line:
+                val1 += (line.quantity * line.price_unit)
+                line.discount = discount
+                disc_amnt += (line.quantity * line.price_unit) * discount / 100
+            total = val1 + val2 - disc_amnt
+            self.amount_discount = round(disc_amnt)
+            self.amount_tax = round(val2)
+            self.amount_total = round(total)
+
     @api.onchange('discount_type', 'discount_rate')
-    def compute_discount(self):
+    def supply_rate(self):
         for inv in self:
             amount = sum(line.price_subtotal for line in self.invoice_line)
             tax = sum(line.amount for line in self.tax_line)
             if inv.discount_type == 'percent':
-                if inv.discount_rate == 100:
-                    disc_amnt = amount + tax
-                else:
-                    disc_amnt = (amount + tax) * inv.discount_rate / 100
-                total = amount + tax - disc_amnt
-                self.amount_discount = disc_amnt
-                self.amount_total = total
+                self.compute_discount(inv.discount_rate)
             else:
-                total = (amount + tax) - inv.discount_rate
-                self.amount_discount = inv.discount_rate
-                self.amount_total = total
+                total = 0.0
+                discount = 0.0
+                for line in inv.invoice_line:
+                    total += (line.quantity * line.price_unit)
+                if inv.discount_rate != 0:
+                    discount = (inv.discount_rate / total) * 100
+                self.compute_discount(discount)
+
 
     @api.model
     def _prepare_refund(self, invoice, date=None, period_id=None, description=None, journal_id=None):
@@ -58,31 +74,3 @@ class AccountInvoice(models.Model):
         })
         return res
 
-
-class invoice_line(osv.Model):
-    _inherit = 'account.invoice.line'
-
-    def move_line_get(self, cr, uid, invoice_id, context=None):
-        res = super(invoice_line, self).move_line_get(cr, uid, invoice_id, context=context)
-        inv = self.pool.get('account.invoice').browse(cr, uid, invoice_id, context=context)
-
-        if inv.type in ('out_invoice', 'out_refund') and inv.discount_type:
-            prop = self.pool.get('ir.property').get(cr, uid, 'property_account_income_categ', 'product.category',
-                                                    context=context)
-            prop_id = prop and prop.id or False
-            account_id = self.pool.get('account.fiscal.position').map_account(cr, uid, inv.fiscal_position or False,
-                                                                              prop_id)
-            sign = -1
-
-            res.append({
-                'name': 'Discount',
-                'price_unit': sign * inv.amount_discount,
-                'quantity': 1,
-                'price': sign * inv.amount_discount,
-                'account_id': account_id,
-                'product_id': False,
-                'uos_id': False,
-                'account_analytic_id': False,
-                'taxes': False,
-            })
-        return res
