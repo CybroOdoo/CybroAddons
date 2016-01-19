@@ -29,6 +29,7 @@ class SaleOrder(osv.Model):
             res[order.id]['amount_tax'] = round(cur_obj.round(cr, uid, cur, val2))
             res[order.id]['amount_discount'] = round(cur_obj.round(cr, uid, cur, val3))
             res[order.id]['amount_total'] = round(cur_obj.round(cr, uid, cur, total))
+	return res
 
     def _get_order(self, cr, uid, ids, context=None):
         result = {}
