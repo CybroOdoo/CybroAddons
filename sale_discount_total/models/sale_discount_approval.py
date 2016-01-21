@@ -84,33 +84,6 @@ class SaleInherit(osv.Model):
                 no_line += 1
                 discnt += line.discount
             discnt = (discnt / no_line)
-            # if sale_obj.discount_type == "percent":
-            #     dicnt_amt = sale_obj.discount_rate
-            #     if dicnt_amt >= min_disct:
-            #         assert len(ids) == 1, 'This option should only be used for a single id at a time.'
-            #         self.signal_workflow(cr, uid, ids, 'order_toapprov')
-            #         return True
-            #
-            #     else:
-            #
-            #         for line in sale_obj.order_line:
-            #             no_line += 1
-            #             discnt = discnt + line.discount
-            #         if dicnt_amt:
-            #             discnt = (discnt / no_line) + dicnt_amt
-            #         else:
-            #             discnt = (discnt / no_line)
-            #
-            # else:
-            #     dicnt_amt = sale_obj.discount_rate
-            #     for line in sale_obj.order_line:
-            #         prod_price = prod_price + line.price_unit
-            #         no_line += 1
-            #         if line.discount:
-            #             line_dicnt = line_dicnt + line.discount
-            #     line_dicnt = line_dicnt/no_line
-            #     prcnt = 100 - (((prod_price - dicnt_amt) * 100) / prod_price)
-            #     discnt = prcnt + line_dicnt
             if discnt >= min_disct:
                 assert len(ids) == 1, 'This option should only be used for a single id at a time.'
                 self.signal_workflow(cr, uid, ids, 'order_toapprov')

@@ -6,11 +6,9 @@ import openerp.addons.decimal_precision as dp
 class SaleOrder(osv.Model):
     _inherit = 'sale.order'
 
-
     def _amount_all(self, cr, uid, ids, field_name, arg, context=None):
         cur_obj = self.pool.get('res.currency')
         res = {}
-        print "_amount_all"
         for order in self.browse(cr, uid, ids, context=context):
             res[order.id] = {
                 'amount_untaxed': 0.0,
@@ -24,12 +22,11 @@ class SaleOrder(osv.Model):
                 val1 += line.price_subtotal
                 val2 += self._amount_line_tax(cr, uid, line, context=context)
                 val3 += (line.product_uom_qty * line.price_unit) * line.discount / 100
-            total = val1 + val2
             res[order.id]['amount_untaxed'] = round(cur_obj.round(cr, uid, cur, val1))
             res[order.id]['amount_tax'] = round(cur_obj.round(cr, uid, cur, val2))
             res[order.id]['amount_discount'] = round(cur_obj.round(cr, uid, cur, val3))
-            res[order.id]['amount_total'] = round(cur_obj.round(cr, uid, cur, total))
-	return res
+            res[order.id]['amount_total'] = round(res[order.id]['amount_untaxed'] + res[order.id]['amount_tax'])
+        return res
 
     def _get_order(self, cr, uid, ids, context=None):
         result = {}

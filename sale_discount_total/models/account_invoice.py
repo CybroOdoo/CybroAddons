@@ -33,7 +33,6 @@ class AccountInvoice(models.Model):
 
     @api.multi
     def compute_discount(self, discount):
-        print "^^^^^^^^^^^^^^^^^^^^^compute_discount"
         for inv in self:
             val1 = val2 = 0.0
             disc_amnt = 0.0
