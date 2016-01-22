@@ -42,14 +42,14 @@ class SaleOrder(osv.Model):
                                       readonly=True,
                                       states={'draft': [('readonly', False)], 'sent': [('readonly', False)]}, ),
         'amount_discount': fields.function(_amount_all, digits_compute=dp.get_precision('Account'), string='Discount',
-                                           multi='sums', help="The total discount."),
+                                           multi='sums', store=True, help="The total discount."),
         'amount_untaxed': fields.function(_amount_all, digits_compute=dp.get_precision('Account'),
                                           string='Untaxed Amount',
-                                          multi='sums', help="The amount without tax.", track_visibility='always'),
+                                          multi='sums', store=True, help="The amount without tax.", track_visibility='always'),
         'amount_tax': fields.function(_amount_all, digits_compute=dp.get_precision('Account'), string='Taxes',
-                                      multi='sums', help="The tax amount."),
+                                      multi='sums', store=True, help="The tax amount."),
         'amount_total': fields.function(_amount_all, digits_compute=dp.get_precision('Account'), string='Total',
-                                        multi='sums', help="The total amount."),
+                                        multi='sums', store=True, help="The total amount."),
     }
 
     _defaults = {
