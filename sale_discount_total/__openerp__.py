@@ -29,6 +29,6 @@ Module to manage discount for total amount in Sale.
     ],
     'demo': [
     ],
-    'installable': True,
+    'installable': False,
     'auto_install': False,
 }
