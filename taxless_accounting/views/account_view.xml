@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <record id="make_visible" model="res.groups">
+            <field name="name">Tax Visible</field>
+        </record>
+    </data>
+    <data>
+                         <!--customer invoice-->
+
+        <record id="account_invoice_inherit_form" model="ir.ui.view">
+            <field name="name">tax.account.invoice.form</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='amount_untaxed']" position="attributes">
+                         <attribute name="groups">taxless_accounting.make_visible</attribute>
+                </xpath>
+                <xpath expr="//field[@name='amount_tax']" position="attributes">
+                         <attribute name="groups">taxless_accounting.make_visible</attribute>
+                </xpath>
+                <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='invoice_line_tax_ids']" position="attributes">
+                         <attribute name="groups">taxless_accounting.make_visible</attribute>
+                </xpath>
+                <xpath expr="//field[@name='tax_line_ids']" position="attributes">
+                         <attribute name="groups">taxless_accounting.make_visible</attribute>
+                </xpath>
+
+            </field>
+        </record>
+
+                            <!--supplier invoice-->
+        <record id="invoice_supplier_inherit_view" model="ir.ui.view">
+            <field name="name">tax.account.invoice.form</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_supplier_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='invoice_line_tax_ids']" position="attributes">
+                         <attribute name="groups">taxless_accounting.make_visible</attribute>
+                </xpath>
+                <xpath expr="//field[@name='tax_line_ids']" position="attributes">
+                         <attribute name="groups">taxless_accounting.make_visible</attribute>
+                </xpath>
+                <xpath expr="//field[@name='amount_tax']" position="attributes">
+                         <attribute name="groups">taxless_accounting.make_visible</attribute>
+                </xpath>
+                <xpath expr="//field[@name='amount_untaxed']" position="attributes">
+                         <attribute name="groups">taxless_accounting.make_visible</attribute>
+                </xpath>
+
+            </field>
+        </record>
+                        <!-- invoice line form-->
+        <record id="invoice_line_inherit_view" model="ir.ui.view">
+            <field name="name">tax.account.invoice.line.form</field>
+            <field name="model">account.invoice.line</field>
+            <field name="inherit_id" ref="account.view_invoice_line_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='invoice_line_tax_ids']" position="attributes">
+                         <attribute name="groups">taxless_accounting.make_visible</attribute>
+                </xpath>
+            </field>
+        </record>
+
+
+              <!--customer receipts-->
+
+        <record id="customer_account_voucher_inherited_view" model="ir.ui.view">
+                <field name="name">customer_account_voucher_inherit_view</field>
+                <field name="model">account.voucher</field>
+                <field name="inherit_id" ref="account_voucher.view_sale_receipt_form"/>
+                <field name="arch" type="xml">
+                    <xpath expr="//field[@name='tax_ids']" position="attributes">
+                        <attribute name="groups">taxless_accounting.make_visible</attribute>
+                    </xpath>
+                        <xpath expr="//field[@name='tax_amount']" position="attributes">
+                        <attribute name="groups">taxless_accounting.make_visible</attribute>
+                    </xpath>
+
+                </field>
+        </record>
+
+                <!--supplier receipts-->
+
+        <record id="supplier_account_voucher_inherited_view" model="ir.ui.view">
+                <field name="name">supplier_account_voucher_inherit_view</field>
+                <field name="model">account.voucher</field>
+                <field name="inherit_id" ref="account_voucher.view_purchase_receipt_form"/>
+                <field name="arch" type="xml">
+                    <xpath expr="//field[@name='tax_ids']" position="attributes">
+                        <attribute name="groups">taxless_accounting.make_visible</attribute>
+                    </xpath>
+                    <xpath expr="//field[@name='tax_amount']" position="attributes">
+                        <attribute name="groups">taxless_accounting.make_visible</attribute>
+                    </xpath>
+                    <xpath expr="//field[@name='tax_correction']" position="attributes">
+                        <attribute name="groups">taxless_accounting.make_visible</attribute>
+                    </xpath>
+                </field>
+        </record>
+
+        <record id="tax_account_fiscal_position_inherited_view" model="ir.ui.view">
+                <field name="name">tax.account.fiscal.position.inherit.view</field>
+                <field name="model">account.fiscal.position</field>
+                <field name="inherit_id" ref="account.view_account_position_form"/>
+                <field name="arch" type="xml">
+                    <xpath expr="//page[@name='tax_mapping']" position="attributes">
+                        <attribute name="groups">taxless_accounting.make_visible</attribute>
+                    </xpath>
+                    <xpath expr="//field[@name='tax_ids']" position="attributes">
+                        <attribute name="groups">taxless_accounting.make_visible</attribute>
+                    </xpath>
+                </field>
+        </record>
+
+
+        <menuitem
+                action="account.action_tax_form"
+                id="account.menu_action_tax_form"
+                parent="account.account_account_menu"
+                sequence="1"
+                groups="make_visible"/>
+
+    </data>
+</openerp>
