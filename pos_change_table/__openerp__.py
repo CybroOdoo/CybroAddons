@@ -21,5 +21,6 @@
     'qweb': [
         "static/src/xml/table_change.xml",
     ],
+    'license': 'AGPL-3',
     'installable': True,
 }
