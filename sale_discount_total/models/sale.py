@@ -22,10 +22,10 @@ class SaleOrder(osv.Model):
                 val1 += line.price_subtotal
                 val2 += self._amount_line_tax(cr, uid, line, context=context)
                 val3 += (line.product_uom_qty * line.price_unit) * line.discount / 100
-            res[order.id]['amount_untaxed'] = cur_obj.round(cr, uid, cur, val1)
-            res[order.id]['amount_tax'] = cur_obj.round(cr, uid, cur, val2)
-            res[order.id]['amount_discount'] = cur_obj.round(cr, uid, cur, val3)
-            res[order.id]['amount_total'] = res[order.id]['amount_untaxed'] + res[order.id]['amount_tax']
+            res[order.id]['amount_untaxed'] = round(cur_obj.round(cr, uid, cur, val1))
+            res[order.id]['amount_tax'] = round(cur_obj.round(cr, uid, cur, val2))
+            res[order.id]['amount_discount'] = round(cur_obj.round(cr, uid, cur, val3))
+            res[order.id]['amount_total'] = round(res[order.id]['amount_untaxed'] + res[order.id]['amount_tax'])
         return res
 
     def _get_order(self, cr, uid, ids, context=None):

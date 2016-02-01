@@ -3,6 +3,14 @@ from openerp.osv import osv
 import openerp.addons.decimal_precision as dp
 
 
+class AccountInvoiceLine(models.Model):
+    _inherit = "account.invoice.line"
+
+    discount = fields.Float(string='Discount (%)',
+                            digits=(16, 10),
+                            # digits= dp.get_precision('Discount'),
+                            default=0.0)
+
 class AccountInvoice(models.Model):
     _inherit = "account.invoice"
 
@@ -12,17 +20,21 @@ class AccountInvoice(models.Model):
         disc = 0.0
         for inv in self:
             for line in inv.invoice_line:
-               disc += (line.quantity * line.price_unit) * line.discount / 100
+                print line.discount
+                disc += (line.quantity * line.price_unit) * line.discount / 100
         self.amount_untaxed = sum(line.price_subtotal for line in self.invoice_line)
         self.amount_tax = sum(line.amount for line in self.tax_line)
-        self.amount_discount = round(disc)
-        self.amount_total = round(self.amount_untaxed + self.amount_tax)
+        self.amount_discount = disc
+        self.amount_total = self.amount_untaxed + self.amount_tax
 
     discount_type = fields.Selection([('percent', 'Percentage'), ('amount', 'Amount')], 'Discount Type', readonly=True,
                                      states={'draft': [('readonly', False)]})
-    discount_rate = fields.Float('Discount Rate', digits_compute=dp.get_precision('Account'), readonly=True,
+    discount_rate = fields.Float('Discount Rate',
+                                 digits_compute=dp.get_precision('Account'),
+                                 readonly=True,
                                  states={'draft': [('readonly', False)]})
-    amount_discount = fields.Float(string='Discount', digits=dp.get_precision('Account'),
+    amount_discount = fields.Float(string='Discount',
+                                   digits=dp.get_precision('Account'),
                                    readonly=True, compute='_compute_amount')
     amount_untaxed = fields.Float(string='Subtotal', digits=dp.get_precision('Account'),
                                   readonly=True, compute='_compute_amount', track_visibility='always')
@@ -42,9 +54,9 @@ class AccountInvoice(models.Model):
                 line.discount = discount
                 disc_amnt += (line.quantity * line.price_unit) * discount / 100
             total = val1 + val2 - disc_amnt
-            self.amount_discount = round(disc_amnt)
-            self.amount_tax = round(val2)
-            self.amount_total = round(total)
+            self.amount_discount = disc_amnt
+            self.amount_tax = val2
+            self.amount_total = total
 
     @api.onchange('discount_type', 'discount_rate')
     def supply_rate(self):
@@ -59,7 +71,10 @@ class AccountInvoice(models.Model):
                 for line in inv.invoice_line:
                     total += (line.quantity * line.price_unit)
                 if inv.discount_rate != 0:
+                    print "#########################################"
                     discount = (inv.discount_rate / total) * 100
+                    print dp.get_precision('Discount'),
+                    print discount
                 self.compute_discount(discount)
 
 
