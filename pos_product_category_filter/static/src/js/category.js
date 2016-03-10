@@ -10,8 +10,6 @@ odoo.define('pos_product_category_filter.pos_product_category_filter', function 
     var QWeb = core.qweb;
 
 
-
-
     var model1 = {
            model:  'pos.category',
             fields: ['id','name','parent_id','child_id','image'],
@@ -79,11 +77,6 @@ odoo.define('pos_product_category_filter.pos_product_category_filter', function 
         add_products: function(products){
             console.log(this.category_by_id);
             var stored_categories = this.product_by_category_id;
-//            for(var i = 0, len = stored_categories.length; i < len; i++){
-//                if(stored_categories[i].available == true){
-//                    console.log(stored_categories[i].name)
-//                }
-//            }
             for(var i = 0, len = products.length; i < len; i++){
                 var ancestor_ids = this.get_category_ancestors_ids(products[i].pos_categ_id[0]);
                 products[i].pos_categ_ancestors = ancestor_ids;
@@ -106,7 +99,6 @@ odoo.define('pos_product_category_filter.pos_product_category_filter', function 
             }
             if(!products instanceof Array){
                 products = [products];
-
             }
             for(var i = 0, len = products.length; i < len; i++){
                 var product = products[i];
@@ -183,19 +175,20 @@ odoo.define('pos_product_category_filter.pos_product_category_filter', function 
                     }
 
                 }
-//                for(var i = 0, len = this.subcategories.length; i < len; i++){
-//                    list_container.appendChild(this.render_category(this.subcategories[i],withpics));
-//                }
             }
-
             var buttons = el_node.querySelectorAll('.js-category-switch');
             for(var i = 0; i < buttons.length; i++){
                 buttons[i].addEventListener('click',this.switch_category_handler);
             }
-
             var products = this.pos.db.get_product_by_category(this.category.id);
-            this.product_list_widget.set_product_list(products); // FIXME: this should be moved elsewhere ...
-
+            var available_products = [];
+            for(var i = 0, len = products.length; i < len; i++){
+                if(products[i].available == true){
+                    available_products.push(products[i]);
+                }
+            }
+            this.product_list_widget.set_product_list(available_products);
+            
             this.el.querySelector('.searchbox input').addEventListener('keypress',this.search_handler);
 
             this.el.querySelector('.searchbox input').addEventListener('keydown',this.search_handler);
