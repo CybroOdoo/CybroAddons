@@ -9,7 +9,7 @@ class Doctors(models.Model):
     doctor = fields.Boolean('Doctor')
     specialist_in = fields.Many2one('pha_marketing.departments', 'Specialist in')
     related_rep = fields.Many2one('hr.employee', string='Related Rep.', domain="[('rep','=',True)]")
-    target = fields.Integer('Doctor Target')
+    target = fields.Integer('Target')
 
     @api.one
     def _get_total_sale(self):
