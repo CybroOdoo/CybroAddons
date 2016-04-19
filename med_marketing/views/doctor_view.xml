@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+         <!--SEARCH [DOCTORS]-->
+        <record id="search_res_partner_doctor" model="ir.ui.view">
+             <field name="name">res.partner.doctor</field>
+             <field name="model">res.partner</field>
+             <field name="inherit_id" ref="base.view_res_partner_filter"/>
+             <field name="arch" type="xml">
+                 <xpath expr="//filter[@name='supplier']" position="after">
+                     <filter string="Doctors"
+                             name="doctor"
+                             domain="[('doctor','=',1)]"
+                             help="Doctor Partners"/>
+                 </xpath>
+             </field>
+        </record>
+
+        <!--FORM [DOCTOR]-->
+        <record id="form_res_partner_doctor" model="ir.ui.view">
+             <field name="name">res.partner.doctor</field>
+             <field name="model">res.partner</field>
+             <field name="inherit_id" ref="base.view_partner_form"/>
+             <field name="arch" type="xml">
+                 <xpath expr="//page[@name='sales_purchases']/group[1]/group[2]" position="inside">
+                        <field name="doctor"/>
+                 </xpath>
+                 <xpath expr="//field[@name='parent_id']" position="before">
+                     <label for="specialist_in" string="Specialist in" attrs="{'invisible': [('doctor', '=', False)]}"/>
+                        <field name="specialist_in"
+                               attrs="{'invisible': [('doctor', '=', False)]}"/>
+                     <label for="related_rep" string="Related Medical Representative" attrs="{'invisible': [('doctor', '=', False)]}"/>
+                        <field name="related_rep"
+                               context="{'default_rep':1}"
+                               attrs="{'invisible': [('doctor', '=', False)]}"/>
+                 </xpath>
+                  <xpath expr="//group[1]/group[1]" position="inside">
+                        <field name="target"
+                               attrs="{'invisible': [('doctor', '=', False)]}"/>
+                      <field name="total_sale"
+                               attrs="{'invisible': [('doctor', '=', False)]}"/>
+                 </xpath>
+                 <xpath expr="//div[@name='buttons']" position="inside">
+                     <button string="Benefits"
+                                     name="doctor_exp_btn"
+                                     class="oe_stat_button"
+                                     icon="fa fa-gift"
+                                     type="object"
+                                     attrs="{'invisible': [('doctor', '=', False)]}"/>
+                </xpath>
+
+
+
+             </field>
+        </record>
+        <!--ACTION [DOCTORS]-->
+         <record id="action_partner_doctor" model="ir.actions.act_window">
+            <field name="name">Doctors</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="context">{"search_default_doctor":1, "default_doctor":1, "default_supplier":0, "default_customer":0}</field>
+            <field name="search_view_id" ref="base.view_res_partner_filter"/>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add a contact in your address book.
+              </p><p>
+                Odoo helps you easily track all activities related to
+                a doctor.
+              </p>
+            </field>
+        </record>
+        <!--MENU [DOCTORS]-->
+         <menuitem action="action_partner_doctor"
+                  id="menu_partner_doctor"
+                  sequence="3"
+                  parent="med_marketing.menu_marketing"/>
+    </data>
+</openerp>
