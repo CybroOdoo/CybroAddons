@@ -1,0 +1,34 @@
+# -*- encoding: utf-8 -*-
+##############################################################################
+#
+#    Item number
+#
+#    Copyright (C) 2016 Cybrosys Techno Solutions (<http://http://www.cybrosys.com).
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+{
+    'name': 'SALE ORDER SPLITTER',
+    'version': '1.0',
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'website': 'http://www.cybrosys.com',
+    'sequence': 6,
+    'category': 'Sales Management',
+    'summary': 'Used for splitting lengthy quotations into suppurate.',
+    'data': ['views/splitter.xml'],
+    'depends': ['base','sale'],
+    'installable': True
+}
