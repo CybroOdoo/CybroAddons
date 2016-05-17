@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!--KANBAN VIEW OF ROUTES-->
+        <record id="medical_feature.view_my_route_kanban" model="ir.ui.view">
+            <field name="name">pharmacy_management.route.kanban</field>
+            <field name="model">pharmacy_management.route</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <field name="name"/>
+                    <field name="route_code"/>
+                    <field name="distributor"/>
+                    <field name="customer_list"/>
+                    <field name="count_customers"/>
+                    <!--<field name="location_list"/>-->
+                    <templates>
+                        <t t-name="kanban-box">
+                            <a type="open">
+                            <div style="width: 300px;color: navy; background-color: #E0E0E0; border: 2px solid #4C4C4C; padding: 5px;">
+                                <h4 style="color:#c2c2d6;">
+                                    <field name="route_code"/>
+                                </h4>
+                                <h2 style="color:#4C4C4C;">
+                                    <field name="name"/>
+                                </h2>
+                                <center>
+                                    <div style="color:#000000;">
+                                        <field name="distributor"/>
+                                    </div>
+                                </center>
+                                <span class="oe_kanban_list_many2many">
+                                    <field name="location_list1"/>
+                                </span>
+
+
+                                <div align="right" style="color:#7C7BAD;">
+                                    <field name="count_customers"/>
+                                    <label>Retailers</label>
+                                </div>
+                            </div>
+                            </a>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+        <!--SEARCH VIEW OF ROUTES-->
+        <record id="medical_feature.view_my_route_filter" model="ir.ui.view">
+            <field name="name">pharmacy_management.route.select</field>
+            <field name="model">pharmacy_management.route</field>
+            <field name="arch" type="xml">
+                <search>
+                   <filter string="My" name="my_route" domain="[('distributor','=',uid)]"/>
+                   </search>
+            </field>
+        </record>
+        <!--ACTION FOR ROUTES MENU-->
+        <record id="routes_menu_action" model="ir.actions.act_window">
+            <field name="name">Routes</field>
+            <field name="res_model">pharmacy_management.route</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="context">{"search_default_my_route":1}</field>
+            <field name="search_view_id" ref="view_my_route_filter"/>
+        </record>
+        <!-- TREE VIEW FOR ROUTES MENU-->
+        <record model="ir.ui.view" id="routes_menu_tree_view">
+            <field name="name">pharmacy_management.route.tree</field>
+            <field name="model">pharmacy_management.route</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="distributor"/>
+                </tree>
+            </field>
+        </record>
+         <!-- FORM VIEW FOR ROUTES MENU-->
+        <record model="ir.ui.view" id="routes_menu_form_view">
+            <field name="name">pharmacy_management.route.form</field>
+            <field name="model">pharmacy_management.route</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <table>
+                            <tr>
+                                <td>
+                                    <group>
+                                        <field name="name" required="1" string="Route"/>
+                                        <field name="route_code" string="Route Code"/>
+                                    </group>
+                                    <group>
+                                        <field name="distributor" required="1" string="Distributor"/>
+                                    </group>
+                                </td>
+                                <td>
+                                </td>
+                            </tr>
+                        </table>
+                        <notebook>
+                            <page string="Retailer">
+                                <field name="customer_list" readonly="1">
+                                    <tree>
+                                        <field name="name"/>
+                                        <field name="mobile"/>
+                                        <field name="email"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Locations">
+                                <group col="2">
+                                    <div>
+                                        <group>
+                                            <field name="location_list1"  widget="many2many_tags"/>
+                                        </group>
+                                    </div>
+                                    <div>
+                                        <button string="All Locations"
+                                                name="locations_btn"
+                                                icon="fa fa-arrow-right"
+                                                class="oe_stat_button"
+                                                type="object"/>
+                                    </div>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <!--MENU ROUTES-->
+
+
+        <menuitem action="routes_menu_action"
+                  id="distributing_routes"
+                  sequence="1"
+                  parent="medical_feature.menu_med_conf"/>
+
+        <!--ADD THE FIELD ROUTE IN CUSTOMER DATA -->
+        <record id="res_partner_route" model="ir.ui.view">
+             <field name="name">res.partner.route</field>
+             <field name="model">res.partner</field>
+             <field name="inherit_id" ref="base.view_partner_form"/>
+             <field name="arch" type="xml">
+                 <xpath expr="//field[@name='parent_id']" position="before">
+                     <label for="customer_route" string="Route" attrs="{'invisible': [('customer','=',False)]}"/>
+                    <field name="customer_route"
+                           attrs="{'invisible': [('customer','=',False)]}"
+                           />
+                     <field name="id_of_route_distributor" attrs="{'invisible': True}"/>
+                 </xpath>
+             </field>
+        </record>
+        <!--ADD THE FIELD ROUTE OF CUSTOMER IN SALE ORDER -->
+        <record id="sale_order_customer_route" model="ir.ui.view">
+             <field name="name">sale.order.customer_route</field>
+             <field name="model">sale.order</field>
+             <field name="inherit_id" ref="sale.view_order_form"/>
+             <field name="arch" type="xml">
+                 <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="route_of_customer" attrs="{'invisible':True}"/>
+                    <field name="route_of_customer_to_show"/>
+                </xpath>
+             </field>
+        </record>
+        <!--ACTION TO OVERRIDE THE CUSTOMER MENU-->
+        <record id="base.action_partner_form" model="ir.actions.act_window">
+            <field name="name">Retailers</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="context">{"search_default_customer":1 ,"search_default_my_retailers":1}</field>
+            <field name="search_view_id" ref="base.view_res_partner_filter"/>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add a contact in your address book.
+              </p><p>
+                Odoo helps you easily track all activities related to
+                a customer; discussions, history of business opportunities,
+                documents, etc.
+              </p>
+            </field>
+        </record>
+        <!--ADDING 'MY RETAILER' FILTER-->
+        <record model="ir.ui.view" id="res_partner_search_inherited">
+        <field name="name">res.partner.serach</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+             <xpath expr="//field[@name='name']" position="before">
+                 <filter string="In my area" name="my_retailers" domain="[('id_of_route_distributor','=',uid)]"/>
+             </xpath>
+        </field>
+        </record>
+
+        <!--Give CONTEXT FOR CUSTOMER IN FORM VIEW OF SALE ORDER-->
+        <record model="ir.ui.view" id="view_order_form_inherit_latest">
+        <field name="name">sale.order.form.inherit269</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr='//field[@name="partner_id"]' position='attributes'>
+                <attribute name="domain">[('customer','=',True), ('id_of_route_distributor','=',uid)]</attribute>
+                <attribute name="context">{'search_default_customer':1, 'show_address': 1, 'search_default_my_retailers': 1 }</attribute>
+            </xpath>
+        </field>
+    </record>
+        <!--TREE [LOCATIONS]-->
+        <record model="ir.ui.view" id="routes_locations_menu_tree_view">
+            <field name="name">pharmacy_management.route.location.tree</field>
+            <field name="model">pharmacy_management.route.location</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+        <!--FORM [LOCATIONS]-->
+        <record model="ir.ui.view" id="routes_locations_menu_form_view">
+            <field name="name">pharmacy_management.route.location.form</field>
+            <field name="model">pharmacy_management.route.location</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+    </data>
+</openerp>

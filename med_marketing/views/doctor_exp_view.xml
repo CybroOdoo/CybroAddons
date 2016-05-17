@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <!--FORM [DOCTOR EXPENSES]-->
+        <record id="form_doctor_exp" model="ir.ui.view">
+            <field name="name">med_marketing.doctor.line.form</field>
+            <field name="model">med_marketing.doctor.line</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button string="Post" states="unposted"  name="post_confirm" type="object" class="oe_highlight"/>
+                        <field name="state" widget="statusbar" statusbar_visible="unposted,posted"/>
+                    </header>
+                    <sheet>
+                        <group>
+                        <group>
+
+                            <field name="name" attrs="{'readonly':[('state', 'in', ('posted'))]}"/>
+                            <field name="doctor_id"
+                                   domain="[('doctor', '=', True)]"
+                                   context="{'search_default_doctor':1, 'default_doctor':1, 'default_supplier':0, 'default_customer':0}"
+                                   attrs="{'readonly':[('state', 'in', ('posted'))]}"/>
+                            <field name="amt"
+                                   attrs="{'readonly':[('state', 'in', ('posted'))]}"/>
+                        </group>
+                        <group>
+                            <field name="journal_id" required="1" attrs="{'readonly':[('state', 'in', ('posted'))]}"/>
+                            <field name="account_id"
+                                   domain="[('type', 'in', ['liquidity', 'payable'])]"
+                                   required="1"
+                                   attrs="{'readonly':[('state', 'in', ('posted'))]}"/>
+                            <field name="exp_account"
+                                   domain="[('user_type.report_type','=','expense'), ('type','!=','view')]"
+                                   required="1"
+                                   attrs="{'readonly':[('state', 'in', ('posted'))]}"/>
+
+                        </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <!--TREE [DOCTOR EXPENSES]-->
+        <record id="tree_doctor_exp" model="ir.ui.view">
+            <field name="name">med_marketing.doctor.line.tree</field>
+            <field name="model">med_marketing.doctor.line</field>
+            <field name="arch" type="xml">
+                <tree colors="blue:state=='unposted'">
+                    <field name="name"/>
+                    <field name="doctor_id"/>
+                    <field name="account_id"/>
+                    <field name="amt"/>
+                    <field name="exp_account"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+        <!--ACTION [DOCTOR EXPENSES]-->
+       <record id="action_doctor_exp" model="ir.actions.act_window">
+            <field name="name">Doctor Benefits</field>
+            <field name="res_model">med_marketing.doctor.line</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add a new doctor benefits.
+              </p>
+            </field>
+        </record>
+        <!--MENU [DOCTOR EXPENSES]-->
+        <menuitem action="action_doctor_exp"
+                  id="menu_doctor_exp"
+                  sequence="3"
+                  parent="med_marketing.menu_marketing"/>
+
+
+    </data>
+</openerp>

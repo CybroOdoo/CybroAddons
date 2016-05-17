@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!--SEARCH[EMPLOYEE]-->
+        <record id="view_employee_filter" model="ir.ui.view">
+            <field name="name">Employees</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_filter"/>
+            <field name="arch" type="xml">
+                  <xpath expr="//group[@string='Group By']" position="before">
+                        <filter name="filter_rep" string="Medical Representative" icon="terp-personal+" domain="[('rep', '=', True)]"/>
+                    <separator/>
+                </xpath>
+            </field>
+        </record>
+
+        <!--FORM [EMPLOYEE]-->
+        <record id="view_employee_form_inherit" model="ir.ui.view">
+            <field name="name">hr.employee.form.inherit</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//label[@for='name']" position="before">
+                    <h4>
+                        <field name="rep" class="oe_inline"/> <label for="rep" string="Is a Medical Representative?"/>
+                    </h4>
+                    <br/>
+                </xpath>
+                <xpath expr="//group[@name='active_group']" position="after">
+                    <group string="Commission" attrs="{'invisible':[('rep','=',False)]}">
+                        <field name="commission"/>
+                        <field name="target"/>
+                        <field name="total_sale"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+         <!--ACTION [REP]-->
+       <record id="action_rep" model="ir.actions.act_window">
+            <field name="name">Medical Representatives</field>
+            <field name="res_model">hr.employee</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{"search_default_filter_rep":1, "default_rep":1}</field>
+            <field name="view_id" eval="False"/>
+            <field name="search_view_id" ref="hr.view_employee_filter"/>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add a new employee.
+              </p><p>
+                With just a quick glance on the Odoo employee screen, you
+                can easily find all the information you need for each person;
+                contact data, job position, availability, etc.
+              </p>
+            </field>
+        </record>
+        <!--MENU [REP]-->
+        <menuitem action="action_rep"
+                  id="menu_rep"
+                  sequence="4"
+                  parent="med_marketing.menu_marketing"/>
+
+    </data>
+</openerp>

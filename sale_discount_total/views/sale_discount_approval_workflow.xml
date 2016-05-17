@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <openerp>
+    <data>
+
+
+        <record id="sale_inherit_wkfform_view" model="ir.ui.view">
+            <field name="name">sale.order.workflow.inherit</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <!-- Statusbar widget should also contain the new status -->
+                <field name="state" position="replace">
+                    <field name="state" widget="statusbar" statusbar_visible="draft,sent,progress,done" statusbar_colors='{"invoice_except":"red","waiting_date":"blue"}'/>
+                </field>
+                <field name="state" position="before">
+                    <!-- buttonz -->
+                    <button string="Approve Order" type="workflow" name="order_confirm" states="waitingapproval" class="oe_highlight" groups="base.group_sale_manager"/>
+                </field>
+                <xpath expr="//button[@name='action_cancel']" position="attributes">
+                     <attribute name ="states">waitingapproval,manual,progress</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_cancel']" position="attributes">
+                     <attribute name ="states">waitingapproval,manual,progress</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!--activity-->
+        <record id="act_approve" model="workflow.activity">
+            <field name="wkf_id" ref="sale.wkf_sale"/>
+            <field name="name">Waiting Approval</field>
+            <field name="kind">function</field>
+            <field name="action">wait_approval()</field>
+        </record>
+
+        <!--end of activity-->
+        <!--transitions-->
+
+         <record model="workflow.transition" id="sale.trans_draft_router">
+            <field name="act_from" ref="sale.act_draft"/>
+            <field name="act_to" ref="act_approve"/>
+            <field name="signal">order_toapprov</field>
+        </record>
+
+        <record id="sale_trans_draft_router" model="workflow.transition">
+            <field name="act_from" ref="sale.act_draft"/>
+            <field name="act_to" ref="sale.act_router"/>
+            <field name="signal">order_confirm</field>
+        </record>
+
+         <record id="sale_trans_approvd" model="workflow.transition">
+            <field name="act_from" ref="act_approve"/>
+            <field name="act_to" ref="sale.act_router"/>
+            <field name="signal">order_confirm</field>
+        </record>
+
+       <!--end of transition-->
+
+        <!--sale transition inherit-->
+        <record id="sale.trans_draft_sent" model="workflow.transition">
+            <field name="act_from" ref="sale.act_draft"/>
+            <field name="act_to" ref="sale.act_sent"/>
+            <field name="signal">quotation_sent</field>
+        </record>
+
+        <record id="sale.trans_draft_cancel" model="workflow.transition">
+            <field name="act_from" ref="sale.act_draft"/>
+            <field name="act_to" ref="sale.act_cancel"/>
+            <field name="signal">cancel</field>
+        </record>
+
+        <record id="sale.trans_sent_router" model="workflow.transition">
+            <field name="act_from" ref="sale.act_sent"/>
+            <field name="act_to" ref="sale.act_router"/>
+            <field name="signal">order_confirm</field>
+        </record>
+        <record id="sale.trans_sent_cancel" model="workflow.transition">
+            <field name="act_from" ref="sale.act_sent"/>
+            <field name="act_to" ref="sale.act_cancel"/>
+            <field name="signal">cancel</field>
+        </record>
+        <record id="sale.trans_router_wait_invoice" model="workflow.transition">
+            <field name="act_from" ref="sale.act_router"/>
+            <field name="act_to" ref="sale.act_wait_invoice"/>
+        </record>
+        <record id="sale.trans_wait_invoice_all_lines_invoiced" model="workflow.transition">
+            <field name="act_from" ref="sale.act_wait_invoice"/>
+            <field name="act_to" ref="sale.act_invoice_end"/>
+            <field name="signal">all_lines</field>
+        </record>
+        <record id="sale.trans_wait_invoice_cancel2" model="workflow.transition">
+            <field name="act_from" ref="sale.act_wait_invoice"/>
+            <field name="act_to" ref="sale.act_cancel2"/>
+            <field name="signal">cancel</field>
+        </record>
+        <record id="sale.trans_wait_invoice_invoice_manual" model="workflow.transition">
+            <field name="act_from" ref="sale.act_wait_invoice"/>
+            <field name="act_to" ref="sale.act_invoice"/>
+            <field name="signal">manual_invoice</field>
+        </record>
+        <record id="sale.trans_invoice_invoice_end" model="workflow.transition">
+            <field name="act_from" ref="sale.act_invoice"/>
+            <field name="act_to" ref="sale.act_invoice_end"/>
+            <field name="signal">subflow.paid</field>
+        </record>
+        <record id="sale.trans_invoice_invoice_except" model="workflow.transition">
+            <field name="act_from" ref="sale.act_invoice"/>
+            <field name="act_to" ref="sale.act_invoice_except"/>
+            <field name="signal">subflow.cancel</field>
+        </record>
+        <record id="sale.trans_invoice_except_invoice" model="workflow.transition">
+            <field name="act_from" ref="sale.act_invoice_except"/>
+            <field name="act_to" ref="sale.act_invoice"/>
+            <field name="signal">invoice_recreate</field>
+        </record>
+        <record id="sale.trans_invoice_except_invoice_end" model="workflow.transition">
+            <field name="act_from" ref="sale.act_invoice_except"/>
+            <field name="act_to" ref="sale.act_invoice_end"/>
+            <field name="signal">invoice_corrected</field>
+        </record>
+        <record id="sale.trans_invoice_except_invoice_cancel" model="workflow.transition">
+            <field name="act_from" ref="sale.act_invoice_except"/>
+            <field name="act_to" ref="sale.act_invoice_cancel"/>
+            <field name="signal">invoice_cancel</field>
+        </record>
+        <record id="sale.trans_invoice_end_done" model="workflow.transition">
+            <field name="act_from" ref="sale.act_invoice_end"/>
+            <field name="act_to" ref="sale.act_done"/>
+        </record>
+
+        <!--end of sale transitions-->
+    </data>
+  </openerp>
