@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<openerp>
+    <data>
+         <!--TREE [PERIOD]-->
+        <record model="ir.ui.view" id="tree_salon_module_period">
+            <field name="name">salon.period.tree</field>
+            <field name="model">salon.period</field>
+            <field name="arch" type="xml">
+                 <tree colors="red:period_type=='off'">
+                     <field name="name" widget="float_time"/>
+                     <field name="period_type"/>
+                     <field name="off_reason" string=" " attrs="{'invisible':[('period_type','=','on')]}"/>
+                </tree>
+            </field>
+        </record>
+         <!--FORM [PERIOD]-->
+        <record model="ir.ui.view" id="form_salon_module_period">
+            <field name="name">salon.period.form</field>
+            <field name="model">salon.period</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name" required="1" widget="float_time"/>
+                            </group>
+                            <group>
+                                <field name="period_type" widget="radio"/>
+                                <field name="off_reason"
+                                       attrs="{'invisible':[('period_type','=','on')]}"
+                                       string="Off Reason"/>
+                                <field name="booked"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Chairs">
+                                <field name="chair_lines" string="Chairs">
+                                    <tree>
+                                        <field name="chair_id"/>
+                                        <field name="partner_id" string="Booked By"/>
+                                        <field name="related_employee"/>
+                                        <field name="booked"/>
+                                        <field name="book_no"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <!--ACTION [PERIOD]-->
+        <record id="action_period" model="ir.actions.act_window">
+            <field name="name">Times</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">salon.period</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{}</field>
+            <field name="domain">[('day_id', '=', None)]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to create a new period.
+                </p>
+            </field>
+        </record>
+        <!--MENU [PERIOD]-->
+        <menuitem id="menu_period"
+                  parent="base.menu_base_config"
+                  action="action_period"
+                  sequence="12"/>
+
+
+        <!--=========================  PERIOD LINE  ===============================-->
+
+
+        <!--TREE [PERIOD]-->
+        <!--<record model="ir.ui.view" id="tree_salon_module_period_line">-->
+            <!--<field name="name">salon.period.tree</field>-->
+            <!--<field name="model">salon.period.line</field>-->
+            <!--<field name="arch" type="xml">-->
+                <!--<tree>-->
+                    <!--<field name="chair_id"/>-->
+                <!--</tree>-->
+            <!--</field>-->
+        <!--</record>-->
+        <!--FORM [PERIOD-LINE]-->
+        <record model="ir.ui.view" id="form_salon_module_period_line">
+            <field name="name">salon.period.form</field>
+            <field name="model">salon.period.line</field>
+            <field name="arch" type="xml">
+                <form >
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="partner_id" domain="[('customer','=',True)]"/>
+                                <field name="chair_id"/>
+                                <field name="related_employee"/>
+                            </group>
+                            <group>
+                                <field name="booked"/>
+                                <field name="book_no" readonly="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</openerp>
+

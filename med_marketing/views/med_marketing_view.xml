@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!--MENU [MARKETING]-->
+        <menuitem name="Marketing"
+                  id="menu_marketing"
+                  sequence="40"
+                  parent="medical_feature.menu_med_features"
+                  groups="medical_feature.group_medical_user" />
+        <!--DEPARTMENT IN PRODUCT-->
+        <record model="ir.ui.view" id="product_template_view_inherited">
+            <field name="name">product.template.form.inherited</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='type']" position="before">
+                        <field string="Uses in" name="uses_in" widget="many2many_tags"/>
+                </xpath>
+            </field>
+        </record>
+           <!--TREE VIEW [DEPARTMENTS]-->
+        <record model="ir.ui.view" id="view_departments_tree">
+            <field name="name">pha_marketing.departments.tree</field>
+            <field name="model">pha_marketing.departments</field>
+            <field name="arch" type="xml">
+                <tree>
+                        <field name="name" required="1"/>
+                </tree>
+            </field>
+        </record>
+             <!--FORM VIEW [DEPARTMENTS]-->
+        <record model="ir.ui.view" id="view_departments_form">
+            <field name="name">pha_marketing.departments.form</field>
+            <field name="model">pha_marketing.departments</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="name" required="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+         <!--ACTION [DEPARTMENTS]-->
+       <record id="action_departments" model="ir.actions.act_window">
+            <field name="name">Departments</field>
+            <field name="res_model">pha_marketing.departments</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+         <!--MENU [DEPARTMENTS]-->
+        <menuitem action="action_departments"
+                  id="menu_departments" parent="medical_feature.menu_med_conf"
+                  sequence="2"/>
+        <!--KANBEN [RES.PARTNER] OVERRIDDEN-->
+        <record model="ir.ui.view" id="base.res_partner_kanban_view">
+            <field name="name">res.partner.kanban</field>
+            <field name="model">res.partner</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <field name="color"/>
+                    <field name="display_name"/>
+                    <field name="title"/>
+                    <field name="email"/>
+                    <field name="parent_id"/>
+                    <field name="is_company"/>
+                    <field name="function"/>
+                    <field name="phone"/>
+                    <field name="street"/>
+                    <field name="street2"/>
+                    <field name="zip"/>
+                    <field name="city"/>
+                    <field name="country_id"/>
+                    <field name="mobile"/>
+                    <field name="state_id"/>
+                    <field name="category_id"/>
+                    <field name="has_image"/>
+                    <field name="doctor"/>
+                    <field name="target"/>
+                    <field name="total_sale"/>
+                    <field name="related_rep"/>
+                    <field name="specialist_in"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div style="width: 100%; height:200px;color: navy; background-color: #ffe6f9; border: 2px solid #cc0099; padding: 5px;">
+                                <table>
+                                    <tr>
+                                        <td >
+                                            <div style="width:20%">
+                                                <div style="width: 30%;" id="div_kanban_border">
+                                                    <div class="oe_kanban_vignette oe_semantic_html_override">
+                                                        <t  t-set="border">oe_kanban_color_red</t>
+                                                        <a type="open">
+                                                            <t t-if="record.has_image.raw_value === true">
+                                                                <img t-att-src="kanban_image('res.partner', 'image_small', record.id.value)" class="oe_kanban_image"/>
+                                                            </t>
+                                                            <t t-if="record.has_image.raw_value === false">
+                                                                <t t-if="record.is_company.raw_value === true">
+                                                                    <img t-att-src='_s + "/base/static/src/img/company_image.png"' class="oe_kanban_image"/>
+                                                                </t>
+                                                                <t t-if="record.is_company.raw_value === false">
+                                                                    <img t-att-src='_s + "/base/static/src/img/avatar.png"' class="oe_kanban_image"/>
+                                                                </t>
+                                                            </t>
+                                                        </a>
+                                                        <div class="oe_kanban_details">
+                                                            <h4 class="oe_partner_heading"><a type="open"><field name="display_name"/></a></h4>
+                                                            <h5><field name="specialist_in"/></h5>
+                                                            <div class="oe_kanban_partner_categories"/>
+                                                            <div class="oe_kanban_partner_links"/>
+                                                            <ul>
+                                                                <li t-if="record.parent_id.raw_value and !record.function.raw_value"><field name="parent_id"/></li>
+                                                                <li t-if="!record.parent_id.raw_value and record.function.raw_value"><field name="function"/></li>
+                                                                <li t-if="record.parent_id.raw_value and record.function.raw_value"><field name="function"/> at <field name="parent_id"/></li>
+                                                                <li t-if="record.city.raw_value and !record.country_id.raw_value"><field name="city"/></li>
+                                                                <li t-if="!record.city.raw_value and record.country_id.raw_value"><field name="country_id"/></li>
+                                                                <li t-if="record.city.raw_value and record.country_id.raw_value"><field name="city"/>, <field name="country_id"/></li>
+                                                                <li t-if="record.email.raw_value"><a t-attf-href="mailto:#{record.email.raw_value}"><field name="email"/></a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <td>
+                                            <div attrs="{'invisible': [('target', '=', 0)]}" style="width: 30%;">
+                                                <div class="oe_center" attrs="{'invisible': [('doctor', '=', False)]}">
+
+                                                    <field name="total_sale" widget="gauge" style="width:120px; height: 90px; cursor: pointer;"
+                                                           options="{'max_field': 'target'}">Target</field>
+
+                                                    <h5 style="color:black;">Related Rep.</h5>
+                                                    <field name="related_rep" string="Related Rep."/>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+        <!--KANBEN [HR.EMPLOYEE] OVERRIDDEN-->
+        <record model="ir.ui.view" id="hr.hr_kanban_view_employees">
+        <field name="name">HR - Employess Kanban</field>
+        <field name="model">hr.employee</field>
+        <field name="priority">10</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="last_login"/>
+                <field name="message_is_follower"/>
+                <field name="message_follower_ids"/>
+                <field name="message_ids"/>
+                 <field name="rep"/>
+                    <field name="target"/>
+                    <field name="total_sale"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div style="width: 100%; height:200px;color: navy; background-color: #cce0ff; border: 2px solid #0066ff; padding: 5px;">
+                        <div class="oe_employee_vignette">
+                            <div class="oe_employee_image">
+                                <a type="open"><img t-att-src="kanban_image('hr.employee', 'image_medium', record.id.value)" class="oe_employee_picture"/></a>
+                            </div>
+                            <div class="oe_employee_details">
+                                <h4>
+                                    <a type="open"><field name="name"/><t t-if="record.login.raw_value"> (<field name="login"/>)</t></a>
+                                </h4>
+                                <ul>
+                                    <li id="last_login">
+                                        <span t-if="record.last_login.raw_value &amp;&amp; record.last_login.raw_value.is().today()" class="oe_kanban_button" style="font-size: 100%%">
+                                              <t t-esc="record.last_login.raw_value.toString('HH:mm')"/>
+                                        </span>
+                                    </li>
+                                    <li t-if="record.job_id.raw_value"><field name="job_id"/></li>
+                                    <li t-if="record.work_location.raw_value"><field name="work_location"/></li>
+                                    <li t-if="record.work_email.raw_value"><a t-attf-href="mailto:#{record.work_email.value}"><field name="work_email"/></a></li>
+                                </ul>
+                                <div class="oe_kanban_footer_left">
+                                    <div attrs="{'invisible': [('target', '=', 0)]}">
+                                        <div class="oe_center" attrs="{'invisible': [('rep', '=', False)]}">
+                                        <field name="total_sale" widget="gauge" style="width:120px; height: 90px; cursor: pointer;"
+                                                options="{'max_field': 'target'}">Target</field>
+                                        </div>
+                                        </div>
+
+                                    <span title='Messages'><span class='oe_e'>9</span><t t-esc="record.message_ids.raw_value.length"/></span>
+                                    <span title='Followers'><span class='oe_e'>+</span><t t-esc="record.message_follower_ids.raw_value.length"/></span>
+                                </div>
+                                <div class="oe_followers" groups="base.group_user">
+                                    <button t-if="record.message_is_follower.raw_value" name="action_unfollow" type="object" class="oe_follower oe_following">
+                                        <span class="oe_unfollow">Unfollow</span>
+                                        <span class="oe_following">Following</span>
+                                    </button>
+                                    <button t-if="! record.message_is_follower.raw_value" name="action_follow" type="object" class="oe_follower oe_notfollow">Follow</button>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                        <script>
+                            $('.oe_employee_picture').load(function() { if($(this).width() > $(this).height()) { $(this).addClass('oe_employee_picture_wide') } });
+                        </script>
+                    </t>
+                </templates>
+            </kanban>
+
+        </field>
+    </record>
+
+
+    </data>
+</openerp>

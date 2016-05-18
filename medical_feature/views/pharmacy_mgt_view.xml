@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+         <!--GROUP [MEDICAL MANAGER]-->
+        <record model="res.groups" id="medical_feature.group_medical_user">
+            <field name="name">Medical Features Manager</field>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+        </record>
+
+        <!--MAIN MENU [MEDICAL FEATURES]-->
+        <menuitem id="menu_med_features"
+                  name="Medical Features"
+                  sequence="11"/>
+        <!--MENU [SALES]-->
+        <menuitem id="menu_med_sale"
+                  name="Sales"
+                  sequence="20"
+                  parent="medical_feature.menu_med_features"/>
+        <!--MENU [CONFIGURATION]-->
+        <menuitem id="menu_med_conf"
+                  name="Configuration"
+                  sequence="100"
+                  parent="medical_feature.menu_med_features"
+                  groups="medical_feature.group_medical_user" />
+         <!--FORM VIEW MEDICINE TYPES-->
+        <record model="ir.ui.view" id="form_medicine_types_view">
+            <field name="name">product.medicine.types.form</field>
+            <field name="model">product.medicine.types</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="medicine_type" required="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <!--TREE VIEW MEDICINE TYPES-->
+        <record model="ir.ui.view" id="tree_medicine_types_view">
+            <field name="name">product.medicine.types.tree</field>
+            <field name="model">product.medicine.types</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="medicine_type"/>
+                </tree>
+            </field>
+        </record>
+         <!--ACTION MEDICINE TYPES-->
+       <record id="action_medicine_types" model="ir.actions.act_window">
+            <field name="name">Medicine Categories</field>
+            <field name="res_model">product.medicine.types</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <!--MENU MEDICINE TYPE-->
+        <menuitem action="action_medicine_types"
+                  id="menu_med_types"
+                  sequence="2"
+                  parent="medical_feature.menu_med_conf"/>
+
+        <!--ADD MEDICINE CATEGORY AND RES IN FORM VIEW-->
+        <record id="product_template_form_view_inherited" model="ir.ui.view">
+            <field name="name">product.template.form.inherited</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view" />
+            <field name="arch" type="xml">
+                    <xpath expr="//field[@name='type']" position="after">
+                        <field name="medicine_category"/>
+                        <field name="medicine_type"/>
+                    </xpath>
+                    <xpath expr="//field[@name='sale_ok']" position="before">
+                        <label  for="product_of" string="Product Of"/>
+                        <field name="product_of"/>
+                    </xpath>
+            </field>
+        </record>
+
+        <!--CUSTOMIZE KANBAN VIEW OF PRODUCTS-->
+        <record id="product_template_kanban_view_inherited" model="ir.ui.view">
+            <field name="name">product.template.kanban.inherited</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_kanban_view" />
+            <field name="arch" type="xml">
+                    <xpath expr="//div[@class='oe_kanban_details']" position="inside">
+
+                        <font face = 'Tahoma' size = '3' color = 'ff6666'> <field name="product_of"/> </font>
+                    </xpath>
+
+            </field>
+        </record>
+
+        <!--ADD FILTER MEDICINE TYPES-->
+        <record id="product_template_search_view_inherited" model="ir.ui.view">
+            <field name="name">product.template.form.inherited.new</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_search_view" />
+            <field name="arch" type="xml">
+                    <xpath expr="//filter[@string='Type']" position="replace">
+                        <filter string='Product Type' icon="terp-stock_symbol-selection" domain="[]" context="{'group_by' : 'type'}"/>
+                        <filter string='Medicine Category' name="medicine_type"  domain="[]" context="{'group_by' : 'medicine_type'}"/>
+                    </xpath>
+            </field>
+        </record>
+
+        <!--OVERRIDING ACTION -->
+        <record id="product.product_template_action" model="ir.actions.act_window">
+            <field name="name">Medicines</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">product.template</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="product.product_template_kanban_view"/>
+            <field name="context">{"search_default_filter_to_sell":1, "search_default_medicine_type":1,}</field>
+        </record>
+
+        <!--FOR PRODUCT OF -->
+
+          <!--FORM VIEW PRODUCT OF-->
+        <record model="ir.ui.view" id="form_medicine_res_view">
+            <field name="name">product.medicine.responsible.form</field>
+            <field name="model">product.medicine.responsible</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="name_responsible" required="1"/>
+                            <field name="related_vendor"/>
+                            <field name="place"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <!--TREE VIEW PRODUCT OF-->
+        <record model="ir.ui.view" id="tree_medicine_res_view">
+            <field name="name">product.medicine.responsible.tree</field>
+            <field name="model">product.medicine.responsible</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name_responsible"/>
+                    <field name="related_vendor"/>
+                    <field name="place"/>
+                </tree>
+            </field>
+        </record>
+         <!--ACTION PRODUCT OF-->
+       <record id="action_medicine_res" model="ir.actions.act_window">
+            <field name="name">Medicine Responsible</field>
+            <field name="res_model">product.medicine.responsible</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <!--MENU PRODUCT OF-->
+        <menuitem action="action_medicine_res"
+                  id="menu_med_res"
+                  sequence="3"
+                  parent="medical_feature.menu_med_conf"/>
+        <!-- ADD ADMIN TO SERIAL NUMBERS-->
+        <record id="stock.group_production_lot" model="res.groups">
+            <field name="name">Manage Lots / Serial Numbers</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+        </record>
+
+         <!--MENU RETAILERS-->
+        <menuitem action="base.action_partner_form"
+                  id="menu_retailers_med"
+                  sequence="1"
+                  parent="medical_feature.menu_med_sale"
+                  name="Retailers"/>
+
+    </data>
+</openerp>
