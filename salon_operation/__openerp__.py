@@ -2,7 +2,7 @@
     'name': 'Salon Booking',
     'summary': """   """,
     'description': """  """,
-    'author': '',
+    'author': 'Cybrosys Techno Solutions',
     'website': 'http://www.example.com',
     'category': 'Test',
     'version': '0.1',
