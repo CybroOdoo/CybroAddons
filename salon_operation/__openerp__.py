@@ -3,7 +3,7 @@
     'summary': """   """,
     'description': """  """,
     'author': 'Cybrosys Techno Solutions',
-    'website': 'http://www.example.com',
+    'website': 'http://www.cybrosys.com',
     'category': 'Test',
     'version': '0.1',
 
