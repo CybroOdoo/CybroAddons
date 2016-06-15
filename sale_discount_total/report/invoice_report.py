@@ -1,11 +1,12 @@
 from openerp.osv import fields, osv
+import openerp.addons.decimal_precision as dp
 
 
 class DiscountInvoiceReport(osv.osv):
     _inherit = 'account.invoice.report'
 
     _columns = {
-        'discount': fields.float('Discount', readonly=True),
+        'discount': fields.float('Discount', readonly=True,digits=dp.get_precision('Discount')),
     }
 
     def _select(self):

@@ -22,10 +22,10 @@ class SaleOrder(osv.Model):
                 val1 += line.price_subtotal
                 val2 += self._amount_line_tax(cr, uid, line, context=context)
                 val3 += (line.product_uom_qty * line.price_unit) * line.discount / 100
-            res[order.id]['amount_untaxed'] = round(cur_obj.round(cr, uid, cur, val1))
-            res[order.id]['amount_tax'] = round(cur_obj.round(cr, uid, cur, val2))
-            res[order.id]['amount_discount'] = round(cur_obj.round(cr, uid, cur, val3))
-            res[order.id]['amount_total'] = round(res[order.id]['amount_untaxed'] + res[order.id]['amount_tax'])
+            res[order.id]['amount_untaxed'] = cur_obj.round(cr, uid, cur, val1)
+            res[order.id]['amount_tax'] = cur_obj.round(cr, uid, cur, val2)
+            res[order.id]['amount_discount'] = cur_obj.round(cr, uid, cur, val3)
+            res[order.id]['amount_total'] = res[order.id]['amount_untaxed'] + res[order.id]['amount_tax']
         return res
 
     def _get_order(self, cr, uid, ids, context=None):
@@ -68,21 +68,27 @@ class SaleOrder(osv.Model):
                 disc_amnt += (line.product_uom_qty * line.price_unit * line.discount)/100
             total = val1 + val2 - disc_amnt
             self.currency_id = order.pricelist_id.currency_id
-            self.amount_discount = round(disc_amnt)
-            self.amount_tax = round(val2)
-            self.amount_total = round(total)
+            self.amount_discount = disc_amnt
+            self.amount_tax = val2
+            self.amount_total = total
 
     @api.onchange('discount_type', 'discount_rate')
     def supply_rate(self):
         for order in self:
-            if order.discount_type == 'percent':
-                self.compute_discount(order.discount_rate)
-            else:
-                total = 0.0
-                for line in order.order_line:
-                    total += (line.product_uom_qty * line.price_unit)
-                discount = (order.discount_rate / total) * 100
-                self.compute_discount(discount)
+            if order.discount_rate != 0:
+                if order.discount_type == 'percent':
+                    self.compute_discount(order.discount_rate)
+                else:
+                    total = 0.0
+                    for line in order.order_line:
+                        total += (line.product_uom_qty * line.price_unit)
+                    discount = (order.discount_rate / total) * 100
+                    self.compute_discount(discount)
+
+    @api.multi
+    def button_dummy(self):
+        self.supply_rate()
+        return True
 
     def _prepare_invoice(self, cr, uid, order, lines, context=None):
         invoice_vals = super(SaleOrder, self)._prepare_invoice(cr, uid, order, lines, context=context)
@@ -91,3 +97,13 @@ class SaleOrder(osv.Model):
             'discount_rate': order.discount_rate
         })
         return invoice_vals
+
+class SaleOrderLine(osv.Model):
+    _inherit = "sale.order.line"
+
+    _columns = {
+    'discount': fields.float(string='Discount (%)',
+                            digits=(16, 10),
+                            # digits= dp.get_precision('Discount'),
+                            default=0.0),
+    }
