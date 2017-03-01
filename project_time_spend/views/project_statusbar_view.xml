@@ -1,0 +1,59 @@
+<openerp>
+    <data>
+        <record id="ir_cron_scheduler_demo_action" model="ir.cron">
+            <field name="name">Demo scheduler</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall"/>
+            <field eval="'project.task'" name="model"/>
+            <field eval="'process_demo_scheduler_queue'" name="function"/>
+        </record>
+
+        <record id="view_project_inherit" model="ir.ui.view">
+            <field name="name">Project Inherit</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_tree2"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='progress']" position="replace">
+                    <field name="progress1" widget="progressbar"/>
+                </xpath>
+                <xpath expr="//field[@name='project_id']" position="after">
+                    <field name="deadline_color" invisible="True"/>
+                </xpath>
+                 <xpath expr="//tree[1]" position="attributes">
+                      <attribute name="colors">red:deadline_color=='red';green:deadline_color=='green'</attribute>
+                 </xpath>
+                <xpath expr="//field[@name='deadline_color']" position="attributes">
+                      <attribute name="attrs">{'invisible': [('deadline_color', '!=', 'XYZ')]}</attribute>
+                </xpath>
+            </field>
+         </record>
+
+        <record id="view_project_inherit1" model="ir.ui.view">
+            <field name="name">Project Inherit1</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_form2"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='date_deadline']" position="replace">
+                    <field name="date_deadline_ex" attrs="{'readonly':[('get_user','!=',True)]}"/>
+                </xpath>
+                <xpath expr="//field[@name='progress']" position="after">
+                    <field name="get_user" invisible="True"/>
+                    <field name="progress1" widget="progressbar"/>
+                </xpath>
+            </field>
+         </record>
+        <record id="view_project_inherit2" model="ir.ui.view">
+            <field name="name">Project Inherit2</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_kanban"/>
+            <field name="arch" type="xml">
+                <xpath expr="//t[@t-name='kanban-box']" position="attributes">
+                    <attribute name="attrs">{'invisible':[('kanban_state','=','blocked')]}</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>
