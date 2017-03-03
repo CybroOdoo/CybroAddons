@@ -6,7 +6,7 @@
     'company': 'Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
     'category': 'Theme',
-    'version': '1.0',
+    'version': '8.0.1.0',
 
 
     'depends': [
