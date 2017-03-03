@@ -6,7 +6,7 @@
     'company': 'Cybrosys Techno Solutions',
     'license': 'AGPL-3',
     'category': 'Medicine',
-    'version': '0.1',
+    'version': '8.0.1.0',
     'depends': ["base",
                 "sale",
                 "purchase",
