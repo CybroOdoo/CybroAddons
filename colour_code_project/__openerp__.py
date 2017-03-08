@@ -23,7 +23,7 @@
 {
     'name': "Automatic Colour Code for Task",
     'summary': """Automatic Colour Code for Task Based on Project""",
-    'author': "Nilmar Shereef",
+    'author': "Cybrosys Technologies",
     'website': "http://www.cybrosys.com",
     'category': 'Project',
     'version': '1.0',
