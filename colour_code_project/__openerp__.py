@@ -23,7 +23,7 @@
 {
     'name': "Automatic Colour Code for Task",
     'summary': """Automatic Colour Code for Task Based on Project""",
-    'author': "Cybrosys Technologies",
+    'author': "Cybrosys Techno Solutions",
     'website': "http://www.cybrosys.com",
     'category': 'Project',
     'version': '1.0',
