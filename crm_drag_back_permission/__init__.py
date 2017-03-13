@@ -20,19 +20,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-{
-    'name': "Automatic Colour Code for Task",
-    'summary': """Automatic Colour Code for Task Based on Project""",
-    'author': "Cybrosys Techno Solutions",
-    'website': "http://www.cybrosys.com",
-    'category': 'Project',
-    'version': '0.2',
-    'license': 'AGPL-3',
-    'depends': ['base', 'project'],
-    'data': ['views/color_code_project_view.xml'],
-    'images': ['static/description/project_banner.jpg'],
-
-    'demo': [],
-    'installable': True,
-    'auto_install': False,
-}
+import models
