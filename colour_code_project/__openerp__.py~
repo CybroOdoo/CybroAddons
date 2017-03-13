@@ -6,7 +6,6 @@
 #    Author: Nilmar Shereef(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
-#
 #    It is forbidden to publish, distribute, sublicense, or sell copies
 #    of the Software or modified copies of the Software.
 #

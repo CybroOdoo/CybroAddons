@@ -6,6 +6,7 @@
 #    Author: Nilmar Shereef(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
 #    It is forbidden to publish, distribute, sublicense, or sell copies
 #    of the Software or modified copies of the Software.
 #
@@ -19,18 +20,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-{
-    'name': "Automatic Colour Code for Task",
-    'summary': """Automatic Colour Code for Task Based on Project""",
-    'author': "Cybrosys Techno Solutions",
-    'website': "http://www.cybrosys.com",
-    'category': 'Project',
-    'version': '1.0',
-    'license': 'AGPL-3',
-    'depends': ['base', 'project'],
-    'data': ['views/color_code_project_view.xml'],
-    'images': ['static/description/project_banner.jpg'],
-    'demo': [],
-    'installable': True,
-    'auto_install': False,
-}
+import update_kanban_record
+
+

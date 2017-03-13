@@ -6,6 +6,7 @@
 #    Author: Nilmar Shereef(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
 #    It is forbidden to publish, distribute, sublicense, or sell copies
 #    of the Software or modified copies of the Software.
 #
@@ -20,17 +21,23 @@
 #
 ##############################################################################
 {
-    'name': "Automatic Colour Code for Task",
-    'summary': """Automatic Colour Code for Task Based on Project""",
-    'author': "Cybrosys Techno Solutions",
-    'website': "http://www.cybrosys.com",
-    'category': 'Project',
-    'version': '1.0',
-    'license': 'AGPL-3',
-    'depends': ['base', 'project'],
-    'data': ['views/color_code_project_view.xml'],
-    'images': ['static/description/project_banner.jpg'],
-    'demo': [],
+    'name': 'CRM Kanban Drag Back Permission',
+    'version': '0.2',
+    'category': 'CRM',
+    'sequence': 6,
+    'summary': 'Permission for Drag Back in CRM',
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'website': 'http://www.cybrosys.com',
+    'depends': ['crm', 'sale', 'sales_team'],
+    'images': ['static/description/banner.jpg'],
+    'data': [
+        'views/crm_sales_team.xml',
+        'views/crm_lead_update.xml',
+        'views/templates.xml',
+        'security/ir.model.access.csv',
+
+    ],
     'installable': True,
     'auto_install': False,
 }
