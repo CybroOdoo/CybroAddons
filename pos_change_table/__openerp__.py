@@ -17,7 +17,7 @@
     'data': [
         'template.xml'
     ],
-
+    'images': ['static/description/banner.png'],
     'qweb': [
         "static/src/xml/table_change.xml",
     ],
