@@ -19,6 +19,7 @@
 
 """,
     'depends': ['point_of_sale'],
+    'images': ['static/description/banner.jpg'],
     'data': ['views/custom_view.xml',
              'views/template.xml'],
     'qweb': [],
