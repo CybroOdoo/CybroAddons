@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+     <template id="project_report_template">
+            <t t-call="report.html_container">
+                <t t-foreach="docs" t-as="doc">
+                <t t-set="doc" t-value="doc.with_context({'lang':doc.partner_id.lang})" />
+                <t t-set="doc2" t-value="get_task_model(doc.id)"/>
+                <t t-set="doc3" t-value="get_issue_model(doc.id)"/>
+                <t t-set="doc4" t-value="get_list_model_task(doc.id)"/>
+                <t t-set="doc5" t-value="get_list_model_issue(doc.id)"/>
+                    <div class="page" >
+                        <t t-call="report.external_layout">
+                        <div class="header" style="text-align:left;"><strong><h1><a>Project :</a><a t-field="doc.name"/></h1></strong></div>
+                        <div style="text-align:left;"><strong><p><a>Project Manager:</a><a t-field="doc.user_id"/></p></strong></div>
+                        <div style="text-align:left;"><strong><p><a>Start Date:</a><a t-field="doc.date_start"/></p></strong></div>
+                        <div style="text-align:left;"><strong><p><a>End Date:</a><a t-field="doc.date"/></p></strong></div>
+                        <div t-if="doc4 == 2" class="header" style="text-align:left;"><strong><h1>Open Tasks</h1></strong></div>
+                        <table t-if="doc4 == 2" class="table table-condensed">
+                             <thead>
+                                <tr >
+                                    <th style="background-color:#9b9da0 !important;">Task</th>
+                                    <th style="background-color:#9b9da0 !important;">Assigned</th>
+                                    <th style="background-color:#9b9da0 !important;">Stage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="doc2" t-as="b">
+                                    <tr>
+                                        <td>
+                                            <span t-att-style="style" t-esc="b.name"/>
+                                        </td>
+                                        <td>
+                                            <span t-att-style="style" t-esc="b.user_id.name"/>
+                                        </td>
+                                        <td>
+                                           <span t-att-style="style" t-esc="b.stage_id.name"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                            <div t-if="doc5 == 2" class="header" style="text-align:left;"><strong><h1>Open Issues</h1></strong></div>
+                            <table t-if="doc5 == 2" class="table table-condensed">
+                             <thead>
+                                <tr >
+                                    <th style="background-color:#9b9da0 !important;">Issue</th>
+                                    <th style="background-color:#9b9da0 !important;">Assigned</th>
+                                    <th style="background-color:#9b9da0 !important;">Stage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="doc3" t-as="b1">
+                                    <tr>
+                                        <td>
+                                            <span t-att-style="style" t-esc="b1.name"/>
+                                        </td>
+                                        <td>
+                                            <span t-att-style="style" t-esc="b1.user_id.name"/>
+                                        </td>
+                                        <td>
+                                           <span t-att-style="style" t-esc="b1.stage_id.name"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                        </t>
+                    </div>
+            </t>
+         </t>
+     </template>
+    <template id="project_report_transition">
+        <t t-call="report.html_container">
+            <t t-foreach="doc_ids" t-as="doc_id">
+                <t t-raw="translate_doc(doc_id, doc_model, 'partner_id.lang', 'project_report_pdf.project_report_template')"/>
+            </t>
+        </t>
+    </template>
+    </data>
+</openerp>
