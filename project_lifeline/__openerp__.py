@@ -24,7 +24,7 @@
     'name': "Lifeline for Task",
     'summary': """Lifeline Progressbar for Tasks (100% -> 0%)""",
     'description': """Calculates the time remaining based on live time & deadline.""",
-    'author': "Cybrosys Technologies",
+    'author': 'Cybrosys Techno Solutions',
     'website': "http://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
     'category': 'Project',
