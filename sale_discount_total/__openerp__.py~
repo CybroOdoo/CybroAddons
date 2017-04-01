@@ -3,7 +3,7 @@
     'version': '1.0',
     'category': 'sale',
     'sequence': 6,
-    'summary': "A module meant to provide discount for total amount and Discount limit with approval in sales",
+    'summary': "Discount on total in Sale and invoice with Discount limit and approval",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
