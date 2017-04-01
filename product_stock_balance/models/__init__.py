@@ -2,8 +2,8 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2008-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Nilmar Shereef(<http://www.cybrosys.com>)
+#    Copyright (C) 2009-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
+#    Author: Sreejith P(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -20,25 +20,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-{
-    'name': "Magic Color Note",
-    'summary': """
-        Automatically Change the Colour Based on the Date Interval Config of Notes""",
-    'description': """
-        Set a date interval in integers.
-        All notes belonging to the period will be assigned the defined colour
-    """,
-    'version': '0.2',
-    'author': "Cybrosys Techno Solutions",
-    'company': "Cybrosys Techno Solutions",
-    'website': "http://www.cybrosys.com",
-    'category': 'Tools',
-    'depends': ['base', 'note'],
-    'data': ['views/color_note.xml',
-             'views/color_config.xml'],
-    'demo': [],
-    'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-}
+
+import product_internal_master
