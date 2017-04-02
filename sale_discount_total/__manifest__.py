@@ -1,6 +1,6 @@
 {
     'name': 'Sale Discount on Total Amount',
-    'version': '1.0',
+    'version': '10.0.1.0',
     'category': 'sale',
     'summary': "Discount on total in Sale and invoice with Discount limit and approval",
     'author': 'Cybrosys Techno Solutions',
