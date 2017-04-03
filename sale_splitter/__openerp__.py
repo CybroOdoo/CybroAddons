@@ -35,7 +35,7 @@
 
     'sequence': 6,
     'category': 'Sales Management',
-    'summary': 'Used for splitting lengthy quotations into suppurate.',
+    'summary': 'Used for splitting lengthy quotations into sepparate.',
     'data': ['views/splitter.xml'],
     'depends': ['base','sale'],
     'installable': True,
