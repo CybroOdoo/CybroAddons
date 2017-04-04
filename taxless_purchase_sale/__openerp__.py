@@ -1,7 +1,7 @@
 {
     'name': 'Taxless Sale & Purchase',
     'version': '1.0',
-    'category': 'Purchase',
+    'category': 'Sale Management',
     'sequence': 7,
     'summary': 'hide Tax from Sales and Purchases',
     'author': 'Cybrosys Techno Solutions',
