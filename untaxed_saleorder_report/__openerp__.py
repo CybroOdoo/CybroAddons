@@ -26,7 +26,7 @@
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': "http://www.cybrosys.com",
-    'category': 'sale',
+    'category': 'Sales Management',
     'description': """ Module gives the Tax Dissolved (In Total Amount) SO/Customer Invoice Print""",
     'depends': ['sale', 'account'],
     'license': 'AGPL-3',

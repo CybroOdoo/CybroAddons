@@ -28,7 +28,7 @@
     'company': 'Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
     'summary': "This module will merge order lines/invoice lines with same product in Sale, Purchase & Invoice",
-    'category': 'sale',
+    'category': 'Sales Management',
     'depends': ['account', 'base', 'sale', 'purchase'],
     'license': 'AGPL-3',
     'data': [],

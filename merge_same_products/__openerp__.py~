@@ -23,11 +23,11 @@
 {
     'name': 'Merge Same Product Line',
     'version': '0.1',
-    'description': """""",
+    'description': """This module will merge order lines/invoice lines with same product in Sale, Purchase & Invoice""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
-    'summary': "This module will merge order lines/invoice line with same product in sale, purchase order lines and invoice line",
+    'summary': "This module will merge order lines/invoice lines with same product in Sale, Purchase & Invoice",
     'category': 'sale',
     'depends': ['account', 'base', 'sale', 'purchase'],
     'license': 'AGPL-3',
