@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2008-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
+#    Copyright (C) 2009-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
 #    Author: Nilmar Shereef(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -20,5 +20,3 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import status_report_wizard
-import status_report_xls

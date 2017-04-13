@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2008-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
+#    Copyright (C) 2009-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
 #    Author: Nilmar Shereef(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -20,25 +20,18 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from openerp import models, fields, api
-
-
-class StatusReportWizard(models.Model):
-    _name = 'project.status_report'
-
-    date_from = fields.Datetime('Start Date')
-    date_to = fields.Datetime('End Date')
-
-    @api.multi
-    def print_report_xls(self):
-        context = self._context
-        datas = {'ids': context.get('active_ids', [])}
-        datas['model'] = 'project.project'
-        datas['form'] = self.read()[0]
-        for field in datas['form'].keys():
-            if isinstance(datas['form'][field], tuple):
-                datas['form'][field] = datas['form'][field][0]
-        return {'type': 'ir.actions.report.xml',
-                'report_name': 'project_status_report',
-                'datas': datas,
-                }
+{
+    'name': 'Sent Mails',
+    'version': '1.0',
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'website': 'http://www.cybrosys.com',
+    "category": "Discuss",
+    'depends': ['base', 'mail'],
+    'license': 'AGPL-3',
+    'data': [
+        'views/get_sent_mails.xml',
+    ],
+    'installable': True,
+    'auto_install': False
+}
