@@ -23,7 +23,7 @@
 {
     'name': "Project Status Report",
     'summary': """
-        Project task Analysis""",
+        Detailed Project Analysis with XLS Diagrams""",
     'description': """
         Graphical information of Project from various aspects. Project Task list, Comparison of planned and
         actual budget and time duration for the project.
