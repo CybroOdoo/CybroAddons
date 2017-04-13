@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Cybrosys Technologies Pvt. Ltd. . 
+#    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2009-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
 #    Author: Sreejith P(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
@@ -21,8 +21,8 @@
 #
 ##############################################################################
 {
-    'name': 'Available Stock in Product',
-    'version': '0.3',
+    'name': 'Available Stock in Product Form',
+    'version': '9.0',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
