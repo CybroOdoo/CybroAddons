@@ -22,7 +22,7 @@
 ##############################################################################
 {
     'name': 'Account Payment Receipt',
-    'summary': """Payment receipt with paid details""",
+    'summary': """Payment Receipt with Paid Details""",
     'version': '0.3',
     'description': """""",
     'author': 'Cybrosys Techno Solutions',
