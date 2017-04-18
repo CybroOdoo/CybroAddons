@@ -20,11 +20,11 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+import json
 from odoo.report import report_sxw
 from odoo.osv import osv
 from odoo import api
 from odoo.http import request
-import json
 
 
 class AccountReceiptParser(report_sxw.rml_parse):
@@ -40,43 +40,52 @@ class AccountReceiptParser(report_sxw.rml_parse):
     @api.multi
     def get_details_invoice(self, doc):
         lines = []
-        acc_inv = request.env['account.invoice']
-        acc_inv_rec = acc_inv.search([('number', '=', doc.number)])
-        total_amount = acc_inv_rec.amount_total
-        if acc_inv_rec.state == 'draft':
-            balance_amount = total_amount
+        if doc.number:
+            acc_inv = request.env['account.invoice']
+            acc_inv_rec = acc_inv.search([('number', '=', doc.number)])
+            total_amount = acc_inv_rec.amount_total
+            if acc_inv_rec.state == 'draft':
+                balance_amount = total_amount
+            else:
+                balance_amount = acc_inv_rec.residual
+            paid = total_amount - balance_amount
+            vals = {
+                'total_amount': total_amount,
+                'balance_amount': balance_amount,
+                'paid': paid,
+            }
+            lines.append(vals)
         else:
-            balance_amount = acc_inv_rec.residual
-        paid = total_amount - balance_amount
-        vals = {
-            'total_amount': total_amount,
-            'balance_amount': balance_amount,
-            'paid': paid,
-        }
-        lines.append(vals)
+            vals = {
+                'total_amount': doc.amount_total,
+                'balance_amount': doc.amount_total,
+                'paid': 0,
+            }
+            lines.append(vals)
         return lines
 
     @api.multi
     def get_details(self, doc):
         lines = []
-        acc_inv = request.env['account.invoice']
-        acc_inv_rec = acc_inv.search([('number', '=', doc.number)])
-        d = json.loads(acc_inv_rec.payments_widget)
-        for payment in d['content']:
-            vals = {
-                'memo': payment['name'],
-                'amount': payment['amount'],
-                'method': payment['journal_name'],
-                'date': payment['date'],
-            }
-            lines.append(vals)
+        if doc.number:
+            acc_inv = request.env['account.invoice']
+            acc_inv_rec = acc_inv.search([('number', '=', doc.number)])
+            d = json.loads(acc_inv_rec.payments_widget)
+            for payment in d['content']:
+                vals = {
+                    'memo': payment['name'],
+                    'amount': payment['amount'],
+                    'method': payment['journal_name'],
+                    'date': payment['date'],
+                }
+                lines.append(vals)
         return lines
 
 
 class PrintReport(osv.AbstractModel):
-    _name = 'report.invoice_payment_receipt.report_payment'
+    _name = 'report.payment_receipt_invoice.report_payment'
     _inherit = 'report.abstract_report'
-    _template = 'invoice_payment_receipt.report_payment'
+    _template = 'payment_receipt_invoice.report_payment'
     _wrapped_report_class = AccountReceiptParser
 
 

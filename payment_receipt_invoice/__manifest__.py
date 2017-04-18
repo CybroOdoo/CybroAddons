@@ -23,12 +23,12 @@
 {
     'name': 'Account Payment Receipt',
     'summary': """Payment Receipt With Paid Details""",
-    'version': '1.0',
+    'version': '0.3',
     'description': """""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
-    'category': 'Reporting',
+    'category': 'Accounting',
     'depends': ['base', 'account'],
     'license': 'AGPL-3',
     'data': [
