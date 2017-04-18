@@ -23,7 +23,7 @@
 {
     'name': "Cab Booking Management System",
     'summary': """Complete Cab Booking Management and its Related Records""",
-    'author': "Cybrosys",
+    'author': "Cybrosys Techno Solutions",
     'website': "http://www.cybrosys.com",
     'category': 'Tools',
     'version': '0.1',
