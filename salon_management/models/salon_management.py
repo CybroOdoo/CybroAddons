@@ -202,6 +202,7 @@ class SalonOrder(models.Model):
     booking_identifier = fields.Boolean(string="Booking Identifier")
     start_time_only = fields.Char(string="Start Time Only")
     end_time_only = fields.Char(string="End Time Only")
+    chair_user = fields.Many2one('res.users', string="Chair User")
 
     @api.onchange('start_time')
     def start_date_change(self):
@@ -230,9 +231,6 @@ class SalonOrder(models.Model):
 
     @api.multi
     def write(self, cr):
-
-        self.chair_id.number_of_orders = len(self.env['salon.order'].search([("chair_id", "=", self.chair_id.id),
-                                                                             ("stage_id", "in", [2, 3])]))
         if 'stage_id' in cr.keys():
             if self.stage_id.id == 3 and cr['stage_id'] != 4:
                 raise ValidationError(_("You can't perform that move !"))
@@ -263,6 +261,7 @@ class SalonOrder(models.Model):
         self.chair_id.number_of_orders = len(self.env['salon.order'].search([("chair_id", "=", self.chair_id.id),
                                                                              ("stage_id", "in", [2, 3])]))
         self.chair_id.total_time_taken_chair = self.chair_id.total_time_taken_chair + self.time_taken_total
+        self.chair_user = self.chair_id.user_of_chair
 
     @api.multi
     def salon_validate(self):
