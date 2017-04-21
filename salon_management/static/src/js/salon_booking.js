@@ -24,10 +24,17 @@ $(document).on('click',"#submit_button",function() {
 
 $(document).on('click',"#check_button",function() {
    var check_date = $( "#check_date" ).val();
+   if (check_date != "")
+   {
    var salon_check_date = ajax.jsonRpc("/page/salon_check_date", 'call', {'check_date':check_date })
                 .then(function(date_info){
                 window.location= "/page/salon_management.salon_booking_form?x=" + date_info
              })
+   }
+   else
+   {
+   alert("Fill the Field")
+   }
 });
 });
 
