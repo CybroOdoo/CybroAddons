@@ -23,16 +23,19 @@
 {
     'name': "Automatic Developer Mode",
     'summary': """Automatically Activate Developer Mode""",
-    'version': '0.3',
+    'version': '8.0.2.0.0',
     'author': 'Cybrosys Techno Solutions',
     'website': "http://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
-    'category': 'Tools',
+    'category': 'Extra Tools',
     'depends': ['base', 'web', 'base_setup'],
     'data': [
         'views/web_view.xml',
+        'security/security_data.xml',
+        'views/developer_mode_view.xml',
     ],
     'images': ['static/description/banner.jpg'],
+    'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
 }
