@@ -22,7 +22,7 @@
 ##############################################################################
 {
     'name': "POS Chat Box",
-    'summary': """Chat in POS""",
+    'summary': """Chat Box In POS Screen""",
     'description': "This module adds chat interface in Point of sale screen.",
     'author': "Cybrosys Techno Solutions",
     'company': "Cybrosys Techno Solutions",

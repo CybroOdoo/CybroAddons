@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
+#
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2009-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
 #    Author: Nilmar Shereef(<http://www.cybrosys.com>)
@@ -21,17 +22,22 @@
 ##############################################################################
 {
     'name': "Automatic Developer Mode",
-    'summary': """Automatically Activate Developer Mode""",
-    'version': '0.3',
+    'summary': """Automatically Activate Developer Mode & Running DB Name on Left Top""",
+    'version': '10.0.2.0.0',
     'author': 'Cybrosys Techno Solutions',
     'website': "http://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
-    'category': 'Tools',
+    'category': 'Extra Tools',
     'depends': ['base', 'web', 'base_setup'],
     'data': [
         'views/web_view.xml',
+        'security/security_data.xml',
+        'views/developer_mode_view.xml',
+        'views/ir_rule_view.xml',
+        'data/cybro_developer_data.xml',
     ],
     'images': ['static/description/banner.jpg'],
+    'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
 }
