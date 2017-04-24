@@ -22,11 +22,11 @@
 ##############################################################################
 {
     'name': "Cab Booking Management System",
+    'version': '9.0.1.0.0',
     'summary': """Complete Cab Booking Management and its Related Records""",
     'author': "Cybrosys Techno Solutions",
     'website': "http://www.cybrosys.com",
-    'category': 'Tools',
-    'version': '0.1',
+    'category': 'Industries',
     'depends': ['base', 'mail'],
     'data': [
         'views/templates.xml',
@@ -40,7 +40,6 @@
         'security/ir.model.access.csv'
             ],
     'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
     'application': True,
