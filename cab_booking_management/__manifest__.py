@@ -25,8 +25,8 @@
     'summary': """Complete Cab Booking Management and its Related Records""",
     'author': "Cybrosys Techno Solutions",
     'website': "http://www.cybrosys.com",
-    'category': 'Tools',
-    'version': '0.1',
+    'category': 'Industries',
+    'version': '10.0.1.0.0',
     'depends': ['base', 'mail'],
     'data': [
         'views/templates.xml',

@@ -29,7 +29,8 @@ class CabTiming(models.Model):
     name = fields.Many2one('cab.management', string="Cab Name", required=True)
     cab_time = fields.Many2many('cab.time', 'cab_name_rel', string="Time", required=True,
                                 help="Use this format 00:00,ex:  01:15")
-    cab_route = fields.Many2one('cab.location', string='Route', required=True)
+    cab_route = fields.Many2one('cab.location', string='Starting Place', required=True)
+    cab_route_to = fields.Many2one('cab.location', string='Destination Place', required=True)
     seat = fields.Integer(string="Seating Capacity", related='name.seating_capacity', required=True)
 
     @api.multi
