@@ -28,7 +28,7 @@
     'website': "http://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
     'category': 'Project',
-    'version': '0.2',
+    'version': '9.0.1.0.0',
     'depends': ['base', 'project'],
     'data': [
         'views/task_lifeline_view.xml',
