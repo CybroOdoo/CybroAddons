@@ -27,7 +27,7 @@
     'author': 'Cybrosys Techno Solutions',
     'website': "http://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
-    "category": "Tools",
+    "category": "Industries",
     'depends': ['base', 'account', 'mail', 'website'],
     'data': ['views/salon_holiday.xml',
              'views/salon_data.xml',
