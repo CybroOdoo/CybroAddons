@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="1">
+
+        <!-- This will set the unit of measure used in projects and tasks.-->
+        <!--<record id="base.main_company" model="res.company">-->
+            <!--<field name="project_time_mode_id" ref="product.product_uom_hour"></field>-->
+        <!--</record>-->
+
+        <!-- Requests Links -->
+        <record id="req_link_car" model="res.request.link">
+            <field name="name">Car</field>
+            <field name="object">car.car</field>
+        </record>
+
+        <record id="req_link_worksheet" model="res.request.link">
+            <field name="name">Car Worksheet</field>
+            <field name="object">car.workshop</field>
+        </record>
+
+        <!-- sale_timesheet and project define the same field without depending on each, which causes the field to be deleted when the module that created it
+        is deleted. To avoid this, we create xmlids manually for this field in both modules to prevent accidental deletion. To fix in saas-7 by moving the field definition-->
+        <!--<record id="duplicate_field_xmlid" model="ir.model.data">-->
+            <!--<field name="res_id" search="[('model','=','res.company')]" model="ir.model.fields"/>-->
+            <!--<field name="model">ir.model.fields</field>-->
+            <!--<field name="module">fleet_car_workshop</field>-->
+            <!--<field name="name">fleet_car_workshop_duplicate</field>-->
+            <!--<field name="noupdate">True</field>-->
+        <!--</record>-->
+
+    </data>
+    <data>
+
+
+        <!-- Task-related subtypes for messaging / Chatter -->
+        <record id="mt_task_new" model="mail.message.subtype">
+            <field name="name">Task Opened</field>
+            <field name="res_model">car.workshop</field>
+            <field name="default" eval="False"/>
+            <field name="hidden" eval="False"/>
+            <field name="description">Task opened</field>
+        </record>
+        <record id="mt_task_blocked" model="mail.message.subtype">
+            <field name="name">Task Blocked</field>
+            <field name="res_model">car.workshop</field>
+            <field name="default" eval="False"/>
+            <field name="description">Task blocked</field>
+        </record>
+        <record id="mt_task_ready" model="mail.message.subtype">
+            <field name="name">Task Ready</field>
+            <field name="res_model">car.workshop</field>
+            <field name="default" eval="False"/>
+            <field name="description">Task ready for Next Stage</field>
+        </record>
+        <record id="mt_task_stage" model="mail.message.subtype">
+            <field name="name">Stage Changed</field>
+            <field name="res_model">car.workshop</field>
+            <field name="default" eval="False"/>
+            <field name="description">Stage changed</field>
+        </record>
+        <!-- Project-related subtypes for messaging / Chatter -->
+        <record id="mt_project_task_new" model="mail.message.subtype">
+            <field name="name">Task Opened</field>
+            <field name="sequence">10</field>
+            <field name="res_model">car.car</field>
+            <field name="default" eval="True"/>
+            <field name="parent_id" eval="ref('mt_task_new')"/>
+            <field name="relation_field">vehicle_id</field>
+        </record>
+        <record id="mt_project_task_blocked" model="mail.message.subtype">
+            <field name="name">Task Blocked</field>
+            <field name="sequence">11</field>
+            <field name="res_model">car.car</field>
+            <field name="default" eval="False"/>
+            <field name="parent_id" eval="ref('mt_task_blocked')"/>
+            <field name="relation_field">vehicle_id</field>
+        </record>
+        <record id="mt_project_task_ready" model="mail.message.subtype">
+            <field name="name">Task Ready</field>
+            <field name="sequence">12</field>
+            <field name="res_model">car.car</field>
+            <field name="default" eval="False"/>
+            <field name="parent_id" eval="ref('mt_task_ready')"/>
+            <field name="relation_field">vehicle_id</field>
+        </record>
+        <record id="mt_project_task_stage" model="mail.message.subtype">
+            <field name="name">Task Stage Changed</field>
+            <field name="sequence">13</field>
+            <field name="res_model">car.car</field>
+            <field name="default" eval="False"/>
+            <field name="parent_id" eval="ref('mt_task_stage')"/>
+            <field name="relation_field">vehicle_id</field>
+        </record>
+
+        <!--&lt;!&ndash; notify all employees of module installation &ndash;&gt;-->
+        <!--<record model="mail.message" id="module_install_notification">-->
+            <!--<field name="model">mail.channel</field>-->
+            <!--<field name="res_id" ref="mail.channel_all_employees"/>-->
+            <!--<field name="message_type">notification</field>-->
+            <!--<field name="subtype_id" ref="mail.mt_comment"/>-->
+            <!--<field name="subject">Project Management application installed!</field>-->
+            <!--<field name="body"><![CDATA[<p>Manage multi-level projects and tasks.  You can delegate tasks, track task work, and review your planning.</p>-->
+<!--<p>You can manage todo lists on tasks by installing the <i>Todo Lists</i> application, supporting the Getting Things Done (GTD) methodology.</p>-->
+<!--<p>You can also manage issues/bugs in projects by installing the "Issue Tracker" application.</p>]]></field>-->
+        <!--</record>-->
+    </data>
+    </openerp>
