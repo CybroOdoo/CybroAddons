@@ -2,8 +2,8 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2009-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Sreejith P(<http://www.cybrosys.com>)
+#    Copyright (C) 2008-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
+#    Author: Nilmar Shereef(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -20,22 +20,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-{
-    'name': 'Available Stock in Product Form',
-    'version': '9.0.2.0.0',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'website': 'http://www.cybrosys.com',
-    'summary': 'Estimate Inventory Levels By Warehouses in Product Form',
-    'depends': ['product','stock'],
-    'category': 'Warehouse',
-    'data': [
-            'views/product_internal_stock.xml',
-            'security/ir.model.access.csv',
-        ],
-    'demo': [],
-    'license': 'AGPL-3',
-    'images': ['static/description/banner.jpg'],
-    'installable': True,
-    'auto_install': False
-}
+import pos_restaurant_extra_facility

@@ -2,8 +2,8 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2009-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Sreejith P(<http://www.cybrosys.com>)
+#    Copyright (C) 2008-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
+#    Author: Nilmar Shereef(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -21,21 +21,22 @@
 #
 ##############################################################################
 {
-    'name': 'Available Stock in Product Form',
-    'version': '9.0.2.0.0',
+    'name': 'Floor Wise Charge in Restaurant',
+    'version': '9.0.1.0.0',
+    'summary': """Product Price Change Based on Floor of POS Restaurant.""",
+    'description': """Module adds the facility charge of floor with each products in POS restaurant""",
     'author': 'Cybrosys Techno Solutions',
+    'website': "http://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
-    'website': 'http://www.cybrosys.com',
-    'summary': 'Estimate Inventory Levels By Warehouses in Product Form',
-    'depends': ['product','stock'],
-    'category': 'Warehouse',
+    'category': 'Point Of Sale',
+    'depends': ['point_of_sale',
+                'pos_restaurant'],
     'data': [
-            'views/product_internal_stock.xml',
-            'security/ir.model.access.csv',
+        'views/pos_restaurant_extra_facility.xml',
+        'views/templates.xml',
         ],
-    'demo': [],
-    'license': 'AGPL-3',
     'images': ['static/description/banner.jpg'],
+    'license': 'AGPL-3',
     'installable': True,
-    'auto_install': False
+    'auto_install': False,
 }
