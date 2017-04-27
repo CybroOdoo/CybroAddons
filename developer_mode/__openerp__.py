@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2009-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
+#    Copyright (C) 2017-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
 #    Author: Nilmar Shereef(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -23,7 +23,7 @@
 {
     'name': "Automatic Developer Mode",
     'summary': """Automatically Activate Developer Mode & Running DB Name on Left Top""",
-    'version': '9.0.2.0.0',
+    'version': '9.0.3.0.0',
     'author': 'Cybrosys Techno Solutions',
     'website': "http://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
