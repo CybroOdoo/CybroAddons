@@ -28,14 +28,16 @@ class FacilityRestaurant(models.Model):
     _inherit = "restaurant.floor"
 
     rest_floor_facility = fields.One2many('restaurant.floor.line', 'ref_field', string='Floor Facility')
-    facility_service_percentage = fields.Float(string="Active Facility Charge %", readonly=True)
+    facility_service_percentage = fields.Float(compute='onchange_rest_facility', string="Active Facility Charge %")
 
-    @api.onchange('rest_floor_facility')
-    def onchange_facility(self):
+    @api.multi
+    @api.depends('rest_floor_facility')
+    def onchange_rest_facility(self):
         sum_of_percentage = 0.0
-        for records in self.rest_floor_facility:
-            sum_of_percentage += records.line_percentage
-        self.facility_service_percentage = sum_of_percentage
+        if self.rest_floor_facility:
+            for records in self.rest_floor_facility:
+                sum_of_percentage += records.line_percentage
+            self.facility_service_percentage = sum_of_percentage
 
 
 class FacilityRestaurantLines(models.Model):
