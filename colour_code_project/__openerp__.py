@@ -29,7 +29,7 @@
     'license': 'AGPL-3',
     'depends': ['base', 'project'],
     'data': ['views/color_code_project_view.xml'],
-    'images': ['static/description/project_banner.jpg'],
+    'images': ['static/description/banner.jpg'],
     'demo': [],
     'installable': True,
     'auto_install': False,
