@@ -20,23 +20,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-{
-    'name': 'Floor Wise Charge in Restaurant',
-    'version': '10.0.3.0.0',
-    'summary': """Product Price Change Based on Floor of POS Restaurant.""",
-    'description': """Module adds the facility charge of floor with each products in POS restaurant""",
-    'author': 'Cybrosys Techno Solutions',
-    'website': "http://www.cybrosys.com",
-    'company': 'Cybrosys Techno Solutions',
-    'category': 'Point Of Sale',
-    'depends': ['point_of_sale',
-                'pos_restaurant'],
-    'data': [
-        'views/pos_restaurant_extra_facility.xml',
-        'views/templates.xml',
-        ],
-    'images': ['static/description/banner.jpg'],
-    'license': 'LGPL-3',
-    'installable': True,
-    'auto_install': False,
-}
+import logs_scheduled_actions
