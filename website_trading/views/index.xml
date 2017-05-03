@@ -1,0 +1,704 @@
+<odoo>
+   <template id="website.layout" name="Main layout" >&lt;!DOCTYPE html&gt;
+      <html t-att-lang="lang and lang.replace('_', '-')"
+            t-att-data-website-id="website.id if editable and website else None"
+            t-att-data-editable="'1' if editable else None"
+            t-att-data-translatable="'1' if translatable else None"
+            t-att-data-edit_translations="'1' if edit_translations else None"
+            t-att-data-view-xmlid="xmlid if editable or translatable else None"
+            t-att-data-main-object="repr(main_object) if editable else None"
+            t-att-data-oe-company-name="res_company.name">
+          <head>
+              <meta charset="utf-8" />
+              <t t-if="main_object and 'website_meta_title' in main_object and not title">
+                  <t t-set="title" t-value="main_object.website_meta_title"/>
+              </t>
+              <t t-if="main_object and 'name' in main_object and not title and not additional_title">
+                  <t t-set="additional_title" t-value="main_object.name"/>
+              </t>
+              <t t-if="not title">
+                  <t t-set="title"><t t-if="additional_title"><t t-raw="additional_title"/> | </t><t t-esc="(website or res_company).name"/></t>
+              </t>
+  
+              <meta name="viewport" content="initial-scale=1"/>
+              <meta name="description" t-att-content="main_object and 'website_meta_description' in main_object
+                  and main_object.website_meta_description or website_meta_description"/>
+              <meta name="keywords" t-att-content="main_object and 'website_meta_keywords' in main_object
+                  and main_object.website_meta_keywords or website_meta_keywords"/>
+              <meta name="generator" content="Odoo"/>
+  
+              <!-- OpenGraph tags for Facebook sharing -->
+              <meta property="og:title" t-att-content="additional_title" />
+              <meta property="og:site_name" t-att-content="res_company.name" />
+              <t t-if="main_object and 'plain_content' in main_object and main_object.plain_content">
+                  <t t-set="og_description" t-value="main_object.plain_content[0:500]"/>
+                  <meta property="og:description" t-att-content="og_description" />
+                  <meta property='og:image' t-att-content="request.httprequest.url_root+'logo.png'"/>
+                  <meta property='og:url' t-att-content="request.httprequest.url_root+request.httprequest.path[1:end]"/>
+              </t>
+  
+              <title>Trading Website</title>
+  
+              <t t-set="languages" t-value="website.get_languages() if website else None"/>
+              <t t-if="request and request.website_multilang and website">
+                  <t t-foreach="website.get_alternate_languages(request.httprequest)" t-as="lg">
+                      <link rel="alternate" t-att-hreflang="lg['hreflang']" t-att-href="lg['href']"/>
+                  </t>
+              </t>
+  
+              <t t-call-assets="web.assets_common" t-js="false"/>
+              <t t-call-assets="website.assets_frontend" t-js="false"/>
+              <t t-call-assets="web.assets_common" t-css="false"/>
+              <t t-call-assets="website.assets_frontend" t-css="false"/>
+              <script type="text/javascript">
+                  odoo.define('web.csrf', function (require) {
+                      var token = "<t t-esc="request.csrf_token(None)"/>";
+                      require('web.core').csrf_token = token;
+                      require('qweb').default_dict.csrf_token = token;
+                  });
+              </script>
+  
+              <t t-raw="head or ''" name='layout_head'/>
+              <!-- custom -->
+              <link href="/website_trading/static/css/style.css" rel="stylesheet"/>
+              <!-- flexslider -->
+              <link rel="stylesheet" href="/website_trading/static/css/flexslider.css" type="text/css" media="screen" />
+              <link href="/website_trading/static/css/lightGallery.css" rel="stylesheet"/>
+              <script src="/website_trading/static/js/responsiveslides.min.js"></script>
+              <!-- Font -->
+              
+              <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"/>
+          </head>
+          <body>
+              <div id="wrapwrap">
+                  <header>
+                    <div class="banner-top">
+                      <div class="slider">
+                        <div class="callbacks_container">
+                          <ul class="rslides callbacks callbacks1" id="slider4">
+                            <li>
+                              <div class=" banner-top jarallax">
+                                <div class="agileinfo-dot">
+                                  <div class="container">
+                                    <div class="agileits-banner-info">
+                                      <h3>Lorem ipsum</h3>
+                                      <h6>Mauris nisl nunc, feugiat a nulla euismod</h6>
+                                      <p>Nulla eu erat risus. Curabitur in purus porta, suscipit nisi sit amet, maximus purus. Fusce nulla nibh, porttitor eu velit id, cursus mattis nibh. Phasellus dapibus aliquam urna in maximus.</p>
+                                      <div class="trade-button"> <a href="#" data-toggle="modal" data-target="#myModal">More</a> </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </li>
+                            <li>
+                              <div class=" banner-top  banner-top1 jarallax">
+                                <div class="agileinfo-dot">
+                                  <div class="container">
+                                    <div class="agileits-banner-info">
+                                      <h3>Donec posuere</h3>
+                                      <h6>Vivamus facilisis dolor ac sapien pharetra</h6>
+                                      <p>Donec luctus faucibus lacus accumsan pellentesque. Vestibulum volutpat dignissim sem id dignissim. Nunc sit amet risus nec diam porttitor tristique et eu lorem. Morbi ut ullamcorper eros</p>
+                                      <div class="trade-button"> <a href="#" data-toggle="modal" data-target="#myModal">More</a> </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </li>
+                            <li>
+                              <div class=" banner-top  banner-top2 jarallax">
+                                <div class="agileinfo-dot">
+                                  <div class="container">
+                                    <div class="agileits-banner-info">
+                                      <h3>Integer accumsan</h3>
+                                      <h6>Nunc dapibus euismod purus, sed molestie</h6>
+                                      <p>Nulla a vehicula urna, in mattis nisl. Nulla facilisi. Praesent at nibh et ligula imperdiet vehicula. Sed posuere, massa semper ornare laoreet, ipsum sem faucibus velit, non tempus mi felis</p>
+                                      <div class="trade-button"> <a href="#" data-toggle="modal" data-target="#myModal">More</a> </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </li>
+                          </ul>
+                        </div>
+                        <div class="clearfix"> </div>
+                      </div>
+                    </div>
+
+                    <div class="container-fluid navnav">
+                      <div class="banner ">
+                        <div class="header">
+                          <div class="container">
+                            <nav class="navbar navbar-default home_header">
+                              <!-- Brand and toggle get grouped for better mobile display -->
+                              <div class="navbar-header">
+                                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                        data-target="#bs-example-navbar-collapse-1">
+                                        <span class="sr-only">Toggle navigation</span>
+                                        <span class="icon-bar"></span>
+                                        <span class="icon-bar"></span>
+                                        <span class="icon-bar"></span>
+                                </button>
+                                <div class="logo">
+                                  <h1><a class='navbar-brand' href="index.html">TRADING</a></h1>
+                                </div>
+                              </div>
+                              <!-- Collect the nav links, forms, and other content for toggling -->
+                              <div class="collapse navbar-collapse nav-wil" id="bs-example-navbar-collapse-1">
+                                <nav>
+                                  <ul class="nav navbar-nav" id="top_menu">
+                                    <li class="active"><a href="/">Home</a></li>
+                                    <li><a href="#about" class="scroll">About</a></li>
+                                    <li><a href="#Trade" class="scroll">Trade</a></li>
+                                    <li><a href="#gallery" class="scroll">Gallery</a></li>
+                                    <li><a href="#testimonial" class="scroll">Testimonial</a></li>
+                                    <li><a href="#blog" class="scroll">Blog</a></li>
+                                    <li><a href="#mail" class="scroll">Contact</a></li>
+                                    <li class="dropdown" t-ignore="true" t-if="website.user_id != user_id">
+                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                            <b>
+                                                <span t-esc="(len(user_id.name)&gt;25) and (user_id.name[:23]+'...') or user_id.name"/>
+                                                <span class="caret"/>
+                                            </b>
+                                        </a>
+                                        <ul class="dropdown-menu js_usermenu" role="menu">
+                                            <li id="o_logout"><a t-attf-href="/web/session/logout?redirect=/" role="menuitem">Logout</a></li>
+                                        </ul>
+                                    </li>
+                                  </ul>
+                                </nav>
+                              </div>
+                              <!-- /.navbar-collapse -->
+                            </nav>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </header>
+                  <main>
+                      <t t-raw="0"/>
+                  </main>
+                  <footer>
+                      <div id="footer">
+                      </div>
+                  </footer>
+              </div>
+              <script>
+                  $(document).ready(function(){
+                    if ($(document).find('#oe_main_menu_navbar').length == 0){
+                        $(".home_header").css({"margin-top":"0px"});
+                    }
+                     // Slideshow 4
+                      $("#slider4").responsiveSlides({
+                        auto: true,
+                        pager:true,
+                        nav:true,
+                        speed: 500,
+                        namespace: "callbacks",
+                        before: function () {
+                          $('.events').append("<li>before event fired.</li>");
+                        },
+                        after: function () {
+                          $('.events').append("<li>after event fired.</li>");
+                        }
+                      });
+                      var scroll_start = 0;
+                      var startchange = $('.banner');
+                      var offset = startchange.offset();
+                      $(document).scroll(function() {
+                        scroll_start = $(this).scrollTop();
+                        if(scroll_start > offset.top) {
+                            $('.banner').css('background-color', 'rgba(0,0,0,0.6)');
+                         } else {
+                            $('.banner ').css('background-color', 'transparent');
+                         }
+                     });
+                  });
+              </script>
+              <script id='tracking_code' t-if="website and website.google_analytics_key and not editable">
+                  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+                  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+                  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  
+                  ga('create', _.str.trim('<t t-esc="website.google_analytics_key"/>'), 'auto');
+                  ga('send','pageview');
+              </script>
+              <!-- View More banner -->
+              <div class="modal about-modal fade" id="myModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&amp;times;</span>
+                      </button>
+                      <h4 class="modal-title">Praesent at nibh</h4>
+                    </div>
+                    <div class="modal-body">
+                      <div class="agileits- info"> <img src="/website_trading/static/images/2.jpg" alt="" width="100%"/>
+                        <p>Duis venenatis, turpis eu bibendum porttitor, sapien quam ultricies tellus,
+                          ac rhoncus risus odio eget nunc. Pellentesque ac fermentum diam.
+                          Integer eu facilisis nunc, a iaculis felis. Pellentesque pellentesque tempor enim,
+                          in dapibus turpis porttitor quis. Suspendisse ultrices hendrerit massa.
+                          Nam id metus id tellus ultrices ullamcorper.  Cras tempor massa luctus, varius lacus sit amet,
+                          blandit lorem. Duis auctor in tortor sed tristique. Proin sed finibus sem.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          </body>
+      </html>
+  </template>
+  <template id="website_trading.home" name="Trading Home Page">
+
+    <t t-call="website.layout">
+      <!-- about -->
+      <div class="about" id="about">
+        <div class="container">
+          <div class="trade-about-grids">
+            <div class="col-md-6 trade-about-left">
+              <div id="main" role="main">
+                <section class="slider">
+                  <div id="slider" class="flexslider">
+                    <ul class="slides">
+                      <li> <img src="/website_trading/static/images/5.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/6.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/7.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/8.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/9.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/10.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/5.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/6.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/7.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/8.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/9.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/10.jpg" alt="" /> </li>
+                    </ul>
+                  </div>
+                  <div id="carousel" class="flexslider">
+                    <ul class="slides">
+                      <li> <img src="/website_trading/static/images/5.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/6.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/7.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/8.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/9.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/10.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/5.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/6.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/7.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/8.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/9.jpg" alt="" /> </li>
+                      <li> <img src="/website_trading/static/images/10.jpg" alt="" /> </li>
+                    </ul>
+                  </div>
+                </section>
+              </div>
+            </div>
+            <div class="col-md-6 trade-about-left">
+              <h2>Why Choose Us ?</h2>
+              <h5>Vivamus facilisis dolor ac sapien pharetra</h5>
+              <p>orem ipsum dolor sit amet, consectetur adipiscing elit. Mauris nisl nunc, feugiat a nulla euismod, porta vehicula nisi. Praesent molestie, elit at mattis euismod, risus augue lacinia sem, vel elementum dui sem eu nisi. Morbi eu condimentum nibh. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. <span>Donec leo orci, tempus ac porta sit amet, pulvinar ac ante. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Pellentesque in mauris vel lectus aliquet imperdiet at in metus. Sed tristique, ante quis varius rhoncus, turpis nisl suscipit neque, id sollicitudin tellus purus a augue. Integer urna ex, vehicula eget tincidunt et, scelerisque non massa. Nulla convallis sodales diam, non laoreet purus.</span></p>
+              <div class="tradel-button"> <a href="#" data-toggle="modal" data-target="#myModal">More</a> </div>
+            </div>
+            <div class="clearfix"> </div>
+          </div>
+        </div>
+      </div>
+      <!-- markets -->
+      <div class="markets" id="Trade">
+        <div class="container">
+          <div class="tradee-heading">
+            <h3>Duis venenatis</h3>
+            <h5>Vivamus facilisis dolor ac sapien pharetra</h5>
+          </div>
+          <div class="markets-grids">
+            <div class="col-md-4 tradels-markets-grid">
+              <div class="agileits-icon-grid">
+                <div class="icon-left"> <i class="fa fa-bar-chart" aria-hidden="true"></i> </div>
+                <div class="icon-right">
+                  <h5>Suspendisse</h5>
+                  <p>Phasellus dapibus felis elit, sed accumsan arcu gravida vitae. Nullam aliquam erat at lectus ullamcorper, nec interdum neque hendrerit.</p>
+                </div>
+                <div class="clearfix"> </div>
+              </div>
+            </div>
+            <div class="col-md-4 tradels-markets-grid">
+              <div class="agileits-icon-grid">
+                <div class="icon-left"> <i class="fa fa-line-chart" aria-hidden="true"></i> </div>
+                <div class="icon-right">
+                  <h5>Aliquam</h5>
+                  <p>Phasellus dapibus felis elit, sed accumsan arcu gravida vitae. Nullam aliquam erat at lectus ullamcorper, nec interdum neque hendrerit.</p>
+                </div>
+                <div class="clearfix"> </div>
+              </div>
+            </div>
+            <div class="col-md-4 tradels-markets-grid">
+              <div class="agileits-icon-grid">
+                <div class="icon-left"> <i class="fa fa-area-chart" aria-hidden="true"></i> </div>
+                <div class="icon-right">
+                  <h5>Consectetur</h5>
+                  <p>Phasellus dapibus felis elit, sed accumsan arcu gravida vitae. Nullam aliquam erat at lectus ullamcorper, nec interdum neque hendrerit.</p>
+                </div>
+                <div class="clearfix"> </div>
+              </div>
+            </div>
+            <div class="col-md-4 tradels-markets-grid">
+              <div class="agileits-icon-grid">
+                <div class="icon-left"> <i class="fa fa-signal" aria-hidden="true"></i> </div>
+                <div class="icon-right">
+                  <h5>Bibendum</h5>
+                  <p>Phasellus dapibus felis elit, sed accumsan arcu gravida vitae. Nullam aliquam erat at lectus ullamcorper, nec interdum neque hendrerit.</p>
+                </div>
+                <div class="clearfix"> </div>
+              </div>
+            </div>
+            <div class="col-md-4 tradels-markets-grid">
+              <div class="agileits-icon-grid">
+                <div class="icon-left"> <i class="fa fa-money" aria-hidden="true"></i> </div>
+                <div class="icon-right">
+                  <h5>Vestibulum</h5>
+                  <p>Phasellus dapibus felis elit, sed accumsan arcu gravida vitae. Nullam aliquam erat at lectus ullamcorper, nec interdum neque hendrerit.</p>
+                </div>
+                <div class="clearfix"> </div>
+              </div>
+            </div>
+            <div class="col-md-4 tradels-markets-grid">
+              <div class="agileits-icon-grid">
+                <div class="icon-left"> <i class="fa fa-briefcase" aria-hidden="true"></i> </div>
+                <div class="icon-right">
+                  <h5>Fermentum</h5>
+                  <p>Phasellus dapibus felis elit, sed accumsan arcu gravida vitae. Nullam aliquam erat at lectus ullamcorper, nec interdum neque hendrerit.</p>
+                </div>
+                <div class="clearfix"> </div>
+              </div>
+            </div>
+            <div class="clearfix"> </div>
+          </div>
+        </div>
+      </div>
+      <!-- gallery -->
+      <div id="gallery" class="gallery_main">
+        <div class="container">
+          <div class="tradee-heading">
+            <h3>Gallery</h3>
+          </div>
+          <div class="tradee-heading">
+            <h5>Vivamus facilisis dolor ac sapien pharetra</h5>
+          </div>
+          <div class="trade_gallery_grids">
+            <ul class="trade_gallery_grid gallery" id="lightGallery">
+              <li data-title="Graduate" data-desc="Lorem Ipsum is simply dummy text of the printing." data-src="/website_trading/static/images/12.jpg" data-responsive-src="/website_trading/static/images/1.jpg">
+                <div class="trade_gallery_grid box"> <a href="#"> <img src="/website_trading/static/images/12.jpg" alt=" " class="img-responsive" />
+                  <div class="caption scale-caption">
+                    <h3>euismod tincidunt</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, 
+                      sed.</p>
+                  </div>
+                  </a> </div>
+              </li>
+              <li data-title="Graduate" data-desc="Lorem Ipsum is simply dummy text of the printing." data-src="/website_trading/static/images/11.jpg" data-responsive-src="/website_trading/static/images/7.jpg">
+                <div class="trade_gallery_grid box"> <a href="#"> <img src="/website_trading/static/images/11.jpg" alt=" " class="img-responsive" />
+                  <div class="caption scale-caption">
+                    <h3>euismod tincidunt</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, 
+                      sed diam.</p>
+                  </div>
+                  </a> </div>
+              </li>
+              <li data-title="Graduate" data-desc="Lorem Ipsum is simply dummy text of the printing." data-src="/website_trading/static/images/12.jpg" data-responsive-src="/website_trading/static/images/5.jpg">
+                <div class="trade_gallery_grid box"> <a href="#"> <img src="/website_trading/static/images/12.jpg" alt=" " class="img-responsive" />
+                  <div class="caption scale-caption">
+                    <h3>euismod tincidunt</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, 
+                      sed diam.</p>
+                  </div>
+                  </a> </div>
+              </li>
+              <li data-title="Graduate" data-desc="Lorem Ipsum is simply dummy text of the printing." data-src="/website_trading/static/images/11.jpg" data-responsive-src="/website_trading/static/images/6.jpg">
+                <div class="trade_gallery_grid box"> <a href="#"> <img src="/website_trading/static/images/11.jpg" alt=" " class="img-responsive" />
+                  <div class="caption scale-caption">
+                    <h3>euismod tincidunt</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, 
+                      sed diam.</p>
+                  </div>
+                  </a> </div>
+              </li>
+              <li data-title="Graduate" data-desc="Lorem Ipsum is simply dummy text of the printing." data-src="/website_trading/static/images/12.jpg" data-responsive-src="/website_trading/static/images/8.jpg">
+                <div class="trade_gallery_grid box"> <a href="#"> <img src="/website_trading/static/images/12.jpg" alt=" " class="img-responsive" />
+                  <div class="caption scale-caption">
+                    <h3>euismod tincidunt</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, 
+                      sed diam.</p>
+                  </div>
+                  </a> </div>
+              </li>
+              <li data-title="Graduate" data-desc="Lorem Ipsum is simply dummy text of the printing." data-src="/website_trading/static/images/11.jpg" data-responsive-src="/website_trading/static/images/9.jpg">
+                <div class="trade_gallery_grid box"> <a href="#"> <img src="/website_trading/static/images/11.jpg" alt=" " class="img-responsive" />
+                  <div class="caption scale-caption">
+                    <h3>euismod tincidunt</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, 
+                      sed diam.</p>
+                  </div>
+                  </a> </div>
+              </li>
+              <li data-title="Graduate" data-desc="Lorem Ipsum is simply dummy text of the printing." data-src="/website_trading/static/images/12.jpg" data-responsive-src="/website_trading/static/images/10.jpg">
+                <div class="trade_gallery_grid box"> <a href="#"> <img src="/website_trading/static/images/12.jpg" alt=" " class="img-responsive" />
+                  <div class="caption scale-caption">
+                    <h3>euismod tincidunt</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, 
+                      sed diam.</p>
+                  </div>
+                  </a> </div>
+              </li>
+              <li data-title="Graduate" data-desc="Lorem Ipsum is simply dummy text of the printing." data-src="/website_trading/static/images/11.jpg" data-responsive-src="/website_trading/static/images/11.jpg">
+                <div class="trade_gallery_grid box"> <a href="#"> <img src="/website_trading/static/images/11.jpg" alt=" " class="img-responsive" />
+                  <div class="caption scale-caption">
+                    <h3>euismod tincidunt</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, 
+                      sed diam.</p>
+                  </div>
+                  </a> </div>
+              </li>
+              <li data-title="Graduate" data-desc="Lorem Ipsum is simply dummy text of the printing." data-src="/website_trading/static/images/12.jpg" data-responsive-src="/website_trading/static/images/12.jpg">
+                <div class="trade_gallery_grid box"> <a href="#"> <img src="/website_trading/static/images/12.jpg" alt=" " class="img-responsive" />
+                  <div class="caption scale-caption">
+                    <h3>euismod tincidunt</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, 
+                      sed diam.</p>
+                  </div>
+                  </a> </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="jarallax testimonial" id="testimonial">
+        <div class="testimonial-dot">
+          <div class="container">
+            <div class="tradee-heading testimonial-heading">
+              <h3>Services Overview</h3>
+              <h5>Vivamus facilisis dolor ac sapien pharetra</h5>
+            </div>
+            <div class="trade-agile-testimonial">
+              <div class="slider">
+                <div class="callbacks_container">
+                  <ul class="rslides callbacks callbacks1" id="slider3">
+                    <li>
+                      <div class="testimonial-img-grid">
+                        <div class="testimonial-img t-img1"> <img src="/website_trading/static/images/14.jpg" alt="" /> </div>
+                        <div class="testimonial-img"> <img src="/website_trading/static/images/15.jpg" alt="" /> </div>
+                        <div class="testimonial-img t-img2"> <img src="/website_trading/static/images/16.jpg" alt="" /> </div>
+                        <div class="clearfix"> </div>
+                      </div>
+                      <div class="testimonial-img-info">
+                        <p>Nunc interdum elit nec sapien vehicula, ut blandit nulla ultrices. Sed ullamcorper metus eget efficitur rutrum. Aliquam a nunc odio. Aenean fermentum finibus efficitur.</p>
+                        <h5>Peter Guptill</h5>
+                        <h6>Proin blandit</h6>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="testimonial-img-grid">
+                        <div class="testimonial-img t-img1"> <img src="/website_trading/static/images/15.jpg" alt="" /> </div>
+                        <div class="testimonial-img"> <img src="/website_trading/static/images/16.jpg" alt="" /> </div>
+                        <div class="testimonial-img t-img2"> <img src="/website_trading/static/images/14.jpg" alt="" /> </div>
+                        <div class="clearfix"> </div>
+                      </div>
+                      <div class="testimonial-img-info">
+                        <p>Morbi est est, mollis id diam a, pellentesque dignissim lorem. Sed malesuada sed lacus sit amet vestibulum. Sed nibh purus, egestas eu orci vel, mollis interdum orci.</p>
+                        <h5>Mary Jane</h5>
+                        <h6>Lorem ipsum</h6>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="testimonial-img-grid">
+                        <div class="testimonial-img t-img1"> <img src="/website_trading/static/images/16.jpg" alt="" /> </div>
+                        <div class="testimonial-img"> <img src="/website_trading/static/images/14.jpg" alt="" /> </div>
+                        <div class="testimonial-img t-img2"> <img src="/website_trading/static/images/15.jpg" alt="" /> </div>
+                        <div class="clearfix"> </div>
+                      </div>
+                      <div class="testimonial-img-info">
+                        <p>Proin blandit rhoncus metus porta tristique. Praesent suscipit in erat a tempor. Nullam tempor lectus ex, a auctor orci ultricies ac. Mauris sapien neque, condimentum sit</p>
+                        <h5>Steven Wilson</h5>
+                        <h6>Proin blandit</h6>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+                <div class="clearfix"> </div>
+                <!--banner Slider starts Here-->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--blog-->
+      <div class="blog" id="blog">
+        <div class="container">
+          <div class="agileits-blog-grids">
+            <div class="tradee-heading">
+              <h3>Latest Blog Posts</h3>
+              <h5>Vivamus facilisis dolor ac sapien pharetra</h5>
+            </div>
+          </div>
+          <div class="posts-grids">
+            <div class="col-sm-4 trade-agile-post-grids">
+              <div class="trade-agile-post-img"> <a href="#" data-toggle="modal" data-target="#myModal"></a> </div>
+              <div class="trade-agile-post-info">
+                <h4><a href="#" data-toggle="modal" data-target="#myModal">Quisque a rhoncus</a></h4>
+                <ul>
+                  <li>By <a href="#">Admin</a></li>
+                  <li>Dec 03rd,2016</li>
+                </ul>
+                <p>Suspendisse in nisl at ipsum molestie dignissim. Pellentesque est nisi, blandit eget aliquam sed, consequat nec risus.</p>
+              </div>
+            </div>
+            <div class="col-sm-4 trade-agile-post-grids">
+              <div class="trade-agile-post-img trade-agile-post-img1"> <a href="#" data-toggle="modal" data-target="#myModal"></a> </div>
+              <div class="trade-agile-post-info">
+                <h4><a href="#" data-toggle="modal" data-target="#myModal">Quisque a rhoncus</a></h4>
+                <ul>
+                  <li>By <a href="#">Admin</a></li>
+                  <li>Dec 14th,2016</li>
+                </ul>
+                <p>Suspendisse in nisl at ipsum molestie dignissim. Pellentesque est nisi, blandit eget aliquam sed, consequat nec risus.</p>
+              </div>
+            </div>
+            <div class="col-sm-4 trade-agile-post-grids">
+              <div class="trade-agile-post-img trade-agile-post-img2"> <a href="#" data-toggle="modal" data-target="#myModal"></a> </div>
+              <div class="trade-agile-post-info">
+                <h4><a href="#" data-toggle="modal" data-target="#myModal">Quisque a rhoncus</a></h4>
+                <ul>
+                  <li>By <a href="#">Admin</a></li>
+                  <li>Nov 24th,2016</li>
+                </ul>
+                <p>Suspendisse in nisl at ipsum molestie dignissim. Pellentesque est nisi, blandit eget aliquam sed, consequat nec risus.</p>
+              </div>
+            </div>
+            <div class="clearfix"> </div>
+          </div>
+        </div>
+      </div>
+      <!--contact-->
+      <div class="contact" id="mail">
+        <div class="container">
+          <div class="tradee-heading">
+            <h3>Get In Touch</h3>
+            <h5>Vivamus facilisis dolor ac sapien pharetra</h5>
+          </div>
+          <div class="agile-contact-form">
+            <div class="col-md-6 contact-form-left">
+              <div class=" contact-form-top">
+                <h3>Get in touch</h3>
+                <p>Pellentesque eget mi nec est tincidunt accumsan. Proin fermentum dignissim justo, vel euismod justo sodales vel. In non condimentum mauris. Maecenas condimentum interdum lacus, ac varius nisl dignissim ac. Vestibulum euismod est risus, quis convallis nisi tincidunt eget. Sed ultricies congue lacus at fringilla.</p>
+              </div>
+              <div class="agileits-contact-address">
+                <ul>
+                  <li><i class="fa fa-phone" aria-hidden="true"></i> <span>+1 234 567 8901</span></li>
+                  <li><i class="fa fa-phone fa-envelope" aria-hidden="true"></i> <span><a href="mailto:example@email.com">mail@example.com</a></span></li>
+                  <li><i class="fa fa-map-marker" aria-hidden="true"></i> <span>Eiusmod Tempor inclore Place,Kingsport 56777.</span></li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-md-6 contact-form-right">
+              <div class="contact-form-top">
+                <h3>Send us a message</h3>
+              </div>
+              <div class="agileinfo-contact-form-grid">
+                <form action="#" method="post">
+                  <input type="text" name="Name" placeholder="Name" required=""/>
+                  <input type="email" name="Email" placeholder="Email" required=""/>
+                  <input type="text" name="Telephone" placeholder="Telephone" required=""/>
+                  <textarea name="Message" placeholder="Message" required=""></textarea>
+                  <button class="btn1">Submit</button>
+                </form>
+              </div>
+            </div>
+            <div class="clearfix"> </div>
+          </div>
+          <div class="tradeagile-map">
+            <h3>Find us here</h3><t>
+            <iframe t-att-src="website.map_key or 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d462568.9345743058!2d54.94791546829496!3d25.074096021734164!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f43496ad9c645%3A0xbde66e5084295162!2sDubai+-+United+Arab+Emirates!5e0!3m2!1sen!2sin!4v1490758316216'"></iframe></t>
+          </div>
+        </div>
+      </div>
+      <script type="text/javascript">
+          jQuery(document).ready(function($) {
+              $(".scroll").click(function(event){		
+                  event.preventDefault();
+                  $('html,body').animate({scrollTop:$(this.hash).offset().top},1000);
+              });
+          });
+      </script>
+      <!-- FlexSlider -->
+      <script src="/website_trading/static/js/jquery.flexslider.js"></script>
+      <script type="text/javascript">
+          $(window).load(function(){
+            $('#carousel').flexslider({
+              animation: "slide",
+              controlNav: false,
+              animationLoop: true,
+              slideshow: false,
+              itemWidth: 102,
+              itemMargin: 5,
+              asNavFor: '#slider'
+            });
+      
+            $('#slider').flexslider({
+              animation: "slide",
+              controlNav: false,
+              animationLoop: true,
+              slideshow: true,
+              sync: "#carousel",
+              start: function(slider){
+                $('body').removeClass('loading');
+              }
+            });
+          });
+        </script>
+      <script src="/website_trading/static/js/lightGallery.js"></script>
+      <script>
+           $(document).ready(function() {
+              $("#lightGallery").lightGallery({
+                  mode:"fade",
+                  speed:800,
+                  caption:true,
+                  desc:true,
+                  mobileSrc:true
+              });
+
+              $("#slider3").responsiveSlides({
+              auto: true,
+              pager:false,
+              nav:false,
+              speed: 500,
+              namespace: "callbacks",
+              before: function () {
+                  $('.events').append("<li>before event fired.</li>");
+                  },
+                  after: function () {
+                  $('.events').append("<li>after event fired.</li>");
+                  }
+          });
+          });
+      </script>
+      <script>
+      $(document).ready(function(){       
+
+      });
+      </script>
+      <script type="text/javascript" src="/website_trading/static/js/move-top.js"></script>
+          <script type="text/javascript" src="/website_trading/static/js/easing.js"></script>
+          <!-- here stars scrolling icon -->
+          <script type="text/javascript">
+              $(document).ready(function() {
+                  $().UItoTop({ easingType: 'easeOutQuart' });
+                  });
+          </script>
+    </t>
+  </template>
+  <template id="backend_style" name="Backend Style" inherit_id="website.assets_backend">
+      <xpath expr="." position="inside">
+          <link href="/website_trading/static/css/backend_style.css" rel="stylesheet" type="text/css"/>
+      </xpath>
+  </template>
+</odoo>
