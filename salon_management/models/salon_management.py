@@ -24,6 +24,7 @@ from openerp import models, fields, api
 from datetime import date, datetime, timedelta
 from openerp.tools.translate import _
 from openerp.exceptions import UserError, ValidationError
+from openerp.http import request
 
 
 class PartnerSalon(models.Model):
@@ -33,9 +34,9 @@ class PartnerSalon(models.Model):
     partner_salon = fields.Boolean(string="Is a Salon Partner")
 
 
-class CompanySalon(models.Model):
+class SequenceUpdaterSalon(models.Model):
 
-    _inherit = 'res.company'
+    _name = 'salon.sequence.updater'
 
     sequence_salon = fields.Char(string="Salon Sequence")
 
@@ -51,7 +52,7 @@ class SalonChair(models.Model):
 
     _name = 'salon.chair'
     name = fields.Char(string="Chair", required=True,
-                       default=lambda self: self.env['res.company'].browse(1).sequence_salon or "Chair-1")
+                       default=lambda self: self.env['salon.sequence.updater'].browse(1).sequence_salon or "Chair-1n")
     number_of_orders = fields.Integer(string="No.of Orders")
     collection_today = fields.Float(string="Today's Collection")
     user_of_chair = fields.Many2one('res.users', string="User", readonly=True,
@@ -61,12 +62,14 @@ class SalonChair(models.Model):
     user_line = fields.One2many('salon.chair.user', 'salon_chair', string="Users")
     total_time_taken_chair = fields.Float(string="Time Reserved(Hrs)")
     active_booking_chairs = fields.Boolean(string="Active booking chairs")
+    chair_created_user = fields.Integer(string="Salon Chair Created User",
+                                        default=lambda self: self._uid)
 
     @api.model
     def create(self, cr):
         sequence_code = 'chair.sequence'
         sequence_number = self.env['ir.sequence'].next_by_code(sequence_code)
-        self.env['res.company'].browse(1).write({'sequence_salon': sequence_number})
+        self.env['salon.sequence.updater'].browse(1).write({'sequence_salon': sequence_number})
         if 'user_line' in cr.keys():
             if cr['user_line']:
                 date_changer = []
@@ -165,9 +168,7 @@ class SalonOrder(models.Model):
             order.time_taken_total = total_time_taken
         time_takes = total_time_taken
         hours = int(time_takes)
-        minutes = 0.0
-        if time_takes != 0:
-            minutes = (time_takes % int(time_takes))*60
+        minutes = (time_takes - hours)*60
         start_time_store = datetime.strptime(self.start_time, "%Y-%m-%d %H:%M:%S")
         self.write({'end_time': start_time_store + timedelta(hours=hours, minutes=minutes)})
         if self.end_time:
@@ -203,6 +204,8 @@ class SalonOrder(models.Model):
     start_time_only = fields.Char(string="Start Time Only")
     end_time_only = fields.Char(string="End Time Only")
     chair_user = fields.Many2one('res.users', string="Chair User")
+    salon_order_created_user = fields.Integer(string="Salon Order Created User",
+                                              default=lambda self: self._uid)
 
     @api.onchange('start_time')
     def start_date_change(self):

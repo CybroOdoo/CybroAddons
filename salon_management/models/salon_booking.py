@@ -93,16 +93,14 @@ class SalonBookingWeb(http.Controller):
         booking_info = kwargs.get('salon_data')
         name = booking_info[0]
         date = booking_info[1]
-        phone = booking_info[2]
-        email = booking_info[3]
-        services = booking_info[4]
-        chair = booking_info[5]
+        time = booking_info[2]
+        phone = booking_info[3]
+        email = booking_info[4]
+        services = booking_info[5]
+        chair = booking_info[6]
         salon_service_obj = request.env['salon.service'].search([('id', 'in', services)])
-        date = str(date)
-        dates = date[0:10]
-        time = date[11:16]
-        dates_time = dates+" "+time+":00"
-        date_and_time = datetime.strptime(dates_time, '%Y-%m-%d %H:%M:%S')
+        dates_time = date+" "+time+":00"
+        date_and_time = datetime.strptime(dates_time, '%m/%d/%Y %H:%M:%S')
         salon_booking = request.registry['salon.booking']
         booking_data = {
             'name': name,
