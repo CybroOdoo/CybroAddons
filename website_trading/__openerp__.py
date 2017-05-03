@@ -30,13 +30,14 @@
         Odoo theme for a trading Company.
     """,
 
-    'author': "Cybrosys Technologies Pvt. Ltd",
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
     'website': "http://cybrosys.com/",
 
     # Categories can be used to filter modules in modules listing
     # Check https://github.com/odoo/odoo/blob/master/openerp/addons/base/module/module_data.xml
     # for the full list
-    'category': 'website',
+    'category': 'Themes/Backend',
     'version': '9.0.0.1',
 
     # any module necessary for this one to work correctly
@@ -48,15 +49,11 @@
 
     # always loaded
     'data': [
-        # 'security/ir.model.access.csv',
         'views/index.xml',
         'views/map_config.xml',
     ],
     # only loaded in demonstration mode
-    'demo': [
-        # 'demo/demo.xml',
-    ],
-    'images': ['/website_trading/static/description/banner.jpg'],
+    'demo': [],
+    'images': ['/static/description/banner.jpg'],
     'installable': True,
-    'application': True
 }
