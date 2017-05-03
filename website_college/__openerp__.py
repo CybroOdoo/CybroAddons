@@ -59,6 +59,6 @@
     'demo': [
 
     ],
-    'images': ['/static/description/banner.jpg'],
+    'images': ['static/description/banner.jpg'],
     'installable': True,
 }

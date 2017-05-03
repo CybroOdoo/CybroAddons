@@ -54,6 +54,6 @@
     ],
     # only loaded in demonstration mode
     'demo': [],
-    'images': ['/static/description/banner.jpg'],
+    'images': ['static/description/banner.jpg'],
     'installable': True,
 }
