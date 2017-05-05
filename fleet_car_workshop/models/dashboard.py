@@ -26,6 +26,7 @@ from openerp.osv import fields, osv
 
 class CarVehicle(osv.osv):
     _name = 'car.car'
+    _description = "Vechicles"
     _inherit = ['mail.thread']
 
     def _get_visibility_selection_id(self, cr, uid, context=None):

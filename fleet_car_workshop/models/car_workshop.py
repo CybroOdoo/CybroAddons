@@ -28,6 +28,7 @@ from openerp.exceptions import UserError
 
 class CarWorkshop(models.Model):
     _name = 'car.workshop'
+    _description = "Car Workshop"
     _inherit = ['mail.thread']
 
     name = fields.Char(string='Title', track_visibility='onchange', required=True)
@@ -55,7 +56,7 @@ class CarWorkshop(models.Model):
     progress = fields.Integer(string="Working Time Progress(%)", copy=False, readonly=True)
     date_last_stage_update = fields.Datetime(string='Last Stage Update', select=True, copy=False, readonly=True)
     id = fields.Integer('ID', readonly=True)
-    company_id = fields.Many2many('res.company', string='Company Name')
+    company_id = fields.Many2many('res.company', string='Company Name', default=lambda self: self.env['res.company']._company_default_get('car.workshop'))
     color = fields.Integer(string='Color Index')
     stage_id = fields.Many2one('worksheet.stages', string='Stage', track_visibility='onchange', copy=False)
     state = fields.Selection([
@@ -94,9 +95,6 @@ class CarWorkshop(models.Model):
         'sequence': 10,
         'active': True,
         'user_id': lambda obj, cr, uid, ctx=None: uid,
-        'company_id': lambda self, cr, uid, ctx=None: self.pool.get('res.company')._company_default_get(cr, uid,
-                                                                                                        'car.workshop',
-                                                                                                        context=ctx),
         'partner_id': lambda self, cr, uid, ctx=None: self._get_default_vehicle(cr, uid, context=ctx),
         'date_start': fields.datetime.now(),
     }
@@ -165,6 +163,11 @@ class CarWorkshop(models.Model):
             inv_line_obj.create(inv_line_data)
 
         for records in self.materials_used:
+            if records.material.id :
+                income_account = records.material.property_account_income_id.id
+            if not income_account:
+                raise UserError(_('There is no income account defined for this product: "%s".') %
+                                (records.material.name,))
 
             inv_line_data = {
                 'name': records.material.name,

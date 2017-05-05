@@ -22,8 +22,8 @@
 ##############################################################################
 {
     'name': 'Car Workshop',
-    'version': '9.0.1.0.0',
-    'summary': 'Vehicle Workshop Operations',
+    'version': '9.0.2.0.0',
+    'summary': 'Vehicle Workshop Operations & Reports',
     'description': 'Vehicle workshop operations & Its reports',
     'category': 'Industries',
     'author': 'Cybrosys Techno Solutions',
