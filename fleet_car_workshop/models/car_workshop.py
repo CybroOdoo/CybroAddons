@@ -56,7 +56,8 @@ class CarWorkshop(models.Model):
     date_last_stage_update = fields.Datetime(string='Last Stage Update', select=True, copy=False, readonly=True)
     id = fields.Integer(string='ID', readonly=True)
     color = fields.Integer(string='Color Index')
-    company_id = fields.Many2one('res.company', 'Company')
+    company_id = fields.Many2one('res.company', string='Company',
+                                 default=lambda self: self.env['res.company']._company_default_get('car.workshop'))
     stage_id = fields.Many2one('worksheet.stages', string='Stage', track_visibility='onchange', copy=False)
     state = fields.Selection([
         ('waiting', 'Ready'),
@@ -90,8 +91,6 @@ class CarWorkshop(models.Model):
         'sequence': 10,
         'active': True,
         'user_id': lambda obj, cr, uid, ctx=None: uid,
-        'company_id': lambda self, cr, uid, ctx=None: self.pool.get('res.company')._company_default_get(cr, uid, 'car.workshop',
-                                                                                                        context=ctx),
         'partner_id': lambda self, cr, uid, ctx=None: self._get_default_vehicle(cr, uid, context=ctx),
         'date_start': fields.datetime.now(),
     }
@@ -156,6 +155,11 @@ class CarWorkshop(models.Model):
             inv_line_obj.create(inv_line_data)
 
         for records in self.materials_used:
+            if records.material.id:
+                income_account = records.material.property_account_income.id
+            if not income_account:
+                raise osv.except_osv(_('UserError!'), _('There is no income account defined '
+                                                        'for this product: "%s".') % (records.material.name,))
 
             inv_line_data = {
                 'name': records.material.name,

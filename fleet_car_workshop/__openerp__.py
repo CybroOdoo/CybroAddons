@@ -22,13 +22,13 @@
 ##############################################################################
 {
     'name': 'Car Workshop',
-    'version': '8.0.1.0.0',
+    'version': '8.0.1.1.0',
     'summary': 'Vehicle Workshop Operations',
     'description': 'Vehicle workshop operations & Its reports',
     'category': 'Industries',
     'author': 'Cybrosys Techno Solutions',
-    'website': "http://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
+    'website': "http://www.cybrosys.com",
     'depends': ['base',
                 'fleet',
                 'account_accountant'],
@@ -48,5 +48,5 @@
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
-    'application': False,
+    'application': True,
 }
