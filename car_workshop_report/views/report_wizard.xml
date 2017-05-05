@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+     <data>
+        <record id="workshop_xls_view" model="ir.ui.view">
+            <field name="name">workshop.xls.Report.view</field>
+            <field name="model">workshop.report</field>
+            <field name="arch" type="xml">
+                  <form string="Workshop Report">
+                        <group>
+                            <group>
+                                <field name="filter_vehicle"/>
+                                <field name="vehicles" widget="many2many_tags" attrs="{'invisible': [('filter_vehicle','=',False)], 'required': [('filter_vehicle', '=', True)]}"/>
+                            <field name="stage_id"/></group>
+                            <group>
+                           <field name="filter_partner"/>
+                            <field name="filter_user"/>
+                            </group>
+                        </group>
+                        <notebook>
+                             <page string="Filters" name="filters">
+                                <group>
+                                     <field name="filter" />
+                                </group>
+                                <group string="Dates"  attrs="{'invisible':[('filter', '!=', 'filter_date')]}">
+                                   <field name="date_from" attrs="{'required': [('filter', '=', 'filter_date')]}"/>
+                                   <field name="date_to" attrs="{'required': [('filter', '=', 'filter_date')]}"/>
+                                </group>
+                             </page>
+                            <page string="Partner Details" attrs="{'invisible': [('filter_partner','=',False)]}">
+                            <group>
+                                <field name="partner_name" widget="many2many_tags"  attrs="{'required': [('filter_partner', '=', True)]}"/>
+                            </group>
+                              </page>
+                             <page string="Sales Person Details" attrs="{'invisible': [('filter_user','=',False)]}">
+                            <group>
+                                <field name="sales_person" widget="many2many_tags" attrs="{'required': [('filter_user', '=', True)]}"/>
+                            </group>
+                              </page>
+                        </notebook>
+                        <footer>
+                            <button name="check_report" string="Export xls" type="object"
+                                     class="oe_highlight"  style="margin: 0 5px;"
+                                     context="{'xls_export':1}" icon='gtk-print' />
+                            <button name="print_pdf" string="Print Pdf" type="object"
+                                     class="oe_highlight"  style="margin: 0 5px;"
+                                    icon='gtk-print' />
+                             or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                        </footer>
+                </form>
+            </field>
+        </record>
+
+         <record model="ir.actions.act_window" id="report_list_action">
+            <field name="name">Workshop Report</field>
+            <field name="res_model">workshop.report</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+             <field name="target">new</field>
+
+        </record>
+
+          <menuitem id="workshop_report_wizard" name="Workshop Report"
+                  parent="fleet_car_workshop.report_worksheet"
+                  action="report_list_action"/>
+         </data>
+</openerp>
