@@ -21,7 +21,7 @@
 ##############################################################################
 
 {
-    'name': "website_trading",
+    'name': "Trading Theme",
 
     'summary': """
         Odoo theme for a trading Company.""",

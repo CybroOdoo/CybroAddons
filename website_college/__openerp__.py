@@ -21,7 +21,7 @@
 #
 ##############################################################################
 {
-    'name': "Website_college",
+    'name': "College Theme",
 
     'summary': """
         Odoo demo theme for an educational Institution which includes their front page, backend theme ..""",
