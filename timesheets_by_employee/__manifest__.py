@@ -22,9 +22,9 @@
 {
     'name': 'Timesheet PDF Report',
     'version': '10.0.1.0.0',
-    'category': 'Human Resources',
+    "category": "Generic Modules/Human Resources",
     'sequence': 25,
-    'summary': 'Timesheet PDF Report of Employee',
+    'summary': 'Timesheet PDF Report of Employees',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'www.cybrosys.com',
