@@ -28,7 +28,7 @@
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
-    'category': 'Human Resources',
+    "category": "Generic Modules/Human Resources",
     'depends': ['mail', 'hr_holidays'],
     'license': 'AGPL-3',
     'data': [
