@@ -23,7 +23,7 @@
 {
     'name': "Employee Orientation & Training",
     'version': '9.0.1.0.0',
-    'category': 'Human Resources',
+    "category": "Generic Modules/Human Resources",
     'summary': """Employee Orientation/Training Program""",
     'description': """Complete Employee Orientation/Training Program""",
     'author': "Cybrosys Techno Solutions",
