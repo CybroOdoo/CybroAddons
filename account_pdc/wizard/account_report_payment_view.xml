@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_report_payment_view" model="ir.ui.view">
+        <field name="name">Payments Report</field>
+        <field name="model">account.report.payment</field>
+        <field name="arch" type="xml">
+            <form string="Report Options">
+                <group>
+                    <group>
+                        <field name="company_id" invisible="1"/>
+                        <field name="payment_type"/>
+                    </group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                </group>
+                <group>
+                    <group>
+                        <field name="pdc_only"/>
+                    </group>
+                    <group>
+                        <field name="effective_date_from"  attrs="{'invisible':[('pdc_only','!=',True)]}"/>
+                        <field name="effective_date_to" attrs="{'invisible': [('pdc_only', '!=', True)]}"/>
+                    </group>
+                </group>
+                <group>
+
+                </group>
+                <group>
+                    <field name="journal_ids" widget="many2many_tags" options="{'no_create': True}" domain="[('type', 'in', ('cash', 'bank'))]"/>
+                </group>
+                <footer>
+                    <button name="check_report" string="Print" type="object" default_focus="1" class="oe_highlight"/>
+                    or
+                    <button string="Cancel" class="oe_link" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_account_report_payment_menu" model="ir.actions.act_window">
+        <field name="name">Payments Report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.report.payment</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="account_report_payment_view"/>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+        id="menu_print_payment"
+        name="Payments Report"
+        parent="account.menu_finance_legal_statement"
+        action="action_account_report_payment_menu"
+        groups="account.group_account_manager,account.group_account_user"
+       />
+
+</odoo>
