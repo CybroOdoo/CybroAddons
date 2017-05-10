@@ -114,7 +114,9 @@ class AccountTax(models.Model):
                 base -= tax_amount
             else:
                 total_included += tax_amount
-
+            
+            tax_base = base
+            
             if tax.include_base_amount:
                 base += tax_amount
 
@@ -126,6 +128,7 @@ class AccountTax(models.Model):
                 'account_id': tax.account_id.id,
                 'refund_account_id': tax.refund_account_id.id,
                 'analytic': tax.analytic,
+                'base': tax_base,
             })
         print "total_excluded:",total_excluded
         print "total_included:",total_included
