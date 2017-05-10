@@ -20,31 +20,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-{
-    'name': 'PDC Management',
-<<<<<<< HEAD
-    'version': '10.0.1.0',
-=======
-    'version': '10.0.2.0',
->>>>>>> e773d5cc4ac49a15b964551d003ba499cf2bf5ad
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'website': 'http://www.cybrosys.com',
-    'category': 'Accounting',
-    'summary': 'Extension on Cheques to handle Post Dated Cheques',
-    'description': """ Extension on Cheques to handle Post Dated Cheques """,
-    'depends': ['account_check_printing'],
-    'data': [
-        'data/account_pdc_data.xml',
-        'views/account_payment_view.xml',
-<<<<<<< HEAD
-=======
-        'views/report_payment.xml',
-        'wizard/account_report_payment_view.xml',
->>>>>>> e773d5cc4ac49a15b964551d003ba499cf2bf5ad
-    ],
-    'images': ['static/description/banner.jpg'],
-    'license': 'LGPL-3',
-    'installable': True,
-    'auto_install': False,
-}
+import account_report_payment
