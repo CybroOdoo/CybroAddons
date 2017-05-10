@@ -38,7 +38,6 @@ class ReportPayment(models.AbstractModel):
 
     @api.model
     def render_html(self, docids, data=None):
-        _logger.info("................................1..............................")
         # target_move = data['form'].get('target_move', 'all')
         # sort_selection = data['form'].get('sort_selection', 'date')
         payment_type = data['form']['payment_type']
