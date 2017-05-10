@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_module_filter" model="ir.ui.view">
+            <field name="name">ir.module.module.list.select</field>
+            <field name="inherit_id" ref="base.view_module_filter"/>
+            <field name="model">ir.module.module</field>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='installed']" position="before">
+                    <filter string="Recently updated" 
+                        domain="[('state','=','installed')]"
+                         groups="developer_mode.odoo_developer_group"/>
+                </xpath>
+                
+                <xpath expr="//filter[last()]" position="after">
+                    <filter string="Latest update"
+                         groups="developer_mode.odoo_developer_group"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="developer_mode_module_form" model="ir.ui.view">
+            <field name="name">ir.module.module.form</field>
+            <field name="inherit_id" ref="base.module_form"/>
+            <field name="model">ir.module.module</field>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='dependencies_id']/tree/field[last()]" position="after">
+                    <button name="dt_button_install"
+                            string="Install" 
+                            type="object"
+                            icon="STOCK_ADD"
+                            states="uninstalled"
+                            groups="developer_mode.odoo_developer_group"/>
+
+                    <button name="dt_button_immediate_upgrade"
+                            string="Update" 
+                            type="object"
+                            icon="STOCK_REFRESH"
+                            states="installed"
+                            groups="developer_mode.odoo_developer_group"/>
+
+                    <button name="dt_button_uninstall"
+                            string="Uninstall" 
+                            type="object"
+                            icon="STOCK_STOP"
+                            states="installed"
+                            groups="developer_mode.odoo_developer_group"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record id="developer_mode_module_module_tree" model="ir.ui.view">
+            <field name="name">ir.module.module.tree</field>
+            <field name="inherit_id" ref="base.module_tree"/>
+            <field name="model">ir.module.module</field>
+            <field name="arch" type="xml">
+                
+                <xpath expr="//field[last()]" position="after">
+                    <button name="button_install"
+                            string="Install" 
+                            type="object"
+                            icon="STOCK_ADD"
+                            states="uninstalled"
+                            groups="developer_mode.odoo_developer_group"/>
+
+                    <button name="button_immediate_upgrade"
+                            string="Update" 
+                            type="object"
+                            icon="STOCK_REFRESH"
+                            states="installed"
+                            groups="developer_mode.odoo_developer_group"/>
+
+                    <button name="button_uninstall"
+                            string="Uninstall" 
+                            type="object"
+                            icon="STOCK_STOP"
+                            states="installed"
+                            groups="developer_mode.odoo_developer_group"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="developer_mode_module_view_kanban">
+            <field name="name">Modules Kanban</field>
+            <field name="inherit_id" ref="base.module_view_kanban"/>
+            <field name="model">ir.module.module</field>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@class='btn btn-default pull-right btn-sm disabled']" position="replace"/>
+                <xpath expr="//button[@name='button_immediate_install']" position="after">
+                    <button type="object" name="button_immediate_upgrade" states="installed" groups="developer_mode.odoo_developer_group">Update</button>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="base.open_module_tree" model="ir.actions.act_window">
+            <field name="name">Local Modules</field>
+            <field name="res_model">ir.module.module</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="context">{'search_default_app':1}</field>
+            <field name="search_view_id" ref="base.view_module_filter"/>
+            <field name="view_id" ref="base.module_view_kanban"/>
+            <field name="help" type="html">
+              <p><b>No module found!</b></p>
+              <p>You should try others search criteria.</p>
+            </field>
+        </record>
+
+        <template id="contact" inherit_id="web.menu_secondary">
+            <xpath expr="//span[@class='oe_logo_edit']" position="before">
+                <t t-if="True" groups="developer_mode.odoo_developer_group">
+                    <div style="height:20px;text-align:center;background-color:green;color:#ffffff;">
+                        <t t-esc="request.session.db"/>
+                    </div>
+                </t>
+            </xpath>
+        </template>
+    </data>
+</odoo>

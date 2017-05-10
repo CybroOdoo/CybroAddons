@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="developer_mode_active_form">
+            <field name="name">DeveloperMode</field>
+            <field name="model"></field>
+            <field name="inherit_id" ref="web.login"/>
+            <field name="arch" type="xml">
+                <xpath expr="//input[@name='redirect']" position='attributes'>
+                    <attribute name="t-att-value">'%s%sdebug=1' % (redirect or '/web', redirect and '?' in redirect and '&amp;' or '?')</attribute>
+                </xpath>
+            </field>
+        </record>
+        <record id="logs_form_view" model="ir.ui.view">
+            <field name="name">logs.action.form</field>
+            <field name="model">logs.action</field>
+            <field name="view_type">form</field>
+            <field name="view_type">form</field>
+            <field name="arch" type="xml">
+                <form string="Logs">
+                    <header>
+                        <button name="button_confirm_action" string="Confirm" type="object" class="oe_highlight" attrs="{'invisible': [('stages_id', '!=', 'new')]}"/>
+                        <button name="button_cancel_action" string="Cancel" type="object" attrs="{'invisible': [('stages_id', '!=', 'new')]}"/>
+                        <button name="button_resolved_action" string="Resolve" type="object" class="oe_highlight" attrs="{'invisible': [('stages_id', '!=', 'confirm')]}"/>
+                        <button name="action_mail_send" string="Send By Email" type="object" context="{'send_mail':True}" class="oe_highlight" attrs="{'invisible': [('stages_id', '!=', 'confirm')]}"/>
+                        <field name="stages_id" widget="statusbar"/>
+                    </header>
+                    <sheet string="Logs">
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="method"/>
+                                <field name="created_by"/>
+                            </group>
+                            <group>
+                                <field name="object_action"/>
+                                <field name="exec_date"/>
+                                <field name="company_name"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="error_info" string="Error">
+                                <field name="error_details"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="logs_tree_view">
+            <field name="name">logs.action.tree</field>
+            <field name="model">logs.action</field>
+            <field name="arch" type="xml">
+                <tree string="Logs">
+                    <field name="name"/>
+                    <field name="exec_date"/>
+                    <field name="stages_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="ir_cron_act_logs" model="ir.actions.act_window">
+            <field name="name">Logs Scheduled Actions</field>
+            <field name="res_model">logs.action</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form,tree</field>
+            <field name="view_id" ref="logs_tree_view"/>
+        </record>
+
+        <menuitem id="menu_ir_cron_logs" action="ir_cron_act_logs" parent="base.menu_automation"/>
+    </data>
+</odoo>
