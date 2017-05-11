@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2009-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
+#    Copyright (C) 2015-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
 #    Author: Avinash Nk(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -25,6 +25,7 @@ from openerp import models, fields, api
 
 class SalonWorkingHours(models.Model):
     _name = 'salon.working.hours'
+
     name = fields.Char(string="Name")
     from_time = fields.Float(string="Starting Time")
     to_time = fields.Float(string="Closing Time")
@@ -32,12 +33,12 @@ class SalonWorkingHours(models.Model):
 
 class SalonHoliday(models.Model):
     _name = 'salon.holiday'
+
     name = fields.Char(string="Name")
     holiday = fields.Boolean(string="Holiday")
 
 
 class WorkshopSetting(models.Model):
-
     _name = "salon.config.settings"
 
     @api.model

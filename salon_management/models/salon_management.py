@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2009-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
+#    Copyright (C) 2015-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
 #    Author: Avinash Nk(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -20,37 +20,33 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from openerp import models, fields, api
 from datetime import date, datetime, timedelta
+from openerp import models, fields, api
 from openerp.tools.translate import _
 from openerp.exceptions import UserError, ValidationError
-from openerp.http import request
 
 
 class PartnerSalon(models.Model):
-
     _inherit = 'res.partner'
 
     partner_salon = fields.Boolean(string="Is a Salon Partner")
 
 
 class SequenceUpdaterSalon(models.Model):
-
     _name = 'salon.sequence.updater'
 
     sequence_salon = fields.Char(string="Salon Sequence")
 
 
 class UserSalon(models.Model):
-
     _inherit = 'res.users'
 
     user_salon_active = fields.Boolean(string="Active Salon Users")
 
 
 class SalonChair(models.Model):
-
     _name = 'salon.chair'
+
     name = fields.Char(string="Chair", required=True,
                        default=lambda self: self.env['salon.sequence.updater'].browse(1).sequence_salon or "Chair-1n")
     number_of_orders = fields.Integer(string="No.of Orders")
@@ -125,7 +121,6 @@ class SalonChair(models.Model):
 
 
 class SalonChairUserLines(models.Model):
-
     _name = 'salon.chair.user'
 
     read_only_checker = fields.Boolean(string="Checker", default=False)
@@ -151,7 +146,6 @@ class SalonChairUserLines(models.Model):
 
 
 class SalonOrder(models.Model):
-
     _name = 'salon.order'
 
     @api.depends('order_line.price_subtotal')
@@ -387,7 +381,6 @@ class SalonOrder(models.Model):
 
 
 class SalonServices(models.Model):
-
     _name = 'salon.service'
 
     name = fields.Char(string="Name")
@@ -396,7 +389,6 @@ class SalonServices(models.Model):
 
 
 class SalonOrderLine(models.Model):
-
     _name = 'salon.order.lines'
 
     service_id = fields.Many2one('salon.service', string="Service")
@@ -422,7 +414,6 @@ class SalonOrderLine(models.Model):
 
 
 class SalonStages(models.Model):
-
     _name = 'salon.stages'
 
     name = fields.Char(string="Name", translate=True, required=True)

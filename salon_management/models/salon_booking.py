@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2009-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
+#    Copyright (C) 2015-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
 #    Author: Avinash Nk(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -20,14 +20,11 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from openerp.addons.web import http
-from openerp import models, fields, _, SUPERUSER_ID, api
-from openerp.addons.web.http import request
-from datetime import datetime, date
+from openerp import models, fields, api
+from datetime import date
 
 
 class SalonBookingBackend(models.Model):
-
     _name = 'salon.booking'
 
     name = fields.Char(string="Name")
@@ -85,55 +82,3 @@ class SalonBookingBackend(models.Model):
         self.env['mail.template'].browse(template.id).send_mail(self.id)
         self.state = "rejected"
 
-
-class SalonBookingWeb(http.Controller):
-
-    @http.route('/page/salon_details', type='json', auth="public", website=True)
-    def salon_details(self, **kwargs):
-        booking_info = kwargs.get('salon_data')
-        name = booking_info[0]
-        date = booking_info[1]
-        time = booking_info[2]
-        phone = booking_info[3]
-        email = booking_info[4]
-        services = booking_info[5]
-        chair = booking_info[6]
-        salon_service_obj = request.env['salon.service'].search([('id', 'in', services)])
-        dates_time = date+" "+time+":00"
-        date_and_time = datetime.strptime(dates_time, '%m/%d/%Y %H:%M:%S')
-        salon_booking = request.registry['salon.booking']
-        booking_data = {
-            'name': name,
-            'phone': phone,
-            'time': date_and_time,
-            'email': email,
-            'chair_id': chair,
-            'services': [(6, 0, [x.id for x in salon_service_obj])],
-        }
-        salon_booking.create(request.cr, SUPERUSER_ID, booking_data, context=request.context)
-        return
-
-    @http.route('/page/salon_check_date', type='json', auth="public", website=True)
-    def salon_check(self, **kwargs):
-        date_info = kwargs.get('check_date')
-        return date_info
-
-    @http.route('/page/salon_management.salon_booking_form', type='http', auth="public", website=True)
-    def chair_info(self, **post):
-
-        salon_service_obj = request.env['salon.service'].search([])
-        salon_working_hours_obj = request.env['salon.working.hours'].search([])
-        salon_holiday_obj = request.env['salon.holiday'].search([('holiday', '=', True)])
-        date_check = date.today()
-        if 'x' in post.keys():
-            date_check = post['x']
-        chair_obj = request.env['salon.chair'].search([('active_booking_chairs', '=', True)])
-        order_obj = request.env['salon.order'].search([('chair_id.active_booking_chairs', '=', True),
-                                                       ('stage_id', 'in', [1, 2, 3])])
-        date_check = str(date_check)
-        order_obj = order_obj.search([('start_date_only', '=', date_check)])
-        return request.website.render('salon_management.salon_booking_form',
-                                      {'chair_details': chair_obj, 'order_details': order_obj,
-                                       'salon_services': salon_service_obj, 'date_search': date_check,
-                                       'holiday': salon_holiday_obj,
-                                       'working_time': salon_working_hours_obj})

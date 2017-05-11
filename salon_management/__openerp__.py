@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2009-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
+#    Copyright (C) 2015-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
 #    Author: Avinash Nk(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -23,7 +23,7 @@
 {
     'name': 'Beauty Spa Management',
     'summary': """Beauty Parlour Management with Online Booking System""",
-    'version': '9.0.2.0.0',
+    'version': '9.0.3.0.0',
     'author': 'Cybrosys Techno Solutions',
     'website': "http://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
@@ -40,14 +40,13 @@
              'views/salon_email_template.xml',
              'views/salon_config.xml',
              'views/working_hours.xml',
-             'security/salon_security.xml',
              'security/ir.model.access.csv',
              ],
     'demo': [
         'views/booking_demo.xml',
     ],
     'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'installable': True,
     'application': True,
 }
