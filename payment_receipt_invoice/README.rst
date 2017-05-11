@@ -1,7 +1,6 @@
 Account Payment Receipt v10
 ===========================
-
-This module will print payment receipts with paid details
+This module will print detailed payment receipts.
 
 
 Credits
