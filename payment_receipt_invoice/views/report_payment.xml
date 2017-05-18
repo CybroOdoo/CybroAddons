@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="report_receipt_document">
+            <t t-call="report.external_layout">
+                <t t-set="o" t-value="o.with_context({'lang':o.partner_id.lang})" />
+                <div class="page">
+                    <br/>
+                    <div class="header" style="text-align:center;"><h1><strong>Payment Receipt</strong></h1></div>
+                    <div class="row mt32 mb32">
+                        <div name="partner_address" class="col-xs-3">
+                            <strong><span t-field="o.partner_type"/><span>:</span></strong>
+                            <address t-field="o.partner_id"
+                                t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}' />
+                            <span t-if="o.partner_id.vat">TIN: <span t-field="o.partner_id.vat"/></span>
+                        </div>
+                        <div class="col-xs-3 col-xs-offset-6">
+                            <t t-if="o.payment_date">
+                                <strong>Payment Date:</strong>
+                                <p t-field="o.payment_date"/></t>
+                            <t t-if="o.name">
+                                <strong>Reference NO:</strong>
+                                <p t-field="o.name"/></t>
+                            <t t-if="o.journal_id">
+                                <strong>Payment Method:</strong>
+                                <p t-field="o.journal_id"/></t>
+                        </div>
+                    </div>
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr style="background-color:#9b9da0 !important;">
+                                <th>Invoice No</th>
+                                <th>Invoice Date</th>
+                                <th class="text-right">Total Amount</th>
+                                <th class="text-right">Payment Amount</th>
+                                <th class="text-right">Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody class="payment_tbody">
+                            <tr t-foreach="o.invoice_ids" t-as="l">
+                                <td><span t-field="l.number"/></td>
+                                <td><span t-field="l.date_invoice"/></td>
+                                <td class="text-right">
+                                    <span t-field="l.amount_total"
+                                          t-options='{"widget": "monetary", "display_currency": l.currency_id}'/>
+                                </td>
+                                <td class="text-right">
+                                    <t t-foreach="l.payment_move_line_ids" t-as="pm">
+                                        <t t-if="pm.payment_id.id == o.id">
+                                            <t t-if="l.type in ('out_invoice', 'in_refund')">
+                                                <t t-foreach="pm.matched_debit_ids" t-as="md">
+                                                    <t t-foreach="l.move_id.line_ids" t-as="ln">
+                                                        <t t-if="md.debit_move_id.id == ln.id">
+                                                            <t t-if="md.debit_move_id.amount_currency == 0.0">
+                                                                <span t-field="md.amount"
+                                                                t-options='{"widget": "monetary", "display_currency": l.currency_id}'/>
+                                                            </t>
+                                                            <t t-if="md.debit_move_id.amount_currency != 0.0">
+                                                                <span t-esc="abs(md.debit_move_id.amount_currency)"
+                                                                t-options='{"widget": "monetary", "display_currency": l.currency_id}'/>
+                                                            </t>
+
+                                                        </t>
+                                                    </t>
+                                                </t>
+                                            </t>
+                                            <t t-if="l.type in ('in_invoice', 'out_refund')">
+                                                <t t-foreach="pm.matched_credit_ids" t-as="mc">
+                                                    <t t-foreach="l.move_id.line_ids" t-as="ln">
+                                                        <t t-if="mc.credit_move_id.id == ln.id">
+                                                            <t t-if="mc.credit_move_id.amount_currency == 0.0">
+                                                                <span t-field="mc.amount"
+                                                                t-options='{"widget": "monetary", "display_currency": l.currency_id}'/>
+                                                            </t>
+                                                            <t t-if="mc.credit_move_id.amount_currency != 0.0">
+                                                                <span t-esc="abs(mc.credit_move_id.amount_currency)"
+                                                                t-options='{"widget": "monetary", "display_currency": l.currency_id}'/>
+                                                            </t>
+                                                        </t>
+                                                    </t>
+                                                </t>
+                                            </t>
+                                        </t>
+                                    </t>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="l.residual"
+                                        t-options='{"widget": "monetary", "display_currency": l.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr style="border-top:2px solid black !important;">
+                                <td colspan="3">
+                                    <b><span>Total Receipt Amount:</span></b>
+                                </td>
+                                <td class="text-right">
+                                    <b><span t-field="o.amount"
+                                          t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></b>
+                                </td>
+                                <td/>
+                            </tr>
+                            <t t-if="o.currency_id != o.company_id.currency_id">
+                                <tr>
+                                    <t t-set="c_amount" t-value="0.0"/>
+                                    <t t-foreach="o.move_line_ids" t-as="x">
+                                        <t t-if="x.credit == 0.0">
+                                            <t t-set="c_amount" t-value="x.debit"/>
+                                        </t>
+                                        <t t-if="x.credit != 0.0">
+                                            <t t-set="c_amount" t-value="x.credit"/>
+                                        </t>
+                                    </t>
+                                    <td colspan="3">
+                                        <b><span>Total Receipt Amount in </span><span t-field="o.company_id.currency_id.name"/>:</b>
+                                    </td>
+                                    <td class="text-right">
+                                        <b><span t-esc="c_amount"
+                                                 t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></b>
+                                    </td>
+                                    <td/>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <p style="text-align:center;">Thank You For Doing Business With Us</p>
+                </div>
+            </t>
+        </template>
+
+        <template id="report_receipt">
+            <t t-call="report.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="payment_receipt_invoice.report_receipt_document" t-lang="o.partner_id.lang"/>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

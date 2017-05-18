@@ -17,6 +17,7 @@
     'data': [
             'views/wizard_view.xml',
             ],
+    'images': ['static/description/banner.jpg'],
     'installable': True,
     'auto_install': False,
 }

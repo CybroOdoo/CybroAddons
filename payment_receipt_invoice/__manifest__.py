@@ -2,8 +2,8 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2009-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Niyas Raphy(<http://www.cybrosys.com>)
+#    Copyright (C) 2017-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
+#    Author: Niyas Raphy,Fasluca(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -23,8 +23,8 @@
 {
     'name': 'Account Payment Receipt',
     'summary': """Payment Receipt With Paid Details""",
-    'version': '0.3',
-    'description': """""",
+    'version': '10.0.1.0',
+    'description': """Payment Receipt With Paid Details""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
@@ -32,9 +32,9 @@
     'depends': ['base', 'account'],
     'license': 'AGPL-3',
     'data': [
-        'views/receipt_print_template.xml',
-        'views/account_payment_print.xml',
-             ],
+        'views/report_payment.xml',
+        'views/report.xml',
+    ],
     'demo': [],
     'images': ['static/description/banner.jpg'],
     'installable': True,
