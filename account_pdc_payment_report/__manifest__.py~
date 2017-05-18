@@ -31,7 +31,7 @@
     'description': """ Report of Payments with filter for PDC type """,
     'depends': ['account_check_printing', 'account_pdc'],
     'data': [
-        'data/account_pdc_data.xml',
+
         'views/account_payment_view.xml',
         'views/report_payment.xml',
         'wizard/account_report_payment_view.xml',
