@@ -65,7 +65,7 @@ class AccountReportPayment(models.TransientModel):
         return self._print_report(data)
 
     def _print_report(self, data):
-        return self.env['report'].with_context(landscape=True).get_action(self, 'account_pdc.report_payment_template', data=data)
+        return self.env['report'].with_context(landscape=True).get_action(self, 'account_pdc_payment_report.report_payment_template', data=data)
 
 
 

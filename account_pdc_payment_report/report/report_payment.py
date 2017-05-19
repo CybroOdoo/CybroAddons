@@ -8,7 +8,7 @@ _logger = logging.getLogger(__name__)
 
 
 class ReportPayment(models.AbstractModel):
-    _name = 'report.account_pdc.report_payment_template'
+    _name = 'report.account_pdc_payment_report.report_payment_template'
 
     def lines(self, payment_type, journal_ids, pdc_only, data):
         domain = []
@@ -28,9 +28,9 @@ class ReportPayment(models.AbstractModel):
         if pdc_only:
             domain.append(('payment_method_id.code', '=', 'pdc'))
             if data['form']['effective_date_from']:
-                domain.append(('effective_date_from', '>=', data['form']['effective_date_from']))
+                domain.append(('effective_date', '>=', data['form']['effective_date_from']))
             if data['form']['effective_date_to']:
-                domain.append(('effective_date_to', '<=', data['form']['effective_date_to']))
+                domain.append(('effective_date', '<=', data['form']['effective_date_to']))
 
 
         return self.env['account.payment'].search(domain)
@@ -38,13 +38,8 @@ class ReportPayment(models.AbstractModel):
 
     @api.model
     def render_html(self, docids, data=None):
-        # target_move = data['form'].get('target_move', 'all')
-        # sort_selection = data['form'].get('sort_selection', 'date')
         payment_type = data['form']['payment_type']
         pdc_only = data['form']['pdc_only']
-        # effective_date_from = data['form']['effective_date_from']
-        # effective_date_to = data['form']['effective_date_to']
-
         res = {}
         for journal in data['form']['journal_ids']:
             res[journal] = self.with_context(data['form'].get('used_context', {})).lines(payment_type, journal, pdc_only, data)
@@ -56,4 +51,4 @@ class ReportPayment(models.AbstractModel):
             'time': time,
             'lines': res,
         }
-        return self.env['report'].render('account_pdc.report_payment_template', docargs)
+        return self.env['report'].render('account_pdc_payment_report.report_payment_template', docargs)

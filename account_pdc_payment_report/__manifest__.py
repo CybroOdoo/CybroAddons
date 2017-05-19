@@ -27,7 +27,7 @@
     'company': 'Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
     'category': 'Accounting',
-    'summary': 'Report of Payments with Filter for PDC Type',
+    'summary': 'Report of Payments with filter for PDC type',
     'description': """ Report of Payments with filter for PDC type """,
     'depends': ['account_check_printing', 'account_pdc'],
     'data': [
