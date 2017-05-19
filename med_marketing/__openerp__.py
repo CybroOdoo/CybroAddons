@@ -19,6 +19,7 @@
              'views/doctor_view.xml',
              'views/doctor_exp_view.xml', ],
     'demo': ['demo/demo.xml'],
+    'images': ['static/description/banner.jpg'],
     'installable': True,
     'auto_install': False,
     'application': True,
