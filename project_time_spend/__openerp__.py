@@ -13,5 +13,6 @@
             'security/ir.model.access.csv',
             'views/project_statusbar_view.xml',
             ],
+    'images': ['static/description/banner.jpg'],
     'installable': True,
 }
