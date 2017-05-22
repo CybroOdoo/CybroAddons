@@ -38,6 +38,7 @@
     'summary': 'Used for splitting lengthy quotations into sepparate.',
     'data': ['views/splitter.xml'],
     'depends': ['base','sale'],
+    'images': ['static/description/banner.jpg'],
     'installable': True,
     'license': 'AGPL-3',
 }
