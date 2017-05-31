@@ -24,7 +24,7 @@
     'name': 'Employees From User',
     'version': '9.0.1.0.1',
     'summary': 'This module automatically creates while creating user',
-    'description': 'This module helps you to create employees automatically from user',
+    'description': 'This module helps you to create employees automatically from users',
     'category': 'Human Resources',
     'author': 'Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
