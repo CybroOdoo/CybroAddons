@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2017-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Jesni Banu(<http://www.cybrosys.com>)
+#    Author: Niyas Raphy(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -20,20 +20,19 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-{
-    'name': 'Employees From User',
-    'version': '10.0.1.0.0',
-    'summary': 'This module automatically creates while creating user',
-    'description': 'This module helps you to create employees automatically while creating users',
-    'category': 'Human Resources',
-    'author': 'Cybrosys Techno Solutions',
-    'website': 'http://www.cybrosys.com',
-    'company': 'Cybrosys Techno Solutions',
-    'depends': ['base', 'hr'],
-    'data': ['employee_creation_from_user_view.xml'],
-    'images': ['static/description/banner.jpg'],
-    'license': 'LGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+from odoo import models, api, _
+from odoo.exceptions import Warning
+
+
+class ProductDeletion(models.Model):
+    _inherit = 'product.template'
+
+    @api.multi
+    @api.model
+    def unlink(self, default=None):
+        res_user = self.env['res.users'].search([('id', '=', self._uid)])
+        if not res_user.has_group('product_deletion.product_deletion_group'):
+            raise Warning(_(
+                "You cannot delete the product(s). Please contact the System Administrator"))
+
+

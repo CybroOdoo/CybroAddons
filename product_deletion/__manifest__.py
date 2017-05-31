@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2017-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Jesni Banu(<http://www.cybrosys.com>)
+#    Author: Niyas Raphy(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -21,19 +21,21 @@
 #
 ##############################################################################
 {
-    'name': 'Employees From User',
-    'version': '10.0.1.0.0',
-    'summary': 'This module automatically creates while creating user',
-    'description': 'This module helps you to create employees automatically while creating users',
-    'category': 'Human Resources',
+    'name': 'Product Removal Authorisation',
+    'summary': """Users in the Group "Product Deletion" Can Only Delete the Products""",
+    'version': '10.0.1.0',
+    'description': """Permission to delete the product""",
     'author': 'Cybrosys Techno Solutions',
-    'website': 'http://www.cybrosys.com',
     'company': 'Cybrosys Techno Solutions',
-    'depends': ['base', 'hr'],
-    'data': ['employee_creation_from_user_view.xml'],
-    'images': ['static/description/banner.jpg'],
+    'website': 'http://www.cybrosys.com',
+    'category': 'Warehouse',
+    'depends': ['base', 'product'],
     'license': 'LGPL-3',
+    'data': [
+        'views/product_deletion_group.xml',
+    ],
+    'demo': [],
+    'images': ['static/description/banner.jpg'],
     'installable': True,
     'auto_install': False,
-    'application': False,
 }
