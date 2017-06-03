@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="sub_task_task_form">
+            <field name="name">Task Form</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_form2"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='description_page']" position="after">
+                    <page name="project_sub_tasks" string="Sub Tasks"
+                          attrs="{'invisible':[('use_sub_task','=',False)]}">
+                        <field name="sub_task_lines">
+                            <tree string="Sub Task Lines" editable="bottom" colors="red:current_date > date_deadline;">
+                                <field name="name"/>
+                                <field name="assigned_user"/>
+                                <field name="date_deadline"/>
+                                <field name="stage_id" readonly="1"/>
+                            </tree>
+                        </field>
+                    </page>
+                </xpath>
+                 <field name="kanban_state" position="after">
+                     <field name="use_sub_task" invisible="1"/>
+                     <field name="subtask_count" invisible="1"/>
+                 </field>
+                <field name="stage_id" position="attributes">
+                    <attribute name="attrs">{'invisible':[('active','=',False)]}</attribute>
+                </field>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="subtask_partner_kanban_view">
+            <field name="name">project.task.kanban.inherit1</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_kanban"/>
+            <field name="priority" eval="10"/>
+            <field name="arch" type="xml">
+                <field name="legend_done" position="after">
+                    <field name="subtask_count"/>
+                </field>
+                <xpath expr="//div[@class='oe_kanban_content']" position="inside">
+                    <div>
+                        <span class="badge" t-if="record.subtask_count.value>0"><i class="fa fa-tasks"/><t t-esc=" "/> <t t-esc="record.subtask_count.value"/></span>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="sub_task_type_form">
+            <field name="name">Task Type Form</field>
+            <field name="model">project.task.type</field>
+            <field name="inherit_id" ref="project.task_type_edit"/>
+            <field name="arch" type="xml">
+                <field name="fold" position="after">
+                    <field name="done_state"/>
+                    <field name="cancel_state"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</odoo>
