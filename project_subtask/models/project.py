@@ -127,7 +127,7 @@ class TaskMaster(models.Model):
         if self.stage_id.done_state:
             for each in self.sub_task_lines:
                 if not each.stage_id.done_state:
-                    raise ValidationError(_("You can't move it to final stage. Some of the task are not completed"))
+                    raise ValidationError(_("You can't move it to final stage. Some child tasks are not completed yet.!"))
 
     @api.multi
     def _check_child_task(self):
