@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<openerp>
+    <data>
+        <report id="action_report_claims"
+                 model="mrp.report"
+                 string="MRP Report"
+                 report_type="qweb-pdf"
+                 file="manufacturing_reports.mrp_pdf"
+                 name="manufacturing_reports.mrp_pdf"
+         />
+        <template id="mrp_pdf">
+            <t t-call="report.html_container">
+                <t t-call="report.internal_layout">
+                    <div class="page">
+                        <div class="header" style="text-align:left;"><h1><strong>MRP Order Report</strong></h1></div>
+                        <div class="row mt32 mb32" style="text-align:left;">
+                                <div class="col-xs-12">
+                               <h3>   <strong>  <p t-esc="res_company.name"/></strong></h3>
+                                    <strong>Date of report:</strong>
+                                       <p t-esc="get_date()"/>
+                                </div>
+                        </div>
+                        <table class="table table-condensed">
+                            <thead>
+                                <tr >
+                                    <th style="background-color:#9b9da0 !important;">Reference</th>
+                                    <th style="background-color:#9b9da0 !important;">Image</th>
+                                    <th style="background-color:#9b9da0 !important;">Product</th>
+                                    <th style="background-color:#9b9da0 !important;">Quantity</th>
+                                    <th style="background-color:#9b9da0 !important;">Unit</th>
+                                    <th style="background-color:#9b9da0 !important;">Responsible</th>
+                                    <th style="background-color:#9b9da0 !important;">Start Date</th>
+                                    <th style="background-color:#9b9da0 !important;">State</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="get_details(data)" t-as="o">
+
+                                    <tr>
+                                        <td>
+                                            <span t-esc="o.name"/>
+                                        </td>
+                                        <td>
+                               <img t-if="o.product_id.image_medium" t-att-src="'data:image/png;base64,%s' % o.product_id.image_medium" style="max-height: 40px;"/>
+                            </td>
+                                        <td>
+                                            <span t-esc="o.product_id.name"/>
+                                        </td>
+                                        <td>
+                                           <span t-esc="o.product_qty"/>
+                                        </td>
+                                        <td>
+                                            <span t-esc="o.product_uom.name"/>
+                                        </td>
+                                        <td>
+                                            <span t-esc="o.user_id.name"/>
+                                        </td>
+                                        <td>
+                                            <span t-esc="o.date_planned"/>
+                                        </td>
+                                        <td>
+                                            <span t-esc="o.state"/>
+                                        </td>
+                                    </tr>
+
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </template>
+    </data>
+</openerp>

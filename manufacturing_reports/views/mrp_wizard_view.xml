@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<openerp>
+     <data>
+
+        <record id="mrp_wizard_view" model="ir.ui.view">
+            <field name="name">MRP Report</field>
+            <field name="model">mrp.report</field>
+            <field name="arch" type="xml">
+                  <form string="MRP Report">
+                        <group>
+                            <group>
+                                <field name="product" widget="many2many_tags" />
+                                <field name="filter"/>
+                                <field name="date_from" attrs="{'invisible': [('filter','=',False)], 'required': [('filter', '=', True)]}"/>
+                                <field name="date_to" attrs="{'invisible': [('filter','=',False)], 'required': [('filter', '=', True)]}"/>
+                            </group>
+                            <group>
+                                <field name="stage"/>
+                                <field name="filter_user"/>
+                                <field name="responsible" widget="many2many_tags" attrs="{'invisible': [('filter_user','=',False)], 'required': [('filter_user', '=', True)]}"/>
+                            </group>
+                        </group>
+
+                        <footer>
+                            <button name="check_report" string="Export xls" type="object"
+                                     class="oe_highlight"  style="margin: 0 5px;"
+                                     context="{'xls_export':1}" icon='gtk-print' />
+                            <button name="print_pdf" string="Print Pdf" type="object"
+                                     class="oe_highlight"  style="margin: 0 5px;"
+                                    icon='gtk-print' />
+                             or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                        </footer>
+                </form>
+            </field>
+
+        </record>
+
+         <record model="ir.actions.act_window" id="mrp_wizard_action">
+            <field name="name">MRP Report</field>
+            <field name="res_model">mrp.report</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+             <field name="target">new</field>
+
+        </record>
+
+
+          <menuitem id="mrp_report_menu" name="Print Report"
+                  parent="base.menu_mrp_root"/>
+         <menuitem id="mrp_pdf$xls_menu" name="PDF and XLS"
+                  parent="manufacturing_reports.mrp_report_menu"
+                  action="mrp_wizard_action"/>
+         </data>
+
+</openerp>
