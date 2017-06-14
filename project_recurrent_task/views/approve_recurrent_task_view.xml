@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record model='ir.ui.view' id='wizard_reason_form'>
+            <field name="name">wizard.reason.form</field>
+            <field name="model">wizard.reason</field>
+            <field name="arch" type="xml">
+                <form string="Update Reason">
+                    <group>
+                        <field name="reason" required="True"/>
+                    </group>
+                    <footer>
+                        <button name="send_reason" string="Send" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model='ir.actions.act_window' id='wizard_reason_act'>
+            <field name="name">Update Reason</field>
+            <field name="res_model">wizard.reason</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="wizard_reason_form"/>
+            <field name="target">new</field>
+        </record>
+
+        <record model='ir.ui.view' id='approve_recurrent_task_form_view'>
+            <field name="name">approve.recurrent.task.form</field>
+            <field name="model">approve.recurrent.task</field>
+            <field name="arch" type="xml">
+                <form create="false" edit="false">
+                    <header>
+                        <button name="approve_recurrent_task" string="Approve" class="btn-primary" type="object" states="waiting"/>
+                        <button class="btn-primary" name="%(wizard_reason_act)d" string="Reject" type="action" states="waiting"
+                                context="{'approval_id':id}"/>
+                        <field name="state" widget="statusbar"  statusbar_visible="waiting,approved,rejected"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name" readonly="1"/>
+                                <field name="task" readonly="1"/>
+                                <field name="project" readonly="1"/>
+                                <field name="user_id" readonly="1"/>
+                                <field name="team_lead" readonly="1" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="from_date" readonly="1"/>
+                                <field name="interval_number" readonly="1"/>
+                                <field name="interval_type" readonly="1"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="reason" readonly="1" attrs="{'invisible': [('state', '!=', 'rejected')]}"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model='ir.ui.view' id='approve_recurrent_task_form_view1'>
+            <field name="name">approve.recurrent.task.form1</field>
+            <field name="model">approve.recurrent.task</field>
+            <field name="arch" type="xml">
+                <form create="false" edit="false">
+                    <header>
+                        <field name="state" widget="statusbar"  statusbar_visible="waiting,approved,rejected"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name" readonly="1"/>
+                                <field name="task" readonly="1"/>
+                                <field name="project" readonly="1"/>
+                                <field name="user_id" readonly="1"/>
+                                <field name="team_lead" readonly="1" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="from_date" readonly="1"/>
+                                <field name="interval_number" readonly="1"/>
+                                <field name="interval_type" readonly="1"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="reason" readonly="1" attrs="{'invisible': [('state', '!=', 'rejected')]}"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model='ir.ui.view' id='approve_recurrent_task_tree_view'>
+            <field name="name">approve.recurrent.task.tree</field>
+            <field name="model">approve.recurrent.task</field>
+            <field name="arch" type="xml">
+                <tree create="false" edit="false" colors="green:state == 'approved';red:state == 'rejected';">
+                    <field name="user_id" />
+                    <field name="task" />
+                    <field name="project" />
+                    <field name="team_lead" />
+                    <field name="state" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_approve_recurrent_task" model="ir.actions.act_window">
+            <field name="name">Approve Recurrent Task</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">approve.recurrent.task</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('team_lead','=', uid)]</field>
+        </record>
+
+        <record id="action_approve_recurrent_task1" model="ir.actions.act_window">
+            <field name="name">My Requests</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">approve.recurrent.task</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('user_id','=', uid)]</field>
+        </record>
+
+        <record model="ir.actions.act_window.view" id="action_approve_recurrent_task11">
+            <field name="sequence" eval="2"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="approve_recurrent_task_form_view1"/>
+            <field name="act_window_id" ref="action_approve_recurrent_task1"/>
+        </record>
+
+        <record model="ir.actions.act_window.view" id="action_approve_recurrent_task12">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="approve_recurrent_task_tree_view"/>
+            <field name="act_window_id" ref="action_approve_recurrent_task1"/>
+        </record>
+
+        <menuitem name="Recurrent Task Requests" parent="base.menu_main_pm" id="approve_recurrent_task_menu" sequence="4"/>
+        <menuitem name="Recurrent Task Requests" parent="project_recurrent_task.approve_recurrent_task_menu" id="approve_recurrent_task_sub_menu" action="action_approve_recurrent_task" sequence="1"/>
+        <menuitem name="My Requests" parent="project_recurrent_task.approve_recurrent_task_menu" id="amy_requests_sub_menu" action="action_approve_recurrent_task1" sequence="2"/>
+    </data>
+</openerp>
