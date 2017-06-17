@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+         <template id="event_report_template">
+            <t t-call="report.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-set="doc" t-value="doc.with_context({'lang':doc.organizer_id.lang})" />
+                    <t t-set="doc2" t-value="event_attendee_details(doc.id)"/>
+                    <div class="page" >
+                        <t t-call="report.external_layout">
+                            <div class="header" style="text-align:left;"><strong><h1><a>Event:</a><a t-field="doc.name"/></h1></strong></div>
+
+                            <table width="100%" style="margin-left:50px;margin-top:5px;border: None solid black;">
+                                    <tr>
+                                        <td style="width:50px;height:25px;" ><span>Location: </span><span t-att-style="style" t-esc="doc.address_id.name"/></td>
+                                        <td style="width:50px;height:25px;" ><span>Responsible : </span><span t-att-style="style" t-esc="doc.user_id.name"/></td>
+                                        <td style="width:50px;height:25px;" ><span>Organizer : </span><span t-att-style="style" t-esc="doc.organizer_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width:50px;height:25px;" ><span>Category : </span><span t-att-style="style" t-esc="doc.event_type_id.name"/></td>
+                                        <td style="width:50px;height:25px;" ><span>Start Date: </span><span t-att-style="style" t-esc="doc.date_begin"/></td>
+                                        <td style="width:50px;height:25px;" ><span>End Date: </span><span t-att-style="style" t-esc="doc.date_end"/></td>
+                                    </tr>
+                                    <tr>
+                                         <td style="width:50px;height:25px;" ><span>Event Status: </span><t t-if ="doc.state =='draft'">Unconfirmed</t>
+                                            <t t-if ="doc.state =='cancel'">Cancelled</t><t t-if ="doc.state =='done'">Done</t>
+                                            <t t-if ="doc.state =='confirm'">Confirmed</t></td>
+                                    </tr>
+                            </table>
+
+                            <div style="text-align:left;"><strong><h2>Tickets</h2></strong></div>
+                            <div style="text-align:left;"><strong><p><a>Minimum Attendees:</a><a t-field="doc.seats_min"/></p></strong></div>
+                            <div style="text-align:left;"><strong><p><a>Maximum Attendees:</a><t t-if ="doc.seats_availability =='limited'">Limited</t>
+                                            <t t-if ="doc.seats_availability =='unlimited'">Unlimited</t></p></strong></div>
+                            <t t-if ="doc.seats_availability =='limited'"><div style="text-align:left;"><strong><p><a>Maximum Attendees Number:</a><a t-field="doc.seats_max"/></p></strong></div></t>
+                            <table class="table table-condensed">
+                                 <thead>
+                                    <tr >
+                                        <th style="background-color:#9b9da0 !important;">Name </th>
+                                        <th style="background-color:#9b9da0 !important;">Product </th>
+                                        <th style="background-color:#9b9da0 !important;">Sales End </th>
+                                        <th style="background-color:#9b9da0 !important;">Price  </th>
+                                        <th style="background-color:#9b9da0 !important;">Max Available Seats </th>
+                                        <th style="background-color:#9b9da0 !important;">Reserved Seats </th>
+                                        <th style="background-color:#9b9da0 !important;">Unconfirmed Reservations</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="doc.event_ticket_ids" t-as="b">
+                                        <tr>
+                                            <td>
+                                                <span t-att-style="style" t-esc="b.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-att-style="style" t-esc="b.product_id.name"/>
+                                            </td>
+                                            <td>
+                                               <span t-att-style="style" t-esc="b.deadline"/>
+                                            </td>
+                                            <td>
+                                                <span t-att-style="style" t-esc="b.price"/>
+                                            </td>
+                                            <td>
+                                                <span t-att-style="style" t-esc="b.seats_max"/>
+                                            </td>
+
+                                            <td>
+                                                <span t-att-style="style" t-esc="b.seats_reserved"/>
+                                            </td>
+                                            <td>
+                                               <span t-att-style="style" t-esc="b.seats_unconfirmed"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                            <div t-if="doc2" class="header" style="text-align:left;"><strong><h2>Attendees</h2></strong>
+                                <table class="table table-condensed">
+                                     <thead>
+                                        <tr >
+                                            <th style="background-color:#9b9da0 !important;">Contact</th>
+                                            <th style="background-color:#9b9da0 !important;">Registration Date</th>
+                                            <th style="background-color:#9b9da0 !important;">Attended Date</th>
+                                            <th style="background-color:#9b9da0 !important;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="doc2" t-as="d">
+                                            <tr>
+                                                <td>
+                                                    <span t-att-style="style" t-esc="d['partner_id']"/>
+                                                </td>
+                                                <td>
+                                                    <span t-att-style="style" t-esc="d['date_open']"/>
+                                                </td>
+                                                <td>
+                                                   <span t-att-style="style" t-esc="d['date_closed']"/>
+                                                </td>
+                                                 <td>
+                                                   <t t-if ="doc.state =='draft'">Unconfirmed</t>
+                                                    <t t-if ="doc.state =='cancel'">Cancelled</t><t t-if ="doc.state =='done'">Done</t>
+                                                    <t t-if ="doc.state =='confirm'">Confirmed</t>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </t>
+                    </div>
+                    <p style="page-break-after:always"></p>
+                </t>
+            </t>
+         </template>
+    </data>
+</openerp>
