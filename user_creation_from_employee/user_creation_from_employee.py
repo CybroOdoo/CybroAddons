@@ -26,7 +26,7 @@ from openerp import models, fields, api, _
 class ResUsersInherit(models.Model):
     _inherit = 'hr.employee'
 
-    user_check = fields.Boolean(default=False)
+    user_check_test = fields.Boolean(default=False)
 
     @api.multi
     def create_user(self):
@@ -34,12 +34,12 @@ class ResUsersInherit(models.Model):
                                                 'login': self.work_email,
                                                 })
         self.address_home_id = user_id.partner_id.id
-        self.user_check = True
+        self.user_check_test = True
 
     @api.onchange('address_home_id')
-    def user_check(self):
+    def user_check_test(self):
         if self.address_home_id:
-            self.user_check = True
+            self.user_check_test = True
         else:
-            self.user_check = False
+            self.user_check_test = False
 
