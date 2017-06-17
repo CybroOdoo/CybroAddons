@@ -22,7 +22,7 @@
 ##############################################################################
 {
     'name': 'User From Employee',
-    'version': '10.0.1.0.1',
+    'version': '10.0.2.0.0',
     'summary': 'This module automatically creates User while creating Employee',
     'description': 'This module helps you to create user automatically from employees',
     'category': 'Human Resources',
