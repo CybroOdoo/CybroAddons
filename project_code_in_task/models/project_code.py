@@ -48,6 +48,10 @@ class ProjectCodeTask(models.Model):
                 if vals.get('name'):
                     vals['name'] = obj.project_code + '/' + vals['name']
                 else:
+                    if '/' in self.name:
+                        s = self.name.index('/')
+                        s += 1
+                        self.name = self.name[s:]
                     vals['name'] = obj.project_code + '/' + self.name
             else:
                 if not vals.get('name'):
