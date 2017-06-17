@@ -23,11 +23,11 @@
 ##############################################################################
 
 {
-    'name': "Event PDF Report",
+    'name': "Events PDF Report",
     'version': '9.0.1.0.0',
     "category": "Marketing",
     'summary': """Events PDF Report With Full Details""",
-    'description': """Event PDF Report With States & Attendees Details""",
+    'description': """Events PDF Report With States & Attendees Details""",
     'author': "Cybrosys Techno Solutions",
     'company': "Cybrosys Techno Solutions",
     'website': "https://www.cybrosys.com",
