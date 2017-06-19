@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="view_pos_config_form_extended">
+            <field name="name">pos.config.extend</field>
+            <field name="model">pos.config</field>
+            <field name="inherit_id" ref="point_of_sale.view_pos_config_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='sequence_id']" position="after">
+                    <field name="discount_account"/>
+                </xpath>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="view_pos_new_form_extended">
+                <field name="name">pos.order.extend</field>
+                <field name="model">pos.order</field>
+                <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+                <field name="arch" type="xml">
+                    <xpath expr="//field[@name='qty']" position="replace">
+                        <field name="qty"/>
+                    </xpath>
+                    <xpath expr="//field[@name='price_unit']" position="replace">
+                        <field name="price_unit"/>
+                    </xpath>
+                    <xpath expr="//field[@name='discount']" position="replace">
+                        <field name="discount" widget="monetary"/>
+                    </xpath>
+                    <xpath expr="//field[@name='discount']" position="after">
+                        <field name="discount_fixed" widget="monetary"/>
+                    </xpath>
+
+                    <xpath expr="//field[@name='amount_tax']" position="after">
+                        <field name="discount_total" />
+                        <field name="discount_percent" />
+                    </xpath>
+                </field>
+        </record>
+
+        <report
+                id="pos_invoice_report"
+                string="Invoice"
+                model="pos.order"
+                report_type="qweb-pdf"
+                name="discounts_in_pos.report_invoice"
+                file="discounts_in_pos.report_invoice"
+            />
+
+    <!--in account.invoice -->
+        <report
+            id="account_invoices"
+            model="account.invoice"
+            string="Invoices"
+            report_type="qweb-pdf"
+            name="discounts_in_pos.report_invoice_new"
+            file="discounts_in_pos.report_invoice_new"
+            attachment_use="True"
+            attachment="(object.state in ('open','paid')) and ('INV'+(object.number or '').replace('/','')+'.pdf')"
+            />
+
+    <report
+            id="pos_payment_report"
+            string="Today's Payment"
+            model="pos.order"
+            report_type="qweb-pdf"
+            name="discounts_in_pos.report_payment"
+            file="discounts_in_pos.report_payment"
+         />
+
+    <report
+            id="action_report_pos_receipt"
+            string="Receipt"
+            model="pos.order"
+            report_type="qweb-pdf"
+            name="discounts_in_pos.report_receipt"
+            file="discounts_in_pos.report_receipt"
+            paperformat="discounts_in_pos.paperformat_posreceipt"
+        />
+    <report
+            id="pos_lines_report"
+            string="Sales Lines"
+            model="pos.order"
+            report_type="qweb-pdf"
+            name="discounts_in_pos.report_saleslines"
+            file="discounts_in_pos.report_saleslines"
+            auto="False"
+         />
+
+    </data>
+</openerp>
