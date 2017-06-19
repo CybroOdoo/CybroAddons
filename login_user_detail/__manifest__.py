@@ -33,7 +33,7 @@
     'license': 'AGPL-3',
     'data': ['views/login_user_views.xml'],
     'demo': [],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,
 }
