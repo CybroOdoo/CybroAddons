@@ -1,0 +1,218 @@
+<?xml version="1.0"?>
+
+<openerp>
+    <data>
+        <!-- Form view of pos claim -->
+        <record id="pos_claim_category_form" model="ir.ui.view">
+            <field name="name">Claims</field>
+            <field name="model">pos.claims</field>
+            <field name="arch" type="xml">
+                <form string="ClaimS">
+                    <header>
+                        <button name="action_sent"
+                                string="Send Mail"
+                                type="object"
+                                state="assigned"
+                                class="oe_highlight"
+                                context="{'send_rfq':True }"
+                                attrs = "{'invisible': [('state', 'in', ('new','settle','feedback','paid','reject'))]}" />
+                        <button name="action_settle"
+                                string="Accept"
+                                type="object"
+                                state="feedback"
+                                class="oe_highlight"
+                                attrs = "{'invisible': [('state', 'in', ('new','settle','paid','reject','assigned'))]}"/>
+                        <button name="action_reject"
+                                string="Cancel"
+                                type="object"
+                                state="feedback"
+                                class="oe_highlight"
+                                attrs = "{'invisible': [('state', 'in', ('new','settle','paid','reject','assigned'))]}"/>
+                        <field name="state"
+                               widget="statusbar"
+                               statusbar_visible="new,assigned,feedback,settle,reject" clickable="1"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                        <h1>
+                            <field name="ref_name" readonly="1"/>
+                        </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="name" style="width:40%%"  options="{'no_create': True}"/>
+                                <field name="claim_date"/>
+                            </group>
+                            <group colspan="4" col="4">
+                                <field name="user_id"  style="width:70%%"/>
+                                <field name="priority" widget="priority"/>
+                            </group>
+                        </group>
+                        <notebook>
+
+                            <page string="Claim Description">
+                                <group>
+                                    <group>
+                                        <separator colspan="2" string="Product Details"/>
+                                        <field name="claim_product" style="width:60%%"  options="{'no_create': True}"/>
+                                        <field name="claim_qty" style="width:60%%"/>
+                                        <field name="session_id"  style="width:60%%"/>
+                                    </group>
+                                    <group>
+                                    </group>
+                                </group>
+                                <group>
+                                    <group>
+                                        <separator colspan="2" string="Claim Reporter"/>
+                                        <field name="partner_id"/>
+                                        <field name="partner_phone"/>
+                                        <field name="partner_email"/>
+                                    </group>
+                                    <group>
+                                    </group>
+                                </group>
+                                <group colspan="2" col="2">
+                                    <separator colspan="2" string="Responsibilities"/>
+                                    <field name="user_fault"/>
+                                    <field name="cate_id" style="width:25%%" options="{'no_create': True, 'no_open': True}"/>
+                                </group>
+                                <separator colspan="4" string="Claim/Action Description" groups="base.group_user"/>
+                                <field name="description" colspan="4" nolabel="1"/>
+                            </page>
+                            <page string="Follow Up" groups="base.group_user">
+                                <group colspan="2" col="2">
+                                    <separator colspan="2" string="Actions"/>
+                                    <field name="date_action_next"/>
+                                    <field name="action_next"/>
+                                </group>
+                                <group colspan="2" col="2">
+                                    <separator colspan="2" string="Root Causes"/>
+                                    <field name="cause" colspan="2" nolabel="1"/>
+                                </group>
+                                <group colspan="2" col="2">
+                                    <separator colspan="2" string="Resolution Actions"/>
+                                    <field name="type_action" style="width:25%%"/>
+                                    <field name="resolution" colspan="2" nolabel="1" placeholder="Action Description..."/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree view of pos claim -->
+
+        <record model="ir.ui.view" id="pos_case_claims_tree_view">
+            <field name="name">Claims</field>
+            <field name="model">pos.claims</field>
+            <field name="arch" type="xml">
+                <tree string="Claims">
+                    <field name="ref_name" string="Ticket Number"/>
+                    <field name="name"/>
+                    <field name="claim_product"/>
+                    <field name="claim_qty"/>
+                    <field name="partner_id"/>
+                    <field name="session_id"/>
+                    <field name="claim_date"/>
+                    <field name="date_action_next"/>
+                    <field name="action_next"/>
+                    <field name="cate_id" string="Type"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Calender view of pos claim -->
+        <record model="ir.ui.view" id="pos_case_claims_calendar_view">
+            <field name="name">Claims</field>
+            <field name="model">pos.claims</field>
+            <field name="arch" type="xml">
+                <calendar string="Claims" date_start="date_action_next" color="user_id">
+                    <field name="name"/>
+                </calendar>
+            </field>
+        </record>
+
+        <record id="pos_claim_cate_action" model="ir.actions.act_window">
+            <field name="name">Claims</field>
+            <field name="res_model">pos.claims</field>
+            <field name="view_mode">tree,form,calendar</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                Click to create a claim category.
+                </p><p>
+                Create claim categories to better manage and classify your
+                claims. Some example of claims can be: preventive action,
+                corrective action.
+                </p>
+            </field>
+        </record>
+
+        <!--Email template -->
+        <record id="email_template_edi_pos_ticket" model="mail.template">
+            <field name="name">Pos Ticket</field>
+            <field name="email_from">${(object.user_id.email)}</field>
+            <field name="email_to">${object.partner_id.id}</field>
+            <field name="partner_to">${object.partner_id.id}</field>
+            <field name="subject">Pos Ticket</field>
+            <field name="model_id" ref="pos_claims.model_pos_claims" />
+            <field name="auto_delete" eval="True" />
+            <field name="body_html"><![CDATA[
+                <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+                    <p>Dear ${object.partner_id.name},</p>
+                     <p>
+                         Your claim is reported successfully and your ticket ${object.ref_name} is now on hold.
+                    </p>
+                    <p>
+                         We will be in contact with you in the coming days to make our best attempt in regaining your
+                         confidence in our company.
+                    </p>
+                    <p>
+                         Please accept our sincerest apology for any trouble or inconvenience we have caused you.
+                    </p>
+                    <p>Thank you,</p>
+
+                </div>
+            ]]>
+            </field>
+        </record>
+
+        <record id="email_template_edi_pos_claims" model="mail.template">
+            <field name="name">Pos Claims</field>
+                <field name="email_from">${(object.user_id.email}</field>
+                <field name="email_to">${object.partner_id.id}</field>
+                <field name="partner_to">${object.partner_id.id}</field>
+                <field name="subject">Pos Claims</field>
+                <field name="model_id" ref="pos_claims.model_pos_claims" />
+                <field name="auto_delete" eval="True" />
+                <field name="body_html"><![CDATA[
+                    <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+                        <p>Dear ${object.partner_id.name},</p>
+                        <p> Thank you for taking the time to communicate to us why our {product / service } did not meet
+                        your expectations. We have every desire to address your needs and provide the best solution
+                        available to resolve your issue as soon as possible.</p>
+                        <p>  We  will be in contact with you in the coming days to make our best attempt in regaining your
+                        confidence in our company. In addition, we will further evaluate how we can prevent this problem
+                        from occurring again in the future.</p>
+                        <p>Please accept our sincerest apology for any trouble or inconvenience we have caused you. Again,
+                        we highly appreciate your feedback as it will assist us in becoming better at what we do.
+                        As with any business like ours, the greatest advertising we can have is word of mouth from a
+                        satisfied customer. It’s  our goal to retain you as a satisfied customer and will hope to
+                        serve you again in the future.
+                        <p>Thank you,</p>
+
+                </div>
+                ]]>
+            </field>
+        </record>
+
+        <menuitem name="Pos Claims" id="menu_point_of_sale_claim" parent="point_of_sale.menu_point_root" sequence="22"/>
+        <menuitem name="Pos Claims" parent="menu_point_of_sale_claim" id="point_of_sale_claim"
+              action="pos_claim_cate_action" sequence="10" />
+    </data>
+</openerp>
