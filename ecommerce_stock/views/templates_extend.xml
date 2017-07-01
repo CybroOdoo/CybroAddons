@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+<data>
+    <template id="assets_frontend" inherit_id="website.assets_frontend" name="Shop">
+        <xpath expr="." position="inside">
+            <link rel='stylesheet' href='/ecommerce_stock/static/src/css/ribbon.css'/></xpath></template>
+
+    <template id="available_stock" inherit_id="website_sale.products_item" name="Products item">
+        <xpath expr="//div[@class='ribbon-wrapper']" position="before">
+            <t t-if="product.sudo().qty_available &gt; 0">
+                <div class="special-ribbon special-ribbon-banner ">
+                    <strong>Available</strong></div>
+            </t>
+            <t t-if="product.sudo().qty_available &lt;= 0">
+                <div class="special-ribbon-red special-ribbon-banner-red ">
+                    <strong>Out of Stock</strong></div></t>
+        </xpath>
+        <xpath expr="//a[@itemprop='name']" position="after">
+
+            <t t-if="product.sudo().qty_available &gt; 0">
+                <div class="text-stock-value">Stock Avialable:<a class="text-stock-value" itemprop="qty" t-att-href="keep('/shop/product/%s' % slug(product), page=(pager['page']['num'] if pager['page']['num']>1 else None))" t-esc="product.sudo().qty_available"/>
+                </div></t>
+            <t t-if="product.sudo().qty_available &lt;= 0">
+                <div class="text-stock-value-not">Stock Avialable:<a class="text-stock-value-not" itemprop="qty" t-att-href="keep('/shop/product/%s' % slug(product), page=(pager['page']['num'] if pager['page']['num']>1 else None))" t-esc="product.sudo().qty_available"/>
+            </div>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="available_stock_product" inherit_id="website_sale.product" name="Product">
+        <xpath expr="//div[@class='js_product']" position="replace">
+            <t t-if="product.sudo().qty_available &gt; 0">
+                 <div class="js_product">
+                    <t t-placeholder="select">
+                      <input type="hidden" class="product_id" name="product_id" t-att-value="int(product.product_variant_ids[0]) if len(product.product_variant_ids) == 1 else '0'"/>
+                      <t t-call="website_sale.variants">
+                        <t t-set="ul_class" t-value="'nav-stacked'"/>
+                      </t>
+                    </t>
+
+                     <t t-call="website_sale.product_price"/>
+                    <p t-if="len(product.product_variant_ids) > 1" class="css_not_available_msg bg-danger" style="padding: 15px;">Product not available</p>
+
+                     <div class="text-stock-value">Stock Avialable : <a class="text-stock-value" itemprop="qty"  t-esc="product.sudo().qty_available"/>
+                     </div>
+
+
+                     <a id="add_to_cart" class="btn btn-primary btn-lg mt8 js_check_product a-submit" href="#">Add to Cart</a>
+                 </div>
+            </t>
+            <t t-if="product.sudo().qty_available &lt;= 0">
+                <div class="js_product">
+                    <t t-placeholder="select">
+                      <input type="hidden" class="product_id" name="product_id" t-att-value="int(product.product_variant_ids[0]) if len(product.product_variant_ids) == 1 else '0'"/>
+                      <t t-call="website_sale.variants">
+                        <t t-set="ul_class" t-value="'nav-stacked'"/>
+                      </t>
+                    </t>
+
+                    <t t-call="website_sale.product_price"/>
+                    <p t-if="len(product.product_variant_ids) > 1" class="css_not_available_msg bg-danger" style="padding: 15px;">Product not available</p>
+
+                    <div class="text-stock-value-not">Stock Avialable : <a class="text-stock-value-not" itemprop="qty"  t-esc="product.sudo().qty_available"/>
+                    </div>
+                       <div class="special-ribbon-red special-ribbon-banner-red ">
+                    <strong>Out of Stock</strong></div>
+
+                </div>
+            </t>
+        </xpath>
+    </template>
+</data>
+</openerp>
+
