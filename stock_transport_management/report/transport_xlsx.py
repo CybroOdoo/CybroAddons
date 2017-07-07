@@ -55,17 +55,12 @@ class TransportReportXls(ReportXlsx):
         if date_end:
             sheet.write('C5', "Date To :", format3)
             sheet.write('C6', date_end, format4)
-        sheet.write('A8', "Vehicle Name ", format2)
-        sheet.write('B8', "", format2)
-        sheet.write('C8', "Date", format2)
-        sheet.write('D8', "", format2)
-        sheet.write('E8', "Sale Order", format2)
-        sheet.write('F8', "", format2)
-        sheet.write('G8', "Delivery Order", format2)
-        sheet.write('H8', "", format2)
-        sheet.write('I8', "No of Parcels", format2)
-        sheet.write('J8', "", format2)
-        sheet.write('K8', "Status", format2)
+        sheet.merge_range('A8:B8', "Vehicle Name ", format2)
+        sheet.merge_range('C8:D8', "Date", format2)
+        sheet.merge_range('E8:F8', "Sale Order", format2)
+        sheet.merge_range('G8:H8', "Delivery Order", format2)
+        sheet.merge_range('I8:J8', "No of Parcels", format2)
+        sheet.merge_range('K8', "Status", format2)
         if date_start and date_end:
             report_obj = self.env['vehicle.status'].search([('transport_date', ">=", date_start) and
                                                             ('transport_date', "<=", date_end)])
@@ -74,11 +69,11 @@ class TransportReportXls(ReportXlsx):
         row_number = 9
         col_number = 0
         for values in report_obj:
-            sheet.write(row_number, col_number, values['name'], format3)
-            sheet.write(row_number, col_number + 2, values['transport_date'], format3)
-            sheet.write(row_number, col_number + 4, values['sale_order'], format3)
-            sheet.write(row_number, col_number + 6, values['delivery_order'], format3)
-            sheet.write(row_number, col_number + 8, values['no_parcels'], format3)
+            sheet.merge_range(row_number, col_number, row_number, col_number + 1, values['name'], format3)
+            sheet.merge_range(row_number, col_number + 2, row_number, col_number + 3, values['transport_date'], format3)
+            sheet.merge_range(row_number, col_number + 4, row_number, col_number + 5,  values['sale_order'], format3)
+            sheet.merge_range(row_number, col_number + 6, row_number, col_number + 7, values['delivery_order'], format3)
+            sheet.merge_range(row_number, col_number + 8, row_number, col_number + 9, values['no_parcels'], format3)
             sheet.write(row_number, col_number + 10, values['state'], format3)
             row_number += 1
 

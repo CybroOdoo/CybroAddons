@@ -5,7 +5,9 @@ This module was developed to  manage the stock .It helps to track transportation
 
 Installation
 ============
-You need **report_xlsx**  to install this module.
+You need 'report_xlsx' module  to install this module.
+Make sure you have xlsxwriter Python module installed:
+$ pip install xlsxwriter
 
 Configuration
 =============
