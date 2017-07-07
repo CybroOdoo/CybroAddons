@@ -34,15 +34,40 @@ class ProjectMaster(models.Model):
 class SubTaskMaster(models.Model):
     _name = 'project.sub_task'
 
+    def stage_find(self, section_id, domain=[], order='sequence'):
+        section_ids = []
+        if section_id:
+            section_ids.append(section_id)
+        section_ids.extend(self.mapped('task_ref').ids)
+        search_domain = []
+        if section_ids:
+            search_domain = [('|')] * (len(section_ids) - 1)
+            for section_id in section_ids:
+                search_domain.append(('task_ids', '=', section_id))
+        search_domain += list(domain)
+        # perform search, return the first found
+        return self.env['project.sub_task.type'].search(search_domain, order=order, limit=1).id
+
+    @api.onchange('task_ref')
+    def get_default_stage_id(self):
+        """ Gives default stage_id """
+        project_id = self.task_ref.id
+        if not project_id:
+            return False
+        self.stage_id = self.stage_find(project_id, [('fold', '=', False)])
+
     @api.constrains('date_deadline', 'task_ref')
     def date_deadline_validation(self):
         if self.date_deadline > self.task_ref.date_deadline:
             raise ValidationError(_("Your main task will dead at this date"))
 
+    active = fields.Boolean(default=True)
     name = fields.Char(string="Name", requires=True)
     priority = fields.Selection([('0', 'Normal'), ('1', 'High')], 'Priority', select=True, default='0')
     assigned_user = fields.Many2one('res.users', string="Assigned Person", required=1)
-    task_ref = fields.Many2one('project.task', string='Task', required=1, domain=['|', '|', ('project_id.use_sub_task', '=', True),
+    task_ref = fields.Many2one('project.task', string='Task', required=1,
+                               default=lambda self: self.env.context.get('default_task_ref'),
+                               domain=['|', '|', ('project_id.use_sub_task', '=', True),
                                                                                   ('stage_id.done_state', '=', False),
                                                                                   ('stage_id.cancel_state', '=', False)])
     stage_id = fields.Many2one('project.sub_task.type', string='Stage', select=True,
@@ -62,47 +87,26 @@ class SubTaskMaster(models.Model):
 
     tag_ids = fields.Many2one('project.sub_task.tags', string='Tags')
     write_date = fields.Datetime(string='Last Modification Date', readonly=True, select=True)
-    date_start = fields.Datetime(string='Starting Date', readonly=True, select=True)
+    date_start = fields.Datetime(string='Starting Date', readonly=True, select=True, default=fields.Datetime.now())
     date_deadline = fields.Date(string='Deadline')
     active = fields.Boolean(string='Active', default=True)
     description = fields.Html(String='Description')
     sequence = fields.Integer(string='Sequence', select=True, default=10,
                               help="Gives the sequence order when displaying a list of sub tasks.")
     company_id = fields.Many2one('res.company', string='Company')
-    date_last_stage_update = fields.Datetime(string='Last Stage Update', select=True, copy=False, readonly=True)
+    date_last_stage_update = fields.Datetime(string='Last Stage Update', select=True, copy=False, readonly=True,
+                                             default=fields.Datetime.now())
     date_assign = fields.Datetime(string='Assigning Date', select=True, copy=False, readonly=True)
 
-    def stage_find(self, cr, uid, cases, section_id, domain=[], order='sequence', context=None):
-        if isinstance(cases, (int, long)):
-            cases = self.browse(cr, uid, cases, context=context)
-        section_ids = []
-        if section_id:
-            section_ids.append(section_id)
-        for task in cases:
-            if task.project_id:
-                section_ids.append(task.project_id.id)
-        search_domain = []
-        if section_ids:
-            search_domain = [('|')] * (len(section_ids) - 1)
-            for section_id in section_ids:
-                search_domain.append(('project_ids', '=', section_id))
-        search_domain += list(domain)
-        stage_ids = self.pool.get('project.sub_task.type').search(cr, uid, search_domain, order=order, context=context)
-        if stage_ids:
-            return stage_ids[0]
-        return False
-
-    def _get_default_stage_id(self, cr, uid, context=None):
-        """ Gives default stage_id """
-        if context is None:
-            context = {}
-        return self.stage_find(cr, uid, [], context.get('default_project_id'), [('fold', '=', False)], context=context)
-
-    _defaults = {
-        'stage_id': _get_default_stage_id,
-        'date_last_stage_update': fields.Datetime.now(),
-        'date_start': fields.Datetime.now(),
-    }
+    @api.model
+    def create(self, vals):
+        context = dict(self.env.context)
+        if vals.get('task_ref'):
+            vals['stage_id'] = self.stage_find(vals.get('task_ref'), [('fold', '=', False)])
+        if vals.get('user_id'):
+            vals['date_assign'] = fields.Datetime.now()
+        task = super(SubTaskMaster, self.with_context(context)).create(vals)
+        return task
 
 
 class TaskMaster(models.Model):
