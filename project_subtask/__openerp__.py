@@ -31,6 +31,7 @@
     'website': "http://www.cybrosys.com",
     'depends': ['base', 'project'],
     'data': [
+        'security/ir.model.access.csv',
         'views/project_view.xml',
         'views/task_view.xml',
         'views/sub_task.xml',
