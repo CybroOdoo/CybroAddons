@@ -84,14 +84,15 @@ class SubTaskMaster(models.Model):
 
     tag_ids = fields.Many2one('project.sub_task.tags', string='Tags')
     write_date = fields.Datetime(string='Last Modification Date', readonly=True, select=True)
-    date_start = fields.Datetime(string='Starting Date', readonly=True, select=True)
+    date_start = fields.Datetime(string='Starting Date', readonly=True, select=True, default=fields.Datetime.now())
     date_deadline = fields.Date(string='Deadline')
     active = fields.Boolean(string='Active', default=True)
     description = fields.Html(String='Description')
     sequence = fields.Integer(string='Sequence', select=True, default=10,
                               help="Gives the sequence order when displaying a list of sub tasks.")
     company_id = fields.Many2one('res.company', string='Company')
-    date_last_stage_update = fields.Datetime(string='Last Stage Update', select=True, copy=False, readonly=True)
+    date_last_stage_update = fields.Datetime(string='Last Stage Update', select=True, copy=False, readonly=True,
+                                             default=fields.Datetime.now())
     date_assign = fields.Datetime(string='Assigning Date', select=True, copy=False, readonly=True)
 
     @api.model
