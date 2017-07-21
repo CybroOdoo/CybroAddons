@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Nilmar Shereef(<https://www.cybrosys.com>)
+#    Author: Saritha Sahadevan(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -20,5 +20,19 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import task_lifeline
-import progress_bar_color
+{
+    'name': "Partner Email History",
+    'version': '10.0.1.0.0',
+    'summary': """ Send/Received Mails From Partner Form""",
+    'description': """Send/Received Emails From Partner Form""",
+    'author': "Cybrosys Techno Solutions",
+    'website': "https://www.cybrosys.com",
+    'category': 'Tools',
+    'depends': ['base', 'mail'],
+    'data': ['views/partner_emails_history_view.xml'],
+    'images': ['static/description/banner.jpg'],
+    'license': 'LGPL-3',
+    'installable': True,
+    'auto_install': False,
+    'application': False,
+}

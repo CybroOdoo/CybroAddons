@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Nilmar Shereef(<https://www.cybrosys.com>)
+#    Author: Saritha Sahadevan(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -20,5 +20,20 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import task_lifeline
-import progress_bar_color
+from odoo import models
+
+
+class PartnerEmailHistory(models.Model):
+    _inherit = 'res.partner'
+
+    def sent_email_history(self):
+        action = self.env.ref('mail.action_view_mail_mail')
+        result = action.read()[0]
+        result['domain'] = [('email_from', '=', self.email)]
+        return result
+
+    def received_email_history(self):
+        action = self.env.ref('mail.action_view_mail_mail')
+        result = action.read()[0]
+        result['domain'] = ['|', ('email_to', '=', self.email), ('recipient_ids', '=', self.email)]
+        return result

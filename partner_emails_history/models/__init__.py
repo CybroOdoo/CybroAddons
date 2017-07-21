@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Nilmar Shereef(<https://www.cybrosys.com>)
+#    Author: Saritha Sahadevan(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -20,5 +20,4 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import task_lifeline
-import progress_bar_color
+import partner_emails_history

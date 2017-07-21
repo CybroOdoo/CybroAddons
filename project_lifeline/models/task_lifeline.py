@@ -2,8 +2,8 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2009-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Nilmar Shereef(<http://www.cybrosys.com>)
+#    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Nilmar Shereef(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -17,18 +17,25 @@
 #
 #    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
 #    GENERAL PUBLIC LICENSE (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
+#    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from odoo import fields, models
 from dateutil.relativedelta import relativedelta
+from odoo import fields, models
+
+
+class ProjectStages(models.Model):
+    _inherit = 'project.task.type'
+
+    freeze_state = fields.Boolean(string='Is Freeze State',
+                                  help="Enable to stop the life line running at this Stages.")
 
 
 class TaskLifeline(models.Model):
     _inherit = 'project.task'
 
     lifeline = fields.Float(string="Life line", default='100', copy=False, readonly=True)
-    date_deadline = fields.Datetime('Deadline', required=True)
+    date_deadline_ext = fields.Datetime('Deadline', required=True)
 
     def process_lifeline_scheduler(self):
         task_obj = self.env['project.task']
@@ -36,11 +43,9 @@ class TaskLifeline(models.Model):
         time_now = fields.Datetime.from_string(fields.Datetime.now())
         for task in task_ids:
             start_date = fields.Datetime.from_string(task.date_assign)
-            end_date = fields.Datetime.from_string(task.date_deadline)
-            if task.stage_id and (task.stage_id.name == 'Done' or task.stage_id.name == 'Cancelled'):
-                task.lifeline = 0
-            else:
-                if task.date_deadline and task.date_assign and end_date > start_date:
+            end_date = fields.Datetime.from_string(task.date_deadline_ext)
+            if task.stage_id and task.stage_id.freeze_state != True:
+                if task.date_deadline_ext and task.date_assign and end_date > start_date:
                     if time_now < end_date:
                         total_difference_days = relativedelta(end_date, start_date)
                         difference_minute = total_difference_days.hours * 60 + total_difference_days.minutes
