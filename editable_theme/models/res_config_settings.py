@@ -1,5 +1,4 @@
 from openerp import models, fields, api, http, SUPERUSER_ID
-from openerp.http import request
 
 
 class MenuThemes(models.Model):
@@ -13,11 +12,9 @@ class MenuThemes(models.Model):
     top_image = fields.Binary('Top BackGround Image')
     sidebar_font_color = fields.Char('Font Colour of Sidebar Child Menu', default='#FFFFFF')
     sidebar_font_color_parent = fields.Char('Font Colour of Sidebar Parent Menu', default='#FFDC63')
-
     top_font_color = fields.Char('Font Colour of Top Menu', default='#FFFFFF')
     top_background_color = fields.Char('BackGround Colour of Top Menu', default='#B71E17')
     sidebar_background_color = fields.Char('BackGround Colour of Sidebar', default='#464746')
-
     font_common = fields.Selection([('sans-serif', 'Sans-Serif'),
                                    ('serif', 'Serif'),
                                    ('monospace', 'Monospace'), ], default='monospace')
@@ -32,7 +29,7 @@ class MenuThemes(models.Model):
             ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme', 'font_common', font_common)
         else:
             font_common =  False
-            ir_values.set_default(cr, SUPERUSER_ID,'menu.theme', 'font_common', font_common)
+            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme', 'font_common', font_common)
 
     # SIDEBAR BACKGROUND COLOR
     def set_sidebar_background_color(self, cr, uid, ids, context=None):
@@ -40,10 +37,10 @@ class MenuThemes(models.Model):
         wizard = self.browse(cr, uid, ids)[0]
         if wizard.sidebar_background_color:
             sidebar_background_color = wizard.sidebar_background_color
-            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme','sidebar_background_color', sidebar_background_color)
+            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme', 'sidebar_background_color', sidebar_background_color)
         else:
-            sidebar_background_color =  False
-            ir_values.set_default(cr, SUPERUSER_ID,'menu.theme','sidebar_background_color', sidebar_background_color)
+            sidebar_background_color = False
+            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme', 'sidebar_background_color', sidebar_background_color)
 
     # SIDEBAR IMAGE
     def set_sidebar_image(self, cr, uid, ids, context=None):
@@ -51,10 +48,10 @@ class MenuThemes(models.Model):
         wizard = self.browse(cr, uid, ids)[0]
         if wizard.sidebar_image:
             sidebar_image = wizard.sidebar_image
-            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme','sidebar_image', sidebar_image)
+            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme', 'sidebar_image', sidebar_image)
         else:
-            sidebar_image =  False
-            ir_values.set_default(cr, SUPERUSER_ID,'menu.theme','sidebar_image',sidebar_image)
+            sidebar_image = False
+            ir_values.set_default(cr, SUPERUSER_ID,'menu.theme', 'sidebar_image', sidebar_image)
 
     # TOP BAR IMAGE
     def set_top_image(self, cr, uid, ids, context=None):
@@ -62,10 +59,10 @@ class MenuThemes(models.Model):
         wizard = self.browse(cr, uid, ids)[0]
         if wizard.top_image:
             top_image = wizard.top_image
-            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme','top_image', top_image)
+            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme', 'top_image', top_image)
         else:
-            top_image =  False
-            ir_values.set_default(cr, SUPERUSER_ID,'menu.theme','top_image',top_image)
+            top_image = False
+            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme', 'top_image',top_image)
 
     # FONT COLOUR CHILD
     def set_sidebar_font_color(self, cr, uid, ids, context=None):
@@ -73,10 +70,10 @@ class MenuThemes(models.Model):
         wizard = self.browse(cr, uid, ids)[0]
         if wizard.sidebar_font_color:
             sidebar_font_color = wizard.sidebar_font_color
-            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme','sidebar_font_color', sidebar_font_color)
+            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme', 'sidebar_font_color', sidebar_font_color)
         else:
-            sidebar_font_color =  False
-            ir_values.set_default(cr, SUPERUSER_ID,'menu.theme','sidebar_font_color',sidebar_font_color)
+            sidebar_font_color = False
+            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme', 'sidebar_font_color', sidebar_font_color)
 
     # FONT COLOUR PARENT
     def set_sidebar_font_color_parent(self, cr, uid, ids, context=None):
@@ -84,10 +81,10 @@ class MenuThemes(models.Model):
         wizard = self.browse(cr, uid, ids)[0]
         if wizard.sidebar_font_color_parent:
             sidebar_font_color_parent = wizard.sidebar_font_color_parent
-            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme','sidebar_font_color_parent', sidebar_font_color_parent)
+            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme', 'sidebar_font_color_parent', sidebar_font_color_parent)
         else:
             sidebar_font_color_parent =  False
-            ir_values.set_default(cr, SUPERUSER_ID,'menu.theme','sidebar_font_color_parent',sidebar_font_color_parent)
+            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme', 'sidebar_font_color_parent', sidebar_font_color_parent)
 
     # FONT COLOR TOP
     def set_top_font_color(self, cr, uid, ids, context=None):
@@ -95,10 +92,10 @@ class MenuThemes(models.Model):
         wizard = self.browse(cr, uid, ids)[0]
         if wizard.top_font_color:
             top_font_color = wizard.top_font_color
-            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme','top_font_color', top_font_color)
+            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme', 'top_font_color', top_font_color)
         else:
-            top_font_color =  False
-            ir_values.set_default(cr, SUPERUSER_ID,'menu.theme','top_font_color',top_font_color)
+            top_font_color = False
+            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme', 'top_font_color', top_font_color)
 
     # TOP BAR FONT COLOR
     def set_top_background_color(self, cr, uid, ids, context=None):
@@ -106,10 +103,10 @@ class MenuThemes(models.Model):
         wizard = self.browse(cr, uid, ids)[0]
         if wizard.top_background_color:
             top_background_color = wizard.top_background_color
-            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme','top_background_color', top_background_color)
+            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme', 'top_background_color', top_background_color)
         else:
-            top_background_color =  False
-            ir_values.set_default(cr, SUPERUSER_ID,'menu.theme','top_background_color',top_background_color)
+            top_background_color = False
+            ir_values.set_default(cr, SUPERUSER_ID, 'menu.theme', 'top_background_color', top_background_color)
 
     # GETTING
     # FONT STYLE

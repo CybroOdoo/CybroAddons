@@ -1,2 +1,2 @@
-import themes
-import play_with_js
+import res_config_settings
+import controller

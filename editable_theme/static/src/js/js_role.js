@@ -42,21 +42,5 @@ $('.oe_view_manager_buttons').click(function(){alert()});
         //SIDE
         $(".oe_leftbar").css("font-family", sideBar_background_COLOR_CODE);
         $("a").css("font-family", sideBar_background_COLOR_CODE);
-
-
-
-
-
-
-//        $("table > body").css("font-family", sideBar_background_COLOR_CODE);
-
-//        .oe_form .oe_form_label[for] {
-//    white-space: nowrap;
-//    padding-right: 8px;
-//    font-family: monospace;
-//}
-
-
-
     });
 })
