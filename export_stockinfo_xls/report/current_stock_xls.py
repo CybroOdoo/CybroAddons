@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from openerp.addons.report_xlsx.report.report_xlsx import ReportXlsx
 import datetime
 
