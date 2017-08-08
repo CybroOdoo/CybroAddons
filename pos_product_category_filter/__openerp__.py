@@ -1,17 +1,17 @@
+# -*- coding: utf-8 -*-
 {
     'name': 'POS Product Category Filter',
-    'version': '1.0',
+    'version': '9.0.2.0.0',
     'category': 'Point of Sale',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
     'sequence': 6,
-    'summary': 'Show only specified categories of product in point of sale ',
+    'summary': 'Show Only Specified Categories of Product in Point of Sale ',
     'description': """
 
 =======================
 
-Customization of produc availablity in PoS.
 
 """,
     'depends': ['point_of_sale'],

@@ -9,7 +9,6 @@ odoo.define('pos_product_category_filter.pos_product_category_filter', function 
     var Widget = require('web.Widget');
     var QWeb = core.qweb;
 
-
     var model1 = {
            model:  'pos.category',
             fields: ['id','name','parent_id','child_id','image'],
@@ -45,7 +44,7 @@ odoo.define('pos_product_category_filter.pos_product_category_filter', function 
             }
             for(var i=0, len = categories.length; i < len; i++){
                 if(categories[i].available === true){
-                    categories[i].parent_id[0] = 0;
+                    categories[i].parent_id = 0;
                 }
             }
             for(var i=0, len = categories.length; i < len; i++){
