@@ -33,11 +33,12 @@ class FacilityRestaurant(models.Model):
     @api.multi
     @api.depends('rest_floor_facility')
     def onchange_rest_facility(self):
-        sum_of_percentage = 0.0
-        if self.rest_floor_facility:
-            for records in self.rest_floor_facility:
-                sum_of_percentage += records.line_percentage
-            self.facility_service_percentage = sum_of_percentage
+        for rec in self:
+            sum_of_percentage = 0.0
+            if rec.rest_floor_facility:
+                for records in rec.rest_floor_facility:
+                    sum_of_percentage += records.line_percentage
+                rec.facility_service_percentage = sum_of_percentage
 
 
 class FacilityRestaurantLines(models.Model):
