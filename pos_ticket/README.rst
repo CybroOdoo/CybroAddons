@@ -1,7 +1,8 @@
 POS Ticket v10
 ==============
 
-This module will add company logo & info in POS receipt
+This module will add company logo & company info in POS receipt. Also it will print the customer name
+in the receipt if the customer is selected
 
 Credits
 =======
