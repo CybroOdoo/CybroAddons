@@ -15,11 +15,11 @@
                     <sheet>
                         <group>
                             <group>
-                                <field name="contract_name" string="Contract" readonly="1"/>
+                                <field name="name" string="Contract" readonly="1"/>
                                 <field name="attachment_ids" widget="many2many_binary" class="oe_inline" readonly="1"/>
                             </group>
                             <group>
-                                <field name="damage_cost" readonly="1"/>
+                                <field name="damage_cost"/>
                             </group>
                         </group>
                         <notebook>
@@ -45,23 +45,26 @@
                 </form>
             </field>
         </record>
+
         <record id="car_rental_contract_checklist_tree_view" model="ir.ui.view">
             <field name="name">car_rental_contract_checklist_tree_view.tree</field>
             <field name="model">car.rental.contract</field>
             <field name="type">tree</field>
             <field name="arch" type="xml">
-                <tree string="car_contract_result2" create="false" colors="#f20b07:state=='checking'">
-                    <field name="contract_name" string="Contract"/>
+                <tree string="car_contract_result2" create="false" colors="#f20b07:state=='checking';green:state=='running'" decoration-info="state == 'draft'">
+                    <field name="name" string="Contract"/>
                     <field name="name" string="Renter"/>
                     <field name="state"/>
                 </tree>
             </field>
         </record>
+
         <record id="action_fleet_rent_checklist" model="ir.actions.act_window">
             <field name="name">Checklist</field>
             <field name="res_model">car.rental.contract</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
+            <field name="domain">[('state', 'in', ('running', 'checking')), ('sales_person','=', uid)]</field>
             <field name="view_id" ref="car_rental_contract_checklist_form_view"/>
         </record>
 
@@ -78,6 +81,7 @@
             <field name="view_id" ref="car_rental_contract_checklist_tree_view"/>
             <field name="act_window_id" ref="action_fleet_rent_checklist"/>
         </record>
+
         <menuitem id="menu_car_checklist" parent="menu_car_parent" name="Checklist"
                   action="action_fleet_rent_checklist" sequence="2"/>
     </data>

@@ -20,6 +20,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import models
-import reports
+import rental_report
 

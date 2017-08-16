@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2017-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Avinash Nk(<http://www.cybrosys.com>)
+#    Author: Cybrosys(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -22,16 +22,19 @@
 ##############################################################################
 {
     'name': 'Fleet Rental Management',
-    'summary': """This module will helps you to give the vehicles for Rent.""",
-    'version': '10.0.1.0.0',
+    'summary': """The Complete Solution for a Car/Vehicle Rental System""",
+    'version': '10.0.2.0.0',
     'author': 'Cybrosys Techno Solutions',
     'website': "http://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
     "category": "Industries",
-    'depends': ['account', 'fleet'],
-    'data': ['views/car_rental_view.xml',
+    'depends': ['base', 'account', 'fleet', 'mail'],
+    'data': ['security/rental_security.xml',
+             'security/ir.model.access.csv',
+             'views/car_rental_view.xml',
              'views/checklist_view.xml',
              'views/car_tools_view.xml',
+             'reports/rental_report.xml',
              'data/fleet_rental_data.xml',
              ],
     'demo': [
