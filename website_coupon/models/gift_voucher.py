@@ -2,8 +2,8 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2017-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Cybrosys Technologies(<http://www.cybrosys.com>)
+#    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: LINTO C T(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -17,10 +17,9 @@
 #
 #    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
 #    GENERAL PUBLIC LICENSE (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
+#    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
-
 import string
 import random
 from odoo import models, fields, api, _
@@ -31,7 +30,15 @@ class GiftVoucher(models.Model):
     _name = 'gift.voucher'
 
     name = fields.Char(string="Name", required=True)
-    product_id = fields.Many2one('product.product', string="Product", required=True)
+    voucher_type = fields.Selection(
+        selection=[
+            ('product', 'Product'),
+            ('category', 'Product Category'),
+            ('all', 'All Products'),
+        ], string="Applicable on ", default='product'
+    )
+    product_id = fields.Many2one('product.product', string="Product")
+    product_categ = fields.Many2one('product.category', string="Product Category")
     min_value = fields.Integer(string="Minimum Voucher Value", required=True)
     max_value = fields.Integer(string="Maximum Voucher Value", required=True)
     expiry_date = fields.Date(string="Expiry Date", required=True)
