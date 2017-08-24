@@ -31,6 +31,7 @@
     'website': "http://www.cybrosys.com",
     'depends': ['base', 'project'],
     'data': [
+        'security/ir.model.access.csv',
         'views/employee_workload_report_view.xml',
         'reports/employee_workload_report.xml',
     ],
