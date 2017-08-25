@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+#
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2017-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Cybrosys(<http://www.cybrosys.com>)
+#    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Nikhil krishnan(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -20,27 +21,21 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+
 {
-    'name': 'Fleet Rental Management',
-    'summary': """The Complete Solution for a Car/Vehicle Rental System""",
-    'version': '10.0.2.0.0',
+    'name': 'Product Category Code',
+    'version': '10.0.1.0',
+    'summary': """We Can Search/Find Product & Category by Product Category CODE.""",
+    'description': """We can search and find product and category by product category code.""",
     'author': 'Cybrosys Techno Solutions',
-    'website': "http://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
-    "category": "Industries",
-    'depends': ['base', 'account', 'fleet', 'mail'],
-    'data': ['security/rental_security.xml',
-             'security/ir.model.access.csv',
-             'views/car_rental_view.xml',
-             'views/checklist_view.xml',
-             'views/car_tools_view.xml',
-             'reports/rental_report.xml',
-             'data/fleet_rental_data.xml',
-             ],
-    'demo': [
-    ],
-    'images': ['static/description/banner.jpg'],
+    'website': 'http://www.cybrosys.com',
+    'category': 'Sales Management',
+    'depends': ['product'],
     'license': 'LGPL-3',
+    'data': ['views/product_category_code.xml'],
+    'demo': [],
+    'images': ['static/description/banner.jpg'],
     'installable': True,
-    'application': False,
+    'auto_install': False,
 }
