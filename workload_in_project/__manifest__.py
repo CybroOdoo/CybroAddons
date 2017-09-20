@@ -22,7 +22,7 @@
 ##############################################################################
 {
     'name': 'Workload In Project',
-    'version': '10.0.2.0',
+    'version': '10.0.2.1',
     'summary': """Calculate The Workload For Employees In Project""",
     'description': 'This module helps you to calculate workload for employees',
     'category': 'Project',
