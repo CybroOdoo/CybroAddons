@@ -29,6 +29,7 @@ class ProjectTaskTimeSheet(models.Model):
 
     date_start = fields.Datetime(string='Start Date')
     date_end = fields.Datetime(string='End Date', readonly=1)
+    timer_duration = fields.Float(invisible=1)
 
 
 class ProjectTaskTimer(models.Model):
@@ -43,11 +44,11 @@ class ProjectTaskTimer(models.Model):
                 order.is_user_working = False
 
     @api.multi
-    @api.depends('timesheet_ids.unit_amount')
+    @api.depends('timesheet_ids.timer_duration')
     def _compute_duration(self):
         self.duration = 0
         for each in self:
-            each.duration = sum(each.timesheet_ids.mapped('unit_amount'))
+            each.duration = sum(each.timesheet_ids.mapped('timer_duration'))
 
     @api.multi
     def toggle_start(self):
@@ -73,9 +74,11 @@ class ProjectTaskTimer(models.Model):
                 if time_line.date_end:
                     diff = fields.Datetime.from_string(time_line.date_end) - fields.Datetime.from_string(
                         time_line.date_start)
-                    time_line.unit_amount = round(diff.total_seconds() / 60.0, 2)
+                    time_line.timer_duration = round(diff.total_seconds() / 60.0, 2)
+                    time_line.unit_amount = round(diff.total_seconds() / (60.0 * 60.0), 2)
                 else:
                     time_line.unit_amount = 0.0
+                    time_line.timer_duration = 0.0
 
     task_timer = fields.Boolean()
     is_user_working = fields.Boolean(
