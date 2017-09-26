@@ -1,6 +1,6 @@
 {
     'name': 'Export Product Stock in Excel',
-    'version': '0.2',
+    'version': '9.0.2.0.0',
     'category': 'Warehouse',
     'license': "AGPL-3",
     'summary': "Current Stock Report for all Products in each Warehouse",
