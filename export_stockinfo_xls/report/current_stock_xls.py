@@ -35,12 +35,12 @@ class StockReportXls(ReportXlsx):
             sale_value = 0
             purchase_value = 0
             product = self.env['product.product'].browse(obj.id)
-            sale_obj = self.env['sale.order.line'].search([('order_id.state', '=', 'done'),
+            sale_obj = self.env['sale.order.line'].search([('order_id.state', 'in', ('sale', 'done')),
                                                            ('product_id', '=', product.id),
                                                            ('order_id.warehouse_id', '=', warehouse)])
             for i in sale_obj:
                 sale_value = sale_value + i.product_uom_qty
-            purchase_obj = self.env['purchase.order.line'].search([('order_id.state', '=', 'done'),
+            purchase_obj = self.env['purchase.order.line'].search([('order_id.state', 'in', ('purchase', 'done')),
                                                                    ('product_id', '=', product.id),
                                                                    ('order_id.picking_type_id', '=', warehouse)])
             for i in purchase_obj:

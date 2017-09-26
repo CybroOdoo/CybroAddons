@@ -1,6 +1,6 @@
-=====================
+================================
 Export Product Stock in Excel v9
-======================
+================================
 This module helps you to take current stock report for all products in each warehouse.
 
 Installation
