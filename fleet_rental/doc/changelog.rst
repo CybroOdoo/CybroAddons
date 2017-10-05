@@ -1,0 +1,22 @@
+Changelog
+=========
+* Nilmar Shereef    contact: shereef@cybrosys.in
+* Jesni Banu        contact: jesni@cybrosys.in
+
+`9.0.2.0.0`
+-----------
+- Pre Invoices Feature Added: Contract may be past record.
+- Smart Buttons: Related invoices in Rental Contracts.
+- Image of Vehicle in Rental Contract.
+- Date Validations in rental record.
+- Pending Invoice validations added.
+- Reporting on Rental Management.
+- Coloured Tree View for Rentals.
+- Coloured Tree View for Rentals.
+- Changed Menus: accessories/tools.
+- Security changed.
+- Checking list invoicing changed.
+- Field changed in recurrent invoice line.
+- Company Image added.
+- Colour picker widget added.
+

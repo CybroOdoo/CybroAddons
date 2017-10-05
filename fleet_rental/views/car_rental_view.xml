@@ -24,6 +24,21 @@
             <field eval="'fleet_scheduler'" name="function"/>
         </record>
 
+        <record model="ir.ui.view" id="rental_fleet_vehicle_inherit_form_view">
+            <field name="name">fleet.vehicle.form.inherit.view</field>
+            <field name="model">fleet.vehicle</field>
+            <field name="inherit_id" ref="fleet.fleet_vehicle_form"/>
+            <field name="arch" type="xml">
+                <field name="car_value" position="after">
+                    <field name="rental_check_availability" invisible="1"/>
+                    <field name="rental_reserved_time" invisible="1"/>
+                </field>
+                <field name="color" position="replace">
+                    <field name="color" widget="color"/>
+                </field>
+            </field>
+        </record>
+
         <record id="car_rental_contract_form_view" model="ir.ui.view">
             <field name="name">car.contract.result.form</field>
             <field name="model">car.rental.contract</field>
@@ -33,8 +48,10 @@
                     <header>
                         <button name="action_confirm" string="Confirm" type="object"
                                 attrs="{'invisible': [('state', '!=', 'draft')]}" class="oe_highlight"/>
+                        <button name="action_run" string="Run" type="object"
+                                attrs="{'invisible': [('state', '!=', 'reserved')]}" class="oe_highlight"/>
                         <button name="action_cancel" string="Cancel" type="object"
-                                attrs="{'invisible': [('state', '!=', 'draft')]}" class="oe_highlight"/>
+                                attrs="{'invisible': [('state', 'not in', ('draft', 'reserved'))]}" class="oe_highlight"/>
                         <button name="action_invoice_create" string="Create Invoice"
                                 attrs="{'invisible': ['|',('state', '!=', 'running'),
                                 ('first_invoice_created','=',True)]}" type="object" class="oe_highlight"/>
@@ -59,104 +76,98 @@
                         </div>
                         <group>
                             <separator string="Contract Details " colspan="4" />
-                          <group>
-                            <field name="customer_id"  string="Customer"
-                                   attrs="{'readonly': [('state','!=','draft')]}"/>
-                            <field name="vehicle_id" domain="[('state_id', 'not in', ('Rent', 'Sold', 'Inactive'))]"
-                                   attrs="{'readonly': [('state','!=','draft')]}"  widget="selection"/>
-                               <label for="cost_generated"/>
+                            <group>
+                                <field name="customer_id"  string="Customer" attrs="{'readonly': [('state','!=','draft')]}"/>
+                                <field name="rent_start_date" attrs="{'readonly': [('state','!=','draft')]}"/>
+                                <field name="rent_end_date" attrs="{'readonly': [('state','!=','draft')]}"/>
+                                <field name="vehicle_id" domain="[('rental_check_availability','=',True),
+                                ('state_id.name','!=','Inactive')]"
+                                   options="{'no_create': True}"/>
+                                <field name="journal_type" invisible="1" />
+                                <field name="check_verify" invisible="1" />
+                                <field name="sales_person" attrs="{'readonly': [('state','!=','draft')]}"/>
+                            </group>
+                            <group>
+                                <field name="car_brand"/>
+                                <field name="car_color" widget="color"/>
+                                <field name="first_invoice_created" invisible="1"/>
+                                <label for="first_payment"/>
+                                <div>
+                                    <field name="first_payment" class="oe_inline"
+                                         attrs="{'readonly': ['|', ('state','not in',('draft', 'running')),
+                                                ('first_invoice_created','=',True)]}"/>
+                                    <field name="first_payment_inv" style="width:142px;" readonly="1"/>
+                                </div>
+                                <field name="account_type" invisible="1"/>
+                                <field name="cost" invisible="1"/>
+                                <label for="cost_generated"/>
                                     <div>
                                         <field name="cost_frequency" class="oe_inline"
                                                attrs="{'readonly': [('state','!=','draft')]}"/>
                                         <field name="cost_generated" style="width:142px;"
                                                attrs="{'invisible': [('cost_frequency','=','no')],
-                                                       'readonly': [('state','!=','draft')]}"/>
-
+                                                       'readonly': [('state','!=','draft')],
+                                                       'required': [('cost_frequency','not in',[None,False,'no'])]}"/>
                                     </div>
-                              <field name="journal_type" invisible="1" />
-                              <field name="sales_person" attrs="{'readonly': [('state','!=','draft')]}"/>
-                          </group>
-                          <group>
-                              <field name="car_brand" attrs="{'readonly': [('state','!=','draft')]}"/>
-                              <field name="car_color" attrs="{'readonly': [('state','!=','draft')]}"/>
-                              <field name="first_invoice_created" invisible="1"/>
-                              <label for="first_payment"/>
-                              <div>
-                                  <field name="first_payment" class="oe_inline"
-                                         attrs="{'readonly': ['|', ('state','not in',('draft', 'running')),
-                                  ('first_invoice_created','=',True)]}"/>
-                                  <field name="first_payment_inv" style="width:142px;" readonly="1"/>
-                              </div>
-                              <field name="account_type" invisible="1"/>
-                          </group>
-                        </group>
-                        <group>
-                            <separator string="Rental Information"/>
-                            <group colspan="2">
-                                <group>
-                                    <field name="rent_start_date" attrs="{'readonly': [('state','!=','draft')]}"/>
-                                </group>
-                                <group>
-                                    <field name="rent_end_date" attrs="{'readonly': [('state','=','done')]}"/>
-                                    <field name="cost" invisible="1"/>
-                                </group>
                             </group>
-                         </group>
-                            <notebook>
-                                <page string="Recurring Invoices">
-                                    <field name="recurring_line" mode="tree">
-                                        <tree string="Fleet Reccurring Lines"
-                                              colors="#0b7a35:payment_info=='paid';#f20b07:payment_info!='paid'">
-                                            <field name="date_today"/>
-                                            <field name="name"/>
-                                            <field name="account_info"/>
-                                            <field name="recurring_amount"/>
-                                            <field name="payment_info"/>
-                                        </tree>
-                                    </field>
-                                </page>
-                                <page string="Checklist">
+                        </group>
+                        <notebook>
+                            <page string="Recurring Invoices" attrs="{'invisible': [('cost_frequency','in',[None,False,'no'])]}">
+                                <field name="recurring_line" mode="tree">
+                                    <tree string="Fleet Reccurring Lines"
+                                          colors="#0b7a35:payment_info=='paid';#f20b07:payment_info!='paid'">
+                                        <field name="date_today"/>
+                                        <field name="date_due"/>
+                                        <field name="name"/>
+                                        <field name="account_info"/>
+                                        <field name="recurring_amount"/>
+                                        <field name="payment_info"/>
+                                        <field name="invoice_ref"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Checklist">
+                                <group>
                                     <group>
-                                        <group>
-                                            <field name="attachment_ids" widget="many2many_binary" class="oe_inline"/>
-                                        </group>
-                                        <group>
-                                            <field name="damage_cost"
-                                                   attrs="{'invisible': [('state','!=','checking')]}"/>
-                                        </group>
+                                        <field name="attachment_ids" widget="many2many_binary" class="oe_inline"/>
                                     </group>
-                                    <field name="checklist_line">
-                                        <tree string="Fleet Checklist Lines" editable="bottom">
-                                            <field name="name"/>
-                                            <field name="checklist_active"/>
-                                            <field name="price"/>
-                                        </tree>
-                                        <form>
-                                            <sheet>
-                                                <group>
-                                                    <field name="name"/>
-                                                    <field name="checklist_active" invisible="1"/>
-                                                    <field name="checklist_number" invisible="1"/>
-                                                </group>
-                                            </sheet>
-                                        </form>
-                                    </field>
-                                    <div>
-                                        <group class="oe_subtotal_footer oe_right">
-                                            <field name="total"/>
-                                            <field name="tools_missing_cost"/>
-                                            <field name="damage_cost_sub"/>
-                                            <field name="total_cost" class="oe_subtotal_footer_separator"/>
-                                        </group>
-                                    </div>
-                                    <div style="float: right;margin-left: 78%;margin-bottom: 36px;">
-                                        <button name="action_verify" string="Verify" type="object"
-                                                style="width: 100px !important;height: 40px;"
-                                                attrs="{'invisible': [('state', '!=', 'checking')]}"
-                                                class="oe_subtotal_footer oe_right oe_highlight"/>
-                                    </div>
-                                </page>
-                            </notebook>
+                                    <group>
+                                        <field name="damage_cost" attrs="{'invisible': [('state','!=','checking')]}"/>
+                                    </group>
+                                </group>
+                                <field name="checklist_line">
+                                    <tree string="Fleet Checklist Lines" editable="bottom">
+                                        <field name="name"/>
+                                        <field name="checklist_active"/>
+                                        <field name="checklist_number" invisible="True"/>
+                                        <field name="price"/>
+                                    </tree>
+                                    <form>
+                                        <sheet>
+                                            <group>
+                                                <field name="name"/>
+                                                <field name="checklist_active" invisible="1"/>
+                                                <field name="checklist_number" invisible="1"/>
+                                            </group>
+                                        </sheet>
+                                    </form>
+                                </field>
+                                <div>
+                                    <group class="oe_subtotal_footer oe_right">
+                                        <field name="total"/>
+                                        <field name="tools_missing_cost"/>
+                                        <field name="damage_cost_sub"/>
+                                        <field name="total_cost" class="oe_subtotal_footer_separator"/>
+                                    </group>
+                                </div>
+                                <div style="float: right;margin-left: 78%;margin-bottom: 36px;">
+                                    <button name="action_verify" string="Verify" type="object"
+                                            style="width: 100px !important;height: 40px;"
+                                            attrs="{'invisible': [('state', '!=', 'checking')]}"
+                                            class="oe_subtotal_footer oe_right oe_highlight"/>
+                                </div>
+                            </page>
+                        </notebook>
                         <group>
                           <field name="notes"/>
                         </group>
@@ -194,7 +205,6 @@
             <field name="res_model">car.rental.contract</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
-            <field name="domain">[('sales_person','=', uid)]</field>
         </record>
 
         <menuitem name="Fleet Rental" id="fleet.menu_root" sequence="115" groups="fleet.group_fleet_user"

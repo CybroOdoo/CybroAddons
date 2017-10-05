@@ -2,10 +2,10 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2016-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Cybrosys(<http://www.cybrosys.com>)
-#    you can modify it under the terms of the GNU LESSER
-#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Cybrosys(<https://www.cybrosys.com>)
+#    you can modify it under the terms of the GNU AGPL (v3), Version 3.
 #
 #    It is forbidden to publish, distribute, sublicense, or sell copies
 #    of the Software or modified copies of the Software.
@@ -13,14 +13,10 @@
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
-#
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    GENERAL PUBLIC LICENSE (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
+#    GNU AGPL (AGPL v3) for more details.
 #
 ##############################################################################
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from openerp import models, fields, api, _
 from openerp.exceptions import UserError, Warning
 
@@ -30,24 +26,48 @@ class CarRentalContract(models.Model):
     _description = 'Fleet Rental Management'
     _inherit = ['mail.thread', 'ir.needaction_mixin']
 
-    image = fields.Binary(related='vehicle_id.image', string="Logo")
+    @api.onchange('rent_start_date', 'rent_end_date')
+    def check_availability(self):
+        self.vehicle_id = ''
+        fleet_obj = self.env['fleet.vehicle'].search([])
+        for i in fleet_obj:
+            for each in i.rental_reserved_time:
+                if each.date_from <= self.rent_start_date <= each.date_to:
+                    i.write({'rental_check_availability': False})
+                elif self.rent_start_date < each.date_from:
+                    if each.date_from <= self.rent_end_date <= each.date_to:
+                        i.write({'rental_check_availability': False})
+                    elif self.rent_end_date > each.date_to:
+                        i.write({'rental_check_availability': False})
+                    else:
+                        i.write({'rental_check_availability': True})
+                else:
+                    i.write({'rental_check_availability': True})
+
+    image = fields.Binary(related='vehicle_id.image', string="Image of Vehicle")
+    reserved_fleet_id = fields.Many2one('rental.fleet.reserved', invisible=True, copy=False)
     image_medium = fields.Binary(related='vehicle_id.image_medium', string="Logo (medium)")
     image_small = fields.Binary(related='vehicle_id.image_small', string="Logo (small)")
     name = fields.Char(string="Name", default="Draft Contract", readonly=True, copy=False)
-    customer_id = fields.Many2one('res.partner', required=True, help="Customer")
-    vehicle_id = fields.Many2one('fleet.vehicle', string="Vehicle", required=True, help="Vehicle", copy=False)
-    car_brand = fields.Char(string="Fleet Brand", size=50)
-    car_color = fields.Char(string="Fleet Color", size=50)
-    cost = fields.Float(string="Rent Cost", help="This fields is to determine the cost of rent per hour", required=True)
+    customer_id = fields.Many2one('res.partner', required=True, string='Customer', help="Customer")
+    vehicle_id = fields.Many2one('fleet.vehicle', string="Vehicle", required=True, help="Vehicle",
+                                 readonly=True,
+                                 states={'draft': [('readonly', False)]}
+                                 )
+    car_brand = fields.Many2one('fleet.vehicle.model.brand', string="Fleet Brand", size=50,
+                                related='vehicle_id.model_id.brand_id', store=True, readonly=True)
+    car_color = fields.Char(string="Fleet Color", size=50, related='vehicle_id.color', store=True, copy=False,
+                            default='#FFFFFF', readonly=True)
+    cost = fields.Float(string="Rent Cost", help="This fields is to determine the cost of rent", required=True)
     rent_start_date = fields.Date(string="Rent Start Date", required=True, default=datetime.today(),
-                                  help="Starting date of your contract", track_visibility='onchange')
-    rent_end_date = fields.Date(string="Rent End Date", required=True, help="Ending date of your contract",
+                                  help="Start date of contract", track_visibility='onchange')
+    rent_end_date = fields.Date(string="Rent End Date", required=True, help="End date of contract",
                                 track_visibility='onchange')
-    state = fields.Selection([('draft', 'Draft'), ('running', 'Running'), ('cancel', 'Cancel'),
+    state = fields.Selection([('draft', 'Draft'), ('reserved', 'Reserved'), ('running', 'Running'), ('cancel', 'Cancel'),
                               ('checking', 'Checking'), ('invoice', 'Invoice'), ('done', 'Done')], string="State",
                              default="draft", copy=False, track_visibility='onchange')
-    notes = fields.Text(string="Details")
-    cost_generated = fields.Float('Recurring Cost',
+    notes = fields.Text(string="Details & Notes")
+    cost_generated = fields.Float(string='Recurring Cost',
                                   help="Costs paid at regular intervals, depending on the cost frequency")
     cost_frequency = fields.Selection([('no', 'No'), ('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly'),
                                        ('yearly', 'Yearly')], string="Recurring Cost Frequency",
@@ -58,21 +78,50 @@ class CarRentalContract(models.Model):
                                    default=lambda self: self.env['account.account'].search([('id', '=', 17)]))
     recurring_line = fields.One2many('fleet.rental.line', 'rental_number', readonly=True, help="Recurring Invoices",
                                      copy=False)
-    first_payment = fields.Float(string='First Payment', help="Advance Payment", track_visibility='onchange')
+    first_payment = fields.Float(string='First Payment',
+                                 help="Transaction/Office/Contract charge amount, must paid by customer side other "
+                                      "than recurrent payments",
+                                 track_visibility='onchange',
+                                 required=True)
     first_payment_inv = fields.Many2one('account.invoice', copy=False)
     first_invoice_created = fields.Boolean(string="First Invoice Created", invisible=True, copy=False)
     attachment_ids = fields.Many2many('ir.attachment', 'car_rent_checklist_ir_attachments_rel',
                                       'rental_id', 'attachment_id', string="Attachments",
                                       help="Images of the vehicle before contract/any attachments")
-    checklist_line = fields.One2many('car.rental.checklist', 'checklist_number', string="Checklist", help="Check List")
-    total = fields.Float(string="Total(Tools)", readonly=True, copy=False)
-    tools_missing_cost = fields.Float(string="Tools missing cost", readonly=True, copy=False)
-    damage_cost = fields.Float(string="Damage cost", copy=False)
-    damage_cost_sub = fields.Float(string="Damage cost", readonly=True, copy=False)
-    total_cost = fields.Float(string="Total cost", readonly=True, copy=False)
+    checklist_line = fields.One2many('car.rental.checklist', 'checklist_number', string="Checklist",
+                                     help="Facilities/Accessories, That should verify when closing the contract.",
+                                     states={'invoice': [('readonly', True)],
+                                             'done': [('readonly', True)],
+                                             'cancel': [('readonly', True)]})
+    total = fields.Float(string="Total (Accessories/Tools)", readonly=True, copy=False)
+    tools_missing_cost = fields.Float(string="Missing Cost", readonly=True, copy=False,
+                                      help='This is the total amount of missing tools/accessories')
+    damage_cost = fields.Float(string="Damage Cost", copy=False)
+    damage_cost_sub = fields.Float(string="Damage Cost", readonly=True, copy=False)
+    total_cost = fields.Float(string="Total", readonly=True, copy=False)
     invoice_count = fields.Integer(compute='_invoice_count', string='# Invoice', copy=False)
+    check_verify = fields.Boolean(compute='check_action_verify', copy=False)
     sales_person = fields.Many2one('res.users', string='Sales Person', default=lambda self: self.env.uid,
                                    track_visibility='always')
+
+    @api.multi
+    def action_run(self):
+        self.state = 'running'
+
+    @api.multi
+    @api.depends('checklist_line.checklist_active')
+    def check_action_verify(self):
+        flag = 0
+        for each in self:
+            for i in each.checklist_line:
+                if i.checklist_active:
+                    continue
+                else:
+                    flag = 1
+            if flag == 1:
+                each.check_verify = False
+            else:
+                each.check_verify = True
 
     @api.constrains('rent_start_date', 'rent_end_date')
     def validate_dates(self):
@@ -100,10 +149,14 @@ class CarRentalContract(models.Model):
     @api.constrains('state')
     def state_changer(self):
         if self.state == "running":
-            state_id = self.env['fleet.vehicle.state'].search([('name', '=', "Rent")]).id
+            state_id = self.env.ref('fleet_rental.vehicle_state_rent').id
             self.vehicle_id.write({'state_id': state_id})
-        elif self.state == "done":
-            state_id = self.env['fleet.vehicle.state'].search([('name', '=', "Active")]).id
+        elif self.state == "cancel":
+            state_id = self.env.ref('fleet.vehicle_state_active').id
+            self.vehicle_id.write({'state_id': state_id})
+        elif self.state == "invoice":
+            self.rent_end_date = fields.datetime.now()
+            state_id = self.env.ref('fleet.vehicle_state_active').id
             self.vehicle_id.write({'state_id': state_id})
 
     @api.constrains('checklist_line', 'damage_cost')
@@ -118,6 +171,76 @@ class CarRentalContract(models.Model):
         self.tools_missing_cost = tools_missing_cost
         self.damage_cost_sub = self.damage_cost
         self.total_cost = tools_missing_cost + self.damage_cost
+
+    @api.multi
+    def fleet_scheduler1(self, rent_date):
+        inv_obj = self.env['account.invoice']
+        inv_line_obj = self.env['account.invoice.line']
+        recurring_obj = self.env['fleet.rental.line']
+        start_date = datetime.strptime(self.rent_start_date, '%Y-%m-%d').date()
+        end_date = datetime.strptime(self.rent_end_date, '%Y-%m-%d').date()
+        supplier = self.customer_id
+        inv_data = {
+            'name': supplier.name,
+            'reference': supplier.name,
+            'account_id': supplier.property_account_payable_id.id,
+            'partner_id': supplier.id,
+            'currency_id': self.account_type.company_id.currency_id.id,
+            'journal_id': self.journal_type.id,
+            'origin': self.name,
+            'company_id': self.account_type.company_id.id,
+            'date_due': self.rent_end_date,
+        }
+        inv_id = inv_obj.create(inv_data)
+        product_id = self.env['product.product'].search([("name", "=", "Fleet Rental Service")])
+        if product_id.property_account_income_id.id:
+            income_account = product_id.property_account_income_id
+        elif product_id.categ_id.property_account_income_categ_id.id:
+            income_account = product_id.categ_id.property_account_income_categ_id
+        else:
+            raise UserError(
+                _('Please define income account for this product: "%s" (id:%d).') % (product_id.name,
+                                                                                     product_id.id))
+        recurring_data = {
+            'name': self.vehicle_id.name,
+            'date_today': rent_date,
+            'account_info': income_account.name,
+            'rental_number': self.id,
+            'recurring_amount': self.cost_generated,
+            'invoice_number': inv_id.id,
+            'invoice_ref': inv_id.id,
+        }
+        recurring_obj.create(recurring_data)
+        inv_line_data = {
+            'name': self.vehicle_id.name,
+            'account_id': income_account.id,
+            'price_unit': self.cost_generated,
+            'quantity': 1,
+            'product_id': product_id.id,
+            'invoice_id': inv_id.id,
+        }
+        inv_line_obj.create(inv_line_data)
+        mail_content = _(
+            '<h3>Reminder Recurrent Payment!</h3><br/>Hi %s, <br/> This is to remind you that the '
+            'recurrent payment for the '
+            'rental contract has to be done.'
+            'Please make the payment at the earliest.'
+            '<br/><br/>'
+            'Please find the details below:<br/><br/>'
+            '<table><tr><td>Contract Ref<td/><td> %s<td/><tr/>'
+            '<tr/><tr><td>Amount <td/><td> %s<td/><tr/>'
+            '<tr/><tr><td>Due Date <td/><td> %s<td/><tr/>'
+            '<tr/><tr><td>Responsible Person <td/><td> %s, %s<td/><tr/><table/>') % \
+                       (self.customer_id.name, self.name, inv_id.amount_total, inv_id.date_due,
+                        inv_id.user_id.name,
+                        inv_id.user_id.mobile)
+        main_content = {
+            'subject': "Reminder Recurrent Payment!",
+            'author_id': self.env.user.partner_id.id,
+            'body_html': mail_content,
+            'email_to': self.customer_id.email,
+        }
+        self.env['mail.mail'].create(main_content).send()
 
     @api.model
     def fleet_scheduler(self):
@@ -172,7 +295,8 @@ class CarRentalContract(models.Model):
                         'account_info': income_account.name,
                         'rental_number': records.id,
                         'recurring_amount': records.cost_generated,
-                        'invoice_number': inv_id.id
+                        'invoice_number': inv_id.id,
+                        'invoice_ref': inv_id.id,
                     }
                     recurring_obj.create(recurring_data)
                     inv_line_data = {
@@ -182,6 +306,7 @@ class CarRentalContract(models.Model):
                         'quantity': 1,
                         'product_id': product_id.id,
                         'invoice_id': inv_id.id,
+
                     }
                     inv_line_obj.create(inv_line_data)
                     mail_content = _(
@@ -195,22 +320,25 @@ class CarRentalContract(models.Model):
                         '<tr/><tr><td>Amount <td/><td> %s<td/><tr/>'
                         '<tr/><tr><td>Due Date <td/><td> %s<td/><tr/>'
                         '<tr/><tr><td>Responsible Person <td/><td> %s, %s<td/><tr/><table/>') % \
-                        (self.customer_id.name, self.name, inv_id.amount_total, inv_id.date_due, inv_id.user_id.name,
+                        (self.customer_id.name, self.name, inv_id.amount_total, inv_id.date_due,
+                         inv_id.user_id.name,
                          inv_id.user_id.mobile)
                     main_content = {
                         'subject': "Reminder Recurrent Payment!",
                         'author_id': self.env.user.partner_id.id,
                         'body_html': mail_content,
                         'email_to': self.customer_id.email,
-
                     }
                     self.env['mail.mail'].create(main_content).send()
             else:
-                records.state = "checking"
+                if self.state == 'running':
+                    records.state = "checking"
 
     @api.multi
     def action_verify(self):
         self.state = "invoice"
+        self.reserved_fleet_id.unlink()
+        self.rent_end_date = fields.datetime.now()
         if self.total_cost != 0:
             inv_obj = self.env['account.invoice']
             inv_line_obj = self.env['account.invoice.line']
@@ -270,11 +398,33 @@ class CarRentalContract(models.Model):
 
     @api.multi
     def action_confirm(self):
-        self.state = "running"
+        check_availability = 0
+        for each in self.vehicle_id.rental_reserved_time:
+            if each.date_from <= self.rent_start_date <= each.date_to:
+                check_availability = 1
+            elif self.rent_start_date < each.date_from:
+                if each.date_from <= self.rent_end_date <= each.date_to:
+                    check_availability = 1
+                elif self.rent_end_date > each.date_to:
+                    check_availability = 1
+                else:
+                    check_availability = 0
+            else:
+                check_availability = 0
+        if check_availability == 0:
+            reserved_id = self.vehicle_id.rental_reserved_time.create({'customer_id': self.customer_id.id,
+                                                                       'date_from': self.rent_start_date,
+                                                                       'date_to': self.rent_end_date,
+                                                                       'reserved_obj': self.vehicle_id.id
+                                                                       })
+            self.write({'reserved_fleet_id': reserved_id.id})
+        else:
+            raise Warning('Sorry This vehicle is already booked by another customer')
+        self.state = "reserved"
         sequence_code = 'car.rental.sequence'
         order_date = self.create_date
         order_date = order_date[0:10]
-        self.name = self.env['ir.sequence']\
+        self.name = self.env['ir.sequence'] \
             .with_context(ir_sequence_date=order_date).next_by_code(sequence_code)
         mail_content = _('<h3>Order Confirmed!</h3><br/>Hi %s, <br/> This is to notify that your rental contract has '
                          'been confirmed. <br/><br/>'
@@ -282,21 +432,22 @@ class CarRentalContract(models.Model):
                          '<table><tr><td>Reference Number<td/><td> %s<td/><tr/>'
                          '<tr><td>Time Range <td/><td> %s to %s <td/><tr/><tr><td>Vehicle <td/><td> %s<td/><tr/>'
                          '<tr><td>Point Of Contact<td/><td> %s , %s<td/><tr/><table/>') % \
-                        (self.customer_id.name, self.name, self.rent_start_date, self.rent_end_date,
-                         self.vehicle_id.name, self.sales_person.name, self.sales_person.mobile)
+                         (self.customer_id.name, self.name, self.rent_start_date, self.rent_end_date,
+                        self.vehicle_id.name, self.sales_person.name, self.sales_person.mobile)
         main_content = {
             'subject': _('Confirmed: %s - %s') %
                         (self.name, self.vehicle_id.name),
             'author_id': self.env.user.partner_id.id,
             'body_html': mail_content,
             'email_to': self.customer_id.email,
-
         }
         self.env['mail.mail'].create(main_content).send()
 
     @api.multi
     def action_cancel(self):
         self.state = "cancel"
+        if self.reserved_fleet_id:
+            self.reserved_fleet_id.unlink()
 
     @api.multi
     def force_checking(self):
@@ -340,11 +491,20 @@ class CarRentalContract(models.Model):
             rent_date = datetime.strptime(each.rent_start_date, "%Y-%m-%d").date()
             if each.cost_frequency != 'no' and rent_date < date.today():
                 rental_days = (date.today() - rent_date).days
-                for each1 in range(1, rental_days):
-                    each.fleet_scheduler()
-                recurrent_obj = self.env.ref('fleet_rental.cron_scheduler_for_fleet')
-                if datetime.today() > datetime.strptime(recurrent_obj.nextcall, "%Y-%m-%d %H:%M:%S"):
-                    each.fleet_scheduler()
+                if each.cost_frequency == 'weekly':
+                    rental_days = int(rental_days / 7)
+                if each.cost_frequency == 'monthly':
+                    rental_days = int(rental_days / 30)
+                for each1 in range(0, rental_days + 1):
+                    if rent_date > datetime.strptime(each.rent_end_date, "%Y-%m-%d").date():
+                        break
+                    each.fleet_scheduler1(rent_date)
+                    if each.cost_frequency == 'daily':
+                        rent_date = rent_date + timedelta(days=1)
+                    if each.cost_frequency == 'weekly':
+                        rent_date = rent_date + timedelta(days=7)
+                    if each.cost_frequency == 'monthly':
+                        rent_date = rent_date + timedelta(days=30)
 
         if self.first_payment != 0:
             self.first_invoice_created = True
@@ -386,9 +546,9 @@ class CarRentalContract(models.Model):
                 '<h3>First Payment Received!</h3><br/>Hi %s, <br/> This is to notify that your first payment has '
                 'been received. <br/><br/>'
                 'Please find the details below:<br/><br/>'
-                '<table><tr><td>Contract Ref<td/><td> %s<td/><tr/>'
-                '<tr><td>Amount <td/><td> %s<td/><tr/><table/>') % \
-                (self.customer_id.name, self.name, inv_id.amount_total)
+                '<table><tr><td>Invoice Number<td/><td> %s<td/><tr/>'
+                '<tr><td>Date<td/><td> %s <td/><tr/><tr><td>Amount <td/><td> %s<td/><tr/><table/>') % \
+                           (self.customer_id.name, inv_id.number, inv_id.date_invoice, inv_id.amount_total)
             main_content = {
                 'subject': _('Payment Received: %s') % inv_id.number,
                 'author_id': self.env.user.partner_id.id,
@@ -421,13 +581,6 @@ class CarRentalContract(models.Model):
         else:
             raise Warning("Please enter advance amount to make first payment")
 
-    @api.onchange('vehicle_id')
-    def update_fields(self):
-        if self.vehicle_id:
-            obj = self.env['fleet.vehicle'].search([('name', '=', self.vehicle_id.name)])
-            self.car_brand = obj.model_id.brand_id.name
-            self.car_color = obj.color
-
 
 class FleetRentalLine(models.Model):
     _name = 'fleet.rental.line'
@@ -437,8 +590,10 @@ class FleetRentalLine(models.Model):
     account_info = fields.Char('Account')
     recurring_amount = fields.Float('Amount')
     rental_number = fields.Many2one('car.rental.contract', string='Rental Number')
-    payment_info = fields.Char(string='Payment Stage', compute='paid_info')
+    payment_info = fields.Char(compute='paid_info', string='Payment Stage', default='draft')
     invoice_number = fields.Integer(string='Invoice ID')
+    invoice_ref = fields.Many2one('account.invoice', string='Invoice Ref')
+    date_due = fields.Date(string='Due Date', related='invoice_ref.date_due')
 
     @api.multi
     @api.depends('payment_info')
@@ -454,8 +609,8 @@ class CarRentalChecklist(models.Model):
     _name = 'car.rental.checklist'
 
     name = fields.Many2one('car.tools', string="Name")
-    checklist_active = fields.Boolean(string="Active", default=False)
-    checklist_number = fields.Many2one('car.rental.contract', string="Checklist number")
+    checklist_active = fields.Boolean(string="Available", default=True)
+    checklist_number = fields.Many2one('car.rental.contract', string="Checklist Number")
     price = fields.Float(string="Price")
 
     @api.onchange('name')

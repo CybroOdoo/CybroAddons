@@ -9,17 +9,20 @@
                 <form string="car_checklist2" create="false">
                     <header>
                         <button name="action_verify" string="Create invoice" type="object"
-                                attrs="{'invisible': [('state', '!=', 'checking')]}" class="oe_highlight"/>
+                                attrs="{'invisible': ['|',('state','!=', 'checking'),('check_verify','=',True)]}" class="oe_highlight"/>
                         <field name="state" widget="statusbar" statusbar_visible="checking"/>
                     </header>
                     <sheet>
                         <group>
                             <group>
                                 <field name="name" string="Contract" readonly="1"/>
-                                <field name="attachment_ids" widget="many2many_binary" class="oe_inline" readonly="1"/>
+                                <field name="customer_id" string="Customer" readonly="1"/>
+                                <field name="vehicle_id" string="Vehicle" readonly="1"/>
+                                <field name="check_verify" invisible="1"/>
                             </group>
                             <group>
                                 <field name="damage_cost"/>
+                                <field name="attachment_ids" widget="many2many_binary" class="oe_inline" readonly="1"/>
                             </group>
                         </group>
                         <notebook>
@@ -53,7 +56,7 @@
             <field name="arch" type="xml">
                 <tree string="car_contract_result2" create="false" colors="#f20b07:state=='checking';green:state=='running'" decoration-info="state == 'draft'">
                     <field name="name" string="Contract"/>
-                    <field name="name" string="Renter"/>
+                    <field name="customer_id" string="Renter"/>
                     <field name="state"/>
                 </tree>
             </field>
@@ -64,7 +67,7 @@
             <field name="res_model">car.rental.contract</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
-            <field name="domain">[('state', 'in', ('running', 'checking')), ('sales_person','=', uid)]</field>
+            <field name="domain">[('state', 'in', ('running', 'checking'))]</field>
             <field name="view_id" ref="car_rental_contract_checklist_form_view"/>
         </record>
 
