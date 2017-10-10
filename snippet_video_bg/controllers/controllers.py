@@ -16,3 +16,13 @@ class SnippetVideoBg(http.Controller):
         request.env['ir.config_parameter'].set_param(
             'video_id', video_id) if video_id else ''
         return request.redirect('/')
+
+    @http.route('/get_video_id', type='json', methods=['GET', 'POST'], auth="public", website=True)
+    def getVideoId(self, **kw):
+        """
+        returns the saved video id.
+        :param kw:
+        :return:
+        """
+        video_id = request.env['ir.config_parameter'].get_param('video_id')
+        return {'video_id': video_id}

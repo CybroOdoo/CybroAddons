@@ -17,13 +17,13 @@
 #
 #    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
 #    GENERAL PUBLIC LICENSE (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
+#    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
 
 {
     'name': "Website Video Background",
-    'version': '10.0.1.0.0',
+    'version': '10.0.1.0.1',
     'summary': """Make Website Background as Video""",
     'description': """
        Website page background as youtube video.
@@ -34,11 +34,12 @@
     'category': 'Website',
     'depends': ['base', 'website'],
     'data': [
+        'views/views.xml',
         'views/conf_view.xml',
-        'views/assets.xml',
         'views/templates.xml',
     ],
-    'demo': [],
+    'demo': [
+    ],
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
