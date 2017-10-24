@@ -22,7 +22,7 @@
 ##############################################################################
 {
     'name': 'Sub Tasks in Project',
-    'version': '10.0.2.0.0',
+    'version': '10.0.3.0.0',
     'summary': """Implementation & Reports of Sub-Task in Project Module""",
     'description': 'This module helps you to create sub task under a task',
     'category': 'Project',

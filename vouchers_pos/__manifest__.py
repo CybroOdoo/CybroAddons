@@ -2,8 +2,8 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2017-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Nilmar Shereef(<http://www.cybrosys.com>)
+#    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Linto C T(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -17,31 +17,30 @@
 #
 #    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
 #    GENERAL PUBLIC LICENSE (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
+#    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
 {
-    'name': 'Sub Tasks in Project',
-    'version': '10.0.2.0.0',
-    'summary': """Implementation & Reports of Sub-Task in Project Module""",
-    'description': 'This module helps you to create sub task under a task',
-    'category': 'Project',
+    'name': 'Coupons & Vouchers in Point of Sale',
+    'version': '10.0.1.0',
+    'category': 'Point of Sale',
+    'summary': 'Manage Point of Sale Coupon Codes & Its Redeem Operations',
     'author': 'Cybrosys Techno Solutions',
+    'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
-    'website': "http://www.cybrosys.com",
-    'depends': ['base', 'project'],
+    'depends': ['point_of_sale'],
     'data': [
-        'security/ir.model.access.csv',
-        'views/project_view.xml',
-        'views/task_view.xml',
-        'views/sub_task.xml',
-        'views/sub_task_report.xml',
-        'views/sub_task_type_view.xml'
-    ],
+             'data/product_data.xml',
+             'views/gift_voucher.xml',
+             'views/applied_coupons.xml',
+             'views/pos_template.xml',
+             'security/ir.model.access.csv',
+            ],
+    'qweb': [
+        'static/src/xml/*.xml'],
     'images': ['static/description/banner.jpg'],
-    'license': 'LGPL-3',
-    'demo': [],
+    'license': 'AGPL-3',
     'installable': True,
-    'auto_install': False,
     'application': False,
+    'auto_install': False,
 }
