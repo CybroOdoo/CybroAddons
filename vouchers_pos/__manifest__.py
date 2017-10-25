@@ -24,7 +24,7 @@
     'name': 'Coupons & Vouchers in Point of Sale',
     'version': '10.0.1.0',
     'category': 'Point of Sale',
-    'summary': 'Manage Point of Sale Coupon Codes & Its Redeem Operations',
+    'summary': 'Manage Point of Sale Vouchers & Coupon Codes',
     'author': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
