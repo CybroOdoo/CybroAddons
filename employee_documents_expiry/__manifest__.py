@@ -23,8 +23,8 @@
 {
     'name': 'Employee Documents',
     'version': '10.0.1.0',
-    'summary': """Manages Employee's Entry & Exit Documents""",
-    'description': """This module is used to remembering the employee's entry and exit progress.""",
+    'summary': """Manages Employee Documents""",
+    'description': """Manages Employee Related Documents with Expiry Notifications.""",
     'category': 'Human Resources',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
