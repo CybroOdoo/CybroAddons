@@ -23,7 +23,7 @@
 
 {
     'name': 'Tax Invoice Report',
-    'version': '10.0.1.0',
+    'version': '10.0.2.0',
     'summary': 'Tax Amount to Accounting Business Intelligence Report',
     'description': 'Total taxable amount to the accounting report',
     'category': 'Accounting',
@@ -33,7 +33,7 @@
     'depends': [
                 'base', 'account',
                 ],
-    'data': [],
+    'data': ['tax_view.xml'],
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
