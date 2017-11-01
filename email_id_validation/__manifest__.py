@@ -2,8 +2,8 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2017-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Cybrosys Technologies(<http://www.cybrosys.com>)
+#    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Saritha Sahadevan(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -17,25 +17,23 @@
 #
 #    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
 #    GENERAL PUBLIC LICENSE (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
+#    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
 {
-    'name': 'Parent Team & Targets',
-    'version': '10.0.2.0.0',
-    'category': 'Sales',
-    'summary': 'Sales Team Targets and Parent Teams',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'website': 'http://www.cybrosys.com',
-    'depends': ['crm', 'sale'],
+    'name': "Validate E-mail ID",
+    'version': '10.0.1.0.0',
+    'summary': """Check Whether A Given E-mail ID Is Valid Or Not""",
+    'description': """Check Whether A Given E-mail ID Is Valid Or Not In Partner And Employee Form""",
+    'author': "Cybrosys Techno Solutions",
+    'website': "https://www.cybrosys.com",
+    'maintainer': 'Cybrosys Techno Solutions',
+    'category': 'Extra Tools',
+    'depends': ['base', 'hr', 'sale'],
     'images': ['static/description/banner.jpg'],
-    'data': [
-        'views/parent_team.xml',
-        'views/sales_man_target.xml',
-        'views/sales_team_target.xml',
-        'security/ir.model.access.csv',
-    ],
+    'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
+    'external_dependencies': {'python': ['validate_email', 'pyDNS']},
+    'application': False,
 }
