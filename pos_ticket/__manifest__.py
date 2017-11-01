@@ -28,7 +28,7 @@
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
-    'category': 'Point Of Sale',
+    'category': 'Point of Sale',
     'depends': ['base', 'point_of_sale'],
     'license': 'AGPL-3',
     'data': [],
