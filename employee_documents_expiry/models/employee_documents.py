@@ -20,8 +20,9 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from datetime import datetime, timedelta
+from datetime import datetime,date, timedelta
 from odoo import models, fields, api, _
+from odoo.exceptions import Warning
 
 
 class HrEmployeeDocument(models.Model):
@@ -45,6 +46,13 @@ class HrEmployeeDocument(models.Model):
                         'email_to': i.employee_ref.work_email,
                     }
                     self.env['mail.mail'].create(main_content).send()
+
+    @api.constrains('expiry_date')
+    def check_expr_date(self):
+        for each in self:
+            exp_date = fields.Date.from_string(each.expiry_date)
+            if exp_date < date.today():
+                raise Warning('Your Document Is Expired.')
 
     name = fields.Char(string='Document Number', required=True, copy=False)
     document_name = fields.Many2one('employee.checklist', string='Document', required=True)

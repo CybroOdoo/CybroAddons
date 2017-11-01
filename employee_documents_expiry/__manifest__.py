@@ -22,10 +22,10 @@
 ##############################################################################
 {
     'name': 'Employee Documents',
-    'version': '10.0.1.0',
-    'summary': """Manages Employee Documents With Expiry Notifications""",
+    'version': '10.0.2.0',
+    'summary': """Manages Employee Documents With Expiry Notifications.""",
     'description': """Manages Employee Related Documents with Expiry Notifications.""",
-    'category': 'Human Resources',
+    'category': 'Generic Modules/Human Resources',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
