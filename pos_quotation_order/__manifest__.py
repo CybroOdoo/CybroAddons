@@ -22,7 +22,7 @@
 #############################################################################
 {
     'name': "Pos Quotation Orders",
-    'version': '10.0.1.0.0',
+    'version': '10.0.2.0.0',
     'summary': """Create & Process Quotation from POS""",
     'description': """This module allows to create and process quotation orders from POS.""",
     'author': "Cybrosys Techno Solutions",

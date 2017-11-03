@@ -133,7 +133,7 @@ var QuotationListScreenWidget = ScreenWidget.extend({
             this.chrome.widget.keyboard.connect(this.$('.searchbox input'));
         }
 
-        this.$('.searchbox input').on('keypress',function(event){
+        this.$('.searchbox input').on('keyup',function(event){
             clearTimeout(search_timeout);
             var query = this.value;
             search_timeout = setTimeout(function(){
@@ -182,6 +182,39 @@ var QuotationListScreenWidget = ScreenWidget.extend({
             this.gui.show_screen('products');
         }
 
+    },
+
+    perform_search: function(query, associate_result){
+        var quotations;
+        if(query){
+            quotations = this.search_quotation(query);
+            this.render_list(quotations);
+        }else{
+            quotations = this.pos.quotations;
+            this.render_list(quotations);
+        }
+    },
+    clear_search: function(){
+        var quotations = this.pos.quotations;
+        this.render_list(quotations);
+        this.$('.searchbox input')[0].value = '';
+        this.$('.searchbox input').focus();
+    },
+
+    search_quotation: function(query){
+        try {
+            var re = RegExp(query);
+        }catch(e){
+            return [];
+        }
+        var results = [];
+        for (var quot_id in this.pos.quotations){
+            var r = re.exec(this.pos.quotations[quot_id]['name']);
+            if(r){
+            results.push(this.pos.quotations[quot_id]);
+            }
+        }
+        return results;
     },
 });
 
