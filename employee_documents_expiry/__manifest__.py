@@ -22,7 +22,7 @@
 ##############################################################################
 {
     'name': 'Employee Documents',
-    'version': '10.0.2.0',
+    'version': '10.0.2.1',
     'summary': """Manages Employee Documents With Expiry Notifications.""",
     'description': """Manages Employee Related Documents with Expiry Notifications.""",
     'category': 'Generic Modules/Human Resources',
