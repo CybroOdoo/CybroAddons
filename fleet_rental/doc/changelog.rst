@@ -41,3 +41,7 @@ Changelog
 - Company Image added to "Fleet Rental Module Logo".
 
 - Added xml data for vehicle stage.
+
+`10.0.3.1.0`
+------------
+- Colour Widget Dependecy Removed.
