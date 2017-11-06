@@ -21,4 +21,6 @@ Changelog
 - Colour picker widget added.
 
 - XML data modified for vehicle stage.
-
+`9.0.2.1.0`
+-----------
+- Colour picker widget removed.
