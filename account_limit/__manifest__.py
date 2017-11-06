@@ -24,8 +24,8 @@
 
 {
     'name': 'Account Credit Limit',
-    'version': '10.0.1.0',
-    'summary': """Generate warning message when credit limit of an account is exceed.""",
+    'version': '10.0.2.0',
+    'summary': """Generate Warning Message When Credit Limit of an Account is Exceed.""",
     'description': """Account credit limit is a handy plugin for Odoo Accounting module to set a Credit limit
     for each Account. The module will bring new fields total Credit, Debit and Balance in ‘Accounts tree view’ and
     ‘Account form view’. The module also produce a warning message while making journal entries which will exceed

@@ -28,7 +28,6 @@ from odoo.exceptions import Warning
 class AccountAccount(models.Model):
     _inherit = 'account.account'
 
-    @api.depends('credit', 'debit', 'balance')
     @api.multi
     def get_credit_debit_balance(self):
         print "get_credit_debit_balance", self
