@@ -22,11 +22,12 @@
 ##############################################################################
 {
     'name': "User Log Details",
-    'version': '10.0.1.0.0',
-    'summary': """Login User Details""",
+    'version': '10.0.2.0.0',
+    'summary': """Login User Details & IP Address""",
     'description': """This module records login information of user""",
     'author': "Cybrosys Techno Solutions ",
     'company': "Cybrosys Techno Solutions ",
+    'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'category': 'Tools',
     'depends': ['base'],

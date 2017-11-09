@@ -49,6 +49,6 @@ class LoginUpdate(models.Model):
     _name = 'login.detail'
 
     name = fields.Char(string="User Name")
-    date_time = fields.Datetime(string="Login Date And Time", default=datetime.now())
+    date_time = fields.Datetime(string="Login Date And Time", default=lambda self: fields.datetime.now())
     ip_address = fields.Char(string="IP Address")
 
