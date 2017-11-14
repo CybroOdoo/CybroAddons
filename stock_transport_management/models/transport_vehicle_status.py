@@ -29,7 +29,7 @@ class VehicleStatus(models.Model):
 
     name = fields.Char(string="Vehicle Name", required=True)
     transport_date = fields.Date(string="Transportation Date")
-    no_parcels = fields.Char(string="No Of Parcels")
+    no_parcels = fields.Char(string="No of Parcels")
     sale_order = fields.Char(string='Order Reference')
     delivery_order = fields.Char(string="Delivery Order")
     state = fields.Selection([
@@ -66,6 +66,3 @@ class VehicleStatus(models.Model):
 
     def action_reshedule(self):
         self.write({'state': 'draft'})
-
-
-

@@ -21,7 +21,7 @@
 #
 ##############################################################################
 
-from odoo import models, fields, api
+from odoo import models, fields
 
 
 class VehicleCreation(models.Model):
@@ -38,10 +38,3 @@ class VehicleCreation(models.Model):
     state_id = fields.Many2one('res.country.state', string='State')
     country_id = fields.Many2one('res.country', string='Country')
     active_available = fields.Boolean(string="Active", default=True)
-
-    @api.one
-    def complete_name_compute(self):
-        self.name = self.ref_name
-        if self.licence_plate:
-            self.name = str(self.licence_plate) + ' / ' + str(self.ref_name)
-

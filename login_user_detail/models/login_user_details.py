@@ -22,7 +22,6 @@
 ##############################################################################
 import logging
 from itertools import chain
-from datetime import datetime
 from odoo.http import request
 from odoo import models, fields, api
 

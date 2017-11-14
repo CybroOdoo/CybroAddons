@@ -43,5 +43,3 @@ class TransportReport(models.TransientModel):
                 'datas': datas,
                 'name': 'Transportation Report'
                 }
-
-

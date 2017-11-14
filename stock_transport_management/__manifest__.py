@@ -7,9 +7,10 @@
     'author': "Cybrosys Techno Solutions",
     'company': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'category': 'Tools',
+    'category': 'Warehouse',
     'depends': ['base', 'sale', 'stock', 'report_xlsx'],
     'data': [
+        'security/ir.model.access.csv',
         'views/transport_vehicle_view.xml',
         'views/transport_vehicle_status_view.xml',
         'views/transportation_sale_order_view.xml',

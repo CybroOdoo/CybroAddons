@@ -23,4 +23,4 @@
 
 
 from . import models
-import wizards,report
+from . import wizards, report

@@ -22,7 +22,7 @@
 ##############################################################################
 {
     'name': "User Log Details",
-    'version': '10.0.2.0.0',
+    'version': '10.0.3.0.0',
     'summary': """Login User Details & IP Address""",
     'description': """This module records login information of user""",
     'author': "Cybrosys Techno Solutions ",
@@ -32,8 +32,9 @@
     'category': 'Tools',
     'depends': ['base'],
     'license': 'AGPL-3',
-    'data': ['views/login_user_views.xml'],
-    'demo': [],
+    'data': [
+        'security/ir.model.access.csv',
+        'views/login_user_views.xml'],
     'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,

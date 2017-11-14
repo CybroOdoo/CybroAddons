@@ -38,7 +38,7 @@ class VehicleSaleOrder(models.Model):
         order = self.env['vehicle.status'].search([('sale_order', '=', self.sale_id.name)])
         if not order and self.transportation_name:
             vals = {'name': self.transportation_name,
-                    'no_parcels':self.no_parcels,
+                    'no_parcels': self.no_parcels,
                     'sale_order': self.sale_id.name,
                     'delivery_order': self.name,
                     'transport_date': self.min_date,
@@ -56,6 +56,3 @@ class VehicleSaleOrder(models.Model):
     def fetch_details(self):
         order = self.env['vehicle.status'].search([('sale_order', '=', self.sale_id.name)])
         self.transportation_details = order
-
-
-

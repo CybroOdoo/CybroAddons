@@ -29,4 +29,3 @@ class VehicleSaleOrder(models.Model):
 
     transportation_name = fields.Many2one('sale.vehicle', string="Transportation Via",
                                           domain=[('active_available', '=', True)])
-
