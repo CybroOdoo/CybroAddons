@@ -25,7 +25,7 @@
     'version': '10.0.1.0.0',
     'summary': 'This module automatically creates employee while creating user',
     'description': 'This module helps you to create employees automatically while creating users',
-    'category': 'Human Resources',
+    'category': 'Generic Modules/Human Resources',
     'author': 'Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
     'company': 'Cybrosys Techno Solutions',
