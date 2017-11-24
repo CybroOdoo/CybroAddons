@@ -190,7 +190,7 @@ class AccountRoundOff(models.Model):
                         'price': total + self.round_off_value,
                         'account_id': inv.account_id.id,
                         'date_maturity': inv.date_due,
-                        'amount_currency': diff_currency and amount_currency,
+                        'amount_currency': diff_currency and total_currency,
                         'currency_id': diff_currency and inv.currency_id.id,
                         'invoice_id': inv.id
                     })
@@ -202,7 +202,7 @@ class AccountRoundOff(models.Model):
                         'price': -self.round_off_value,
                         'account_id': acc_id,
                         'date_maturity': inv.date_due,
-                        'amount_currency': diff_currency and amount_currency,
+                        'amount_currency': diff_currency and total_currency,
                         'currency_id': diff_currency and inv.currency_id.id,
                         'invoice_id': inv.id
                     })

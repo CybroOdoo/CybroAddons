@@ -23,7 +23,7 @@
 
 {
     'name': 'Round Off Invoice Amount',
-    'version': '10.0.1.0.0',
+    'version': '10.0.2.0.0',
     'summary': 'Allows Rounding on Invoice Amount',
     'description': 'Invoice amount is rounded to their nearest digits excluding the decimal part',
     'category': 'Accounting',
