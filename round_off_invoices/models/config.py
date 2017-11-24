@@ -49,7 +49,8 @@ class AccountRoundOff(models.Model):
 
     def get_round_active(self):
         ir_values = self.env['ir.values']
-        self.round_active = ir_values.get_default('account.config.settings', 'round_off')
+        for i in self:
+            i.round_active = ir_values.get_default('account.config.settings', 'round_off')
 
     @api.one
     @api.depends('invoice_line_ids.price_subtotal', 'tax_line_ids.amount', 'currency_id', 'company_id',
