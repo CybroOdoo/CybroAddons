@@ -22,14 +22,16 @@
 import pytz
 import sys
 import datetime
-from zklib import zklib
-from zklib.zkconst import *
+try:
+    from zklib import zklib
+    from zklib.zkconst import *
+    sys.path.append("zklib")
+except ImportError:
+    pass
 from struct import unpack
 from odoo import api, fields, models
 from odoo import _
 from odoo.exceptions import UserError, ValidationError
-
-sys.path.append("zklib")
 
 
 class HrAttendance(models.Model):

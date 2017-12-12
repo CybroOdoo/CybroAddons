@@ -36,6 +36,9 @@
     ],
     'images': ['static/description/banner.gif'],
     'license': 'AGPL-3',
+    'external_dependencies': {
+        'python': ['zklib']
+    },
     'demo': [],
     'installable': True,
     'auto_install': False,
