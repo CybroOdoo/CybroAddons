@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Aswani PC(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
@@ -20,23 +20,15 @@
 #
 ###################################################################################
 {
-    'name': "Pos Quick Payment",
+    'name': "Reduced Accounting Entries In POS",
     'version': '10.0.1.0.0',
-    'summary': """Quick Payment Buttons In POS""",
-    'description': """
-        This module add extra quick payment buttons in pos payment screen.
-    """,
+    'summary': """Single Transaction Entry In Pos""",
+    'description': """This module allows to record pos transaction as a single transaction""",
     'author': "Cybrosys Techno Solutions",
-    'maintainer': 'Cybrosys Techno Solutions',
     'company': "Cybrosys Techno Solutions",
     'website': "https://www.cybrosys.com",
-    'category': 'Point Of Sale',
-    'depends': ['point_of_sale'],
-    'data': [
-        'views/views.xml',
-        'views/templates.xml',
-    ],
-    'qweb': ['static/src/xml/pos_quick_payment.xml'],
+    'category': 'Point of Sale',
+    'depends': ['base', 'point_of_sale'],
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
