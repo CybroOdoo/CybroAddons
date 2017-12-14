@@ -382,7 +382,7 @@ odoo.define("vouchers_pos.coupons", function (require) {
         get_total_without_tax: function() {
             var res = OrderSuper.prototype.get_total_without_tax.call(this);
             var final_res = round_pr(this.orderlines.reduce((function(sum, orderLine) {
-                return sum + (orderLine.get_unit_price() * orderLine.get_quantity());
+                return sum + (orderLine.get_unit_price() * orderLine.get_quantity() * (1.0 - (orderLine.get_discount() / 100.0)));
             }), 0), this.pos.currency.rounding);
             return final_res;
         },
