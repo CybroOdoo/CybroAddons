@@ -23,7 +23,7 @@
 {
     'name': 'Beauty Spa Management',
     'summary': """Beauty Parlour Management with Online Booking System""",
-    'version': '10.0.2.0.0',
+    'version': '11.0.0.0.0',
     'author': 'Cybrosys Techno Solutions',
     'website': "http://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
