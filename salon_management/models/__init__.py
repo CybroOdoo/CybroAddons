@@ -20,7 +20,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import salon_management
-import salon_booking
-import salon_config
+from . import salon_management
+from . import salon_booking
+from . import salon_config
 
