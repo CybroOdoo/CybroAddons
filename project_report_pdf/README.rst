@@ -12,7 +12,7 @@ Installation
 ============
 To install this module, you need also the **report_xlsx**
 module located in:
-https://github.com/OCA/reporting-engine/tree/9.0/report_xlsx
+https://apps.odoo.com/apps/modules/10.0/report_xlsx/
 
 Credits
 =======
