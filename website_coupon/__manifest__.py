@@ -32,6 +32,7 @@
     'depends': ['sale', 'website_sale'],
     'website': 'http://www.cybrosys.com',
     'data': [
+        'security/ir.model.access.csv',
         'data/product_data.xml',
         'views/gift_voucher.xml',
         'views/applied_coupons.xml',
