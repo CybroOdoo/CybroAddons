@@ -33,6 +33,7 @@
     'depends': ['sale'],
     'data': ['views/import_product_image_view.xml'],
     'license': 'AGPL-3',
+    'images': ['static/description/banner.jpg'],
     'application': False,
     'installable': True,
     'auto_install': False,
