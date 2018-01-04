@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from odoo import http, tools, _
-from odoo.http import request
 from datetime import datetime
 from dateutil import parser
+from odoo import http, tools, _
+from odoo.http import request
 
 
 class WebsiteCoupon(http.Controller):
@@ -108,32 +108,32 @@ class WebsiteCoupon(http.Controller):
                         if type == 'fixed':
                             # coupon type is 'fixed'--------------------------------------
                             if voucher_val < order.amount_total:
-                                res = coupon_product.product_tmpl_id.write({'list_price': -voucher_val})
+                                coupon_product.product_tmpl_id.write({'list_price': -voucher_val})
+
                             else:
                                 return request.redirect("/shop/cart?coupon_not_available=3")
                         elif type == 'percentage':
                             # coupon type is percentage -------------------------------------
+                            amount_final = 0
                             if voucher_type == 'product':
                                 for line in order.order_line:
                                     if line.product_id.name == categ_id.name:
                                         amount_final = (voucher_val / 100) * line.price_total
                                         break
                             elif voucher_type == 'category':
-                                amount_final = 0
                                 for line in order.order_line:
                                     if line.product_id.categ_id.name == product_id.name:
                                         amount_final += (voucher_val / 100) * line.price_total
                             elif voucher_type == 'all':
                                 amount_final = (voucher_val/100) * order.amount_total
-                        res = coupon_product.product_tmpl_id.write({'list_price': -amount_final})
-                        value = order._cart_update(product_id=coupon_product.id, set_qty=1, add_qty=1)
-
+                            coupon_product.product_tmpl_id.write({'list_price': -amount_final})
+                        order._cart_update(product_id=coupon_product.id, set_qty=1, add_qty=1)
                         # updating coupon balance--------------
                         total = coupon.total_avail - 1
                         coupon.write({'total_avail': total})
                         # creating a record for this partner, i.e he is used this coupon once-----------
                         if not applied_coupons:
-                            res = curr_user.partner_id.write({'applied_coupon': [(0, 0, {'partner_id': curr_user.partner_id.id,
+                            curr_user.partner_id.write({'applied_coupon': [(0, 0, {'partner_id': curr_user.partner_id.id,
                                                                                          'coupon': coupon.code,
                                                                                          'number': 1})]})
                         else:

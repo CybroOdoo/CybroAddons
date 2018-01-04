@@ -64,7 +64,6 @@ class GiftCoupon(models.Model):
     partner_id = fields.Many2one('res.partner', string="Limit to a Single Partner")
     limit = fields.Integer(string="Total Available For Each User", default=1)
     total_avail = fields.Integer(string="Total Available", default=1)
-
     voucher_val = fields.Float(string="Voucher Value")
     type = fields.Selection([
         ('fixed', 'Fixed Amount'),

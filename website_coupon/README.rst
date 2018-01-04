@@ -21,7 +21,8 @@ Additional Features (version: 10.0.2)
 Installation
 ============
 
-Just select it from available modules to install it, there is no need to extra installations.
+- www.odoo.com/documentation/10.0/setup/install.html
+- Install our custom addon
 
 Configuration
 =============
@@ -30,6 +31,27 @@ After installing the module, go to sales and create vouchers from the vouchers m
 generate the coupons related to this voucher. Now go to website, go to cart and under the customize menu, enable the
 voucher code option.
 
+License
+=======
+GNU LESSER GENERAL PUBLIC LICENSE, Version 3 (LGPLv3)
+(http://www.gnu.org/licenses/agpl.html)
+
+Bug Tracker
+===========
+Bugs are tracked on GitHub Issues. In case of trouble, please check there if your issue has already been reported.
+
 Credits
 =======
+* Cybrosys Techno Solutions<https://www.cybrosys.com>
+
+Author
+------
+
 Developer: Linto CT @ cybrosys, linto@cybrosys.in
+
+Maintainer
+----------
+
+This module is maintained by Cybrosys Technologies.
+
+For support and more information, please visit https://www.cybrosys.com.

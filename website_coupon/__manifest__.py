@@ -18,26 +18,29 @@
 #
 #    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
 #    GENERAL PUBLIC LICENSE (LGPL v3) along with this program.
-#    If not, see <https://www.gnu.org/licenses/>.
+#    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
 {
     'name': 'Website Coupon Code',
-    'version': '10.0.2.0',
-    'category': 'Website',
-    'sequence': 56,
+    'version': '10.0.2.0.0',
     'summary': 'Manage Website Coupon Codes for Products/Categories/All Products & Its Redeem Operations',
+    'category': 'Website',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
     'depends': ['sale', 'website_sale'],
-    'website': 'http://www.cybrosys.com',
+    'website': 'https://www.cybrosys.com',
     'data': [
         'data/product_data.xml',
         'views/gift_voucher.xml',
         'views/applied_coupons.xml',
         'views/templates.xml',
+        'security/ir.model.access.csv'
     ],
     'images': ['static/description/banner.jpg'],
+    'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
+    'application': False,
 }
