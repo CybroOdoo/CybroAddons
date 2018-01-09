@@ -1,4 +1,4 @@
-odoo.define('pos_return',function(require){
+odoo.define('product_return_pos',function(require){
 "use strict";
 
 var gui = require('point_of_sale.gui');
