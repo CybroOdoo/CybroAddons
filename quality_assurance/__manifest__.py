@@ -31,7 +31,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://cybrosys.com/",
-    'category': '',
+    'category': 'Inventory',
     'depends': ['product', 'stock', 'purchase'],
     'data': [
         'data/data.xml',
