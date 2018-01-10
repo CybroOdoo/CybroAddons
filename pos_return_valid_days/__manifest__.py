@@ -29,7 +29,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['point_of_sale', 'pos_return'],
+    'depends': ['point_of_sale', 'product_return_pos'],
     'data': [
         'views/pos_valid_day_add.xml',
         'views/pos_template_view.xml',
