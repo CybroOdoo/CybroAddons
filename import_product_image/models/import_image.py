@@ -61,11 +61,10 @@ class ProductImageImportWizard(models.TransientModel):
                         'image_medium': image_base64,
                         'name': product,
                     }
-                    if self.pdt_operation == '1':
-                        if not product_id:
-                            product_obj.create(vals)
-                        else:
-                            product_id.write(vals)
+                    if self.pdt_operation == '1' and not product_id:
+                        product_obj.create(vals)
+                    elif self.pdt_operation == '1' and product_id:
+                        product_id.write(vals)
                     elif self.pdt_operation == '2' and product_id:
                         product_id.write(vals)
                     elif not product_id and self.pdt_operation == '2':
@@ -85,15 +84,15 @@ class ProductImageImportWizard(models.TransientModel):
                             'image_medium': image_base64,
                             'name': product,
                         }
-                        if self.pdt_operation == '1':
-                            if not product_id:
-                                product_obj.create(vals)
-                            else:
-                                product_id.write(vals)
+                        if self.pdt_operation == '1' and not product_id:
+                            product_obj.create(vals)
+                        elif self.pdt_operation == '1' and product_id:
+                            product_id.write(vals)
                         elif self.pdt_operation == '2' and product_id:
                             product_id.write(vals)
                         elif not product_id and self.pdt_operation == '2':
                             raise Warning("Could not find the product '%s'" % product)
                 except IOError:
-                    raise Warning("Could not find the image '%s' - please make sure it is accessible to this script" % product)
+                    raise Warning("Could not find the image '%s' - please make sure it is accessible to this script" %
+                                  product)
 
