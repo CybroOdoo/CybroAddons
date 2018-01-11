@@ -29,7 +29,6 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'category': 'Sales',
-    'version': '10.0.1.0.0',
     'depends': ['sale'],
     'data': ['views/import_product_image_view.xml'],
     'license': 'AGPL-3',
