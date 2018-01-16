@@ -7,7 +7,7 @@ This module allows pos user to lock pos screen.
 Installation
 ============
 
-- www.odoo.com/documentation/11.0/setup/install.html
+- www.odoo.com/documentation/10.0/setup/install.html
 - Install our custom addon
 
 
