@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import time
-from odoo.tools import float_is_zero
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from odoo import  fields, models, _
+
+from odoo import fields, models, _
 from odoo.exceptions import UserError
+from odoo.tools import float_is_zero
 
 
 class FilterAgedPartner(models.TransientModel):
@@ -13,7 +14,6 @@ class FilterAgedPartner(models.TransientModel):
     customer = fields.Many2many('res.partner', 'name', string='Customers')
 
     def _print_report(self, data):
-        # data['form']=super(FilterAgedPartner, self)._print_report(data)
         res = {}
         data = self.pre_print_report(data)
         data['form'].update(self.read(['period_length'])[0])
@@ -36,7 +36,6 @@ class FilterAgedPartner(models.TransientModel):
             start = stop - relativedelta(days=1)
         data['form'].update(res)
         data['form'].update({'customer': self.customer.ids})
-        # data=super(FilterAgedPartner, self)._print_report(data)
         return self.env['report'].with_context(landscape=True).get_action(self, 'account.report_agedpartnerbalance',
                                                                            data=data)
 
@@ -86,15 +85,10 @@ class FilterAgedCustomer(models .AbstractModel):
             ORDER BY UPPER(res_partner.name)'''
         cr.execute(query, arg_list)
         partners = cr.dictfetchall()
-        print 'filtered', partners
-        #-------------filter--------------#
         if customer:
             for ptnr in partners[:]:
-                print customer
-                print 'm', ptnr['partner_id']
                 if ptnr['partner_id'] not in customer:
                     partners.remove(ptnr)
-        #---------------------------------#
 
         for i in range(7):
             total.append(0)
@@ -235,7 +229,6 @@ class FilterAgedCustomer(models .AbstractModel):
         return res, total, lines
 
     def render_html(self, docids, data=None):
-        print 'mymodule'
         if not data.get('form') or not self.env.context.get('active_model') or not self.env.context.get('active_id'):
             raise UserError(_("Form content is missing, this report cannot be printed."))
 
