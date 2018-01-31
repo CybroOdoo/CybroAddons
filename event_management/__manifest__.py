@@ -24,7 +24,7 @@
     'version': '10.0.1.0.0',
     'summary': """Core Module for Managing Different Types Of Events.""",
     'description': """Core Module for Managing Different Types Of Events""",
-    "category": "Specific Industry Applications",
+    "category": "Industry",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

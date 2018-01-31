@@ -24,7 +24,7 @@
     'version': '10.0.1.0.0',
     'summary': """Catering Service for Event Management Module.""",
     'description': """Catering Service for Event Management Module.""",
-    "category": "Specific Industry Applications",
+    "category": "Industry",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
