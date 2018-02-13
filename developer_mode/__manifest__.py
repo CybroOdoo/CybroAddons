@@ -23,7 +23,7 @@
 {
     'name': "Automatic Developer Mode",
     'summary': """Automatically Activate Developer Mode & Running DB Name on Left Top""",
-    'version': '10.0.3.0.0',
+    'version': '10.0.4.0.0',
     'author': 'Cybrosys Techno Solutions',
     'website': "http://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
