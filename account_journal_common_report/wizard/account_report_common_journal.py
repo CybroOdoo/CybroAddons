@@ -12,4 +12,4 @@ class AccountJournalReport(models.TransientModel):
     def _print_report(self, data):
         data = self.pre_print_report(data)
         data['form'].update({'sort_selection': self.sort_selection})
-        return self.env.ref('account_journal_report.action_report_common_journal').with_context(landscape=True).report_action(self, data=data)
+        return self.env.ref('account_journal_common_report.action_report_common_journal').with_context(landscape=True).report_action(self, data=data)
