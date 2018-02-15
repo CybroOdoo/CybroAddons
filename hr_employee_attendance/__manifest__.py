@@ -33,6 +33,7 @@
     'data': [
         'data/employee_attendance.xml',
     ],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'application': False,
