@@ -121,6 +121,7 @@ class HrPayslip(models.Model):
                                     (self.employee_id, from_date, to_date, code))
                 res = self.env.cr.fetchone()
                 return res and res[0] or 0.0
-            timesheet_hours = self.timesheet_hours
-            total_hours = self.total_hours
+            for record in self:
+                timesheet_hours = record.timesheet_hours
+                total_hours = record.total_hours
         return super(HrPayslip, self).get_payslip_lines(contract_ids, payslip_id)
