@@ -66,7 +66,7 @@ odoo.define("pos_pricing.pricelist", function (require) {
             var self = this;
             var pricelist_id = get_pricelist_id(self.pos.pricelists, $("#pos_pricelist").val());
             OrderSuper.prototype.add_product.call(this, product, options);
-            if (!pricelist_id){
+            if (pricelist_id){
                 if (this.pos.get_client()){
                     self.apply_pricelist(this.pos.get_client(), pricelist_id);
                 }
