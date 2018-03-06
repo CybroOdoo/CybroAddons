@@ -2,7 +2,7 @@
 ###################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2018-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Avinash Nk(<avinash@cybrosys.in>)
 #
 #    This program is free software: you can modify
@@ -19,4 +19,4 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###################################################################################
-from . import models
+from . import event_mail

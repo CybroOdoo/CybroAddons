@@ -2,7 +2,7 @@
 ###################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2018-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Avinash Nk(<avinash@cybrosys.in>)
 #
 #    This program is free software: you can modify
@@ -33,7 +33,7 @@ class EventManagementMail(models.Model):
                     message loaded by default
                 """
         self.ensure_one()
-        template = self.env.ref('event_mail.email_template_event', False)
+        template = self.env.ref('event_management_mail.email_template_event', False)
         compose_form = self.env.ref('mail.email_compose_message_wizard_form', False)
         ctx = dict(
             default_model='event.management',
@@ -42,7 +42,7 @@ class EventManagementMail(models.Model):
             default_template_id=template and template.id or False,
             default_composition_mode='comment',
             mark_invoice_as_sent=True,
-            custom_layout="event_mail.mail_template_event_confirmation"
+            custom_layout="event_management_mail.mail_template_event_confirmation"
         )
         return {
             'name': _('Compose Email'),

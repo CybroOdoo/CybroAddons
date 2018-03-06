@@ -2,7 +2,7 @@
 ###################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2018-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Avinash Nk(<avinash@cybrosys.in>)
 #
 #    This program is free software: you can modify
@@ -19,4 +19,24 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###################################################################################
-from . import event_mail
+{
+    'name': 'Event Mail',
+    'version': '10.0.1.0.0',
+    'summary': """Send Email Notification to the Customer at the Time of Event Order Confirmation.""",
+    'description': """Send Email Notification to the Customer at the Time of Event Order Confirmation.""",
+    "category": "Tools",
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
+    'website': "https://www.cybrosys.com",
+    'depends': ['event_management'],
+    'data': ['data/event_mail_template.xml',
+             'views/event_mail.xml',
+             ],
+    'demo': [
+    ],
+    'images': ['static/description/banner.jpg'],
+    'license': 'AGPL-3',
+    'installable': True,
+    'application': False,
+}
