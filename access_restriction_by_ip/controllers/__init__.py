@@ -20,5 +20,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import main
+from . import main
 

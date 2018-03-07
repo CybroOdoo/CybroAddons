@@ -20,6 +20,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import allowed_ips
+from . import allowed_ips
 
 
