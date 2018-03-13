@@ -28,7 +28,7 @@ class BinaryCustom(Binary):
         '/logo',
         '/logo.png',
     ], type='http', auth="none")
-    def company_logo(self, dbname=None, **kw):
+	def company_logo(self, dbname=None, **kw):
 		imgname = 'logo'
 		imgext = '.png'
 		company_logo = request.env['website'].sudo().search([])[0].company_logo
