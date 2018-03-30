@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="lawsuit_seq" model="ir.sequence">
+            <field name="name">Lawsuit Code</field>
+            <field name="code">hr.lawsuit</field>
+            <field name="prefix">LC</field>
+            <field eval="4" name="padding"/>
+        </record>
+
+        <record model="ir.cron" id="lawsuit_data_reminder">
+            <field name="name">Legal Next Call Notification</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="model" eval="'hr.lawsuit'"/>
+            <field name="function" eval="'mail_reminder'"/>
+            <field name="args" eval="'()'" />
+        </record>
+
+        <record model='ir.ui.view' id='wizard_lawsuit_followup'>
+            <field name="name">wizard.lawsuit.form</field>
+            <field name="model">wizard.lawsuit</field>
+            <field name="arch" type="xml">
+                <form string="Follow Next Hearing Date">
+                    <group>
+                        <field name="is_next_action" />
+                        <field name="next_date" string="Next Hearing Date" attrs="{'invisible': [('is_next_action','=',True)],
+                                                        'required': [('is_next_action','=',False)]}"/>
+                        <field name="next_action_date" string="Next Action Date" attrs="{'invisible': [('is_next_action','=',False)],
+                                                        'required': [('is_next_action','=',True)]}"/>
+                        <field name="next_action" attrs="{'invisible': [('is_next_action','=',False)],
+                                                        'required': [('is_next_action','=',True)]}"/>
+                        <field name="case_details"/>
+                        <field name="attachment_id" widget="many2many_binary" class="oe_inline"/>
+                    </group>
+                    <footer>
+                        <button name="follow_up" string="Follow Up" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model='ir.actions.act_window' id='wizard_lawsuit_act'>
+            <field name="name">Follow Next Hearing Date</field>
+            <field name="res_model">wizard.lawsuit</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="wizard_lawsuit_followup"/>
+            <field name="target">new</field>
+        </record>
+
+        <record model='ir.ui.view' id='hr_lawsuit_form_view'>
+            <field name="name">hr.lawsuit.form</field>
+            <field name="model">hr.lawsuit</field>
+            <field name="arch" type="xml">
+                <form string="Legal Actions">
+                    <header>
+                        <button name="process" string="Process" type="object" states="draft"/>
+                        <button name="won" string="Won" type="object" states="running"/>
+                        <button name="loss" string="Loss" type="object" states="running"/>
+                        <button name="cancel" string="Cancel" type="object" states="running,draft"/>
+                        <button name="%(wizard_lawsuit_act)d" string="Follow Up" type="action" states="running"
+                        context="{'lawsuit_id':id}"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,running,won"/>
+                    </header>
+                    <sheet>
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                        <group>
+                            <group>
+                                <field name="party1"/>
+                                <field name="party2_name" invisible="1"/>
+                                <field name="party2"/>
+                                <field name="employee_id" attrs="{'invisible': [('party2','!=','employee')],
+                                                                  'required': [('party2','=','employee')]}"/>
+                                <field name="customer_id" domain="[('customer','=',True)]"
+                                                          attrs="{'invisible': [('party2','!=','customer')],
+                                                                  'required': [('party2','=','customer')]}"/>
+                                <field name="supplier_id" domain="[('supplier','=',True)]"
+                                                          attrs="{'invisible': [('party2','!=','supplier')],
+                                                                  'required': [('party2','=','supplier')]}"/>
+                                <field name="court_name"/>
+                                <field name="judge"/>
+                                <field name="lawyer"/>
+                                <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
+                            </group>
+                            <group>
+                                <field name="requested_date"/>
+                                <field name="next_date"/>
+                                <field name="attachment_id" widget="many2many_binary" class="oe_inline"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="pending_invoice" string="Pending Invoices">
+                                <field name="pending_invoices">
+                                    <tree>
+                                        <field name="law_obj" invisible="1"/>
+                                        <field name="invoice_ref"/>
+                                        <field name="invoice_date"/>
+                                        <field name="due_date"/>
+                                        <field name="total"/>
+                                        <field name="due_amount"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page name="case_desc" string="Case Details">
+                                <field name="case_details"/>
+                            </page>
+                            <page name="case_records" string="Case Reports">
+                                <field name="case_record" readonly="1">
+                                    <tree editable="bottom">
+                                        <field name="case_date"/>
+                                        <field name="next_action"/>
+                                        <field name="cse_details"/>
+                                        <field name="court_name"/>
+                                        <field name="judge"/>
+                                        <field name="lawyer"/>
+                                        <field name="attachment_id" widget="many2many_binary" class="oe_inline"/>
+                                        <field name="lawsuit_obj" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record model='ir.ui.view' id='hr_lawsuit_tree_view'>
+            <field name="name">hr.lawsuit.tree</field>
+            <field name="model">hr.lawsuit</field>
+            <field name="arch" type="xml">
+                <tree decoration-info="state == 'draft'" colors="grey:state == 'cancel';green:state == 'won';
+                red:state == 'fail';green:state == 'running';">
+                    <field name="name"/>
+                    <field name="party1"/>
+                    <field name="party2"/>
+                    <field name="party2_name"/>
+                    <field name="court_name"/>
+                    <field name="judge"/>
+                    <field name="lawyer"/>
+                    <field name="requested_date"/>
+                    <field name="next_date"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model='ir.ui.view' id='hr_lawsuit_search_view'>
+            <field name="name">hr.lawsuit.search</field>
+            <field name="model">hr.lawsuit</field>
+            <field name="arch" type="xml">
+                <search string="Lawsuit">
+                    <field name="name"/>
+                    <field name="party1"/>
+                    <field name="party2"/>
+                    <field name="court_name"/>
+                    <field name="judge"/>
+                    <field name="lawyer"/>
+                    <field name="requested_date"/>
+                    <field name="next_date"/>
+                    <field name="state"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Status" domain="[]" context="{'group_by':'state'}"/>
+                        <filter string="Employee" domain="[]" context="{'group_by':'employee_id'}"/>
+                        <filter string="Customer" domain="[]" context="{'group_by':'customer_id'}"/>
+                        <filter string="Supplier" domain="[]" context="{'group_by':'supplier_id'}"/>
+                        <filter string="Lawyer Name" domain="[]" context="{'group_by':'lawyer'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_hr_lawsuit" model="ir.actions.act_window">
+            <field name="name">Legal Management</field>
+            <field name="res_model">hr.lawsuit</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="hr_lawsuit_search_view"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to Create a New Record.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="hr_lawsuit_menu"
+                  name="Legal Actions" parent="hr.menu_hr_root" sequence="17" groups="lawsuit_group_manager"/>
+
+        <menuitem id="hr_lawsuit_sub_menu" parent="hr_lawsuit_menu" action="action_hr_lawsuit"
+                  name="Legal Actions" sequence="1" groups="lawsuit_group_manager"/>
+    </data>
+</odoo>

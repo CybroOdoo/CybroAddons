@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+     <template id="report_pdf_case">
+        <t t-call="report.external_layout">
+            <div class="page">
+                <div class="row">
+                    <div class="header" style="text-align:center;"><h1><strong>Case Report</strong></h1></div>
+                    <div class="row mt32 mb32" style="text-align:center;">
+                        <div class="col-xs-4">
+                            <strong>Code</strong>
+                            <p t-esc="o.name"/>
+                        </div>
+                        <div class="col-xs-4">
+                            <strong>Party 1:</strong>
+                            <p t-esc="o.party1.name"/>
+                        </div>
+                        <div class="col-xs-4">
+                            <strong>Party 2:</strong>
+                            <t t-if="o.party2 == 'employee'">
+                                <p t-esc="o.employee_id.name"/>
+                            </t>
+                            <t t-if="o.party2 == 'supplier'">
+                                <p t-esc="o.supplier_id.name"/>
+                            </t>
+                            <t t-if="o.party2 == 'customer'">
+                                <p t-esc="o.customer_id.name"/>
+                            </t>
+                        </div>
+                    </div>
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Next Action</th>
+                                <th>Case Details</th>
+                                <th>Court Name</th>
+                                <th>Judge</th>
+                                <th>Lawyer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="o.case_record" t-as="case">
+                                <tr>
+                                    <td>
+                                        <span t-att-style="style" t-esc="case.case_date"/>
+                                    </td>
+                                    <td>
+                                        <span t-att-style="style" t-esc="case.next_action"/>
+                                    </td>
+                                    <td>
+                                        <span t-att-style="style" t-esc="case.cse_details"/>
+                                    </td>
+                                    <td>
+                                        <span t-att-style="style" t-esc="case.court_name"/>
+                                    </td>
+                                    <td>
+                                        <span t-att-style="style" t-esc="case.judge"/>
+                                    </td>
+                                    <td>
+                                        <span t-att-style="style" t-esc="case.lawyer"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_case_base">
+        <t t-call="report.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="oh_hr_lawsuit_management.report_pdf_case"/>
+            </t>
+        </t>
+    </template>
+
+    <report id="action_report_case"
+            model="hr.lawsuit"
+            report_type="qweb-pdf"
+            string="Case Report"
+            name="oh_hr_lawsuit_management.report_case_base"
+            file="oh_hr_lawsuit_management.report_case_base"/>
+</odoo>
