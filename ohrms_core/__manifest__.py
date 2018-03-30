@@ -38,7 +38,7 @@
         'views/menu_arrangement_view.xml',
         'views/hr_config_view.xml',
     ],
-    'images': [],
+    'images': ["static/description/banner.jpg"],
     'license': 'AGPL-3',
     'demo': [],
     'installable': True,
