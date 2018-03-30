@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="ir_cron_ticket_status_update" model="ir.cron">
+            <field name="name">Flight ticket status update</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="model" eval="'hr.flight.ticket'"/>
+            <field name="function" eval="'run_update_ticket_status'"/>
+            <field name="args">()</field>
+        </record>
+
+        <record id="leaves_approved" model="ir.filters">
+            <field name="name">Approved Leaves</field>
+            <field name="model_id">hr.holidays</field>
+            <field name="domain">[('state', '=', 'validate')]</field>
+            <field name="user_id" eval="False"/>
+        </record>
+
+        <record id="hr_email_leave_reminder" model="ir.actions.server">
+            <field name="name">HR Leave Reminder</field>
+            <field name="model_id" ref="hr_holidays.model_hr_holidays"/>
+            <field name="condition">False</field>
+            <field name="type">ir.actions.server</field>
+            <field name="state">code</field>
+            <field name="code">
+mail_template = env.ref('hr_vacation_mngmt.email_template_hr_leave_reminder_mail')
+holiday_managers = env.ref('hr_holidays.group_hr_holidays_manager').users
+for manager in holiday_managers:
+    template = mail_template.sudo().with_context(
+    email_to = manager.email,
+    )
+    template.send_mail(record.id, force_send=True)
+            </field>
+        </record>
+
+        <record id="rule_hr_leave_reminder_email" model="base.action.rule">
+            <field name="name">HR Leave Reminder</field>
+            <field name="model_id" ref="hr_holidays.model_hr_holidays"/>
+            <field name="sequence">1</field>
+            <field name="kind">on_time</field>
+            <field name="filter_id" ref="leaves_approved"/>
+            <field name="trg_date_id" ref="hr_holidays.field_hr_holidays_date_from"/>
+            <field name="trg_date_range">-5</field>
+            <field name="trg_date_range_type">day</field>
+            <field name="server_action_ids" eval="[(6, 0, [ref('hr_email_leave_reminder')])]"/>
+        </record>
+
+        <record id="air_lines_partner" model="res.partner">
+            <field name="name">Airlines</field>
+            <field name="supplier">True</field>
+        </record>
+    </data>
+</odoo>

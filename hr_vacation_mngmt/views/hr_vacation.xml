@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="hr_vacation_form_view" model="ir.ui.view">
+            <field name="name">Leave Request</field>
+            <field name="model">hr.holidays</field>
+            <field name="inherit_id" ref="hr_holidays.edit_holiday_new"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@class='oe_title']" position="before">
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" icon="fa-pencil-square-o" name="view_flight_ticket"
+                                string="Flight Ticket" class="oe_stat_button"
+                                attrs="{'invisible': [('flight_ticket','=', [])]}"
+                                groups="hr_holidays.group_hr_holidays_manager">
+                        </button>
+                    </div>
+                </xpath>
+                <button name="action_draft" position="after">
+                    <button string="Book Flight Ticket" name="book_ticket" type="object"
+                            groups="hr_holidays.group_hr_holidays_manager" class="oe_highlight"
+                            attrs="{'invisible': ['|', '|', ('type','=','add'),('state','!=','validate'), ('flight_ticket','!=',[])]}"/>
+                </button>
+                <field name="employee_id" position="after">
+                    <field name="remaining_leaves" attrs="{'invisible': [('state','in',('validate', 'refuse'))]}"
+                           readonly="1" groups="hr_holidays.group_hr_holidays_user,hr_holidays.group_hr_holidays_manager"/>
+                    <field name="flight_ticket" invisible="1"/>
+                </field>
+                <xpath expr="//sheet" position="inside">
+                    <notebook attrs="{'invisible': [('type','=','add')], 'readonly': [('state','in',('validate', 'refuse'))]}">
+                        <page string="Pending Works">
+                            <field name="pending_tasks" widget="one2many_list" attrs="{'readonly': [('state','in',('validate', 'validate1','refuse'))]}">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                    <field name="project_id"/>
+                                    <field name="description"/>
+                                    <field name="leave_id" invisible="1"/>
+                                    <field name="dept_id" invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Overlapping Leaves"
+                              attrs="{'invisible': ['|',('state','in',('validate', 'refuse')),('overlapping_leaves','=',[])]}"
+                              groups="hr_holidays.group_hr_holidays_manager,hr_holidays.group_hr_holidays_user">
+                            <field name="overlapping_leaves"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_pending_task" model="ir.ui.view">
+            <field name="name">pending.task.form</field>
+            <field name="model">pending.task</field>
+            <field name="arch" type="xml">
+                <form string="Pending Tasks">
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="leave_id"/>
+                            <field name="project_id"/>
+                        </group>
+                        <group>
+                            <field name="dept_id"/>
+                            <field name="assigned_to" groups="hr_holidays.group_hr_holidays_manager,hr_holidays.group_hr_holidays_user"/>
+                            <field name="unavailable_employee" widget="many2many_tags"
+                                   groups="hr_holidays.group_hr_holidays_manager,hr_holidays.group_hr_holidays_user"/>
+                        </group>
+                        <group colspan="4">
+                            <field name="description"/>
+                        </group>
+                    </group>
+               </form>
+            </field>
+        </record>
+
+        <record id="view_hr_vacation_configuration" model="ir.ui.view">
+            <field name="name">Configure Payroll</field>
+            <field name="model">hr.vacation.config.settings</field>
+            <field name="arch" type="xml">
+                <form string="Configure Vacation" class="oe_form_configuration">
+                    <header>
+                        <button string="Apply" type="object" name="execute" class="oe_highlight"/>
+                        <button string="Cancel" type="object" name="cancel" class="oe_link"/>
+                    </header>
+                    <group string="Vacation">
+                        <field name="leave_reminder"/>
+                        <field name="reminder_day_before"/>
+                    </group>
+                    <group string="Travel Expense">
+                        <field name="default_expense_account"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_hr_vacation_configuration" model="ir.actions.act_window">
+            <field name="name">Configure Payroll</field>
+            <field name="res_model">hr.vacation.config.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+        </record>
+
+        <menuitem
+            id="menu_hr_holidays_settings"
+            name="Settings"
+            parent="hr_holidays.menu_hr_holidays_configuration"
+            sequence="0"
+            groups="hr_holidays.group_hr_holidays_manager"
+            action="action_hr_vacation_configuration"/>
+
+        <menuitem
+            id="menu_hr_holidays_leave_types"
+            name="Leave Types"
+            parent="hr_holidays.menu_hr_holidays_configuration"
+            sequence="2"
+            groups="hr_holidays.group_hr_holidays_manager"
+            action="hr_holidays.open_view_holiday_status"/>
+    </data>
+</odoo>

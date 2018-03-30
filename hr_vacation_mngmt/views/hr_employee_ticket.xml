@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_hr_flight_ticket_form" model="ir.ui.view">
+            <field name="name">hr.flight.ticket.form</field>
+            <field name="model">hr.flight.ticket</field>
+            <field name="priority" eval="0"/>
+            <field name="arch" type="xml">
+                <form string="Flight Ticket" create="0">
+                    <header>
+                        <button name="confirm_ticket" states="booked" string="Confirm" type="object" class="oe_highlight"/>
+                        <button name="cancel_ticket" string="Cancel" type="object" states="booked,confirmed"/>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="booked,confirmed,started,completed"/>
+                    </header>
+                    <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoice"
+                            string="Invoice"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-pencil-square-o"
+                            attrs="{'invisible':[('invoice_id','=', False)]}">
+                        </button>
+                        <field name="invoice_id" invisible="1"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="display_name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id" attrs="{'readonly': [('state','in',('confirmed','started','completed'))]}"/>
+                            <field name="depart_from" attrs="{'readonly': [('state','in',('confirmed','started','completed'))]}"/>
+                            <field name="date_start" attrs="{'readonly': [('state','in',('confirmed','started','completed'))]}"/>
+                            <field name="ticket_class" attrs="{'readonly': [('state','in',('confirmed','started','completed'))]}"/>
+                            <field name="flight_details" attrs="{'readonly': [('state','=','completed')]}"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="ticket_type" attrs="{'readonly': [('state','in',('confirmed','started','completed'))]}"/>
+                            <field name="destination" attrs="{'readonly': [('state','in',('confirmed','started','completed'))]}"/>
+                            <field name="date_return" attrs="{'readonly': [('state','in',('confirmed','started','completed'))]}"/>
+                            <field name="ticket_fare" attrs="{'readonly': [('state','in',('confirmed','started','completed'))]}"/>
+                            <field name="leave_id" invisible="1"/>
+                            <field name="return_flight_details"
+                                   attrs="{'readonly': [('state','=','completed')],
+                                   'invisible':[('ticket_type', '=', 'one')]}"/>
+                        </group>
+                    </group>
+                    </sheet>
+               </form>
+            </field>
+        </record>
+
+        <record id="view_hr_flight_ticket_tree" model="ir.ui.view">
+            <field name="name">hr.flight.ticket.form</field>
+            <field name="model">hr.flight.ticket</field>
+            <field name="priority" eval="1"/>
+            <field name="arch" type="xml">
+                <tree string="Flight Ticket" create="0">
+                    <field name="employee_id"/>
+                    <field name="date_start"/>
+                    <field name="date_return"/>
+                    <field name="ticket_type"/>
+                    <field name="state"/>
+               </tree>
+            </field>
+        </record>
+
+        <record id="view_hr_book_flight_ticket_form" model="ir.ui.view">
+            <field name="name">hr.flight.ticket.form</field>
+            <field name="model">hr.flight.ticket</field>
+            <field name="priority" eval="2"/>
+            <field name="arch" type="xml">
+                <form string="Flight Ticket" create="0">
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id" readonly="1"/>
+                            <field name="depart_from"/>
+                            <field name="date_start"/>
+                            <field name="ticket_class"/>
+                        </group>
+                        <group>
+                            <field name="ticket_type"/>
+                            <field name="destination"/>
+                            <field name="date_return"/>
+                            <field name="leave_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="book_ticket" type="object" string="Book Ticket" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+               </form>
+            </field>
+        </record>
+
+        <record id="action_hr_flight_tickets" model="ir.actions.act_window">
+            <field name="name">Flight Tickets</field>
+            <field name="res_model">hr.flight.ticket</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_type">form</field>
+            <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+            There is no previously booked flight ticket details available.
+            </p>
+            </field>
+        </record>
+
+        <menuitem
+            id="menu_hr_flight_tickets"
+            name="Flight Tickets"
+            parent="hr_holidays.menu_hr_holidays_root"
+            action="action_hr_flight_tickets"
+            groups="hr_holidays.group_hr_holidays_manager"
+            sequence="5"/>
+    </data>
+</odoo>
