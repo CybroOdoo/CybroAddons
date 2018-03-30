@@ -20,11 +20,26 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###################################################################################
-
-from odoo import models, fields
-
-
-class SurveyInput(models.Model):
-    _inherit = 'survey.user_input'
-
-    appraisal_id = fields.Many2one('hr.appraisal', string="Appriasal id")
+{
+    'name': "OHRMS Employee Appraisal",
+    'version': '10.0.1.0.0',
+    'summary': """Roll out appraisal plans and get the best of your workforce""",
+    'description': """Roll out appraisal plans and get the best of your workforce""",
+    'category': 'Human Resources',
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
+    'website': "https://www.openhrms.com",
+    'depends': ['hr', 'survey'],
+    'data': [
+        'security/ir.model.access.csv',
+        'security/hr_appraisal_security.xml',
+        'views/hr_appraisal_survey_views.xml',
+        'views/hr_appraisal_form_view.xml',
+        'data/hr_appraisal_stages.xml'
+    ],
+    'images': ["static/description/banner.jpg"],
+    'license': "AGPL-3",
+    'installable': True,
+    'application': False,
+}
