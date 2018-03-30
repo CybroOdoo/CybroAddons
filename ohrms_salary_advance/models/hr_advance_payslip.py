@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from odoo import models
-from odoo.exceptions import except_orm
 
 
 class SalaryRuleInput(models.Model):
