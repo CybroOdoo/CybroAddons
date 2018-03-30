@@ -28,7 +28,7 @@
     'author': 'Cybrosys Techno solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
+    'website': 'https://www.openhrms.com',
     'depends': ['base',
                 'hr_employee_updation'
                 ],
