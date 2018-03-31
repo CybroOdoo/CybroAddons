@@ -21,8 +21,8 @@
 #
 ###################################################################################
 {
-    'name': 'OHRMS Employees From User',
-    'version': '10.0.1.0.0',
+    'name': 'Open HRMS Employees From User',
+    'version': '10.0.1.2.0',
     'summary': 'Automatically Creates Employee While Creating User',
     'description': 'This module helps you to create employees automatically while creating users',
     'category': 'Generic Modules/Human Resources',
@@ -30,7 +30,7 @@
     'company': 'Cybrosys Techno Solutions',
     'website': "https://www.openhrms.com",
     'depends': ['base', 'hr'],
-    'data': ['employee_creation_from_user_view.xml'],
+    'data': ['views/employee_creation_from_user_view.xml'],
     'demo': [],
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
