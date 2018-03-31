@@ -21,7 +21,7 @@
 #
 ###################################################################################
 {
-    'name': "OHRMS Employee Appraisal",
+    'name': "OpenHRMS Employee Appraisal",
     'version': '10.0.1.0.0',
     'summary': """Roll out appraisal plans and get the best of your workforce""",
     'description': """Roll out appraisal plans and get the best of your workforce""",
