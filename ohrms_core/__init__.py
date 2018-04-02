@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 ###################################################################################
-#    A part of OpenHrms Project <https://www.openhrms.com>
+#    A part of Open HRMS Project <https://www.openhrms.com>
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2018-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
-#    Author: Jesni Banu (<https://www.cybrosys.com>)
+#    Author: Nilmar Shereef & Jesni Banu (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as

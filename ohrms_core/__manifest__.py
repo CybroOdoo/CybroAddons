@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 ###################################################################################
-#    A part of OpenHrms Project <https://www.openhrms.com>
+#    A part of Open HRMS Project <https://www.openhrms.com>
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2018-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
-#    Author: Jesni Banu (<https://www.cybrosys.com>)
+#    Author: Nilmar Shereef & Jesni Banu (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
@@ -22,17 +22,31 @@
 ###################################################################################
 {
     'name': 'Open HRMS Core',
-    'version': '10.0.1.1.0',
-    'summary': """Open HRMS Core""",
-    'description': 'Open HRMS Core',
+    'version': '10.0.2.0.0',
+    'summary': """Open HRMS Suit: It brings all Open HRMS modules""",
+    'description': 'Main module of Open HRMS. It brings all others into a single module',
     'category': 'Generic Modules/Human Resources',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': "https://www.openhrms.com",
-    'depends': ['hr_payroll_account', 'hr_gamification', 'hr_employee_updation', 'hr_recruitment', 'hr_attendance', 'hr_holidays',
-                'hr_payroll', 'hr_expense', 'hr_leave_request_aliasing', 'hr_timesheet', 'oh_appraisal',
-                'oh_employee_creation_from_user', 'oh_employee_documents_expiry', 'hr_multi_company',
-                'ohrms_loan_accounting', 'ohrms_salary_advance', 'hr_reminder', 'hr_reward_warning',
+    'depends': ['hr_payroll_account',
+                'hr_gamification',
+                'hr_employee_updation',
+                'hr_recruitment',
+                'hr_attendance',
+                'hr_holidays',
+                'hr_payroll',
+                'hr_expense',
+                'hr_leave_request_aliasing',
+                'hr_timesheet',
+                'oh_appraisal',
+                'oh_employee_creation_from_user',
+                'oh_employee_documents_expiry',
+                'hr_multi_company',
+                'ohrms_loan_accounting',
+                'ohrms_salary_advance',
+                'hr_reminder',
+                'hr_reward_warning',
                 'hr_theme'],
     'data': [
         'views/menu_arrangement_view.xml',
@@ -43,5 +57,5 @@
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
-    'application': False,
+    'application': True,
 }
