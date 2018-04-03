@@ -75,5 +75,3 @@ class HrPopupReminder(models.Model):
             else:
                 i.reminder_active = True
 
-
-

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ###################################################################################
-#    A part of OpenHRMS Project <https://www.openhrms.com>
+#    A part of Open HRMS Project <https://www.openhrms.com>
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2018-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
@@ -22,7 +22,7 @@
 ###################################################################################
 
 {
-    'name': 'OHRMS Employee Insurance Management',
+    'name': 'Open HRMS Employee Insurance Management',
     'version': '10.0.1.0.0',
     'summary': """Employee Insurance Management for Open HRMS.""",
     'description': """Manages insurance amounts for employees to be deducted from salary""",
