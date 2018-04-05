@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ###################################################################################
-#    A part of OpenHRMS Project <https://www.openhrms.com>
+#    A part of Open HRMS Project <https://www.openhrms.com>
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2018-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
@@ -21,7 +21,7 @@
 #
 ###################################################################################
 {
-    'name': 'OHRMS HR Resignation',
+    'name': 'Open HRMS Resignation',
     'version': '10.0.1.0.0',
     'summary': 'Handle the resignation process of the employee',
     'author': 'Cybrosys Techno solutions',
