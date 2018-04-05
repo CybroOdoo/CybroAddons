@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ###################################################################################
-#    A part of OpenHrms Project <https://www.openhrms.co.uk>
+#    A part of Open Hrms Project <https://www.openhrms.co.uk>
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2018-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
@@ -21,7 +21,7 @@
 #
 ###################################################################################
 {
-    'name': "OHRMS Vacation Management",
+    'name': "Open HRMS Vacation Management",
     'version': '10.0.1.0.0',
     'summary': """Manage Employee Vacation""",
     'description': """HR Vacation management""",
@@ -29,7 +29,7 @@
     'company': 'Cybrosys Techno Solutions',
     'website': 'https://www.openhrms.com',
     'category': 'Generic Modules/Human Resources',
-    'depends': ['hr_holidays', 'project', 'hr_payroll', 'account'],
+    'depends': ['hr_leave_request_aliasing', 'project', 'hr_payroll', 'account'],
     'data': [
         'security/hr_vacation_security.xml',
         'security/ir.model.access.csv',

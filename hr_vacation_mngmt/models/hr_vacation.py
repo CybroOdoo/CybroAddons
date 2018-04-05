@@ -16,7 +16,7 @@ class HrLeaveRequest(models.Model):
 
     @api.one
     def get_overlapping_leaves(self):
-        if self.type == 'remove':
+        if self.type == 'remove' and self.date_from and self.date_to:
             overlap_leaves = []
             from_date = datetime.strptime(self.date_from, '%Y-%m-%d %H:%M:%S').date()
             to_date = datetime.strptime(self.date_to, '%Y-%m-%d %H:%M:%S').date()
@@ -126,8 +126,7 @@ class PendingTask(models.Model):
 
 
 class HrVacationConfigSettings(models.TransientModel):
-    _name = 'hr.vacation.config.settings'
-    _inherit = 'res.config.settings'
+    _inherit = 'hr.leave.config.settings'
 
     leave_reminder = fields.Boolean(string='Leave Reminder Email', help="Send leave remainder emails to hr managers")
     reminder_day_before = fields.Integer(string='Reminder Day Before')
