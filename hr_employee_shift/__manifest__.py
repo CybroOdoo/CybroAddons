@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ###################################################################################
-#    A part of OpenHrms Project <https://www.openhrms.com>
+#    A part of Open Hrms Project <https://www.openhrms.com>
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2018-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
@@ -21,7 +21,7 @@
 #
 ###################################################################################
 {
-    'name': "OHRMS Employee Shift",
+    'name': "Open HRMS Employee Shift",
     'version': '10.0.1.0',
     'summary': """Easily create, manage, and track employee shift schedules.""",
     'description': """Easily create, manage, and track employee shift schedules.""",
