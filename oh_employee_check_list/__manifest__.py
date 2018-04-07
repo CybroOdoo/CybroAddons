@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ###################################################################################
-#    A part of OpenHRMS Project <https://www.openhrms.com>
+#    A part of Open HRMS Project <https://www.openhrms.com>
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2018-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
@@ -21,7 +21,7 @@
 #
 ###################################################################################
 {
-    'name': 'OHRMS Employee Checklist',
+    'name': 'Open HRMS Employee Checklist',
     'version': '10.0.1.0.0',
     'summary': """Manages Employee's Entry & Exit Process""",
     'description': """This module is a part of OH project, used to remembering the employee's entry and exit progress.""",
