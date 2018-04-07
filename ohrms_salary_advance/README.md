@@ -1,5 +1,5 @@
-OHRMS Advance Salary'
-=====================
+Open HRMS Advance Salary
+========================
 
 Advance Salary In HR.
 

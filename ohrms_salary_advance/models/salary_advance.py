@@ -25,7 +25,7 @@ class SalaryAdvancePayment(models.Model):
     department = fields.Many2one('hr.department', string='Department')
     state = fields.Selection([('draft', 'Draft'),
                               ('submit', 'Submitted'),
-                              ('waiting_approval', 'Waiting Approval From Accounts'),
+                              ('waiting_approval', 'Waiting Approval'),
                               ('approve', 'Approved'),
                               ('cancel', 'Cancelled'),
                               ('reject', 'Rejected')], string='Status', default='draft', track_visibility='onchange')
