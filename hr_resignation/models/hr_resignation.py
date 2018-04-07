@@ -11,18 +11,39 @@ class HrResignation(models.Model):
     _inherit = 'mail.thread'
     _rec_name = 'employee_id'
 
-    employee_id = fields.Many2one('hr.employee', string="Employee")
-    department_id = fields.Many2one('hr.department', string="Department", related='employee_id.department_id')
-    joined_date = fields.Date(string="Join Date", required=True)
-    expected_revealing_date = fields.Date(string="Revealing Date", required=True)
-    resign_confirm_date = fields.Date(string="Resign confirm date")
-    approved_revealing_date = fields.Date(string="Approved Date")
-    reason = fields.Text(string="Reason")
+    def _get_employee_id(self):
+        # assigning the related employee of the logged in user
+        employee_rec = self.env['hr.employee'].search([('user_id', '=', self.env.uid)], limit=1)
+        return employee_rec.id
+
+    name = fields.Char(string='Order Reference', required=True, copy=False, readonly=True, index=True,
+                       default=lambda self: _('New'))
+    employee_id = fields.Many2one('hr.employee', string="Employee", default=_get_employee_id,
+                                  help='Name of the employee for whom the request is creating')
+    department_id = fields.Many2one('hr.department', string="Department", related='employee_id.department_id',
+                                    help='Department of the employee')
+    joined_date = fields.Date(string="Join Date", required=True, related='employee_id.joining_date',
+                              help='Joining date of the employee')
+    expected_revealing_date = fields.Date(string="Revealing Date", required=True,
+                                          help='Date on which he is revealing from the company')
+    resign_confirm_date = fields.Date(string="Resign confirm date", help='Date on which the request is confirmed')
+    approved_revealing_date = fields.Date(string="Approved Date", help='The date approved for the revealing')
+    reason = fields.Text(string="Reason", help='Specify reason for leaving the company')
+    notice_period = fields.Char(string="Notice Period", compute='_notice_period')
     state = fields.Selection([('draft', 'Draft'), ('confirm', 'Confirm'), ('approved', 'Approved'), ('cancel', 'Cancel')],
                              string='Status', default='draft')
 
+    @api.model
+    def create(self, vals):
+        # assigning the sequence for the record
+        if vals.get('name', _('New')) == _('New'):
+            vals['name'] = self.env['ir.sequence'].next_by_code('hr.resignation') or _('New')
+        res = super(HrResignation, self).create(vals)
+        return res
+
     @api.constrains('employee_id')
     def check_employee(self):
+        # Checking whether the user is creating leave request of his/her own
         for rec in self:
             if not self.env.user.has_group('hr.group_hr_user'):
                 if rec.employee_id.user_id.id and rec.employee_id.user_id.id != self.env.uid:
@@ -31,6 +52,7 @@ class HrResignation(models.Model):
     @api.onchange('employee_id')
     @api.depends('employee_id')
     def check_request_existence(self):
+        # Check whether any resignation request already exists
         for rec in self:
             if rec.employee_id:
                 resignation_request = self.env['hr.resignation'].search([('employee_id', '=', rec.employee_id.id),
@@ -41,6 +63,7 @@ class HrResignation(models.Model):
 
     @api.multi
     def _notice_period(self):
+        # calculating the notice period for the employee
         for rec in self:
             if rec.approved_revealing_date and rec.resign_confirm_date:
                 approved_date = datetime.strptime(rec.approved_revealing_date, date_format)
@@ -50,6 +73,7 @@ class HrResignation(models.Model):
 
     @api.constrains('joined_date', 'expected_revealing_date')
     def _check_dates(self):
+        # validating the entered dates
         for rec in self:
             resignation_request = self.env['hr.resignation'].search([('employee_id', '=', rec.employee_id.id),
                                                                      ('state', 'in', ['confirm', 'approved'])])
