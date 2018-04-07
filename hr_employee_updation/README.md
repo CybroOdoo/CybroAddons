@@ -1,6 +1,6 @@
-OHRMS Employee Info
--------------------
-Supporting Addon for Open HRMS, Added Advance Fields On Employee Master
+Open HRMS Employee Info
+-----------------------
+Supporting Addon for Open HRMS, Added Advanced Fields On Employee Master.
 
 Connect with experts
 --------------------
