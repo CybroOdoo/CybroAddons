@@ -28,7 +28,7 @@ class HrLeaveConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
     alias_prefix = fields.Char(string='Default Alias Name for Leave', help='Default Alias Name for Leave')
-    alias_domain = fields.Char(string='Alias Domain',
+    alias_domain = fields.Char(string='Alias Domain', help='Default Alias Domain for Leave',
                                default=lambda self: self.env["ir.config_parameter"].get_param("mail.catchall.domain"))
 
     @api.model

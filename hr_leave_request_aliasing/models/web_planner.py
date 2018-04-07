@@ -24,6 +24,7 @@ from odoo import api, models
 
 
 class PlannerHrLeave(models.Model):
+    """This class is used to activate web.planner feature in 'hr_leave_request_aliasing' module"""
 
     _inherit = 'web.planner'
 
