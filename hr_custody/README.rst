@@ -1,5 +1,5 @@
-OHRMS Custody Management
-=====================
+Open HRMS Custody Management
+============================
 
 Functionality to give and track the assets of a company to employees.
  - Creates a new menu item Custody Management under Employees
