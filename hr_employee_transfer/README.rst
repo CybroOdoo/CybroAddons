@@ -1,5 +1,5 @@
-OHRMS Employee Transfer v10
-===========================
+Open HRMS Employee Transfer v10
+===============================
 
 Employee transfer between branches.
 
