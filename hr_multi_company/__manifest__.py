@@ -22,7 +22,7 @@
 ###################################################################################
 {
     'name': 'Open HRMS Multi-Company',
-    'version': '10.0.1.0.0',
+    'version': '10.0.1.1.0',
     'summary': """Enables Multi-Company""",
     'description': 'This module enables multi company features',
     'category': 'Generic Modules/Human Resources',
