@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ###################################################################################
-#    A part of OpenHRMS Project <https://www.openhrms.com>
+#    A part of Open HRMS Project <https://www.openhrms.com>
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2018-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
@@ -21,8 +21,8 @@
 #
 ###################################################################################
 {
-    'name': 'OHRMS Advance Salary',
-    'version': '10.0.1.0.0',
+    'name': 'Open HRMS Advance Salary',
+    'version': '10.0.1.1.0',
     'summary': 'Advance Salary In HR',
     'description': """
         Helps you to manage Advance Salary Request of your company's staff.
