@@ -22,7 +22,7 @@
 ###################################################################################
 {
     'name': 'Open HRMS Core',
-    'version': '10.0.2.0.0',
+    'version': '10.0.3.0.0',
     'summary': """Open HRMS Suit: It brings all Open HRMS modules""",
     'description': 'Main module of Open HRMS. It brings all others into a single module',
     'category': 'Generic Modules/Human Resources',
