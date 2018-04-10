@@ -1,5 +1,5 @@
-OHRMS Loan Management
-=====================
+Open HRMS Loan Accounting
+=========================
 
 Manage Loan Requests.
 

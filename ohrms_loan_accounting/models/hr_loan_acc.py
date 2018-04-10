@@ -15,12 +15,12 @@ class HrLoanAcc(models.Model):
         contract_obj = self.env['hr.contract'].search([('employee_id', '=', self.employee_id.id)])
         if not contract_obj:
             raise except_orm('Warning', 'You must Define a contract for employee')
-        if not self.loan_line_ids:
-            raise except_orm('Warning', 'You must compute Loan Request before Approved')
+        if not self.loan_lines:
+            raise except_orm('Warning', 'You must compute installment before Approved')
         if loan_approve:
             self.write({'state': 'waiting_approval_2'})
         else:
-            raise except_orm('Warning', 'Enable the option for loan approval from accounting department')
+            raise except_orm('Warning', 'Enable the option for loan approval in accounting settings')
 
     @api.multi
     def action_double_approve(self):
@@ -28,60 +28,46 @@ class HrLoanAcc(models.Model):
             """
         if not self.emp_account_id or not self.treasury_account_id or not self.journal_id:
             raise except_orm('Warning', "You must enter employee account & Treasury account and journal to approve ")
-        if not self.loan_line_ids:
+        if not self.loan_lines:
             raise except_orm('Warning', 'You must compute Loan Request before Approved')
-        move_obj = self.env['account.move']
         timenow = time.strftime('%Y-%m-%d')
-        line_ids = []
-        debit_sum = 0.0
-        credit_sum = 0.0
         for loan in self:
             amount = loan.loan_amount
             loan_name = loan.employee_id.name
             reference = loan.name
             journal_id = loan.journal_id.id
-            move = {
+            debit_account_id = loan.treasury_account_id.id
+            credit_account_id = loan.emp_account_id.id
+            debit_vals = {
+                'name': loan_name,
+                'account_id': debit_account_id,
+                'journal_id': journal_id,
+                'date': timenow,
+                'debit': amount > 0.0 and amount or 0.0,
+                'credit': amount < 0.0 and -amount or 0.0,
+                'loan_id': loan.id,
+            }
+            credit_vals = {
+                'name': loan_name,
+                'account_id': credit_account_id,
+                'journal_id': journal_id,
+                'date': timenow,
+                'debit': amount < 0.0 and -amount or 0.0,
+                'credit': amount > 0.0 and amount or 0.0,
+                'loan_id': loan.id,
+            }
+            vals = {
                 'name': 'Loan For' + ' ' + loan_name,
                 'narration': loan_name,
                 'ref': reference,
                 'journal_id': journal_id,
                 'date': timenow,
-                'state': 'posted',
+                'line_ids': [(0, 0, debit_vals), (0, 0, credit_vals)]
             }
-
-            debit_account_id = loan.treasury_account_id.id
-            credit_account_id = loan.emp_account_id.id
-            if debit_account_id:
-                debit_line = (0, 0, {
-                    'name': loan_name,
-                    'account_id': debit_account_id,
-                    'journal_id': journal_id,
-                    'date': timenow,
-                    'debit': amount > 0.0 and amount or 0.0,
-                    'credit': amount < 0.0 and -amount or 0.0,
-                    'loan_id': loan.id,
-                })
-                line_ids.append(debit_line)
-                debit_sum += debit_line[2]['debit'] - debit_line[2]['credit']
-
-            if credit_account_id:
-                credit_line = (0, 0, {
-                    'name': loan_name,
-                    'account_id': credit_account_id,
-                    'journal_id': journal_id,
-                    'date': timenow,
-                    'debit': amount < 0.0 and -amount or 0.0,
-                    'credit': amount > 0.0 and amount or 0.0,
-                    'loan_id': loan.id,
-                })
-                line_ids.append(credit_line)
-                credit_sum += credit_line[2]['credit'] - credit_line[2]['debit']
-
-            move.update({'line_ids': line_ids})
-            move_id = move_obj.create(move)
-            self.move_id = move_id.id
-            self.write({'state': 'approve'})
-            return self.write({'move_id': move_id.id})
+            move = self.env['account.move'].create(vals)
+            move.post()
+        self.write({'state': 'approve'})
+        return True
 
 
 class AccountMoveLine(models.Model):
@@ -97,67 +83,62 @@ class HrLoanLineAcc(models.Model):
     def action_paid_amount(self):
         """This create the account move line for payment of each installment.
             """
-        result = super(HrLoanLineAcc, self).action_paid_amount()
-        move_obj = self.env['account.move']
         timenow = time.strftime('%Y-%m-%d')
-        line_ids = []
-        debit_sum = 0.0
-        credit_sum = 0.0
-
         for line in self:
             if line.loan_id.state != 'approve':
                 raise except_orm('Warning', "Loan Request must be approved")
-            amount = line.paid_amount
+            amount = line.amount
             loan_name = line.employee_id.name
-            print "loan_name",loan_name
             reference = line.loan_id.name
             journal_id = line.loan_id.journal_id.id
-            move = {
+            debit_account_id = line.loan_id.emp_account_id.id
+            credit_account_id = line.loan_id.treasury_account_id.id
+            debit_vals = {
+                'name': loan_name,
+                'account_id': debit_account_id,
+                'journal_id': journal_id,
+                'date': timenow,
+                'debit': amount > 0.0 and amount or 0.0,
+                'credit': amount < 0.0 and -amount or 0.0,
+                'loan_id': line.loan_id.id,
+            }
+            credit_vals = {
+                'name': loan_name,
+                'account_id': credit_account_id,
+                'journal_id': journal_id,
+                'date': timenow,
+                'debit': amount < 0.0 and -amount or 0.0,
+                'credit': amount > 0.0 and amount or 0.0,
+                'loan_id': line.loan_id.id,
+            }
+            vals = {
                 'name': 'Loan For' + ' ' + loan_name,
                 'narration': loan_name,
                 'ref': reference,
                 'journal_id': journal_id,
                 'date': timenow,
-                'state': 'posted',
+                'line_ids': [(0, 0, debit_vals), (0, 0, credit_vals)]
             }
-
-            debit_account_id = line.loan_id.emp_account_id.id
-            credit_account_id = line.loan_id.treasury_account_id.id
-
-            if debit_account_id:
-                debit_line = (0, 0, {
-                    'name': loan_name,
-                    'account_id': debit_account_id,
-                    'journal_id': journal_id,
-                    'date': timenow,
-                    'debit': amount > 0.0 and amount or 0.0,
-                    'credit': amount < 0.0 and -amount or 0.0,
-                    'loan_id': line.loan_id.id,
-                })
-                line_ids.append(debit_line)
-                debit_sum += debit_line[2]['debit'] - debit_line[2]['credit']
-
-            if credit_account_id:
-                credit_line = (0, 0, {
-                    'name': loan_name,
-                    'account_id': credit_account_id,
-                    'journal_id': journal_id,
-                    'date': timenow,
-                    'debit': amount < 0.0 and -amount or 0.0,
-                    'credit': amount > 0.0 and amount or 0.0,
-                    'loan_id': line.loan_id.id,
-                })
-                line_ids.append(credit_line)
-                credit_sum += credit_line[2]['credit'] - credit_line[2]['debit']
-
-            move.update({'line_ids': line_ids})
-            move_id = move_obj.create(move)
-            return result
+            move = self.env['account.move'].create(vals)
+            move.post()
         return True
 
 
 class HrPayslipAcc(models.Model):
     _inherit = 'hr.payslip'
+
+    @api.multi
+    def compute_sheet(self):
+        res = super(HrPayslipAcc, self).compute_sheet()
+        if len(self.loan_ids) == 0:
+            loan_count = self.env['hr.loan'].search_count([('employee_id', '=', self.employee_id.id), ('state', '=', 'approve'),
+                                                           ('balance_amount', '!=', 0)])
+            if loan_count:
+                raise except_orm('Error!', 'Please Update the Loans')
+            else:
+                return res
+        else:
+            return res
 
     @api.multi
     def action_payslip_done(self):
