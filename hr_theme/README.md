@@ -1,5 +1,5 @@
-OHRMS Theme
-===========
+Open HRMS Theme
+===============
 
 Theme for Open HRMS.
 
