@@ -1,4 +1,4 @@
-OH Employees From User
+Open HRMS Employees From User
 ---------------------
 Supporting Addon for Open HRMS, Creates Employee While Creating User
 

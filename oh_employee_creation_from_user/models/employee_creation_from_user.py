@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ###################################################################################
-#    A part of OpenHRMS Project <https://www.openhrms.com>
+#    A part of Open HRMS Project <https://www.openhrms.com>
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2018-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
@@ -32,6 +32,8 @@ class ResUsersInherit(models.Model):
 
     @api.model
     def create(self, vals):
+        """This code is to create an employee while creating an user."""
+
         result = super(ResUsersInherit, self).create(vals)
         result['employee_id'] = self.env['hr.employee'].sudo().create({'name': result['name'],
                                                                        'user_id': result['id'],

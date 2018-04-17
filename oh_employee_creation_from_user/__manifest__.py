@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ###################################################################################
-#    A part of OpenHRMS Project <https://www.openhrms.com>
+#    A part of Open HRMS Project <https://www.openhrms.com>
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2018-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
@@ -22,7 +22,7 @@
 ###################################################################################
 {
     'name': 'Open HRMS Employees From User',
-    'version': '10.0.1.2.0',
+    'version': '10.0.1.1.0',
     'summary': 'Automatically Creates Employee While Creating User',
     'description': 'This module helps you to create employees automatically while creating users',
     'category': 'Generic Modules/Human Resources',

@@ -34,7 +34,7 @@
     'category': 'Website',
     'depends': ['base', 'website'],
     'data': [
-        'views/views.xml',
+        'views/assets.xml',
         'views/conf_view.xml',
         'views/templates.xml',
     ],
