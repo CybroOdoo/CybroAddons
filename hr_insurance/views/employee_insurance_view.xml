@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="hr_employee_insurance_form" model="ir.ui.view">
+        <field name="name">hr.employee.Insurance_form</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='hr_settings']" position="after">
+                <page name="insurance" string="Insurance">
+                    <group>
+                        <group>
+                            <field name="insurance_percentage">%</field>
+                        </group>
+                        <group>
+                            <field name="deduced_amount_per_year"/>
+                            <field name="deduced_amount_per_month"/>
+                        </group>
+                    </group>
+                    <field name="insurance" context="{'default_employee_id':id}"/>
+
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+
+
+
+        <record id="employee_insurance__details_form" model="ir.ui.view">
+            <field name="name">Employee Insurance</field>
+            <field name="model">hr.insurance</field>
+            <field name="arch" type="xml">
+                <form string="Employee Insurance">
+                    <header>
+                     <field name="state" widget="statusbar" statusbar_visible="active,expired"/>
+                    </header>
+                    <sheet>
+                        <!--<header>-->
+                            <!--<field name="state" class="oe_no_button" placeholder="State" style="width: 37%%" options='{"no_open": True}'/>-->
+                        <!--</header>-->
+                        <group>
+                            <group>
+                                <field name="employee_id"/>
+                                <field name="policy_coverage"/>
+                                <label for="date_from" string="Policy Period"/>
+			<div>
+				<field name="date_from" class="oe_inline" on_change="1" modifiers="{'readonly': [['state', 'not in', ['draft']]], 'required': true}"/>
+				  -
+				<field name="date_to" class="oe_inline" on_change="1" modifiers="{'readonly': [['state', 'not in', ['draft']]], 'required': true}"/>
+			</div>
+                            </group>
+                            <group>
+                                <field name="policy_id"/>
+                                <field name="sum_insured"/>
+                                <field name="amount"/>
+                                <field name="company_id"/>
+                            </group>
+                        </group>
+
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record id="employee_insurance_details_tree" model="ir.ui.view">
+            <field name="name">Employee Insurance</field>
+            <field name="model">hr.insurance</field>
+            <field name="arch" type="xml">
+                <tree string="Employee Insurance">
+                     <field name="employee_id"/>
+                    <field name="policy_id"/>
+                    <field name="policy_coverage"/>
+                    <field name="sum_insured"/>
+                    <field name="amount"/>
+                    <field name="date_from" />
+				<field name="date_to"/>
+                    <field name="company_id"/>
+                </tree>
+            </field>
+        </record>
+        <record id="action_employee_insurance_details" model="ir.actions.act_window">
+            <field name="name">Employee Insurance</field>
+            <field name="res_model">hr.insurance</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    You have'nt created any policy yet.
+                </p>
+            </field>
+        </record>
+
+        <menuitem
+                id="hr_insurance_main_menu"
+                parent ="hr.menu_hr_root"
+                name="HR Insurance"/>
+
+        <menuitem
+                id="hr_employee_insurance_menu"
+                name="Employee Insurance"
+                parent="hr_insurance_main_menu"
+                action="action_employee_insurance_details"/>
+    </data>
+</odoo>
