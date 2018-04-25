@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_zk_machine_form" model="ir.ui.view">
+        <field name="name">zk.machine.form</field>
+        <field name="model">zk.machine</field>
+        <field name="arch" type="xml">
+            <form string="Biometric Device">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" />
+                        <h1>
+                            <field name="name" placeholder="Machine IP"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="port_no"/>
+                            <field name="address_id"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_zk_machine_tree" model="ir.ui.view">
+        <field name="name">zk.machine.tree</field>
+        <field name="model">zk.machine</field>
+        <field name="arch" type="xml">
+            <tree string="Biometric Machine">
+                <field name="name"/>
+                <field name="port_no"/>
+                <field name="address_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="zk_machine_action" model="ir.actions.act_window">
+        <field name="name">Attendances</field>
+        <field name="res_model">zk.machine</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="zk_machine_attendance_action" model="ir.actions.act_window">
+        <field name="name">Generate Attendances</field>
+        <field name="res_model">zk.attendance</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="hr_employee_inherit_form_view" model="ir.ui.view">
+        <field name="name">hr.employee.form</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <field name="user_id" position="after">
+                <field name="device_id"/>
+            </field>
+        </field>
+    </record>
+    <menuitem id="hr_attendance.menu_hr_attendance_settings" name="Attendance Config" parent="hr.menu_human_resources_configuration"
+        sequence="2" groups="hr_attendance.group_hr_attendance_manager"/>
+    <menuitem id="zk_menu_hr_attendance_settings" name="Settings" parent="hr_attendance.menu_hr_attendance_settings"
+        sequence="1" action="hr_attendance.action_hr_attendance_settings" groups="hr_attendance.group_hr_attendance_manager"/>
+    <menuitem id="zk_machine_config" parent="hr_attendance.menu_hr_attendance_settings"  name="Device Configuration" action="zk_machine_action" sequence="2"/>
+    <menuitem id="zk_machine_menu" parent="hr_attendance.menu_hr_attendance_root" sequence="11" name="Biometric Attendance" />
+    <menuitem id="zk_machine_sub_menu" parent="zk_machine_menu"  name="Generate Attendance" action="zk_machine_attendance_action" sequence="1"/>
+</odoo>
+
