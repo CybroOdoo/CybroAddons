@@ -22,7 +22,7 @@ class HrResignation(models.Model):
                                   help='Name of the employee for whom the request is creating')
     department_id = fields.Many2one('hr.department', string="Department", related='employee_id.department_id',
                                     help='Department of the employee')
-    joined_date = fields.Date(string="Join Date", required=True, related='employee_id.joining_date',
+    joined_date = fields.Date(string="Join Date", required=True,
                               help='Joining date of the employee')
     expected_revealing_date = fields.Date(string="Revealing Date", required=True,
                                           help='Date on which he is revealing from the company')
@@ -32,6 +32,10 @@ class HrResignation(models.Model):
     notice_period = fields.Char(string="Notice Period", compute='_notice_period')
     state = fields.Selection([('draft', 'Draft'), ('confirm', 'Confirm'), ('approved', 'Approved'), ('cancel', 'Cancel')],
                              string='Status', default='draft')
+
+    @api.onchange('employee_id')
+    def set_join_date(self):
+        self.joined_date = self.employee_id.joining_date if self.employee_id.joining_date else ''
 
     @api.model
     def create(self, vals):
