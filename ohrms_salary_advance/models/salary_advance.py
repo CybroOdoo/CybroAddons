@@ -124,7 +124,6 @@ class SalaryAdvancePayment(models.Model):
         current_month = datetime.strptime(self.date, '%Y-%m-%d').date().month
         for each_advance in salary_advance_search:
             existing_month = datetime.strptime(each_advance.date, '%Y-%m-%d').date().month
-            print current_month, existing_month
             if current_month == existing_month:
                 raise except_orm('Error!', 'Advance can be requested once in a month')
         if not self.debit or not self.credit or not self.journal:
