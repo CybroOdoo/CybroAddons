@@ -1,36 +1,33 @@
 # -*- coding: utf-8 -*-
-##############################################################################
-#
+###################################################################################
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2017-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Nilmar Shereef(<http://www.cybrosys.com>)
-#    you can modify it under the terms of the GNU LESSER
-#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
-#
-#    It is forbidden to publish, distribute, sublicense, or sell copies
-#    of the Software or modified copies of the Software.
+#    Copyright (C) 2018-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).#
+#    This program is free software: you can modify
+#    it under the terms of the GNU Affero General Public License (AGPL) as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
 #
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#    GNU Affero General Public License for more details.
 #
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    GENERAL PUBLIC LICENSE (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-##############################################################################
+###################################################################################
 {
     'name': "Employee Orientation & Training",
-    'version': '9.0.1.0.0',
+    'version': '9.0.2.0.0',
     "category": "Generic Modules/Human Resources",
     'summary': """Employee Orientation/Training Program""",
     'description': """Complete Employee Orientation/Training Program""",
     'author': "Cybrosys Techno Solutions",
     'company': "Cybrosys Techno Solutions",
-    'website': "http://www.cybrosys.com",
-    'depends': ['base', 'hr', 'mail', ],
+    'website': "https://www.cybrosys.com",
+    'depends': ['base', 'hr'],
     'data': [
+        'wizard/orientation_complete.xml',
         'views/orientation_checklist_line.xml',
         'views/orientation_checklist.xml',
         'views/employee_orientation.xml',
@@ -41,8 +38,8 @@
         'security/ir.model.access.csv',
     ],
     'images': ['static/description/banner.jpg'],
-    'license': 'LGPL-3',
+    'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
-    'application': True,
+    'application': False,
 }

@@ -1,29 +1,8 @@
 # -*- coding: utf-8 -*-
-##############################################################################
-#
-#    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2017-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Nilmar Shereef(<http://www.cybrosys.com>)
-#    you can modify it under the terms of the GNU LESSER
-#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
-#
-#    It is forbidden to publish, distribute, sublicense, or sell copies
-#    of the Software or modified copies of the Software.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
-#
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    GENERAL PUBLIC LICENSE (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
-##############################################################################
 from openerp import api, fields, models, _
 
 
-class Orientation(models.Model):
+class EmployeeTraining(models.Model):
     _name = 'employee.training'
     _rec_name = 'program_name'
     _description = "Employee Training"
@@ -34,12 +13,15 @@ class Orientation(models.Model):
     program_convener = fields.Many2one('res.users', string='Responsible User', size=32, required=True)
     training_id = fields.One2many('hr.employee', string='Employee Details', compute="employee_details")
     note_id = fields.Text('Description')
+    date_from = fields.Date(string="Date From")
+    date_to = fields.Date(string="Date To")
+    user_id = fields.Many2one('res.users', string='users', default=lambda self: self.env.user)
     company_id = fields.Many2one('res.company', string='Company', required=True,
                                  default=lambda self: self.env.user.company_id)
-    user_id = fields.Many2one('res.users', string='users', default=lambda self: self.env.user)
     state = fields.Selection([
         ('new', 'New'),
         ('confirm', 'Confirmed'),
+        ('cancel', 'Canceled'),
         ('complete', 'Completed'),
     ], string='Status', readonly=True, copy=False, index=True, track_visibility='onchange', default='new')
 
@@ -51,13 +33,15 @@ class Orientation(models.Model):
 
     @api.multi
     def complete_event(self):
-        user_obj = self.env.user
-        if user_obj == self.program_convener.user_id:
-            self.write({'state': 'complete'})
+        self.write({'state': 'complete'})
 
     @api.multi
     def confirm_event(self):
         self.write({'state': 'confirm'})
+
+    @api.multi
+    def cancel_event(self):
+        self.write({'state': 'cancel'})
 
     @api.multi
     def confirm_send_mail(self):
@@ -91,5 +75,3 @@ class Orientation(models.Model):
             'target': 'new',
             'context': ctx,
         }
-
-

@@ -1,26 +1,5 @@
 # -*- coding: utf-8 -*-
-##############################################################################
-#
-#    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2017-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Nilmar Shereef(<http://www.cybrosys.com>)
-#    you can modify it under the terms of the GNU LESSER
-#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
-#
-#    It is forbidden to publish, distribute, sublicense, or sell copies
-#    of the Software or modified copies of the Software.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
-#
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    GENERAL PUBLIC LICENSE (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
-##############################################################################
-from openerp import models, fields, api, _
+from openerp import models, fields, api
 from openerp.tools.translate import _
 
 
@@ -34,18 +13,18 @@ class OrientationChecklistRequest(models.Model):
     request_orientation = fields.Many2one('employee.orientation', string='Employee Orientation')
     employee_company = fields.Many2one('res.company', string='Company', required=True,
                                        default=lambda self: self.env.user.company_id)
-    user_id = fields.Many2one('res.users', string='Users', default=lambda self: self.env.user)
     partner_id = fields.Many2one('res.users', string='Responsible User')
     request_date = fields.Date(string="Date")
     employee_id = fields.Many2one('hr.employee', string='Employee')
     request_expected_date = fields.Date(string="Expected Date")
     attachment_id_1 = fields.Many2many('ir.attachment', 'orientation_rel_1', string="Attachment")
     note_id = fields.Text('Description')
+    user_id = fields.Many2one('res.users', string='users', default=lambda self: self.env.user)
     company_id = fields.Many2one('res.company', string='Company', required=True,
                                  default=lambda self: self.env.user.company_id)
-
     state = fields.Selection([
         ('new', 'New'),
+        ('cancel', 'Cancel'),
         ('complete', 'Completed'),
     ], string='Status', readonly=True, copy=False, index=True, track_visibility='onchange', default='new')
 
@@ -84,10 +63,8 @@ class OrientationChecklistRequest(models.Model):
 
     @api.multi
     def confirm_request(self):
-        user_obj = self.env.user
-        if user_obj == self.partner_id.user_id:
-            self.write({'state': "complete"})
-            data = self.env['orientation.check'].search([('checklist_line_name.line_name', '=', self.request_name),
-                                                     ('checklist_line_user.name', '=', self.partner_id.name)])
-            data.status = self.state
+        self.write({'state': "complete"})
 
+    @api.multi
+    def cancel_request(self):
+        self.write({'state': "cancel"})

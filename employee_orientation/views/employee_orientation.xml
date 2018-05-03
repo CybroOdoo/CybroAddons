@@ -8,19 +8,23 @@
                 <tree string="Employee Orientation">
                     <field name="employee_name" />
                     <field name="department" />
+                    <field name="responsible_user"/>
+                    <field name="orientation_id"/>
+                    <field name="state"/>
                 </tree>
             </field>
         </record>
+
         <record id="view_employee_orientation_form" model="ir.ui.view">
             <field name="name">employee.orientation.form</field>
             <field name="model">employee.orientation</field>
             <field name="arch" type="xml">
                 <form string="Employee Orientation">
                     <header>
-                         <button name="confirm_orientation" string="Confirm" type="object" states="draft" class="btn-primary" />
-                         <button name="complete_orientation" string="Mark Done" type="object" states="confirm" class="btn-primary"/>
-                                <!--attrs="{'visible': [('state', '==', 'confirm')]}"/>-->
-                         <field name="state" widget="statusbar" statusbar_visible="draft,confirm,complete"/>
+                        <button name="confirm_orientation" string="Confirm" type="object" states="draft" class="btn-primary" />
+                        <button name="complete_orientation" string="Mark Done" type="object" states="confirm" class="btn-primary"/>
+                        <button name="cancel_orientation" string="Cancel" type="object" states="draft,confirm"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,confirm,complete"/>
                     </header>
                     <sheet>
                         <div class="oe_title">
@@ -29,26 +33,36 @@
                             </h1>
                         </div>
                         <group colspan="1" col="4" name="main">
-                            <field name="employee_name" />
-                            <field name="department"/>
-                            <field name="date"/>
-                            <field name="job_id"/>
-                            <field name="responsible_user"/>
-                            <field name="parent_id"/>
-                            <field name="employee_company"/>
-                            <field name="orientation_id" domain="[('checklist_department', '=', department)]"/>
+                            <field name="employee_name" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
+                            <field name="department" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
+                            <field name="date" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
+                            <field name="job_id" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
+                            <field name="responsible_user" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
+                            <field name="parent_id" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
+                            <field name="employee_company" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
+                            <field name="orientation_id" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
                         </group>
                         <notebook colspan="4">
-                            <page name="checklist_lines" string="Orientation Checklists Lines">
-                                <field name="orientation_line_id">
+                            <page name="checklist_lines" string="Orientation Checklists Lines" attrs="{'invisible': [('state', '=', 'draft')]}">
+                                <field name="orientation_request" attrs="{'readonly':[('state','=','complete')]}">
                                     <tree string="lines" editable="bottom">
-                                        <field name="checklist_line_name"/>
-                                        <field name="checklist_line_user"/>
-                                        <field name="expected_date"/>
-                                        <field name="status"/>
+                                        <field name="request_name"/>
+                                        <field name="partner_id"/>
+                                        <field name="request_expected_date"/>
+                                        <field name="state"/>
                                     </tree>
+                                    <form>
+                                        <group colspan="1" col="4" name="main">
+                                            <field name="request_name" />
+                                            <field name="request_orientation"/>
+                                            <field name="employee_company" readonly="1"/>
+                                            <field name="partner_id"/>
+                                            <field name="request_date" readonly="1"/>
+                                            <field name="request_expected_date"/>
+                                            <field name="employee_id" invisible="1"/>
+                                        </group>
+                                    </form>
                                 </field>
-
                             </page>
                             <page name="note_book"
                                 string="Notes">
@@ -93,6 +107,6 @@
                 </p>
              </field>
         </record>
-        <menuitem action="action_employee_orientation" id="menu_employee_orientation_child" name="Employee Orientation" parent="menu_employee_orientation" sequence="1" />
+        <menuitem action="action_employee_orientation" id="menu_employee_orientation_child" name="Employee Orientation" parent="menu_employee_orientation" sequence="1" groups="base.group_hr_manager,base.group_hr_user"/>
     </data>
 </openerp>
