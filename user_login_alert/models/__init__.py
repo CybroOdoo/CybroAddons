@@ -20,5 +20,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import logged_details
-
+from . import logged_details
