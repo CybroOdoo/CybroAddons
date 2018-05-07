@@ -19,4 +19,4 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import models
+from . import models
