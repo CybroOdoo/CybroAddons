@@ -25,7 +25,7 @@
     'summary': "Integrates LinkedIn with HR Recruitment",
     'description': "Basic module for LnkedIn-HR Recruitment connector",
     'category': 'Generic Modules/Human Resources',
-    'version': "10.0.1.0.0",
+    'version': "10.0.1.1.0",
     'depends': ['hr_recruitment', 'auth_oauth'],
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
