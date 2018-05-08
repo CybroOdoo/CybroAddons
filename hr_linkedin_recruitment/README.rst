@@ -19,10 +19,6 @@ The module integrates LinkedIn with Odoo HR Recruitment.
  * Automate Odoo HRMS with LinkedIn.
 
 
-Contributor
------------
-* `Nilmar Shereef <https://twitter.com/nilmarshereef>`__
-
 Company
 -------
 * `Cybrosys Technologies <https://cybrosys.com/>`__
