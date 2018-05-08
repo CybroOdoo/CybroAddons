@@ -33,10 +33,7 @@
     'data': [
         'security/ir.model.access.csv',
         'security/reward_security.xml',
-        'views/hr_reward_warning_view.xml',
-        'views/hr_employee_view.xml',
-        'data/reward_rule.xml',
-        'reports/letter.xml',
+        'views/hr_announcement_view.xml',
     ],
     'demo': [],
     'images': ['static/description/banner.jpg'],
