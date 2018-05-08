@@ -20,5 +20,5 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import hr_payroll_report
+from . import hr_payroll_report
 

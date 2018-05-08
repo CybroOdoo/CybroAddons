@@ -20,4 +20,4 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import product_deletion
+from . import product_deletion

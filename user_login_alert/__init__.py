@@ -20,6 +20,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import controllers
-import models
-
+from . import controllers
+from . import models
