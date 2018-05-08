@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ###################################################################################
-#    A part of Open HRMS Project <https://www.openhrms.com>
+#    A part of OpenHRMS Project <https://www.openhrms.com>
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2018-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
@@ -22,7 +22,7 @@
 ###################################################################################
 {
     'name': 'Open HRMS Official Announcements',
-    'version': '10.0.1.0.0',
+    'version': '10.0.1.1.0',
     'summary': """Managing Official Announcements""",
     'description': 'This module helps you to manage hr official announcements',
     'category': 'Generic Modules/Human Resources',
@@ -33,10 +33,7 @@
     'data': [
         'security/ir.model.access.csv',
         'security/reward_security.xml',
-        'views/hr_reward_warning_view.xml',
-        'views/hr_employee_view.xml',
-        'data/reward_rule.xml',
-        'reports/letter.xml',
+        'views/hr_announcement_view.xml',
     ],
     'demo': [],
     'images': ['static/description/banner.jpg'],
