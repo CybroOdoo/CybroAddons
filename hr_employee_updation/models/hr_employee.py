@@ -39,7 +39,7 @@ class HrEmployeeContractName(models.Model):
     employee_obj = fields.Many2one('hr.employee', invisible=1)
 
 
-class HrEmployeeFamily(models.Model):
+class HrEmployeeFamilyInfo(models.Model):
     """Table for keep employee family information"""
 
     _name = 'hr.employee.family'
@@ -48,21 +48,12 @@ class HrEmployeeFamily(models.Model):
     member_name = fields.Char(string='Name', related='employee_ref.name', store=True)
     employee_id = fields.Many2one(string="Employee", help='Select corresponding Employee', comodel_name='hr.employee',
                                   invisible=1)
-    employee_ref = fields.Many2one(string="Is Employee", help='If family member currently is an employee of '
-                                                              'same company, then please tick this field',
-                                   comodel_name='hr.employee')
-    member_id = fields.Char(string='Identification No', related='employee_ref.identification_id', store=True)
-    member_passport = fields.Char(string='Passport No', related='employee_ref.passport_id', store=True)
-    member_passport_expiry_date = fields.Date(string='Expiry Date', related='employee_ref.passport_expiry_date',
-                                              store=True)
     relation = fields.Selection([('father', 'Father'),
                                  ('mother', 'Mother'),
                                  ('daughter', 'Daughter'),
                                  ('son', 'Son'),
                                  ('wife', 'Wife')], string='Relationship', help='Relation with employee')
     member_contact = fields.Char(string='Contact No', related='employee_ref.personal_mobile', store=True)
-    date_of_birth = fields.Date(string="Date of Birth", related='employee_ref.birthday', store=True)
-    gender = fields.Selection(string='Gender', selection=GENDER_SELECTION, related='employee_ref.gender', store=True)
 
 
 class HrEmployee(models.Model):
@@ -113,16 +104,5 @@ class HrEmployee(models.Model):
                                               help='You can attach the copy of Passport')
     fam_ids = fields.One2many('hr.employee.family', 'employee_id', string='Family', help='Family Information')
 
-
-class HrEmployeeAttachment(models.Model):
-    _inherit = 'ir.attachment'
-
-    id_attachment_rel = fields.Many2many('hr.employee', 'id_attachment_id', 'attach_ref', 'id_ref', string="Attachment",
-                                         invisible=1)
-    passport_attachment_rel = fields.Many2many('hr.employee', 'passport_attachment_id', 'attach_ref1', 'passport_ref',
-                                               string="Attachment", invisible=1)
-    training_attach_rel = fields.Many2many('ir.attachment', 'certificate_id', 'training_attach_id3', 'training_id',
-                                           string="Certificates", invisible=1,
-                                           help='You can attach the copy of your certificate')
 
 

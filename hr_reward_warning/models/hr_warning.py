@@ -27,7 +27,7 @@ from odoo import models, fields, api, _
 class HrAnnouncementTable(models.Model):
     _name = 'hr.announcement'
     _description = 'HR Announcement'
-    _inherit = ['mail.thread', 'ir.needaction_mixin']
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     name = fields.Char(string='Code No:')
     announcement_reason = fields.Text(string='Title', states={'draft': [('readonly', False)]}, required=True, readonly=True)
