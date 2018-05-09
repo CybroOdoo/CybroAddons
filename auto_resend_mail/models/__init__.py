@@ -20,5 +20,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import auto_resend
+from . import auto_resend
+
 
