@@ -40,7 +40,7 @@
     """,
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
-    'website': 'http://www.yourcompany.com',
+    'website': 'https://www.cybrosys.com',
     'depends': ['product', 'quality_control'],
     'data': ['views/qc_inspection_views.xml'],
     'images': ['static/description/banner.jpg'],
