@@ -22,7 +22,7 @@
 ###################################################################################
 {
     'name': 'Open HRMS Employee Info',
-    'version': '11.0.1.0.0',
+    'version': '11.0.2.0.0',
     'summary': """Adding Advanced Fields In Employee Master""",
     'description': 'This module helps you to add more information in employee records.',
     'category': 'Generic Modules/Human Resources',
