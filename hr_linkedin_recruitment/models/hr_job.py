@@ -25,6 +25,7 @@ _logger = logging.getLogger(__name__)
 try:
     import mechanize
     from linkedin import linkedin
+    from mechanize_op import MechanizeRedirectHandler
 
 except ImportError:
     _logger.error('Odoo module hr_linkedin_recruitment depends on the several external python package'
@@ -34,8 +35,7 @@ import requests
 import json
 import urlparse
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
-from mechanize_op import MechanizeRedirectHandler
+from odoo.exceptions import ValidationError, Warning
 
 
 class HrJobShare(models.Model):
@@ -59,15 +59,25 @@ class HrJobShare(models.Model):
         has_access_url = 'https://api.linkedin.com/v1/companies/%s/relation-to-viewer/is-company-share-enabled?format=json'%(li_credential['page_id'])
         page_share_url = 'https://api.linkedin.com/v1/companies/%s/shares?format=json'%(li_credential['page_id'])
 
-        response = self.has_acces_request('GET', has_access_url, access_token)
-        access_response_text = response.json()
+        access_response = self.has_acces_request('GET', has_access_url, access_token)
+        access_response_text = access_response.json()
         if access_response_text:
             response = self.share_request('POST', page_share_url, access_token, data=json.dumps(share_data))
             share_response_text = response.json()
             share_response_code = response.status_code
             if share_response_code == 201:
                 self.update_key = share_response_text['updateKey']
+        else:
+            raise Warning("You have no share access in company page.!")
 
+    def has_acces_request(self, method, has_access_url, access_token):
+        """ Function will return TRUE if credentials user has the access to update """
+        headers = {'x-li-format': 'json', 'Content-Type': 'application/json'}
+        params = {}
+        params.update({'oauth2_access_token': access_token})
+        kw = dict(params=params, headers=headers, timeout=60)
+        req_response = requests.request(method.upper(), has_access_url, **kw)
+        return req_response
 
     def share_request(self, method, page_share_url, access_token, data):
         """ Function will return UPDATED KEY , [201] if sharing is OK """
@@ -93,15 +103,15 @@ class HrJobShare(models.Model):
             li_credential['page_id'] = self.env['ir.values'].get_default('hr.recruitment.config.settings',
                                                                          'company_page_id')
         else:
-            raise exceptions.Warning(_('Please fill up company page ID in LinkedIn Credential settings.'))
+            raise Warning(_('Please fill up company page ID in LinkedIn Credential settings.'))
         if self.env['ir.values'].get_default('hr.recruitment.config.settings', 'li_username'):
             li_credential['un'] = self.env['ir.values'].get_default('hr.recruitment.config.settings', 'li_username')
         else:
-            raise exceptions.Warning(_('Please fill up username in LinkedIn Credential settings.'))
+            raise Warning(_('Please fill up username in LinkedIn Credential settings.'))
         if self.env['ir.values'].get_default('hr.recruitment.config.settings', 'li_password'):
             li_credential['pw'] = self.env['ir.values'].get_default('hr.recruitment.config.settings', 'li_password')
         else:
-            raise exceptions.Warning(_('Please fill up password in LinkedIn Credential settings.'))
+            raise Warning(_('Please fill up password in LinkedIn Credential settings.'))
 
         # Browser Data Posting And Signing
         br = mechanize.Browser()
@@ -109,7 +119,7 @@ class HrJobShare(models.Model):
         br.handler_classes['_redirect'] = MechanizeRedirectHandler
         br.set_handle_redirect(True)
         br.set_handle_robots(False)
-        return_uri = 'http://0.0.0.0:8010'
+        return_uri = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
         li_permissions = ['r_basicprofile', 'r_emailaddress', 'w_share', 'rw_company_admin']
         auth = linkedin.LinkedInAuthentication(li_credential['api_key'],
                                                li_credential['secret_key'],
@@ -117,11 +127,15 @@ class HrJobShare(models.Model):
                                                li_permissions)
         br.open(auth.authorization_url)
         br.select_form(nr=0)
-
+        print "li_credential", li_credential
         br.form['session_key'] = li_credential['un']
         br.form['session_password'] = li_credential['pw']
         r = br.submit()
-        auth.authorization_code = urlparse.parse_qs(urlparse.urlsplit(r.geturl()).query)['code']
+        try:
+            auth.authorization_code = urlparse.parse_qs(urlparse.urlsplit(r.geturl()).query)['code']
+        except:
+            raise Warning("Please cross check your username and password.!")
+
         li_suit_credent = {}
         li_suit_credent['access_token'] = str(auth.get_access_token().access_token)
         li_suit_credent['li_credential'] = li_credential
