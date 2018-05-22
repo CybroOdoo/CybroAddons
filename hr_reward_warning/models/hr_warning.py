@@ -41,7 +41,6 @@ class HrAnnouncementTable(models.Model):
                                      string="Attachment", help='You can attach the copy of your Letter')
     company_id = fields.Many2one('res.company', string='Company',
                                  default=lambda self: self.env.user.company_id, readonly=True,)
-    is_announcement = fields.Boolean(string='Is general Announcement?')
     announcement = fields.Html(string='Letter', states={'draft': [('readonly', False)]}, readonly=True)
 
     @api.multi
@@ -62,6 +61,5 @@ class HrAnnouncementTable(models.Model):
 
     @api.model
     def create(self, vals):
-        if vals.get('is_announcement'):
-            vals['name'] = self.env['ir.sequence'].next_by_code('hr.announcement')
+        vals['name'] = self.env['ir.sequence'].next_by_code('hr.announcement')
         return super(HrAnnouncementTable, self).create(vals)

@@ -29,15 +29,13 @@ class HrAnnouncements(models.Model):
     @api.multi
     def _announcement_count(self):
         for obj in self:
-            announcement_ids = self.env['hr.announcement'].sudo().search([('is_announcement', '=', True),
-                                                                          ('state', 'in', ('approved', 'done'))])
+            announcement_ids = self.env['hr.announcement'].sudo().search([('state', 'in', ('approved', 'done'))])
             obj.announcement_count = len(announcement_ids)
 
     @api.multi
     def announcement_view(self):
         for obj in self:
-            ann_obj = self.env['hr.announcement'].sudo().search([('is_announcement', '=', True),
-                                                                 ('state', 'in', ('approved', 'done'))])
+            ann_obj = self.env['hr.announcement'].sudo().search([('state', 'in', ('approved', 'done'))])
             ann_ids = []
             for each in ann_obj:
                 ann_ids.append(each.id)
