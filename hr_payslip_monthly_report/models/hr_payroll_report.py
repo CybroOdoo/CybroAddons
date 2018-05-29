@@ -51,7 +51,7 @@ class PayrollReportView(models.Model):
         from_str = """
             hr_payslip_line psl  join hr_payslip ps on (ps.employee_id=psl.employee_id and ps.id=psl.slip_id)
             join hr_employee emp on (ps.employee_id=emp.id) join hr_department dp on (emp.department_id=dp.id)
-            join hr_job jb on (emp.department_id=jb.id) join res_company cmp on (cmp.id=ps.company_id) where psl.code='NET'
+            join hr_job jb on (emp.job_id=jb.id) join res_company cmp on (cmp.id=ps.company_id) where psl.code='NET'
          """
         return from_str
 
