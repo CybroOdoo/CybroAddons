@@ -3,8 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Anusha (<https://www.cybrosys.com>)
-#
+#    Author: Anusha P P(<https://www.cybrosys.com>)
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
 #    published by the Free Software Foundation, either version 3 of the
@@ -21,7 +20,7 @@
 ###################################################################################
 {
     'name': 'Product Return In POS',
-    'version': '10.0.1.0.0',
+    'version': '10.0.1.1.0',
     'category': 'Point of Sale',
     'summary': 'POS Order Return',
     'author': 'Cybrosys Techno Solutions',

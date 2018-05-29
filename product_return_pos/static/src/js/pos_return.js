@@ -131,6 +131,7 @@ models.PosModel = models.PosModel.extend({
         var self = this;
         var new_order = {};
         var orders_list = self.pos_orders;
+
         for (var i in orders) {
             var partners = self.partners;
             var partner = "";
@@ -459,7 +460,9 @@ var OrderSuper = models.Order;
 models.Order = models.Order.extend({
     initialize: function(attributes,options){
         var order = OrderSuper.prototype.initialize.call(this, attributes,options);
-        order.return_ref = '';
+        if (typeof(order) != 'undefined'){
+            order.return_ref = ' '
+        }
         return order;
     },
     init_from_JSON: function(json) {

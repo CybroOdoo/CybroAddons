@@ -50,7 +50,7 @@ class PosReturn(models.Model):
                     if line:
                         qty = -(data[2]['qty'])
                         line.returned_qty += qty
-        if ui_order['return_ref']:
+        if 'return_ref' in ui_order.keys() and ui_order['return_ref']:
             order['return_ref'] = ui_order['return_ref']
             parent_order = self.search([('pos_reference', '=', ui_order['return_ref'])], limit=1)
             lines = self.env['pos.order.line'].search([('order_id', '=', parent_order.id)])
@@ -61,11 +61,12 @@ class PosReturn(models.Model):
                 if line.returned_qty:
                     ret += 1
             if qty-ret == 0:
-                parent_order.return_status = 'fully_return'
+                if parent_order:
+                    parent_order.return_status = 'fully_return'
             elif ret:
                 if qty > ret:
-                    parent_order.return_status = 'partialy_return'
-
+                    if parent_order:
+                        parent_order.return_status = 'partialy_return'
         return order
 
     @api.model
