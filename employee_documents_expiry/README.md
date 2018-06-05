@@ -21,6 +21,6 @@ Contacts
 
 info - info@cybrosys.com
 Cybrosys Odoo - odoo@cybrosys.com
-Niyas Raphy - niyas@cybrosys.in
-
+Nilmar Shereef - shereef@cybrosys.in
+Jesni Banu - jesni@cybrosys.in
 
