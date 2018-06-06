@@ -20,7 +20,7 @@
 #
 ###################################################################################
 import csv
-import urllib2
+import urllib
 import base64
 import StringIO
 import sys
@@ -49,7 +49,7 @@ class ProductImageImportWizard(models.TransientModel):
             image_path = row[1]
             if "http://" in image_path or "https://" in image_path:
                 try:
-                    link = urllib2.urlopen(image_path).read()
+                    link = urllib.urlopen(image_path).read()
                     image_base64 = base64.encodestring(link)
                     if self.product_model == '1':
                         product_obj = self.env['product.template']
