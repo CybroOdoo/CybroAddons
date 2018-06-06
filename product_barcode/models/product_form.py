@@ -16,12 +16,6 @@ class ProductAutoBarcode(models.Model):
         res.barcode = ean
         return res
 
-    def init(self):
-        products = self.env['product.product'].search([])
-        for product in products:
-            ean = generate_ean(str(product.id))
-            product.barcode = ean
-
 
 def ean_checksum(eancode):
     """returns the checksum of an ean string of length 13, returns -1 if the string has the wrong length"""
