@@ -36,7 +36,7 @@
         'data/download_data.xml'
 
     ],
-    'images': ['static/description/banner.gif'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'demo': [],
     'installable': True,
