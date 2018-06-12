@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<!-- Customize Attendance Report -->
+    <record id="inherited_view_attendance_tree" model="ir.ui.view">
+        <field name="name">inherited_hr.attendance.tree</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+        <field name="arch" type="xml">
+            <tree string="Employee attendances">
+                <field name="worked_hours" type="measure"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="inherited_hr_attendance_view_filter" model="ir.ui.view">
+        <field name="name">inherited_hr_attendance_view_filter</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_filter"/>
+        <field name="arch" type="xml">
+            <search string="Hr Attendance Search">
+                <group expand="0" string="Group By">
+                    <separator/>
+                	<filter name="date" string="Date" context="{'group_by':'check_in:day'}"/>
+                    
+                </group>
+            </search>
+        </field>
+    </record>
+        	
+    <record id="view_zk_report_daily_attendance_search" model="ir.ui.view">
+        <field name="name">zk.report.daily.attendance.search</field>
+        <field name="model">zk.report.daily.attendance</field>
+        <field name="arch" type="xml" >
+            <search string="Hr Attendance Search">
+                <filter icon="terp-stock_align_left_24" string="My Attendance" name="my_attendance" domain="[('name.user_id.id', '=', uid)]" />
+                <filter name="today" string="Today" domain="[('punching_time', '&gt;=', datetime.datetime.now().replace(hour=0, minute=0, second=0)),('punching_time', '&lt;=', datetime.datetime.now().replace(hour=23, minute=59, second=59))]" />
+                <filter string="Current Month" domain="[('punching_time', '&gt;=', datetime.datetime.now().strftime('%Y-%m-01'))]" />
+                <separator/>
+                
+                <field name="name"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_zk_report_daily_attendance_tree" model="ir.ui.view">
+        <field name="name">zk.report.daily.attendance.tree</field>
+        <field name="model">zk.report.daily.attendance</field>
+        <field name="arch" type="xml" >
+            <tree string="Attendance" create="false" delete="false" colors="green:punch_type in ('0');red:punch_type in ('1');">
+                <field name="punching_day"/>
+                <field name="name"/>
+                <field name="punch_type"/>
+                <field name="attendance_type"/>
+                <field name="punching_time"/>
+                <field name="address_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_zk_report_daily_attendance" model="ir.actions.act_window">
+        <field name="name">Attendance Analysis</field>
+        <field name="res_model">zk.report.daily.attendance</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree</field>
+        <field name="context">{'search_default_my_attendance':1}</field>
+        <field name="search_view_id" ref="view_zk_report_daily_attendance_search" />
+    </record>
+
+    <menuitem id="menu_zk_attendance_view" name="Attendance log" action="action_zk_report_daily_attendance" parent="zk_machine_menu"
+              sequence="2" groups="hr_attendance.group_hr_attendance_user"/>
+</odoo>
