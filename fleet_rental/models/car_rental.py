@@ -598,7 +598,6 @@ class FleetRentalLine(models.Model):
     date_due = fields.Date(string='Due Date', related='invoice_ref.date_due')
 
     @api.multi
-    @api.depends('payment_info')
     def paid_info(self):
         for each in self:
             if self.env['account.invoice'].browse(each.invoice_number):
