@@ -10,7 +10,7 @@ class SalaryAdvancePayment(models.Model):
     _name = "salary.advance"
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    name = fields.Char(string='Name', readonly=True, select=True, default=lambda self: 'Adv/')
+    name = fields.Char(string='Name', readonly=True, default=lambda self: 'Adv/')
     employee_id = fields.Many2one('hr.employee', string='Employee', required=True)
     date = fields.Date(string='Date', required=True, default=lambda self: fields.Date.today())
     reason = fields.Text(string='Reason')
