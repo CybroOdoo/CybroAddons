@@ -32,6 +32,7 @@
     'depends': ['base', 'mail'],
     'license': 'AGPL-3',
     'data': [
+        'security/ir.model.access.csv',
         'views/allowed_ips_view.xml',
     ],
     'images': ['static/description/banner.jpg'],
