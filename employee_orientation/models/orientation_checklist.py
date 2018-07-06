@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from openerp import models, fields, _
+from odoo import models, fields, _
 
 
 class OrientationChecklist(models.Model):
