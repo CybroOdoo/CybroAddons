@@ -20,8 +20,10 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
+
 import string
 import random
+
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
@@ -38,7 +40,8 @@ class GiftVoucher(models.Model):
         ], string="Applicable on ", default='product'
     )
     product_id = fields.Many2one('product.product', string="Product")
-    product_categ = fields.Many2one('product.category', string="Product Category")
+    product_categ = fields.Many2one('product.category',
+                                    string="Product Category")
     min_value = fields.Integer(string="Minimum Voucher Value", required=True)
     max_value = fields.Integer(string="Maximum Voucher Value", required=True)
     expiry_date = fields.Date(string="Expiry Date", required=True)
@@ -61,7 +64,8 @@ class GiftCoupon(models.Model):
     voucher = fields.Many2one('gift.voucher', string="Voucher", required=True)
     start_date = fields.Date(string="Start Date")
     end_date = fields.Date(string="End Date")
-    partner_id = fields.Many2one('res.partner', string="Limit to a Single Partner")
+    partner_id = fields.Many2one('res.partner',
+                                 string="Limit to a Single Partner")
     limit = fields.Integer(string="Total Available For Each User", default=1)
     total_avail = fields.Integer(string="Total Available", default=1)
     voucher_val = fields.Float(string="Voucher Value")
@@ -72,7 +76,8 @@ class GiftCoupon(models.Model):
 
     @api.onchange('voucher_val')
     def check_val(self):
-        if self.voucher_val > self.voucher.max_value or self.voucher_val < self.voucher.min_value:
+        if (self.voucher_val > self.voucher.max_value
+                or self.voucher_val < self.voucher.min_value):
             raise UserError(_("Please check the voucher value"))
 
 
@@ -87,4 +92,5 @@ class CouponPartner(models.Model):
 class PartnerExtended(models.Model):
     _inherit = 'res.partner'
 
-    applied_coupon = fields.One2many('partner.coupon', 'partner_id', string="Coupons Applied")
+    applied_coupon = fields.One2many('partner.coupon', 'partner_id',
+                                     string="Coupons Applied")
