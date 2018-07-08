@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: LINTO C T(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -20,4 +20,5 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import gift_voucher
+
+import gift_voucher  # noqa

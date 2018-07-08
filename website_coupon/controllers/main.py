@@ -19,10 +19,10 @@ class WebsiteCoupon(http.Controller):
         if order:
             from_currency = order.company_id.currency_id
             to_currency = order.pricelist_id.currency_id
-            compute_currency = lambda price: from_currency.compute(price,
-                                                                   to_currency)
+            compute_currency = lambda price: from_currency.compute(  # noqa
+                price, to_currency)
         else:
-            compute_currency = lambda price: price
+            compute_currency = lambda price: price  # noqa
 
         values = {
             'website_sale_order': order,

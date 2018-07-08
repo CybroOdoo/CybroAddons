@@ -3,7 +3,7 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: LINTO C T(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -24,7 +24,8 @@
 {
     'name': 'Website Coupon Code',
     'version': '10.0.2.0.0',
-    'summary': 'Manage Website Coupon Codes for Products/Categories/All Products & Its Redeem Operations',
+    'summary': ('Manage Website Coupon Codes for '
+                'Products/Categories/All Products & Its Redeem Operations'),
     'category': 'Website',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
