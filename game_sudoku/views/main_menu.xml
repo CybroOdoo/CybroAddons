@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="action_entertainment_games_request" model="ir.actions.client">
+            <field name="name">Game Approval</field>
+            <field name="tag">entertainment_games_my_game</field>
+            <field name="target">main</field>
+        </record>
+
+        <record id="game_approval_tree" model="ir.ui.view">
+            <field name="name">employee.game.approve.tree</field>
+            <field name="model">employee.game.approve</field>
+            <field name="arch" type="xml">
+                <tree string="Game Approval" create="false" edit="false"
+                      colors="red:state == 'draft';green:state == 'approve';grey:state == 'cancel';">
+                    <field name="name"/>
+                    <field name="department_id"/>
+                    <field name="approve_datetime"/>
+                    <field name="game_user"/>
+                    <field name="user_id" invisible="1"/>
+                    <field name="state" invisible="1"/>
+                    <button name="approve" string="Confirm" type="object" icon="fa-check" style="color:green"
+                             attrs="{'invisible':[('state','!=', 'draft')]}"/>
+                    <button name="cancel" string="Cancel" type="object" icon="fa-close" style="color:red"
+                            attrs="{'invisible':[('state','=', 'cancel')]}"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_entertainment_games_approval_tree" model="ir.actions.act_window">
+            <field name="name">Game Approval</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">employee.game.approve</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="game_approval_tree"/>
+        </record>
+
+        <menuitem id="entertainment_games_menu" name="Games" sequence="105" groups="base.group_user"/>
+
+        <menuitem id="entertainment_games_approval_request_menu" name="May I Play?" sequence="1"
+                  action="action_entertainment_games_request" parent="entertainment_games_menu"
+                  groups="game_sudoku.odoo_gamer_approve_req"/>
+
+        <menuitem id="entertainment_games_approval_menu" name="Game Request" sequence="2"
+                  action="action_entertainment_games_approval_tree" parent="entertainment_games_menu"
+                  groups="hr.group_hr_manager"/>
+    </data>
+</odoo>

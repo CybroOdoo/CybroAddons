@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_payment_template">
+        <t t-call="report.html_container">
+            <t t-set="data_report_margin_top" t-value="12"/>
+            <t t-set="data_report_header_spacing" t-value="9"/>
+            <t t-set="data_report_dpi" t-value="110"/>
+            <t t-call="report.internal_layout">
+                <div class="page">
+                    <h2>Payments Report</h2>
+                    <div class="row mt32">
+                        <div class="col-xs-3">
+                            <strong>Company:</strong>
+                            <p t-esc="res_company.name"/>
+                        </div>
+                        <div class="col-xs-3">
+                            <strong>Journal:</strong>
+                            <t t-foreach="docs" t-as="o"><span t-esc="o.name"/>,</t>
+                        </div>
+                        <div class="col-xs-3">
+                            <strong>Payment Types</strong>
+                            <p t-if="data['form']['payment_type'] == 'inbound'">Customer</p>
+                            <p t-if="data['form']['payment_type'] == 'outbound'">Supplier</p>
+                            <p t-if="data['form']['pdc_only'] == 1"> PDC only</p>
+                            <p t-if="data['form']['payment_type'] == '' and data['form']['pdc_only'] == 0">ALL</p>
+                        </div>
+                    </div>
+                    <t t-foreach="docs" t-as="o">
+                        <h4><t t-esc="o.name"/> Journal</h4>
+                        <table class="table table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Name</th>
+                                    <th>Partner</th>
+                                    <th>Bank Ref.</th>
+                                    <th>Cheque Ref.</th>
+                                    <th>Amount</th>
+                                    <th>Effc. Date</th>
+                                    <th>State</th>
+                                </tr>
+                            </thead>
+                            <t t-if="lines[o.id]">
+                                <tbody>
+                                    <tr t-foreach="lines[o.id]" t-as="ap">
+                                        <td><span t-esc="ap.name"/></td>
+                                        <td><span t-field="ap.payment_date"/></td>
+                                        <td><span t-esc="ap.sudo().partner_id and ap.sudo().partner_id.name[:23] or ''"/></td>
+                                        <td><span t-field="ap.bank_reference"/></td>
+                                        <td><span t-field="ap.cheque_reference"/></td>
+                                        <td><span t-esc="ap.amount" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                                        <td><span t-field="ap.effective_date"/></td>
+                                        <td><span t-field="ap.state"/></td>
+                                    </tr>
+                                </tbody>
+                            </t>
+                        </table>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <data>
+        <report
+            id="action_report_payment"
+            model="account.payment"
+            string="Payments Report"
+            report_type="qweb-pdf"
+            name="account_pdc_payment_report.report_payment_template"
+            file="account_pdc_payment_report.report_payment_template"
+            />
+    </data>
+
+</odoo>

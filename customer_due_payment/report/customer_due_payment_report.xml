@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="account.report_overdue_document">
+            <t t-call="report.external_layout">
+                <div class="page">
+                    <div class="row">
+                        <div class="col-xs-5 col-xs-offset-7">
+                            <span t-field="o.name"/><br/>
+                            <span t-raw="o.contact_address.replace('\n\n', '\n').replace('\n', '&lt;br&gt;')"/>
+                            <span t-field="o.vat"/>
+                        </div>
+                        <p>
+                            Document: Customer account statement<br/>
+                            Date: <span t-esc="Date"/><br/>
+                            <t t-if="o.ref">Customer ref: <span t-field="o.ref"/></t>
+                        </p>
+
+                        <t t-if="Lines[o.id]">
+                            <span t-field="res_company.overdue_msg"/>
+                            <table class="table table-condensed" t-foreach="Lines[o.id]" t-as="currency">
+                                <thead>
+                                    <tr>
+                                        <th>Reference number</th>
+                                        <th class="text-center">Date</th>
+                                        <th class="text-center">Due Date</th>
+                                        <th>Communication</th>
+                                        <th class="text-right">Total</th>
+                                        <th class="text-right">Due</th>
+                                        <th class="text-right">Paid</th>
+                                        <th class="text-center">Litigation</th>
+                                    </tr>
+                                </thead>
+                                <t t-set="total_due" t-value="0"/>
+                                <t t-set="total_paid" t-value="0"/>
+                                <t t-set="total" t-value="0"/>
+                                <tr t-foreach="Lines[o.id][currency]" t-as="line">
+                                    <t t-set="invoice" t-value="env['account.invoice'].search([('number','=',line['move_id'])])"/>
+                                    <td>
+                                        <span t-esc="line['move_id']"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="line['date']"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="line['date_maturity']"/>
+                                    </td>
+                                    <td>
+                                        <t t-if="line['name'] != '/'"><span t-esc="line['name']"/></t>
+                                        <span t-esc="line['ref']"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="invoice.amount_total" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="invoice.residual" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="invoice.amount_total - invoice.residual" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-if="line['blocked']">x</span>
+                                    </td>
+                                    <t t-set="total_due" t-value="total_due + invoice.residual"/>
+                                    <t t-set="total_paid" t-value="total_paid + (invoice.amount_total - invoice.residual)"/>
+                                    <t t-set="total" t-value="total + invoice.amount_total"/>
+                                </tr>
+                                <tr>
+                                    <td colspan="3"></td>
+                                    <td><strong>Subtotal :</strong></td>
+                                    <td class="text-right"><span t-esc="total" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                    <td class="text-right"><span t-esc="total_due" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                    <td class="text-right"><span t-esc="total_paid" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3"></td>
+                                    <td><strong>Balance :</strong></td>
+                                    <td></td>
+                                    <td class="text-right">
+                                        <span t-esc="total_due" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </t>
+                        <p t-if="not Lines[o.id]">
+                            <strong>There is nothing due with this customer.</strong>
+                        </p>
+                    </div>
+                </div>
+           </t>
+        </template>
+    </data>
+</odoo>

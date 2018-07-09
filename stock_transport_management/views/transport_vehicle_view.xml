@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="transport_management_vehicle_creation_form_view">
+        <field name="name">Vehicles</field>
+        <field name="model">sale.vehicle</field>
+        <field name="arch" type="xml">
+            <form string="Vehicle">
+                <sheet>
+                    <field name="vehicle_image" widget="image" class="oe_avatar"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" style="width:50%%"/>
+                        </h1>
+                        <seperator></seperator>
+                        <label for="licence_plate"/>
+                        <h2>
+                            <field name="licence_plate" style="width:25%%"/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="driver_name"/>
+                            <field name="vehicle_address"/>
+                            <field name="vehicle_city"/>
+                            <field name="country_id"/>
+                        </group>
+                        <group>
+                            <field name="mob_no"/>
+                            <field name="vehicle_zip"/>
+                            <field name="state_id"/>
+                            <field name="active_available" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+        </record>
+
+        <record id="vehicle_template_kanban_view" model="ir.ui.view">
+            <field name="name">sale.vehicle.kanban</field>
+            <field name="model">sale.vehicle</field>
+            <field name="arch" type="xml">
+            <kanban>
+                <field name="vehicle_image" modifiers="{}"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="o_kanban_image">
+                                <img t-att-src="kanban_image('sale.vehicle', 'vehicle_image', record.id.value)"/>
+                            </div>
+                            <div class="oe_kanban_details">
+                            <strong>
+                                <span t-if="record.name.value">[<field name="name"/>]</span>
+                                <ul>
+                                    <li>Name :<field name="driver_name"/></li>
+                                    <li>Phone Number : <field name="mob_no"/> </li>
+                                </ul>
+                            </strong>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+            </field>
+        </record>
+
+        <record id="vehicle_template_action" model="ir.actions.act_window">
+            <field name="name">Vehicle</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.vehicle</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="vehicle_template_kanban_view"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to define a new Vehicle.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="main_transportation_vehicle_creation_menu" name="Vehicles"  parent="sales_team.menu_sale_config" action="vehicle_template_action" sequence="2"/>
+
+    </data>
+</odoo>

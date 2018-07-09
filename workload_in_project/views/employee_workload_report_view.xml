@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model='ir.ui.view' id='wizard_workload_report_form_view'>
+            <field name="name">wizard.workload.report.form</field>
+            <field name="model">wizard.workload.report</field>
+            <field name="arch" type="xml">
+                <form string="Employee Workload Report">
+                    <group>
+                        <group>
+                            <field name="from_date"/>
+                            <field name="to_date"/>
+                        </group>
+                        <group>
+                            <field name="working_hr"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="workload_report" type="object" default_focus="1"
+                                string="Print" class="oe_highlight"
+                                icon='fa-print'/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model='ir.actions.act_window' id='wizard_workload_report_act'>
+            <field name="name">Employee Workload Report</field>
+            <field name="res_model">wizard.workload.report</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="wizard_workload_report_form_view"/>
+            <field name="target">new</field>
+        </record>
+
+        <record model="ir.ui.view" id="res_user_kanban_view">
+            <field name="name">res.users.kanban</field>
+            <field name="model">res.users</field>
+            <field name="arch" type="xml">
+                <kanban class="o_res_partner_kanban" create="false">
+                    <field name="color"/>
+                    <field name="display_name"/>
+                    <field name="email"/>
+                    <field name="image"/>
+                    <field name="progress_rate"/>
+                    <field name="maximum_rate"/>
+                    <field name="image"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_content">
+                                <div>
+                                    <div style="display: inline-block">
+                                         <div class="o_kanban_image">
+                                            <t t-if="record.image.raw_value">
+                                                <img t-att-src="kanban_image('res.users', 'image_small', record.id.value)"/>
+                                            </t>
+                                         </div>
+                                        <div class="oe_kanban_details">
+                                            <strong class="oe_partner_heading"><field name="display_name"/></strong>
+                                            <ul>
+                                                <li t-if="record.email.raw_value" class="o_text_overflow"><field name="email"/></li>
+                                            </ul>
+                                            <div class="oe_kanban_partner_links"/>
+                                        </div>
+                                        <field name="progress_rate" widget="gauge" style="width:120px; height: 90px;"
+                                                options="{'max_field': 'maximum_rate'}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="project_inherit_config_settings" model="ir.ui.view">
+            <field name="name">project settings</field>
+            <field name="model">project.config.settings</field>
+            <field name="inherit_id" ref="project.view_config_settings"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[2]" position="after">
+                    <group string="Employee Workload">
+                        <field name="working_hr"/>
+                        <field name="no_of_days"/>
+                        <field name="block_busy_users"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+         <record id="project_action_res_users" model="ir.actions.act_window">
+            <field name="name">Project Users</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.users</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">kanban</field>
+            <field name="view_id" ref="res_user_kanban_view"/>
+        </record>
+
+        <report id="action_employee_workload"
+                model="hr.employee"
+                report_type="qweb-pdf"
+                string="Employee Workload Report"
+                name="workload_in_project.report_employee_workload"
+                file="workload_in_project.report_employee_workload"/>
+
+        <menuitem name="Report" parent="project.menu_main_pm" id="workload_report" sequence="5"/>
+        <menuitem name="Users" parent="project.menu_main_pm" id="project_users" action="project_action_res_users" sequence="4"/>
+        <menuitem name="Employee Workload" parent="workload_report" id="employee_workload_report" action="wizard_workload_report_act" sequence="1"/>
+
+    </data>
+</odoo>

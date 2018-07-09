@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model='ir.actions.act_window' id='wizard_task_act'>
+            <field name="name">Create Task</field>
+            <field name="res_model">project.task</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="project.view_task_form2"/>
+            <field name="context">{'default_project_id': context.get('project_id'),
+                                   'default_user_id': context.get('user_id'),
+                                   'default_name': 'Issue: ' + context.get('name'),
+                                   'default_issue_id': context.get('issue_id'),
+                                   'default_description': context.get('description')}</field>
+            <field name="target">new</field>
+        </record>
+
+        <record id="project_inherit_project_issue" model="ir.ui.view">
+            <field name="name">project issue task</field>
+            <field name="model">project.issue</field>
+            <field name="inherit_id" ref="project_issue.project_issue_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header/field[@name='stage_id']" position="before">
+                    <button name="%(wizard_task_act)d" string="Create Task" type="action" class="oe_highlight"
+                            attrs="{'invisible': [('task_id', 'not in', [None,False])]}"
+                            context="{'project_id':project_id, 'user_id': user_id, 'name': name, 'issue_id': id, 'description': description}"/>
+                </xpath>
+                <field name="day_close" position="after">
+                    <field name="task_id"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="project_task_inherit_view" model="ir.ui.view">
+            <field name="name">project task</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_form2"/>
+            <field name="arch" type="xml">
+                <field name="partner_id" position="after">
+                    <field name="issue_id"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</odoo>

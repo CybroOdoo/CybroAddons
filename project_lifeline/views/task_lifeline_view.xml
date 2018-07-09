@@ -1,0 +1,50 @@
+<odoo>
+    <data>
+        <record id="ir_cron_scheduler_project_task" model="ir.cron">
+            <field name="name">Lifeline scheduler</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall"/>
+            <field eval="'project.task'" name="model"/>
+            <field eval="'process_lifeline_scheduler'" name="function"/>
+        </record>
+
+        <record id="project_lifeline_tree_view" model="ir.ui.view">
+            <field name="name">project.lifeline.tree</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_tree2"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='user_id']" position="after">
+                    <field name="lifeline" widget="progressbar"/>
+                </xpath>
+            </field>
+         </record>
+
+         <record id="project_stage_freeze_form_view" model="ir.ui.view">
+            <field name="name">project.stage.freeze.form</field>
+            <field name="model">project.task.type</field>
+            <field name="inherit_id" ref="project.task_type_edit"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='fold']" position="after">
+                    <field name="freeze_state"/>
+                </xpath>
+            </field>
+         </record>
+
+        <record id="project_lifeline_form_view" model="ir.ui.view">
+            <field name="name">project.lifeline.form</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_form2"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='date_deadline']" position="replace">
+                    <field name="date_deadline_ext"/>
+                </xpath>
+                <xpath expr="//field[@name='tag_ids']" position="after">
+                    <field name="lifeline" widget="progressbar"/>
+                </xpath>
+            </field>
+         </record>
+    </data>
+</odoo>

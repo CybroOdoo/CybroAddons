@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="act_sale_order_2_revised" model="ir.actions.act_window">
+            <field name="name">Revised Quotation Orders</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="sale.view_quotation_tree"/>
+            <field name="domain">[('parent_so_id', '=', active_id)]</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Revised order against this Quotation Order.
+              </p>
+            </field>
+        </record>
+
+        <!--In sale order menu, we need to avoid the 'revised' state orders. -->
+
+        <record id="sale.action_orders" model="ir.actions.act_window">
+            <field name="name">Sales Orders</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
+            <field name="search_view_id" ref="sale.sale_order_view_search_inherit_sale"/>
+            <field name="context">{}</field>
+            <field name="domain">[('state', 'not in', ('draft','revised','sent', 'cancel'))]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create a Quotation, the first step of a new sale.
+                </p><p>
+                    Once the quotation is confirmed, it becomes a sales order.
+                    You'll be able to invoice it and collect payments.
+                    From the <i>Sales Orders</i> menu, you can track delivery
+                    orders or services.
+                </p>
+            </field>
+        </record>
+
+        <record id="sale.action_quotations" model="ir.actions.act_window">
+            <field name="name">Quotations</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="sale.view_quotation_tree"/>
+            <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
+            <field name="context">{}</field>
+            <field name="domain">[('state','in',('pre','draft','sent','cancel'))]</field>
+            <field name="search_view_id" ref="sale.view_sales_order_filter"/>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Create a Quotation, the first step of a new sale.
+              </p><p>
+                Your next actions should flow efficiently: confirm the Quotation
+                to a Sale Order, then create the Invoice and collect the Payment.
+              </p><p>
+                Note that once a Quotation becomes a Sale Order, it will be moved
+                from the Quotations list to the Sales Order list.
+              </p>
+            </field>
+        </record>
+
+        <record id="view_order_form_revised" model="ir.ui.view">
+            <field name="name">sale.order.form</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_confirm']" position="after">
+                    <button name="make_revision" string="Revise the Quotation" type="object" states="sent" class="btn-primary"/>
+                    <button name="action_quotation_send" string="Send by Email" type="object" states="pre" class="btn-primary"/>
+                    <button name="print_quotation" string="Print" type="object" states="pre" class="btn-primary"/>
+                    <button name="action_cancel" states="pre" type="object" string="Cancel"/>
+                </xpath>
+
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button class="oe_inline oe_stat_button" type="action" name="%(act_sale_order_2_revised)d"
+                        icon="fa-bars" attrs="{'invisible':[('state','in',[('draft','revised')]}">
+                        <field string="Revised Quotation Orders" name="revised_order_count" widget="statinfo"/>
+                    </button>
+                </xpath>
+
+                <xpath expr="//field[@name='order_line']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('state', 'in', ('sent','revised','done','cancel'))]}</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='payment_term_id']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('state', 'in', ('sent','revised','done','cancel'))]}</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='user_id']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('state', 'in', ('sent','revised','done','cancel'))]}</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='team_id']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('state', 'in', ('sent','revised','done','cancel'))]}</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_quotation_handler_tree" model="ir.ui.view">
+            <field name="name">sale.order.tree</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_quotation_tree" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='state']" position="replace">
+                    <field name="state"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

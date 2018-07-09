@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+		<record id='view_mrp_to_mrp_indent_form' model='ir.ui.view'>
+			<field name="name">mrp.indent.form</field>
+			<field name="model">mrp.indent</field>
+			<field name="arch" type="xml">
+				<form string="Indents" create="false" edit="false" delete="false">
+					<header>
+						<button name="mrp_indent_confirm" string="Confirm" states="draft" type="object"
+							class="oe_highlight" />
+						<field name="state" widget="statusbar"
+							statusbar_visible="draft,waiting_approval,inprogress,move_created,done"
+							statusbar_colors='{"reject":"red"}' />
+					</header>
+					<sheet>
+						<h1>
+							<field name="name" class="oe_inline" readonly="1"/>
+						</h1>
+						<group>
+							<group>
+								<field name="requirement"/>
+                                <field name="issued_by" />
+                               <field name="company_id" groups="base.group_multi_company"/>
+							</group>
+							<group>
+								<field name="indent_date" />
+								<field name="required_date" />
+								<field name="issued_date" />
+							</group>
+						</group>
+						<notebook>
+							<page string="Moves">
+								<field name="move_lines">
+									<tree string="Products" colors="grey:state == 'cancel';green:state == 'done';red:(state not in ('cancel','done')) and date > current_date;black:(state not in ('cancel','done'))">
+                                        <field name="product_id"/>
+										<field name="name"/>
+										<field name="product_uom_qty"/>
+										<field name="product_uom" groups="product.group_uom"/>
+                                        <field name="state" invisible="1"/>
+                                        <field name="location_id"/>
+                                        <field name="location_dest_id"/>
+										<field name="mrp_indent_id" invisible="1"/>
+										<field name="date" invisible="1"/>
+                                    </tree>
+								</field>
+								<div class="oe_clear">
+									<label for="description" />
+								</div>
+								<field name="description" class="oe_inline" placeholder="Additional note..." />
+							</page>
+							<page string="Other Info">
+								<group>
+									<group><field name="origin" readonly="True"/></group>
+									<group><field name="item_for"/></group>
+								</group>
+							</page>
+						</notebook>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id='view_mrp_to_mrp_indent_tree' model='ir.ui.view'>
+			<field name="name">mrp.indent.tree</field>
+			<field name="model">mrp.indent</field>
+			<field name="arch" type="xml">
+				<tree string="Indents" create="false" edit="false" delete="false"
+					colors="red:(state == 'waiting_approval' and  requirement == '2') or (state == 'inprogress' and  requirement == '2');black:state=='draft';green:state=='inprogress';gray:state=='reject';">
+					<field name="name" />
+					<field name="indent_date" />
+					<field name="required_date" />
+					<field name="requirement" invisible="1"/>
+					<field name="state" />
+				</tree>
+			</field>
+		</record>
+
+		<record id="act_mrp_production_indent_view" model="ir.actions.act_window">
+            <field name="name">Indent Orders</field>
+            <field name="res_model">mrp.indent</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+			<field name="view_ids"
+                   eval="[(5, 0, 0),
+                          (0, 0, {'view_mode': 'tree', 'view_id': ref('view_mrp_to_mrp_indent_tree')}),
+                          (0, 0, {'view_mode': 'form', 'view_id': ref('view_mrp_to_mrp_indent_form')})]"/>
+            <field name="domain">[('origin', '=', active_id)]</field>
+        </record>
+
+		<record id="mrp_production_indent_form_view" model="ir.ui.view">
+            <field name="name">mrp.production.form</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+            <field name="arch" type="xml">
+				<xpath expr="//button[@name='action_assign']" position="replace">
+					<button name="action_before_assign"
+                            attrs="{'invisible': [('availability', 'in',  ('assigned', 'none'))]}"
+                            string="Check availability" type="object" class="oe_highlight"/>
+					<button name="mrp_indent_confirm"
+                            attrs="{'invisible': [('indent_state', '!=', 'indent_created')]}"
+                            string="Confirm the Indent" type="object" class="oe_highlight"/>
+				</xpath>
+				<xpath expr="//field[@name='availability']" position="after">
+					<field name="indent_state" readonly="True"/>
+				</xpath>
+				<xpath expr="//div[@name='button_box']" position="inside">
+					<button class="oe_inline oe_stat_button" type="action" name="%(act_mrp_production_indent_view)d"
+						icon="fa-bars" attrs="{'invisible':[('indent_state','=','draft')]}">
+						<field string="Indent" name="mrp_indent_order_count" widget="statinfo"/>
+					</button>
+				</xpath>
+			</field>
+		</record>
+    </data>
+</odoo>

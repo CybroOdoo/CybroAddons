@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+		<!--MRP_Indent Form View -->
+        <record id='view_stock_mrp_indent_indent_form' model='ir.ui.view'>
+			<field name="name">mrp.indent.form</field>
+			<field name="model">mrp.indent</field>
+			<field name="arch" type="xml">
+				<form string="Indents" create="false">
+					<header>
+						<button name="action_assign" string="Approve" type="object"
+							class="oe_highlight" groups="stock.group_stock_manager"
+								attrs="{'invisible': ['|',('item_for', '!=', 'mrp'),('state', '!=', 'waiting_approval')]}"/>
+						<button name="mrp_indent_inprogress" string="Approve" type="object"
+							class="oe_highlight" groups="stock.group_stock_user"
+								attrs="{'invisible': ['|',('item_for', '=', 'mrp'),('state', '!=', 'waiting_approval')]}"/>
+						<button name="indent_reject" string="Reject" states="waiting_approval,inprogress,move_created" type="object"
+							groups="mrp.group_mrp_user,mrp.group_mrp_manager,stock.group_stock_manager"/>
+						<button name="indent_transfer" string="Ready To Transfer" states="inprogress" type="object"
+								class="oe_highlight" groups="stock.group_stock_manager"/>
+						<button name="indent_transfer_move_confirm" string="Confirm Transfer" states="move_created" type="object"
+								class="oe_highlight" groups="stock.group_stock_manager"/>
+						<field name="state" widget="statusbar"
+							statusbar_visible="draft,waiting_approval,inprogress,move_created,done"
+							statusbar_colors='{"reject":"red"}' />
+					</header>
+					<sheet>
+						<h1>
+							<field name="name" class="oe_inline" readonly="1"/>
+						</h1>
+						<group>
+							<group>
+								<field name="requirement"/>
+                                <field name="issued_by" />
+                               <field name="company_id" groups="base.group_multi_company"/>
+							</group>
+							<group>
+								<field name="indent_date" />
+								<field name="required_date" />
+								<field name="issued_date" />
+							</group>
+						</group>
+						<notebook>
+							<page string="Products" attrs="{'invisible':[('item_for', '=', 'mrp')]}">
+								<field name="product_lines">
+									<form string="Products">
+										<group>
+											<group>
+												<field name="product_id" groups="base.group_user"
+													on_change="onchange_product_id(product_id, product_uom_qty, product_uom, name)" />
+												<field name="original_product_id"/>
+												<label for="product_uom_qty" />
+												<div>
+													<field name="product_uom_qty" class="oe_inline" />
+													<field name="product_uom" groups="product.group_uom"
+														class="oe_inline oe_no_button"
+														on_change="onchange_product_id(product_id, product_uom_qty,
+														product_uom, name)" />
+												</div>
+											</group>
+
+										</group>
+										<group>
+											<field name="name"/>
+											<field name="state"/>
+										</group>
+
+										<group string ="Locations">
+											<field name="location_id"/>
+											<field name="location_dest_id"/>
+										</group>
+									</form>
+                                    <tree string="Products">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="product_id"/>
+                                        <field name="state" invisible="1"/>
+                                        <field name="product_uom_qty" sum="Total Qty"/>
+                                        <field name="product_uom" string="Unit" groups="product.group_uom"/>
+                                        <field name="location_id"/>
+                                        <field name="location_dest_id"/>
+										<field name="name"/>
+                                    </tree>
+								</field>
+								<div class="oe_clear">
+									<label for="description" />
+								</div>
+								<field name="description" class="oe_inline" placeholder="Additional note..." />
+							</page>
+
+							<page string="Moves">
+								<field name="move_lines">
+									<tree string="Products" colors="grey:state == 'cancel';black:state == 'done';red:(state not in ('cancel','done')) and date > current_date;blue:(state not in ('cancel','done'))">
+                                        <field name="product_id"/>
+										<field name="name"/>
+										<field name="product_uom_qty"/>
+										<field name="product_uom" groups="product.group_uom"/>
+                                        <field name="state" invisible="1"/>
+                                        <field name="location_id"/>
+                                        <field name="location_dest_id"/>
+										<field name="mrp_indent_id" invisible="1"/>
+										<field name="date" invisible="1"/>
+                                    </tree>
+								</field>
+								<div class="oe_clear">
+									<label for="description" />
+								</div>
+								<field name="description" class="oe_inline" placeholder="Additional note..." />
+							</page>
+							<page string="Other Info">
+								<group>
+									<group><field name="origin" readonly="True"/></group>
+									<group><field name="item_for" readonly="True"/></group>
+								</group>
+							</page>
+						</notebook>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+        <!-- Indent Window Action -->
+		<record id='menu_action_mrp_indent_stock_approve' model='ir.actions.act_window'>
+			<field name="name">Indents</field>
+			<field name="res_model">mrp.indent</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="domain">[('state', 'in', ('waiting_approval','inprogress','move_created','done','reject'))]</field>
+			<field name="view_ids"
+                   eval="[(5, 0, 0),
+                          (0, 0, {'view_mode': 'tree', 'view_id': ref('view_mrp_to_mrp_indent_tree')}),
+                          (0, 0, {'view_mode': 'form', 'view_id': ref('view_stock_mrp_indent_indent_form')})]"/>
+
+			<field name="help" type="html">
+				<p class="oe_view_nocontent_create">
+					Click to create a new indent.
+				</p>
+			</field>
+		</record>
+
+		<!--Indent main menu in stock-->
+		<menuitem id="menu_indent_indent_main" name="Indent"
+				  parent="stock.menu_stock_root" sequence="40"/>
+
+		<!--Indent view for store users-->
+		<menuitem action="menu_action_mrp_indent_stock_approve" id="menu_mrp_indent_stock_approve_action"
+				  parent="menu_indent_indent_main" name="Indent from Manufacturing" sequence="40"
+				  groups="stock.group_stock_user"/>
+    </data>
+</odoo>
