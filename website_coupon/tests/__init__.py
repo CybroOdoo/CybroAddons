@@ -1,1 +1,1 @@
-import test_coupon  # noqa
+import test_coupon
