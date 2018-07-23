@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="discount_sale_view_form" model="ir.ui.view">
+            <field name="name">discount.sale.order.form</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='state']" position="before">
+                    <button string="Approve" type="object" name="action_approve" states="waiting" class="oe_highlight"
+                            groups="sales_team.group_sale_manager"/>
+                </xpath>
+                <xpath expr="//button[@name='action_cancel']" position="attributes">
+                     <attribute name ="states">draft,sent,sale,waiting</attribute>
+                </xpath>
+                <!--<xpath expr="//tree/field[@name='discount']" position="replace">-->
+                    <!--<field name="discount" class="oe_inline" digits="(16, 2)"/> %%-->
+                <!--</xpath>-->
+                <xpath expr="//group[@name='sale_total']" position="replace">
+                    <group col="4">
+                        <group name="discount" colspan="2">
+                            <field name="discount_type"/>
+                            <field name="discount_rate"/>
+                        </group>
+                        <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
+                            <field name="amount_untaxed" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                            <field name="amount_discount" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                            <field name="amount_tax" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                            <div class="oe_subtotal_footer_separator oe_inline">
+                                <label for="amount_total" />
+                                <button name="button_dummy"
+                                        states="draft,sent" string="(update)" type="object" class="oe_edit_only oe_link"/>
+                            </div>
+                            <field name="amount_total" nolabel="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                        </group>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
