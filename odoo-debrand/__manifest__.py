@@ -22,7 +22,7 @@
 ##############################################################################
 {
     'name': "Odoo Debranding",
-    'version': "10.0.3.0",
+    'version': "10.0.1.0.0",
     'summary': """Debrand Odoo""",
     'description': """Debrand Odoo""",
     'author': "Cybrosys Techno Solutions",
@@ -31,7 +31,8 @@
     'category': 'Tools',
     'depends': ['base', 'im_livechat', 'website'],
     'data': [
-        'views/views.xml'],
+        'views/views.xml',
+        'views/templates.xml'],
     'demo': [],
     'qweb': ["static/src/xml/*.xml"],
     'images': ['static/description/banner.jpg'],
