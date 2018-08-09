@@ -22,5 +22,6 @@
 #
 ##############################################################################
 
-import point_of_sale_make_mrp
+from . import point_of_sale_make_mrp
+
 
