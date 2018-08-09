@@ -3,7 +3,7 @@ odoo.define('pos_mrp_order.models_mrp_order', function (require) {
 var pos_model = require('point_of_sale.models');
 var pos_screens = require('point_of_sale.screens');
 var models = pos_model.PosModel.prototype.models;
-var Model = require('web.DataModel');
+var rpc = require('web.rpc');
 
 
 for(var i=0; i<models.length; i++){
@@ -42,8 +42,13 @@ pos_screens.PaymentScreenWidget.include({
                 }
                 if (list_product.length)
                 {
-                    new Model("mrp.production")
-                        .call("create_mrp_from_pos", [1, list_product])
+                  rpc.query({
+                    model:'mrp.production',
+                    method:'create_mrp_from_pos',
+                    args:[1, list_product]
+                  }).then(function(result){
+                    console.log(result);
+                  });
                 }
             }
 
