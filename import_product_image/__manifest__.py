@@ -21,7 +21,7 @@
 ###################################################################################
 {
     'name': "Import Product Image",
-    'version': '10.0.1.0.0',
+    'version': '11.0.1.0.0',
     'summary': """Import Product Image from CSV File""",
     'description': """Import Product Image from CSV File(Web URL/File Path)""",
     'author': "Cybrosys Techno Solutions",
