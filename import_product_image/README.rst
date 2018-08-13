@@ -1,4 +1,4 @@
-Import Product Image v10
+Import Product Image v11
 ========================
 
 This  Cybrosys's module allows you to import images for a product/product variant from a
