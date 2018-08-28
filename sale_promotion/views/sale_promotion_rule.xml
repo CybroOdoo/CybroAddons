@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <!--Sale promotion rule view-->
+        <record id="sale_promotion_rule_tree_view" model="ir.ui.view">
+            <field name="name">sale.promotion.rule.tree</field>
+            <field name="model">sale.promotion.rule</field>
+            <field name="arch" type="xml">
+                <tree string="Sale Promotion Rules">
+                    <field colspan="4" name="name"/>
+                    <field name="product_tmpl_id"/>
+                    <field name="categ_id"/>
+                    <field name="min_quantity"/>
+                    <field name="date_start"/>
+                    <field name="date_end"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="sale_promotion_rule_form_view" model="ir.ui.view">
+            <field name="name">sale.promotion.rule.form</field>
+            <field name="model">sale.promotion.rule</field>
+            <field name="arch" type="xml">
+                <form string="Sale Promotion Rule">
+                    <h1><field name="name"/></h1>
+                    <group>
+                        <group>
+                            <field name="applied_on" widget="radio"/>
+                            <field name="categ_id" attrs="{'invisible':[('applied_on', '!=', 'product_category')], 'required':[('applied_on', '=', 'product_category')]}"/>
+                            <field name="product_tmpl_id"
+                                   attrs="{'invisible':[('applied_on', '!=', 'product')],'required':[('applied_on', '=', 'product')]}" string="Product"/>
+                        </group>
+                        <group>
+                            <field name="min_quantity"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Promotion Rule lines">
+                            <field name="promotion_rule_lines">
+                                <tree name="Promotion Rule Lines">
+                                    <field name="product_id" domain="[('is_promotion_product','=',True),('sale_ok', '=', True)]"/>
+                                    <field name="quantity"/>
+                                </tree>
+
+                            </field>
+                        </page>
+                    </notebook>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="sale_promotion_view_search">
+            <field name="name">sale.promotion.search</field>
+            <field name="model">sale.promotion</field>
+            <field name="arch" type="xml">
+                <search string="Sale Promotion Search">
+                    <field name="name" string="Promotion"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="sale_promotion_view_tree" model="ir.ui.view">
+            <field name="name">sale.promotion.tree</field>
+            <field name="model">sale.promotion</field>
+            <field name="arch" type="xml">
+                <tree string="Sale promotion">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="sale_promotion_view_form" model="ir.ui.view">
+            <field name="name">sale.promotion.form</field>
+            <field name="model">sale.promotion</field>
+            <field name="arch" type="xml">
+                <form string="Sale Promotion">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1><field name="name" placeholder="e.g.Buy 1 get 1 free"/></h1>
+                        </div>
+                        <div>
+                            <separator string="Sale Promotion Rules"/>
+                            <field name="item_ids" nolabel="1">
+                                <tree string="Sale Promotion Rules">
+                                    <field name="name" string="Applicable On"/>
+                                    <field name="min_quantity"/>
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <field name="applied_on" invisible="1"/>
+                                </tree>
+                            </field>
+                        </div>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_sale_promotion_menu" model="ir.actions.act_window">
+            <field name="name">Sale Promotions</field>
+            <field name="res_model">sale.promotion</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+         <!--sale promotion rule lines form view-->
+        <record id="sale_promotion_rule_lines_form_view" model="ir.ui.view">
+            <field name="name">sale.promotion.rule.line.form</field>
+            <field name="model">sale.promotion.rule.line</field>
+            <field name="arch" type="xml">
+                <form string="Sale Promotion Rule">
+                    <group>
+                        <group>
+                            <field name="product_id" domain="[('is_promotion_product','=',True),('sale_ok', '=', True)]" options="{'no_create': True}"/>
+                            <field name="quantity"/>
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <menuitem name="Sale Promotions" id="sale_promotion_menu"
+                  parent="sale.menu_sale_config" sequence="3" />
+        <menuitem name="Sale Promotions" id="sale_promotion_child_menu" action="action_sale_promotion_menu"
+                  parent="sale_promotion_menu" sequence="3" />
+
+    </data>
+</odoo>
