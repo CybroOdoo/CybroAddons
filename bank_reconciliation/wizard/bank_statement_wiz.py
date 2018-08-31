@@ -25,7 +25,6 @@ class BankStatement(models.Model):
     @api.one
     @api.depends('statement_lines.statement_date')
     def _compute_amount(self):
-        print("_compute_amount")
         gl_balance = 0
         bank_balance = 0
         current_update = 0
@@ -46,7 +45,6 @@ class BankStatement(models.Model):
     date_from = fields.Date('Date From')
     date_to = fields.Date('Date To')
     statement_lines = fields.One2many('account.move.line', 'bank_statement_id')
-    # statement_lines = fields.One2many('bank.statement.line', 'bank_statement_id')
     gl_balance = fields.Monetary('Balance as per Company Books', readonly=True, compute='_compute_amount')
     bank_balance = fields.Monetary('Balance as per Bank', readonly=True, compute='_compute_amount')
     balance_difference = fields.Monetary('Amounts not Reflected in Bank', readonly=True, compute='_compute_amount')
@@ -56,21 +54,3 @@ class BankStatement(models.Model):
                                  default=lambda self: self.env['res.company']._company_default_get('bank.statement'))
 
 
-# class BankStatementLine(models.Model):
-#     _name = 'bank.statement.line'
-#
-#     bank_statement_id = fields.Many2one('bank.statement', 'Bank Statement')
-#     move_id = fields.Many2one('account.move.line', 'Journal Item')
-#     date = fields.Date(related='move_id.date', string='Date')
-#     name = fields.Char(string="Label", related='move_id.name')
-#     ref = fields.Char(related='move_id.ref', string='Reference')
-#     partner_id = fields.Many2one('res.partner', string='Partner', related='move_id.partner_id')
-#     account_id = fields.Many2one('account.account', 'Account', related='move_id.account_id')
-#     debit = fields.Monetary(currency_field='company_currency_id', related='move_id.debit')
-#     credit = fields.Monetary(currency_field='company_currency_id', related='move_id.credit')
-#     amount_currency = fields.Monetary(related='move_id.amount_currency')
-#     currency_id = fields.Many2one('res.currency', string='Currency', related='move_id.currency_id')
-#     company_currency_id = fields.Many2one('res.currency', string="Company Currency", readonly=True,
-#                                           related='move_id.currency_id')
-#     date_maturity = fields.Date(string='Due date', related='move_id.date_maturity')
-#     statement_date = fields.Date('Bank.St Date', related='move_id.statement_date')

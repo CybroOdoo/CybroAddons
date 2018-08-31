@@ -12,7 +12,6 @@ class AccountJournal(models.Model):
         self.bank_statements_source = 'manual'
         action = self.env.ref('bank_reconciliation.action_bank_statement_wiz').read()[0]
         action.update({
-            # 'views': [[False, 'form']],
             'context': "{'default_journal_id': " + str(self.id) + "}",
         })
         return action
@@ -20,7 +19,6 @@ class AccountJournal(models.Model):
     @api.multi
     def get_journal_dashboard_datas(self):
         res = super(AccountJournal, self).get_journal_dashboard_datas()
-        print(res)
         account_sum = 0.0
         bank_balance = 0.0
         currency = self.currency_id or self.company_id.currency_id
@@ -40,14 +38,10 @@ class AccountJournal(models.Model):
             query_results = self.env.cr.dictfetchall()
             if query_results and query_results[0].get('sum') != None:
                 bank_balance = query_results[0].get('sum')
-        # account_id = self.default_debit_account_id.id or self.default_credit_account_id.id
-        # domain = [('account_id', '=', account_id),('statement_date', '!=', False)]
-        # lines = self.env['account.move.line'].search(domain)
-        # statement_balance += sum([line.balance for line in lines])
         difference = currency.round(account_sum - bank_balance) + 0.0
         res.update({
             'last_balance': formatLang(self.env, currency.round(bank_balance) + 0.0, currency_obj=currency),
             'difference': formatLang(self.env, currency.round(difference) + 0.0, currency_obj=currency)
         })
-        print(res)
+
         return res
