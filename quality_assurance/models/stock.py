@@ -61,14 +61,14 @@ class StockPicking(models.Model):
     def action_confirm(self):
         if self.alert_count == 0:
             self.generate_quality_alert()
-        res = super(StockPicking, self)._action_confirm()
+        res = super(StockPicking, self).action_confirm()
         return res
 
     @api.multi
     def force_assign(self):
         if self.alert_count == 0:
             self.generate_quality_alert()
-        res = super(StockPicking, self)._force_assign()
+        res = super(StockPicking, self).force_assign()
         return res
 
     @api.multi
