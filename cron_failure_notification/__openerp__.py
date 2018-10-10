@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2009-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
+#    Copyright (C) 2009-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Nilmar Shereef(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -28,7 +28,7 @@
         Actions / Cron jobs running in backend server
     """,
     'author': "Cybrosys Techno Solution",
-    'website': "http://www.cybrosys.com",
+    'website': "https://www.cybrosys.com",
     'category': 'Extra Tools',
     'depends': ['base', 'mail', 'web', 'base_setup'],
     'data': [
