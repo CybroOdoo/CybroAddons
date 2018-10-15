@@ -26,9 +26,7 @@ class ProductPrice(models.TransientModel):
 
     @api.onchange('name')
     def get_price(self):
-        prod_obj = self.env['product.template'].search([('name', '=', self.name.name)])
-        self.sale_price = prod_obj.list_price
-        self.cost_price = prod_obj.standard_price
-
+        self.sale_price = self.name.list_price
+        self.cost_price = self.name.standard_price
 
 
