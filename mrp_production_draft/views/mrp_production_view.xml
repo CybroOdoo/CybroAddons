@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="mrp_production_form_view" model="ir.ui.view">
+            <field name="name">mrp.production.form</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+            <field name="arch" type="xml">
+                <button name="button_mark_done" position="before">
+                    <button name="action_confirm" attrs="{'invisible': [('state', '!=', 'draft')]}" string="Confirm" type="object" class="oe_highlight"/>
+                </button>
+                <button name="%(mrp.action_change_production_qty)d" position="attributes">
+                    <attribute name="attrs">{'invisible': [('state','in',['draft','done'])]}</attribute>
+                </button>
+            </field>
+        </record>
+
+        <record id="view_mrp_production_filter_extend" model="ir.ui.view">
+            <field name="name">mrp.production.select</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.view_mrp_production_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='todo']" position="replace">
+                    <filter string="To Do" name="todo" domain="[('state','in',('draft','confirmed', 'planned','progress'))]"
+                        help="Manufacturing Orders which are in confirmed state."/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="mrp.mrp_production_action" model="ir.actions.act_window">
+            <field name="name">Manufacturing Orders</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">mrp.production</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
+            <field name="view_id" eval="False"/>
+            <field name="search_view_id" ref="view_mrp_production_filter_extend"/>
+            <field name="context">{'search_default_todo': True}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to create a manufacturing order.
+              </p><p>
+                A manufacturing order, based on a bill of materials, will
+                consume raw materials and produce finished products.
+              </p><p>
+                Manufacturing orders are usually proposed automatically based
+                on customer requirements or automated rules like the minimum
+                stock rule.
+              </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>
