@@ -22,7 +22,8 @@
 ##############################################################################
 
 from odoo import api, models, fields, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
+from psycopg2 import IntegrityError
 
 from odoo.addons.mrp.models.mrp_production import MrpProduction as mp
 
@@ -39,14 +40,31 @@ class MrpProduction(models.Model):
         ('cancel', 'Cancelled')], string='State',
         copy=False, default='draft', track_visibility='onchange')
 
-    _sql_constraints = [
-        ('name_uniq', "check(state='draft' or UNIQUE(name,company_id))", 'Reference must be unique per Company!'),
-    ]
+    @api.model_cr
+    def init(self):
+        self.env.cr.execute('ALTER TABLE mrp_production DROP CONSTRAINT mrp_production_name_uniq')
+        self.env.cr.execute(
+            '''CREATE UNIQUE INDEX mrp_mo_unique ON mrp_production (name,company_id) WHERE (state != 'draft')''')
 
     @api.model
     def create(self, values):
         production = super(mp, self).create(values)
         return production
+
+    @api.multi
+    def write(self, vals):
+        try:
+            res = super(MrpProduction, self).write(vals)
+        except IntegrityError:
+            raise ValidationError(_("Reference must be unique per Company for confirmed orders!"))
+        if 'date_planned_start' in vals:
+            moves = (self.mapped('move_raw_ids') + self.mapped('move_finished_ids')).filtered(
+                lambda r: r.state not in ['done', 'cancel'])
+            moves.write({
+                'date_expected': vals['date_planned_start'],
+            })
+        if res:
+            return res
 
     @api.multi
     def unlink(self):
@@ -60,5 +78,6 @@ class MrpProduction(models.Model):
             self.name = self.env['ir.sequence'].next_by_code('mrp.production') or _('New')
         if not self.procurement_group_id:
             self.procurement_group_id = self.env["procurement.group"].create({'name': self.name}).id
-        self._generate_moves()
         self.state = 'confirmed'
+        self._generate_moves()
+
