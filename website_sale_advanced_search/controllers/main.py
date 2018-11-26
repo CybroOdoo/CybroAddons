@@ -18,6 +18,7 @@ class WebsiteSearch(http.Controller):
         category = int(kw.get('category')) if not kw.get('category') == 'all' else ''
         try:
             domain = [('public_categ_ids', 'child_of', [category])] if category else []
+            domain.append(('website_published','=', True))
             product_as_category = request.env['product.template'].search(domain)
             sql = """select id as res_id, name as name, name as value from product_template where name ILIKE %s"""
             extra_query = ''
