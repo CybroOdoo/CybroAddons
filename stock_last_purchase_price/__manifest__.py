@@ -23,7 +23,7 @@
 {
     'name': 'Costing method: Last Purchase Price',
     'version': '12.0.1.0.0',
-    'category': 'Warehouse',
+    'category': 'Inventory',
     'summary': "Introducing new costing method in Odoo 'last purchase price'",
     'author': 'Cybrosys Techno solutions',
     'maintainer': 'Cybrosys Techno Solutions',
