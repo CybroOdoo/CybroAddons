@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+        <record id="hr_payroll_report_view_pivot" model="ir.ui.view">
+            <field name="name">hr.payslip.pivot</field>
+            <field name="model">hr.payroll.report.view</field>
+            <field name="arch" type="xml">
+                <pivot string="Payslip Analysis">
+                    <field name="name" type="row"/>
+                    <field name="date_from" interval="month" type="col"/>
+                    <field name="net"  type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="hr_payroll_report_view_graph" model="ir.ui.view">
+            <field name="name">hr.payslip.graph</field>
+            <field name="model">hr.payroll.report.view</field>
+            <field name="arch" type="xml">
+                <graph string="Payslip Analysis">
+                    <field name="date_from" type="row"/>
+                    <field name="net" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id="hr_payroll_report_view_search" model="ir.ui.view">
+            <field name="name">hr.payslip.search</field>
+            <field name="model">hr.payroll.report.view</field>
+            <field name="arch" type="xml">
+                <search string="Payslip Analysis">
+                    <field name="name"/>
+                    <field name="date_from"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <filter string="This Year" name="year" domain="[('date_from','&lt;=', time.strftime('%%Y-12-31')),('date_from','&gt;=',time.strftime('%%Y-01-01')),('date_to','&lt;=', time.strftime('%%Y-12-31')),('date_to','&gt;=',time.strftime('%%Y-01-01'))]"/>
+                    <filter name="Salary" string="Salary" domain="[('state','=', 'done')]"/>
+                    <filter name="Draft" string="Draft" domain="[('state','=','draft')]"/>
+                    <separator/>
+                    <field name="department_id"/>
+                    <group expand="1" string="Group By">
+                        <filter string="Employee" name="Employee" context="{'group_by':'name'}"/>
+                        <filter string="Job" name="job" context="{'group_by':'job_id'}"/>
+                        <filter string="Department" name="department" context="{'group_by':'department_id'}"/>
+                        <filter name="status" string="Status" context="{'group_by':'state'}"/>
+                        <filter string="Company" name="company" groups="base.group_multi_company" context="{'group_by':'company_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+
+        <record id="action_hr_payslip_view_report" model="ir.actions.act_window">
+            <field name="res_model">hr.payroll.report.view</field>
+            <field name="name">Payslips</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">pivot,graph</field>
+            <field name="context">{'search_default_year':1}</field>
+            <field name="help">This report helps in payroll analysis. This helps you to check your pay slips and sorting it out from different group
+                        criteria (Employee, Job title, Department, Company, Pay slip etc.).</field>
+        </record>
+
+        <menuitem
+                name="Reports"
+                id="menu_hr_payslip_reports"
+                parent="hr_payroll.menu_hr_payroll_root" />
+        <menuitem
+                id="menu_hr_payslip_view_report"
+                name="Payslip Report"
+                parent="menu_hr_payslip_reports"
+                action="action_hr_payslip_view_report"
+                groups="hr.group_hr_manager"
+                sequence="10"/>
+    </data>
+
+</odoo>
