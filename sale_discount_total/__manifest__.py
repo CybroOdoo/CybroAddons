@@ -22,7 +22,7 @@
 
 {
     'name': 'Sale Discount on Total Amount',
-    'version': '11.0.1.0.0',
+    'version': '11.0.1.0.1',
     'category': 'Sales Management',
     'summary': "Discount on Total in Sale and Invoice With Discount Limit and Approval",
     'author': 'Cybrosys Techno Solutions',
