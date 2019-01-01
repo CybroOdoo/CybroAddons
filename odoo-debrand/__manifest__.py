@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Tintuk Tomin(<tintuk@cybrosys.in>)
+#    Author: Hilar AK(<hilar@cybrosys.in>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -22,12 +22,12 @@
 ##############################################################################
 {
     'name': "Odoo Debranding",
-    'version': "11.0.1.0.0",
+    'version': "11.0.3.0",
     'summary': """Debrand Odoo""",
     'description': """Debrand Odoo""",
     'author': "Cybrosys Techno Solutions",
     'company': "Cybrosys Techno Solutions",
-    'website': "https://www.cybrosys.com/",
+    'website': "https://cybrosys.com/",
     'category': 'Tools',
     'depends': ['base', 'im_livechat', 'website'],
     'data': [
