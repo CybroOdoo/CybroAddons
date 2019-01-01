@@ -16,7 +16,7 @@ if hasattr(sys, 'frozen'):
     path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'views'))
     loader = jinja2.FileSystemLoader(path)
 else:
-    loader = jinja2.PackageLoader('odoo.addons.odoo-debrand', "views")
+    loader = jinja2.PackageLoader('odoo.addons.odoo_debrand', "views")
 env = main.jinja2.Environment(loader=loader, autoescape=True)
 env.filters["json"] = json.dumps
 db_monodb = http.db_monodb
