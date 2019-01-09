@@ -26,7 +26,7 @@
     'version': '11.0.1.0.0',
     'summary': 'Suggest product images from google search',
     'category': 'Tools',
-    'author': 'Akhilesh N S',
+    'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'depends': ['base', 'product'],
