@@ -32,7 +32,6 @@ class MrpProduction(models.Model):
     @api.multi
     def create_mrp_from_pos(self, products):
         product_ids = []
-        print "products", products
         if products:
             for product in products:
                 flag = 1
@@ -57,7 +56,6 @@ class MrpProduction(models.Model):
                             bom = bom_temp[0]
                         else:
                             bom = []
-                            print "This product variants have no exact BOM"
                         if bom:
                             vals = {
                                 'origin': 'POS-' + prod['pos_reference'],
