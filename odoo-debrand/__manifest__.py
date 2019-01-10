@@ -33,7 +33,7 @@
         'views/views.xml'],
     'demo': [],
     'qweb': ["static/src/xml/base.xml"],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/debranding_1.gif'],
     'license': "LGPL-3",
     'installable': True,
     'application': False
