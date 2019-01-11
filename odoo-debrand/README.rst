@@ -46,7 +46,7 @@ Contact odoo@cybrosys.com
 Contributors
 ------------
 
-* Tintuk Tomin <tintuk@cybrosys.in>
+* Tintuk Tomin <odoo@cybrosys.com>
 
 Maintainer
 ----------
