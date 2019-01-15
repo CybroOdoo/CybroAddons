@@ -22,7 +22,7 @@
 ##############################################################################
 {
     'name': 'PDC Payments Report',
-    'version': '11.0.1.0',
+    'version': '11.0.2.0',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
