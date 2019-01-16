@@ -9,7 +9,7 @@ odoo.define("vouchers_pos.coupons", function (require) {
     var models = pos_model.PosModel.prototype.models;
     var PosModelSuper = pos_model.PosModel;
     var OrderSuper = pos_model.Order;
-    var Model = require('web.DataModel');
+    var Model = require('web.BasicModel');
     var core = require('web.core');
     var _t = core._t;
     var utils = require('web.utils');
@@ -93,8 +93,8 @@ odoo.define("vouchers_pos.coupons", function (require) {
         }
         );
 
-    var VoucherWidget = PosBaseWidget.extend({
-        template:'VoucherWidget',        
+    var VoucherWidget = pos_screen.ActionButtonWidget.extend({
+        template:"VoucherWidget",
         init: function(parent) {
             return this._super(parent);
         },
@@ -108,9 +108,10 @@ odoo.define("vouchers_pos.coupons", function (require) {
             });
         },
     });
-    
+
+
     pos_screen.ProductScreenWidget.include({
-        start: function(){ 
+        start: function(){
             this._super();
             this.coupons = new VoucherWidget(this,{});
             this.coupons.replace(this.$('.placeholder-VoucherWidget'));
@@ -304,7 +305,7 @@ odoo.define("vouchers_pos.coupons", function (require) {
             this.applied_coupon = [];
         },
     });
-    
+
     pos_model.Order = pos_model.Order.extend({
         initialize: function(attributes,options){
             this.coupon = false;
