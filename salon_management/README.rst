@@ -17,5 +17,4 @@ Features
 
 Credits
 =======
-Developer : Avinash N K
-
+Developer (v9-v11): Avinash N K
