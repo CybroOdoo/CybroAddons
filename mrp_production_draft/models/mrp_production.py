@@ -42,9 +42,9 @@ class MrpProduction(models.Model):
 
     @api.model_cr
     def init(self):
-        self.env.cr.execute('ALTER TABLE mrp_production DROP CONSTRAINT mrp_production_name_uniq')
+        self.env.cr.execute('ALTER TABLE mrp_production DROP CONSTRAINT IF EXISTS mrp_production_name_uniq')
         self.env.cr.execute(
-            '''CREATE UNIQUE INDEX mrp_mo_unique ON mrp_production (name,company_id) WHERE (state != 'draft')''')
+            '''CREATE UNIQUE INDEX IF NOT EXISTS mrp_mo_unique ON mrp_production (name,company_id) WHERE (state != 'draft')''')
 
     @api.model
     def create(self, values):
