@@ -48,6 +48,8 @@ class MrpProduction(models.Model):
 
     @api.model
     def create(self, values):
+        if not values.get('product_uom_id'):
+            values['product_uom_id'] = self.env['product.product'].browse(values['product_id']).uom_id.id
         production = super(mp, self).create(values)
         return production
 
