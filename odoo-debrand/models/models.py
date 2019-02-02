@@ -8,7 +8,6 @@ from odoo import models, fields, api, tools
 class OdooDebrand(models.Model):
     _inherit = "website"
 
-
     def get_company_logo(self):
         id = self.env.user.company_id.id
         self.company_logo_url ="/web/image/res.company/%s/logo"%(id)

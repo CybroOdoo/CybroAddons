@@ -5,3 +5,6 @@ Changelog
 ------------
 - Initial commit
 
+`12.0.1.0.1`
+------------
+- [Fix] Issue in New Db Creation

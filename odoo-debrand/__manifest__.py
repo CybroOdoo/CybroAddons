@@ -20,9 +20,10 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+
 {
     'name': "Odoo Debranding",
-    'version': "12.0.1.0",
+    'version': "12.0.1.0.1",
     'summary': """Debrand Odoo""",
     'description': """Debrand Odoo""",
     'author': "Cybrosys Techno Solutions",
@@ -31,7 +32,8 @@
     'category': 'Tools',
     'depends': ['base', 'im_livechat', 'website'],
     'data': [
-        'views/views.xml'],
+        'views/views.xml'
+    ],
     'demo': [],
     'qweb': ["static/src/xml/base.xml"],
     'images': ['static/description/debranding_1.gif'],
