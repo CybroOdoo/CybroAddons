@@ -12,11 +12,13 @@ class AccountMoveLine(models.Model):
     def write(self, vals):
         if not vals.get("statement_date"):
             vals.update({"reconciled": False})
-            if self.payment_id and self.payment_id.state == 'reconciled':
-                self.payment_id.state = 'posted'
+            for record in self:
+                if record.payment_id and record.payment_id.state == 'reconciled':
+                    record.payment_id.state = 'posted'
         elif vals.get("statement_date"):
             vals.update({"reconciled": True})
-            if self.payment_id:
-                self.payment_id.state = 'reconciled'
+            for record in self:
+                if record.payment_id:
+                    record.payment_id.state = 'reconciled'
         res = super(AccountMoveLine, self).write(vals)
         return res
