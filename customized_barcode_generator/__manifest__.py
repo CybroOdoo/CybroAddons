@@ -9,7 +9,7 @@
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'depends': ['base', 'web', 'product'],
+    'depends': ['base', 'web', 'product', 'account'],
     'website': 'https://www.cybrosys.com',
     'data': [
         'report/product_label_template.xml',
