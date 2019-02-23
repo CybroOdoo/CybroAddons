@@ -153,11 +153,11 @@ class CarRentalContract(models.Model):
             state_id = self.env.ref('fleet_rental.vehicle_state_rent').id
             self.vehicle_id.write({'state_id': state_id})
         elif self.state == "cancel":
-            state_id = self.env.ref('fleet.vehicle_state_active').id
+            state_id = self.env.ref('fleet_rental.vehicle_state_active').id
             self.vehicle_id.write({'state_id': state_id})
         elif self.state == "invoice":
-            self.rent_end_date = fields.datetime.now()
-            state_id = self.env.ref('fleet.vehicle_state_active').id
+            self.rent_end_date = fields.Date.today()
+            state_id = self.env.ref('fleet_rental.vehicle_state_active').id
             self.vehicle_id.write({'state_id': state_id})
 
     @api.constrains('checklist_line', 'damage_cost')
@@ -339,7 +339,8 @@ class CarRentalContract(models.Model):
     def action_verify(self):
         self.state = "invoice"
         self.reserved_fleet_id.unlink()
-        self.rent_end_date = fields.datetime.now()
+        self.rent_end_date = fields.Date.today()
+        # print(rent_end_date,'ooooooooooooiiiiiiiiiiiii')
         if self.total_cost != 0:
             inv_obj = self.env['account.invoice']
             inv_line_obj = self.env['account.invoice.line']

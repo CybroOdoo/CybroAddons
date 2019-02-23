@@ -1,4 +1,4 @@
-Fleet Rental Management v11
+Fleet Rental Management v12
 ===========================
 This module will helps you to give the vehicles for Rent.
 
@@ -23,7 +23,7 @@ Tech
 
 Installation
 ============
-- www.odoo.com/documentation/11.0/setup/install.html
+- www.odoo.com/documentation/12.0/setup/install.html
 - Install our custom addon
 
 Bug Tracker
@@ -31,7 +31,7 @@ Bug Tracker
 Bugs are tracked on GitHub Issues. In case of trouble, please check there if your issue has already been reported.
 
 
-Developer: Avinash NK @ cybrosys, avinash@cybrosys.in
+Developer: Avinash NK @ cybrosys, odoo@cybrosys.com
 
 Maintainer
 ----------
