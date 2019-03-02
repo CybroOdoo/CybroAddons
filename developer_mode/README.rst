@@ -11,8 +11,8 @@ Odoo Developers, Keep smiling for the below reasons:
 
 Credits
 -------
-* `Nilmar Shereef < odoo@cybsosys.in >`__
-* `Saritha < odoo@cybsosys.in >`__
+* `Nilmar Shereef < odoo@cybsosys.com >`
+* `Saritha < odoo@cybsosys.com >`
 
 
 Further information
