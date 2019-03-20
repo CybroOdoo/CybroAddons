@@ -34,7 +34,7 @@
         'security/ir.model.access.csv',
             "views/asset_notebook.xml",
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'demo': [],
     'installable': True,
