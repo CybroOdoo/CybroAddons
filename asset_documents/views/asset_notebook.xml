@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="asset_documents">
+            <field name="name">account.asset.inherit</field>
+            <field name="model">account.asset.asset</field>
+            <field name="inherit_id" ref="account_asset.view_account_asset_asset_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='category_id']" position="after">
+                    <field name="sequence_number"/>
+                </xpath>
+                <xpath  expr="//notebook[last()]" position="inside">
+                    <page name="Documents" string="Documents">
+                        <field name="documents" mode="tree">
+                               <tree string="documents_page" editable="bottom">
+                                    <field name="document_name"/>
+                                    <field name="description" />
+                                    <field name="expiry_date" />
+                                    <field name="warning_before"/>
+                                    <field name="doc_attachment_id" widget="many2many_binary" class="oe_inline" />
+                                    <field name="repeat"/>
+                                    <field name="period_type"  attrs="{'invisible': [('repeat','=',False)]}" />
+                                    <field name="no_of_periods"  attrs="{'invisible': [('repeat','=',False)]}" />
+                               </tree>
+                        </field>
+                    </page>
+                    <page name="other_information" string="Other Information">
+                        <field name="description" />
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="asset_catagory_inherit">
+            <field name="name">account.asset.catagory.inherit</field>
+            <field name="model">account.asset.category</field>
+            <field name="inherit_id" ref="account_asset.view_account_asset_category_form"/>
+            <field name="arch" type="xml">
+                <xpath  expr="//field[@name='group_entries']" position="after">
+                    <field name="category_code" />
+                    <field name="next_number" />
+                    <field name="padding" />
+                </xpath>
+            </field>
+        </record>
+
+        <record id="asset_data_reminder" model="ir.cron">
+            <field name="name">Asset Document Expiry</field>
+            <field name="model_id" ref="model_account_asset_document"/>
+            <field name="state">code</field>
+            <field name="code">model.asset_mail_reminder()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+        </record>
+
+    </data>
+</odoo>
