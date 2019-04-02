@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template id="voucher_code" inherit_id="website_sale.cart"
+              active="False" customize_show="True"
+              name="Voucher Code">
+        <xpath expr="//div[hasclass('oe_website_sale')]"
+               position="inside">
+            <h4>Voucher Code</h4>
+            <p>
+                 Have a voucher code? Fill this field and apply .
+                      </p>
+
+            <t t-if="coupon_not_available">
+                <t t-if="coupon_not_available == '1'">
+                    <p class="bg-warning">This gift code is not available</p>
+                </t>
+                <t t-if="coupon_not_available=='2'">
+                    <p class="bg-warning">This gift code is not available</p>
+                </t>
+                <t t-if="coupon_not_available=='3'">
+                    <p class="bg-warning">The discount amount is too large</p>
+                </t>
+            </t>
+            <form t-if="website_sale_order and website_sale_order.website_order_line"
+                  action="/shop/gift_coupon" method="post"
+                  class="mb32">
+                <input type="hidden" name="csrf_token"
+                       t-att-value="request.csrf_token()" />
+                <div class="input-group">
+                    <input name="promo_voucher" class="form-control"
+                           type="text" placeholder="code..."
+                           t-att-value="website_sale_order.pricelist_id.code or None" />
+                   <div class="input-group-append">
+                    <a href="#" role="button" class="btn btn-secondary a-submit">Apply</a>
+                </div>
+                </div>
+            </form>
+        </xpath>
+    </template>
+
+    <template id="cart_lines_extended" inherit_id="website_sale.cart_lines">
+        <xpath expr="//table[@id='cart_products']/thead/tr/th[1]" position="attributes">
+            <attribute name="width">100</attribute>
+        </xpath>
+        <xpath expr="//table[@id='cart_products']/thead/tr/th[3]" position="attributes">
+            <attribute name="width">130</attribute>
+        </xpath>
+        <xpath expr="//table[@id='cart_products']/thead/tr/th[4]" position="attributes">
+            <attribute name="width">100</attribute>
+        </xpath>
+    </template>
+</odoo>
