@@ -9,7 +9,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "",
-    'depends': ['base', 'point_of_sale', 'oh_employee_creation_from_user', 'document', 'hr'],
+    'depends': ['base', 'point_of_sale', 'document', 'hr'],
     'data': [
              'views/admin_view.xml',
              'security/ir.model.access.csv',
