@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_todo_tree" model="ir.ui.view">
+            <field name="name">ToDoTree</field>
+            <field name="model">todo.list</field>
+            <field name="priority" eval="8" />
+            <field name="arch" type="xml">
+                <tree string="ToDo Menu">
+                    <field name="accountant"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_activity_tree" model="ir.ui.view">
+            <field name="name">ActivityTree</field>
+            <field name="model">todo.activity</field>
+            <field name="priority" eval="8" />
+            <field name="arch" type="xml">
+                <tree string="ToDo Activity">
+                    <field name="activity_description"/>
+                    <field name="activity_type"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_todo_form" model="ir.ui.view">
+            <field name="name">ToDoList</field>
+            <field name="model">todo.list</field>
+            <field name="priority" eval="8" />
+            <field name="arch" type="xml">
+            <form string="ToDo Menu">
+                <sheet>
+                    <group>
+                        <div id="o_employee_container"><div id="o_employee_main">
+                        <field name="img_view" widget='image' class="oe_avatar"/>
+                        <div class="oe_title">
+                            <h3><label for="accountant" class="oe_edit_only"/></h3>
+                            <h1>
+                                <field name="accountant" required="True" attrs="{'readonly':True}"/>
+                            </h1>
+                        </div>
+                        </div>
+                       </div>
+                    </group>
+                    <notebook>
+                        <page name="todo_list" string="Todo List">
+                            <field name="todo_menu" mode="tree">
+                                <form string="To Do List">
+                                    <group>
+                                        <field name="todo_name"/>
+                                        <field name="todo_type"/>
+                                        <field name="todo_date"/>
+                                        <field name="todo_checked" groups="base.group_erp_manager"/>
+                                        <field name="colour_check" invisible="1"/>
+                                        <field name="connect_id" invisible="1"/>
+                                    </group>
+                                </form>
+                                <tree string="To Do List" editable="bottom" decoration-info="colour_check==False"
+                                      decoration-danger="colour_check==True">
+                                    <field name="todo_name"/>
+                                    <field name="todo_type"/>
+                                    <field name="todo_date"/>
+                                    <field name="todo_checked" groups="base.group_erp_manager"/>
+                                    <field name="colour_check" invisible="1"/>
+                                    <button name="action_check_bool" type="object" icon="fa fa-check-square-o"/>
+                                </tree>
+                            </field>
+                        </page>
+                         <page name='internal_notes' string="Internal Notes">
+                            <field name="note" placeholder="Internal note..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+            </field>
+        </record>
+
+
+         <record model="ir.ui.view" id="to_do_inherited_form">
+            <field name="name">Todo List Unread</field>
+            <field name="model">todo.list</field>
+            <field name="inherit_id" ref="pos_checklist.view_todo_form"/>
+            <field name="groups_id" eval="[(6, 0, [ref('base.group_erp_manager')])]"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='accountant']" position="attributes">
+                    <attribute name="readonly">False</attribute>
+                </xpath>
+            </field>
+         </record>
+
+         <record model="ir.ui.view" id="cashier_inherited_form">
+            <field name="name">Cashier Checking</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='public']//field[@name='department_id']" position="before">
+                    <field name="is_cashier"/>
+                </xpath>
+            </field>
+         </record>
+
+
+        <record id="view_activity_form" model="ir.ui.view">
+            <field name="name">ActivityList</field>
+            <field name="model">todo.activity</field>
+            <field name="priority" eval="8" />
+            <field name="arch" type="xml">
+            <form string="Activity Menu">
+                <sheet>
+                    <group>
+                    <field name="activity_description"/>
+                    <field name="activity_type"/>
+                    </group>
+                </sheet>
+            </form>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="action_view_todo">
+            <field name="name">Assign Activity</field>
+            <field name="res_model">todo.list</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="help" type="html">
+                <p class="oe_view_no_content_create">Assign Activity
+                </p>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="action_view_activity">
+            <field name="name">Activity List</field>
+            <field name="res_model">todo.activity</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="help" type="html">
+                <p class="oe_view_no_content_create">Create Activity
+                </p>
+            </field>
+        </record>
+
+
+
+        <menuitem id="pos_check_list" name="POS Checklist" parent="point_of_sale.menu_point_config_product"/>
+        <menuitem id="pos_todo_list" name="Activities" parent="pos_checklist.pos_check_list"
+                  action="action_view_todo"/>
+        <menuitem id="pos_activity_list" name="Activity List" parent="pos_checklist.pos_check_list"
+                  action="action_view_activity" groups="base.group_erp_manager"/>
+    </data>
+</odoo>

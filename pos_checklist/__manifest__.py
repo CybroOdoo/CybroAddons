@@ -1,0 +1,25 @@
+# -*- coding: utf-8 -*-
+{
+    'name': "Pos Checklist",
+    'version': '11.0.1.0.0',
+    'summary': """Checklist for Point Of sale Cashier""",
+    'description': """Checklist for Point Of sale Cashier""",
+    'category': 'Point Of Sale',
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
+    'website': "",
+    'depends': ['base', 'point_of_sale', 'oh_employee_creation_from_user', 'document', 'hr'],
+    'data': [
+             'views/admin_view.xml',
+             'security/ir.model.access.csv',
+             'security/security.xml',
+             'data/cron.xml',
+            ],
+    'qweb': [],
+    'demo': [],
+    'images': ['static/description/banner.png'],
+    'license': "AGPL-3",
+    'installable': True,
+    'application': True,
+}
