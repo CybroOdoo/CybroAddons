@@ -32,7 +32,6 @@
         'security/ir.model.access.csv',
         'report/due_days.xml',
     ],
-    'qweb': [],
     'images': ['static/description/banner.jpg'],
     'installable': True,
     'auto_install': False,
