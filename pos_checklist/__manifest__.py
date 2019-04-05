@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Pos Checklist",
+    'name': "POS Checklist",
     'version': '11.0.1.0.0',
     'summary': """Checklist for Point Of sale Cashier""",
     'description': """Checklist for Point Of sale Cashier""",
