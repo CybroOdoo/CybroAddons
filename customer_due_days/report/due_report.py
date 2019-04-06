@@ -1,36 +1,14 @@
 # -*- coding: utf-8 -*-
-import json
-import io
 from datetime import datetime
-from odoo.tools import date_utils
-from odoo import models, fields, api, _
-try:
-    from odoo.tools.misc import xlsxwriter
-except ImportError:
-    import xlsxwriter
+from odoo import api, models,fields, _
 
 
-class CreditDueExceedReportWizard(models.TransientModel):
-    _name = 'customer.due.report'
+class CustomerDueReportXLSX(models.AbstractModel):
+    _name = 'report.customer_due_days.report_customer_due_xlsx'
+    _inherit = 'report.report_xlsx.abstract'
 
-    @api.model
-    def xlsx_credit_due_report(self,data):
-        data = {}
-        data['form'] = self.read([])
-        return {
-            'type': 'ir_actions_xlsx_download',
-            'data': {'model': 'customer.due.report',
-                     'options': json.dumps(data['form'],
-                                           default=date_utils.json_default),
-                     'output_format': 'xlsx',
-                     'report_name': 'customer_due_report',
-                     }
-        }
-
-    def get_xlsx_report(self, options, response):
-        output = io.BytesIO()
-        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-        sheet = workbook.add_worksheet('Product Ageing Report')
+    def generate_xlsx_report(self, workbook,  data, vals):
+        sheet = workbook.add_worksheet('Customer Due Report')
         format1 = workbook.add_format({'font_size': 15, 'align': 'center', 'bg_color': '#8a98a8', 'bold': True})
         format2 = workbook.add_format(
             {'align': 'center', 'font_size': 10, 'bg_color': '#8a98a8', 'bottom': 1, 'bold': True})
@@ -118,7 +96,4 @@ class CreditDueExceedReportWizard(models.TransientModel):
                             sheet.write(row_num, col_num + 6, aml['amount_residual'], format4)
                             sheet.write(row_num, col_num + 7, total_overdue, format5)
                             row_num += 1
-        workbook.close()
-        output.seek(0)
-        response.stream.write(output.read())
-        output.close()
+
