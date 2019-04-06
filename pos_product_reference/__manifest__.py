@@ -21,7 +21,7 @@
 #
 ##############################################################################
 {
-    'name': 'Product reference In POS',
+    'name': 'Product Reference In POS',
     'version': '11.0.1.0.0',
     'summary': """Product Reference in pos screen and receipt""",
     'description': """This module enables user to print the Product Reference in POS receipts""",
