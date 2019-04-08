@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <record id="view_orientation_request_tree" model="ir.ui.view">
+            <field name="name">orientation.request.tree</field>
+            <field name="model">orientation.request</field>
+            <field name="arch" type="xml">
+                <tree string="Employee Orientation" create="0">
+                    <field name="request_name" />
+                    <field name="request_orientation" />
+                    <field name="partner_id" />
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+        <record id="view_orientation_request_form" model="ir.ui.view">
+            <field name="name">orientation.request.form</field>
+            <field name="model">orientation.request</field>
+            <field name="arch" type="xml">
+                <form string="Employee Orientation" create="0">
+                    <header>
+                        <button name="confirm_send_mail" string="Send by Email" type="object" class="oe_highlight" attrs="{'invisible': [('state', 'in', 'complete')]}"/>
+                        <button name="confirm_request" string="Complete" type="object" states="new" class="btn-primary"/>
+                        <button name="cancel_request" string="Cancel" type="object" states="new"/>
+                        <field name="state" widget="statusbar" statusbar_visible="new,complete"/>
+                    </header>
+                    <sheet>
+                        <group colspan="1" col="4" name="main">
+                            <field name="request_name" readonly="1"/>
+                            <field name="request_orientation" readonly="1"/>
+                            <field name="employee_id" readonly="1"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="request_date" readonly="1"/>
+                            <field name="request_expected_date" attrs="{'readonly':[('state','=','complete')]}"/>
+                            <field name="employee_company" readonly="1"/>
+                        </group>
+                        <notebook>
+                            <page name="orientation_line_attachments" string="Documents">
+                                <field name="attachment_id_1" widget="many2many_binary" attrs="{'readonly':[('state','=','complete')]}" />
+                            </page>
+                            <page name="note_book" string="Notes">
+                                <field name="note_id" nolabel="1"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        <record id="view_orientation_request_search" model="ir.ui.view">
+            <field name="name">orientation.request.search</field>
+            <field name="model">orientation.request</field>
+            <field name="arch" type="xml">
+                <search string="Employee Orientation">
+                    <field name="request_name"/>
+                    <newline />
+<!--                    <group expand="0" string="Group By...">-->
+<!--                        <filter string="Request" domain="[]"-->
+<!--                            context="{'group_by':'request_name'}" />-->
+<!--                    </group>-->
+                </search>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_orientation_request">
+            <field name="name">Orientation Request</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">orientation.request</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_orientation_request_search" />
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+             <field name="help" type="html">
+                <field class="oe_view_nocontent_create">
+                    Create Orientation Requests.
+                </field>
+             </field>
+        </record>
+        <menuitem action="action_orientation_request" id="menu_orientation_request" name="Orientation Request" parent="menu_employee_orientation" sequence="2"/>
+    </data>
+</openerp>

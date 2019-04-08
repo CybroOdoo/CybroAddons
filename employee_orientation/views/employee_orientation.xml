@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_employee_orientation_tree" model="ir.ui.view">
+            <field name="name">employee.orientation.tree</field>
+            <field name="model">employee.orientation</field>
+            <field name="arch" type="xml">
+                <tree string="Employee Orientation">
+                    <field name="employee_name" />
+                    <field name="department" />
+                    <field name="responsible_user"/>
+                    <field name="orientation_id"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_employee_orientation_form" model="ir.ui.view">
+            <field name="name">employee.orientation.form</field>
+            <field name="model">employee.orientation</field>
+            <field name="arch" type="xml">
+                <form string="Employee Orientation">
+                    <header>
+                        <button name="confirm_orientation" string="Confirm" type="object" states="draft" class="btn-primary" />
+                        <button name="complete_orientation" string="Mark Done" type="object" states="confirm" class="btn-primary"/>
+                        <button name="cancel_orientation" string="Cancel" type="object" states="draft,confirm"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,confirm,complete"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group colspan="1" col="4" name="main">
+                            <field name="employee_name" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
+                            <field name="department" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
+                            <field name="date" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
+                            <field name="job_id" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
+                            <field name="responsible_user" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
+                            <field name="parent_id" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
+                            <field name="employee_company" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
+                            <field name="orientation_id" attrs="{'readonly':[('state','in',('confirm','complete'))]}"/>
+                        </group>
+                        <notebook colspan="4">
+                            <page name="checklist_lines" string="Orientation Checklists Lines" attrs="{'invisible': [('state', '=', 'draft')]}">
+                                <field name="orientation_request" attrs="{'readonly':[('state','=','complete')]}">
+                                    <tree string="lines" editable="bottom" create="true">
+                                        <field name="request_name"/>
+                                        <field name="partner_id"/>
+                                        <field name="request_expected_date"/>
+                                        <field name="state"/>
+                                    </tree>
+                                    <form>
+                                        <group colspan="1" col="4" name="main">
+                                            <field name="request_name" />
+                                            <field name="request_orientation"/>
+                                            <field name="employee_company" readonly="1"/>
+                                            <field name="partner_id"/>
+                                            <field name="request_date" readonly="1"/>
+                                            <field name="request_expected_date"/>
+                                            <field name="employee_id" invisible="1"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+                            <page name="note_book"
+                                string="Notes">
+                                <field name="note_id" colspan="4" nolabel="1" />
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        <record id="view_employee_orientation_search" model="ir.ui.view">
+            <field name="name">employee.orientation.search</field>
+            <field name="model">employee.orientation</field>
+            <field name="arch" type="xml">
+                <search string="Employee Orientation">
+                    <field name="employee_name"/>
+                    <field name="department"/>
+                    <newline />
+<!--                    <group expand="0" string="Group By...">-->
+<!--                        <filter string="department" domain="[]"-->
+<!--                            context="{'group_by':'department'}" />-->
+<!--                    </group>-->
+                </search>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_employee_orientation">
+            <field name="name">Employee Orientation</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">employee.orientation</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_employee_orientation_search" />
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+             <field name="help" type="html">
+                <field class="oe_view_nocontent_create">
+                    Create Employee Orientation.
+                </field>
+             </field>
+        </record>
+        <menuitem action="action_employee_orientation" id="menu_employee_orientation_child" name="Employee Orientation" parent="menu_employee_orientation" sequence="1" groups="hr.group_hr_manager,hr.group_hr_user"/>
+    </data>
+</odoo>
