@@ -30,7 +30,7 @@
     'website': 'https://www.cybrosys.com',
     'images': ['static/description/banner.jpg'],
     'data': [
-        'security/ir.model.access.csv',
+        # 'security/ir.model.access.csv',
         'wizard/due_days.xml',
         'report/due_report.xml',
     ],
