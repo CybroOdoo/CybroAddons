@@ -1,5 +1,5 @@
-Mobile Service Manager v11
-===================
+Mobile Service Management v11
+=============================
 Module for mobile service shop daily activities
 
 Features
