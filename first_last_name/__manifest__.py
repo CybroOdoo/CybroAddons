@@ -18,7 +18,7 @@
 ##############################################################################
 
 {
-    'name': 'Contact First And Last Name',
+    'name': 'First And Last Name in Contacts',
     'version': '12.0.1.0.0',
     'summary': """This module will helps you to give the first name and last name for your contact.""",
     'description': "Module helps you to manage the first name and last name of your partner as well as in the contacts.",
