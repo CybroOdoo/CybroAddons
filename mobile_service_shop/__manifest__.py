@@ -17,7 +17,7 @@
 #
 ##############################################################################
 {
-    'name': 'Mobile Service Manager',
+    'name': 'Mobile Service Management',
     'version': '11.0.1.0.0',
     'summary': 'Module for managing mobile service shop daily activities.',
     'category': 'Industries',
