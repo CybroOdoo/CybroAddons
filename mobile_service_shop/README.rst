@@ -1,5 +1,5 @@
-Mobile Service Manager v12
-===================
+Mobile Service Management v12
+=============================
 Module for mobile service shop daily activities
 
 Features
