@@ -38,7 +38,7 @@
         'views/product_view.xml',
         'views/pos_template.xml',
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,
 }
