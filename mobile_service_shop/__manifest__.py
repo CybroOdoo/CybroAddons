@@ -34,7 +34,7 @@
              'reports/service_ticket_template.xml',
              'data/mobile_service_data.xml',
              'data/mobile_service_email_template.xml'],
-    'image': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.jpg'],
     'installable': True,
     'application': True,
     'auto_install': False,
