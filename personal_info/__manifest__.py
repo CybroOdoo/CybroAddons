@@ -27,7 +27,7 @@
     'company': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'depends': ['base','contacts','first_last_name','gender_contact'],
-    'data': ['security/ir.model.access.csv',
+    'data': [
              'views/info_view.xml'
              ],
     'demo': [],
