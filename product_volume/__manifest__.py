@@ -18,7 +18,7 @@
 ##############################################################################
 
 {
-    'name': 'Product Dimensions',
+    'name': 'Product Volume Calculation',
     'version': '12.0.1.0.0',
     'summary': """This module will helps you to give dimensions of the product.""",
     'description': "Module helps you to manage the length, breadth and height of the product and calculates its volume accordingily.",
