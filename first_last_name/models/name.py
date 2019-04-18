@@ -11,39 +11,30 @@ class FirstNameLastName(models.Model):
 
     @api.onchange('last_name', 'first_name')
     def _onchange_first_last_name(self):
-        print(self)
-        print("_onchange_first_last_name")
-        print(self.name)
-        print(self.first_name)
-        print(self.last_name)
-        if self.first_name and self.last_name:
-            self.name = (self.first_name + ' ' + self.last_name)
+        for i in self:
+            if i.first_name and i.last_name:
+                i.name = (i.first_name + ' ' + i.last_name)
 
     @api.onchange('name')
     def _onchange_name(self):
-        print(self)
-        print("_onchange_name")
-        if self.name and self.company_type == 'person':
-            name = self.name
-            list = name.split(' ', 1)
-            print(list)
-            self.first_name = list[0]
-            self.last_name = list[1]
+        for i in self:
+            if i.name and i.company_type == 'person':
+                name = i.name
+                list = name.split(' ', 1)
+                i.first_name = list[0]
+                if len(list) == 2:
+                    i.last_name = list[1]
 
     @api.depends('name')
     def _compute_first_name(self):
-        print("_compute_first_name")
         for i in self:
-            list = i.name.split(' ',1) if i.name else None
+            list = i.name.split(' ', 1) if i.name else None
             if list and i.company_type == 'person':
                 i.first_name = list[0]
 
     @api.depends('name')
     def _compute_last_name(self):
-        print("_compute_last_name")
         for i in self:
-            list = i.name.split(' ', 1)  if i.name else None
-            print(list)
-            if list and i.company_type == 'person':
-                print(i.name)
+            list = i.name.split(' ', 1) if i.name else None
+            if len(list) == 2 and i.company_type == 'person':
                 i.last_name = list[1]
