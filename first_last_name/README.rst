@@ -1,4 +1,4 @@
-Contact First And Last Name v11
+Contact First And Last Name v12
 ===========================
 This module will helps you to give the first name and last name for your contact
 
@@ -14,7 +14,7 @@ Tech
 
 Installation
 ============
-- www.odoo.com/documentation/11.0/setup/install.html
+- www.odoo.com/documentation/12.0/setup/install.html
 - Install our custom addon
 
 Bug Tracker
