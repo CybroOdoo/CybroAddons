@@ -19,14 +19,14 @@ class Appointment(models.Model):
     _order = 'appointment_date'
 
     user_id = fields.Many2one('res.users', 'Responsible', readonly=True)
-    patient_id = fields.Many2one('lab.patient', string='Patient', required=True, select=True,
+    patient_id = fields.Many2one('lab.patient', string='Patient', required=True,
                                  help='Patient Name')
     name = fields.Char(string='Appointment ID', readonly=True, default=lambda self: _('New'))
     date = fields.Datetime(string='Requested Date', default=lambda s: fields.Datetime.now(),
                            help="This is the date in which patient appointment is noted")
     appointment_date = fields.Datetime(string='Appointment Date', default=lambda s: fields.Datetime.now(),
                                        help="This is the appointment date")
-    physician_id = fields.Many2one('res.partner', string='Referred By', select=True)
+    physician_id = fields.Many2one('res.partner', string='Referred By')
     comment = fields.Text(string='Comments')
     appointment_lines = fields.One2many('lab.appointment.lines', 'test_line_appointment', string="Test Request")
 

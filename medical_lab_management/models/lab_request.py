@@ -19,7 +19,7 @@ class LabRequest(models.Model):
     name = fields.Char(string='Lab Test', size=16, readonly=True, required=True, help="Lab result ID", default=lambda *a: '#')
     lab_request_id = fields.Char(string='Appointment ID', help="Lab appointment ID")
     app_id = fields.Many2one('lab.appointment', string='Appointment')
-    lab_requestor = fields.Many2one('lab.patient', string='Patient', required=True, select=True,
+    lab_requestor = fields.Many2one('lab.patient', string='Patient', required=True,
                                     help='Patient Name')
     test_request = fields.Many2one('lab.test', string='Test')
     lab_requesting_date = fields.Datetime(string='Requested Date')
