@@ -16,7 +16,7 @@ class DeadLineReminder(models.Model):
         su_id = self.env['res.partner'].browse(SUPERUSER_ID)
         for task in self.env['project.task'].search([('date_deadline', '!=', None),
                                                      ('task_reminder', '=', True), ('user_id', '!=', None)]):
-            reminder_date = datetime.strptime(task.date_deadline, '%Y-%m-%d').date()
+            reminder_date = task.date_deadline
             today = datetime.now().date()
             if reminder_date == today and task:
                 template_id = self.env['ir.model.data'].get_object_reference(
