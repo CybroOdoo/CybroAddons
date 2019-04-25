@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record model="ir.actions.act_window" id="lab_invoice_action">
+            <field name="name">Invoices</field>
+            <field name="res_model">account.invoice</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,kanban,calendar,graph,pivot</field>
+            <field name="view_id" ref="account.invoice_tree"/>
+            <field name="domain">[('is_lab_invoice','=',True)]</field>
+            <field name="search_view_id" ref="account.view_account_invoice_filter"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create Invoices.
+                </p>
+            </field>
+        </record>
+
+        <record id="lab_invoice_action_view_tree" model="ir.actions.act_window.view">
+            <field name="sequence">1</field>
+            <field name="view_mode">tree</field>
+            <field name="act_window_id" ref="medical_lab_management.lab_invoice_action"/>
+        </record>
+
+        <record id="lab_invoice_view_form" model="ir.actions.act_window.view">
+            <field name="sequence">2</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="account.invoice_form"/>
+            <field name="act_window_id" ref="medical_lab_management.lab_invoice_action"/>
+        </record>
+
+        <record model="ir.ui.view" id="kanban_view_lab_appointment">
+            <field name="name">Appointment Kanban</field>
+            <field name="model">lab.appointment</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_global_click">
+                                <div class="oe_kanban_details">
+                                <strong>
+                                    <ul>
+                                        <li>Name :<field name="patient_id"/></li>
+                                        <li>Lab Request ID :<field name="name"/></li>
+                                        <li>Appointment Date :<field name="appointment_date"/></li>
+                                    </ul>
+                                </strong>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="view_lab_appointment_tree" model="ir.ui.view">
+            <field name="name">lab.appointment.tree</field>
+            <field name="model">lab.appointment</field>
+            <field name="priority" eval="8" />
+            <field name="arch" type="xml">
+                <tree string="Appointments" colors="blue:state in ('sample_collection','test_in_progress');black:state == 'draft';gray:state in ('invoiced','cancelled');green:state == 'completed'">
+                    <field name="patient_id" />
+                    <field name="name" />
+                    <field name="state" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_lab_appointment_form" model="ir.ui.view">
+            <field name="name">lab.appointment.form</field>
+            <field name="model">lab.appointment</field>
+            <field name="priority" eval="8" />
+            <field name="arch" type="xml">
+                <form string="Appointment">
+                    <header>
+                        <button name="confirm_appointment" states="draft" string="Confirm" type="object" class="oe_highlight" />
+                        <button name="action_request" states="confirm" string="Request Lab" type="object" class="oe_highlight" />
+                        <button name="create_invoice" states="completed" string="Create Invoice" type="object" class="oe_highlight"/>
+                        <button name="cancel_appointment" states="draft,confirm" string="Cancelled" type="object"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,confirm,request_lab,completed,to_invoice,invoiced"
+                               />
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="%(act_open_lab_request_view)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-building-o"
+                                context = "{'search_default_app_id': [active_id]}"
+                                attrs="{'invisible': [('request_count', '=', 0)]}">
+                                <field name="request_count" widget="statinfo" string="Lab Requests"/>
+                            </button>
+                            <button name="%(lab_invoice_action)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-pencil-square-o"
+                                context = "{'search_default_lab_request': [active_id]}"
+                                attrs="{'invisible': [('inv_count', '=', 0)]}">
+                                <field name="inv_count" widget="statinfo" string="Lab Invoice"/>
+                            </button>
+                        </div>
+                        <group>
+                            <group col="4" colspan="4">
+                                <field name="patient_id" />
+                                <field name="priority" widget="priority"/>
+                                <field name="name" />
+                                <field name="date" />
+                                <field name="appointment_date" />
+                                <field name="physician_id" domain="[('is_physician','=',True)]" context="{'search_default_is_physician':1, 'default_is_physician':1}"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Lab Requests">
+                                <field name="appointment_lines">
+                                    <tree string="Lab Request" editable="bottom">
+                                        <field name="lab_test"/>
+                                        <field name="cost"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page name="Note"
+                             string="Note">
+                                <field name="comment"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_lab_appointment_search" model="ir.ui.view">
+            <field name="name">lab.appointment.search</field>
+            <field name="model">lab.appointment</field>
+            <field name="priority" eval="8" />
+            <field name="arch" type="xml">
+                <search string="Appointment">
+                    <field name="patient_id" />
+                    <field name="date" />
+                    <field name="name" />
+                    <field name="physician_id" />
+                    <newline />
+                    <group expand="0" string="Group By...">
+                        <filter name="patient_id" string="Patient"
+                            domain="[]" context="{'group_by':'patient_id'}" />
+                        <filter name="date" string="Date"
+                            domain="[]" context="{'group_by':'date'}" />
+                        <filter name="appointment_date" string="Appointment date"
+                            domain="[]" context="{'group_by':'appointment_date'}" />
+                        <filter name="physician_id" string="Physician"
+                            domain="[]" context="{'group_by':'physician_id'}" />
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="act_open_lab_appointment_view">
+            <field name="name">Appointments</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">lab.appointment</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,kanban</field>
+            <field name="search_view_id" ref="view_lab_appointment_search" />
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create Appointments.
+                </p>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="act_open_lab_appointment_view_2">
+            <field name="name">Appointments</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">lab.appointment</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lab_appointment_search" />
+             <field name="domain">[('appointment_date', '&gt;=',((datetime.date.today()- datetime.timedelta(days=0)).strftime('%Y-%m-%d 00:00:00'))),
+             ('appointment_date', '&lt;=',((datetime.date.today()- datetime.timedelta(days=0)).strftime('%Y-%m-%d 23:59:59')))]
+            </field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create Appointments.
+                </p>
+            </field>
+        </record>
+
+        <record model="ir.sequence" id="seq_lab_appointment">
+            <field name="name">Appointment </field>
+            <field name="code">lab.appointment</field>
+            <field name="prefix">ID</field>
+            <field name="padding">3</field>
+            <field name="company_id" eval="False" />
+        </record>
+
+
+
+        <menuitem id="menu_lab_appointment" name="Appointments" sequence="11"
+        parent="menu_root_lab" groups="group_lab_management_user,group_lab_management_technician"/>
+        <menuitem id="menu_lab_appointment_child" name="Appointments" sequence="10"
+        parent="menu_lab_appointment" action="act_open_lab_appointment_view"
+                  groups="group_lab_management_user,group_lab_management_technician"/>
+        <menuitem id="menu_lab_appointment_child_2" name=" Today's Appointments" sequence="11"
+                  groups="group_lab_management_user,group_lab_management_technician"
+                  parent="menu_lab_appointment" action="act_open_lab_appointment_view_2"/>
+
+        <record id="view_lab_patient_form_inherit" model="ir.ui.view">
+            <field name="name">lab.patient.form</field>
+            <field name="model">lab.patient</field>
+            <field name="inherit_id" ref="medical_lab_management.view_lab_patient_form" />
+            <field name="arch" type="xml">
+                <data>
+                    <xpath expr="//div[@name='button_box']" position="inside">
+                        <button name="%(act_open_lab_appointment_view)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-building-o"
+                                context = "{'search_default_patient_id': [active_id], 'default_patient_id':[active_id]}" >
+                                <field name="app_count" widget="statinfo" string="Appointments"/>
+
+                            </button>
+                    </xpath>
+                </data>
+            </field>
+        </record>
+    </data>
+</odoo>

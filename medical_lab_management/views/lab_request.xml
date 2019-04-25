@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_lab_request_tree" model="ir.ui.view">
+            <field name="name">lab.request.tree</field>
+            <field name="model">lab.request</field>
+            <field name="arch" type="xml">
+                <tree string="Lab Request" colors="green:state in ('sample_collection','test_in_progress');black:state == 'completed';gray:state == 'cancelled';blue:state == 'draft'">
+                    <field name="name" />
+                    <field name="lab_requestor" />
+                    <field name="lab_request_id" />
+                    <field name="test_request" />
+                    <field name="state" />
+                </tree>
+            </field>
+        </record>
+        <record id="view_lab_reques_form" model="ir.ui.view">
+            <field name="name">lab.request.form</field>
+            <field name="model">lab.request</field>
+            <field name="arch" type="xml">
+                <form string="Lab Request">
+                    <header>
+                        <button  name="set_to_sample_collection" states="draft" string="Sample Collection" type="object" class="oe_highlight"/>
+                        <button  name="set_to_test_in_progress" states="sample_collection" string="Test In Progress" type="object" class="oe_highlight"/>
+                        <button  name="set_to_test_completed" states="test_in_progress" string="Complete Test" type="object" class="oe_highlight"/>
+                        <button  name="print_lab_test" states="completed,invoiced" string="Print Lab Test" type="object" class="oe_highlight"/>
+                        <button  name="cancel_lab_test" states="draft" string="Cancel" type="object"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,sample_collection,test_in_progress,completed" statusbar_colors='{"Completed":"blue","Test In Progress":"red","Invoiced":"grey"}'/>
+                    </header>
+                    <sheet>
+                        <div class="oe_left" style="width: 500px;">
+                            <div class="oe_title" style="width: 390px;">
+                                <label class="oe_edit_only" for="name"/>
+                                <h1><field name="name" class="oe_inline"/></h1>
+                            </div>
+                        </div>
+                        <group>
+                            <group col="4" colspan="4">
+                                <field name="lab_requestor" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="lab_request_id"/>
+                                <field name="lab_requesting_date" />
+                                <field name="test_request"/>
+                                <field name="app_id" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Test lines">
+                                <field name="request_line">
+                                     <tree string="Test lines" editable="bottom">
+                                           <field name="test_content" />
+                                           <field name="unit"/>
+                                           <field name="interval"/>
+                                           <field name="result"/>
+                                     </tree>
+                                </field>
+                            </page>
+                            <page name="Note"
+                             string="Note">
+                                <field name="comment"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                     <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        <record id="view_lab_requester_search" model="ir.ui.view">
+            <field name="name">lab.request.search</field>
+            <field name="model">lab.request</field>
+            <field name="priority" eval="8" />
+            <field name="arch" type="xml">
+                <search string="Lab Request">
+                    <field name="lab_requestor" />
+                    <field name="lab_request_id" />
+                     <field name="app_id" />
+                    <newline />
+                    <group expand="0" string="Group By...">
+                        <filter name="lab_requestor" string="Patient"
+                            domain="[]" context="{'group_by':'lab_requestor'}" />
+                        <filter name="lab_request_id" string="Date"
+                            domain="[]" context="{'group_by':'lab_request_id'}" />
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="act_open_lab_request_view">
+            <field name="name">Lab Request</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">lab.request</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_lab_requester_search" />
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create Lab request.
+                </p>
+            </field>
+        </record>
+
+        <record model="ir.sequence" id="seq_lab_request">
+            <field name="name">Lab Request</field>
+            <field name="code">lab.request</field>
+            <field name="prefix">LR</field>
+            <field name="padding">3</field>
+            <field name="company_id" eval="False" />
+        </record>
+
+        <menuitem id="menu_lab_request" name="Lab Request" sequence="12"
+                  parent="menu_root_lab"
+                  groups="group_lab_management_user,group_lab_management_technician"/>
+        <menuitem id="menu_lab_request_child" name="Lab Request" sequence="10"
+                  parent="menu_lab_request" action="act_open_lab_request_view"
+                  groups="group_lab_management_user,group_lab_management_technician"/>
+    </data>
+</odoo>
