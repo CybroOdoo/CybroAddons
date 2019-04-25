@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="report_gatepass_slip">
+        <t t-call="web.html_container">
+            <t t-call="gatepass_slip.gate_pass_layout">
+                <t t-foreach="docs" t-as="o">
+                    <div class="page">
+                        <br/>
+                        <br/>
+                        <center>
+                        <h2>GATE PASS</h2>
+                        </center>
+                        <br/>
+                         <table class="table table-bordered" style="border: 1px solid black;">
+                            <thead style="border: 1px solid black;">
+                                <tr style="border: 1px solid black;">
+                                     <t t-if="o.vehicle_no">
+                                    <th style="border: 1px solid black;"><strong>Vehicle Number</strong></th>
+                                     </t>
+                                    <t t-if="o.vehicle_driver_name">
+                                    <th style="border: 1px solid black;"><strong>Driver Name</strong></th>
+                                    </t>
+                                    <t t-if="o.driver_contact_number">
+                                    <th style="border: 1px solid black;"><strong>Contact No</strong></th>
+                                    </t>
+                                    <t t-if="o.corresponding_company">
+                                    <th style="border: 1px solid black;"><strong>Company</strong></th>
+                                    </t>
+                                    <th style="border: 1px solid black;"><strong>Date</strong></th>
+                                    <th style="border: 1px solid black;"><strong>Entry Time</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody style="border: 1px solid black;">
+                                <tr style="border: 1px solid black;">
+                                    <td style="border: 1px solid black;" t-if="o.vehicle_no">
+                                        <span t-field="o.vehicle_no"/>
+                                    </td>
+                                    <td style="border: 1px solid black;" t-if="o.vehicle_driver_name">
+                                        <span t-field="o.vehicle_driver_name"/>
+                                    </td>
+                                    <td style="border: 1px solid black;" t-if="o.driver_contact_number">
+                                        <span t-field="o.driver_contact_number"/>
+                                    </td>
+                                     <td style="border: 1px solid black;" t-if="o.corresponding_company">
+                                        <span t-field="o.corresponding_company"/>
+                                    </td>
+                                    <td style="border: 1px solid black;">
+                                        <span t-esc="datetime.datetime.now().strftime('%Y-%m-%d')"/>
+                                    </td>
+                                    <td style="border: 1px solid black;">
+                                        <span t-esc="datetime.datetime.now().strftime('%H:%M:%S %p')"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <t t-if="o.enable_order_line">
+                            <center>
+                            <h2>PRODUCT DETAILS</h2>
+                            </center>
+                            <table class="table table-condensed" style="border: 0px solid black;">
+                                <thead>
+                                    <tr style="border: 0px solid black;">
+                                        <th><strong>Product</strong></th>
+                                        <th><strong>Quantity</strong></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="o.move_lines" t-as="move_line" style="border: 0px solid black;">
+                                        <td>
+                                            <span t-field="move_line.product_id"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="move_line.product_uom_qty"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="gate_pass_layout">
+        <t t-if="o and 'company_id' in o">
+            <t t-set="company" t-value="o.company_id"/>
+        </t>
+        <t t-if="not o or not 'company_id' in o">
+            <t t-set="company" t-value="res_company"/>
+        </t>
+
+        <div class="header">
+            <div class="pull-left" >
+                <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/>
+                <br/>
+                <span t-esc="company.name"/>
+                <br/>
+                <span t-esc="company.street"/>
+                <br/>
+                <br/>
+            </div>
+            <div class="pull-right">
+                <t t-foreach="docs" t-as="o">
+                    <h4>Shipping Address</h4>
+                    <span t-esc="o.partner_id.street"/>
+                    <br/>
+                    <span t-esc="o.partner_id.city"/>
+                    <span t-esc="o.partner_id.zip"/>
+                    <br/>
+                    <span t-esc="o.partner_id.country_id.name"/>
+                </t>
+            </div>
+        </div>
+        <div class="article">
+          <t t-raw="0" />
+        </div>
+    </template>
+</odoo>
