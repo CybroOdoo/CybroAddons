@@ -10,7 +10,7 @@ class MobileServiceShop(models.Model):
     _rec_name = 'name'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    name = fields.Char(string='Code', copy=False, default="New")
+    name = fields.Char(string='Service Number', copy=False, default="New")
     person_name = fields.Many2one('res.partner', string="Customer Name", required=True,
                                   domain="[('customer','=','True')]")
     contact_no = fields.Char(related='person_name.mobile', string="Contact Number")
@@ -36,7 +36,7 @@ class MobileServiceShop(models.Model):
 
     imei_no = fields.Char(string="IMEI Number")
 
-    model_name = fields.Many2one('brand.model', string="Model",required=True, domain="[('mobile_brand_name','=',brand_name)]")
+    model_name = fields.Many2one('brand.model', string="Model", required=True, domain="[('mobile_brand_name','=',brand_name)]")
     image_medium = fields.Binary(related='model_name.image_medium', store=True, attachment=True)
     date_request = fields.Date(string="Requested date", default=fields.Datetime.now)
     return_date = fields.Date(string="Return date", required=True)
@@ -384,13 +384,13 @@ class ProductOrderLine(models.Model):
     product_order_id = fields.Many2one('mobile.service')
 
     product_id = fields.Many2one('product.product', string='Product',
-                                 domain="[('is_a_parts','=', True)]")
-    product_uom_qty = fields.Float(string='Used Quantity', default=1.0)
-    price_unit = fields.Float(string='Unit Price', default=0.0)
+                                 domain="[('is_a_parts','=', True)]", required=True)
+    product_uom_qty = fields.Float(string='Used Quantity', default=1.0, required=True)
+    price_unit = fields.Float(string='Unit Price', default=0.0, required=True)
     qty_invoiced = fields.Float(string='Invoiced qty', readonly=True)
     qty_stock_move = fields.Float(string='Stock Move Posted Qty', readonly=True)
     part_price = fields.Char(compute='_compute_amount', string='Price', readonly=True, store=True)
-    product_uom = fields.Char(string='Unit of Measure')
+    product_uom = fields.Char(string='Unit of Measure', required=True)
 
     @api.onchange('product_id')
     def change_prod(self):
