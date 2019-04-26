@@ -5,12 +5,11 @@ import pytz
 
 
 class MobileServiceShop(models.Model):
-
     _name = 'mobile.service'
     _rec_name = 'name'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    name = fields.Char(string='Code', copy=False, default="New")
+    name = fields.Char(string='Service Number', copy=False, default="New")
     person_name = fields.Many2one('res.partner', string="Customer Name", required=True,
                                   domain="[('customer','=','True')]")
     contact_no = fields.Char(related='person_name.mobile', string="Contact Number")
@@ -23,7 +22,7 @@ class MobileServiceShop(models.Model):
     zip = fields.Char(related='person_name.zip', string="Address")
     country_id = fields.Many2one(related='person_name.country_id', string="Address")
 
-    brand_name = fields.Many2one('mobile.brand', string="Mobile Brand", required=True)
+    brand_name = fields.Many2one('mobile.brand', string="Mobile Brand")
     is_in_warranty = fields.Boolean(
         'In Warranty', default=False,
         help="Specify if the product is in warranty.")
@@ -36,7 +35,7 @@ class MobileServiceShop(models.Model):
 
     imei_no = fields.Char(string="IMEI Number")
 
-    model_name = fields.Many2one('brand.model', string="Model",required=True, domain="[('mobile_brand_name','=',brand_name)]")
+    model_name = fields.Many2one('brand.model', string="Model", domain="[('mobile_brand_name','=',brand_name)]")
     image_medium = fields.Binary(related='model_name.image_medium', store=True, attachment=True)
     date_request = fields.Date(string="Requested date", default=fields.Date.context_today)
     return_date = fields.Date(string="Return date", required=True)
@@ -53,7 +52,8 @@ class MobileServiceShop(models.Model):
 
     internal_notes = fields.Text(string="Internal notes")
     invoice_count = fields.Integer(compute='_invoice_count', string='# Invoice', copy=False)
-    invoice_ids = fields.Many2many("account.invoice", string='Invoices', compute="_get_invoiced", readonly=True, copy=False)
+    invoice_ids = fields.Many2many("account.invoice", string='Invoices', compute="_get_invoiced", readonly=True,
+                                   copy=False)
 
     first_payment_inv = fields.Many2one('account.invoice', copy=False)
 
@@ -300,13 +300,11 @@ class MobileServiceShop(models.Model):
             'mobile_brand': self.brand_name.brand_name,
             'model_name': self.model_name.mobile_brand_models,
 
-
         }
         return self.env.ref('mobile_service_shop.mobile_service_ticket').report_action(self, data=data)
 
 
 class MobileBrand(models.Model):
-
     _name = 'mobile.brand'
     _rec_name = 'brand_name'
 
@@ -314,7 +312,6 @@ class MobileBrand(models.Model):
 
 
 class MobileComplaintType(models.Model):
-
     _name = 'mobile.complaint'
     _rec_name = 'complaint_type'
 
@@ -322,7 +319,6 @@ class MobileComplaintType(models.Model):
 
 
 class MobileComplaintTypeTemplate(models.Model):
-
     _name = 'mobile.complaint.description'
     _rec_name = 'description'
 
@@ -331,7 +327,6 @@ class MobileComplaintTypeTemplate(models.Model):
 
 
 class MobileComplaintTree(models.Model):
-
     _name = 'mobile.complaint.tree'
     _rec_name = 'complaint_type_tree'
 
@@ -343,7 +338,6 @@ class MobileComplaintTree(models.Model):
 
 
 class MobileBrandModels(models.Model):
-
     _name = 'brand.model'
     _rec_name = 'mobile_brand_models'
 
@@ -353,7 +347,6 @@ class MobileBrandModels(models.Model):
 
 
 class MobileServiceTermsAndConditions(models.Model):
-
     _name = 'terms.conditions'
     _rec_name = 'terms_id'
 
@@ -384,13 +377,13 @@ class ProductOrderLine(models.Model):
     product_order_id = fields.Many2one('mobile.service')
 
     product_id = fields.Many2one('product.product', string='Product',
-                                 domain="[('is_a_parts','=', True)]")
-    product_uom_qty = fields.Float(string='Used Quantity', default=1.0)
-    price_unit = fields.Float(string='Unit Price', default=0.0)
+                                 domain="[('is_a_parts','=', True)]", required=True)
+    product_uom_qty = fields.Float(string='Used Quantity', default=1.0, required=True)
+    price_unit = fields.Float(string='Unit Price', default=0.0, required=True)
     qty_invoiced = fields.Float(string='Invoiced qty', readonly=True)
     qty_stock_move = fields.Float(string='Stock Move Posted Qty', readonly=True)
     part_price = fields.Char(compute='_compute_amount', string='Price', readonly=True, store=True)
-    product_uom = fields.Char(string='Unit of Measure')
+    product_uom = fields.Char(string='Unit of Measure', required=True)
 
     @api.onchange('product_id')
     def change_prod(self):
