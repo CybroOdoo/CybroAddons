@@ -26,7 +26,7 @@
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'www.cybrosys.com',
+    'website': 'https://www.cybrosys.com',
     'depends': ['lunch', 'hr_payroll'],
     'data': [
         'data/data.xml',
