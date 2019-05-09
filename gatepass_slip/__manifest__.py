@@ -19,7 +19,7 @@
 #
 ###################################################################################
 {
-    'name': 'Gate Pass',
+    'name': 'Delivery Gate Pass',
     'summary': """Generating Gate pass slip in delivery orders""",
     'version': '12.0.1.0.0',
     'description': """Generating Gate pass slip in delivery orders""",
