@@ -1,5 +1,5 @@
-Gatepass
-========
+Delivery Gate Pass
+==================
 
 Gatepass tickets for delivery orders.
 
