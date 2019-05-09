@@ -61,8 +61,9 @@ class MobileServiceShop(models.Model):
 
     journal_type = fields.Many2one('account.journal', 'Journal', invisible=True,
                                    default=lambda self: self.env['account.journal'].search([('code', '=', 'SERV')]))
-    account_type = fields.Many2one('account.account', 'Account', invisible=True,
-                                   default=lambda self: self.env['account.account'].search([('code', '=', 200110)]))
+
+    company_id = fields.Many2one('res.company', 'Company',
+                                 default=lambda self: self.env['res.company']._company_default_get('mobile.service'))
 
     @api.model
     def _default_picking_transfer(self):
@@ -178,7 +179,11 @@ class MobileServiceShop(models.Model):
 
     @api.model
     def create(self, vals):
-        vals['name'] = self.env['ir.sequence'].next_by_code('mobile.service')
+        if 'company_id' in vals:
+            vals['name'] = self.env['ir.sequence'].with_context(force_company=vals['company_id']).next_by_code(
+                'mobile.service') or _('New')
+        else:
+            vals['name'] = self.env['ir.sequence'].next_by_code('mobile.service') or _('New')
         vals['service_state'] = 'draft'
         return super(MobileServiceShop, self).create(vals)
 
@@ -187,7 +192,7 @@ class MobileServiceShop(models.Model):
         for i in self:
             if i.service_state != 'draft':
                 raise UserError(_('You cannot delete an assigned service request'))
-            return super(MobileServiceShop, i).unlink()
+        return super(MobileServiceShop, self).unlink()
 
     @api.multi
     def action_invoice_create_wizard(self):
