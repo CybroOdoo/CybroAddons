@@ -40,10 +40,10 @@ class MobileServiceInvoice(models.Model):
             'reference': supplier.name,
             'account_id': supplier.property_account_receivable_id.id,
             'partner_id': supplier.id,
-            'currency_id': service_id.account_type.company_id.currency_id.id,
+            'currency_id': service_id.company_id.currency_id.id,
             'journal_id': service_id.journal_type.id,
             'origin': service_id.name,
-            'company_id': service_id.account_type.company_id.id,
+            'company_id': service_id.company_id.id,
             'date_due': service_id.return_date,
         }
         inv_id = inv_obj.create(inv_data)
