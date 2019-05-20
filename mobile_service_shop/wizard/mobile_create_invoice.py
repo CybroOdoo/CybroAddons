@@ -11,7 +11,6 @@ class MobileServiceInvoice(models.Model):
 
     _name = 'mobile.invoice'
 
-
     advance_payment_method = fields.Selection([('advance', 'Advance'), ('full_amount', 'Full amount')],
                                               string='Invoice method', default='advance')
     amount = fields.Integer(string='Amount')
@@ -21,7 +20,6 @@ class MobileServiceInvoice(models.Model):
     def action_invoice_create(self):
         active_id = self._context.get('active_id')
         service_id = self.env['mobile.service'].search([('id', '=', active_id)])
-
         if not service_id.env['product.product'].search([("name", "=", "Mobile Service Advance")]):
             vals = self._prepare_advance_product()
             self.env['product.product'].create(vals)
@@ -40,10 +38,10 @@ class MobileServiceInvoice(models.Model):
             'reference': supplier.name,
             'account_id': supplier.property_account_receivable_id.id,
             'partner_id': supplier.id,
-            'currency_id': service_id.account_type.company_id.currency_id.id,
+            'currency_id': service_id.company_id.currency_id.id,
             'journal_id': service_id.journal_type.id,
             'origin': service_id.name,
-            'company_id': service_id.account_type.company_id.id,
+            'company_id': service_id.company_id.id,
             'date_due': service_id.return_date,
         }
         inv_id = inv_obj.create(inv_data)
