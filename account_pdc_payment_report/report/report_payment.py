@@ -32,7 +32,6 @@ class ReportPayment(models.AbstractModel):
             if data['form']['effective_date_to']:
                 domain.append(('effective_date', '<=', data['form']['effective_date_to']))
 
-
         return self.env['account.payment'].search(domain)
 
 

@@ -30,11 +30,14 @@ class AccountRegisterPayments(models.TransientModel):
 
     bank_reference = fields.Char(copy=False)
     cheque_reference = fields.Char(copy=False)
-    effective_date = fields.Date('Effective Date', help='Effective date of PDC', copy=False, default=False)
+    effective_date = fields.Date('Effective Date', help='Effective date of '
+                                                        'PDC')
 
     def get_payment_vals(self):
         res = super(AccountRegisterPayments, self).get_payment_vals()
+        res['effective_date']=self.effective_date
         if self.payment_method_id == self.env.ref('account_check_printing.account_payment_method_check'):
+
             res.update({
                 'check_amount_in_words': self.check_amount_in_words,
                 'check_manual_sequencing': self.check_manual_sequencing,
@@ -48,7 +51,7 @@ class AccountPayment(models.Model):
 
     bank_reference = fields.Char(copy=False)
     cheque_reference = fields.Char(copy=False)
-    effective_date = fields.Date('Effective Date', help='Effective date of PDC', copy=False, default=False)
+    effective_date = fields.Date('Effective Date', help='Effective date of PDC')
 
     @api.multi
     def print_checks(self):
@@ -85,7 +88,6 @@ class AccountPayment(models.Model):
             self.filtered(lambda r: r.state == 'draft').post()
             self.write({'state': 'sent'})
             return self.do_print_checks()
-
 
     def _get_move_vals(self, journal=None):
         """ Return dict to create the payment move
