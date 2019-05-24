@@ -424,7 +424,7 @@ class ProductOrderLine(models.Model):
                 'picking_id': picking.id,
                 'move_dest_id': False,
                 'state': 'draft',
-                'company_id': self.product_order_id.account_type.company_id.id,
+                'company_id': self.product_order_id.company_id.id,
                 'price_unit': price_unit,
                 'picking_type_id': picking.picking_type_id.id,
                 'procurement_id': False,
