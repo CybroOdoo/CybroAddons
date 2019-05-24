@@ -18,10 +18,10 @@ pos_screens.PaymentScreenWidget.include({
             this._super(force_validation);
             var order = self.pos.get_order();
             var order_line = order.orderlines.models;
-            var list_product = []
             var due = order.get_due();
              for (var i in order_line)
               {
+                 var list_product = []
                  if (order_line[i].product.to_make_mrp)
                  {
                    if (order_line[i].quantity>0)
