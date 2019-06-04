@@ -2,12 +2,11 @@
 
 import math
 import re
-
 from odoo import api, models
 
 
 class ProductAutoBarcode(models.Model):
-    _inherit = "product.product"
+    _inherit = 'product.product'
 
     @api.model
     def create(self, vals):
@@ -16,7 +15,14 @@ class ProductAutoBarcode(models.Model):
         res.barcode = ean
         return res
 
+    @api.multi
+    def write(self, values):
+        ean = generate_ean(str(self.product_tmpl_id.id))
+        values['barcode'] = ean
+        return super(ProductAutoBarcode, self).write(values)
 
+
+@api.multi
 def ean_checksum(eancode):
     """returns the checksum of an ean string of length 13, returns -1 if
     the string has the wrong length"""
@@ -64,3 +70,20 @@ def generate_ean(ean):
     return ean[:-1] + str(ean_checksum(ean))
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
+
+
+class ProductAutoBarcodeInherit(models.Model):
+    _inherit = 'product.template'
+
+    @api.model
+    def create(self, vals):
+        res = super(ProductAutoBarcodeInherit, self).create(vals)
+        ean = generate_ean(str(res.id))
+        res.barcode = ean
+        return res
+
+    @api.multi
+    def write(self, values):
+        ean = generate_ean(str(self.id))
+        values['barcode'] = ean
+        return super(ProductAutoBarcodeInherit, self).write(values)
