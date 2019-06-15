@@ -28,13 +28,15 @@ class FirstNameLastName(models.Model):
     @api.depends('name')
     def _compute_first_name(self):
         for i in self:
-            list = i.name.split(' ', 1) if i.name else None
-            if list and i.company_type == 'person':
-                i.first_name = list[0]
+            if i.name :
+                list = i.name.split(' ', 1)
+                if list and i.company_type == 'person':
+                    i.first_name = list[0]
 
     @api.depends('name')
     def _compute_last_name(self):
         for i in self:
-            list = i.name.split(' ', 1) if i.name else None
-            if len(list) == 2 and i.company_type == 'person':
-                i.last_name = list[1]
+            if i.name:
+                list = i.name.split(' ', 1)
+                if len(list) == 2 and i.company_type == 'person':
+                    i.last_name = list[1]
