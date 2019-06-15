@@ -6,6 +6,6 @@ class FirstNameLastName(models.Model):
     _inherit = 'res.partner'
 
     gender = fields.Selection([ ('male', 'Male'),
-                                ('female', 'female'),
+                                ('female', 'Female'),
                                 ('other', 'Others')],
                                 string='Gender')
