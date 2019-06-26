@@ -23,3 +23,16 @@
 
 import models
 import controllers
+from . import wizards
+
+from odoo import SUPERUSER_ID
+from odoo.api import Environment
+
+
+def post_init_hook(cr, registry):
+    env = Environment(cr, SUPERUSER_ID, {})
+    companies = env['res.company'].search([])
+    gift_coupon_product_id = env['product.product'].search(
+        [('default_code', '=', 'gift_coupon')], limit=1)
+    for company in companies:
+        company.gift_coupon_product_id = gift_coupon_product_id

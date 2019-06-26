@@ -79,12 +79,12 @@ class WebsiteCoupon(http.Controller):
             voucher_type = coupon.voucher.voucher_type
             voucher_val = coupon.voucher_val
             type = coupon.type
-            coupon_product = request.env['product.product'].sudo().search([('name', '=', 'Gift Coupon')], limit=1)
+            coupon_product = request.env.user.company_id.gift_coupon_product_id
             if coupon_product:
                 order = request.website.sale_get_order(force_create=1)
                 flag_product = False
                 for line in order.order_line:
-                    if line.product_id.name == 'Gift Coupon':
+                    if line.product_id == coupon_product:
                         flag = False
                         break
                 if flag and order.order_line:
