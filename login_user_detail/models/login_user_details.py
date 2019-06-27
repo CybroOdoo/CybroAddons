@@ -34,8 +34,8 @@ class LoginUserDetail(models.Model):
     _inherit = 'res.users'
 
     @api.model
-    def check_credentials(self, password):
-        result = super(LoginUserDetail, self).check_credentials(password)
+    def _check_credentials(self, password):
+        result = super(LoginUserDetail, self)._check_credentials(password)
         ip_address = request.httprequest.environ['REMOTE_ADDR']
         vals = {'name': self.name,
                 'ip_address': ip_address
