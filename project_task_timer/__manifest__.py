@@ -19,7 +19,7 @@
 ##############################################################################
 {
     'name': 'Project Task Timer',
-    'version': '12.0.1.0',
+    'version': '12.0.2.0',
     'summary': """Task Timer With Start & Stop""",
     'description': """"This module helps you to track time sheet in project automatically.""",
     'category': 'Project',
@@ -32,7 +32,7 @@
         'views/project_timer_static.xml',
     ],
     'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'demo': [],
     'installable': True,
     'auto_install': False,
