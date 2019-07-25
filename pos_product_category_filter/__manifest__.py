@@ -32,6 +32,7 @@
 
 """,
     'depends': ['point_of_sale'],
+    'license': 'LGPL-3',
     'images': ['static/description/banner.jpg'],
     'data': ['views/category.xml',
              'views/template.xml'],

@@ -9,10 +9,6 @@ Installation
 - www.odoo.com/documentation/12.0/setup/install.html
 - Install our custom addon
 
-License
-=======
-GNU Lesser General Public License, Version 3 (LGPLv3)
-(http://www.gnu.org/licenses/agpl.html)
 
 Bug Tracker
 ===========

@@ -36,7 +36,7 @@
     'qweb': ['static/src/xml/pos_ticket_view.xml',
              'static/src/xml/pos_screen_image_view.xml'],
     'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'demo': [],
     'installable': True,
     'auto_install': False,

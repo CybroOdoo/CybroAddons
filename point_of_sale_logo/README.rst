@@ -18,8 +18,8 @@ Configuration & Usage
 
 Credits
 =======
-Developer: Nilmar Shereef @ cybrosys, shereef@cybrosys.in
-Developer: Jesni Banu @ cybrosys, jesni@cybrosys.in
+Developer: Nilmar Shereef @ cybrosys, odoo@cybrosys.com
+Developer: Jesni Banu @ cybrosys, odoo@cybrosys.com
 Developer: Niyas Raphy (Migrated to v11)
 
 

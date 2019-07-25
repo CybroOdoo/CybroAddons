@@ -35,6 +35,7 @@
         'report/due_report.xml',
     ],
     'qweb': [],
+    'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
     'application': False,

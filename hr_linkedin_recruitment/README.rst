@@ -1,6 +1,6 @@
-==========================================
+====================================
    Basic HR-LinkedIn Connector  v12
-==========================================
+====================================
 
 The module integrates LinkedIn with Odoo HR Recruitment.
  * Share Job Opening Posts With LinkedIn.

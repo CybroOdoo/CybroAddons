@@ -27,7 +27,7 @@
     'website': 'https://www.cybrosys.com',
     'category': 'Tools',
     'depends': ['base', 'mail'],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'data': [
         'security/ir.model.access.csv',
         'views/allowed_ips_view.xml',

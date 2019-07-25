@@ -1,6 +1,6 @@
-====================
+===============================
 POS Product Category Filter V12
-====================
+===============================
 
 This module shows only the specified categories of products in Point of Sale.
 
