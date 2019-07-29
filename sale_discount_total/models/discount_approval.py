@@ -75,7 +75,7 @@ class ResDiscountSettings(models.TransientModel):
 
     so_double_validation = fields.Selection(related='company_id.so_double_validation',string="Levels of Approvals *", readonly=False)
     so_double_validation_limit = fields.Float(string="Discount limit requires approval in %",
-                                              related='company_id.so_double_validation_limit')
+                                              related='company_id.so_double_validation_limit', readonly=False)
 
     def set_values(self):
         super(ResDiscountSettings, self).set_values()
