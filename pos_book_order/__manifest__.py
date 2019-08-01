@@ -15,7 +15,7 @@
              'security/ir.model.access.csv'
              ],
     'demo': [],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/images/banner.png'],
     'qweb': ['static/src/xml/book_order.xml',
              'static/src/xml/booked_order.xml',
              'static/src/xml/pickup_orders.xml',
