@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="button_book_order">
+        <t t-if="widget.pos.config.enable">
+            <div class='control-button'>
+                <i class='fa fa-book' />
+                <span class="label">Booking</span>
+            </div>
+        </t>
+    </t>
+
+    <t t-name="popup_widget">
+        <div class="modal-dialog">
+            <div class="popup widget order-scroller touch-scrollable" style="width:516px;height: 545px;font-size: 13px;">
+                <br/><br/>
+                <t t-if="widget.pos.get_client()">
+                    <label style="margin-right: 298px;" >AMOUNT TOTAL</label>
+                    <div>
+                        <input class='form-control booking_field' name="amount" type='text' style="height:34px;border-radius:5px;"
+                                  t-att-value="widget.format_currency(widget.pos.get_order().get_total_with_tax())" readonly="1" />
+                    </div>
+                    <br/><br/>
+                    <label style="margin-right: 333px;">CUSTOMER</label>
+                    <div>
+                        <input class='form-control booking_field' name="name" type='text' style="height:34px;border-radius:5px;"
+                                  t-att-value="widget.pos.get_client().name" readonly="1" />
+                    </div>
+                    <br/><br/>
+                     <label style="margin-right: 185px;">PHONE CONTACT FOR DELIVERY(*)</label>
+                    <div>
+                        <input class='form-control booking_field' name="phone" type='text' style="height:34px;border-radius:5px;"
+                                  t-att-value="widget.pos.get_client().phone" data-is-required="true"/>
+                    </div>
+                </t>
+                <br/><br/>
+                <div class="radio" style="width:100%;float: left;text-align: center;font-size: 23px;">
+                    <label>Pickup</label> <input  type="radio" name="method" style="width: auto;min-height: auto;margin-right: 28px;" checked="checked" value="pickup"  />
+                    <label>Deliver</label> <input  type="radio" name="method" style="width: auto;min-height: auto;" value="deliver" />
+                </div>
+                <br/><br/><br/>
+
+                <t t-if="widget.pos.get_order()">
+                    <label style="margin-right: 324px;">PRICELIST(*)</label>
+                    <div>
+                    <input class='form-control booking_field' name="pricelist" type='text' style="height:34px;border-radius:5px;"
+                                  t-att-value="widget.pos.get_order().pricelist.display_name "
+                                    readonly="1"/>
+                    </div>
+                    <br/><br/>
+                    <label style="margin-right: 293px;">BOOKING DATE(*)</label>
+                    <div>
+                        <input type="text" id='BookingDate' name="order_date" class="order_date" maxlength="10" style="height:34px;border-radius:5px; " readonly="readonly"/>
+                    </div>
+                    <br/><br/>
+                    <label style="margin-right: 324px;">ORDER NOTE</label>
+                    <div>
+                        <textarea rows="1" cols="30" name="order_note" class="form-control order_note" placeholder="Enter your notes here..."/>
+                    </div>
+                </t>
+                <br/><br/>
+                <div id="Method_pickup" class="desc">
+                <label style="margin-right: 317px;">PICKUP DATE</label>
+                    <div>
+                        <input name="pickup_date"  class='form-control booking_field' id="pickup" type='date' style="height:34px;border-radius:5px;"/>
+                    </div>
+                </div>
+                <div id="Method_deliver" class="desc" style="display: none;">
+                <label style="margin-right: 301px;">DELIVERY DATE</label>
+                    <div>
+                        <input  name="deliver_date" class='form-control booking_field' id="deliver" type='date' style="height:34px;border-radius:5px;"/>
+                    </div>
+                    <br/><br/>
+                    <t t-if="widget.pos.get_client()">
+                    <label style="margin-right: 271px;">DELIVERY ADDRESS(*)</label>
+                        <div>
+                            <input class='form-control booking_field' name="delivery_address" type='text' style="height:34px;border-radius:5px;"
+                                      t-att-value="widget.pos.get_client().address" data-is-required="true"/>
+                        </div>
+                    </t>
+                </div>
+                <script type="text/javascript">
+                    $(document).ready(function() {
+                        $("input[name$='method']").click(function() {
+                            var test = $(this).val();
+                            $("div.desc").hide();
+                            $("#Method_" + test).show();
+                        });
+                        var currentDate=new Date();
+                        $( "#BookingDate" ).datepicker({
+                            setDate:currentDate,
+                            beforeShow: function(i) {
+                                if ($(i).attr('readonly')) { return false; }
+                            }
+                        });
+                        $('#BookingDate').datepicker('setDate', 'today');
+                    });
+                </script>
+                <div class="button cancel" style="background-color: #d9534f;color: white;">
+                    Close
+                </div>
+                <div class="button confirm" style="background-color: #6EC89B;color: white;">
+                    Confirm
+                </div>
+                <br/><br/><br/><br/>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="seq_book_order" model="ir.sequence">
+        <field name="name">POS Quotation</field>
+        <field name="code">book.order</field>
+        <field name="prefix">POS/BO/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False" />
+    </record>
+
+    <record id="view_book_order_form" model="ir.ui.view">
+        <field name="name">book.order.form</field>
+        <field name="model">book.order</field>
+        <field name="arch" type="xml">
+            <form string="Point of Sale Quotations" create="false">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed" />
+                </header>
+                <sheet>
+                <group col="4" colspan="4" name="order_fields">
+                    <field name="name"/>
+                    <field name="date_order"/>
+                    <field name="partner_id" />
+                    <field name="phone"/>
+                    <field name="book_order"/>
+                    <field name="date_quotation"/>
+                    <field name="pickup_date"/>
+                    <field name="deliver_date"/>
+                    <field name="pricelist_id" />
+                    <field name="delivery_address" />
+                </group>
+                <notebook colspan="4">
+                    <page string="Products">
+                        <field name="lines" colspan="4" nolabel="1">
+                            <tree string="Order lines" editable="bottom">
+                                <field name="product_id"/>
+                                <field name="qty"/>
+                                <field name="price_unit" widget="monetary"/>
+                                <field name="discount" widget="monetary"/>
+                                <field name="tax_ids_after_fiscal_position" widget="many2many_tags"/>
+                                <field name="tax_ids" invisible="1"/>
+                                <field name="price_subtotal" widget="monetary"/>
+                                <field name="price_subtotal_incl" widget="monetary"/>
+                            </tree>
+                            <form string="Order lines">
+                                <group col="4">
+                                    <field name="product_id"/>
+                                    <field name="qty"/>
+                                    <field name="discount" widget="monetary"/>
+                                    <field name="price_unit" widget="monetary"/>
+                                    <field name="price_subtotal" invisible="1" widget="monetary"/>
+                                    <field name="price_subtotal_incl" invisible="1" widget="monetary"/>
+                                    <field name="tax_ids_after_fiscal_position" widget="many2many_tags"/>
+                                    <field name="tax_ids" invisible="1"/>
+                                    <field name="notice"/>
+                                </group>
+                            </form>
+                        </field>
+                        <group class="oe_subtotal_footer oe_right" colspan="2" name="order_total">
+                            <field name="amount_tax" widget="monetary"/>
+                            <div class="oe_subtotal_footer_separator oe_inline">
+                                <label for="amount_total" />
+                                <button name="button_dummy" string="(update)" class="oe_edit_only oe_link"/>
+                            </div>
+                            <field name="amount_total" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary"/>
+                        </group>
+                        <div class="oe_clear"/>
+                    </page>
+                    <page string="Notes" >
+                        <field name="note"/>
+                    </page>
+                </notebook>
+            </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_book_order_tree" model="ir.ui.view">
+        <field name="name">book.order.tree</field>
+        <field name="model">book.order</field>
+        <field name="arch" type="xml">
+            <tree string="Point of Sale Quotations" create="false" decoration-danger="state == 'draft'" decoration-success="state == 'confirmed'" >
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="pickup_date"/>
+                <field name="deliver_date"/>
+                <field name="amount_total"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_book_order_form" model="ir.actions.act_window">
+        <field name="name">Booking Orders</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">book.order</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" eval="False"/>
+        <field name="domain">[]</field>
+        <field name="help" type="html">
+            <p>
+                Use this menu to browse previous booking orders and to record new booking orders.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_book_order"
+              web_icon="pos_book_order,static/description/icon.png"
+              name="Booking Orders"
+              parent="point_of_sale.menu_point_of_sale"
+              action="action_book_order_form"
+              sequence="0"
+              groups="point_of_sale.group_pos_manager,point_of_sale.group_pos_user"/>
+
+    <record id="view_pos_book_order_form" model="ir.ui.view">
+        <field name="name">pos.order.form</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="booking_ref"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

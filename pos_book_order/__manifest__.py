@@ -1,0 +1,27 @@
+{
+    'name': 'POS Booking Order',
+    'version': '12.0.1.0.0',
+    'summary': """Book orders in pos""",
+    'description': 'Book orders for customers in POS',
+    'category': 'Point of Sale',
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
+    'website': "https://www.cybrosys.com",
+    'depends': ['base', 'point_of_sale'],
+    'data': ['views/template.xml',
+             'views/pos_config.xml',
+             'views/book_order.xml',
+             'security/ir.model.access.csv'
+             ],
+    'demo': [],
+    'images': ['static/description/banner.png'],
+    'qweb': ['static/src/xml/book_order.xml',
+             'static/src/xml/booked_order.xml',
+             'static/src/xml/pickup_orders.xml',
+             'static/src/xml/delivery_orders.xml'
+             ],
+    'license': 'AGPL-3',
+    'installable': True,
+    'application': False,
+}

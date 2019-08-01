@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="BookedOrderButton">
+        <t t-if="widget.pos.config.enable">
+            <div class='control-button'>
+                <span class='control-button-number'>
+                <t t-esc="widget.count()" />
+                </span>
+                Booked Orders
+            </div>
+        </t>
+    </t>
+
+    <t t-name="BookedOrderLIne">
+        <tr class='order-line' t-att-data-id='quotation.id'>
+            <td><t t-esc='quotation.name' /></td>
+            <td><t t-esc='quotation.partner_id[1]'/></td>
+            <td><t t-if="quotation.phone">
+                <t t-esc='quotation.phone'/></t>
+            </td>
+            <td><t t-esc='quotation.date_order' /></td>
+             <td><t t-if="quotation.pickup_date">
+                <t t-esc='quotation.pickup_date'/></t>
+            </td>
+            <td><t t-if="quotation.deliver_date">
+                <t t-esc='quotation.deliver_date'/></t>
+            </td>
+            <td><t t-if="quotation.deliver_date">
+                <t t-esc='quotation.delivery_address'/></t>
+            </td>
+            <td><t t-esc='widget.format_currency(quotation.amount_total)' /></td>
+            <td><button class="confirm_pos_order mode-button selected-mode" style="color: darkgreen;">
+                <i class='fa fa-angle-double-right'/>
+                Confirm POS order
+            </button></td>
+        </tr>
+    </t>
+
+    <t t-name="BookedOrdersWidget">
+        <div class="clientlist-screen screen">
+            <div class="full_width screen-content">
+                <section class="top-content">
+                    <span class='button highlight back'>
+                        <i class='fa fa-angle-double-left'/>
+                        Back
+                    </span>
+                    <span class='searchbox' style="right: 0 !important;margin-left: 0;left: auto;">
+                        <input placeholder='Search Order Ref' />
+                        <span class='search-clear'/>
+                    </span>
+                    <span class='button pickup' style="right: 310px;font-size: 14px;margin-left: 0;border-radius: 30px;
+                    line-height: 28px;top: 3px;background-color: #393939;color: #fff;border-color: #cecbcb;">
+                        Pickup orders
+                    </span>
+                    <span class='button delivery' style="right: 180px;font-size: 14px;margin-left: 0;border-radius:30px;
+                    line-height: 28px;top: 3px;background-color: #393939;color: #fff;border-color: #cecbcb;">
+                        Delivery orders
+                    </span>
+                </section>
+                <section class="full-content">
+                    <div class='window'>
+                        <section class='subwindow collapsed'>
+                            <div class='subwindow-container collapsed'>
+                                <div class='subwindow-container-fix order-details-contents'>
+                                </div>
+                            </div>
+                        </section>
+                        <section class='subwindow'>
+                            <div class='subwindow-container'>
+                                <div class='subwindow-container-fix touch-scrollable scrollable-y'>
+                                    <table class='client-list'>
+                                       <thead>
+                                            <tr>
+                                                <th>Order Ref</th>
+                                                <th>Customer</th>
+                                                <th>Contact No</th>
+                                                <th>Order Date</th>
+                                                <th>Pickup Date</th>
+                                                <th>Delivery Date</th>
+                                                <th>Address</th>
+                                                <th>Total Amount</th>
+                                                <th> </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class='order-list-contents'>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </t>
+
+    <t t-extend="PosTicket">
+        <t t-jquery='.receipt-change' t-operation='after'>
+            <t t-if='order.quotation_ref'>
+                <br/>
+                <div class='receipt-quotation'>
+                    <table class='receipt-quotation-ref'>
+                        <tr>
+                            <td class="pos-left-align">
+                                Booking Ref:
+                            </td>
+                            <td>
+                                <t t-esc='order.quotation_ref["name"]' />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <br/>
+
+                <div class='receipt-phone'>
+                    <table class='receipt-phone-ref'>
+                        <tr>
+                            <td class="pos-left-align">
+                                Contact No:
+                            </td>
+                            <td>
+                                <t t-esc='order.quotation_ref["phone"]' />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <br/>
+
+                <div class='receipt-note'>
+                    <table class='receipt-note-ref'>
+                        <tr>
+                            <td class="pos-left-align">
+                                Order Note:
+                            </td>
+                            <td>
+                                <t t-esc='order.quotation_ref["note"]' />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <br/>
+
+                <div class='receipt-pickup'>
+                    <table class='receipt-pickup-ref'>
+                        <tr>
+                            <td class="pos-left-align">
+                                <t t-if='order.quotation_ref["pickup_date"]'>
+                                Pickup Date:
+                                </t>
+                            </td>
+                            <td>
+                                <t t-if='order.quotation_ref["pickup_date"]'>
+                                    <t t-esc='order.quotation_ref["pickup_date"]' /></t>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class='receipt-deliver'>
+                    <table class='receipt-deliver-ref'>
+                        <tr>
+                            <td class="pos-left-align">
+                                <t t-if='order.quotation_ref["deliver_date"]'>
+                                Delivery Date:
+                                </t>
+                            </td>
+                            <td>
+                                <t t-if='order.quotation_ref["deliver_date"]'>
+                                    <t t-esc='order.quotation_ref["deliver_date"]' /></t>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <br/>
+
+                <div class='receipt-address'>
+                    <table class='receipt-address-ref'>
+                        <tr>
+                            <td class="pos-left-align">
+                                <t t-if='order.quotation_ref["deliver_date"]'>
+                                Delivery Address:
+                                </t>
+                            </td>
+                            <td>
+                                <t t-if='order.quotation_ref["deliver_date"]'>
+                                    <t t-esc='order.quotation_ref["delivery_address"]' />
+                                </t>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </t>
+</templates>
