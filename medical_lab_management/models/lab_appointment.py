@@ -78,11 +78,12 @@ class Appointment(models.Model):
                     'account_id': lab.patient_id.patient.property_account_receivable_id.id,
                     'state': 'draft',
                     'type': 'out_invoice',
-                    'date_invoice': datetime.datetime.now(),
+                    'date_invoice': str(datetime.datetime.now()),
                     'origin': "Lab Test# : " + lab.name,
                     'target': 'new',
                     'lab_request': lab.id,
-                    'is_lab_invoice': True
+                    'is_lab_invoice': True,
+                    'picking_count': 0
                 }
 
                 inv_ids = invoice_obj.create(curr_invoice)
@@ -134,7 +135,7 @@ class Appointment(models.Model):
     def confirm_appointment(self):
 
         message_body = "Dear " + self.patient_id.patient.name + "," + "<br>Your Appointment Has been Confirmed " \
-                                             + "<br>Appointment ID : " + self.name + "<br>Date : " + self.appointment_date + \
+                                             + "<br>Appointment ID : " + self.name + "<br>Date : " + str(self.appointment_date) + \
                        '<br><br>Thank you'
 
         template_obj = self.env['mail.mail']

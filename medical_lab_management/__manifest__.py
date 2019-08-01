@@ -21,7 +21,7 @@
 
 {
     'name': "Medical Lab Management",
-    'version': '12.0.1.0.0',
+    'version': '12.0.1.0.1',
     'summary': """Manage Medical Lab Operations.""",
     'description': """Manage Medical Lab General Operations.""",
     'author': "Cybrosys Techno Solutions",
