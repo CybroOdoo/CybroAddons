@@ -18,6 +18,7 @@
 #############################################################################
 
 from dateutil import parser
+from datetime import datetime
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
@@ -76,8 +77,8 @@ class SalePromotion(models.Model):
                 product_rule_ids = []
                 for obj in self.sale_promotion_id:
                     for promo_lines in obj.item_ids:
-                        if not promo_lines.date_start or promo_lines.date_start <= date_order:
-                            if not promo_lines.date_end or promo_lines.date_end >= date_order:
+                        if not promo_lines.date_start or str(promo_lines.date_start) <= datetime.strftime(date_order,'%Y-%m-%d'):
+                            if not promo_lines.date_end or str(promo_lines.date_end) >= datetime.strftime(date_order,'%Y-%m-%d'):
                                 if promo_lines.applied_on == 'product_category':
                                     categ_val = {'rule': promo_lines,
                                                  'category': promo_lines.categ_id.id,
