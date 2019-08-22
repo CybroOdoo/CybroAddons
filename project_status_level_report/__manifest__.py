@@ -38,7 +38,7 @@
         'views/report.xml'
     ],
     'license': 'AGPL-3',
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,
 }
