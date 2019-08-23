@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates id="variant.template" xml:space="preserve">
+
+    <t t-extend="Product" name="ProductStockWidget">
+    <t t-jquery="div.product-img" t-operation="replace">
+        <div class="product-img">
+                <img t-att-src='image_url' alt="Product image"/>
+
+            <t t-if="!product.to_weight">
+
+                    <span class="price-tag">
+                        <t t-esc="widget.format_currency(product.get_price(pricelist, 1),'Product Price')"/>
+                    </span>
+                <t t-if="product.pos_variants">
+                        <span class="variant">Multi-variant</span>
+                    </t>
+                </t>
+
+            <t t-if="product.to_weight">
+
+                    <span class="price-tag">
+                        <t t-esc="widget.format_currency(product.get_price(pricelist, 1),'Product Price')"/>
+                    </span>
+                <t t-if="product.pos_variants">
+                        <span class="variant">Multi-variant</span>
+                    </t>
+                </t>
+            </div>
+    </t>
+    </t>
+    <t t-extend="Orderline">
+        <t t-jquery="ul.info-list" t-operation="append">
+            <div class="variant-orderline">
+                <t t-foreach="line.product_variants" t-as="item">
+                    <li>
+                        <em>
+                        <t t-esc="item.type" />:
+                        </em>
+                        at
+                        <t t-esc="widget.format_currency(item.extra_price)"/>
+                    </li>
+                </t>
+
+            </div>
+        </t>
+    </t>
+    <t t-extend="PosTicket">
+        <t t-jquery="tr[t-foreach*='orderlines'][t-as*='orderline']" t-operation="append">
+            <tr t-foreach="orderline.product_variants" t-as="variant">
+                <div>
+                    <td t-esc="variant.type" style="padding-left:15px;"/>
+                    <td style="text-align: left;" t-esc="widget.format_currency(variant.extra_price)"/>
+                </div>
+            </tr>
+        </t>
+    </t>
+
+</templates>
+
+
