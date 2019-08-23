@@ -269,4 +269,12 @@ class StockMove(models.Model):
             {'date_done': f_date})
         # pickings.filtered(lambda picking: picking.state == 'done' and not picking.date_done).write({'date_done': time.strftime(DEFAULT_SERVER_DATETIME_FORMAT)})
 
-        return True
+    @api.multi
+    def action_done(self):
+    	"""Function to update the price, (added after)"""
+        self.product_price_update_before_done()
+        res = super(StockMove, self).action_done()
+        self.product_price_update_after_done()
+        return res
+
+

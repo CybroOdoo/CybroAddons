@@ -6,7 +6,7 @@
 #    Author: fasluca(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
-
+#
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -19,7 +19,7 @@
 ##############################################################################
 {
     'name': 'Stock Force Date',
-    'version': '10.0.1.0',
+    'version': '10.0.1.0.1',
     'summary': 'Force Date in Stock Picking',
     'description': """
     This module will give you a way to record stock picking to a specific date. 
