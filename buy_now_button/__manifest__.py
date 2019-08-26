@@ -18,7 +18,7 @@
 ##############################################################################
 {
     'name': 'Buy Now Button in Website',
-    'version': '12.0.1.0.0',
+    'version': '12.0.1.1.0',
     'summary': """ Buy now button on Website""",
     'description': 'Buy now is added in the E-commerce for the purpose of quick checkout',
     'category': 'Website',
