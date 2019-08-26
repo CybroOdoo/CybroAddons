@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="template" xml:space="preserve">
+
+    <t t-name="InternalNoteButton">
+        <div class='control-button in_note'>
+            <i class="fa fa-tags">  Multi Notes </i>
+        </div>
+    </t>
+    <t t-name="NotePopupWidget">
+        <div role="dialog" class="modal-dialog">
+            <div class="popup popup-textinput" style="background-color: bisque;">
+                <header class="title"><t t-esc=" widget.options.title || '' " /></header>
+                <div>
+                    <select id="note_select" style="width:461px;" class="note_temp">
+                        <option id="" value="select"></option>
+                    </select>
+                </div>
+                <br/>
+                <textarea id="note_text_area" type='text' t-att-value="widget.options.value || ''"></textarea>
+                <div class="footer">
+                    <div class="button confirm">
+                        Ok
+                    </div>
+                    <div class="button cancel">
+                        Cancel
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+    <t t-extend="PosTicket">
+        <t t-jquery="table.receipt-orderlines" t-operation="replace">
+            <table class='receipt-orderlines'>
+                <colgroup>
+                    <col width='50%' />
+                    <col width='25%' />
+                    <col width='25%' />
+                </colgroup>
+                <tr t-foreach="orderlines" t-as="orderline">
+                    <td>
+                        <t t-esc="orderline.get_product().display_name"/><br/>
+                        <i class="fa fa-tags"><t t-esc="orderline.note"/></i><br/>
+                         <t t-if="orderline.get_discount() > 0">
+                            <div class="pos-disc-font">
+                                With a <t t-esc="orderline.get_discount()"/>% discount
+                            </div>
+                        </t>
+                    </td>
+                    <td class="pos-right-align">
+                        <t t-esc="orderline.get_quantity_str_with_unit()"/>
+                    </td>
+                    <td class="pos-right-align">
+                        <t t-esc="widget.format_currency(orderline.get_display_price())"/>
+                    </td>
+                </tr>
+            </table>
+        </t>
+    </t>
+</template>
