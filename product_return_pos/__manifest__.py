@@ -2,7 +2,7 @@
 ###################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2019-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
 #    published by the Free Software Foundation, either version 3 of the
@@ -19,7 +19,7 @@
 ###################################################################################
 {
     'name': 'Product Return In POS',
-    'version': '12.0.0.1.0',
+    'version': '12.0.1.1.0',
     'category': 'Point of Sale',
     'summary': 'POS Order Return',
     'author': 'Cybrosys Techno Solutions',
@@ -32,7 +32,7 @@
              'views/return.xml',
              'views/pos_template.xml',
             ],
-    'qweb': ['static/src/xml/*.xml'],
+    'qweb': ['static/src/xml/pos_return.xml'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
