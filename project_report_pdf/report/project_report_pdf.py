@@ -60,13 +60,22 @@ class ProjectReportParser(models.AbstractModel):
                 'user_id': i.user_id.name,
                 'stage_id': i.stage_id.name,
             })
-        return {
-            'vals': vals,
-            'name': current_task[0].project_id.name,
-            'manager': current_task[0].project_id.user_id.name,
-            'date_start': current_task[0].project_id.date_start,
-            'date_end': current_task[0].project_id.date,
-        }
+        if current_task:
+            return {
+                'vals': vals,
+                'name': current_task[0].project_id.name,
+                'manager': current_task[0].project_id.user_id.name,
+                'date_start': current_task[0].project_id.date_start,
+                'date_end': current_task[0].project_id.date,
+            }
+        else:
+            return {
+                'vals': vals,
+                'name': current_task.project_id.name,
+                'manager': current_task.project_id.user_id.name,
+                'date_start': current_task.project_id.date_start,
+                'date_end': current_task.project_id.date,
+            }
 
 
 

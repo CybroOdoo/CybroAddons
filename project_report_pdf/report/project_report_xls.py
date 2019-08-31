@@ -28,12 +28,8 @@ class ProjectReportXls(models.AbstractModel):
     _inherit = 'report.report_xlsx.abstract'
 
     def generate_xlsx_report(self, workbook, data, lines):
-        print('kskskjajaajaj')
         name = data['record']
-        print(lines)
-        print(data['context']['uid'])
         user_obj = self.env['res.users'].search([('id', '=', data['context']['uid'])])
-        print(user_obj.company_id)
         wizard_record = request.env['wizard.project.report'].search([])[-1]
         task_obj = request.env['project.task']
         users_selected = []
@@ -65,8 +61,12 @@ class ProjectReportXls(models.AbstractModel):
                 'user_id': i.user_id.name if i.user_id.name else '',
                 'stage_id': i.stage_id.name,
             })
-        print(vals, 'vals')
-
+        if current_task:
+            project_name = current_task[0].project_id.name
+            user = current_task[0].project_id.name
+        else:
+            project_name = current_task.project_id.name
+            user = current_task.project_id.name
         sheet = workbook.add_worksheet("Project Report")
         format1 = workbook.add_format({'font_size': 22, 'bg_color': '#D3D3D3'})
         format4 = workbook.add_format({'font_size': 22})
@@ -84,14 +84,14 @@ class ProjectReportXls(models.AbstractModel):
         sheet.merge_range('A5:B5', user_obj.company_id.country_id.name, format5)
         sheet.merge_range('C1:H5', "", format5)
         sheet.merge_range(5, 0, 6, 1, "Project  :", format1)
-        sheet.merge_range(5, 2, 6, 7, current_task[0].project_id.name, format1)
+        sheet.merge_range(5, 2, 6, 7, project_name, format1)
         sheet.merge_range('A8:B8', "Project Manager    :", format5)
-        sheet.merge_range('C8:D8', current_task[0].project_id.user_id.name, format5)
+        sheet.merge_range('C8:D8', user, format5)
         date_start = ''
         date_end = ''
-        if current_task[0].project_id.date_start:
+        if current_task:
             date_start = str(current_task[0].project_id.date_start)
-        if current_task[0].project_id.date:
+        if current_task:
             date_end = str(current_task[0].project_id.date)
         sheet.merge_range('A9:B9', "Start Date              :", format5)
         sheet.merge_range('C9:D9', date_start, format5)
@@ -100,10 +100,8 @@ class ProjectReportXls(models.AbstractModel):
         sheet.merge_range(0, 2, 4, 5, "", format5)
         sheet.merge_range(1, 6, 4, 7, "", format5)
         sheet.merge_range(7, 4, 9, 7, "", format5)
-
         sheet.merge_range(10, 4, 11, 7, "", format5)
         sheet.merge_range('A11:H12', 'Open Tasks', format4)
-
         sheet.merge_range('A13:D13', "Tasks", format2)
         sheet.merge_range('E13:F13', "Assigned", format2)
         sheet.merge_range('G13:H13', "Stage", format2)
