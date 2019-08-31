@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_financial_report_cash_flow0" model="account.financial.report">
+        <field name="name">Cash Flow Statement</field>
+        <field name="type">sum</field>
+    </record>
+
+    <record id="account_financial_report_operation0" model="account.financial.report">
+        <field name="name">Operations</field>
+        <field name="sequence">1</field>
+        <field name="parent_id" ref="account_financial_report_cash_flow0"/>
+        <field name="display_detail">detail_with_hierarchy</field>
+        <field name="type">sum</field>
+    </record>
+    <record id="cash_in_from_operation0" model="account.financial.report">
+        <field name="name">Cash In</field>
+        <field name="sequence">1</field>
+        <field name="parent_id" ref="account_financial_report_operation0"/>
+        <field name="display_detail">detail_with_hierarchy</field>
+        <field name="type">accounts</field>
+    </record>
+    <record id="cash_out_operation1" model="account.financial.report">
+        <field name="name">Cash Out</field>
+        <field name="sequence">2</field>
+        <field name="parent_id" ref="account_financial_report_operation0"/>
+        <field name="display_detail">detail_with_hierarchy</field>
+        <field name="type">accounts</field>
+    </record>
+
+    <record id="account_financial_report_investing_activity0" model="account.financial.report">
+        <field name="name">Investing Activities</field>
+        <field name="sequence">2</field>
+        <field name="parent_id" ref="account_financial_report_cash_flow0"/>
+        <field name="display_detail">detail_with_hierarchy</field>
+        <field name="type">sum</field>
+    </record>
+    <record id="cash_in_investing0" model="account.financial.report">
+        <field name="name">Cash In</field>
+        <field name="parent_id" ref="account_financial_report_investing_activity0"/>
+        <field name="display_detail">detail_with_hierarchy</field>
+        <field name="type">accounts</field>
+    </record>
+    <record id="cash_out_investing1" model="account.financial.report">
+        <field name="name">Cash Out</field>
+        <field name="parent_id" ref="account_financial_report_investing_activity0"/>
+        <field name="display_detail">detail_with_hierarchy</field>
+        <field name="type">accounts</field>
+    </record>
+
+    <record id="account_financial_report_financing_activity1" model="account.financial.report">
+        <field name="name">Financing Activities</field>
+        <field name="sequence">3</field>
+        <field name="parent_id" ref="account_financial_report_cash_flow0"/>
+        <field name="display_detail">detail_with_hierarchy</field>
+        <field name="type">sum</field>
+    </record>
+
+
+    <record id="cash_in_financial0" model="account.financial.report">
+        <field name="name">Cash In</field>
+        <field name="parent_id" ref="account_financial_report_financing_activity1"/>
+        <field name="display_detail">detail_with_hierarchy</field>
+        <field name="type">accounts</field>
+    </record>
+    <record id="cash_out_financial1" model="account.financial.report">
+        <field name="name">Cash Out</field>
+        <field name="parent_id" ref="account_financial_report_financing_activity1"/>
+        <field name="display_detail">detail_with_hierarchy</field>
+        <field name="type">accounts</field>
+    </record>
+
+    <record id="accounting_report_view" model="ir.ui.view">
+        <field name="name">Accounting Report</field>
+        <field name="model">accounting.report</field>
+        <field name="inherit_id" ref="account.account_common_report_view"/>
+        <field name="arch" type="xml">
+            <field name="target_move" position="before">
+                <field name="account_report_id" domain="[('parent_id','=',False)]"/>
+            </field>
+            <field name="target_move" position="after">
+                <field name="enable_filter"/>
+                <field name="debit_credit" attrs="{'invisible': [('enable_filter','=',True)]}"/>
+            </field>
+            <field name="journal_ids" position="after">
+                <notebook tabpos="up" colspan="4">
+                    <page string="Comparison" name="comparison" attrs="{'invisible': [('enable_filter','=',False)]}">
+                        <group>
+                            <field name="label_filter" attrs="{'required': [('enable_filter', '=', True)]}"/>
+                            <field name="filter_cmp"/>
+                        </group>
+                        <group string="Dates" attrs="{'invisible':[('filter_cmp', '!=', 'filter_date')]}">
+                            <field name="date_from_cmp" attrs="{'required':[('filter_cmp', '=', 'filter_date')]}"/>
+                            <field name="date_to_cmp" attrs="{'required':[('filter_cmp', '=', 'filter_date')]}"/>
+                        </group>
+                    </page>
+                </notebook>
+            </field>
+            <field name="journal_ids" position="replace"/>
+        </field>
+    </record>
+
+    <record id="action_account_report_cfs" model="ir.actions.act_window">
+        <field name="name">Cash Flow Statement</field>
+        <field name="res_model">accounting.report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="accounting_report_view"/>
+        <field name="target">new</field>
+        <field name="context"
+               eval="{'default_account_report_id':ref('cash_flow_statement.account_financial_report_cash_flow0')}"/>
+    </record>
+    <menuitem id="menu_financial_reports"
+              name="Financial reports"
+              sequence="1"
+              parent="account.menu_finance_reports"
+              groups="account.group_account_user"/>
+    <menuitem id="menu_account_report_cfs"
+              name="Cash Flow Statement"
+              sequence="5"
+              action="action_account_report_cfs"
+              parent="menu_financial_reports"
+              groups="account.group_account_user"/>
+
+</odoo>

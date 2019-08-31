@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="print_voucher_receipt">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <div align="right">
+                        <t t-set="address">
+                            <address t-field="data.partner_id"
+                                     t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                            <div t-if="data.partner_id.vat" class="mt16">
+                                <t t-esc="data.company_id.country_id.vat_label or 'Tax ID'"/>:
+                                <span t-field="data.partner_id.vat"/>
+                            </div>
+                        </t>
+                    </div>
+                    <br/>
+                    <h3>Voucher Receipts
+                        <span t-field="data.number"/>
+                    </h3>
+                    <br/>
+                    <div id="informations" class="row mt32 mb32">
+
+                        <div class="col-auto mw-100 mb-2" t-if="data.reference" name="reference">
+                            <strong>Bill Reference:</strong>
+                            <p class="m-0" t-field="data.reference"/>
+                        </div>
+
+                        <div class="col-auto mw-100 mb-2" t-if="data.date" name="date">
+                            <strong>Bill Date:</strong>
+                            <p class="m-0" t-field="data.date"/>
+                        </div>
+                        <div class="col-auto mw-100 mb-2" t-if="data.date_due" name="date_due">
+                            <strong>Due Date:</strong>
+                            <p class="m-0" t-field="data.date_due"/>
+                        </div>
+                    </div>
+
+                    <table border="2" class="table" cellpadding="10">
+                        <t t-set="current_subtotal" t-value="0"/>
+                        <tbody>
+                            <tr>
+                                <th>Product</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Tax</th>
+                                <th>Amount</th>
+                            </tr>
+                            <t t-foreach="data.line_ids" t-as="t">
+                                <t t-set="current_subtotal" t-value="current_subtotal + t.price_subtotal"
+                                   groups="account.group_show_line_subtotals_tax_excluded"/>
+                                <t t-set="current_subtotal" t-value="current_subtotal + t.price_subtotal"
+                                   groups="account.group_show_line_subtotals_tax_included"/>
+                                <tr>
+                                    <td>
+                                        <t t-esc="t.product_id.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="t.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="t.quantity"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="t.price_unit"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="t.tax_ids.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="t.price_subtotal"/>
+                                    </td>
+                                </tr>
+
+                            </t>
+                        </tbody>
+                    </table>
+                    <div id="total" class="row">
+                        <div t-attf-class="#{'col-4' if report_type != 'html' else 'col-sm-7 col-md-5'} ml-auto">
+                            <table class="table table-sm">
+                                <tr class="border-black o_subtotal" style="">
+                                    <td>
+                                        <strong>Subtotal</strong>
+                                    </td>
+                                    <td class="text-right">
+                                        <span
+                                                t-esc="current_subtotal"
+                                                t-options='{"widget": "monetary", "display_currency": data.currency_id}'
+                                        />
+                                    </td>
+                                </tr>
+                                <tr style="">
+                                    <td>Tax Amount</td>
+                                    <td class="text-right">
+                                        <span
+                                                t-field="data.tax_amount"
+                                                t-options='{"widget": "monetary", "display_currency": data.currency_id}'
+                                        />
+                                    </td>
+                                </tr>
+                                <tr t-if="data.tax_correction" name="tax_correction" style="">
+                                    <td>Tax Correction</td>
+                                    <td class="text-right">
+                                        <span
+                                                t-field="data.tax_correction"
+                                                t-options='{"widget": "monetary", "display_currency": data.currency_id}'
+                                        />
+                                    </td>
+                                </tr>
+                                <tr class="border-black o_subtotal" style="">
+                                    <td>
+                                        <strong>Total</strong>
+                                    </td>
+                                    <td class="text-right">
+                                        <span
+                                                t-esc="data.amount"
+                                                t-options='{"widget": "monetary", "display_currency": data.currency_id}'
+                                        />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <p t-if="data.number">
+                        Please use the following communication for your payment :
+                        <b>
+                            <span t-field="data.number"/>
+                        </b>
+                    </p>
+                    <p id="total_in_words" class="mb16">
+                        <strong>Total (In Words):</strong>
+                        <span t-field="data.amount_total_words"/>
+                    </p>
+
+                    <p t-if="data.pay_now" name="pay_now">
+                        Payment terms:
+                        <span t-field="data.pay_now"/>
+                    </p>
+                    <p t-if="data.pay_now == 'pay_now'" name="payment_journal_id">
+                        Payment Method:
+                        <span t-field="data.payment_journal_id"/>
+                    </p>
+                    <p t-if="data.pay_now == 'pay_now' and data.name " name="name">
+                        Payment Memo:
+                        <span t-field="data.name"/>
+                    </p>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
