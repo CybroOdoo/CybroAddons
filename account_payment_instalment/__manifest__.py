@@ -29,7 +29,7 @@
     'category': 'Accounting',
     'summary': 'Instalment in Payment Terms',
     'description': """
-    New type 'Instalment' in Odoo payment terms, Instalment in Payment Terms,Instalment
+    New type 'Instalment' in Odoo payment terms, Instalment in Payment Terms,Installment
 """,
     'depends': ['account'],
     'data': [
