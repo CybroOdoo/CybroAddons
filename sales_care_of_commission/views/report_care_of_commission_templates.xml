@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<template id="report_commission">
+    <t t-call="web.html_container">
+        <t t-call="web.external_layout">
+            <div class="page">
+                <h3> Care of Commission Report</h3>
+                <div class="row" style="padding-bottom:15px">
+                    <div class="col-4" style="padding-right: 1em;">
+                        <t t-if="data['date_from']"><strong>From</strong> <span t-esc="data['date_from']"/><br/></t>
+                        <t t-if="data['date_to']"><strong>To </strong><span t-esc="data['date_to']"/></t>
+                    </div>
+                    <br/>
+                    <div class="col-4">
+                        <strong>Prepared By</strong> <span t-esc="data['create_uid'][1]"/><br/>
+                        <strong>Time </strong><span t-esc="print_time"/>
+                    </div>
+                </div>
+                <table class="table table-sm table-reports">
+                    <thead>
+                        <tr class="text-left">
+                            <th></th>
+                            <th>Invoice #</th>
+                            <th>Inv Customer</th>
+                            <th>Inv Date</th>
+                            <th>Commission(%)</th>
+                            <th>Tax Excluded</th>
+                            <th>Comm Amount</th>
+                        </tr>
+                    </thead>
+                    <t t-set="i" t-value="1"/>
+                    <t t-set="sum_untaxed" t-value="0.0"/>
+                    <t t-set="sum_commission" t-value="0.0"/>
+                    <tr t-foreach="docs" t-as="doc">
+                        <th colspan="5"><span t-esc="docs[doc]['name']"/></th>
+                        <th class="text-right"><span t-att-style="style" t-esc="docs[doc]['sum_untax']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                        <th class="text-right"><span t-att-style="style" t-esc="docs[doc]['sum_comm']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                        <tr t-foreach="docs[doc]['invoices']" t-as="inv">
+                            <td></td>
+                            <td><span t-esc="inv.number"/></td>
+                            <td><span t-esc="inv.partner_id.name"/></td>
+                            <td><span t-esc="inv.date_invoice"/></td>
+                            <td class="text-right"><span t-esc="inv.care_of_percentage*100"/></td>
+                            <td class="text-right"><span t-att-style="style" t-esc="inv.amount_untaxed" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                            <td class="text-right"><span t-att-style="style" t-esc="inv.care_of_commission" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                            <t t-set="i" t-value="i+1"/>
+                            <t t-set="sum_untaxed" t-value="sum_untaxed+inv.amount_untaxed"/>
+                            <t t-set="sum_commission" t-value="sum_commission+inv.care_of_commission"/>
+                        </tr>
+                    </tr>
+                    <tr class="text-right">
+                        <td colspan="4"></td>
+                        <td style="border-top: 1px solid black !important;"><strong>Total</strong></td>
+                        <td style="border-top: 1px solid black !important;">
+                            <strong>
+                                <span t-att-style="style" t-esc="sum_untaxed"
+                                          t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </strong>
+                        </td>
+                        <td style="border-top: 1px solid black !important;">
+                            <strong>
+                                <span t-att-style="style" t-esc="sum_commission"
+                                          t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </strong>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </t>
+    </t>
+</template>
+</odoo>
