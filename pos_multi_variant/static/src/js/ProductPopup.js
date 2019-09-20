@@ -50,7 +50,7 @@ odoo.define('pos_multi_variant.ProductPopup', function (require)
     });
 
     var ProductPopUp = PopupWidget.extend
-    ({   template: 'ProductPopUp',
+    ({  template: 'ProductPopUp',
 
         init: function(parent, options)
         {   this._super(parent, options);
@@ -59,8 +59,7 @@ odoo.define('pos_multi_variant.ProductPopup', function (require)
         },
 
         show: function(options)
-        {   var self =this;
-            this._super(options);
+        {   this._super(options);
             this.render_list(options);
         },
 
@@ -78,7 +77,7 @@ odoo.define('pos_multi_variant.ProductPopup', function (require)
 
             var category = $(self).find('.action').data('category');
             $('.product-img').find('.variant-selected').each(function ()
-            {   if($(this).data('category') ==  category) // if so
+            {   if($(this).data('category') ==  category)
                 {   $(this).text("").removeClass('variant-selected');
                     $(self).find('.action').text("Selected").addClass('variant-selected');
                 }
@@ -92,7 +91,7 @@ odoo.define('pos_multi_variant.ProductPopup', function (require)
 
         render_list:function(options)
         {   this.list = options.list
-            this.image_url    = options.image_url
+            this.image_url = options.image_url
             this.pos_reference = options.data
             this.variant_values = options.values
             this.self = options.self
@@ -106,6 +105,9 @@ odoo.define('pos_multi_variant.ProductPopup', function (require)
             {   if(this.list[i].pos_active == false)
                 {   NotActive += 1
                 }
+                if(this.list.length == NotActive)
+                {   $("#notify").append(ActiveError);
+                }
                 if(this.list[i].pos_active == true)
                 {   if (!pushed.includes(this.list[i].attribute[0]))
                     {   var temp = {};
@@ -114,9 +116,6 @@ odoo.define('pos_multi_variant.ProductPopup', function (require)
                         pushed.push(this.list[i].attribute[0])
                         AttributeNumbers.push(temp)
                     }
-                }
-                if(this.list.length == NotActive)
-                {   $("#notify").append(ActiveError);
                 }
             }
             var tag = "<div class='"+i+"'>";
@@ -136,7 +135,7 @@ odoo.define('pos_multi_variant.ProductPopup', function (require)
                                     "<div class='product-img'>"+
                                     "<img src='"+this.image_url+"'/>" +
                                     "<span class='extra-price'>"+price+"</span>"+
-                                    "<h2 class='action' data-price='' data-type='' data-category='"+AttributeNumbers[i].name+""'></h2>"+
+                                    "<h2 class='action' data-price='' data-type='' data-category='"+AttributeNumbers[i].name+"'></h2>"+
                                     "<span class='variants'>"+this.variant_values[k].name+"</span>"+
                                     "</div>"+
                                     "</article>"
@@ -153,7 +152,7 @@ odoo.define('pos_multi_variant.ProductPopup', function (require)
             if(!(this.pos_reference.variant_line_ids.length>0))
             {   $("#notify").append(AddError);
             }
-        },
+            },
 
         click_cancel: function()
         {   var order = this.self.pos.get('selectedOrder').selected_orderline.product_variants = []
@@ -162,7 +161,7 @@ odoo.define('pos_multi_variant.ProductPopup', function (require)
 
         click_confirm: function()
         {   var price = 0.00
-            var order = this.self.pos.get_order();
+            var order = this.self.pos.get('selectedOrder');
             var selected_orderline = order.selected_orderline
             $('.product-img').find('.variant-selected').each(function ()
             {   price += parseFloat($(this).data('price'))

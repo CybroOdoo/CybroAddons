@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "POS Product Multi variant",
-    'version': '12.0.1.0.0',
+    'version': '12.0.1.0.1',
     'summary': """Product with multi-variants""",
     'description': """Configure products having variants in POS""",
     'author': 'Cybrosys Techno Solutions',
