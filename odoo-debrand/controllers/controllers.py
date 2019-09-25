@@ -1,4 +1,24 @@
 # -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2019-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Tintuk Tomin(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU AFFERO
+#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
+#
+#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
+#    (AGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
 
 import imghdr
 import json
@@ -86,7 +106,9 @@ class BinaryCustom(Binary):
 
 
 class OdooDebrand(Database):
+
 	def _render_template(self, **d):
+
 		d.setdefault('manage', True)
 		d['insecure'] = odoo.tools.config.verify_admin_password('admin')
 		d['list_db'] = odoo.tools.config['list_db']
@@ -95,6 +117,7 @@ class OdooDebrand(Database):
 		d['pattern'] = DBNAME_PATTERN
 		website_id = request.env['website'].sudo().search([])
 		d['website_name'] = website_id and website_id[0].name or ''
+		d['company_name'] = website_id and website_id[0].company_id.name or ''
 		d['favicon']= website_id and	website_id[0].favicon_url or ''
 		d['company_logo_url'] = website_id and website_id[0].company_logo_url or ''
 
