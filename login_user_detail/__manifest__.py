@@ -22,7 +22,7 @@
 
 {
     'name': "User Log Details",
-    'version': '13.0.1.0.1',
+    'version': '13.0.1.0.0',
     'summary': """Login User Details & IP Address""",
     'description': """This module records login information of user""",
     'author': "Cybrosys Techno Solutions ",
@@ -31,7 +31,7 @@
     'website': "https://www.cybrosys.com",
     'category': 'Tools',
     'depends': ['base'],
-    'license': 'LGPL-3',
+    'license': 'AGPL-3',
     'data': [
         'security/ir.model.access.csv',
         'views/login_user_views.xml'],
