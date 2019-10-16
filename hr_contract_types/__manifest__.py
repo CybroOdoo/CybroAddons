@@ -7,7 +7,7 @@
     'description': """
         Contract type in contracts
     """,
-    'author': 'Cybrosys Techno Solutions, Odoo SA',
+    'author': 'Cybrosys Techno Solutions, Odoo S.A.',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
