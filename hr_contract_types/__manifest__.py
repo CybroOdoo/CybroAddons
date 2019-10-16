@@ -18,6 +18,7 @@
         'data/hr_contract_type_data.xml',
     ],
     'installable': True,
+    'images': ['static/description/banner.png'],
     'auto_install': False,
     'application': False,
     'license': 'AGPL-3',

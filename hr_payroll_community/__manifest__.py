@@ -9,6 +9,7 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'summary': 'Manage your employee payroll records',
+    'images': ['static/description/banner.png'],
     'description': "",
     'depends': [
         'hr_contract',
