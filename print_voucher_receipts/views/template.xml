@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="print_voucher_receipt">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <div align="right">
+                        <t t-set="address">
+                            <address t-field="data.partner_id"
+                                     t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                            <div t-if="data.partner_id.vat" class="mt16">
+                                <t t-esc="data.company_id.country_id.vat_label or 'Tax ID'"/>:
+                                <span t-field="data.partner_id.vat"/>
+                            </div>
+                        </t>
+                    </div>
+                    <br/>
+                    <h3 t-if="data.type == 'out_receipt' and data.state == 'posted'">Sales Receipt
+                        <span t-field="data.name"/>
+                    </h3>
+                    <h3 t-if="data.type == 'out_receipt'and data.state == 'draft'">Draft Sales Receipt
+                        <span t-field="data.name"/>
+                    </h3>
+                    <h3 t-if="data.type == 'in_receipt' and data.state == 'posted'">Purchase Receipt
+                        <span t-field="data.name"/>
+                    </h3>
+                    <h3 t-if="data.type == 'in_receipt' and data.state == 'draft'">Draft Purchase Receipt
+                        <span t-field="data.name"/>
+                    </h3>
+                    <br/>
+                    <div id="informations" class="row mt32 mb32">
+                        <div class="col-auto mw-100 mb-2" t-if="data.ref" name="reference">
+                            <label t-if="data.type == 'out_receipt'">
+                                <b>Invoice Reference:</b>
+                            </label>
+                            <label t-if="data.type == 'in_receipt'">
+                                <b>Bill Reference:</b>
+                            </label>
+                            <p class="m-0" t-field="data.ref"/>
+                        </div>
+
+                        <div class="col-auto mw-100 mb-2" t-if="data.invoice_date" name="date">
+                            <label t-if="data.type == 'out_receipt'">
+                                <b>Invoice Date:</b>
+                            </label>
+                            <label t-if="data.type == 'in_receipt'">
+                                <b>Bill Date:</b>
+                            </label>
+                            <p class="m-0" t-field="data.invoice_date"/>
+                        </div>
+
+                        <div class="col-auto mw-100 mb-2" t-if="data.date and data.type == 'in_receipt'" name="date">
+                            <label t-if="data.type == 'out_receipt'">
+                                <b>Accounting Date:</b>
+                            </label>
+                            <label t-if="data.type == 'in_receipt'">
+                                <b>Accounting Date:</b>
+                            </label>
+                            <p class="m-0" t-field="data.date"/>
+                        </div>
+
+                        <div class="col-auto mw-100 mb-2" t-if="data.invoice_date_due" name="invoice_date_due">
+                            <label t-if="data.type == 'out_receipt'">
+                                <b>Due Date:</b>
+                            </label>
+                            <label t-if="data.type == 'in_receipt'">
+                                <b>Due Date:</b>
+                            </label>
+                            <p class="m-0" t-field="data.invoice_date_due"/>
+                        </div>
+                    </div>
+
+                    <table border="2" class="table" cellpadding="10">
+                        <t t-set="current_subtotal" t-value="0"/>
+                        <tbody>
+                            <tr>
+                                <th>Product</th>
+                                <th>Label</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Tax</th>
+                                <th>Amount</th>
+                            </tr>
+                            <t t-foreach="data.invoice_line_ids" t-as="t">
+                                <t t-set="current_subtotal" t-value="current_subtotal + t.price_subtotal"
+                                   groups="account.group_show_line_subtotals_tax_excluded"/>
+                                <t t-set="current_subtotal" t-value="current_subtotal + t.price_subtotal"
+                                   groups="account.group_show_line_subtotals_tax_included"/>
+                                <tr>
+                                    <td>
+                                        <t t-esc="t.product_id.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="t.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="t.quantity"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="t.price_unit"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="t.tax_ids.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="t.price_subtotal"/>
+                                    </td>
+                                </tr>
+
+                            </t>
+                        </tbody>
+                    </table>
+                    <div class="clearfix">
+                        <div id="total" class="row">
+                            <div t-attf-class="#{'col-4' if report_type != 'html' else 'col-sm-7 col-md-5'} ml-auto">
+                                <table class="table table-sm;page-break-inside: avoid;">
+                                    <tr class="border-black o_subtotal" style="">
+                                        <td>
+                                            <strong>Subtotal</strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="data.amount_untaxed"/>
+                                        </td>
+                                    </tr>
+                                    <t t-foreach="data.amount_by_group" t-as="amount_by_group">
+                                        <tr style="">
+                                            <t t-if="len(data.line_ids.filtered(lambda line: line.tax_line_id)) == 1 and data.amount_untaxed == amount_by_group[2]">
+                                                <td>
+                                                    <span t-esc="amount_by_group[0]"/>
+                                                </td>
+                                                <td class="text-right o_price_total">
+                                                    <span t-esc="amount_by_group[3]"/>
+                                                </td>
+                                            </t>
+                                            <t t-else="">
+                                                <td>
+                                                    <span t-esc="amount_by_group[0]"/>
+                                                    <span>&amp;nbsp;
+                                                        <span>on</span>
+                                                        <t t-esc="amount_by_group[4]"/>
+                                                    </span>
+                                                </td>
+                                                <td class="text-right o_price_total">
+                                                    <span t-esc="amount_by_group[3]"/>
+                                                </td>
+                                            </t>
+                                        </tr>
+                                    </t>
+                                    <tr class="border-black o_total">
+                                        <td>
+                                            <strong>Total</strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="data.amount_total"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-black">
+                                        <td>
+                                            <strong>Amount Due</strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="data.amount_residual"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p t-if="data.name">
+                        Please use the following communication for your payment :
+                        <b>
+                            <span t-field="data.name"/>
+                        </b>
+                    </p>
+                    <p id="total_in_words" class="mb16">
+                        <strong>Total (In Words):</strong>
+                        <span t-field="data.amount_total_words"/>
+                    </p>
+
+                    <p t-if="data.invoice_payment_term_id" name="invoice_payment_term_id">
+                        Payment terms:
+                        <span t-field="data.invoice_payment_term_id"/>
+                    </p>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
