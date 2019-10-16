@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 {
-    'name': 'Payroll Accounting',
+    'name': 'Odoo13 Payroll Accounting',
     'category': 'Generic Modules/Human Resources',
     'description': """
 Generic Payroll system Integrated with Accounting.
@@ -12,7 +12,7 @@ Generic Payroll system Integrated with Accounting.
     * Company Contribution Management
     """,
     'version': '13.0.1.0.0',
-    'author': 'Cybrosys Techno Solutions',
+    'author': 'Cybrosys Techno Solutions, Odoo SA',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
