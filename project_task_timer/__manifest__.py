@@ -31,7 +31,7 @@
         'views/project_task_timer_view.xml',
         'views/project_timer_static.xml',
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'demo': [],
     'installable': True,
