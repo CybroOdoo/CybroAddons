@@ -6,7 +6,7 @@
 #    Authors: Tintuk Tomin (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
-#    it under the terms of the GNU Affero General Public License (AGPL) as
+#    it under the terms of the GNU Affero General Public License (LGPL) as
 #    published by the Free Software Foundation, either version 3 of the
 #    License, or (at your option) any later version.
 #
@@ -35,7 +35,7 @@
             "views/asset_notebook.xml",
     ],
     'images': ['static/description/banner.png'],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'demo': [],
     'installable': True,
     'auto_install': False,
