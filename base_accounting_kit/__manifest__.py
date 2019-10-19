@@ -30,7 +30,7 @@
                    "Customer Credit Limit, Recurring Payment, "
                    "PDC Management, Customer Follow Up and "
                    "Lock Dates into Odoo 13 Community Edition",
-    'author': 'Cybrosys Techno Solutions, Odoo SA',
+    'author': ' Odoo SA,Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
