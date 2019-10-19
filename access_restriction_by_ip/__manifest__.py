@@ -31,7 +31,7 @@
         'security/ir.model.access.csv',
         'views/allowed_ips_view.xml',
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'demo': [],
     'installable': True,
     'auto_install': False,
