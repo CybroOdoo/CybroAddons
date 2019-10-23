@@ -4,9 +4,10 @@
     'name': 'Odoo13 Employee Contracts Types',
     'version': '13.0.1.0.0',
     'category': 'Generic Modules/Human Resources',
-    'description': """
+    'summary': """
         Contract type in contracts
     """,
+    'description': """Odoo13 Employee Contracts Types,Odoo13 Employee, Employee Contracts, Odoo 13"""
     'author': 'Odoo SA,Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

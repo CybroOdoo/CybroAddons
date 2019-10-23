@@ -3,14 +3,10 @@
 {
     'name': 'Odoo13 Payroll Accounting',
     'category': 'Generic Modules/Human Resources',
-    'description': """
-Generic Payroll system Integrated with Accounting.
-==================================================
-
-    * Expense Encoding
-    * Payment Encoding
-    * Company Contribution Management
+    'summary': """
+          Generic Payroll system Integrated with Accounting,Expense Encoding,Payment Encoding,Company Contribution Management
     """,
+    'description': """Odoo13 Payroll Accounting,Odoo13 Payroll,Odoo 13,Payroll Accounting,Accounting""",
     'version': '13.0.1.0.0',
     'author': 'Odoo SA,Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',

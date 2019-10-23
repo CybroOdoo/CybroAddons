@@ -10,7 +10,7 @@
     'website': 'https://www.cybrosys.com',
     'summary': 'Manage your employee payroll records',
     'images': ['static/description/banner.png'],
-    'description': "",
+    'description': "Odoo 13 Payroll, Payroll, Odoo 13,Odoo Payroll",
     'depends': [
         'hr_contract',
         'hr_holidays',
