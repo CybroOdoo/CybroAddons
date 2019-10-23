@@ -34,7 +34,7 @@
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'depends': ['base', 'account', 'account_check_printing'],
+    'depends': ['base', 'account', 'sale', 'account_check_printing'],
     'data': [
         'security/ir.model.access.csv',
         'security/account_asset_security.xml',
@@ -87,7 +87,7 @@
     ],
     'qweb': ['static/src/xml/*.xml'],
     'license': 'AGPL-3',
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
     'installable': True,
     'auto_install': False,
     'application': False,
