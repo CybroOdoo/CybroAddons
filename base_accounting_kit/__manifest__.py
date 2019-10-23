@@ -7,12 +7,12 @@
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU AFFERO
-#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
+#    GNU AFFERO GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
 #    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
 #    (AGPL v3) along with this program.
@@ -24,12 +24,14 @@
     'name': 'Odoo 13 Accounting',
     'version': '13.0.1.0.0',
     'category': 'Accounting',
-    'summary': """ Complete accounting kit for Odoo 13 """,
+    'summary': """ Asset Management, Accounting Reports, PDC Management,
+                    Account Lock dates, Customer Credit Limit and Follow Ups, Day book,
+                    Bank book and Cash book reports. """,
     'description': "This Module will bring back the accounting features such "
-                   "as Account Reports, Asset Management, "
-                   "Customer Credit Limit, Recurring Payment, "
-                   "PDC Management, Customer Follow Up and "
-                   "Lock Dates into Odoo 13 Community Edition",
+                    "as Accounting Reports, Asset Management, "
+                    "Customer Credit Limit, Recurring Payment, "
+                    "PDC Management, Customer Follow-up and "
+                    "Lock Dates into Odoo 13 Community Edition, Odoo Accounting",
     'author': ' Odoo SA,Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
@@ -86,7 +88,7 @@
         'report/report.xml',
     ],
     'qweb': ['static/src/xml/*.xml'],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'images': ['static/description/banner.gif'],
     'installable': True,
     'auto_install': False,
