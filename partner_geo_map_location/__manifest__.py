@@ -4,16 +4,16 @@
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2016-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
 #    Author: Cybrosys Technologies(<https://www.cybrosys.com>)
-#    you can modify it under the terms of the GNU LESSER
-#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#    you can modify it under the terms of the GNU AFFERO
+#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
 
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
 #
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    GENERAL PUBLIC LICENSE (LGPL v3) along with this program.
+#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
+#    GENERAL PUBLIC LICENSE (AGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
@@ -31,7 +31,7 @@
     'demo': [
     ],
     'images': ['static/description/banner.jpg'],
-    'license': 'LGPL-3',
+    'license': 'AGPL-3',
     'installable': True,
     'application': False,
 }
