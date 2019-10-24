@@ -7,7 +7,7 @@
     'summary': """
         Contract type in contracts
     """,
-    'description': """Odoo13 Employee Contracts Types,Odoo13 Employee, Employee Contracts, Odoo 13"""
+    'description': """Odoo13 Employee Contracts Types,Odoo13 Employee, Employee Contracts, Odoo 13""",
     'author': 'Odoo SA,Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
