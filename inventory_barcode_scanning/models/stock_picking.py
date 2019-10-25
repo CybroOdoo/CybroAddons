@@ -18,7 +18,8 @@ class StockPicking(models.Model):
             raise Warning('No product is available for this barcode')
         if self.barcode and self.pack_operation_product_ids:
             for line in self.pack_operation_product_ids:
-                if line.product_id.barcode == self.barcode:
+                if line.product_id.barcode and \
+                        line.product_id.barcode == self.barcode:
                     line.qty_done += 1
                     self.barcode = None
                     match = True
