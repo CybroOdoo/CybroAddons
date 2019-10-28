@@ -21,7 +21,7 @@
 #############################################################################
 
 {
-    'name': 'Odoo 13 Accounting',
+    'name': 'Odoo 13 Full Accounting Kit',
     'version': '13.0.1.0.0',
     'category': 'Accounting',
     'summary': """ This Module will bring back the accounting features such  Asset Management, Accounting Reports, PDC Management,
@@ -31,7 +31,7 @@
                     Odoo 13 Accounting,Accounting Reports,Odoo13 Accounting PDF Reports, Asset Management,
                     Customer Credit Limit, Recurring Payment,
                     PDC Management, Customer Follow-up,
-                    Lock Dates into Odoo 13 Community Edition, Odoo Accounting,Odoo 13 Accounting Reports,Odoo 13""",
+                    Lock Dates into Odoo 13 Community Edition, Odoo Accounting,Odoo 13 Accounting Reports,Odoo 13, Full Accounting, Complete Accounting, Odoo Community Accounting, Accounting for odoo 13, Full Accounting Package, Financial Reports, Financial Report for Odoo 13""",
     'author': ' Odoo SA,Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
