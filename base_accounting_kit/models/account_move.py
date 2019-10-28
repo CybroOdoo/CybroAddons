@@ -20,11 +20,14 @@
 #
 #############################################################################
 
+from datetime import datetime
+
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models, _
 from odoo.addons.base.models import decimal_precision as dp
 from odoo.exceptions import UserError
+from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
 
 
 class AccountMove(models.Model):
@@ -34,6 +37,16 @@ class AccountMove(models.Model):
                                              'move_id',
                                              string='Assets Depreciation Lines',
                                              ondelete="restrict")
+
+    def button_cancel(self):
+        for move in self:
+            for line in move.asset_depreciation_ids:
+                line.move_posted_check = False
+        return super(AccountMove, self).button_cancel()
+
+    def post(self):
+        self.mapped('asset_depreciation_ids').post_lines_and_close_asset()
+        return super(AccountMove, self).post()
 
     @api.model
     def _refund_cleanup_lines(self, lines):
@@ -63,26 +76,12 @@ class AccountMove(models.Model):
             inv.invoice_line_ids.with_context(context).asset_create()
         return result
 
-    def button_cancel(self):
-        for move in self:
-            for line in move.asset_depreciation_ids:
-                line.move_posted_check = False
-        return super(AccountMove, self).button_cancel()
 
-    def post(self):
-        for move in self:
-            for depreciation_line in move.asset_depreciation_ids:
-                depreciation_line.post_lines_and_close_asset()
-        return super(AccountMove, self).post()
-
-
-class AccountMoveLine(models.Model):
+class AccountInvoiceLine(models.Model):
     _inherit = 'account.move.line'
 
     asset_category_id = fields.Many2one('account.asset.category',
                                         string='Asset Category')
-    type_rel = fields.Selection(related='move_id.type')
-    move_asset_category_id = fields.Many2one('account.move')
     asset_start_date = fields.Date(string='Asset Start Date',
                                    compute='_get_asset_date', readonly=True,
                                    store=True)
@@ -90,8 +89,9 @@ class AccountMoveLine(models.Model):
                                  compute='_get_asset_date', readonly=True,
                                  store=True)
     asset_mrr = fields.Float(string='Monthly Recurring Revenue',
-                             compute='_get_asset_date', readonly=True,
-                             digits=dp.get_precision('Account'), store=True)
+                             compute='_get_asset_date',
+                             readonly=True, digits=dp.get_precision('Account'),
+                             store=True)
 
     @api.depends('asset_category_id', 'move_id.invoice_date')
     def _get_asset_date(self):
@@ -102,17 +102,18 @@ class AccountMoveLine(models.Model):
             cat = record.asset_category_id
             if cat:
                 if cat.method_number == 0 or cat.method_period == 0:
-                    raise UserError(_('The number of depreciations or '
-                                      'the period length of your asset category cannot be 0.'))
+                    raise UserError(_(
+                        'The number of depreciations or the period length of your asset category cannot be null.'))
                 months = cat.method_number * cat.method_period
                 if record.move_id.type in ['out_invoice', 'out_refund']:
-                    record.asset_mrr = record.price_subtotal / months
+                    record.asset_mrr = record.price_subtotal_signed / months
                 if record.move_id.invoice_date:
-                    start_date = record.move_id.invoice_date.replace(day=1)
+                    start_date = datetime.strptime(
+                        str(record.move_id.invoice_date), DF).replace(day=1)
                     end_date = (start_date + relativedelta(months=months,
                                                            days=-1))
-                    record.asset_start_date = start_date
-                    record.asset_end_date = end_date
+                    record.asset_start_date = start_date.strftime(DF)
+                    record.asset_end_date = end_date.strftime(DF)
 
     def asset_create(self):
         for record in self:
@@ -146,13 +147,13 @@ class AccountMoveLine(models.Model):
 
     @api.onchange('uom_id')
     def _onchange_uom_id(self):
-        result = super(AccountMoveLine, self)._onchange_uom_id()
+        result = super(AccountInvoiceLine, self)._onchange_uom_id()
         self.onchange_asset_category_id()
         return result
 
     @api.onchange('product_id')
     def _onchange_product_id(self):
-        vals = super(AccountMoveLine, self)._onchange_product_id()
+        vals = super(AccountInvoiceLine, self)._onchange_product_id()
         if self.product_id:
             if self.move_id.type == 'out_invoice':
                 self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id
@@ -167,11 +168,9 @@ class AccountMoveLine(models.Model):
             elif invoice.type == 'in_invoice':
                 self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id.id
             self.onchange_asset_category_id()
-        super(AccountMoveLine, self)._set_additional_fields(invoice)
+        super(AccountInvoiceLine, self)._set_additional_fields(invoice)
 
     def get_invoice_line_account(self, type, product, fpos, company):
         return product.asset_category_id.account_asset_id or super(
-            AccountMoveLine, self).get_invoice_line_account(type,
-                                                            product,
-                                                            fpos,
-                                                            company)
+            AccountInvoiceLine, self).get_invoice_line_account(type, product,
+                                                               fpos, company)

@@ -1,5 +1,5 @@
 Accounting Kit
-=============================
+==============
 * Full accounting kit for Odoo 13 community editions
 
 Installation

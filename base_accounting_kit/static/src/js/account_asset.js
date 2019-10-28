@@ -1,4 +1,4 @@
-odoo.define('om_account_asset.widget', function(require) {
+odoo.define('base_accounting_kit.account_asset', function(require) {
 "use strict";
 
 /**
@@ -58,7 +58,7 @@ var AccountAssetWidget = AbstractField.extend({
             type: 'button',
             title: title,
             disabled: disabled,
-        }).addClass('btn btn-link fa fa-circle o_deprec_lines_toggler ' + className);
+        }).addClass('btn btn-sm btn-link fa fa-circle o_deprec_lines_toggler ' + className);
         this.$el.html($button);
     },
 
