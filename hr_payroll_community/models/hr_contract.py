@@ -24,7 +24,6 @@ class HrContract(models.Model):
     help="Defines the frequency of the wage payment.")
     resource_calendar_id = fields.Many2one(required=True, help="Employee's working schedule.")
 
-    @api.multi
     def get_all_structures(self):
         """
         @return: the structures linked to the given contracts, ordered by hierachy (parent=False first,
@@ -36,11 +35,9 @@ class HrContract(models.Model):
         # YTI TODO return browse records
         return list(set(structures._get_parent_structure().ids))
 
-    @api.multi
     def get_attribute(self, code, attribute):
         return self.env['hr.contract.advantage.template'].search([('code', '=', code)], limit=1)[attribute]
 
-    @api.multi
     def set_attribute_value(self, code, active):
         for contract in self:
             if active:

@@ -72,12 +72,10 @@ class HrPayslip(models.Model):
         copy=False, states={'draft': [('readonly', False)]})
     payslip_count = fields.Integer(compute='_compute_payslip_count', string="Payslip Computation Details")
 
-    @api.multi
     def _compute_details_by_salary_rule_category(self):
         for payslip in self:
             payslip.details_by_salary_rule_category = payslip.mapped('line_ids').filtered(lambda line: line.category_id)
 
-    @api.multi
     def _compute_payslip_count(self):
         for payslip in self:
             payslip.payslip_count = len(payslip.line_ids)
@@ -87,22 +85,18 @@ class HrPayslip(models.Model):
         if any(self.filtered(lambda payslip: payslip.date_from > payslip.date_to)):
             raise ValidationError(_("Payslip 'Date From' must be earlier 'Date To'."))
 
-    @api.multi
     def action_payslip_draft(self):
         return self.write({'state': 'draft'})
 
-    @api.multi
     def action_payslip_done(self):
         self.compute_sheet()
         return self.write({'state': 'done'})
 
-    @api.multi
     def action_payslip_cancel(self):
         if self.filtered(lambda slip: slip.state == 'done'):
             raise UserError(_("Cannot cancel a payslip that is done."))
         return self.write({'state': 'cancel'})
 
-    @api.multi
     def refund_sheet(self):
         for payslip in self:
             copied_payslip = payslip.copy({'credit_note': True, 'name': _('Refund: ') + payslip.name})
@@ -123,11 +117,9 @@ class HrPayslip(models.Model):
             'context': {}
         }
 
-    @api.multi
     def check_done(self):
         return True
 
-    @api.multi
     def unlink(self):
         if any(self.filtered(lambda payslip: payslip.state not in ('draft', 'cancel'))):
             raise UserError(_('You cannot delete a payslip which is not draft or cancelled!'))
@@ -151,7 +143,6 @@ class HrPayslip(models.Model):
         clause_final = [('employee_id', '=', employee.id), ('state', '=', 'open'), '|', '|'] + clause_1 + clause_2 + clause_3
         return self.env['hr.contract'].search(clause_final).ids
 
-    @api.multi
     def compute_sheet(self):
         for payslip in self:
             number = payslip.number or self.env['ir.sequence'].next_by_code('salary.slip')
@@ -386,7 +377,6 @@ class HrPayslip(models.Model):
 
     # YTI TODO To rename. This method is not really an onchange, as it is not in any view
     # employee_id and contract_id could be browse records
-    @api.multi
     def onchange_employee_id(self, date_from, date_to, employee_id=False, contract_id=False):
         #defaults
         res = {
@@ -585,11 +575,9 @@ class HrPayslipRun(models.Model):
         states={'draft': [('readonly', False)]},
         help="If its checked, indicates that all payslips generated from here are refund payslips.")
 
-    @api.multi
     def draft_payslip_run(self):
         return self.write({'state': 'draft'})
 
-    @api.multi
     def close_payslip_run(self):
         return self.write({'state': 'close'})
 

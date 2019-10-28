@@ -15,7 +15,6 @@ class PayslipLinesContributionRegister(models.TransientModel):
     date_to = fields.Date(string='Date To', required=True,
         default=str(datetime.now() + relativedelta.relativedelta(months=+1, day=1, days=-1))[:10])
 
-    @api.multi
     def print_report(self):
         active_ids = self.env.context.get('active_ids', [])
         datas = {

@@ -10,7 +10,6 @@ class HrPayslipEmployees(models.TransientModel):
 
     employee_ids = fields.Many2many('hr.employee', 'hr_employee_group_rel', 'payslip_id', 'employee_id', 'Employees')
 
-    @api.multi
     def compute_sheet(self):
         payslips = self.env['hr.payslip']
         [data] = self.read()

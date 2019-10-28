@@ -43,14 +43,12 @@ class HrPayslip(models.Model):
         super(HrPayslip, self).onchange_contract()
         self.journal_id = self.contract_id.journal_id.id or (not self.contract_id and self.default_get(['journal_id'])['journal_id'])
 
-    @api.multi
     def action_payslip_cancel(self):
         moves = self.mapped('move_id')
         moves.filtered(lambda x: x.state == 'posted').button_cancel()
         moves.unlink()
         return super(HrPayslip, self).action_payslip_cancel()
 
-    @api.multi
     def action_payslip_done(self):
         res = super(HrPayslip, self).action_payslip_done()
 

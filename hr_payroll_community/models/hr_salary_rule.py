@@ -34,14 +34,12 @@ class HrPayrollStructure(models.Model):
         if not self._check_recursion():
             raise ValidationError(_('You cannot create a recursive salary structure.'))
 
-    @api.multi
     @api.returns('self', lambda value: value.id)
     def copy(self, default=None):
         self.ensure_one()
         default = dict(default or {}, code=_("%s (copy)") % (self.code))
         return super(HrPayrollStructure, self).copy(default)
 
-    @api.multi
     def get_all_rules(self):
         """
         @return: returns a list of tuple (id, sequence) of rules that are maybe to apply
@@ -51,7 +49,6 @@ class HrPayrollStructure(models.Model):
             all_rules += struct.rule_ids._recursive_search_of_rules()
         return all_rules
 
-    @api.multi
     def _get_parent_structure(self):
         parent = self.mapped('parent_id')
         if parent:
@@ -177,7 +174,6 @@ class HrSalaryRule(models.Model):
         if not self._check_recursion(parent='parent_rule_id'):
             raise ValidationError(_('Error! You cannot create recursive hierarchy of Salary Rules.'))
 
-    @api.multi
     def _recursive_search_of_rules(self):
         """
         @return: returns a list of tuple (id, sequence) which are all the children of the passed rule_ids
@@ -188,7 +184,6 @@ class HrSalaryRule(models.Model):
         return [(rule.id, rule.sequence) for rule in self] + children_rules
 
     #TODO should add some checks on the type of result (should be float)
-    @api.multi
     def _compute_rule(self, localdict):
         """
         :param localdict: dictionary containing the environement in which to compute the rule
@@ -215,7 +210,6 @@ class HrSalaryRule(models.Model):
             except:
                 raise UserError(_('Wrong python code defined for salary rule %s (%s).') % (self.name, self.code))
 
-    @api.multi
     def _satisfy_condition(self, localdict):
         """
         @param contract_id: id of hr.contract to be tested
