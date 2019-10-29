@@ -502,7 +502,6 @@ class AccountAssetAsset(models.Model):
                 view_mode = 'tree,form'
             return {
                 'name': name,
-                'view_type': 'form',
                 'view_mode': view_mode,
                 'res_model': 'account.move',
                 'type': 'ir.actions.act_window',
@@ -606,7 +605,6 @@ class AccountAssetAsset(models.Model):
                     move_ids.append(depreciation_line.move_id.id)
         return {
             'name': _('Journal Entries'),
-            'view_type': 'form',
             'view_mode': 'tree,form',
             'res_model': 'account.move',
             'view_id': False,

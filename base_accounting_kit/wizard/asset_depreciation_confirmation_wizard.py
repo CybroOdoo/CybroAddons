@@ -36,7 +36,6 @@ class AssetDepreciationConfirmationWizard(models.TransientModel):
 
         return {
             'name': _('Created Asset Moves') if context.get('asset_type') == 'purchase' else _('Created Revenue Moves'),
-            'view_type': 'form',
             'view_mode': 'tree,form',
             'res_model': 'account.move',
             'view_id': False,
