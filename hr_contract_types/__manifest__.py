@@ -2,7 +2,7 @@
 
 {
     'name': 'Odoo13 Employee Contracts Types',
-    'version': '13.0.1.0.0',
+    'version': '13.0.1.1.0',
     'category': 'Generic Modules/Human Resources',
     'summary': """
         Contract type in contracts
