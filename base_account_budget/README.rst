@@ -1,6 +1,6 @@
-Accounting Kit
+Odoo 13 Budgets Management
 =============================
-* Full accounting kit for Odoo 13 community editions
+* Budgets Management system for Odoo 13 Community edition
 
 Installation
 ============
@@ -19,9 +19,6 @@ Company
 Credits
 -------
 * Developer:
-(v13) Milind Mohan @ Cybrosys, Contact: milind@cybrosys.in
-(v13) Mashhood K U @ Cybrosys, Contact: mashood@cybrosys.in
-(v13) Sreejith @ Cybrosys, Contact: sreejith@cybrosys.in
 (v13) Varsha Vivek @ Cybrosys, Contact: varsha@cybrosys.in
 
 Contacts

@@ -22,21 +22,31 @@
 
 {
     'name': 'Odoo 13 Full Accounting Kit',
-    'version': '13.0.1.1.1',
+    'version': '13.0.1.2.1',
     'category': 'Accounting',
-    'summary': """ This Module will bring back the accounting features such  Asset Management, Accounting Reports, PDC Management,
-                    Account Lock dates, Customer Credit Limit and Follow Ups, Day book,
-                    Bank book and Cash book reports. """,
-    'description': """
-                    Odoo 13 Accounting,Accounting Reports,Odoo13 Accounting PDF Reports, Asset Management,
+    'summary':  """ This Module will bring back the accounting features such  
+                    Asset Management, Budget Management,  Accounting Reports, 
+                    PDC Management, Account Lock dates, Customer Credit Limit 
+                    and Follow Ups, Day book, Bank book and Cash book reports. 
+                """,
+    'description':  """
+                    Odoo 13 Accounting,Accounting Reports, Odoo 13 Accounting 
+                    PDF Reports, Asset Management, Budget Management, 
                     Customer Credit Limit, Recurring Payment,
                     PDC Management, Customer Follow-up,
-                    Lock Dates into Odoo 13 Community Edition, Odoo Accounting,Odoo 13 Accounting Reports,Odoo 13,, Full Accounting, Complete Accounting, Odoo Community Accounting, Accounting for odoo 13, Full Accounting Package, Financial Reports, Financial Report for Odoo 13""",
+                    Lock Dates into Odoo 13 Community Edition, 
+                    Odoo Accounting,Odoo 13 Accounting Reports,Odoo 13,, 
+                    Full Accounting, Complete Accounting, 
+                    Odoo Community Accounting, Accounting for odoo 13, 
+                    Full Accounting Package, 
+                    Financial Reports, Financial Report for Odoo 13
+                    """,
     'author': ' Odoo SA,Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'depends': ['base', 'account', 'sale', 'account_check_printing'],
+    'depends': ['base', 'account', 'sale', 'account_check_printing',
+                'base_account_budget'],
     'data': [
         'security/ir.model.access.csv',
         'security/account_asset_security.xml',
@@ -87,7 +97,6 @@
         'report/account_asset_report_views.xml',
         'report/report.xml',
     ],
-    'qweb': ['static/src/xml/*.xml'],
     'license': 'LGPL-3',
     'images': ['static/description/banner.gif'],
     'installable': True,
