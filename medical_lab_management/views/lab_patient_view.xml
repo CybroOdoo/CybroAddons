@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <menuitem id="menu_root_lab" name="Laboratory" sequence="40"
+                  groups="group_lab_management_user,group_lab_management_technician"/>
+        <record model="ir.ui.view" id="kanban_view_patient">
+            <field name="name">Patient Kanban</field>
+            <field name="model">lab.patient</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <field name='id'/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_global_click">
+                                <div class="o_kanban_image">
+                                    <img t-att-src="kanban_image('lab.patient', 'patient_image', record.id.value)"/>
+                                </div>
+                                <div class="oe_kanban_details">
+                                    <strong>
+                                        <ul>
+                                            <li>Name :<field name="patient"/></li>
+                                            <li>Patient ID :<field name="name"/></li>
+                                        </ul>
+                                    </strong>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="view_lab_patient_tree" model="ir.ui.view">
+            <field name="name">lab.patient.tree</field>
+            <field name="model">lab.patient</field>
+            <field name="priority" eval="8" />
+            <field name="arch" type="xml">
+                <tree string="Patient">
+                    <field name="title" />
+                    <field name="patient" />
+                    <field name="name" />
+                    <field name="phone"/>
+                    <field name="email"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_lab_patient_form" model="ir.ui.view">
+            <field name="name">lab.patient.form</field>
+            <field name="model">lab.patient</field>
+            <field name="priority" eval="8" />
+            <field name="arch" type="xml">
+                <form string="Patient">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                        </div>
+                        <field name="patient_image" widget="image" class="oe_avatar"/>
+                        <div name="title_name" class="oe_title">
+                            <h3>
+                                <field name="title"
+                                    style="width: 30%%" />
+                            </h3>
+                            <h1>
+                                <table>
+                                    <tr>
+                                        <td>
+                                            <field name="patient"
+                                                required="1"
+                                                placeholder="FullName"
+                                                style="padding-right:10px"
+                                                domain="[('is_patient','=',True)]" context="{'search_default_is_patient':1, 'default_is_patient':1, 'default_customer':1}"
+                                            />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="name" />
+                                <field name="gender" />
+                                <field name="dob" />
+                                <field name="age"/>
+                                <field name="phone"/>
+                            </group>
+                            <group>
+                                <field name="visa_info"/>
+                                <field name="id_proof_number"/>
+                                <field name="date" invisible="1"/>
+                                <field name="blood_group"/>
+                                <field name="email"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Note">
+                                <group>
+                                    <field name="note"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_lab_patient_search" model="ir.ui.view">
+            <field name="name">lab.patient.search</field>
+            <field name="model">lab.patient</field>
+            <field name="priority" eval="8" />
+            <field name="arch" type="xml">
+                <search string="Patient">
+                    <field name="patient" />
+                    <field name="blood_group" />
+                     <field name="name" />
+                    <newline />
+                    <group expand="0" string="Group By...">
+                        <filter name="blood_group" string="Blood Group"
+                            domain="[]" context="{'group_by':'blood_group'}" />
+                        <filter name="name" string="Patient ID"
+                            domain="[]" context="{'group_by':'name'}" />
+                        <filter name="patient" string="Patient"
+                            domain="[]" context="{'group_by':'patient'}" />
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="act_open_lab_patient_view">
+            <field name="name">Patients</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">lab.patient</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="search_view_id" ref="view_lab_patient_search" />
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create Patients.
+                </p>
+            </field>
+        </record>
+
+        <record model="ir.sequence" id="seq_lab_patient">
+            <field name="name">Patient</field>
+            <field name="code">lab.patient</field>
+            <field name="prefix">PID</field>
+            <field name="padding">3</field>
+            <field name="company_id" eval="False" />
+        </record>
+
+        <menuitem id="menu_lab_patient" name="Patient" sequence="10"
+            parent="menu_root_lab" groups="group_lab_management_user,group_lab_management_technician"/>
+        <menuitem id="menu_lab_patient_child" name="Patient" sequence="10"
+                  parent="menu_lab_patient" action="act_open_lab_patient_view"
+                  groups="group_lab_management_user,group_lab_management_technician"/>
+
+
+    </data>
+</odoo>
