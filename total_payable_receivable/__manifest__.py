@@ -22,13 +22,13 @@
 {
     'name': 'Payable And Receivable Amount',
     'summary': """Amount Payable & Receivable In Partner Form""",
-    'version': '13.0.1.0.0',
+    'version': '13.0.1.0.1',
     'description': """Amount Payable & Receivable In Partner Form, Odoo 13, Odoo13""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'category': 'Accounting',
-    'depends': ['base'],
+    'depends': ['base','sale','purchase'],
     'license': 'AGPL-3',
     'data': [
         'views/total_payable_receivable_view.xml',

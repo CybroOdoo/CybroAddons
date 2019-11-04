@@ -32,6 +32,7 @@ class ResPartner(models.Model):
 
     @api.depends_context('force_company')
     def credit_debit_get(self):
+        partner_debit = 0.0
         tables, where_clause, where_params = self.env['account.move.line'].with_context(state='posted', company_id=self.env.company.id)._query_get()
         where_params = [tuple(self.ids)] + where_params
         if where_clause:
