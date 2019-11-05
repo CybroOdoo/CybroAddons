@@ -38,24 +38,28 @@ class PayrollReportView(models.Model):
 
     def _select(self):
         select_str = """
-        min(ps.id) as id,emp.id as name,jb.id as job_id,
-        dp.id as department_id,cmp.id as company_id,
-        ps.date_from, ps.date_to, sum(psl.total) as net, ps.state as state
-        """
+min(psl.id),ps.id,ps.number,emp.id as name,dp.id as department_id,jb.department_id as job_id,cmp.id as company_id,ps.date_from, ps.date_to, sum(psl.total) as net, ps.state as state        """
+        print(select_str, "select_str")
         return select_str
 
     def _from(self):
         from_str = """
-            hr_payslip_line psl  join hr_payslip ps on (ps.employee_id=psl.employee_id and ps.id=psl.slip_id)
-            join hr_employee emp on (ps.employee_id=emp.id) join hr_department dp on (emp.department_id=dp.id)
-            join hr_job jb on (emp.department_id=jb.id) join res_company cmp on (cmp.id=ps.company_id) where psl.code='NET'
+                 hr_payslip_line psl   
+            join hr_payslip ps on ps.id=psl.slip_id
+            join hr_employee emp on ps.employee_id=emp.id
+            left join hr_department dp on emp.department_id=dp.id
+            left join hr_job jb on emp.job_id=jb.id
+            join res_company cmp on cmp.id=ps.company_id
+        where psl.code='NET'
          """
+        print(from_str, "from_str")
         return from_str
 
     def _group_by(self):
         group_by_str = """
-            group by emp.id,psl.total,ps.date_from, ps.date_to, ps.state,jb.id,dp.id,cmp.id
+            group by ps.number,ps.id,emp.id,dp.id,jb.id,cmp.id,ps.date_from,ps.date_to,ps.state
         """
+        print(group_by_str, "group_by_str")
         return group_by_str
 
     @api.model_cr
