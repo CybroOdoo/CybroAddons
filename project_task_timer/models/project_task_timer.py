@@ -18,7 +18,11 @@
 #
 ##############################################################################
 from datetime import datetime
+
+from AptUrl.Helpers import _
+
 from odoo import models, fields, api
+from odoo.exceptions import UserError
 
 
 class ProjectTaskTimeSheet(models.Model):
@@ -51,35 +55,36 @@ class ProjectTaskTimer(models.Model):
     def toggle_start(self):
         for record in self:
             record.task_timer = not record.task_timer
-        if self.task_timer:
-            print("self.task_timer")
-            self.write({'is_user_working': True})
-            time_line = self.env['account.analytic.line']
-            print(time_line, "time_line")
-            for time_sheet in self:
-                time_line.create({
-                    'name': self.env.user.name + ': ' + time_sheet.name,
-                    'task_id': time_sheet.id,
-                    'user_id': self.env.user.id,
-                    'project_id': time_sheet.project_id.id,
-                    'date_start': datetime.now(),
-                })
-        else:
-            self.write({'is_user_working': False})
-            time_line_obj = self.env['account.analytic.line']
-            print(time_line_obj, "time_line_obj")
-            domain = [('task_id', 'in', self.ids), ('date_end', '=', False)]
-            for time_line in time_line_obj.search(domain):
-                print(time_line, "else")
-                time_line.write({'date_end': fields.Datetime.now()})
-                if time_line.date_end:
-                    diff = fields.Datetime.from_string(time_line.date_end) - fields.Datetime.from_string(
-                        time_line.date_start)
-                    print(len(time_line) - 1, "time_line - 1")
-                    # if time_line == len(time_line) - 1:
-                    print(len(time_line), "-----------------------")
-                    time_line.timer_duration = round(diff.total_seconds() / 60.0, 2)
-                    time_line.unit_amount = round(diff.total_seconds() / (60.0 * 60.0), 2)
-                else:
-                    time_line.unit_amount = 0.0
-                    time_line.timer_duration = 0.0
+        project_obj = self.env['project.task'].search([])
+        for data in project_obj:
+            if self.task_timer:
+                if data.user_id.id == self.user_id.id and data.task_timer == False:
+                    print("success")
+                    raise UserError(_('you cannot start timer for more than one task at the same time'))
+            elif self.task_timer:
+                self.write({'is_user_working': True})
+                time_line = self.env['account.analytic.line']
+                print(time_line, "time_line")
+                for time_sheet in self:
+                    time_line.create({
+                        'name': self.env.user.name + ':' + time_sheet.name,
+                        'task_id': time_sheet.id,
+                        'user_id': self.env.user.id,
+                        'project_id': time_sheet.project_id.id,
+                        'date_start': datetime.now(),
+                    })
+                break
+            else:
+                self.write({'is_user_working': False})
+                time_line_obj = self.env['account.analytic.line']
+                domain = [('task_id', 'in', self.ids), ('date_end', '=', False)]
+                for time_line in time_line_obj.search(domain):
+                    time_line.write({'date_end': fields.Datetime.now()})
+                    if time_line.date_end:
+                        diff = fields.Datetime.from_string(time_line.date_end) - fields.Datetime.from_string(
+                            time_line.date_start)
+                        time_line.timer_duration = round(diff.total_seconds() / 60.0, 2)
+                        time_line.unit_amount = round(diff.total_seconds() / (60.0 * 60.0), 2)
+                    else:
+                        time_line.unit_amount = 0.0
+                        time_line.timer_duration = 0.0
