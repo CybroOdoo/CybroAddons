@@ -23,7 +23,7 @@
 
 {
     'name': 'Barcode scanning in Inventory',
-    'version': '12.0.1.0.0',
+    'version': '12.0.1.0.1',
     'summary': 'Barcode Support in Stock Picking.',
     'author': 'Cybrosys Techno solutions',
     'maintainer': 'Cybrosys Techno Solutions',
