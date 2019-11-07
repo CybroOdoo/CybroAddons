@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2017-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
+#    Copyright (C) 2019-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
 #    Author: Jesni Banu(<http://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -19,7 +19,7 @@
 ##############################################################################
 {
     'name': 'Project Task Timer',
-    'version': '12.0.2.0',
+    'version': '12.0.2.0.1',
     'summary': """Task Timer With Start & Stop""",
     'description': """"This module helps you to track time sheet in project automatically.""",
     'category': 'Project',

@@ -25,7 +25,7 @@ class ProjectTaskTimeSheet(models.Model):
     _inherit = 'account.analytic.line'
 
     date_start = fields.Datetime(string='Start Date')
-    date_end = fields.Datetime(string='End Date', readonly=1)
+    date_end = fields.Datetime(string='End Date')
     timer_duration = fields.Float(invisible=1, string='Time Duration (Minutes)')
 
 
@@ -52,8 +52,10 @@ class ProjectTaskTimer(models.Model):
         for record in self:
             record.task_timer = not record.task_timer
         if self.task_timer:
+            print("self.task_timer")
             self.write({'is_user_working': True})
             time_line = self.env['account.analytic.line']
+            print(time_line, "time_line")
             for time_sheet in self:
                 time_line.create({
                     'name': self.env.user.name + ': ' + time_sheet.name,
@@ -65,18 +67,19 @@ class ProjectTaskTimer(models.Model):
         else:
             self.write({'is_user_working': False})
             time_line_obj = self.env['account.analytic.line']
+            print(time_line_obj, "time_line_obj")
             domain = [('task_id', 'in', self.ids), ('date_end', '=', False)]
             for time_line in time_line_obj.search(domain):
+                print(time_line, "else")
                 time_line.write({'date_end': fields.Datetime.now()})
                 if time_line.date_end:
                     diff = fields.Datetime.from_string(time_line.date_end) - fields.Datetime.from_string(
-                            time_line.date_start)
+                        time_line.date_start)
+                    print(len(time_line) - 1, "time_line - 1")
+                    # if time_line == len(time_line) - 1:
+                    print(len(time_line), "-----------------------")
                     time_line.timer_duration = round(diff.total_seconds() / 60.0, 2)
                     time_line.unit_amount = round(diff.total_seconds() / (60.0 * 60.0), 2)
                 else:
                     time_line.unit_amount = 0.0
                     time_line.timer_duration = 0.0
-
-
-
-
