@@ -22,7 +22,7 @@
 
 {
     'name': 'Odoo 13 Full Accounting Kit',
-    'version': '13.0.1.2.1',
+    'version': '13.0.1.3.1',
     'category': 'Accounting',
     'summary':  """ This Module will bring back the accounting features such  
                     Asset Management, Budget Management,  Accounting Reports, 

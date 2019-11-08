@@ -35,6 +35,12 @@ class RecurringPaymentsWizard(models.TransientModel):
     recurring_tmpl_ids = fields.Many2many('account.recurring.payments',
                                           string='Recurring Template')
 
+    @api.model
+    def default_get(self, fields):
+        result = super(RecurringPaymentsWizard, self).default_get(fields)
+        self.get_remaining_entries()
+        return result
+
     @api.onchange('date_from', 'recurring_tmpl_ids')
     def get_remaining_entries(self):
         if self.date_from:
@@ -95,33 +101,31 @@ class RecurringPaymentsWizard(models.TransientModel):
         if not data:
             raise UserError(_("There is no remaining payments"))
         for line in data:
-            this = line.tmpl_id
-            recurr_code = str(this.id) + '/' + str(line.date)
+            tmpl_id = line.tmpl_id
+            recurr_code = str(tmpl_id.id) + '/' + str(line.date)
             line_ids = [(0, 0, {
-                'account_id': this.credit_account.id,
-                'partner_id': this.partner_id.id,
+                'account_id': tmpl_id.credit_account.id,
+                'partner_id': tmpl_id.partner_id.id,
                 'credit': line.amount,
-                'analytic_account_id': this.analytic_account_id.id,
-                'narration': 'Recurring entry of "%s"' % this.name,
+                'analytic_account_id': tmpl_id.analytic_account_id.id,
             }), (0, 0, {
-                'account_id': this.debit_account.id,
-                'partner_id': this.partner_id.id,
+                'account_id': tmpl_id.debit_account.id,
+                'partner_id': tmpl_id.partner_id.id,
                 'debit': line.amount,
-                'analytic_account_id': this.analytic_account_id.id,
-                'narration': 'Recurring entry of "%s"' % this.name,
+                'analytic_account_id': tmpl_id.analytic_account_id.id,
             })]
 
             vals = {
                 'date': line.date,
                 'recurring_ref': recurr_code,
                 'company_id': self.env.user.company_id.id,
-                'journal_id': this.journal_id.id,
-                'is_active': True,
+                'journal_id': tmpl_id.journal_id.id,
                 'ref': line.template_name,
+                'narration': 'Recurring entry',
                 'line_ids': line_ids
             }
             move_id = self.env['account.move'].create(vals)
-            if this.journal_state == 'posted':
+            if tmpl_id.journal_state == 'posted':
                 move_id.post()
 
 
