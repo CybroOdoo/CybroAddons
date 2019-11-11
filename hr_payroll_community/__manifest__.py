@@ -9,7 +9,7 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'summary': 'Manage your employee payroll records',
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
     'description': "Odoo 13 Payroll, Payroll, Odoo 13,Odoo Payroll, Odoo Community Payroll",
     'depends': [
         'hr_contract',
