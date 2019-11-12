@@ -16,3 +16,7 @@ Bug Fixed
 #### 06.11.2019
 #### Version 12.0.2.0.2
 Bug Fixed
+
+#### 12.11.2019
+#### Version 12.0.2.0.3
+Bug Fixed

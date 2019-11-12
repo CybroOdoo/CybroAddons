@@ -55,16 +55,13 @@ class ProjectTaskTimer(models.Model):
     def toggle_start(self):
         for record in self:
             record.task_timer = not record.task_timer
-        project_obj = self.env['project.task'].search([])
-        for data in project_obj:
-            if self.task_timer:
-                if data.user_id.id == self.user_id.id and data.task_timer == False:
-                    print("success")
-                    raise UserError(_('you cannot start timer for more than one task at the same time'))
-            elif self.task_timer:
+            project_obj = self.env['project.task'].search_count(
+                [('user_id', '=', record.user_id.id), ('task_timer', '=', True)])
+            if project_obj > 1:
+                raise UserError(_('you cannot start timer for more than one task at the same time'))
+            if record.task_timer:
                 self.write({'is_user_working': True})
                 time_line = self.env['account.analytic.line']
-                print(time_line, "time_line")
                 for time_sheet in self:
                     time_line.create({
                         'name': self.env.user.name + ':' + time_sheet.name,
@@ -73,7 +70,6 @@ class ProjectTaskTimer(models.Model):
                         'project_id': time_sheet.project_id.id,
                         'date_start': datetime.now(),
                     })
-                break
             else:
                 self.write({'is_user_working': False})
                 time_line_obj = self.env['account.analytic.line']
