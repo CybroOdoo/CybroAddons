@@ -19,7 +19,7 @@
 ##############################################################################
 from datetime import datetime
 
-from AptUrl.Helpers import _
+from odoo import api, fields, models, _
 
 from odoo import models, fields, api
 from odoo.exceptions import UserError
