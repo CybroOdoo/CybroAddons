@@ -13,7 +13,7 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'depends': ['hr_payroll_community', 'account'],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
     'data': ['views/hr_payroll_account_views.xml'],
     'test': ['../account/test/account_minimal_test.xml'],
     'license': 'AGPL-3',
