@@ -51,6 +51,16 @@ class ProjectTaskTimer(models.Model):
             else:
                 order.is_user_working = False
 
+    def _compute_duration(self):
+        self
+
+    def set_date_end(self):
+        if self.timesheet_ids:
+            for data in self.timesheet_ids:
+                if not data.date_end:
+                    end_date = datetime.combine(data.date, datetime.min.time())
+                    data.date_end = end_date
+
     @api.multi
     def toggle_start(self):
         for record in self:
