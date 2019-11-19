@@ -22,13 +22,12 @@
 
 {
     'name': 'Odoo 13 Full Accounting Kit',
-    'version': '13.0.1.4.1',
+    'version': '13.0.1.4.2',
     'category': 'Accounting',
-    'summary':  """ This Module will bring back the accounting features such  
-                    Asset Management, Budget Management,  Accounting Reports, 
-                    PDC Management, Account Lock dates, Customer Credit Limit 
-                    and Follow Ups, Day book, Bank book and Cash book reports. 
-                """,
+    'summary':  """ Asset and Budget Management,
+                    Accounting Reports, PDC, Lock dates,
+                    Credit Limit, Follow Ups,
+                    Day-Bank-Cash book reports.""",
     'description':  """
                     Odoo 13 Accounting,Accounting Reports, Odoo 13 Accounting 
                     PDF Reports, Asset Management, Budget Management, 
@@ -45,8 +44,7 @@
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'depends': ['base', 'account', 'sale', 'account_check_printing',
-                'base_account_budget'],
+    'depends': ['base', 'account', 'sale', 'account_check_printing'],
     'data': [
         'security/ir.model.access.csv',
         'security/account_asset_security.xml',
