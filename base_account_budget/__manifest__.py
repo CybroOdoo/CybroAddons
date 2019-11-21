@@ -47,7 +47,7 @@
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'depends': ['base', 'account', 'base_accounting_kit'],
+    'depends': ['base', 'account'],
     'website': 'https://www.cybrosys.com',
     'data': [
         'security/ir.model.access.csv',
