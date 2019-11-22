@@ -20,13 +20,13 @@
 {
     'name': 'Payable And Receivable Amount',
     'summary': """Amount Payable & Receivable In Partner Form""",
-    'version': '12.0.1.0.0',
+    'version': '12.0.1.0.1',
     'description': """Amount Payable & Receivable In Partner Form""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'category': 'Accounting',
-    'depends': ['base'],
+    'depends': ['base', 'account'],
     'license': 'LGPL-3',
     'data': [
         'views/total_payable_receivable_view.xml',
