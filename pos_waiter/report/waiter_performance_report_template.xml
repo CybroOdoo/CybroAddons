@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="performance_analysis">
+        <t t-call="web.html_container">
+            <t t-call="pos_waiter.performance_analysis_layout">
+                <div class="page">
+                    <CENTER>
+                        <h2>WAITER PERFORMANCE ANALYSIS</h2>
+                    </CENTER>
+                    <br/>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Start Date</th>
+                                <th class="text-center">End Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center">
+                                    <span t-esc="start_date"/>
+                                </td>
+                                <td class="text-center">
+                                    <span t-esc="end_date"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <br/>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Waiter</th>
+                                <th class="text-center">Date</th>
+                                <th class="text-center">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody class="performance_details_body">
+                            <tr t-foreach="performance_details" t-as="performance">
+                                <td class="text-center">
+                                    <span t-esc="performance['waiter_name']"/>
+                                </td>
+                                <td class="text-center">
+                                    <span t-esc="performance['order_date']"/>
+                                </td>
+                                <td class="text-center">
+                                    <span t-esc="performance['total_amount']"
+                                          t-options='{"widget": "monetary", "display_currency": user.company_id.currency_id}'/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <template id="performance_analysis_layout">
+        <t t-if="not o and doc">
+            <t t-set="o" t-value="doc"/>
+        </t>
+
+        <t t-if="o and 'company_id' in o">
+            <t t-set="company" t-value="o.company_id.sudo()"/>
+        </t>
+        <t t-if="not o or not 'company_id' in o">
+            <t t-set="company" t-value="res_company"/>
+        </t>
+        <div class="header o_boxed_header">
+            <div class="row mb8">
+                <div class="col-xs-6">
+                    <img t-if="company.logo" t-att-src="'data:image/png;base64,%s' % to_text(company.logo)"/>
+                </div>
+                <div class="col-xs-6 text-right mb4">
+                    <h4 class="mt0" t-field="company.report_header"/>
+                    <div name="company_address" class="mb4">
+                        <span style="color: #000;font-color:#000000;" class="company_address"
+                              t-field="company.partner_id"
+                              t-field-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": true}'/>
+                    </div>
+                </div>
+            </div>
+            <div style="border-bottom: 1px solid black;"/>
+        </div>
+        <div class="article o_report_layout_background">
+            <t t-raw="0"/>
+        </div>
+        <div class="footer">
+            <div class="text-center" style="border-top: 1px solid black;">
+                <ul class="list-inline mb4">
+                    <li t-if="company.phone">Phone:
+                        <span t-field="company.phone"/>
+                    </li>
+                    <li t-if="company.email">Email:
+                        <span t-field="company.email"/>
+                    </li>
+                    <li t-if="company.website">Web:
+                        <span t-field="company.website"/>
+                    </li>
+                    <li t-if="company.vat"><t t-esc="company.country_id.vat_label or 'TIN'"/>:
+                        <span t-field="company.vat"/>
+                    </li>
+                </ul>
+                <div name="financial_infos">
+                    <span t-field="company.report_footer"/>
+                </div>
+                <div class="text-muted">
+                    Page:
+                    <span class="page"/>
+                    /
+                    <span class="topage"/>
+                </div>
+            </div>
+        </div>
+    </template>
+</odoo>
