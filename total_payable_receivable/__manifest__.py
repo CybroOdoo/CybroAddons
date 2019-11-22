@@ -20,7 +20,7 @@
 {
     'name': 'Payable And Receivable Amount',
     'summary': """Amount Payable & Receivable In Partner Form""",
-    'version': '11.0.1.0.0',
+    'version': '11.0.1.0.1',
     'description': """Amount Payable & Receivable In Partner Form""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
