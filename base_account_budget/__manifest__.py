@@ -55,7 +55,7 @@
         'views/account_analytic_account_views.xml',
         'views/account_budget_views.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
