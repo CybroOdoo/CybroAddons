@@ -42,6 +42,7 @@
         'report/waiter_performance_report_template.xml',
     ],
     'qweb': ['static/src/xml/pos_waiter_selection.xml'],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,
 
