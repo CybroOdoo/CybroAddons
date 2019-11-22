@@ -26,7 +26,7 @@
     'company': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'category': 'Accounting',
-    'depends': ['base'],
+    'depends': ['base', 'account'],
     'license': 'LGPL-3',
     'data': [
         'views/total_payable_receivable_view.xml',
