@@ -4,3 +4,8 @@
 #### Version 13.0.1.0.0
 ##### ADD
 - Initial Commit
+
+#### 11.25.2019
+#### Version 13.0.1.1.0
+##### FIX
+- Bug Fixed
