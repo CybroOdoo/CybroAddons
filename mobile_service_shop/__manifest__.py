@@ -5,12 +5,12 @@
 #
 #    Copyright (C) 2018-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
-#    you can modify it under the terms of the GNU AGPL (v3), Version 3.
-
+#    you can modify it under the terms of the GNU LGPL (v3), Version 3.
+#
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU AGPL (AGPL v3) for more details.
+#    GNU AGPL (LGPL v3) for more details.
 #
 ##############################################################################
 {
@@ -35,5 +35,5 @@
     'installable': True,
     'application': True,
     'auto_install': False,
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
 }
