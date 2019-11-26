@@ -9,7 +9,7 @@ class PurchaseCurrency(models.Model):
 
     company_currency_amount = fields.Float(string='Company Currency Total',
                                            compute='find_amount')
-    @api.models
+    @api.model
     def find_amount(self):
         """ Function to calculate the total amount in company currency"""
         for this in self:
