@@ -34,6 +34,7 @@ class FilterRecurringEntries(models.Model):
 
 class RecurringPayments(models.Model):
     _name = 'account.recurring.payments'
+    _description = 'Accounting Recurring Payment'
 
     def _get_next_schedule(self):
         if self.date:

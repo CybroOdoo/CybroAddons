@@ -30,10 +30,9 @@ class AccountCommonAccountReport(models.TransientModel):
 
     display_account = fields.Selection(
         [('all', 'All'), ('movement', 'With movements'),
-         ('not_zero', 'With balance is not equal to 0'), ],
+         ('not_zero', 'With balance is not equal to 0')],
         string='Display Accounts', required=True, default='movement')
 
-    @api.model
     def pre_print_report(self, data):
         data['form'].update(self.read(['display_account'])[0])
         return data

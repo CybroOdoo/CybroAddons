@@ -26,6 +26,7 @@ from odoo import models, fields
 
 class DayBookWizard(models.TransientModel):
     _name = 'account.day.book.report'
+    _description = 'Account Day Book Report'
 
     company_id = fields.Many2one('res.company', string='Company',
                                  readonly=True,
@@ -35,8 +36,7 @@ class DayBookWizard(models.TransientModel):
                                    default=lambda self: self.env[
                                        'account.journal'].search([]))
     target_move = fields.Selection([('posted', 'All Posted Entries'),
-                                    ('all', 'All Entries'),
-                                    ], string='Target Moves', required=True,
+                                    ('all', 'All Entries')], string='Target Moves', required=True,
                                    default='posted')
 
     account_ids = fields.Many2many('account.account',

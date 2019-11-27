@@ -48,11 +48,6 @@ class FinancialReport(models.TransientModel):
     enable_filter = fields.Boolean(
         string='Enable Comparison',
         default=False)
-    target_move = fields.Selection([
-        ('all', 'All'),
-        ('posted', 'Posted')],
-        string="Type",
-        default='all')
     account_report_id = fields.Many2one(
         'account.financial.report',
         string='Account Reports',
@@ -382,6 +377,7 @@ class ProfitLossPdf(models.AbstractModel):
     """ Abstract model for generating PDF report value and send to template """
 
     _name = 'report.base_accounting_kit.report_financial'
+    _description = 'Financial Report'
 
     @api.model
     def _get_report_values(self, docids, data=None):

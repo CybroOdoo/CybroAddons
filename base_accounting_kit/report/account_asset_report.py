@@ -3,6 +3,7 @@
 
 from odoo import api, fields, models, tools
 
+
 class AssetAssetReport(models.Model):
     _name = "asset.asset.report"
     _description = "Assets Analysis"

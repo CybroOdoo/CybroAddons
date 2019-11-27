@@ -28,6 +28,7 @@ from odoo.exceptions import UserError
 
 class ReportFinancial(models.AbstractModel):
     _name = 'report.base_accounting_kit.report_cash_flow'
+    _description = 'Cash Flow Report'
 
     def _compute_account_balance(self, accounts):
         mapping = {

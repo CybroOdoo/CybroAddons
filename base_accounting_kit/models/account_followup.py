@@ -20,7 +20,7 @@
 #
 #############################################################################
 
-from odoo import fields, api, models, _
+from odoo import fields, models
 
 
 class Followup(models.Model):
@@ -28,13 +28,11 @@ class Followup(models.Model):
     _description = 'Account Follow-up'
     _rec_name = 'name'
 
-    followup_line_ids = fields.One2many('followup.line', 'followup_id', 'Follow-up', copy=True)
+    followup_line_ids = fields.One2many('followup.line', 'followup_id',
+                                        'Follow-up', copy=True)
     company_id = fields.Many2one('res.company', 'Company',
-                                 default=lambda self: self.env['res.company']._company_default_get(
-                                     'account_followup.followup'))
+                                 default=lambda self: self.env.user.company_id)
     name = fields.Char(related='company_id.name', readonly=True)
-
-    _sql_constraints = [('company_uniq', 'unique(company_id)', 'Only one follow-up per company is allowed')]
 
 
 class FollowupLine(models.Model):
@@ -43,22 +41,11 @@ class FollowupLine(models.Model):
     _order = 'delay'
 
     name = fields.Char('Follow-Up Action', required=True, translate=True)
-    sequence = fields.Integer(help="Gives the sequence order when displaying a list of follow-up lines.")
+    sequence = fields.Integer(
+        help="Gives the sequence order when displaying a list of follow-up lines.")
     delay = fields.Integer('Due Days', required=True,
                            help="The number of days after the due date of the invoice"
                                 " to wait before sending the reminder."
                                 "  Could be negative if you want to send a polite alert beforehand.")
-    followup_id = fields.Many2one('account.followup', 'Follow Ups', ondelete="cascade")
-
-    _sql_constraints = [('days_uniq', 'unique(followup_id, delay)', 'Days of the follow-up levels must be different')]
-
-    @api.constrains('description')
-    def _check_description(self):
-        for line in self:
-            if line.description:
-                try:
-                    line.description % {'partner_name': '', 'date': '', 'user_signature': '', 'company_name': ''}
-                except:
-                    raise Warning(_(
-                        'Your description is invalid, use the right legend'
-                        ' or %% if you want to use the percent character.'))
+    followup_id = fields.Many2one('account.followup', 'Follow Ups',
+                                  ondelete="cascade")

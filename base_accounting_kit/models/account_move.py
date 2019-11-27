@@ -90,7 +90,7 @@ class AccountInvoiceLine(models.Model):
                                  store=True)
     asset_mrr = fields.Float(string='Monthly Recurring Revenue',
                              compute='_get_asset_date',
-                             readonly=True, digits=dp.get_precision('Account'),
+                             readonly=True, digits='Account',
                              store=True)
 
     @api.depends('asset_category_id', 'move_id.invoice_date')
@@ -145,7 +145,7 @@ class AccountInvoiceLine(models.Model):
         elif self.move_id.type == 'in_invoice' and self.asset_category_id:
             self.account_id = self.asset_category_id.account_asset_id.id
 
-    @api.onchange('uom_id')
+    @api.onchange('product_uom_id')
     def _onchange_uom_id(self):
         result = super(AccountInvoiceLine, self)._onchange_uom_id()
         self.onchange_asset_category_id()

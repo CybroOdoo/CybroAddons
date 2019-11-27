@@ -49,8 +49,8 @@ class AccountingReport(models.TransientModel):
     filter_cmp = fields.Selection(
         [('filter_no', 'No Filters'), ('filter_date', 'Date')],
         string='Filter by', required=True, default='filter_no')
-    date_from_cmp = fields.Date(string='Start Date')
-    date_to_cmp = fields.Date(string='End Date')
+    date_from_cmp = fields.Date(string='Date Start')
+    date_to_cmp = fields.Date(string='Date End')
     debit_credit = fields.Boolean(string='Display Debit/Credit Columns',
                                   help="This option allows you to get more details about the way your balances are computed. Because it is space consuming, we do not allow to use it while doing a comparison.")
 

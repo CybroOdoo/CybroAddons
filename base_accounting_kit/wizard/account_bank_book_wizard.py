@@ -27,13 +27,13 @@ from odoo.exceptions import UserError
 
 class BankBookWizard(models.TransientModel):
     _name = 'account.bank.book.report'
+    _description = 'Account Bank Book Report'
 
     company_id = fields.Many2one('res.company', string='Company',
                                  readonly=True,
                                  default=lambda self: self.env.user.company_id)
     target_move = fields.Selection([('posted', 'All Posted Entries'),
-                                    ('all', 'All Entries'),
-                                    ], string='Target Moves', required=True,
+                                    ('all', 'All Entries')], string='Target Moves', required=True,
                                    default='posted')
     date_from = fields.Date(string='Start Date', default=date.today(),
                             requred=True)
@@ -41,7 +41,7 @@ class BankBookWizard(models.TransientModel):
                           requred=True)
     display_account = fields.Selection(
         [('all', 'All'), ('movement', 'With movements'),
-         ('not_zero', 'With balance is not equal to 0'), ],
+         ('not_zero', 'With balance is not equal to 0')],
         string='Display Accounts', required=True, default='movement')
     sortby = fields.Selection(
         [('sort_date', 'Date'), ('sort_journal_partner', 'Journal & Partner')],

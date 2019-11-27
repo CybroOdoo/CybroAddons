@@ -32,6 +32,7 @@ from odoo.tools import float_is_zero
 
 class ReportAgedPartnerBalance(models.AbstractModel):
     _name = 'report.base_accounting_kit.report_agedpartnerbalance'
+    _description = 'Aged Partner Balance Report'
 
     def _get_partner_move_lines(self, account_type, date_from, target_move,
                                 period_length):

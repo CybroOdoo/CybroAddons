@@ -22,13 +22,13 @@
 
 {
     'name': 'Odoo 13 Full Accounting Kit',
-    'version': '13.0.1.4.2',
+    'version': '13.0.2.4.1',
     'category': 'Accounting',
-    'summary':  """ Asset and Budget Management,
-                    Accounting Reports, PDC, Lock dates,
-                    Credit Limit, Follow Ups,
-                    Day-Bank-Cash book reports.""",
-    'description':  """
+    'summary': """ Asset and Budget Management,
+                 Accounting Reports, PDC, Lock dates, 
+                 Credit Limit, Follow Ups, 
+                 Day-Bank-Cash book reports.""",
+    'description': """
                     Odoo 13 Accounting,Accounting Reports, Odoo 13 Accounting 
                     PDF Reports, Asset Management, Budget Management, 
                     Customer Credit Limit, Recurring Payment,
@@ -47,7 +47,7 @@
     'depends': ['base', 'account', 'sale', 'account_check_printing'],
     'data': [
         'security/ir.model.access.csv',
-        'security/account_asset_security.xml',
+        'security/security.xml',
         'data/account_financial_report_data.xml',
         'data/cash_flow_data.xml',
         'data/account_pdc_data.xml',

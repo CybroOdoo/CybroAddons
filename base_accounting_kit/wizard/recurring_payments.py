@@ -29,6 +29,7 @@ from odoo.exceptions import UserError
 
 class RecurringPaymentsWizard(models.TransientModel):
     _name = 'recurring.payments.wizard'
+    _description = 'Recurring Payment Wizard'
 
     recurring_lines = fields.One2many('account.recurring.entries.line', 'p_id')
     date_from = fields.Date('Starting Date', default=date.today())
@@ -131,6 +132,7 @@ class RecurringPaymentsWizard(models.TransientModel):
 
 class GetAllRecurringEntries(models.TransientModel):
     _name = 'account.recurring.entries.line'
+    _description = 'Account Recurring Entries Line'
 
     date = fields.Date('Date')
     template_name = fields.Char('Name')

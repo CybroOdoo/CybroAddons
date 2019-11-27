@@ -53,13 +53,11 @@ class AccountAssetCategory(models.Model):
                                                       string='Depreciation Entries: Expense Account',
                                                       required=True, domain=[
             ('internal_type', '=', 'other'), ('deprecated', '=', False)],
-                                                      oldname='account_income_recognition_id',
                                                       help="Account used in the periodical entries, to record a part of the asset as expense.")
     journal_id = fields.Many2one('account.journal', string='Journal',
                                  required=True)
     company_id = fields.Many2one('res.company', string='Company',
-                                 required=True, default=lambda self: self.env[
-            'res.company']._company_default_get('account.asset.category'))
+                                 required=True, default=lambda self: self.env.user.company_id)
     method = fields.Selection(
         [('linear', 'Linear'), ('degressive', 'Degressive')],
         string='Computation Method', required=True, default='linear',
@@ -122,8 +120,7 @@ class AccountAssetAsset(models.Model):
     code = fields.Char(string='Reference', size=32, readonly=True,
                        states={'draft': [('readonly', False)]})
     value = fields.Float(string='Gross Value', required=True, readonly=True,
-                         digits=0, states={'draft': [('readonly', False)]},
-                         oldname='purchase_value')
+                         digits=0, states={'draft': [('readonly', False)]})
     currency_id = fields.Many2one('res.currency', string='Currency',
                                   required=True, readonly=True,
                                   states={'draft': [('readonly', False)]},
@@ -132,9 +129,7 @@ class AccountAssetAsset(models.Model):
     company_id = fields.Many2one('res.company', string='Company',
                                  required=True, readonly=True,
                                  states={'draft': [('readonly', False)]},
-                                 default=lambda self: self.env[
-                                     'res.company']._company_default_get(
-                                     'account.asset.asset'))
+                                 default=lambda self: self.env.user.company_id)
     note = fields.Text()
     category_id = fields.Many2one('account.asset.category', string='Category',
                                   required=True, change_default=True,
@@ -142,8 +137,7 @@ class AccountAssetAsset(models.Model):
                                   states={'draft': [('readonly', False)]})
     date = fields.Date(string='Date', required=True, readonly=True,
                        states={'draft': [('readonly', False)]},
-                       default=fields.Date.context_today,
-                       oldname="purchase_date")
+                       default=fields.Date.context_today)
     state = fields.Selection(
         [('draft', 'Draft'), ('open', 'Running'), ('close', 'Close')],
         'Status', required=True, copy=False, default='draft',
@@ -348,9 +342,6 @@ class AccountAssetAsset(models.Model):
                 # purchase month in other cases
                 if self.method_period >= 12:
                     if self.company_id.fiscalyear_last_month:
-                        print(self.company_id.fiscalyear_last_month)
-                        print(self.company_id.fiscalyear_last_day)
-                        print(self.date)
                         asset_date = date(year=int(self.date.year),
                                           month=int(
                                               self.company_id.fiscalyear_last_month),

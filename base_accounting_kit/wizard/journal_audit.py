@@ -29,7 +29,7 @@ class AccountPrintJournal(models.TransientModel):
     _description = "Account Print Journal"
 
     sort_selection = fields.Selection(
-        [('date', 'Date'), ('move_name', 'Journal Entry Number'), ],
+        [('date', 'Date'), ('move_name', 'Journal Entry Number')],
         'Entries Sorted by', required=True, default='move_name')
     journal_ids = fields.Many2many('account.journal', string='Journals',
                                    required=True,

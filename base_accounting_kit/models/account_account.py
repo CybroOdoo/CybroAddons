@@ -46,6 +46,4 @@ class CashFlow(models.Model):
         if self._origin.cash_flow_type.ids:
             for rec in self._origin.cash_flow_type:
                 # remove old record
-                rec.write({
-                    'account_ids': [(3, self._origin.id)]
-                })
+                rec.write({'account_ids': [(3, self._origin.id)]})
