@@ -6,3 +6,9 @@
 - Initial commit for cash_flow_statement
 
 
+#### 11.11.2019
+#### Version 12.0.2.0.0
+##### RMV
+- DEpendency Removed
+
+
