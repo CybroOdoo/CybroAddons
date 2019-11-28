@@ -130,7 +130,10 @@ class ZkMachine(models.Model):
 
             users = {}
             if len(zk.userdata) > 0:
-                userdata = zk.userdata[0]
+                for x in range(len(zk.userdata)):
+                    if x > 0:
+                        zk.userdata[x] = zk.userdata[x][8:]
+                userdata = b''.join(zk.userdata)
                 userdata = userdata[11:]
                 while len(userdata) > 72:
                     uid, role, password, name, userid = unpack('2s2s8s28sx31s', userdata.ljust(72)[:72])
@@ -195,7 +198,7 @@ class ZkMachine(models.Model):
                     attendance = []
                     if len(zk.attendancedata) > 0:
                         # The first 4 bytes don't seem to be related to the user
-                        for x in range(len(zk.attendancedata)):
+                        for x in xrange(len(zk.attendancedata)):
                             if x > 0:
                                 zk.attendancedata[x] = zk.attendancedata[x][8:]
                         attendancedata = b''.join(zk.attendancedata) 
