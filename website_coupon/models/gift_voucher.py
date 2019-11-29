@@ -20,7 +20,7 @@
 import string
 import random
 from odoo import models, fields, api, _
-from datetime import datetime,date
+from datetime import datetime, date
 from odoo.exceptions import UserError
 
 
@@ -66,12 +66,19 @@ class GiftCoupon(models.Model):
     type = fields.Selection([
         ('fixed', 'Fixed Amount'),
         ('percentage', 'Percentage'),
-        ], store=True, default='fixed')
+    ], store=True, default='fixed')
+    count = fields.Char(string="count")
 
     @api.onchange('voucher_val')
     def check_val(self):
         if self.voucher_val > self.voucher.max_value or self.voucher_val < self.voucher.min_value:
             raise UserError(_("Please check the voucher value"))
+
+    @api.model
+    def create(self, vals):
+        res = super(GiftCoupon, self).create(vals)
+        vals['count'] = vals['total_avail']
+        return res
 
 
 class CouponPartner(models.Model):
@@ -86,3 +93,9 @@ class PartnerExtended(models.Model):
     _inherit = 'res.partner'
 
     applied_coupon = fields.One2many('partner.coupon', 'partner_id', string="Coupons Applied")
+
+
+class SaleCoupon(models.Model):
+    _inherit = 'sale.order'
+
+    coupon_id = fields.Char(string='coupon')
