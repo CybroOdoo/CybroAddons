@@ -20,13 +20,13 @@ class WebsiteSearch(http.Controller):
             domain = [('public_categ_ids', 'child_of', [category])] if category else []
             domain.append(('website_published','=', True))
             product_as_category = request.env['product.template'].search(domain)
-            sql = """select id as res_id, name as name, name as value from product_template where name ILIKE %s"""
+            sql = """select id as res_id, name as name, name as value from product_template where name ILIKE '{}'"""
             extra_query = ''
             if product_as_category:
-                extra_query = " and id in %s"
+                extra_query = " and id in {}"
             limit = " limit 15"
-            request.cr.execute(sql+extra_query+limit,\
-                               (tuple([strings]), tuple(product_as_category and product_as_category.ids)))
+            qry = sql + extra_query + limit
+            request.cr.execute(qry.format(strings, tuple(product_as_category and product_as_category.ids)))
             name = request.cr.dictfetchall()
         except:
             name = {'name': 'None', 'value': 'None'}
