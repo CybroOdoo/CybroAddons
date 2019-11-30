@@ -21,9 +21,6 @@
 ###################################################################################
 import binascii
 from struct import pack, unpack
-
-from gevent.hub import xrange
-
 from .zkconst import *
 
 
@@ -42,7 +39,7 @@ def getSizeAttendance(self):
 
 def reverseHex(hexstr):
     tmp = ''
-    for i in reversed( xrange( int(len(hexstr)/2) ) ):
+    for i in reversed(range(int(len(hexstr)/2))):
         tmp += hexstr[i*2:(i*2)+2]
     
     return tmp
@@ -74,7 +71,7 @@ def zkgetattendance(self):
         attendance = []  
         if len(self.attendancedata) > 0:
             # The first 4 bytes don't seem to be related to the user
-            for x in xrange(len(self.attendancedata)):
+            for x in range(len(self.attendancedata)):
                 if x > 0:
                     self.attendancedata[x] = self.attendancedata[x][8:]
             

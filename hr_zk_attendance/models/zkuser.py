@@ -65,7 +65,7 @@ def zkgetuser(self):
         users = {}
         if len(self.userdata) > 0:
             # The first 4 bytes don't seem to be related to the user
-            for x in xrange(len(self.userdata)):
+            for x in range(len(self.userdata)):
                 if x > 0:
                     self.userdata[x] = self.userdata[x][8:]
             

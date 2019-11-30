@@ -4,7 +4,7 @@ from .zkconst import *
 
 def reverseHex(hexstr):
     tmp = ''
-    for i in reversed( xrange( len(hexstr)/2 ) ):
+    for i in reversed(range(len(hexstr)/2)):
         tmp += hexstr[i*2:(i*2)+2]
     
     return tmp
