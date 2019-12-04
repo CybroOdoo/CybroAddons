@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_product_catalog" name="report_product_catalog">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="product_catalogue.catalog_layout">
+                    <div class="page">
+                        <h2>PRODUCT CATALOGUE</h2>
+                        <br/>
+                        <table class="table table-bordered" style="border: 2px solid black;">
+                            <thead>
+                                <tr>
+                                    <th class="text-center" style="border: 2px solid black;font-family:Verdana">
+                                        <p style="font-weight: bold;" t-field="o.name"/>
+                                    </th>
+                                    <th class="text-center" colspan="2" style="font-weight: bold;border: 2px solid black;">
+                                        <p>Specifications</p>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="border: 2px solid black;">
+                                        <div class="col-12 text-center">
+                                            <p style="padding: 50px;" t-field="o.image_medium" t-options='{"widget": "image"}'/>
+                                        </div>
+                                    </td>
+                                    <td style="border: 0px solid black;">
+                                        <t t-if="o.categ_id">
+                                            <span>Category</span>
+                                            <br/>
+                                            <br/>
+                                        </t>
+                                        <t t-if="o.list_price">
+                                            <span>Sale Price</span>
+                                            <br/>
+                                            <br/>
+                                        </t>
+                                        <t t-if="o.default_code">
+                                            <span>Internal Reference</span>
+                                            <br/>
+                                            <br/>
+                                        </t>
+                                        <t t-if="o.description">
+                                            <span>Description</span>
+                                        </t>
+                                    </td>
+                                    <td style="border: 0px solid black;">
+                                        <div class="col-12 text-center">
+                                            <t t-if="o.categ_id">
+                                                <span t-field="o.categ_id.name"/>
+                                                <br/>
+                                                <br/>
+                                            </t>
+                                            <t t-if="o.list_price">
+                                                <span t-field="o.list_price" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                                <br/>
+                                                <br/>
+                                            </t>
+                                            <t t-if="o.default_code">
+                                                <span t-field="o.default_code"/>
+                                                <br/>
+                                                <br/>
+                                            </t>
+                                            <t t-if="o.description">
+                                                <span t-field="o.description"/>
+                                            </t>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="catalog_layout">
+        <t t-if="not o and doc">
+            <t t-set="o" t-value="doc"/>
+        </t>
+
+        <t t-if="o and 'company_id' in o">
+            <t t-set="company" t-value="o.company_id.sudo()"/>
+        </t>
+        <t t-if="not o or not 'company_id' in o">
+            <t t-set="company" t-value="res_company"/>
+        </t>
+        <div class="header o_boxed_header">
+            <div class="row mb8">
+                <div class="col-xs-6">
+                    <img t-if="company.logo" t-att-src="'data:image/png;base64,%s' % to_text(company.logo)"/>
+                </div>
+                <div class="col-xs-6 text-right mb4">
+                    <h4 class="mt0" t-field="company.report_header"/>
+                    <div name="company_address" class="mb4">
+                        <span style="color: #000;font-color:#000000;" class="company_address" t-field="company.partner_id"
+                        t-field-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": true}'/>
+                    </div>
+                </div>
+            </div>
+            <div style="border-bottom: 1px solid black;"/>
+        </div>
+        <div class="article o_report_layout_background">
+            <t t-raw="0" />
+        </div>
+        <div class="footer">
+            <div class="text-center" style="border-top: 1px solid black;">
+                <ul class="list-inline mb4">
+                <li t-if="company.phone">Phone: <span t-field="company.phone"/></li>
+                <li t-if="company.email">Email: <span t-field="company.email"/></li>
+                <li t-if="company.website">Web: <span t-field="company.website"/></li>
+                <li t-if="company.vat"><t t-esc="company.country_id.vat_label or 'TIN'"/>: <span t-field="company.vat"/></li>
+                </ul>
+                <div name="financial_infos">
+                    <span t-field="company.report_footer"/>
+                </div>
+                <div class="text-muted">
+                    Page: <span class="page"/> / <span class="topage"/>
+                </div>
+            </div>
+        </div>
+    </template>
+
+</odoo>
