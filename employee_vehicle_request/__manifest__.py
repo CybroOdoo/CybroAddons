@@ -37,7 +37,7 @@
         'security/ir.model.access.csv',
         'views/employee_fleet_view.xml',
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'demo': [],
     'installable': True,
