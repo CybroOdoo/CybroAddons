@@ -48,7 +48,7 @@
         'report/lab_test_report.xml',
         'report/lab_patient_card.xml',
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,

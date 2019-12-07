@@ -31,7 +31,7 @@
     'depends': ['point_of_sale'],
     'data': ['views/pos_order_line_image.xml'],
     'qweb': ['static/src/xml/pos_order_line.xml'],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,

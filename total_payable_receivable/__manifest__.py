@@ -34,7 +34,7 @@
         'views/total_payable_receivable_view.xml',
     ],
     'demo': [],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,
 }

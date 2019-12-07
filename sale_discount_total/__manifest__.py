@@ -48,7 +48,7 @@ Module to manage discount on total amount in Sale.
     ],
     'demo': [
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'application': True,
     'installable': True,

@@ -35,7 +35,7 @@
             'views/deadline_reminder_cron.xml',
             'data/deadline_reminder_action_data.xml'
              ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False
 }
