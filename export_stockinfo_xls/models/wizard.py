@@ -19,18 +19,12 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
-from datetime import datetime
 from datetime import date, datetime
-from odoo import models, fields, api
-import time
 import pytz
 import json
 import datetime
 import io
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError
-from odoo.exceptions import ValidationError
 from odoo.tools import date_utils
 try:
     from odoo.tools.misc import xlsxwriter
@@ -46,26 +40,12 @@ class StockReport(models.TransientModel):
     category = fields.Many2many('product.category', 'categ_wiz_rel', 'categ', 'wiz', string='Warehouse')
 
     def export_xls(self):
-        # context = self._context
-        # data = {'ids': context.get('active_ids', [])}
-        # data['model'] = 'wizard.stock.history'
-        # data['form'] = self.read()[0]
-        # for field in data['form'].keys():
-        #     if isinstance(data['form'][field], tuple):
-        #         data['form'][field] = data['form'][field][0]
-        # if context.get('xls_export'):
-
-            # return self.env.ref('export_stockinfo_xls.stock_xlsx').report_action(self, data=datas)
         data = {
             'ids': self.ids,
             'model': self._name,
-            'warehouse': self.warehouse.id,
-            'category': self.category.id,
-            # 'date_start': self.date_start,
-            # 'date_end': self.date_end,
-            # 'state': self.state,
-            # 'product_id': self.product_id.id,
-            # 'usage': self.usage,
+            'warehouse': self.warehouse.ids,
+            'category': self.category.ids,
+
         }
         return {
             'type': 'ir_actions_xlsx_download',
@@ -107,9 +87,10 @@ class StockReport(models.TransientModel):
                                                                    ('order_id.picking_type_id', '=', warehouse)])
             for i in purchase_obj:
                 purchase_value = purchase_value + i.product_qty
-            available_qty = product.with_context({'warehouse': warehouse}).virtual_available + \
-                            product.with_context({'warehouse': warehouse}).outgoing_qty - \
-                            product.with_context({'warehouse': warehouse}).incoming_qty
+            test = product.with_context(warehouse=warehouse)._compute_quantities()
+            available_qty = product.virtual_available + \
+                            product.outgoing_qty - \
+                            product.incoming_qty
             value = available_qty * product.standard_price
             vals = {
                 'sku': product.default_code,
@@ -126,21 +107,16 @@ class StockReport(models.TransientModel):
                 'purchase_value': purchase_value,
             }
             lines.append(vals)
-            print(lines)
         return lines
 
     def get_xlsx_report(self, data, response):
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         lines = self.browse(data['ids'])
-        print("lines",lines)
         d = lines.category
         get_warehouse = self.get_warehouse(lines)
-        print("get_warehouse",get_warehouse)
         count = len(get_warehouse[0]) * 11 + 6
-        print("count",count)
         comp = self.env.user.company_id.name
-        print("comp",comp)
         sheet = workbook.add_worksheet('Stock Info')
         format0 = workbook.add_format({'font_size': 20, 'align': 'center', 'bold': True})
         format1 = workbook.add_format({'font_size': 14, 'align': 'vcenter', 'bold': True})
@@ -171,11 +147,10 @@ class StockReport(models.TransientModel):
             sheet.merge_range(4, 2, 4, 3 + len(d1), cat, format4)
         sheet.merge_range(5, 0, 5, 1, 'Warehouse(s) : ', format4)
         w_house = w_house.join(get_warehouse[0])
-        sheet.merge_range(5, 2, 5, 3+len(get_warehouse[0]), w_house, format4)
+        sheet.merge_range(5, 2, 5, 3 + len(get_warehouse[0]), w_house, format4)
         user = self.env['res.users'].browse(self.env.uid)
         tz = pytz.timezone(user.tz)
         time = pytz.utc.localize(datetime.datetime.now()).astimezone(tz)
-        # print("tz", time)
         sheet.merge_range('A8:G8', 'Report Date: ' + str(time.strftime("%Y-%m-%d %H:%M %p")), format1)
         sheet.merge_range(7, 7, 7, count, 'Warehouses', format1)
         sheet.merge_range('A9:G9', 'Product Information', format11)
@@ -236,14 +211,15 @@ class StockReport(models.TransientModel):
                     sheet.merge_range(prod_row, prod_col + 4, prod_row, prod_col + 5, each['net_on_hand'], red_mark)
                 else:
                     sheet.merge_range(prod_row, prod_col + 4, prod_row, prod_col + 5, each['net_on_hand'], font_size_8)
-                if each['sale_value'] < 0:
-                    sheet.merge_range(prod_row, prod_col + 6, prod_row, prod_col + 7, each['sale_value'], red_mark)
-                else:
-                    sheet.merge_range(prod_row, prod_col + 6, prod_row, prod_col + 7, each['sale_value'], font_size_8)
+                    if each['sale_value'] < 0:
+                        sheet.merge_range(prod_row, prod_col + 6, prod_row, prod_col + 7, each['sale_value'], red_mark)
+                    else:
+                        sheet.merge_range(prod_row, prod_col + 6, prod_row, prod_col + 7, each['sale_value'], font_size_8)
                 if each['purchase_value'] < 0:
                     sheet.merge_range(prod_row, prod_col + 8, prod_row, prod_col + 9, each['purchase_value'], red_mark)
                 else:
-                    sheet.merge_range(prod_row, prod_col + 8, prod_row, prod_col + 9, each['purchase_value'], font_size_8)
+                    sheet.merge_range(prod_row, prod_col + 8, prod_row, prod_col + 9, each['purchase_value'],
+                                      font_size_8)
                 if each['total_value'] < 0:
                     sheet.write(prod_row, prod_col + 10, each['total_value'], red_mark)
                 else:

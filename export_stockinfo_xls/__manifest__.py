@@ -22,7 +22,7 @@
 
 {
     'name': 'Export Product Stock in Excel',
-    'version': '13.0.1.0.0',
+    'version': '13.0.1.1.0',
     'summary': "Current Stock Report for all Products in each Warehouse",
     'description': "Current Stock Report for all Products in each Warehouse, Odoo 13,Odoo13",
     'category': 'Warehouse',
@@ -40,7 +40,7 @@
             'views/wizard_view.xml',
             'views/action_manager.xml',
             ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,

@@ -1,4 +1,4 @@
-Export Product Stock in Excel v12
+Export Product Stock in Excel v13
 =================================
 This module helps you to take current stock report for all products in each warehouse.
 

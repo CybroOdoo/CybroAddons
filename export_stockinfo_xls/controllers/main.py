@@ -32,7 +32,7 @@ class XLSXReportController(http.Controller):
     @http.route('/xlsx_reports', type='http', auth='user', methods=['POST'], csrf=False)
     def get_report_xlsx(self, model, options, output_format, token, report_name, **kw):
         uid = request.session.uid
-        report_obj = request.env[model].sudo(uid)
+        report_obj = request.env[model].with_user(uid)
         options = json.loads(options)
         try:
             if output_format == 'xlsx':
