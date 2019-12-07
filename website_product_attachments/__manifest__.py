@@ -32,7 +32,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['documents', 'website_sale'],
+    'depends': ['website_sale'],
     'data': ['views/template.xml'],
     'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
