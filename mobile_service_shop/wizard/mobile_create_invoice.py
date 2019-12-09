@@ -33,16 +33,6 @@ class MobileServiceInvoice(models.Model):
     amount = fields.Integer(string='Amount')
     number = fields.Char(string='Service Id')
 
-    @api.model
-    def create(self, vals):
-        print(vals)
-        if 'amount' in vals:
-            vals['name'] = self.env['ir.sequence'].next_by_code('account.payment.customer.invoice') or _('New')
-        else:
-            vals['name'] = self.env['ir.sequence'].next_by_code('account.payment.customer.invoice') or _('New')
-        vals['service_state'] = 'draft'
-        return super(MobileServiceInvoice, self).create(vals)
-
     def action_invoice_create(self):
         active_id = self._context.get('active_id')
         service_id = self.env['mobile.service'].search([('id', '=', active_id)])
