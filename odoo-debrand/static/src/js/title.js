@@ -1,4 +1,4 @@
-odoo.define('odoo-debrand-11.title', function(require) {
+odoo.define('odoo-debrand.title', function(require) {
 "use strict";
 
 var core = require('web.core');
@@ -25,54 +25,31 @@ var map_title ={
     except_orm: _lt('Global Business Error'),
     access_denied: _lt('Access Denied'),
 };
-
-    var myWebClient = WebClient.include({
-        init: function (parent) {
-            this._super();
-            var obj = this;
-            this._rpc({
-                fields: ['name',],
-                domain: [],
-                model: 'website',
-                method: 'search_read',
-                limit: 1,
-                context: session.user_context,
-            })
-                .then(function (result) {
-                    obj.set('title_part', {"zopenerp": result[0].name});
-                });
-        },
-        start: function () {
-            this._super();
-            this._rpc({
-            fields: ['name',],
-            domain: [],
-            model: 'website',
+    
+var myWebClient = WebClient.include({
+    
+    start: function () {
+        this._super();
+        var domain = session.user_context.allowed_company_ids;
+        var obj = this;
+        this._rpc({
+            fields: ['name','id',],
+            domain: [['id', 'in', domain]],
+            model: 'res.company',
             method: 'search_read',
-            limit: 1,
-            context: session.user_context,
-            })
-            .then(function(result){
-                  $("link[type='image/x-icon']").attr('href', '/web/image/website/'+result[0].id+'/favicon');
-                });
-        },
-    });
+        })
+            .then(function (result) {
+                obj.set('title_part', {"zopenerp": result[0].name});  // Replacing the name 'Oodo' to selected company name near favicon
+            });
+    },
+});
 
 var ExceptionHandler = {
-    /**
-     * @param parent The parent.
-     * @param error The error object as returned by the JSON-RPC implementation.
-     */
     init: function(parent, error) {},
-    /**
-     * Called to inform to display the widget, if necessary. A typical way would be to implement
-     * this interface in a class extending instance.web.Dialog and simply display the dialog in this
-     * method.
-     */
     display: function() {},
 };
 
-var RedirectWarningHandler = Dialog.extend(ExceptionHandler, {
+var RedirectWarningHandler = Widget.extend(ExceptionHandler, {  // Rewriting the exception handler
     init: function(parent, error) {
         this._super(parent);
         this.error = error;
@@ -80,32 +57,36 @@ var RedirectWarningHandler = Dialog.extend(ExceptionHandler, {
     display: function() {
         var self = this;
         var error = this.error;
-        error.data.message = error.data.arguments[0];
 
-        new Dialog(this, {
-            size: 'medium',
-            title: _.str.capitalize(error.type) || _t("Warning"),
+        new WarningDialog(this, {
+            title: _.str.capitalize(error.type) || _t("Warning"),   // Replacing 'Odoo Warning' to 'Warning'
             buttons: [
                 {text: error.data.arguments[2], classes : "btn-primary", click: function() {
-                    window.location.href = '#action='+error.data.arguments[1];
+                    $.bbq.pushState({
+                        'action': error.data.arguments[1],
+                        'cids': $.bbq.getState().cids,
+                    }, 2);
                     self.destroy();
+                    location.reload();
                 }},
                 {text: _t("Cancel"), click: function() { self.destroy(); }, close: true}
-            ],
-            $content: QWeb.render('CrashManager.warning', {error: error}),
+            ]
+        }, {
+            message: error.data.arguments[0],
         }).open();
     }
 });
+
 core.crash_registry.add('odoo.exceptions.RedirectWarning', RedirectWarningHandler);
+
 
 function session_expired(cm) {
     return {
-        display: function () {
-            cm.show_warning({type: _t("Session Expired"), data: {message: _t("Your Odoo session expired. Please refresh the current web page.")}});
+        display: function () {   // Replace 'Odoo session expired' to 'Session Expired'
+            cm.show_warning({type: _t("Session Expired"), data: {message: _t("Your Session expired. Please refresh the current web page.")}});
         }
     };
 }
 core.crash_registry.add('odoo.http.SessionExpiredException', session_expired);
-
 
 });

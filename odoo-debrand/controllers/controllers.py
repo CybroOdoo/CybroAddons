@@ -104,6 +104,7 @@ class BinaryCustom(Binary):
                         imgext = '.' + mimetype.split('/')[1]
                         if imgext == '.svg+xml':
                             imgext = '.svg'
+
                         response = http.send_file(image_data,
                                                   filename=imgname + imgext,
                                                   mimetype=mimetype,

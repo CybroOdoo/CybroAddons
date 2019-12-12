@@ -10,11 +10,9 @@ Debranding of odoo with the given configurations under Website Admin -> Debrandi
 Will replace:
 
  - Page Title
- - Odoo from Popups
+ - Login Page Modification
  - User Drop down Odoo links
- - Website Title
  - POS Odoo logo replaced by company logo
- - Odoo label from Dialogues
  - Odoo Database Selector Logo, Labels
 
 Installation
