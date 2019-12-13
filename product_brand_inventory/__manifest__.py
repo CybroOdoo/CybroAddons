@@ -19,7 +19,7 @@
 #
 ###################################################################################
 {
-    'name': 'Product Brand Inventory',
+    'name': 'Product Brand in Inventory',
     'version': '13.0.1.0.0',
     'category': 'Warehouse',
     'summary': 'Product Brand in Inventory',

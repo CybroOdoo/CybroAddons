@@ -20,7 +20,7 @@
 #
 ###################################################################################
 {
-    'name': 'Product Brand Invoicing',
+    'name': 'Product Brand in Invoicing',
     'version': '13.0.1.0.0',
     'category': 'Accounting',
     'summary': 'Product Brand in Invoicing',
