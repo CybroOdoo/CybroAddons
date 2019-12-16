@@ -22,7 +22,7 @@
 
 {
     'name': "Odoo Debranding",
-    'version': "13.0.1.1.1",
+    'version': "13.0.1.2.1",
     'summary': """Odoo Backend and Front end Debranding""",
     'description': """Debrand Odoo,Debranding, odoo13""",
     'author': "Cybrosys Techno Solutions",
@@ -33,7 +33,8 @@
     'depends': ['website', 'base_setup'],
     'data': [
         'views/views.xml',
-        'views/res_config_views.xml'
+        'views/res_config_views.xml',
+        'views/ir_module_views.xml'
     ],
     'qweb': ["static/src/xml/base.xml"],
     'images': ['static/description/banner.gif'],
