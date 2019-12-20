@@ -1,7 +1,7 @@
-Product Dynamic Fields
+Product Custom Fields
 =======================
 
-Product Dynamic Fields
+Product Custom Fields
 
 Depends
 =======

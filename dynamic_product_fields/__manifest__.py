@@ -23,7 +23,7 @@
 
 {
     'name': 'Product Custom Fields',
-    'version': '12.0.1.0.0',
+    'version': '12.0.1.1.0',
     'summary': """Ability To Add Custom Fields in Products From User Level""",
     'description': """Ability To Add Custom Fields in Products From User Level.""",
     'category': 'Sales',
@@ -31,10 +31,12 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['product', 'sale'],
+    'depends': ['product'],
     'data': [
         'security/ir.model.access.csv',
+        'security/product_security_group.xml',
         'wizard/product_fields_view.xml',
+        'views/product_form_view.xml',
     ],
     'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
