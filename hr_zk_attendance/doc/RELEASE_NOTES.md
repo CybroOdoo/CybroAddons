@@ -9,3 +9,9 @@
 #### Version 12.0.1.0.1
 ##### FIX
 - Bug Fixed
+
+
+#### 27.12.2019
+#### Version 12.0.1.1.1
+##### FIX
+- Bug Fixed : timezone issue in cronjob
