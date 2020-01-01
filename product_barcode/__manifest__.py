@@ -22,7 +22,7 @@
 
 {
     'name': 'Product Barcode Generator',
-    'version': '13.0.1.1.0',
+    'version': '13.0.1.2.0',
     'summary': 'Generates EAN13 Standard Barcode for Product.',
     'category': 'Inventory',
     'author': 'Cybrosys Techno solutions',

@@ -32,8 +32,8 @@ class ProductAutoBarcode(models.Model):
     def create(self, vals):
         res = super(ProductAutoBarcode, self).create(vals)
         ean = generate_ean(str(res.id))
-
         res.barcode = ean
+        print("res.barcode",res.barcode)
         return res
 
 
@@ -82,5 +82,17 @@ def generate_ean(ean):
     if len(ean) < 13:
         ean = ean + '0' * (13 - len(ean))
     return ean[:-1] + str(ean_checksum(ean))
+
+
+class ProductTemplateAutoBarcode(models.Model):
+    _inherit = 'product.template'
+
+    @api.model
+    def create(self, vals_list):
+        templates = super(ProductTemplateAutoBarcode, self).create(vals_list)
+        ean = generate_ean(str(templates.id))
+        templates.barcode = ean
+        return templates
+
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
