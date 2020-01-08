@@ -1,0 +1,50 @@
+<odoo>
+    <data>
+        <template id="blog_search" name="Blog search">
+            <form action="/blog/search_content" method="post">
+                <div class="input-group">
+                    <input type="text" name="search" class="search_query" widget="auto_fill"
+                           placeholder="Search for blog" t-att-value="search" style="padding-left:12px;"/>
+                    <button type='submit' name="searching_blog" class="btn btn-secondary oe_search_blog"
+                            aria-label="Search" title="Search">
+                        <i class="fa fa-search"/>
+                    </button>
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                </div>
+            </form>
+        </template>
+        <template id="blog_search_blog" name="search_blog"
+                  customize_show="True" active="True" inherit_id="website_blog.blogs_nav">
+            <xpath expr="//div[@class='container']" position="inside">
+                <t t-call="website_search_blog.blog_search">
+                </t>
+            </xpath>
+        </template>
+        <template id="search" name="Search Box">
+            <form t-att-action="keep('/'+ ('/category/'+slug(category)) if category else None, search=0)" method="get"
+                  t-att-class="_classes">
+                <t t-if="attrib_values">
+                    <t t-foreach="attrib_values" t-as="a">
+                        <input type="hidden" name="attrib" t-att-value="'%s-%s' % (a[0], a[1])"/>
+                    </t>
+                </t>
+                <t t-call="website_search_blog.blog_search"/>
+            </form>
+        </template>
+        <template id="404">
+            <t t-call="website.layout">
+                <div id="wrap">
+                    <div class="oe_structure oe_empty">
+                        <div class="container">
+                            <h1 class="mt32">Blog not found!</h1>
+                            <p>Sorry, this blog is not available.</p>
+                            <p>
+                                <a t-attf-href="blog/our-blog-1">Return to the blog list.</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+    </data>
+</odoo>
