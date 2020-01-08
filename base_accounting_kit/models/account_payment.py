@@ -33,7 +33,7 @@ class AccountRegisterPayments(models.TransientModel):
                                  default=False)
 
     def get_payments_vals(self):
-        res = super(AccountRegisterPayments, self).get_payment_vals()
+        res = super(AccountRegisterPayments, self).get_payments_vals()
         if self.payment_method_id == self.env.ref(
                 'account_check_printing.account_payment_method_check'):
             res.update({

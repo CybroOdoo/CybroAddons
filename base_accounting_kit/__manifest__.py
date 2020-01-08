@@ -22,7 +22,7 @@
 
 {
     'name': 'Odoo 13 Full Accounting Kit',
-    'version': '13.0.2.4.1',
+    'version': '13.0.2.4.2',
     'category': 'Accounting',
     'summary': """ Asset and Budget Management,
                  Accounting Reports, PDC, Lock dates, 
