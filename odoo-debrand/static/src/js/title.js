@@ -10,6 +10,7 @@ var CrashManager = require('web.CrashManager'); // We can import crash_manager a
 var concurrency = require('web.concurrency');
 var mixins = require('web.mixins');
 var session = require('web.session');
+var Widget = require('web.Widget');
 var QWeb = core.qweb;
 var _t = core._t;
 var _lt = core._lt;
