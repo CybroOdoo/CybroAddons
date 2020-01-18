@@ -21,7 +21,7 @@
 #############################################################################
 from odoo.exceptions import UserError
 from odoo import models, fields, api, _
-from odoo.doc._extensions.pyjsparser.parser import false
+#from odoo.doc._extensions.pyjsparser.parser import false
 
 
 class InvoiceStockMove(models.Model):
