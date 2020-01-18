@@ -21,11 +21,20 @@
 #############################################################################
 from odoo.exceptions import UserError
 from odoo import models, fields, api, _
+from odoo.doc._extensions.pyjsparser.parser import false
 
 
 class InvoiceStockMove(models.Model):
     _inherit = 'account.move'
 
+    @api.onchange('type')
+    def onchange_invoice_type(self):
+        if self.type in ['out_invoice','out_receipt']:
+            domain="[('code','=','incoming')]"
+        else:
+            domain="[('code','=','outgoing')]"
+        return {'domain': {'picking_type_id': domain}}
+            
     @api.model
     def _default_picking_receive(self):
         type_obj = self.env['stock.picking.type']
@@ -44,14 +53,14 @@ class InvoiceStockMove(models.Model):
             types = type_obj.search([('code', '=', 'outgoing'), ('warehouse_id', '=', False)])
         return types[:4]
 
-    picking_count = fields.Integer(string="Count")
-    invoice_picking_id = fields.Many2one('stock.picking', string="Picking Id")
+    picking_count = fields.Integer(string="Count",copy=False)
+    invoice_picking_id = fields.Many2one('stock.picking', string="Picking Id",copy=False)
     picking_type_id = fields.Many2one('stock.picking.type', 'Picking Type', required=True,
                                       default=_default_picking_receive,
-                                      help="This will determine picking type of incoming shipment")
+                                      help="This will determine picking type of incoming shipment",copy=False)
     picking_transfer_id = fields.Many2one('stock.picking.type', 'Deliver To', required=True,
                                           default=_default_picking_transfer,
-                                          help="This will determine picking type of outgoing shipment")
+                                          help="This will determine picking type of outgoing shipment",copy=False)
     state = fields.Selection([
         ('draft', 'Draft'),
         ('proforma', 'Pro-forma'),
@@ -64,21 +73,32 @@ class InvoiceStockMove(models.Model):
         track_visibility='onchange', copy=False)
 
     def action_stock_move(self):
-        for order in self:
-            if not self.invoice_picking_id:
+        "will be executed at the pressing of transfer button"
+        for order in self:  # order is account.move meaning also invoice
+            exist_stockable_products = False
+            for line in order.invoice_line_ids:
+                if line.product_id:
+                    if line.product_id.type == 'product':
+                        exist_stockable_products = True 
+                        break
+            if exist_stockable_products and not self.invoice_picking_id:
                 pick = {
                     'picking_type_id': self.picking_type_id.id,
                     'partner_id': self.partner_id.id,
-                    'origin': self.name,
+                    'origin': self.type+self.name,
                     'location_dest_id': self.picking_type_id.default_location_dest_id.id,
                     'location_id': self.partner_id.property_stock_supplier.id
                 }
                 picking = self.env['stock.picking'].create(pick)
                 self.invoice_picking_id = picking.id
                 self.picking_count = len(picking)
-                moves = order.invoice_line_ids.filtered(lambda r: r.product_id.type in ['product', 'consu'])._create_stock_moves(picking)
+                moves = order.invoice_line_ids.filtered(lambda r: r.product_id.type in ['product'])._create_stock_moves(picking)
+                #, 'consu'
                 move_ids = moves._action_confirm()
                 move_ids._action_assign()
+            else:
+                self.invoice_picking_id = false
+                self.picking_count = 0
 
     def action_view_picking(self):
         action = self.env.ref('stock.action_picking_tree_ready')
