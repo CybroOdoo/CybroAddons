@@ -8,20 +8,20 @@
         <field name="arch" type="xml">
             <xpath expr="//header" position="inside">
                 <button name="action_stock_move" string="Transfer" type="object"  class="oe_highlight"
-                     attrs="{'invisible':['|',('state', '=', 'draft'),('picking_count', '=', 0)]}"/>
+                     attrs="{'invisible':['|',('state', '=', 'draft'),('transfer_state', '!=', 'not_done')]}"/>
             </xpath>
             <xpath expr="//field[@name='invoice_date']" position="after">
-                <field name="picking_type_id" />
-                <field name="invoice_picking_id" invisible="0" readonly="1" force_save="1"/>
+                <field name="picking_type_id" attrs="{'invisible':[('transfer_state','=','nothing_to_transfer')],'readonly':[('state','not in',['draft'])]}"/>
+                <field name="transfer_state" invisible="1"/>
             </xpath>
             <xpath expr="//field[@name='name']" position="before">
                 <div class="oe_button_box" name="button_box">
                     <button type="object"
                         name="action_view_picking" states="open,paid"
-                        class="oe_stat_button" attrs="{'invisible':['|',('state','=','draft'),('picking_count', '&lt;', 1)]}"
+                        class="oe_stat_button" attrs="{'invisible':['|',('state','=','draft'),('transfer_state', '!=', 'done')]}"
                         icon="fa-truck">
-                        <field name="picking_count"  string="Shipment" widget="statinfo"/>
-                    </button>
+<!--                         <field name="transfer_state"  string="Shipment" widget="statinfo"/>
+ -->                    </button>
                 </div>
             </xpath>
         </field>
