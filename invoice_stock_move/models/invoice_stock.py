@@ -21,62 +21,82 @@
 #############################################################################
 from odoo.exceptions import UserError
 from odoo import models, fields, api, _
+import logging
+
+_logger = logging.getLogger(__name__)
+ 
 
 
 class InvoiceStockMove(models.Model):
     _inherit = 'account.move'
 
-    @api.model
-    def _default_picking_receive(self):
-        type_obj = self.env['stock.picking.type']
-        company_id = self.env.context.get('company_id') or self.env.user.company_id.id
-        types = type_obj.search([('code', '=', 'incoming'), ('warehouse_id.company_id', '=', company_id)], limit=1)
-        if not types:
-            types = type_obj.search([('code', '=', 'incoming'), ('warehouse_id', '=', False)])
-        return types[:1]
+    @api.onchange('type','invoice_line_ids')
+    def onchange_invoice_type(self):
+        transfer_state = 'nothing_to_transfer'
+        for line in self.invoice_line_ids:
+            if line.product_id:
+                if line.product_id.type == 'product':
+                    transfer_state = 'not_done'
+                    break
+        self.transfer_state = transfer_state
+        domain=[('id','=',0)]
+        if transfer_state == 'not_done':
+            if self.type in ['out_invoice','out_receipt']:
+                domain=[('code','=','outgoing')]
+            elif self.type in ['in_invoice','in_receipt']:
+                domain=[('code','=','incoming')]
+            if not self.picking_type_id:
+                type_obj = self.env['stock.picking.type']
+                company_id = self.env.context.get('company_id') or self.env.user.company_id.id
+                full_domain = domain+ [('warehouse_id.company_id', '=', company_id)]
+                self.picking_type_id = type_obj.search(full_domain, limit=1)
+    #            types = type_obj.search([('code', '=', 'incoming'), ('warehouse_id', '=', False)])
+        return {'domain': {'picking_type_id': domain}}
 
-    @api.model
-    def _default_picking_transfer(self):
-        type_obj = self.env['stock.picking.type']
-        company_id = self.env.context.get('company_id') or self.env.user.company_id.id
-        types = type_obj.search([('code', '=', 'outgoing'), ('warehouse_id.company_id', '=', company_id)], limit=1)
-        if not types:
-            types = type_obj.search([('code', '=', 'outgoing'), ('warehouse_id', '=', False)])
-        return types[:4]
-
-    picking_count = fields.Integer(string="Count")
-    invoice_picking_id = fields.Many2one('stock.picking', string="Picking Id")
-    picking_type_id = fields.Many2one('stock.picking.type', 'Picking Type', required=True,
-                                      default=_default_picking_receive,
-                                      help="This will determine picking type of incoming shipment")
-    picking_transfer_id = fields.Many2one('stock.picking.type', 'Deliver To', required=True,
-                                          default=_default_picking_transfer,
-                                          help="This will determine picking type of outgoing shipment")
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('proforma', 'Pro-forma'),
-        ('proforma2', 'Pro-forma'),
-        ('posted', 'Posted'),
-        ('post', 'Post'),
-        ('cancel', 'Cancelled'),
-        ('done', 'Received'),
-    ], string='Status', index=True, readonly=True, default='draft',
-        track_visibility='onchange', copy=False)
+    transfer_state = fields.Selection([('not_done','not_done'),('nothing_to_transfer','nothing_to_transfer'),('done','done')],help='If the tranfer form invoice was done or not')
+    invoice_picking_id = fields.Many2one('stock.picking', string="Picking Id",copy=False)
+    picking_type_id = fields.Many2one('stock.picking.type', 'Picking Type', required=False,
+                                      help="This will determine picking type of incoming shipment",copy=False)
+#     picking_transfer_id = fields.Many2one('stock.picking.type', 'Deliver To', required=True,
+#                                           help="This will determine picking type of outgoing shipment",copy=False)
+#     state = fields.Selection([
+#         ('draft', 'Draft'),
+#         ('proforma', 'Pro-forma'),
+#         ('proforma2', 'Pro-forma'),
+#         ('posted', 'Posted'),
+#         ('post', 'Post'),
+#         ('cancel', 'Cancelled'),
+#         ('done', 'Received'),
+#     ], string='Status', index=True, readonly=True, default='draft',
+#         track_visibility='onchange', copy=False)
 
     def action_stock_move(self):
-        for order in self:
+        "will be executed at the pressing of transfer button"
+        for order in self:  # order is account.move meaning also invoice
             if not self.invoice_picking_id:
+                if self.type in ['out_invoice','out_receipt']:
+                    location_dest_id = self.partner_id.property_stock_customer.id 
+                    location_id = self.picking_type_id.default_location_src_id.id
+                elif self.type in ['in_invoice','in_receipt']:
+                    location_dest_id = self.picking_type_id.default_location_dest_id.id
+                    location_id = self.partner_id.property_stock_supplier.id
+                else:
+                    _logger.error(f'is something wrong, transfer should exist only for invoices self={self}') 
+                    self.transfer_state = 'nothing_to_transfer'
+                    return
+
                 pick = {
                     'picking_type_id': self.picking_type_id.id,
                     'partner_id': self.partner_id.id,
-                    'origin': self.name,
-                    'location_dest_id': self.picking_type_id.default_location_dest_id.id,
-                    'location_id': self.partner_id.property_stock_supplier.id
+                    'origin': self.type+self.name,
+                    'location_dest_id': location_dest_id,
+                    'location_id': location_id
                 }
                 picking = self.env['stock.picking'].create(pick)
                 self.invoice_picking_id = picking.id
-                self.picking_count = len(picking)
-                moves = order.invoice_line_ids.filtered(lambda r: r.product_id.type in ['product', 'consu'])._create_stock_moves(picking)
+                self.transfer_state = 'done'
+                moves = order.invoice_line_ids.filtered(lambda r: r.product_id.type in ['product'])._create_stock_moves(picking)
+                #, 'consu'
                 move_ids = moves._action_confirm()
                 move_ids._action_assign()
 
@@ -106,8 +126,10 @@ class SupplierInvoiceLine(models.Model):
                 'name': line.name or '',
                 'product_id': line.product_id.id,
                 'product_uom': line.product_uom_id.id,
-                'location_id': line.move_id.partner_id.property_stock_supplier.id,
-                'location_dest_id': picking.picking_type_id.default_location_dest_id.id,
+#                 'location_id': line.move_id.partner_id.property_stock_supplier.id,
+#                 'location_dest_id': picking.picking_type_id.default_location_dest_id.id,
+                'location_id': picking.location_id.id,
+                'location_dest_id': picking.location_dest_id.id,
                 'picking_id': picking.id,
                 # 'move_dest_id': False,
                 'state': 'draft',
