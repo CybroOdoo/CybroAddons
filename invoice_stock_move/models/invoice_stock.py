@@ -32,6 +32,16 @@ class InvoiceStockMove(models.Model):
 
     @api.onchange('type','invoice_line_ids')
     def onchange_invoice_type(self):
+ 
+        if self.env.context.get('default_team_id',False) or (self._fields.get('team_id',False) and self.invoice_origin): # is a invoice from sale order 
+            transfer_state = 'make_the_transfer_from_sale'
+            self.transfer_state = transfer_state
+            return
+        if self.env.context.get('default_purchase_id',False) or (self._fields.get('purchase_id',False) and self.purchase_id): # is a invoice from purchase order
+            transfer_state = 'make_the_transfer_from_purchase'
+            self.transfer_state = transfer_state
+            return
+
         transfer_state = 'nothing_to_transfer'
         for line in self.invoice_line_ids:
             if line.product_id:
@@ -43,15 +53,9 @@ class InvoiceStockMove(models.Model):
         if transfer_state == 'not_initiated':
             if self.type in ['out_invoice','out_receipt']:
                 domain=[('code','=','outgoing')]
-                if self._fields.get('team_id',False) and self.team_id: # is a invoice from sale order 
-                    transfer_state = 'make_the_transfer_from_sale'
-                    return
             
             elif self.type in ['in_invoice','in_receipt']:
                 domain=[('code','=','incoming')]
-                if self._fields.get('purchase_id',False) and self.purchase_id: # is a invoice from purchase order
-                    transfer_state = 'make_the_transfer_from_purchase'
-                    return
             if not self.picking_type_id:
                 type_obj = self.env['stock.picking.type']
                 company_id = self.env.context.get('company_id') or self.env.user.company_id.id
@@ -67,9 +71,12 @@ class InvoiceStockMove(models.Model):
                                        ('make_the_transfer_from_purchase','make_the_transfer_from_purchase'),
                                        ('make_the_transfer_from_sale','make_the_transfer_from_sale'),
                                        ],string='Stock Transfer State',help='If the transfer form invoice was done or not',copy=False)
-    invoice_picking_id = fields.Many2one('stock.picking', string="Picking Id",copy=False)
     picking_type_id = fields.Many2one('stock.picking.type', 'Picking Type', required=False,
                                       help="This will determine picking type of incoming shipment",copy=False)
+
+    invoice_picking_id = fields.Many2one('stock.picking', string="Picking Id",copy=False) 
+    picking_status = fields.Selection(related='invoice_picking_id.state')
+
 
     def action_stock_move(self):
         "will be executed at the pressing of transfer button"
