@@ -21,6 +21,10 @@
 #############################################################################
 from odoo.exceptions import UserError
 from odoo import models, fields, api, _
+import logging
+
+_logger = logging.getLogger(__name__)
+ 
 
 
 class InvoiceStockMove(models.Model):
@@ -70,12 +74,23 @@ class InvoiceStockMove(models.Model):
         "will be executed at the pressing of transfer button"
         for order in self:  # order is account.move meaning also invoice
             if not self.invoice_picking_id:
+                if self.type in ['out_invoice','out_receipt']:
+                    location_dest_id = self.partner_id.property_stock_customer.id 
+                    location_id = self.picking_type_id.default_location_src_id.id
+                elif self.type in ['in_invoice','in_receipt']:
+                    location_dest_id = self.picking_type_id.default_location_dest_id.id
+                    location_id = self.partner_id.property_stock_supplier.id
+                else:
+                    _logger.error(f'is something wrong, transfer should exist only for invoices self={self}') 
+                    self.transfer_state = 'nothing_to_transfer'
+                    return
+
                 pick = {
                     'picking_type_id': self.picking_type_id.id,
                     'partner_id': self.partner_id.id,
                     'origin': self.type+self.name,
-                    'location_dest_id': self.picking_type_id.default_location_dest_id.id,
-                    'location_id': self.partner_id.property_stock_supplier.id
+                    'location_dest_id': location_dest_id,
+                    'location_id': location_id
                 }
                 picking = self.env['stock.picking'].create(pick)
                 self.invoice_picking_id = picking.id
@@ -111,8 +126,10 @@ class SupplierInvoiceLine(models.Model):
                 'name': line.name or '',
                 'product_id': line.product_id.id,
                 'product_uom': line.product_uom_id.id,
-                'location_id': line.move_id.partner_id.property_stock_supplier.id,
-                'location_dest_id': picking.picking_type_id.default_location_dest_id.id,
+#                 'location_id': line.move_id.partner_id.property_stock_supplier.id,
+#                 'location_dest_id': picking.picking_type_id.default_location_dest_id.id,
+                'location_id': picking.location_id.id,
+                'location_dest_id': picking.location_dest_id.id,
                 'picking_id': picking.id,
                 # 'move_dest_id': False,
                 'state': 'draft',
