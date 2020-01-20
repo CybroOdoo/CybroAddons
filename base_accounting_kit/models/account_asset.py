@@ -147,7 +147,7 @@ class AccountAssetAsset(models.Model):
     active = fields.Boolean(default=True)
     partner_id = fields.Many2one('res.partner', string='Partner',
                                  readonly=True,
-                                 states={'draft': [('readonly', False)]})
+                                 states={'draft': [('readonly', False)]}, )
     method = fields.Selection(
         [('linear', 'Linear'), ('degressive', 'Degressive')],
         string='Computation Method', required=True, readonly=True,
@@ -281,7 +281,7 @@ class AccountAssetAsset(models.Model):
                 if self.prorata:
                     if sequence == 1:
                         if self.method_period % 12 != 0:
-                            date = datetime.strptime(self.date, '%Y-%m-%d')
+                            date = datetime.strptime(str(self.date), '%Y-%m-%d')
                             month_days = \
                             calendar.monthrange(date.year, date.month)[1]
                             days = month_days - date.day + 1
@@ -311,6 +311,7 @@ class AccountAssetAsset(models.Model):
         return undone_dotation_number
 
     def compute_depreciation_board(self):
+        print("compute_depreciatopn_board")
         self.ensure_one()
 
         posted_depreciation_line_ids = self.depreciation_line_ids.filtered(
@@ -383,6 +384,7 @@ class AccountAssetAsset(models.Model):
                                                     posted_depreciation_line_ids,
                                                     total_days,
                                                     depreciation_date)
+
                 amount = self.currency_id.round(amount)
                 if float_is_zero(amount,
                                  precision_rounding=self.currency_id.rounding):
@@ -585,6 +587,7 @@ class AccountAssetAsset(models.Model):
         res = super(AccountAssetAsset, self).write(vals)
         if 'depreciation_line_ids' not in vals and 'state' not in vals:
             for rec in self:
+                print("rec",rec)
                 rec.compute_depreciation_board()
         return res
 

@@ -33,6 +33,5 @@ from . import financial_report
 from . import general_ledger
 from . import journal_audit
 from . import partner_ledger
-from . import recurring_payments
 from . import tax_report
 from . import trial_balance

@@ -29,3 +29,8 @@
 #### Version 13.0.2.4.2
 #### FIX
 - Bug Fixed multiple payment issue.
+
+#### 20.01.2020
+#### Version 13.0.3.4.2
+#### FIX
+- Bug Fixed reccuring payment templates.
