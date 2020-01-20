@@ -5,3 +5,9 @@
 #### ADD
 
 Initial Commit
+
+#### 17.01.2020
+#### Version 13.0.1.1.1
+#### FIX
+
+Delivery and Receipts Bug fixed.

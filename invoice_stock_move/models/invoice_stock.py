@@ -26,32 +26,25 @@ from odoo import models, fields, api, _
 class InvoiceStockMove(models.Model):
     _inherit = 'account.move'
 
-    @api.model
-    def _default_picking_receive(self):
-        type_obj = self.env['stock.picking.type']
-        company_id = self.env.context.get('company_id') or self.env.user.company_id.id
-        types = type_obj.search([('code', '=', 'incoming'), ('warehouse_id.company_id', '=', company_id)], limit=1)
-        if not types:
-            types = type_obj.search([('code', '=', 'incoming'), ('warehouse_id', '=', False)])
-        return types[:1]
+    def _get_stock_type_ids(self):
+        data = self.env['stock.picking.type'].search([])
 
-    @api.model
-    def _default_picking_transfer(self):
-        type_obj = self.env['stock.picking.type']
-        company_id = self.env.context.get('company_id') or self.env.user.company_id.id
-        types = type_obj.search([('code', '=', 'outgoing'), ('warehouse_id.company_id', '=', company_id)], limit=1)
-        if not types:
-            types = type_obj.search([('code', '=', 'outgoing'), ('warehouse_id', '=', False)])
-        return types[:4]
+        if self._context.get('default_type') == 'out_invoice':
+            for line in data:
+                if line.code == 'outgoing':
+                    return line
+        if self._context.get('default_type') == 'in_invoice':
+            for line in data:
+                if line.code == 'incoming':
+                    return line
 
     picking_count = fields.Integer(string="Count")
     invoice_picking_id = fields.Many2one('stock.picking', string="Picking Id")
-    picking_type_id = fields.Many2one('stock.picking.type', 'Picking Type', required=True,
-                                      default=_default_picking_receive,
+
+    picking_type_id = fields.Many2one('stock.picking.type', 'Picking Type',
+                                      default=_get_stock_type_ids,
                                       help="This will determine picking type of incoming shipment")
-    picking_transfer_id = fields.Many2one('stock.picking.type', 'Deliver To', required=True,
-                                          default=_default_picking_transfer,
-                                          help="This will determine picking type of outgoing shipment")
+
     state = fields.Selection([
         ('draft', 'Draft'),
         ('proforma', 'Pro-forma'),
@@ -65,6 +58,10 @@ class InvoiceStockMove(models.Model):
 
     def action_stock_move(self):
         for order in self:
+            if not self.picking_type_id.default_location_dest_id:
+                raise UserError(_(
+                    " Please set Default Destination Location"))
+
             if not self.invoice_picking_id:
                 pick = {
                     'picking_type_id': self.picking_type_id.id,
@@ -76,7 +73,8 @@ class InvoiceStockMove(models.Model):
                 picking = self.env['stock.picking'].create(pick)
                 self.invoice_picking_id = picking.id
                 self.picking_count = len(picking)
-                moves = order.invoice_line_ids.filtered(lambda r: r.product_id.type in ['product', 'consu'])._create_stock_moves(picking)
+                moves = order.invoice_line_ids.filtered(
+                    lambda r: r.product_id.type in ['product', 'consu'])._create_stock_moves(picking)
                 move_ids = moves._action_confirm()
                 move_ids._action_assign()
 
@@ -92,6 +90,33 @@ class InvoiceStockMove(models.Model):
             result['views'] = [(res and res.id or False, 'form')]
             result['res_id'] = pick_ids or False
         return result
+
+    def action_post(self):
+        if not self.picking_type_id:
+            raise UserError(_(
+                " Please select a picking type"))
+        res = super(InvoiceStockMove, self).action_post()
+        return res
+
+    def _reverse_moves(self, default_values_list=None, cancel=False):
+        ''' Reverse a recordset of account.move.
+        If cancel parameter is true, the reconcilable or liquidity lines
+        of each original move will be reconciled with its reverse's.
+
+        :param default_values_list: A list of default values to consider per move.
+                                    ('type' & 'reversed_entry_id' are computed in the method).
+        :return:                    An account.move recordset, reverse of the current self.
+        '''
+        print("Reverse moves", self.picking_type_id)
+
+        if self.picking_type_id.code == 'outgoing':
+            data = self.env['stock.picking.type'].search([('company_id', '=', self.company_id.id),('code', '=', 'incoming')], limit=1)
+            self.picking_type_id = data.id
+        elif self.picking_type_id.code == 'incoming':
+            data = self.env['stock.picking.type'].search([('company_id', '=', self.company_id.id),('code', '=', 'outgoing')], limit=1)
+            self.picking_type_id = data.id
+        reverse_moves = super(InvoiceStockMove, self)._reverse_moves()
+        return reverse_moves
 
 
 class SupplierInvoiceLine(models.Model):
@@ -109,12 +134,10 @@ class SupplierInvoiceLine(models.Model):
                 'location_id': line.move_id.partner_id.property_stock_supplier.id,
                 'location_dest_id': picking.picking_type_id.default_location_dest_id.id,
                 'picking_id': picking.id,
-                # 'move_dest_id': False,
                 'state': 'draft',
                 'company_id': line.move_id.company_id.id,
                 'price_unit': price_unit,
                 'picking_type_id': picking.picking_type_id.id,
-                # 'procurement_id': False,
                 'route_ids': 1 and [
                     (6, 0, [x.id for x in self.env['stock.location.route'].search([('id', 'in', (2, 3))])])] or [],
                 'warehouse_id': picking.picking_type_id.warehouse_id.id,
