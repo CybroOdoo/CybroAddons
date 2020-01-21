@@ -25,6 +25,7 @@
     'version': "13.0.1.2.2",
     'summary': """Odoo Backend and Front end Debranding""",
     'description': """Debrand Odoo,Debranding, odoo13""",
+    'live_test_url': 'https://www.youtube.com/watch?v=fYSPARjmYA4',
     'author': "Cybrosys Techno Solutions",
     'company': "Cybrosys Techno Solutions",
     'maintainer': "Cybrosys Techno Solutions",
