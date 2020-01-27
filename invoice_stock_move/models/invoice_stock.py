@@ -119,8 +119,8 @@ class InvoiceStockMove(models.Model):
                 picking = self.env['stock.picking'].create(pick)
                 self.invoice_picking_id = picking.id
                 self.transfer_state = 'transfered'
-                moves = order.invoice_line_ids.filtered(lambda r: r.product_id.type in ['product'])._create_stock_moves(picking)
-                #, 'consu'
+                moves = order.invoice_line_ids.filtered(lambda r: r.product_id.type in ['product', 'consu'])._create_stock_moves(picking)
+
                 move_ids = moves._action_confirm()
                 move_ids._action_assign()
 
