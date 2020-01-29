@@ -11,14 +11,17 @@
                      attrs="{'invisible':['|',('state', '=', 'draft'),('transfer_state', '!=', 'not_initiated')]}"/>
             </xpath>
             <xpath expr="//field[@name='invoice_date']" position="after">
-                <field name="picking_type_id" attrs="{'invisible':[('transfer_state','!=','not_initiated')],'readonly':[('state','not in',['draft'])]}"/>
+                <field name='picking_type_code' invisible="0" readonly="1" force_save="1"/>
+                <field name="picking_type_id" attrs="{'readonly':[('state','not in',['draft'])]}" 
+                				domain="[('code','=',picking_type_code)]"/> <!--'invisible':[('transfer_state','not in',[,,])],  -->
                 <field name="transfer_state" invisible="0" readonly="1" force_save="1"/>
+                <field name="invoice_picking_id" invisible="0" readonly="1" force_save="1"/>
             </xpath>
             <xpath expr="//field[@name='name']" position="before">
                 <div class="oe_button_box" name="button_box">
                     <button type="object"
                         name="action_view_picking" states="open,paid"
-                        class="oe_stat_button" attrs="{'invisible':['|',('state','=','draft'),('transfer_state', '!=', 'transfered')]}"
+                        class="oe_stat_button" attrs="{'invisible':['|',('state','=','draft'),('transfer_state', '!=', 'transfer_created')]}"
                         icon="fa-truck">
                         <field name="picking_status"  string="Transfer Status" widget="statinfo"/>
                    </button>
