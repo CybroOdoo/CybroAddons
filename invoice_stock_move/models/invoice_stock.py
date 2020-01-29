@@ -30,7 +30,7 @@ _logger = logging.getLogger(__name__)
 class InvoiceStockMove(models.Model):
     _inherit = 'account.move'
 
-    @api.onchange('type','invoice_line_ids','id')
+    @api.onchange('type','invoice_line_ids','id','state')
     def onchange_invoice_type(self):
  
         if self.env.context.get('default_team_id',False) or (self._fields.get('team_id',False) and self.invoice_origin): # is a invoice from sale order 
