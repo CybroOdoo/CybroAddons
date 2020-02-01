@@ -131,7 +131,7 @@ class CarWorkshop(models.Model):
         inv_data = {
             'name': customer.name,
             'reference': customer.name,
-            'account_id': customer.property_account_payable_id.id,
+            'account_id': customer.property_account_receivable_id.id,
             'partner_id': customer.id,
             'currency_id': currency_value,
             'journal_id': journal_id,
