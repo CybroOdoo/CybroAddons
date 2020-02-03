@@ -203,6 +203,35 @@ class CarWorkshop(models.Model):
             invoiced_date = invoiced_date[0:10]
             if invoiced_date == str(date.today()):
                 total = total + rows.price_subtotal
+        for lines in self.materials_used:
+            product_ids = self.env['product.product'].search(
+                [('id', '=', lines.material.id)])
+            for prod_id in product_ids:
+                    move_id = self.env['stock.picking']
+                    type_obj = self.env['stock.picking.type']
+                    company_id = self.env.context.get('company_id') or self.env.user.company_id.id
+                    types = type_obj.search([('code', '=', 'outgoing'), ('warehouse_id.company_id', '=', company_id)], limit=1)
+                    vals = {
+                        'partner_id': self.partner_id.id,
+                        'origin': self.name,
+                        'move_type': 'one',
+                        'picking_type_id': types.id,
+                        'location_id': types.default_location_src_id.id,
+                        'location_dest_id': self.partner_id.property_stock_customer.id,
+                        'move_lines': [(0, 0, {
+                            'name': self.name,
+                            'product_id': prod_id.id,
+                            'product_uom': prod_id.uom_id.id,
+                            'product_uom_qty': lines.amount,
+                            'quantity_done': lines.amount,
+                            'location_id': types.default_location_src_id.id,
+                            'location_dest_id': self.partner_id.property_stock_customer.id,
+                        })],
+                    }
+                    move = move_id.create(vals)
+                    move.action_confirm()
+                    move.action_assign()
+                    move.action_done()
         return result
 
     @api.depends('works_done.duration')

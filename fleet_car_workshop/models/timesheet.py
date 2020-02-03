@@ -24,7 +24,7 @@ from odoo import fields, models, api
 class PlannedWork (models.Model):
     _name = 'planned.work'
 
-    planned_work = fields.Many2one('product.template', string='Planned work', domain=[('type', '=', 'service')])
+    planned_work = fields.Many2one('product.product', string='Planned work', domain=[('type', '=', 'service')])
     time_spent = fields.Float(string='Estimated Time')
     work_date = fields.Datetime(string='Date')  # Date of work planned:planned date
     responsible = fields.Many2one('res.users', string='Responsible')
@@ -42,7 +42,7 @@ class PlannedWork (models.Model):
 class MaterialUsed (models.Model):
     _name = 'material.used'
 
-    material = fields.Many2one('product.template', string='Products')
+    material = fields.Many2one('product.product', string='Products')
     amount = fields.Integer(string='Quantity')
     price = fields.Float(string='Unit Price')
     material_id = fields.Many2one('car.workshop')

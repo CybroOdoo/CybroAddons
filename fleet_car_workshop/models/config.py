@@ -78,7 +78,7 @@ class WorksheetStages(models.Model):
 
 
 class Services(models.Model):
-    _inherit = 'product.template'
+    _inherit = 'product.product'
 
     type = fields.Selection([('consu', _('Consumable')), ('service', _('Service')), ('product', _('Stockable Product'))], 'Product Type', required=True,
                             help="A consumable is a product for which you don't manage stock,"
