@@ -37,7 +37,7 @@
     'installable': True,
     'application': False,
     'auto_install': False,
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'qweb': [],
     'license': 'AGPL-3',
 }
