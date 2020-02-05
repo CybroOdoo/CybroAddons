@@ -26,7 +26,7 @@
     'company': 'Cybrosys Techno Solutions',
     "category": "Sales",
     "depends": ["sale", "stock", "product", "product_expiry"],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'application': False,
