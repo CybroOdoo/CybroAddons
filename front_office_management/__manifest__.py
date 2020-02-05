@@ -42,7 +42,7 @@
         'security/fo_security.xml',
         'security/ir.model.access.csv',
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
