@@ -22,7 +22,7 @@
 
 {
     'name': 'Export Product Stock in Excel',
-    'version': '12.0.1.0.0',
+    'version': '12.0.1.0.1',
     'summary': "Current Stock Report for all Products in each Warehouse",
     'category': 'Warehouse',
     'author': 'Cybrosys Techno Solutions',
