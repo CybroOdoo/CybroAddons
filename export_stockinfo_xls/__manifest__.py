@@ -19,7 +19,7 @@
 ##############################################################################
 {
     'name': 'Export Product Stock in Excel',
-    'version': '10.0.2.0.0',
+    'version': '10.0.2.0.1',
     'summary': "Current Stock Report for all Products in each Warehouse",
     'category': 'Warehouse',
     'author': 'Cybrosys Techno Solutions',
