@@ -11,6 +11,12 @@ Initial Commit  Export Product Stock in Excel
 #### FIX
 Updation Of Export Product Stock in Excel
 
+
+#### 05.02.2020
+#### Version 13.0.1.1.1
+#### UPDT
+Changed to query
+
 	
 
 

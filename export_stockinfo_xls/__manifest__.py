@@ -22,7 +22,7 @@
 
 {
     'name': 'Export Product Stock in Excel',
-    'version': '13.0.1.1.0',
+    'version': '13.0.1.1.1',
     'summary': "Current Stock Report for all Products in each Warehouse",
     'description': "Current Stock Report for all Products in each Warehouse, Odoo 13,Odoo13",
     'category': 'Warehouse',
