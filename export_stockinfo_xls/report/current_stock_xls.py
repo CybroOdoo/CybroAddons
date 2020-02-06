@@ -24,37 +24,52 @@ class StockReportXls(models.AbstractModel):
         lines = []
         categ_id = data.mapped('id')
         if categ_id:
-            stock_history = self.env['product.product'].search([('categ_id', 'in', categ_id)])
+            categ_products = self.env['product.product'].search([('categ_id', 'in', categ_id)])
+
         else:
-            stock_history = self.env['product.product'].search([])
-        for obj in stock_history:
+            categ_products = self.env['product.product'].search([])
+        product_ids = tuple([pro_id.id for pro_id in categ_products])
+        sale_query = """
+               SELECT sum(s_o_l.product_uom_qty) AS product_uom_qty, s_o_l.product_id FROM sale_order_line AS s_o_l
+               JOIN sale_order AS s_o ON s_o_l.order_id = s_o.id
+               WHERE s_o.state IN ('sale','done')
+               AND s_o.warehouse_id = %s
+               AND s_o_l.product_id in %s group by s_o_l.product_id"""
+        purchase_query = """
+               SELECT sum(p_o_l.product_qty) AS product_qty, p_o_l.product_id FROM purchase_order_line AS p_o_l
+               JOIN purchase_order AS p_o ON p_o_l.order_id = p_o.id
+               INNER JOIN stock_picking_type AS s_p_t ON p_o.picking_type_id = s_p_t.id
+               WHERE p_o.state IN ('purchase','done')
+               AND s_p_t.warehouse_id = %s AND p_o_l.product_id in %s group by p_o_l.product_id"""
+        params = warehouse, product_ids if product_ids else (0, 0)
+        self._cr.execute(sale_query, params)
+        sol_query_obj = self._cr.dictfetchall()
+        self._cr.execute(purchase_query, params)
+        pol_query_obj = self._cr.dictfetchall()
+        for obj in categ_products:
             sale_value = 0
             purchase_value = 0
-            product = self.env['product.product'].browse(obj.id)
-            sale_obj = self.env['sale.order.line'].search([('order_id.state', 'in', ('sale', 'done')),
-                                                           ('product_id', '=', product.id),
-                                                           ('order_id.warehouse_id', '=', warehouse)])
-            for i in sale_obj:
-                sale_value = sale_value + i.product_uom_qty
-            purchase_obj = self.env['purchase.order.line'].search([('order_id.state', 'in', ('purchase', 'done')),
-                                                                   ('product_id', '=', product.id),
-                                                                   ('order_id.picking_type_id', '=', warehouse)])
-            for i in purchase_obj:
-                purchase_value = purchase_value + i.product_qty
-            available_qty = product.with_context({'warehouse': warehouse}).virtual_available + \
-                            product.with_context({'warehouse': warehouse}).outgoing_qty - \
-                            product.with_context({'warehouse': warehouse}).incoming_qty
-            value = available_qty * product.standard_price
+            for sol_product in sol_query_obj:
+                if sol_product['product_id'] == obj.id:
+                    sale_value = sol_product['product_uom_qty']
+            for pol_product in pol_query_obj:
+                if pol_product['product_id'] == obj.id:
+                    purchase_value = pol_product['product_qty']
+            virtual_available = obj.with_context({'warehouse': warehouse}).virtual_available
+            outgoing_qty = obj.with_context({'warehouse': warehouse}).outgoing_qty
+            incoming_qty = obj.with_context({'warehouse': warehouse}).incoming_qty
+            available_qty = virtual_available + outgoing_qty - incoming_qty
+            value = available_qty * obj.standard_price
             vals = {
-                'sku': product.default_code,
-                'name': product.name,
-                'category': product.categ_id.name,
-                'cost_price': product.standard_price,
+                'sku': obj.default_code,
+                'name': obj.name,
+                'category': obj.categ_id.name,
+                'cost_price': obj.standard_price,
                 'available': available_qty,
-                'virtual': product.with_context({'warehouse': warehouse}).virtual_available,
-                'incoming': product.with_context({'warehouse': warehouse}).incoming_qty,
-                'outgoing': product.with_context({'warehouse': warehouse}).outgoing_qty,
-                'net_on_hand': product.with_context({'warehouse': warehouse}).qty_available,
+                'virtual': virtual_available,
+                'incoming': incoming_qty,
+                'outgoing': outgoing_qty,
+                'net_on_hand': obj.with_context({'warehouse': warehouse}).qty_available,
                 'total_value': value,
                 'sale_value': sale_value,
                 'purchase_value': purchase_value,
