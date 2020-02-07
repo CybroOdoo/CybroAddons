@@ -19,7 +19,7 @@
 {
     'name': 'Access Restriction By IP',
     'summary': """User Can Access His Account Only From Specified IP Address""",
-    'version': '13.0.1.0.0',
+    'version': '13.0.1.0.1',
     'description': """User Can Access His Account Only From Specified IP Address""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',

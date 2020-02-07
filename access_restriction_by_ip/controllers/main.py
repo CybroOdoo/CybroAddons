@@ -47,32 +47,43 @@ class Home(main.Home):
             old_uid = request.uid
             ip_address = request.httprequest.environ['REMOTE_ADDR']
             if request.params['login']:
-                user_rec = request.env['res.users'].sudo().search([('login', '=', request.params['login'])])
+                user_rec = request.env['res.users'].sudo().search(
+                    [('login', '=', request.params['login'])])
                 if user_rec.allowed_ips:
                     ip_list = []
                     for rec in user_rec.allowed_ips:
                         ip_list.append(rec.ip_address)
                     if ip_address in ip_list:
-                        uid = request.session.authenticate(request.session.db, request.params['login'], request.params['password'])
-                        if uid is not False:
-                                request.params['login_success'] = True
-                                if not redirect:
-                                    redirect = '/web'
-                                return http.redirect_with_hash(redirect)
+                        try:
+                            uid = request.session.authenticate(
+                                request.session.db,
+                                request.params[
+                                    'login'],
+                                request.params[
+                                    'password'])
+                            request.params['login_success'] = True
+                            return http.redirect_with_hash(
+                                self._login_redirect(uid, redirect=redirect))
+                        except odoo.exceptions.AccessDenied as e:
+                            request.uid = old_uid
+                            if e.args == odoo.exceptions.AccessDenied().args:
+                                values['error'] = _("Wrong login/password")
+                    else:
                         request.uid = old_uid
-                        values['error'] = _("Wrong login/password")
-                    request.uid = old_uid
-                    values['error'] = _("Not allowed to login from this IP")
+                        values['error'] = _("Not allowed to login from this IP")
                 else:
-                    uid = request.session.authenticate(request.session.db, request.params['login'],
-                                                       request.params['password'])
-                    if uid is not False:
+                    try:
+                        uid = request.session.authenticate(request.session.db,
+                                                           request.params[
+                                                               'login'],
+                                                           request.params[
+                                                               'password'])
                         request.params['login_success'] = True
-                        if not redirect:
-                            redirect = '/web'
-                        return http.redirect_with_hash(redirect)
-                    request.uid = old_uid
-                    values['error'] = _("Wrong login/password")
-
+                        return http.redirect_with_hash(
+                            self._login_redirect(uid, redirect=redirect))
+                    except odoo.exceptions.AccessDenied as e:
+                        request.uid = old_uid
+                        if e.args == odoo.exceptions.AccessDenied().args:
+                            values['error'] = _("Wrong login/password")
 
         return request.render('web.login', values)
