@@ -34,6 +34,7 @@
     'website': 'https://www.cybrosys.com',
     'category': 'Sales',
     'license': 'AGPL-3',
+    'images': ['static/description/banner.png'],
     'depends': ['sale_management', 'stock'],
     'data': [
         'security/ir.model.access.csv',
