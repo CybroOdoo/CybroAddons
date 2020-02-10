@@ -39,3 +39,13 @@
 #### Version 13.0.3.4.3
 #### FIX
 - Asset depreciation date issue
+
+#### 12.02.2020
+#### Version 13.0.4.4.3
+#### UPDT
+- Dashboard Added
+
+#### 13.02.2020
+#### Version 13.0.4.5.3
+#### RMV
+- Library Removed
