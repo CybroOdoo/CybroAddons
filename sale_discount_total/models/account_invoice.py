@@ -95,7 +95,10 @@ class AccountInvoice(models.Model):
                 sign = 1
             else:
                 sign = -1
-            move.amount_discount = sum((line.quantity * line.price_unit * line.discount)/100 for line in move.line_ids)
+            if move.discount_type == 'percent':
+                move.amount_discount = sum((line.quantity * line.price_unit * line.discount) / 100 for line in move.invoice_line_ids)
+            else:
+                move.amount_discount = move.discount_rate
             move.amount_untaxed = sign * (total_untaxed_currency if len(currencies) == 1 else total_untaxed)
             move.amount_tax = sign * (total_tax_currency if len(currencies) == 1 else total_tax)
             move.amount_total = sign * (total_currency if len(currencies) == 1 else total)
@@ -119,7 +122,8 @@ class AccountInvoice(models.Model):
 
     discount_type = fields.Selection([('percent', 'Percentage'), ('amount', 'Amount')], string='Discount Type',
                                      readonly=True, states={'draft': [('readonly', False)]}, default='percent')
-    discount_rate = fields.Float('Discount Amount', digits=(16, 2), readonly=True, states={'draft': [('readonly', False)]})
+    discount_rate = fields.Float('Discount Amount', digits=(16, 2), readonly=True,
+                                 states={'draft': [('readonly', False)]})
     amount_discount = fields.Monetary(string='Discount', store=True, readonly=True, compute='_compute_amount',
                                       track_visibility='always')
 
@@ -129,6 +133,7 @@ class AccountInvoice(models.Model):
             if inv.discount_type == 'percent':
                 for line in inv.line_ids:
                     line.discount = inv.discount_rate
+                    line._onchange_price_subtotal()
             else:
                 total = discount = 0.0
                 for line in inv.invoice_line_ids:
@@ -137,13 +142,17 @@ class AccountInvoice(models.Model):
                     discount = (inv.discount_rate / total) * 100
                 else:
                     discount = inv.discount_rate
-                for line in inv.invoice_line_ids:
+                for line in inv.line_ids:
                     line.discount = discount
+                    line._onchange_price_subtotal()
 
+            inv._compute_invoice_taxes_by_group()
+    #
 
     def button_dummy(self):
         self.supply_rate()
         return True
+
 
 class AccountInvoiceLine(models.Model):
     _inherit = "account.move.line"
