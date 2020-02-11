@@ -34,3 +34,8 @@
 #### Version 13.0.3.4.2
 #### FIX
 - Bug Fixed reccuring payment templates.
+
+#### 11.02.2020
+#### Version 13.0.3.4.3
+#### FIX
+- Asset depreciation date issue

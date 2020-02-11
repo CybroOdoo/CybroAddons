@@ -264,7 +264,7 @@ class AccountAssetAsset(models.Model):
                     amount = amount_to_depr / self.method_number
                     if sequence == 1:
                         if self.method_period % 12 != 0:
-                            date = datetime.strptime(self.date, '%Y-%m-%d')
+                            date = datetime.strptime(str(self.date), '%Y-%m-%d')
                             month_days = \
                             calendar.monthrange(date.year, date.month)[1]
                             days = month_days - date.day + 1
@@ -311,7 +311,6 @@ class AccountAssetAsset(models.Model):
         return undone_dotation_number
 
     def compute_depreciation_board(self):
-        print("compute_depreciatopn_board")
         self.ensure_one()
 
         posted_depreciation_line_ids = self.depreciation_line_ids.filtered(
@@ -353,9 +352,9 @@ class AccountAssetAsset(models.Model):
                                          self.date.year))  # e.g. 2018-12-31 +1 -> 2019
                     else:
                         asset_date = datetime.strptime(
-                            self.date[:4] + '-01-01', DF).date()
+                            str(self.date)[:4] + '-01-01', DF).date()
                 else:
-                    asset_date = datetime.strptime(self.date[:7] + '-01',
+                    asset_date = datetime.strptime(str(self.date)[:7] + '-01',
                                                    DF).date()
                 # if we already have some previous validated entries, starting date isn't 1st January but last entry + method period
                 if posted_depreciation_line_ids and \
