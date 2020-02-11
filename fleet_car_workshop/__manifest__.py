@@ -19,7 +19,7 @@
 ##############################################################################
 {
     'name': 'Car Workshop',
-    'version': '10.0.2.0.1',
+    'version': '10.0.2.0.2',
     'summary': 'Complete Vehicle Workshop Operations & Reports',
     'description': 'Vehicle workshop operations & Its reports',
     'category': 'Industries',
@@ -30,6 +30,7 @@
                 'base',
                 'fleet',
                 'account_accountant',
+                'stock'
                 ],
     'data': [
         'views/worksheet_views.xml',

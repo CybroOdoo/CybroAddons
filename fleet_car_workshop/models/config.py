@@ -76,15 +76,3 @@ class WorksheetStages(models.Model):
     }
     _order = 'sequence'
 
-
-class Services(models.Model):
-    _inherit = 'product.product'
-
-    type = fields.Selection([('consu', _('Consumable')), ('service', _('Service')), ('product', _('Stockable Product'))], 'Product Type', required=True,
-                            help="A consumable is a product for which you don't manage stock,"
-                                 " a service is a non-material product provided by a company or an individual.")
-
-    _defaults = {
-        'type': 'service',
-
-    }

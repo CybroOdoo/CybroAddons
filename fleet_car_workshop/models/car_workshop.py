@@ -208,9 +208,9 @@ class CarWorkshop(models.Model):
                 [('id', '=', lines.material.id)])
             for prod_id in product_ids:
                     move_id = self.env['stock.picking']
-                    type_obj = self.env['stock.picking.type']
+                    type_object = self.env['stock.picking.type']
                     company_id = self.env.context.get('company_id') or self.env.user.company_id.id
-                    types = type_obj.search([('code', '=', 'outgoing'), ('warehouse_id.company_id', '=', company_id)], limit=1)
+                    types = type_object.search([('code', '=', 'outgoing'), ('warehouse_id.company_id', '=', company_id)], limit=1)
                     vals = {
                         'partner_id': self.partner_id.id,
                         'origin': self.name,
