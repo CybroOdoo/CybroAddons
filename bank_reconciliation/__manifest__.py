@@ -33,7 +33,7 @@
         'views/account_journal_dashboard_view.xml',
         'wizard/bank_statement_wiz_view.xml',
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
