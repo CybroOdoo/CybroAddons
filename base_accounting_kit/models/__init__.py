@@ -32,3 +32,4 @@ from . import product_template
 from . import recurring_payments
 from . import res_config_settings
 from . import res_partner
+from . import account_dashboard
