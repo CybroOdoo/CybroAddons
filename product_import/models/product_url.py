@@ -28,7 +28,6 @@ class ProductImage(models.Model):
     _inherit = 'product.template'
 
     image_url = fields.Char(string='Image URL')
-    image = fields.Binary(string='Image')
 
     @api.onchange('image_url')
     def _onchange_image_url(self):
@@ -43,7 +42,6 @@ class ProductVariantImage(models.Model):
     _inherit = 'product.product'
 
     image_url = fields.Char(string='Image URL')
-    image = fields.Binary(string='Image')
 
     @api.onchange('image_url')
     def _onchange_image_url(self):
