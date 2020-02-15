@@ -17,7 +17,11 @@ Updation Of Export Product Stock in Excel
 #### UPDT
 Changed to query
 
-	
+#### 05.02.2020
+#### Version 13.0.1.1.2
+#### UPDT
+Set Timezone 'UTC' for default
+
 
 
 
