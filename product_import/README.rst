@@ -1,6 +1,6 @@
-Import Product From Excel
-=========================
-Using the application, the user can easily load product image from URL in the product, import product image, barcode, name, type, and price from XLS/CSV file.
+Product Image from URL
+======================
+Product Image from URL and Path
 
 Configuration
 =============

@@ -21,13 +21,10 @@
 #############################################################################
 
 {
-    'name': 'Import Product From Excel',
-    'summary': 'Import Product From Excel or CSV File, Import Product Image From URL and Path',
+    'name': 'Product Image from URL',
+    'summary': 'Product Images from Web URL and Path',
     'version': '13.0.1.0.0',
-    'description': """Import product from excel,XLSX,CSV,Import product image from Excel,Import product from URL,
-		      Import product from path,import product details usinf xlsx,import product,odoo13 sales,odoo13,
-		      odoo13 xlsx,odoo13,mport product barcode from csv,Import product price from csv,Import product type from csv,
-		      create product from csv,Import product from csv""",
+    'description': """Product Images from Web URL, Product Images from path, local""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
