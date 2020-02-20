@@ -17,3 +17,9 @@ Delivery and Receipts Bug fixed.
 #### FIX
 
 Bug fixed.
+
+#### 20.02.2020
+#### Version 13.0.1.2.3
+#### FIX
+
+Invoice Post Bug fixed.

@@ -57,25 +57,29 @@ class InvoiceStockMove(models.Model):
         track_visibility='onchange', copy=False)
 
     def action_stock_move(self):
+        if not self.picking_type_id:
+            raise UserError(_(
+                " Please select a picking type"))
         for order in self:
             if not self.invoice_picking_id:
-                if self.picking_type_id.code =='outgoing':
-                        pick = {
-                            'picking_type_id': self.picking_type_id.id,
-                            'partner_id': self.partner_id.id,
-                            'origin': self.name,
-                            'location_dest_id': self.partner_id.property_stock_customer.id,
-                            'location_id': self.picking_type_id.default_location_src_id.id
-                        }
+                pick = {}
+                if self.picking_type_id.code == 'outgoing':
+                    pick = {
+                        'picking_type_id': self.picking_type_id.id,
+                        'partner_id': self.partner_id.id,
+                        'origin': self.name,
+                        'location_dest_id': self.partner_id.property_stock_customer.id,
+                        'location_id': self.picking_type_id.default_location_src_id.id
+                    }
 
-                if self.picking_type_id.code =='incoming':
-                        pick = {
-                            'picking_type_id': self.picking_type_id.id,
-                            'partner_id': self.partner_id.id,
-                            'origin': self.name,
-                            'location_dest_id': self.picking_type_id.default_location_dest_id.id,
-                            'location_id': self.partner_id.property_stock_supplier.id
-                        }
+                if self.picking_type_id.code == 'incoming':
+                    pick = {
+                        'picking_type_id': self.picking_type_id.id,
+                        'partner_id': self.partner_id.id,
+                        'origin': self.name,
+                        'location_dest_id': self.picking_type_id.default_location_dest_id.id,
+                        'location_id': self.partner_id.property_stock_supplier.id
+                    }
                 picking = self.env['stock.picking'].create(pick)
                 self.invoice_picking_id = picking.id
                 self.picking_count = len(picking)
@@ -96,13 +100,6 @@ class InvoiceStockMove(models.Model):
             result['views'] = [(res and res.id or False, 'form')]
             result['res_id'] = pick_ids or False
         return result
-
-    def action_post(self):
-        if not self.picking_type_id :
-            raise UserError(_(
-                " Please select a picking type"))
-        res = super(InvoiceStockMove, self).action_post()
-        return res
 
     def _reverse_moves(self, default_values_list=None, cancel=False):
         ''' Reverse a recordset of account.move.
