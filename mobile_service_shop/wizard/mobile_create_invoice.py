@@ -50,14 +50,12 @@ class MobileServiceInvoice(models.Model):
         supplier = service_id.person_name
         inv_data = {
             'type': 'out_invoice',
-            'reference': supplier.name,
-            'account_id': supplier.property_account_receivable_id.id,
+            'ref': supplier.name,
             'partner_id': supplier.id,
             'currency_id': service_id.company_id.currency_id.id,
             'journal_id': service_id.journal_type.id,
             'invoice_origin': service_id.name,
             'company_id': service_id.company_id.id,
-            'date_due': service_id.return_date,
         }
         inv_id = inv_obj.create(inv_data)
         service_id.first_payment_inv = inv_id.id

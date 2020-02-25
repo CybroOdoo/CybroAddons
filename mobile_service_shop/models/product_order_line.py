@@ -69,12 +69,11 @@ class ProductOrderLine(models.Model):
                 'location_id': picking.picking_type_id.default_location_src_id.id,
                 'location_dest_id': self.product_order_id.person_name.property_stock_customer.id,
                 'picking_id': picking.id,
-                'move_dest_id': False,
+                'move_dest_ids': False,
                 'state': 'draft',
                 'company_id': self.product_order_id.company_id.id,
                 'price_unit': price_unit,
                 'picking_type_id': picking.picking_type_id.id,
-                'procurement_id': False,
                 'route_ids': 1 and [
                     (6, 0, [x.id for x in self.env['stock.location.route'].search([('id', 'in', (2, 3))])])] or [],
                 'warehouse_id': picking.picking_type_id.warehouse_id.id,

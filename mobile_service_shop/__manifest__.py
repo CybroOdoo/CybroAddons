@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Mobile Service Management',
-    'version': '13.0.1.0.1',
+    'version': '13.0.1.1.2',
     'summary': 'Module for managing mobile service shop daily activities.',
     'category': 'Industries',
     'author': 'Cybrosys Techno Solutions',

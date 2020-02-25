@@ -11,3 +11,9 @@ Initial Commit.
 #### FIX
 
 Bug Fixed.
+
+#### 25.02.2020
+#### Version 13.0.1.1.2
+#### FIX
+
+Bug Fixed In Invoice
