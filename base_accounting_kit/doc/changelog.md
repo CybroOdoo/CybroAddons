@@ -48,4 +48,9 @@
 #### 13.02.2020
 #### Version 13.0.4.5.3
 #### RMV
-- Library Removed
+- Library Removed from dashboard
+
+#### 27.02.2020
+#### Version 13.0.4.5.4
+#### FIX
+- Bug Fixed in asset 'Modify Depreciation'
