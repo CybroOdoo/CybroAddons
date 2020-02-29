@@ -25,7 +25,7 @@
     'version': '13.0.1.0.0',
     'summary': """Generate four levels of cash flow statement reports in PDF and Excel""",
     'description': """Generate four levels of cash flow statement reports in PDF and Excel, pdf report, excel report, cashflow, odoo13""",
-    'author': "Cybrosys Technologies",
+    'author': "Cybrosys Techno Solutions",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
