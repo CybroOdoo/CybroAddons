@@ -3,7 +3,7 @@
 {
     'name': 'Odoo13 Payroll',
     'category': 'Generic Modules/Human Resources',
-    'version': '13.0.1.2.1',
+    'version': '13.0.1.3.2',
     'author': 'Odoo SA,Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

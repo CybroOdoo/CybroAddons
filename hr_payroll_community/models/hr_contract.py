@@ -23,12 +23,12 @@ class HrContract(models.Model):
     ], string='Scheduled Pay', index=True, default='monthly',
         help="Defines the frequency of the wage payment.")
     resource_calendar_id = fields.Many2one(required=True, help="Employee's working schedule.")
-    hra = fields.Integer(string="HRA", help="House rent allowance")
-    travel_allowance = fields.Integer(string="Travel Allowance", help="Travel allowance")
-    da = fields.Integer(string="DA", help="Dearness allowance")
-    meal_allowance = fields.Integer(string="Meal Allowance", help="Meal allowance")
-    medical_allowance = fields.Integer(string="Medical Allowance", help="Medical allowance")
-    other_allowance = fields.Integer(string="Other Allowance", help="Other allowances")
+    hra = fields.Monetary(string='HRA', tracking=True, help="House rent allowance.")
+    travel_allowance = fields.Monetary(string="Travel Allowance", help="Travel allowance")
+    da = fields.Monetary(string="DA", help="Dearness allowance")
+    meal_allowance = fields.Monetary(string="Meal Allowance", help="Meal allowance")
+    medical_allowance = fields.Monetary(string="Medical Allowance", help="Medical allowance")
+    other_allowance = fields.Monetary(string="Other Allowance", help="Other allowances")
 
     def get_all_structures(self):
         """
