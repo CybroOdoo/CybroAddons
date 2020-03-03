@@ -22,7 +22,7 @@
 
 {
     'name': "Restrict Concurrent User Login",
-    'version': '13.0.1.0.0',
+    'version': '13.0.1.1.1',
     'summary': 'Restrict concurrent sessions, User force logout, Automatic session expiry',
     "description": """Restrict concurrent sessions, User force logout, Automatic session expiry, 
                       restrict user login, session expiry, session, user session, force logout,
@@ -35,6 +35,7 @@
 
     'data': [
         'data/data.xml',
+        'views/res_users_view.xml',
         'views/templates.xml',
     ],
     'license': 'LGPL-3',
