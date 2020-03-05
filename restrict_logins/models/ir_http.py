@@ -41,31 +41,46 @@ class IrHttp(models.AbstractModel):
     @classmethod
     def _authenticate(cls, auth_method='user'):
         try:
-            def _update_user(u_sid, u_now, u_exp_date, u_uid):
-                if u_uid and u_exp_date and u_sid and u_now:
-                    query = """update res_users set sid = '%s',
-                            last_update = '%s',exp_date = '%s',
-                            logged_in = 'TRUE' where id = %s
-                            """ % (u_sid, u_now, u_exp_date, u_uid)
-                    request.env.cr.execute(query)
-            uid = request.session.uid
-            user_pool = request.env['res.users'].with_user(
-                SUPERUSER_ID).browse(uid)
-            sid = request.session.sid
-            last_update = user_pool.last_update
-            now = datetime.now()
-            exp_date = datetime.now() + timedelta(minutes=45)
-            # update if there is no data and user is active
-            if not user_pool.last_update and not user_pool.sid and \
-                    not user_pool.logged_in:
-                _update_user(sid, now, exp_date, uid)
-            # update sid and date if last update is above 0.5 min
-            if last_update:
-                update_diff = (datetime.now() - last_update).total_seconds() / 60.0
-                if uid and (update_diff > 0.5 or sid != user_pool.sid):
-                    _update_user(sid, now, exp_date, uid)
+            if request.session.uid:
+                uid = request.session.uid
+                user_pool = request.env['res.users'].with_user(
+                    SUPERUSER_ID).browse(uid)
+
+                def _update_user(u_sid, u_now, u_exp_date, u_uid):
+                    """ Function for updating session details for the
+                        corresponding user
+                    """
+                    if u_uid and u_exp_date and u_sid and u_now:
+                        query = """update res_users set sid = '%s',
+                                       last_update = '%s',exp_date = '%s',
+                                       logged_in = 'TRUE' where id = %s
+                                       """ % (u_sid, u_now, u_exp_date, u_uid)
+                        request.env.cr.execute(query)
+
+                sid = request.session.sid
+                last_update = user_pool.last_update
+                now = datetime.now()
+                exp_date = datetime.now() + timedelta(minutes=45)
+                # check that the authentication contains bus_inactivity
+                request_params = request.params.copy()
+                if 'options' in request_params and 'bus_inactivity' in \
+                        request_params['options']:
+                    # update session if there is sid mismatch
+                    if uid and user_pool.sid and sid != user_pool.sid:
+                        _update_user(sid, now, exp_date, uid)
+                else:
+                    # update if there is no session data and user is active
+                    if not user_pool.last_update and not user_pool.sid and \
+                            not user_pool.logged_in:
+                        _update_user(sid, now, exp_date, uid)
+                    # update sid and date if last update is above 0.5 min
+                    if last_update:
+                        update_diff = (datetime.now() -
+                                       last_update).total_seconds() / 60.0
+                        if uid and (update_diff > 0.5 or sid != user_pool.sid):
+                            _update_user(sid, now, exp_date, uid)
         except Exception as e:
-            _logger.info("Exception during updating user session...")
+            _logger.info("Exception during updating user session...%s", e)
             pass
         try:
             if request.session.uid:

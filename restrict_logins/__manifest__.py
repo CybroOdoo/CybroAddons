@@ -22,7 +22,7 @@
 
 {
     'name': "Restrict Concurrent User Login",
-    'version': '13.0.1.1.1',
+    'version': '13.0.1.1.2',
     'summary': 'Restrict concurrent sessions, User force logout, Automatic session expiry',
     "description": """Restrict concurrent sessions, User force logout, Automatic session expiry, 
                       restrict user login, session expiry, session, user session, force logout,

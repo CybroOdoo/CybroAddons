@@ -57,6 +57,20 @@ def clear_session_history(u_sid, f_uid=False):
     return False
 
 
+def super_clear_all():
+    """ Clear all the user session histories """
+    path = odoo.tools.config.session_dir
+    store = werkzeug.contrib.sessions.FilesystemSessionStore(
+        path, session_class=odoo.http.OpenERPSession, renew_missing=True)
+    for fname in os.listdir(store.path):
+        path = os.path.join(store.path, fname)
+        try:
+            os.unlink(path)
+        except OSError:
+            pass
+    return True
+
+
 class Session(main.Session):
     @http.route('/web/session/logout', type='http', auth="none")
     def logout(self, redirect='/web'):
@@ -78,6 +92,19 @@ class Session(main.Session):
                 if session_cleared:
                     # clear user session
                     user._clear_session()
+        request.session.logout(keep_db=True)
+        return werkzeug.utils.redirect(redirect, 303)
+
+    @http.route('/super/logout_all', type='http', auth="none")
+    def super_logout_all(self, redirect='/web'):
+        """ Log out from all the sessions of all the users """
+        users = request.env['res.users'].with_user(1).search([])
+        for user in users:
+            # clear session session file for the user
+            session_cleared = super_clear_all()
+            if session_cleared:
+                # clear user session
+                user._clear_session()
         request.session.logout(keep_db=True)
         return werkzeug.utils.redirect(redirect, 303)
 
