@@ -25,13 +25,13 @@ from odoo import api, models, fields
 
 class AccountFinancialReport(models.Model):
     _name = "account.financial.report"
-    _description = "Account Report"
+    _description = "Cash Flow Report"
 
     @api.multi
     @api.depends('parent_id', 'parent_id.level')
     def _get_level(self):
-        '''Returns a dictionary with key=the ID of a record and value = the level of this
-           record in the tree structure.'''
+        """Returns a dictionary with key=the ID of a record and value = the level of this
+           record in the tree structure."""
         for report in self:
             level = 0
             if report.parent_id:
@@ -39,8 +39,8 @@ class AccountFinancialReport(models.Model):
             report.level = level
 
     def _get_children_by_order(self):
-        '''returns a recordset of all the children computed recursively,
-         and sorted by sequence. Ready for the printing'''
+        """returns a recordset of all the children computed recursively,
+         and sorted by sequence. Ready for the printing"""
         res = self
         children = self.search([('parent_id', 'in', self.ids)], order='sequence ASC')
         if children:

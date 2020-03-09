@@ -9,7 +9,7 @@
 
                         <div class="row mt32 mb32">
                             <div class="col-4">
-                                <strong>Target Moves:</strong>
+                                <b>Target Moves:</b>
                                 <p>
                                     <span t-if="data['target_move'] == 'all'">All Entries</span>
                                     <span t-if="data['target_move'] == 'posted'">All Posted Entries</span>
@@ -17,11 +17,29 @@
                             </div>
                             <div class="col-4">
                                 <p>
-                                    <strong>Date from :</strong> <span t-esc="data['date_from']"/><br/>
-                                    <strong>Date to :</strong> <span t-esc="data['date_to']"/>
+                                    <b>Date from :</b>
+                                    <span t-esc="data['date_from']"/>
+                                    <br/>
+                                    <b>Date to :</b>
+                                    <span t-esc="data['date_to']"/>
                                 </p>
                             </div>
                         </div>
+                        <t t-if="data['date_from']">
+                            <div class="row mt32 mb32">
+                                <div class="col-8">
+                                    <p>
+                                        <b>For the Period / Year End :</b>&amp;nbsp;
+                                        <span t-esc="end_date"/>
+                                        <br/>
+                                        <b>Cash at the beginning of the Period / Year :</b>&amp;nbsp;
+                                        <span t-esc="round(sum_bal, 2)"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </p>
+
+                                </div>
+                            </div>
+                        </t>
 
                         <table class="table table-sm table-reports" t-if="data['debit_credit'] == 1">
                             <thead>
@@ -29,86 +47,193 @@
                                     <th>Name</th>
                                     <th class="text-right">Debit</th>
                                     <th class="text-right">Credit</th>
-                                    <th class="text-right"/>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr t-foreach="get_account_lines" t-as="a">
-                                    <t t-if="a['level'] != 0">
-                                        <t t-if="a.get('level') &gt; 3"><t t-set="style" t-value="'font-weight: normal;'"/></t>
-                                        <t t-if="not a.get('level') &gt; 3"><t t-set="style" t-value="'font-weight: bold;'"/></t>
-                                        <td>
-                                            <span style="color: white;" t-esc="'..' * a.get('level', 0)"/>
-                                            <span t-att-style="style" t-esc="a.get('name')"/>
-                                        </td>
-                                        <td class="text-right" style="white-space: text-nowrap;">
-<!--                                            <t t-if="a.get('debit')">-->
-                                            <span t-att-style="style" t-esc="a.get('debit')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
-<!--                                            </t>-->
-                                        </td>
-                                        <td class="text-right" style="white-space: text-nowrap;">
-<!--                                            <t t-if="a.get('credit')">-->
-                                            <span t-att-style="style" t-esc="a.get('credit')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
-<!--                                            </t>-->
-                                        </td>
-                                        <td class="text-right" style="white-space: text-nowrap;">
-                                            <span t-att-style="style" t-esc="a.get('balance')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
-                                        </td>
-                                    </t>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <table class="table table-sm table-reports" t-if="not data['enable_filter'] and not data['debit_credit']">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th class="text-right"/>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr t-foreach="get_account_lines" t-as="a">
-                                    <t t-if="a['level'] != 0">
-                                        <t t-if="a.get('level') &gt; 3"><t t-set="style" t-value="'font-weight: normal;'"/></t>
-                                        <t t-if="not a.get('level') &gt; 3"><t t-set="style" t-value="'font-weight: bold;'"/></t>
-                                        <td>
-                                            <span style="color: white;" t-esc="'..' * a.get('level', 0)"/>
-                                            <span t-att-style="style" t-esc="a.get('name')"/>
-                                        </td>
-                                        <td class="text-right"><span t-att-style="style" t-esc="a.get('balance')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
-                                    </t>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <table class="table table-sm table-reports" t-if="data['enable_filter'] == 1 and not data['debit_credit']">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
                                     <th class="text-right">Balance</th>
-                                    <th class="text-right"><span t-esc="data['label_filter']"/></th>
                                 </tr>
                             </thead>
                             <tbody>
+                                <t t-set="net_deb_increases" t-value="0"/>
+                                <t t-set="net_cred_increases" t-value="0"/>
+                                <t t-set="net_bal_increases" t-value="0"/>
                                 <tr t-foreach="get_account_lines" t-as="a">
                                     <t t-if="a['level'] != 0">
-                                        <t t-if="a.get('level') &gt; 3"><t t-set="style" t-value="'font-weight: normal;'"/></t>
-                                        <t t-if="not a.get('level') &gt; 3"><t t-set="style" t-value="'font-weight: bold;'"/></t>
+                                        <t t-if="a.get('level') &gt; 3">
+                                            <t t-set="style" t-value="'font-weight: normal;'"/>
+                                        </t>
+                                        <t t-if="not a.get('level') &gt; 3">
+                                            <t t-set="style" t-value="'font-weight: bold;'"/>
+                                        </t>
                                         <td>
-                                            <span style="color: white;" t-esc="'..'"/>
-                                            <span t-att-style="style" t-esc="a.get('name')"/>
+                                            <span style="color: white;" t-esc="'..' * a.get('level', 0)"/>
+                                            <t t-if="a['level'] == 1">
+                                                <span t-att-style="style" t-esc="a.get('name')"/>
+                                                <span>(Net Cash From)</span>
+                                                <t t-set="net_deb_increases"
+                                                   t-value="net_deb_increases+a.get('debit')"/>
+                                                <t t-set="net_cred_increases"
+                                                   t-value="net_cred_increases+a.get('credit')"/>
+                                                <t t-set="net_bal_increases"
+                                                   t-value="net_bal_increases+a.get('balance')"/>
+                                            </t>
+                                            <t t-if="a['level'] != 1">
+                                                <span t-att-style="style" t-esc="a.get('name')"/>
+                                            </t>
                                         </td>
-                                        <td class="text-right"><span t-att-style="style" t-esc="a.get('balance')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
-                                        <td class="text-right"><span t-att-style="style" t-esc="a.get('balance_cmp')"/></td>
+                                        <td class="text-right" style="white-space: text-nowrap;">
+                                            <span t-att-style="style" t-esc="a.get('debit')"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td class="text-right" style="white-space: text-nowrap;">
+                                            <span t-att-style="style" t-esc="a.get('credit')"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td class="text-right" style="white-space: text-nowrap;">
+                                            <span t-att-style="style" t-esc="a.get('balance')"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
                                     </t>
                                 </tr>
+                                <tr>
+                                    <td>
+                                        <b>Net Cash Increases</b>
+                                    </td>
+                                    <td>
+                                        <b>
+                                            <span t-esc="round(net_deb_increases, 2)" style="float:right;"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </b>
+
+                                    </td>
+                                    <td>
+                                        <b>
+                                            <span t-esc="round(net_cred_increases, 2)" style="float:right;"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </b>
+
+                                    </td>
+                                    <td>
+                                        <b>
+                                            <span t-esc="round(net_bal_increases, 2)" style="float:right;"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </b>
+
+                                    </td>
+                                </tr>
+
+                                <t t-if="data['date_from']">
+                                    <tr>
+                                        <td>
+                                            <b>Cash at Year End</b>
+                                        </td>
+                                        <td>
+                                            <t t-set="year_end_cash_deb"
+                                               t-value="net_deb_increases+sum_deb"/>
+                                            <b>
+                                                <span t-esc="round(year_end_cash_deb, 2)" style="float:right;"
+                                                      t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </b>
+                                        </td>
+                                        <td>
+                                            <t t-set="year_end_cash_cred"
+                                               t-value="net_cred_increases+sum_cred"/>
+                                            <b>
+                                                <span t-esc="round(year_end_cash_cred, 2)" style="float:right;"
+                                                      t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </b>
+                                        </td>
+                                        <td>
+                                            <t t-set="year_end_cash_bal"
+                                               t-value="net_bal_increases+sum_bal"/>
+                                            <b>
+                                                <span t-esc="round(year_end_cash_bal, 2)" style="float:right;"
+                                                      t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </b>
+
+                                        </td>
+                                    </tr>
+                                </t>
+
                             </tbody>
                         </table>
+
+                        <table class="table table-sm table-reports"
+                               t-if="not data['debit_credit']">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th class="text-right"/>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!--                                <t t-set="net_deb_increases" t-value="0"/>-->
+                                <!--                                <t t-set="net_cred_increases" t-value="0"/>-->
+                                <t t-set="net_bal_increases" t-value="0"/>
+                                <tr t-foreach="get_account_lines" t-as="a">
+                                    <t t-if="a['level'] != 0">
+                                        <t t-if="a.get('level') &gt; 3">
+                                            <t t-set="style" t-value="'font-weight: normal;'"/>
+                                        </t>
+                                        <t t-if="not a.get('level') &gt; 3">
+                                            <t t-set="style" t-value="'font-weight: bold;'"/>
+                                        </t>
+                                        <td>
+                                            <span style="color: white;" t-esc="'..' * a.get('level', 0)"/>
+                                            <t t-if="a['level'] == 1">
+                                                <span t-att-style="style" t-esc="a.get('name')"/>
+                                                <span>(Net Cash From)</span>
+                                                <!--                                                <t t-set="net_deb_increases"-->
+                                                <!--                                                   t-value="net_deb_increases+a.get('debit')"/>-->
+                                                <!--                                                <t t-set="net_cred_increases"-->
+                                                <!--                                                   t-value="net_cred_increases+a.get('credit')"/>-->
+                                                <t t-set="net_bal_increases"
+                                                   t-value="net_bal_increases+a.get('balance')"/>
+                                            </t>
+                                            <t t-if="a['level'] != 1">
+                                                <span t-att-style="style" t-esc="a.get('name')"/>
+                                            </t>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-att-style="style" t-esc="a.get('balance')"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                    </t>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <b>Net Cash Increases</b>
+                                    </td>
+                                    <td>
+                                        <b>
+                                            <span t-esc="round(net_bal_increases, 2)" style="float:right;"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </b>
+
+                                    </td>
+                                </tr>
+                                <t t-if="data['date_from']">
+                                    <tr>
+                                        <td>
+                                            <b>Cash at Year End</b>
+                                        </td>
+                                        <td>
+                                            <t t-set="year_end_cash"
+                                               t-value="net_bal_increases+sum_bal"/>
+                                            <b>
+                                                <span t-esc="round(year_end_cash, 2)" style="float:right;"
+                                                      t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </b>
+
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
                     </div>
                 </t>
             </t>
         </t>
     </template>
+
     <report
             id="action_report_financial"
             model="account.financial.report"
@@ -117,5 +242,5 @@
             report_type="qweb-pdf"
             name="cash_flow_statement.report_financial"
             file="cash_flow_statement.report_financial"
-            />
+    />
 </odoo>
