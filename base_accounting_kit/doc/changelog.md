@@ -54,3 +54,8 @@
 #### Version 13.0.4.5.4
 #### FIX
 - Bug Fixed in asset 'Modify Depreciation'
+
+#### 10.03.2020
+#### Version 13.0.4.5.5
+#### FIX
+- Bug Fixed in recurring
