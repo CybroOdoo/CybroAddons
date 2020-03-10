@@ -20,7 +20,7 @@
 {
     'name': 'Hide Product Cost Price',
     'summary': """Product Cost Price Will be Visible Only for Specified Group""",
-    'version': '11.0.1.0.0',
+    'version': '11.0.1.1.0',
     'description': """Product cost price will be visible only for specified group""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
