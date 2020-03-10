@@ -139,8 +139,6 @@ class RecurringPayments(models.Model):
                             'tmpl_id': line.id,
                         })
         child_ids = self.recurring_lines.create(remaining_dates)
-        if not child_ids:
-            raise UserError(_("There is no remaining payments"))
         for line in child_ids:
             tmpl_id = line.tmpl_id
             recurr_code = str(tmpl_id.id) + '/' + str(line.date)
