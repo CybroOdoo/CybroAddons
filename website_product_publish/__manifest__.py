@@ -24,7 +24,7 @@
 {
     'name': 'Quick Product Publish/Unpublish',
     'version': '13.0.1.0.0',
-    'summary': """Quick Product Published & Unpublished on Website, Multi Product Publish, Category vise publish""",
+    'summary': """Quick Product Publish& Unpublish on Website, Multiple Product Publish, Category wise publish""",
     'description': """quick product published & unpublished on website, multi product publish, category vise publish, 
                       multi product publish/unpublish, products published & unpublished on website,
                       quick product publishe, publish all products in a category, website publish, all publish,
