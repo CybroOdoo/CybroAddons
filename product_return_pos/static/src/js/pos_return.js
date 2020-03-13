@@ -4,6 +4,7 @@ odoo.define('product_return_pos.return',function(require) {
 var models = require('point_of_sale.models');
 var screens = require('point_of_sale.screens');
 var ScreenWidget = screens.ScreenWidget;
+var ReceiptScreenWidget = screens.ReceiptScreenWidget;
 var gui = require('point_of_sale.gui');
 var core = require('web.core');
 var QWeb = core.qweb;
@@ -30,6 +31,15 @@ models.load_models({
     }
 });
 
+ReceiptScreenWidget.include({
+
+    renderElement: function() {
+        this._super();
+        this.$('.next').click(function(){
+        location.reload();
+        });
+    },
+});
 
 var ReturnWidget = PopupWidget.extend({
     template:'ReturnWidget',

@@ -3,4 +3,9 @@
 #### 10.10.2019
 #### Version 13.0.1.0.0
 ##### ADD
-- Migrated to Version 13.
+- Initial Commit.
+
+#### 13.03.2020
+#### Version 13.0.1.0.1
+##### UPDT
+- Auto refresh added.
