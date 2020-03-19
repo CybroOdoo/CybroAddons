@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Product Return In POS',
-    'version': '13.0.1.0.1',
+    'version': '13.0.1.0.2',
     'category': 'Point of Sale',
     'summary': 'POS Order Return',
     'author': 'Cybrosys Techno Solutions',

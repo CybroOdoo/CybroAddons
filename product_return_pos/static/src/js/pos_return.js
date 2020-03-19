@@ -4,7 +4,6 @@ odoo.define('product_return_pos.return',function(require) {
 var models = require('point_of_sale.models');
 var screens = require('point_of_sale.screens');
 var ScreenWidget = screens.ScreenWidget;
-var ReceiptScreenWidget = screens.ReceiptScreenWidget;
 var gui = require('point_of_sale.gui');
 var core = require('web.core');
 var QWeb = core.qweb;
@@ -29,16 +28,6 @@ models.load_models({
         self.order_line[i] = order_lines[i];
     }
     }
-});
-
-ReceiptScreenWidget.include({
-
-    renderElement: function() {
-        this._super();
-        this.$('.next').click(function(){
-        location.reload();
-        });
-    },
 });
 
 var ReturnWidget = PopupWidget.extend({
@@ -177,10 +166,14 @@ var OrderListScreenWidget = ScreenWidget.extend({
         var self = this;
         this._super();
         this.renderElement();
+        var orders = this.pos.orders;
         this.$('.back').click(function(){
             self.gui.back();
         });
-        var orders = this.pos.orders;
+        this.$('.refresh').click(function(){
+            location.reload();
+        });
+
         this.render_list(orders);
         var search_timeout = null;
         this.$('.searchbox input').on('keypress',function(event){
