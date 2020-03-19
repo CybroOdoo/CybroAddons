@@ -23,6 +23,7 @@ pos_screens.PaymentScreenWidget.include({
              for (var i in order_line)
               {
 		         var list_product = []
+		         console.log("order_line[i].product.to_make_mrp",order_line[i].product)
                  if (order_line[i].product.to_make_mrp)
                  {
                    if (order_line[i].quantity>0)
