@@ -35,19 +35,26 @@ class StockPicking(models.Model):
         product_obj = self.env['product.product']
         product_id = product_obj.search([('barcode', '=', self.barcode)])
         if self.barcode and not product_id:
-            self.barcode = None
             raise Warning('No product is available for this barcode')
         if self.barcode and self.move_ids_without_package:
             for line in self.move_ids_without_package:
                 if line.product_id.barcode == self.barcode:
                     line.quantity_done += 1
-                    self.barcode = None
                     match = True
         if self.barcode and not match:
-            self.barcode = None
             if product_id:
                 raise Warning('This product is not available in the order.'
                               'You can add this product by clicking the "Add an item" and scan')
+
+    def write(self, vals):
+        res = super(StockPicking, self).write(vals)
+        if vals.get('barcode') and self.move_ids_without_package:
+            for line in self.move_ids_without_package:
+                if line.product_id.barcode == vals['barcode']:
+                    print(line.quantity_done)
+                    line.quantity_done += 1
+                    self.barcode = None
+        return res
 
 
 class StockPickingOperation(models.Model):
