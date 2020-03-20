@@ -1,200 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+import calendar
 import datetime
 from datetime import datetime
+
 from dateutil.relativedelta import relativedelta
-import calendar
+
+from odoo import models, api
 
 
 class DashBoard(models.Model):
     _inherit = 'account.move'
 
     # function to getting expenses
-
-    @api.model
-    def get_expense_details(self):
-
-        self._cr.execute('''select sum(debit)-sum(credit) as expense ,to_char(account_move_line.date, 'Month')  as month ,
-        internal_group from account_move_line ,
-        account_account
-         where account_move_line.account_id=account_account.id AND internal_group = 'expense' AND
-         to_char(DATE(NOW()), 'YY') = to_char(account_move_line.date, 'YY')
-         AND account_move_line.parent_state = 'posted'
-         group by internal_group,month 
-         order by month desc               
-         ''')
-        result = self._cr.dictfetchall()
-        month = list(sorted(set([item['month'] for item in result])))
-        incomes = list(filter(lambda i: i['internal_group'] == 'income', result))
-        expenses = list(filter(lambda i: i['internal_group'] == 'expense', result))
-        inc = [item['amount'] * -1 for item in incomes]
-        exp = [item['amount'] for item in expenses]
-        record = {
-            'month': month,
-            'income': inc,
-            'expense': exp
-        }
-        return record
-
-    # function to getting expense of this year
-
-    @api.model
-    def get_ex_this_year(self):
-        month_list = []
-        for i in range(11, -1, -1):
-            l_month = datetime.now() - relativedelta(months=i)
-            text = format(l_month, '%B')
-            month_list.append(text)
-
-        self._cr.execute('''select sum(debit)-sum(credit) as expense ,to_char(account_move_line.date, 'Month')  as month ,
-        internal_group from account_move_line ,
-        account_account
-         where account_move_line.account_id=account_account.id AND internal_group = 'expense' AND
-         to_char(DATE(NOW()), 'YY') = to_char(account_move_line.date, 'YY')  AND account_move_line.parent_state='posted'
-         group by internal_group,month                  
-         ''')
-
-        record = self._cr.dictfetchall()
-        records = []
-        for month in month_list:
-            this_month = list(filter(lambda r: r['month'].strip() == month, record))
-            if not this_month:
-                records.append({
-                    'month': month,
-                    'expense': 0.0
-                })
-            else:
-                records.append(this_month[0])
-        labels = [item['month'] for item in records]
-        expense = [item['expense'] for item in records]
-        record = {
-            'expense': expense,
-            'label': labels
-        }
-        return record
-
-    # function to getting expense of last year
-
-    @api.model
-    def get_ex_last_year(self):
-        month_list = []
-        for i in range(11, -1, -1):
-            l_month = datetime.now() - relativedelta(months=i)
-            text = format(l_month, '%B')
-            month_list.append(text)
-
-        self._cr.execute('''
-
-             select sum(debit)-sum(credit) as expense,to_char(account_move_line.date, 'Month')  as month ,
-            internal_group from account_move_line ,
-            account_account
-             where  Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW())) -1 AND
-              account_move_line.account_id=account_account.id AND internal_group = 'expense' 
-              AND account_move_line.parent_state='posted'
-             group by month, internal_group               
-             ''')
-        record = self._cr.dictfetchall()
-        records = []
-        for month in month_list:
-            this_month = list(filter(lambda r: r['month'].strip() == month, record))
-            if not this_month:
-                records.append({
-                    'month': month,
-                    'expense': 0.0
-                })
-            else:
-                records.append(this_month[0])
-        labels = [item['month'] for item in records]
-        expense = [item['expense'] for item in records]
-        record = {
-            'expense': expense,
-            'label': labels
-        }
-        return record
-
-    # function to getting expense of this month
-
-    @api.model
-    def get_ex_this_month(self):
-
-        day_list = []
-        now = datetime.now()
-        day = calendar.monthrange(now.year, now.month)[1]
-        for x in range(1, day + 1):
-            day_list.append(x)
-        self._cr.execute('''select sum(debit)-sum(credit) as expense ,cast(to_char(account_move_line.date, 'DD')as int)
-            as date ,
-            internal_group from account_move_line ,
-            account_account
-             where  Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW()))  AND
-              Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))  AND
-              account_move_line.account_id=account_account.id AND internal_group='expense'  
-              AND account_move_line.parent_state='posted'
-             group by internal_group,date                 
-             ''')
-
-        record = self._cr.dictfetchall()
-        records = []
-        for date in day_list:
-            last_month = list(filter(lambda m: m['date'] == date, record))
-            if not last_month:
-                records.append({
-                    'date': date,
-                    'expense': 0.0
-                })
-            else:
-                records.append(last_month[0])
-        labels = [item['date'] for item in records]
-        series = [item['expense'] for item in records]
-        record = {
-            'expense': series,
-            'label': labels
-        }
-        return record
-
-    # function to getting expense of last month
-
-    @api.model
-    def get_ex_last_month(self):
-        day_list = []
-        now = datetime.now()
-        day = \
-            calendar.monthrange(now.year - 1 if now.month == 1 else now.year,
-                                now.month - 1 if not now.month == 1 else 12)[
-                1]
-        for x in range(1, day + 1):
-            day_list.append(x)
-
-        one_month_ago = (datetime.now() - relativedelta(months=1)).month
-
-        self._cr.execute('''select sum(debit)-sum(credit) as expense ,cast(to_char(account_move_line.date, 'DD')as int)
-            as date ,
-            internal_group from account_move_line ,
-            account_account
-             where  Extract(month FROM account_move_line.date) = ''' + str(one_month_ago) + ''' AND
-              account_move_line.account_id=account_account.id AND internal_group='expense' 
-              AND account_move_line.parent_state='posted'
-             group by internal_group,date                 
-             ''')
-        record = self._cr.dictfetchall()
-        records = []
-        for date in day_list:
-            last_month = list(filter(lambda m: m['date'] == date, record))
-            if not last_month:
-                records.append({
-                    'date': date,
-                    'expense': 0.0
-                })
-            else:
-                records.append(last_month[0])
-        labels = [item['date'] for item in records]
-        series = [item['expense'] for item in records]
-        record = {
-            'expense': series,
-            'label': labels
-        }
-        return record
 
     # function to getting income of this year
 
@@ -642,44 +460,6 @@ class DashBoard(models.Model):
 
         # return record
 
-    @api.model
-    def get_latebills_last_month(self):
-
-        # company_id = self.env.company.id
-
-        one_month_ago = (datetime.now() - relativedelta(months=1)).month
-
-        self._cr.execute(''' select to_char(account_move.date, 'Month') as month, res_partner.name as partner, account_move.partner_id as parent,
-                                sum(account_move.amount_total) as amount from account_move, res_partner where account_move.partner_id = res_partner.id
-                                AND account_move.type = 'in_invoice'
-                                AND invoice_payment_state = 'not_paid'
-                                AND state = 'posted' AND Extract(month FROM account_move.invoice_date_due) = ''' + str(
-            one_month_ago) + '''
-                                AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))
-                                AND account_move.partner_id = res_partner.commercial_partner_id
-                                group by parent, partner, month
-                                order by amount desc ''')
-
-        record = self._cr.dictfetchall()
-        return record
-
-    @api.model
-    def get_latebills_last_year(self):
-
-        # company_id = self.env.company.id
-
-        self._cr.execute(''' select to_char(account_move.date, 'Month') as month, res_partner.name as partner, account_move.partner_id as parent,
-                            sum(account_move.amount_total) as amount from account_move, res_partner where account_move.partner_id = res_partner.id
-                            AND account_move.type = 'in_invoice'
-                            AND invoice_payment_state = 'not_paid'
-                            AND state = 'posted' AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW())) - 1
-                            AND account_move.partner_id = res_partner.commercial_partner_id
-                            group by parent, partner, month
-                            order by amount desc ''')
-
-        record = self._cr.dictfetchall()
-        return record
-
     # function to getting over dues
 
     @api.model
@@ -728,27 +508,40 @@ class DashBoard(models.Model):
         return records
 
     @api.model
-    def get_overdues_this_month(self, *post):
+    def get_overdues_this_month_and_year(self, *post):
 
         states_arg = ""
-        if post != ('posted',):
+        if post[0] != 'posted':
             states_arg = """ state in ('posted', 'draft')"""
         else:
             states_arg = """ state = 'posted'"""
 
         company_id = self.env.company.id
-        self._cr.execute((''' 
-                           select to_char(account_move.date, 'Month') as month, res_partner.name as due_partner, account_move.partner_id as parent,
-                           sum(account_move.amount_total) as amount from account_move, res_partner where account_move.partner_id = res_partner.id
-                           AND account_move.type = 'out_invoice'
-                           AND invoice_payment_state = 'not_paid'
-                           AND %s 
-                           AND Extract(month FROM account_move.invoice_date_due) = Extract(month FROM DATE(NOW()))
-                           AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))
-                           AND account_move.partner_id = res_partner.commercial_partner_id
-                           AND account_move.company_id = ''' + str(company_id) + '''
-                           group by parent, due_partner, month
-                           order by amount desc ''') % (states_arg))
+        if post[1] == 'this_month':
+            self._cr.execute((''' 
+                               select to_char(account_move.date, 'Month') as month, res_partner.name as due_partner, account_move.partner_id as parent,
+                               sum(account_move.amount_total) as amount from account_move, res_partner where account_move.partner_id = res_partner.id
+                               AND account_move.type = 'out_invoice'
+                               AND invoice_payment_state = 'not_paid'
+                               AND %s 
+                               AND Extract(month FROM account_move.invoice_date_due) = Extract(month FROM DATE(NOW()))
+                               AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))
+                               AND account_move.partner_id = res_partner.commercial_partner_id
+                               AND account_move.company_id = ''' + str(company_id) + '''
+                               group by parent, due_partner, month
+                               order by amount desc ''') % (states_arg))
+        else:
+            self._cr.execute((''' select  res_partner.name as due_partner, account_move.partner_id as parent,
+                                            sum(account_move.amount_total) as amount from account_move, res_partner where account_move.partner_id = res_partner.id
+                                            AND account_move.type = 'out_invoice'
+                                            AND invoice_payment_state = 'not_paid'
+                                            AND %s
+                                            AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))
+                                            AND account_move.partner_id = res_partner.commercial_partner_id
+                                            AND account_move.company_id = ''' + str(company_id) + '''
+    
+                                            group by parent, due_partner
+                                            order by amount desc ''') % (states_arg))
 
         record = self._cr.dictfetchall()
         due_partner = [item['due_partner'] for item in record]
@@ -772,303 +565,47 @@ class DashBoard(models.Model):
         return records
 
     @api.model
-    def get_latebills_this_month(self, *post):
-
+    def get_latebillss(self, *post):
         company_id = self.env.company.id
 
         partners = self.env['res.partner'].search([('active', '=', True)])
 
         states_arg = ""
-        if post != ('posted',):
+        if post[0] != 'posted':
             states_arg = """ state in ('posted', 'draft')"""
         else:
             states_arg = """ state = 'posted'"""
 
-        self._cr.execute((''' 
-                            select to_char(account_move.date, 'Month') as month, res_partner.name as bill_partner, account_move.partner_id as parent,
-                            sum(account_move.amount_total) as amount from account_move, res_partner where account_move.partner_id = res_partner.id
-                            AND account_move.type = 'in_invoice'
-                            AND invoice_payment_state = 'not_paid'
-                            AND %s 
-                            AND Extract(month FROM account_move.invoice_date_due) = Extract(month FROM DATE(NOW()))
-                            AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))
-                            AND account_move.company_id = ''' + str(company_id) + '''
-                            AND account_move.partner_id = res_partner.commercial_partner_id
-                            group by parent, bill_partner, month
-                            order by amount desc ''') % (states_arg))
-
-        result = self._cr.dictfetchall()
-        bill_partner = [item['bill_partner'] for item in result]
-
-        bill_amount = [item['amount'] for item in result]
-
-        amounts = sum(bill_amount[9:])
-        name = bill_partner[9:]
-        results = []
-        pre_partner = []
-
-        bill_amount = bill_amount[:9]
-        bill_amount.append(amounts)
-        bill_partner = bill_partner[:9]
-        bill_partner.append("Others")
-        records = {
-            'bill_partner': bill_partner,
-            'bill_amount': bill_amount,
-            'result': results,
-
-        }
-        return records
-
-    @api.model
-    def get_overdues_last_month(self):
-
-        # company_id = self.env.company.id
-
-        one_month_ago = (datetime.now() - relativedelta(months=1)).month
-
-        self._cr.execute(''' select to_char(account_move.date, 'Month') as month, res_partner.name as partner, account_move.partner_id as parent,
-                                    sum(account_move.amount_total) as amount from account_move, res_partner where account_move.partner_id = res_partner.id
-                                    AND account_move.type = 'out_invoice'
-                                    AND invoice_payment_state = 'not_paid'
-                                    AND state = 'posted' AND Extract(month FROM account_move.invoice_date_due) = ''' + str(
-            one_month_ago) + '''
-                                    AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))
-                                    AND account_move.partner_id = res_partner.commercial_partner_id
-                                    group by parent, partner, month
-                                    order by amount desc ''')
-
-        record = self._cr.dictfetchall()
-        return record
-
-    @api.model
-    def get_top_10_customers(self, *post):
-
-        company_id = self.env.company.id
-
-        states_arg = ""
-        if post != ('posted',):
-            states_arg = """ state in ('posted', 'draft')"""
-        else:
-            states_arg = """ state = 'posted'"""
-
-
-        self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
-                                sum(account_move.amount_total) as amount from account_move, res_partner
-                                where account_move.commercial_partner_id = res_partner.id
-                                AND account_move.type = 'out_invoice' 
-                                AND %s                         
-                                group by parent, customers
-                                order by amount desc 
-                                limit 10
-                        ''') % (states_arg))
-
-        record_invoice = self._cr.dictfetchall()
-
-        self._cr.execute((''' select res_partner.commercial_company_name as customers, account_move.commercial_partner_id as parent, 
-                                sum(account_move.amount_total) as amount from account_move, res_partner
-                                where account_move.commercial_partner_id = res_partner.id
-                                AND account_move.type = 'out_refund' 
-                                AND %s                         
-                                group by parent, customers
-                                order by amount desc 
-                                limit 10
-                        ''') % (states_arg))
-
-        record_refund = self._cr.dictfetchall()
-
-        summed = []
-        for out_sum in record_invoice:
-            parent = out_sum['parent']
-            su = out_sum['amount'] - \
-                 (list(filter(lambda refund: refund['parent'] == out_sum['parent'], record_refund))[0][
-                      'amount'] if len(
-                     list(filter(lambda refund: refund['parent'] == out_sum['parent'], record_refund))) > 0 else 0.0)
-            summed.append({
-                'customers': out_sum['customers'],
-                'amount': su,
-                'parent': parent
-            })
-
-        return summed
-
-    @api.model
-    def get_top_10_customers_this_month(self, *post):
-
-        company_id = self.env.company.id
-
-        states_arg = ""
-        if post != ('posted',):
-            states_arg = """ state in ('posted', 'draft')"""
-        else:
-            states_arg = """ state = 'posted'"""
-
-        self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
-                                sum(account_move.amount_total) as amount from account_move, res_partner
-                                where account_move.commercial_partner_id = res_partner.id
-                                AND account_move.type = 'out_invoice' 
-                                AND %s   
-                                AND Extract(month FROM account_move.invoice_date_due) = Extract(month FROM DATE(NOW()))
-                                AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))                      
-                                group by parent, customers
-                                order by amount desc 
-                                limit 10
-                                ''') % (states_arg))
-
-        record_invoice = self._cr.dictfetchall()
-
-        self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
-                                sum(account_move.amount_total) as amount from account_move, res_partner
-                                where account_move.commercial_partner_id = res_partner.id
-                                AND account_move.type = 'out_refund' 
-                                AND %s      
-                                AND Extract(month FROM account_move.invoice_date_due) = Extract(month FROM DATE(NOW()))
-                                AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))                   
-                                group by parent, customers
-                                order by amount desc 
-                                limit 10
-                                ''') % (states_arg))
-
-        record_refund = self._cr.dictfetchall()
-
-        summed = []
-        for out_sum in record_invoice:
-            parent = out_sum['parent']
-            su = out_sum['amount'] - \
-                 (list(filter(lambda refund: refund['parent'] == out_sum['parent'], record_refund))[0][
-                      'amount'] if len(
-                     list(filter(lambda refund: refund['parent'] == out_sum['parent'], record_refund))) > 0 else 0.0)
-            summed.append({
-                'customers': out_sum['customers'],
-                'amount': su,
-                'parent': parent
-            })
-
-        return summed
-
-    @api.model
-    def get_top_10_customers_last_month(self, *post):
-
-        company_id = self.env.company.id
-        one_month_ago = (datetime.now() - relativedelta(months=1)).month
-
-        if post != ('posted',):
-            states_arg = """ state in ('posted', 'draft')"""
-        else:
-            states_arg = """ state = 'posted'"""
-
-        self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
-                                sum(account_move.amount_total) as amount from account_move, res_partner
-                                where account_move.commercial_partner_id = res_partner.id
-                                AND account_move.type = 'out_invoice' 
-                                AND %s            
-                                AND Extract(month FROM account_move.invoice_date_due) = ''' + str(one_month_ago) + '''
-                                group by parent, customers
-                                order by amount desc 
-                                limit 10
-                                ''') % (states_arg))
-
-        record_invoice = self._cr.dictfetchall()
-
-        self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
-                                sum(account_move.amount_total) as amount from account_move, res_partner
-                                where account_move.commercial_partner_id = res_partner.id
-                                AND account_move.type = 'out_refund' 
-                                AND %s       
-                                AND Extract(month FROM account_move.invoice_date_due) = ''' + str(one_month_ago) + '''                  
-                                group by parent, customers
-                                order by amount desc 
-                                limit 10
-                                ''') % (states_arg))
-
-        record_refund = self._cr.dictfetchall()
-
-        summed = []
-        for out_sum in record_invoice:
-            parent = out_sum['parent']
-            su = out_sum['amount'] - \
-                 (list(filter(lambda refund: refund['parent'] == out_sum['parent'], record_refund))[0][
-                      'amount'] if len(
-                     list(filter(lambda refund: refund['parent'] == out_sum['parent'], record_refund))) > 0 else 0.0)
-            summed.append({
-                'customers': out_sum['customers'],
-                'amount': su,
-                'parent': parent
-            })
-
-        return summed
-
-    @api.model
-    def get_overdues_this_year(self, *post):
-
-        company_id = self.env.company.id
-        partners = self.env['res.partner'].search([('active', '=', True)])
-
-        states_arg = ""
-        if post != ('posted',):
-            states_arg = """ state in ('posted', 'draft')"""
-        else:
-            states_arg = """ state = 'posted'"""
-
-        self._cr.execute((''' select  res_partner.name as due_partner, account_move.partner_id as parent,
-                                sum(account_move.amount_total) as amount from account_move, res_partner where account_move.partner_id = res_partner.id
-                                AND account_move.type = 'out_invoice'
-                                AND invoice_payment_state = 'not_paid'
-                                AND %s
-                                AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))
-                                AND account_move.partner_id = res_partner.commercial_partner_id
-                                AND account_move.company_id = ''' + str(company_id) + '''
-
-                                group by parent, due_partner
-                                order by amount desc ''') % (states_arg))
-
-        record = self._cr.dictfetchall()
-        due_partner = [item['due_partner'] for item in record]
-        due_amount = [item['amount'] for item in record]
-
-        amounts = sum(due_amount[9:])
-        name = due_partner[9:]
-        result = []
-        pre_partner = []
-
-        due_amount = due_amount[:9]
-        due_amount.append(amounts)
-        due_partner = due_partner[:9]
-        due_partner.append("Others")
-        records = {
-            'due_partner': due_partner,
-            'due_amount': due_amount,
-            'result': result,
-
-        }
-        return records
-
-    @api.model
-    def get_latebills_this_year(self, *post):
-
-        company_id = self.env.company.id
-
-        states_arg = ""
-        if post != ('posted',):
-            states_arg = """ state in ('posted', 'draft')"""
-        else:
-            states_arg = """ state = 'posted'"""
-
-        self._cr.execute((''' select res_partner.name as bill_partner, account_move.partner_id as parent,
+        if post[1] == 'this_month':
+            self._cr.execute((''' 
+                                select to_char(account_move.date, 'Month') as month, res_partner.name as bill_partner, account_move.partner_id as parent,
                                 sum(account_move.amount_total) as amount from account_move, res_partner where account_move.partner_id = res_partner.id
                                 AND account_move.type = 'in_invoice'
                                 AND invoice_payment_state = 'not_paid'
-                                AND %s
+                                AND %s 
+                                AND Extract(month FROM account_move.invoice_date_due) = Extract(month FROM DATE(NOW()))
                                 AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))
-                                AND account_move.partner_id = res_partner.commercial_partner_id
                                 AND account_move.company_id = ''' + str(company_id) + '''
-                                group by parent, bill_partner
+                                AND account_move.partner_id = res_partner.commercial_partner_id
+                                group by parent, bill_partner, month
                                 order by amount desc ''') % (states_arg))
+        else:
+            self._cr.execute((''' select res_partner.name as bill_partner, account_move.partner_id as parent,
+                                            sum(account_move.amount_total) as amount from account_move, res_partner where account_move.partner_id = res_partner.id
+                                            AND account_move.type = 'in_invoice'
+                                            AND invoice_payment_state = 'not_paid'
+                                            AND %s
+                                            AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))
+                                            AND account_move.partner_id = res_partner.commercial_partner_id
+                                            AND account_move.company_id = ''' + str(company_id) + '''
+                                            group by parent, bill_partner
+                                            order by amount desc ''') % (states_arg))
 
         result = self._cr.dictfetchall()
-
         bill_partner = [item['bill_partner'] for item in result]
 
         bill_amount = [item['amount'] for item in result]
+
         amounts = sum(bill_amount[9:])
         name = bill_partner[9:]
         results = []
@@ -1087,21 +624,88 @@ class DashBoard(models.Model):
         return records
 
     @api.model
-    def get_overdues_last_year(self):
+    def get_top_10_customers_month(self, *post):
+        record_invoice = {}
+        record_refund = {}
+        company_id = self.env.company.id
 
-        # company_id = self.env.company.id
+        states_arg = ""
+        if post[0] != 'posted':
+            states_arg = """ state in ('posted', 'draft')"""
+        else:
+            states_arg = """ state = 'posted'"""
+        if post[1] == 'this_month':
+            self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
+                                    sum(account_move.amount_total) as amount from account_move, res_partner
+                                    where account_move.commercial_partner_id = res_partner.id
+                                    AND account_move.type = 'out_invoice' 
+                                    AND %s   
+                                    AND Extract(month FROM account_move.invoice_date_due) = Extract(month FROM DATE(NOW()))
+                                    AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))                      
+                                    group by parent, customers
+                                    order by amount desc 
+                                    limit 10
+                                    ''') % (states_arg))
 
-        self._cr.execute(''' select to_char(account_move.date, 'Month') as month, res_partner.name as partner, account_move.partner_id as parent,
-                                sum(account_move.amount_total) as amount from account_move, res_partner where account_move.partner_id = res_partner.id
-                                AND account_move.type = 'out_invoice'
-                                AND invoice_payment_state = 'not_paid'
-                                AND state = 'posted' AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW())) - 1
-                                AND account_move.partner_id = res_partner.commercial_partner_id
-                                group by parent, partner, month
-                                order by amount desc ''')
+            record_invoice = self._cr.dictfetchall()
 
-        record = self._cr.dictfetchall()
-        return record
+            self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
+                                    sum(account_move.amount_total) as amount from account_move, res_partner
+                                    where account_move.commercial_partner_id = res_partner.id
+                                    AND account_move.type = 'out_refund' 
+                                    AND %s      
+                                    AND Extract(month FROM account_move.invoice_date_due) = Extract(month FROM DATE(NOW()))
+                                    AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))                   
+                                    group by parent, customers
+                                    order by amount desc 
+                                    limit 10
+                                    ''') % (states_arg))
+
+            record_refund = self._cr.dictfetchall()
+        else:
+            one_month_ago = (datetime.now() - relativedelta(months=1)).month
+            self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
+                                            sum(account_move.amount_total) as amount from account_move, res_partner
+                                            where account_move.commercial_partner_id = res_partner.id
+                                            AND account_move.type = 'out_invoice' 
+                                            AND %s            
+                                            AND Extract(month FROM account_move.invoice_date_due) = ''' + str(
+                one_month_ago) + '''
+                                            group by parent, customers
+                                            order by amount desc 
+                                            limit 10
+                                            ''') % (states_arg))
+
+            record_invoice = self._cr.dictfetchall()
+
+            self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
+                                            sum(account_move.amount_total) as amount from account_move, res_partner
+                                            where account_move.commercial_partner_id = res_partner.id
+                                            AND account_move.type = 'out_refund' 
+                                            AND %s       
+                                            AND Extract(month FROM account_move.invoice_date_due) = ''' + str(
+                one_month_ago) + '''                  
+                                            group by parent, customers
+                                            order by amount desc 
+                                            limit 10
+                                            ''') % (states_arg))
+
+            record_refund = self._cr.dictfetchall()
+
+        summed = []
+        for out_sum in record_invoice:
+            parent = out_sum['parent']
+            su = out_sum['amount'] - \
+                 (list(filter(lambda refund: refund['parent'] == out_sum['parent'], record_refund))[0][
+                      'amount'] if len(
+                     list(filter(lambda refund: refund['parent'] == out_sum['parent'], record_refund))) > 0 else 0.0)
+            summed.append({
+                'customers': out_sum['customers'],
+                'amount': su,
+                'parent': parent
+            })
+
+        return summed
 
     # function to get total invoice
 
@@ -1168,7 +772,6 @@ class DashBoard(models.Model):
                         ''') % (states_arg))
         record_supplier_current_year = self._cr.dictfetchall()
 
-
         self._cr.execute(('''select sum(-(amount_total_signed)) - sum(-(amount_residual_signed)) as credit_note from account_move where type ='out_refund'
                             AND  %s                               
                             AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
@@ -1176,15 +779,12 @@ class DashBoard(models.Model):
                         ''') % (states_arg))
         result_credit_note_current_year = self._cr.dictfetchall()
 
-
         self._cr.execute(('''select sum(-(amount_total_signed)) as refund from account_move where type ='in_refund'
                             AND %s                               
                             AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
                             AND account_move.company_id = ''' + str(company_id) + '''   
                         ''') % (states_arg))
         result_refund_current_year = self._cr.dictfetchall()
-
-
 
         self._cr.execute(('''select sum(amount_total_signed) - sum(amount_residual_signed)  as customer_invoice_paid from account_move where type ='out_invoice'
                                     AND   %s
@@ -1194,9 +794,6 @@ class DashBoard(models.Model):
                                 ''') % (states_arg))
         record_paid_customer_invoice_current_year = self._cr.dictfetchall()
 
-
-
-
         self._cr.execute(('''select sum(-(amount_total_signed)) - sum(-(amount_residual_signed))  as supplier_invoice_paid from account_move where type ='in_invoice'
                                     AND   %s
                                     AND  invoice_payment_state = 'paid'
@@ -1204,8 +801,6 @@ class DashBoard(models.Model):
                                     AND account_move.company_id = ''' + str(company_id) + '''
                                 ''') % (states_arg))
         result_paid_supplier_invoice_current_year = self._cr.dictfetchall()
-
-
 
         self._cr.execute(('''select sum(-(amount_total_signed)) - sum(-(amount_residual_signed))  as customer_credit_paid from account_move where type ='out_refund'
                                             AND   %s
@@ -1215,8 +810,6 @@ class DashBoard(models.Model):
                                         ''') % (states_arg))
         record_paid_customer_credit_current_year = self._cr.dictfetchall()
 
-
-
         self._cr.execute(('''select sum(amount_total_signed) - sum(amount_residual_signed)  as supplier_refund_paid from account_move where type ='in_refund'
                                             AND   %s
                                             AND  invoice_payment_state = 'paid'
@@ -1225,23 +818,23 @@ class DashBoard(models.Model):
                                         ''') % (states_arg))
         result_paid_supplier_refund_current_year = self._cr.dictfetchall()
 
-
-
         customer_invoice_current_year = [item['customer_invoice'] for item in record_customer_current_year]
         supplier_invoice_current_year = [item['supplier_invoice'] for item in record_supplier_current_year]
 
         credit_note_current_year = [item['credit_note'] for item in result_credit_note_current_year]
         refund_current_year = [item['refund'] for item in result_refund_current_year]
 
-        paid_customer_invoice_current_year = [item['customer_invoice_paid'] for item in record_paid_customer_invoice_current_year]
-        paid_supplier_invoice_current_year = [item['supplier_invoice_paid'] for item in result_paid_supplier_invoice_current_year]
+        paid_customer_invoice_current_year = [item['customer_invoice_paid'] for item in
+                                              record_paid_customer_invoice_current_year]
+        paid_supplier_invoice_current_year = [item['supplier_invoice_paid'] for item in
+                                              result_paid_supplier_invoice_current_year]
 
-        paid_customer_credit_current_year = [item['customer_credit_paid'] for item in record_paid_customer_credit_current_year]
-        paid_supplier_refund_current_year = [item['supplier_refund_paid'] for item in result_paid_supplier_refund_current_year]
+        paid_customer_credit_current_year = [item['customer_credit_paid'] for item in
+                                             record_paid_customer_credit_current_year]
+        paid_supplier_refund_current_year = [item['supplier_refund_paid'] for item in
+                                             result_paid_supplier_refund_current_year]
 
-
-
-        return customer_invoice_current_year, credit_note_current_year, supplier_invoice_current_year, refund_current_year, paid_customer_invoice_current_year,paid_supplier_invoice_current_year, paid_customer_credit_current_year, paid_supplier_refund_current_year
+        return customer_invoice_current_year, credit_note_current_year, supplier_invoice_current_year, refund_current_year, paid_customer_invoice_current_year, paid_supplier_invoice_current_year, paid_customer_credit_current_year, paid_supplier_refund_current_year
 
     @api.model
     def get_total_invoice_current_month(self, *post):
@@ -1324,11 +917,15 @@ class DashBoard(models.Model):
         supplier_invoice_current_month = [item['supplier_invoice'] for item in record_supplier_current_month]
         credit_note_current_month = [item['credit_note'] for item in result_credit_note_current_month]
         refund_current_month = [item['refund'] for item in result_refund_current_month]
-        paid_customer_invoice_current_month = [item['customer_invoice_paid'] for item in record_paid_customer_invoice_current_month]
-        paid_supplier_invoice_current_month = [item['supplier_invoice_paid'] for item in result_paid_supplier_invoice_current_month]
+        paid_customer_invoice_current_month = [item['customer_invoice_paid'] for item in
+                                               record_paid_customer_invoice_current_month]
+        paid_supplier_invoice_current_month = [item['supplier_invoice_paid'] for item in
+                                               result_paid_supplier_invoice_current_month]
 
-        paid_customer_credit_current_month = [item['customer_credit_paid'] for item in record_paid_customer_credit_current_month]
-        paid_supplier_refund_current_month = [item['supplier_refund_paid'] for item in result_paid_supplier_refund_current_month]
+        paid_customer_credit_current_month = [item['customer_credit_paid'] for item in
+                                              record_paid_customer_credit_current_month]
+        paid_supplier_refund_current_month = [item['supplier_refund_paid'] for item in
+                                              result_paid_supplier_refund_current_month]
 
         return customer_invoice_current_month, credit_note_current_month, supplier_invoice_current_month, refund_current_month, paid_customer_invoice_current_month, paid_supplier_invoice_current_month, paid_customer_credit_current_month, paid_supplier_refund_current_month
 
@@ -1422,10 +1019,9 @@ class DashBoard(models.Model):
                               Extract(YEAR FROM l.date) = Extract(YEAR FROM DATE(NOW())) AND
                               L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
                               l.balance != 0 AND a.reconcile IS F 
-                              AND l.'''+states_arg+'''
+                              AND l.''' + states_arg + '''
                               AND  l.company_id = ''' + str(company_id) + '''                              
                                '''
-
 
         self._cr.execute((''' select count(*) FROM account_move_line l,account_account a
                               where Extract(month FROM l.date) = Extract(month FROM DATE(NOW())) AND
@@ -1437,7 +1033,6 @@ class DashBoard(models.Model):
                                ''') % (states_arg))
         record = self._cr.dictfetchall()
         return record
-
 
     # function to get unreconcile items last month
 
@@ -1547,7 +1142,7 @@ class DashBoard(models.Model):
                                     AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))   
                                     AND account_move_line.company_id = ''' + str(company_id) + '''        
                                     group by internal_group 
-                                     ''') %(states_arg))
+                                     ''') % (states_arg))
         income = self._cr.dictfetchall()
         profit = [item['profit'] for item in income]
         internal_group = [item['internal_group'] for item in income]
@@ -1583,44 +1178,7 @@ class DashBoard(models.Model):
                                         AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))  
                                         AND account_move_line.company_id = ''' + str(company_id) + '''           
                                         group by internal_group 
-                                         ''') %(states_arg))
-        income = self._cr.dictfetchall()
-        profit = [item['profit'] for item in income]
-        internal_group = [item['internal_group'] for item in income]
-        net_profit = True
-        loss = True
-
-        if profit and profit == 0:
-            if (-profit[1]) > (profit[0]):
-                net_profit = -profit[1] - profit[0]
-            elif (profit[1]) > (profit[0]):
-                net_profit = -profit[1] - profit[0]
-            else:
-                net_profit = -profit[1] - profit[0]
-
-        return profit
-
-    @api.model
-    def profit_income_last_year(self, *post):
-
-        company_id = self.env.company.id
-
-        states_arg = ""
-        if post != ('posted',):
-            states_arg = """ parent_state in ('posted', 'draft')"""
-        else:
-            states_arg = """ parent_state = 'posted'"""
-
-        self._cr.execute('''select sum(debit) - sum(credit) as profit, account_account.internal_group from  account_account, account_move_line where 
-                            
-                            account_move_line.account_id = account_account.id AND
-                            %s AND
-                            (account_account.internal_group = 'income' or    
-                            account_account.internal_group = 'expense' )                                       
-                            AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW())) - 1
-                            AND account_move_line.company_id = ''' + str(company_id) + '''           
-                            group by internal_group 
-                             ''')
+                                         ''') % (states_arg))
         income = self._cr.dictfetchall()
         profit = [item['profit'] for item in income]
         internal_group = [item['internal_group'] for item in income]
@@ -1735,11 +1293,9 @@ class DashBoard(models.Model):
                             AND account_move_line.company_id = ''' + str(company_id) + '''
 
 
-                                 ''') %(states_arg))
+                                 ''') % (states_arg))
         record = self._cr.dictfetchall()
         return record
-
-
 
     # function to get total expense this year
 
@@ -1747,7 +1303,6 @@ class DashBoard(models.Model):
     def month_expense_this_year(self, *post):
 
         company_id = self.env.company.id
-
 
         states_arg = ""
         if post != ('posted',):
@@ -1801,6 +1356,3 @@ class DashBoard(models.Model):
 
         }
         return records
-
-
-
