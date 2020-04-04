@@ -269,7 +269,7 @@ class CarRentalContract(models.Model):
                 if temp == 1 and records.cost_frequency != "no" and records.state == "running":
                     supplier = records.customer_id
                     inv_data = {
-                        'name': supplier.name,
+                        # 'name': supplier.name,
                         'ref': supplier.name,
                         # 'account_id': supplier.property_account_payable_id.id,
                         'partner_id': supplier.id,
@@ -343,7 +343,7 @@ class CarRentalContract(models.Model):
             inv_line_obj = self.env['account.move.line']
             supplier = self.customer_id
             inv_data = {
-                'name': supplier.name,
+                # 'name': supplier.name,
                 'ref': supplier.name,
                 # 'account_id': supplier.property_account_payable_id.id,
                 'partner_id': supplier.id,
@@ -514,7 +514,7 @@ class CarRentalContract(models.Model):
             inv_line_obj = self.env['account.move.line']
             supplier = self.customer_id
             inv_data = {
-                'name': supplier.name,
+                # 'name': supplier.name,
                 'ref': supplier.name,
                 'type': 'out_invoice',
                 # 'account_id': supplier.property_account_payable_id.id,
