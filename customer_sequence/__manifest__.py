@@ -38,7 +38,7 @@
         'security/ir.model.access.csv',
     ],
     'demo': [],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'application': False
