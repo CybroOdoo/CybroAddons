@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+         <record id="base_view_partner_form_inherit" model="ir.ui.view">
+            <field name="name">	base.view.partner.form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/notebook/page[@name='internal_notes']" position="after">
+                    <page name="product_visibility" string="Product Visibility" groups="website.group_website_designer">
+                        <group name ='container_row_2'>
+                            <field name="filter_mode" widget="radio"/>
+                        </group>
+                         <group name="container_row_2">
+                             <field name="website_available_cat_ids" widget="many2many_tags" attrs="{'invisible': [('filter_mode', 'in', ['product_only','null'])]}" />
+                         </group>
+                         <group name="container_row_3">
+                             <field name="website_available_product_ids" widget="many2many_tags" attrs="{'invisible': [('filter_mode', 'in', ['categ_only','null'])]}" />
+                         </group>
+                    </page>
+                </xpath>
+            </field>
+         </record>
+
+
+        <record id="website_config_view_inherit" model="ir.ui.view">
+            <field name="name">website.config.view.inherit</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="website.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[hasclass('app_settings_block')]/div[@id='website_selection_settings']" position="after">
+                    <div class="app_settings_block" data-string="Website" string="Website">
+                    <h2>Product Visibility</h2>
+                    <div class="row mt16 o_settings_container">
+                       <div class="col-12 col-lg-6 o_setting_box" >
+                           <div class="o_setting_left_pane">
+                                <field name="product_visibility_guest_user"/>
+                           </div>
+                           <div class="o_setting_right_pane">
+                                <label for="product_visibility_guest_user"/>
+                                <div class="text-muted">
+                                      Enable Product Visibility
+                                </div>
+                                <div attrs="{'invisible': [('product_visibility_guest_user', '=', False)]}">
+                                    <div class="mt16">
+                                        <label  class="o_light_label col-lg-3" for="filter_mode"/>
+                                        <field name="filter_mode" widget="radio"/>
+                                    </div>
+                                   <div class="mt16" attrs="{'invisible': [('filter_mode', 'in', ['categ_only'])]}">
+                                       <label  class="o_light_label col-lg-3" for="available_product_ids"/>
+                                       <field name="available_product_ids" widget="many2many_tags"  />
+                                   </div>
+                                    <div class="mt16" attrs="{'invisible': [('filter_mode', 'in', ['product_only'])]}">
+                                        <label  class="o_light_label col-lg-3" for="available_cat_ids"/>
+                                       <field name="available_cat_ids"  widget="many2many_tags" />
+                                   </div>
+                                </div>
+                           </div>
+                       </div>
+                    </div>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
