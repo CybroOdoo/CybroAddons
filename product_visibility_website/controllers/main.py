@@ -22,7 +22,6 @@
 ###################################################################################
 
 from werkzeug.exceptions import NotFound
-
 from addons.http_routing.models.ir_http import slug
 from addons.website.controllers.main import QueryURL
 from addons.website_sale.controllers.main import TableCompute
@@ -99,14 +98,14 @@ class ProductVisibilityCon(WebsiteSale):
     ], type='http', auth="public", website=True, sitemap=sitemap_shop)
     def shop(self, page=0, category=None, search='', ppg=False, **post):
         ''''Override shop function.'''
-        available_categ = available_products = ''
+        available_categ =  available_products = ''
         user = request.env['res.users'].sudo().search([('id', '=', request.env.user.id)])
         if not user:
             mode = request.env['ir.config_parameter'].sudo().get_param('filter_mode')
-            products = literal_eval(request.env['ir.config_parameter'].sudo().get_param('product_visibility_website.available_product_ids', 'False'))
+            products = literal_eval(request.env['ir.config_parameter'].sudo().get_param('website_product_visibility.available_product_ids', 'False'))
             if mode == 'product_only':
                 available_products = request.env['product.template'].search([('id', 'in', products)])
-            cat = literal_eval(request.env['ir.config_parameter'].sudo().get_param('product_visibility_website.available_cat_ids', 'False'))
+            cat = literal_eval(request.env['ir.config_parameter'].sudo().get_param('website_product_visibility.available_cat_ids', 'False'))
             available_categ = request.env['product.public.category'].search([('id', 'in', cat)])
         else:
             partner = request.env['res.partner'].sudo().search([('id', '=', user.partner_id.id)])
@@ -271,12 +270,12 @@ class ProductVisibilityCon(WebsiteSale):
         if not user:
             mode = request.env['ir.config_parameter'].sudo().get_param('filter_mode')
             products = literal_eval(
-                request.env['ir.config_parameter'].sudo().get_param('product_visibility_website.available_product_ids',
+                request.env['ir.config_parameter'].sudo().get_param('website_product_visibility.available_product_ids',
                                                                     'False'))
             if mode == 'product_only':
                 available_products = request.env['product.template'].search([('id', 'in', products)])
             cat = literal_eval(
-                request.env['ir.config_parameter'].sudo().get_param('product_visibility_website.available_cat_ids',
+                request.env['ir.config_parameter'].sudo().get_param('website_product_visibility.available_cat_ids',
                                                                     'False'))
             available_categ = request.env['product.public.category'].search([('id', 'in', cat)])
         else:

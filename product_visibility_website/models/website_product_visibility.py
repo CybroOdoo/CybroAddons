@@ -40,13 +40,18 @@ class ProductVisibility(models.Model):
                                                       ' If no product is specified,'
                                                       ' all available products will be shown')
 
+    @api.onchange("filter_mode")
+    def onchange_filter_mod(self):
+        if self.filter_mode == 'null':
+            self.website_available_cat_ids = None
+            self.website_available_product_ids = None
 
 class WebsiteGuestVisibility(models.TransientModel):
     _inherit = 'res.config.settings'
 
     product_visibility_guest_user = fields.Boolean(string="Product visibility Guest User")
     filter_mode = fields.Selection([('product_only', 'Product Wise'),
-                                    ('categ_only', 'Category Wise')], string='Filter Mode',default='product_only')
+                                    ('categ_only', 'Category Wise')], string='Filter Mode', default='product_only')
 
     available_product_ids = fields.Many2many('product.template', string='Available Product',
                                              domain="[('is_published', '=', True)]",
@@ -58,39 +63,37 @@ class WebsiteGuestVisibility(models.TransientModel):
                                               ' If no product is specified,'
                                               ' all available products will be shown')
 
-
     @api.model
     def set_values(self):
         res = super(WebsiteGuestVisibility, self).set_values()
         self.env['ir.config_parameter'].sudo().set_param('product_visibility_guest_user',
                                                          self.product_visibility_guest_user)
-        self.env['ir.config_parameter'].sudo().set_param('filter_mode',
-                                                        self.filter_mode)
+        self.env['ir.config_parameter'].sudo().set_param('filter_mode', self.filter_mode)
         if not self.product_visibility_guest_user:
             self.available_cat_ids = None
             self.available_product_ids = None
+            self.env['ir.config_parameter'].sudo().set_param('filter_mode','product_only')
         if self.filter_mode == 'product_only':
             self.available_cat_ids = None
         elif self.filter_mode == 'categ_only':
             self.available_product_ids = None
 
-        self.env['ir.config_parameter'].sudo().set_param('product_visibility_website.available_product_ids',
+        self.env['ir.config_parameter'].sudo().set_param('website_product_visibility.available_product_ids',
                                                          self.available_product_ids.ids)
-        self.env['ir.config_parameter'].sudo().set_param('product_visibility_website.available_cat_ids',
+        self.env['ir.config_parameter'].sudo().set_param('website_product_visibility.available_cat_ids',
                                                          self.available_cat_ids.ids)
         return res
 
     @api.model
     def get_values(self):
         res = super(WebsiteGuestVisibility, self).get_values()
-        product_ids = literal_eval(self.env['ir.config_parameter'].sudo().get_param('product_visibility_website.available_product_ids', 'False'))
-        cat_ids = literal_eval(self.env['ir.config_parameter'].sudo().get_param('product_visibility_website.available_cat_ids', 'False'))
-
+        product_ids = literal_eval(self.env['ir.config_parameter'].sudo().get_param('website_product_visibility.available_product_ids', 'False'))
+        cat_ids = literal_eval(self.env['ir.config_parameter'].sudo().get_param('website_product_visibility.available_cat_ids', 'False'))
+        mod = self.env['ir.config_parameter'].sudo().get_param('filter_mode')
         res.update(
             product_visibility_guest_user=self.env['ir.config_parameter'].sudo().get_param(
                 'product_visibility_guest_user'),
-            filter_mode=self.env['ir.config_parameter'].sudo().get_param(
-                'filter_mode'),
+            filter_mode=mod if mod else 'product_only',
             available_product_ids=[(6, 0, product_ids)],
             available_cat_ids=[(6, 0, cat_ids)],
         )
