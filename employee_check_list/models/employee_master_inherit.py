@@ -44,14 +44,16 @@ class EmployeeMasterInherit(models.Model):
 
     entry_checklist = fields.Many2many('employee.checklist', 'entry_obj', 'check_hr_rel', 'hr_check_rel',
                                        string='Entry Process',
-                                       domain=[('document_type', '=', 'entry')])
+                                       domain=[('document_type', '=', 'entry')],
+                                       groups='hr.group_hr_user')
     exit_checklist = fields.Many2many('employee.checklist', 'exit_obj', 'exit_hr_rel', 'hr_exit_rel',
                                       string='Exit Process',
-                                      domain=[('document_type', '=', 'exit')])
-    entry_progress = fields.Float(compute=entry_progress, string='Entry Progress', store=True, default=0.0)
-    exit_progress = fields.Float(compute=exit_progress, string='Exit Progress', store=True, default=0.0)
-    maximum_rate = fields.Integer(default=100)
-    check_list_enable = fields.Boolean(invisible=True, copy=False)
+                                      domain=[('document_type', '=', 'exit')], 
+                                      groups='hr.group_hr_user')
+    entry_progress = fields.Float(compute=entry_progress, string='Entry Progress', store=True, default=0.0, groups='hr.group_hr_user')
+    exit_progress = fields.Float(compute=exit_progress, string='Exit Progress', store=True, default=0.0, groups='hr.group_hr_user')
+    maximum_rate = fields.Integer(default=100, groups='hr.group_hr_user')
+    check_list_enable = fields.Boolean(invisible=True, copy=False, groups='hr.group_hr_user')
 
 
 class EmployeeDocumentInherit(models.Model):
