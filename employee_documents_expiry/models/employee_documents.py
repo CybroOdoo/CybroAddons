@@ -90,7 +90,7 @@ class HrEmployee(models.Model):
                            Click to Create for New Documents
                         </p>'''),
             'limit': 80,
-            'context': "{'default_employee_ref': '%s'}" % self.id
+            'context': {'default_employee_ref': self.id}
         }
 
     document_count = fields.Integer(compute='_document_count', string='# Documents')
