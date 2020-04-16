@@ -51,7 +51,7 @@ class HrEmployeeDocument(models.Model):
     def check_expr_date(self):
         for each in self:
             exp_date = each.expiry_date
-            if exp_date < date.today():
+            if exp_date and exp_date < date.today():
                 raise Warning('Your Document Is Already Expired.')
 
     name = fields.Char(string='Document Number', required=True, copy=False)
