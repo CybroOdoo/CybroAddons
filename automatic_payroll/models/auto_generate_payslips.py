@@ -76,18 +76,24 @@ class HrPayslipRunCron(models.Model):
         }])
 
         generate_payslip = self.env['hr.payslip.employees']
+        # print(generate_payslip)
         contract_ids = self.env['hr.contract'].search([('state', '=', 'open')])
         employee_ids = []
         for line in contract_ids:
+            print(line.employee_id.name)
             employee_ids.append(line.employee_id)
-            generate_payslip.create([{
-                    'name': line.employee_id.id,
-                    'work_phone': line.employee_id.work_phone or None,
-                    'work_email': line.employee_id.work_email or None,
-                    'department_id': line.employee_id.department_id or None,
-                    'job_id': line.employee_id.job_id or None,
-                    'parent_id': line.employee_id.parent_id or None,
-            }])
+            generate_payslip.create({
+                'employee_ids': [(4, line.employee_id.id)]
+            })
+            # generate_payslip.create([{
+            #         'name': line.employee_id.name,
+            #         'work_phone': line.employee_id.work_phone or None,
+            #         'work_email': line.employee_id.work_email or None,
+            #         'department_id': line.employee_id.department_id or None,
+            #         'job_id': line.employee_id.job_id or None,
+            #         'parent_id': line.employee_id.parent_id.name or None,
+            # }])
+            print(generate_payslip)
         payslips = self.env['hr.payslip']
         [run_data] = batch_id.read(
             ['date_start', 'date_end', 'credit_note'])

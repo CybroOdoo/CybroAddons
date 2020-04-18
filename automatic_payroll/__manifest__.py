@@ -1,6 +1,6 @@
 {
     'name': 'Automatic Payroll',
-    'version': '13.0.1.0.0',
+    'version': '13.0.1.1.1',
     'category': 'Generic Modules/Human Resources',
     'description': """Generate payslips automatically""",
     'author': 'Cybrosys Techno Solutions',
