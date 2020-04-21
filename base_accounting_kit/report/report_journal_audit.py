@@ -33,7 +33,6 @@ class ReportJournal(models.AbstractModel):
     def lines(self, target_move, journal_ids, sort_selection, data):
         if isinstance(journal_ids, int):
             journal_ids = [journal_ids]
-
         move_state = ['draft', 'posted']
         if target_move == 'posted':
             move_state = ['posted']

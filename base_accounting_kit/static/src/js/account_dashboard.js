@@ -4,7 +4,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
     var ajax = require('web.ajax');
     var core = require('web.core');
     var rpc = require('web.rpc');
-    var session = require('web.session');
     var web_client = require('web.web_client');
     var _t = core._t;
     var QWeb = core.qweb;

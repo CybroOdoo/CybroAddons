@@ -64,3 +64,8 @@
 #### Version 13.0.4.5.6
 #### UPDT
 - Code Optimized-dashboard
+
+#### 24.04.2020
+#### Version 13.0.4.6.7
+#### IMP
+- Multi Company issue updated.

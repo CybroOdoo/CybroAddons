@@ -41,7 +41,7 @@ class AccountUpdateLockDate(models.TransientModel):
     @api.model
     def default_get(self, field_list):
         res = super(AccountUpdateLockDate, self).default_get(field_list)
-        company = self.env.user.company_id
+        company = self.env.company
         res.update({
             'company_id': company.id,
             'period_lock_date': company.period_lock_date,

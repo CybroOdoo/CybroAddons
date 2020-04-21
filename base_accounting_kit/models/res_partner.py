@@ -56,7 +56,7 @@ class ResPartner(models.Model):
             total_overdue = 0
             today = fields.Date.today()
             for am in record.invoice_list:
-                if am.company_id == self.env.user.company_id:
+                if am.company_id == self.env.company:
                     amount = am.amount_residual
                     total_due += amount
                     is_overdue = today > am.invoice_date_due if am.invoice_date_due else today > am.date
@@ -96,13 +96,13 @@ class ResPartner(models.Model):
         delay = """select id,delay from followup_line where followup_id =
         (select id from account_followup where company_id = %s)
          order by delay limit 1"""
-        self._cr.execute(delay, [self.env.user.company_id.id])
+        self._cr.execute(delay, [self.env.company.id])
         record = self.env.cr.dictfetchall()
         return record
 
     def action_after(self):
         lines = self.env['followup.line'].search([(
-            'followup_id.company_id', '=', self.env.user.company_id.id)])
+            'followup_id.company_id', '=', self.env.company.id)])
         if lines:
             record = self.get_delay()
             for i in record:

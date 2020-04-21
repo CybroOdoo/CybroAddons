@@ -89,7 +89,7 @@ class RecurringPayments(models.Model):
                                            ('pay_later', 'Pay Later')],
                                 store=True, required=True)
     company_id = fields.Many2one('res.company',
-                                 default=lambda l: l.env.user.company_id.id)
+                                 default=lambda l: l.env.company.id)
     recurring_lines = fields.One2many('account.recurring.entries.line', 'tmpl_id')
 
     @api.onchange('partner_id')
@@ -156,7 +156,7 @@ class RecurringPayments(models.Model):
             vals = {
                 'date': line.date,
                 'recurring_ref': recurr_code,
-                'company_id': self.env.user.company_id.id,
+                'company_id': self.env.company.id,
                 'journal_id': tmpl_id.journal_id.id,
                 'ref': line.template_name,
                 'narration': 'Recurring entry',

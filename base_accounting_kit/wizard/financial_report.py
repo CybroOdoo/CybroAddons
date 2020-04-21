@@ -68,7 +68,7 @@ class FinancialReport(models.TransientModel):
         'res.company',
         string='Company',
         index=True,
-        default=lambda self: self.env.user.company_id.id)
+        default=lambda self: self.env.company.id)
 
     def view_report_pdf(self):
         """This function will be executed when we click the view button
@@ -370,7 +370,7 @@ class FinancialReport(models.TransientModel):
             self.env.context.get('default_journal_id', False))
         if journal.currency_id:
             return journal.currency_id.id
-        return self.env.user.company_id.currency_id.symbol
+        return self.env.company.currency_id.symbol
 
 
 class ProfitLossPdf(models.AbstractModel):

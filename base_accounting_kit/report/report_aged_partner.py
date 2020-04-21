@@ -67,7 +67,7 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         res = []
         total = []
         cr = self.env.cr
-        user_company = self.env.user.company_id
+        user_company = self.env.company
         user_currency = user_company.currency_id
         ResCurrency = self.env['res.currency'].with_context(date=date_from)
         company_ids = self._context.get('company_ids') or [user_company.id]
@@ -147,7 +147,7 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                     line_amount -= ResCurrency._compute(
                         partial_line.company_id.currency_id, user_currency,
                         partial_line.amount)
-            if not self.env.user.company_id.currency_id.is_zero(line_amount):
+            if not self.env.company.currency_id.is_zero(line_amount):
                 undue_amounts[partner_id] += line_amount
                 lines[partner_id].append({
                     'line': line,
@@ -207,7 +207,7 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                             partial_line.company_id.currency_id, user_currency,
                             partial_line.amount)
 
-                if not self.env.user.company_id.currency_id.is_zero(
+                if not self.env.company.currency_id.is_zero(
                         line_amount):
                     partners_amount[partner_id] += line_amount
                     lines[partner_id].append({
@@ -230,7 +230,7 @@ class ReportAgedPartnerBalance(models.AbstractModel):
             total[6] = total[6] + undue_amt
             values['direction'] = undue_amt
             if not float_is_zero(values['direction'],
-                                 precision_rounding=self.env.user.company_id.currency_id.rounding):
+                                 precision_rounding=self.env.company.currency_id.rounding):
                 at_least_one_amount = True
 
             for i in range(5):
@@ -241,7 +241,7 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                 total[(i)] = total[(i)] + (during and during[0] or 0)
                 values[str(i)] = during and during[0] or 0.0
                 if not float_is_zero(values[str(i)],
-                                     precision_rounding=self.env.user.company_id.currency_id.rounding):
+                                     precision_rounding=self.env.company.currency_id.rounding):
                     at_least_one_amount = True
             values['total'] = sum(
                 [values['direction']] + [values[str(i)] for i in range(5)])

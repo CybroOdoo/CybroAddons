@@ -57,7 +57,7 @@ class AccountAssetCategory(models.Model):
     journal_id = fields.Many2one('account.journal', string='Journal',
                                  required=True)
     company_id = fields.Many2one('res.company', string='Company',
-                                 required=True, default=lambda self: self.env.user.company_id)
+                                 required=True, default=lambda self: self.env.company)
     method = fields.Selection(
         [('linear', 'Linear'), ('degressive', 'Degressive')],
         string='Computation Method', required=True, default='linear',
@@ -125,11 +125,11 @@ class AccountAssetAsset(models.Model):
                                   required=True, readonly=True,
                                   states={'draft': [('readonly', False)]},
                                   default=lambda
-                                      self: self.env.user.company_id.currency_id.id)
+                                      self: self.env.company.currency_id.id)
     company_id = fields.Many2one('res.company', string='Company',
                                  required=True, readonly=True,
                                  states={'draft': [('readonly', False)]},
-                                 default=lambda self: self.env.user.company_id)
+                                 default=lambda self: self.env.company)
     note = fields.Text()
     category_id = fields.Many2one('account.asset.category', string='Category',
                                   required=True, change_default=True,
