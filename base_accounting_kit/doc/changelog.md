@@ -69,3 +69,8 @@
 #### Version 13.0.4.6.7
 #### IMP
 - Multi Company issue updated.
+
+#### 29.04.2020
+#### Version 13.0.4.7.8
+#### UPDT
+- Report updated.

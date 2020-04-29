@@ -84,7 +84,7 @@ class AccountFinancialReport(models.Model):
         'report_id', 'account_type_id',
         'Account Types')
     sign = fields.Selection(
-        [("1", 'Reverse balance sign'), ("-1", 'Preserve balance sign')],
+        [("-1", 'Reverse balance sign'), ("1", 'Preserve balance sign')],
         'Sign on Reports', required=True, default="1",
         help='For accounts that are typically more'
              ' debited than credited and that you'
