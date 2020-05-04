@@ -65,6 +65,7 @@ class MrpProduction(models.Model):
                             mrp_order = self.sudo().create(vals)
                             list_value = []
                             for bom_line in mrp_order.bom_id.bom_line_ids:
+                                print(bom_line.product_id.with_context(force_company=self.company_id.id).property_stock_production.id)
                                 list_value.append((0, 0, {
                                             'raw_material_production_id': mrp_order.id,
                                             'name': mrp_order.name,
@@ -73,7 +74,7 @@ class MrpProduction(models.Model):
                                             'product_uom_qty': bom_line.product_qty,
                                             'picking_type_id': mrp_order.picking_type_id.id,
                                             'location_id': mrp_order.location_src_id.id,
-                                            'location_dest_id': mrp_order.location_dest_id.id,
+                                            'location_dest_id': bom_line.product_id.with_context(force_company=self.company_id.id).property_stock_production.id,
                                             'company_id': mrp_order.company_id.id,
 
                                 }))
