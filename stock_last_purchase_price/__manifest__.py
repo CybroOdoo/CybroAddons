@@ -22,7 +22,7 @@
 
 {
     'name': 'Costing method: Last Purchase Price',
-    'version': '13.0.1.0.0',
+    'version': '13.0.1.0.1',
     'category': 'Inventory',
     'summary': "Introducing new costing method in Odoo 'last purchase price'",
     'author': 'Cybrosys Techno solutions',
@@ -34,7 +34,7 @@
                 'stock_account',
                 'purchase'
                 ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'application': False,
     'installable': True,
