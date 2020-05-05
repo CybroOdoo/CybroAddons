@@ -34,7 +34,7 @@
                 'stock_account',
                 'purchase'
                 ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'application': False,
     'installable': True,
