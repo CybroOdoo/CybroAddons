@@ -58,40 +58,39 @@ class ProductProduct(models.Model):
         product_accounts = {product.id: product.product_tmpl_id.get_product_accounts() for product in self}
         for product in self.with_context().filtered(lambda r: r.valuation == 'real_time'):
             diff = product.standard_price - new_price
-            if float_is_zero(diff, precision_rounding=product.currency_id.rounding):
-                raise UserError(_("No difference between the standard price and the new price."))
-            if not product_accounts[product.id].get('stock_valuation', False):
-                raise UserError(_('You don\'t have any stock valuation account defined on your product category. You must define one before processing this operation.'))
-            qty_available = product.qty_available
-            if qty_available:
-                # Accounting Entries
-                if diff * qty_available > 0:
-                    debit_account_id = account_id
-                    credit_account_id = product_accounts[product.id]['stock_valuation'].id
-                else:
-                    debit_account_id = product_accounts[product.id]['stock_valuation'].id
-                    credit_account_id = account_id
+            if not float_is_zero(diff, precision_rounding=product.currency_id.rounding):
+                if not product_accounts[product.id].get('stock_valuation', False):
+                    raise UserError(_('You don\'t have any stock valuation account defined on your product category. You must define one before processing this operation.'))
+                qty_available = product.qty_available
+                if qty_available:
+                    # Accounting Entries
+                    if diff * qty_available > 0:
+                        debit_account_id = account_id
+                        credit_account_id = product_accounts[product.id]['stock_valuation'].id
+                    else:
+                        debit_account_id = product_accounts[product.id]['stock_valuation'].id
+                        credit_account_id = account_id
 
-                move_vals = {
-                    'journal_id': product_accounts[product.id]['stock_journal'].id,
-                    'company_id': company_id,
-                    'ref': product.default_code,
-                    'line_ids': [(0, 0, {
-                        'name': _('%s changed cost from %s to %s - %s') % (origin, product.standard_price, new_price, product.display_name),
-                        'account_id': debit_account_id,
-                        'debit': abs(diff * qty_available),
-                        'credit': 0,
-                        'product_id': product.id,
-                    }), (0, 0, {
-                        'name': _('%s changed cost from %s to %s - %s') % (origin, product.standard_price, new_price, product.display_name),
-                        'account_id': credit_account_id,
-                        'debit': 0,
-                        'credit': abs(diff * qty_available),
-                        'product_id': product.id,
-                    })],
-                }
-                move = AccountMove.create(move_vals)
-                move.post()
+                    move_vals = {
+                        'journal_id': product_accounts[product.id]['stock_journal'].id,
+                        'company_id': company_id,
+                        'ref': product.default_code,
+                        'line_ids': [(0, 0, {
+                            'name': _('%s changed cost from %s to %s - %s') % (origin, product.standard_price, new_price, product.display_name),
+                            'account_id': debit_account_id,
+                            'debit': abs(diff * qty_available),
+                            'credit': 0,
+                            'product_id': product.id,
+                        }), (0, 0, {
+                            'name': _('%s changed cost from %s to %s - %s') % (origin, product.standard_price, new_price, product.display_name),
+                            'account_id': credit_account_id,
+                            'debit': 0,
+                            'credit': abs(diff * qty_available),
+                            'product_id': product.id,
+                        })],
+                    }
+                    move = AccountMove.create(move_vals)
+                    move.post()
         return True
 
     @api.multi
