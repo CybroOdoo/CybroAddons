@@ -87,12 +87,12 @@ class WebsiteCoupon(WebsiteSale):
             voucher_type = coupon.voucher.voucher_type
             voucher_val = coupon.voucher_val
             type = coupon.type
-            coupon_product = request.env['product.product'].sudo().search([('name', '=', 'Gift Coupon')], limit=1)
+            coupon_product = request.env['product.product'].sudo().search([('default_code', '=', 'gift_coupon')], limit=1)
             if coupon_product:
                 order = request.website.sale_get_order(force_create=1)
                 flag_product = False
                 for line in order.order_line:
-                    if line.product_id.name == 'Gift Coupon':
+                    if line.product_id.default_code == 'gift_coupon':
                         flag = False
                         break
                 if flag and order.order_line:
@@ -175,7 +175,6 @@ class WebsiteCoupon(WebsiteSale):
         for data in sales_order:
             products.append(data.name)
         if 'Gift Coupon' in products:
-            print("gigt coupon in products")
             total = coupon.total_avail - 1
             coupon.write({'total_avail': total})
         if not applied_coupons:

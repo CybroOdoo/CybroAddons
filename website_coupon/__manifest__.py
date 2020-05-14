@@ -20,7 +20,7 @@
 ##############################################################################
 {
     'name': 'Website Coupon Code',
-    'version': '12.0.2.0.1',
+    'version': '12.0.2.1.2',
     'summary': 'Manage Website Coupon Codes for Products/Categories/All Products & Its Redeem Operations',
     'category': 'Website',
     'author': 'Cybrosys Techno Solutions',
