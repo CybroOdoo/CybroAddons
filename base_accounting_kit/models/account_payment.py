@@ -32,14 +32,20 @@ class AccountRegisterPayments(models.TransientModel):
                                  help='Effective date of PDC', copy=False,
                                  default=False)
 
-    def get_payments_vals(self):
-        res = super(AccountRegisterPayments, self).get_payments_vals()
-        if self.payment_method_id == self.env.ref(
-                'account_check_printing.account_payment_method_check'):
+    def _prepare_payment_vals(self, invoices):
+        res = super(AccountRegisterPayments, self)._prepare_payment_vals(invoices)
+        # Check payment method is Check or PDC
+        check_pdc_ids = self.env['account.payment.method'].search([('code', 'in', ['pdc', 'check_printing'])])
+        if self.payment_method_id.id in check_pdc_ids.ids:
+            currency_id = self.env['res.currency'].browse(res['currency_id'])
+            journal_id = self.env['account.journal'].browse(res['journal_id'])
+            # Updating values in case of Multi payments
             res.update({
-                'check_amount_in_words': self.check_amount_in_words,
-                'check_manual_sequencing': self.check_manual_sequencing,
+                'bank_reference': self.bank_reference,
+                'cheque_reference': self.cheque_reference,
+                'check_manual_sequencing': journal_id.check_manual_sequencing,
                 'effective_date': self.effective_date,
+                'check_amount_in_words': currency_id.amount_to_text(res['amount']),
             })
         return res
 

@@ -639,6 +639,7 @@ class DashBoard(models.Model):
             self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
                                     sum(account_move.amount_total) as amount from account_move, res_partner
                                     where account_move.commercial_partner_id = res_partner.id
+                                    AND account_move.company_id = %s 
                                     AND account_move.type = 'out_invoice' 
                                     AND %s   
                                     AND Extract(month FROM account_move.invoice_date_due) = Extract(month FROM DATE(NOW()))
@@ -646,13 +647,14 @@ class DashBoard(models.Model):
                                     group by parent, customers
                                     order by amount desc 
                                     limit 10
-                                    ''') % (states_arg))
+                                    ''') % (company_id, states_arg))
 
             record_invoice = self._cr.dictfetchall()
 
             self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
                                     sum(account_move.amount_total) as amount from account_move, res_partner
                                     where account_move.commercial_partner_id = res_partner.id
+                                    AND account_move.company_id = %s
                                     AND account_move.type = 'out_refund' 
                                     AND %s      
                                     AND Extract(month FROM account_move.invoice_date_due) = Extract(month FROM DATE(NOW()))
@@ -660,7 +662,7 @@ class DashBoard(models.Model):
                                     group by parent, customers
                                     order by amount desc 
                                     limit 10
-                                    ''') % (states_arg))
+                                    ''') % (company_id, states_arg))
 
             record_refund = self._cr.dictfetchall()
         else:
@@ -668,6 +670,7 @@ class DashBoard(models.Model):
             self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
                                             sum(account_move.amount_total) as amount from account_move, res_partner
                                             where account_move.commercial_partner_id = res_partner.id
+                                            AND account_move.company_id = %s
                                             AND account_move.type = 'out_invoice' 
                                             AND %s            
                                             AND Extract(month FROM account_move.invoice_date_due) = ''' + str(
@@ -675,13 +678,14 @@ class DashBoard(models.Model):
                                             group by parent, customers
                                             order by amount desc 
                                             limit 10
-                                            ''') % (states_arg))
+                                            ''') % (company_id, states_arg))
 
             record_invoice = self._cr.dictfetchall()
 
             self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
                                             sum(account_move.amount_total) as amount from account_move, res_partner
                                             where account_move.commercial_partner_id = res_partner.id
+                                            AND account_move.company_id = %s 
                                             AND account_move.type = 'out_refund' 
                                             AND %s       
                                             AND Extract(month FROM account_move.invoice_date_due) = ''' + str(
@@ -689,7 +693,7 @@ class DashBoard(models.Model):
                                             group by parent, customers
                                             order by amount desc 
                                             limit 10
-                                            ''') % (states_arg))
+                                            ''') % (company_id, states_arg))
 
             record_refund = self._cr.dictfetchall()
 
@@ -928,7 +932,8 @@ class DashBoard(models.Model):
         paid_supplier_refund_current_month = [item['supplier_refund_paid'] for item in
                                               result_paid_supplier_refund_current_month]
 
-        return customer_invoice_current_month, credit_note_current_month, supplier_invoice_current_month, refund_current_month, paid_customer_invoice_current_month, paid_supplier_invoice_current_month, paid_customer_credit_current_month, paid_supplier_refund_current_month
+        currency = self.get_currency()
+        return customer_invoice_current_month, credit_note_current_month, supplier_invoice_current_month, refund_current_month, paid_customer_invoice_current_month, paid_supplier_invoice_current_month, paid_customer_credit_current_month, paid_supplier_refund_current_month, currency
 
     @api.model
     def get_total_invoice_this_month(self, *post):
@@ -1162,10 +1167,12 @@ class DashBoard(models.Model):
     def get_current_company_value(self):
         current_company = request.httprequest.cookies.get('cids')
         if current_company:
-            company_id = current_company[0]
+            company_id = int(current_company[0])
         else:
             company_id = self.env.company.id
-        return int(company_id)
+        if company_id not in self.env.user.company_ids.ids:
+            company_id = self.env.company.id
+        return company_id
 
     @api.model
     def profit_income_this_year(self, *post):
@@ -1263,8 +1270,12 @@ class DashBoard(models.Model):
     def get_currency(self):
         current_company = self.env['res.company'].browse(self.get_current_company_value())
         default = current_company.currency_id or self.env.ref('base.main_company').currency_id
-        default = default.symbol
-        return default
+        lang = self.env.user.lang
+        if not lang:
+            lang = 'en_US'
+        lang = lang.replace("_", '-')
+        currency = {'position': default.position, 'symbol': default.symbol, 'language': lang}
+        return currency
 
     # function to get total expense
 

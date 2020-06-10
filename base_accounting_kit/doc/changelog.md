@@ -74,3 +74,11 @@
 #### Version 13.0.4.7.8
 #### UPDT
 - Report updated.
+
+#### 10.06.2020
+#### Version 13.0.4.8.9
+#### UPDT
+- Comma separator in Dashboard
+- Currency symbol position in Dashboard
+- Monthly invoice filter in Dashboard
+- Check payment issue, in case of multi payment

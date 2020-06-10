@@ -79,11 +79,17 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
             var selected = $('.btn.btn-tool.income');
             var data = $(selected[0]).data();
             var posted = false;
+            var self = this;
             var f = f;
             if ($('#toggle-two')[0].checked == true) {
                 posted = "posted"
             }
-
+            rpc.query({
+                model: "account.move",
+                method: "get_currency",
+            }).then(function (result) {
+                currency = result;
+            })
             rpc.query({
                 model: "account.move",
                 method: "get_top_10_customers_month",
@@ -99,7 +105,8 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                     var due_count = 0;
                     _.forEach(result, function (x) {
                         due_count++;
-                        $('#top_10_customers_this_month').append('<li><div id="line_' + x.parent + '" data-user-id="' + x.parent + '">' + x.customers + '</div>' + '<div id="line_' + x.parent + '" data-user-id="' + x.parent + '">' + x.amount.toFixed(2) + ' ' + currency + '</div>' + '</li>');
+                        var amount = self.format_currency(currency, x.amount);
+                        $('#top_10_customers_this_month').append('<li><div id="line_' + x.parent + '" data-user-id="' + x.parent + '">' + x.customers + '</div>' + '<div id="line_' + x.parent + '" data-user-id="' + x.parent + '">' + amount + '</div>' + '</li>');
 
                     });
                 })
@@ -349,9 +356,17 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
             var selected = $('.btn.btn-tool.selected');
             var data = $(selected[0]).data();
             var posted = false;
+            var self = this;
             if ($('#toggle-two')[0].checked == true) {
                 posted = "posted"
             }
+
+            rpc.query({
+                model: "account.move",
+                method: "get_currency",
+            }).then(function (result) {
+                currency = result;
+            })
 
             rpc.query({
                 model: "account.move",
@@ -409,6 +424,11 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                     $('#tot_invoice_current_year').attr("value", customer_invoice_paid_current_year);
                     $('#tot_invoice_current_year').attr("max", customer_invoice_total_current_year);
 
+                    customer_invoice_paid_current_year = self.format_currency(currency, customer_invoice_paid_current_year);
+                    customer_invoice_total_current_year = self.format_currency(currency, customer_invoice_total_current_year);
+                    supplier_invoice_paid_current_year = self.format_currency(currency, supplier_invoice_paid_current_year);
+                    supplier_invoice_total_current_year = self.format_currency(currency, supplier_invoice_total_current_year);
+
                     $('#total_customer_invoice_paid_current_year').append('<div class="logo">' + '<span>' + customer_invoice_paid_current_year + '</span><span>Total Paid<span></div>');
                     $('#total_customer_invoice_current_year').append('<div" class="logo">' + '<span>' + customer_invoice_total_current_year + '</span><span>Total Invoice <span></div>');
 
@@ -422,40 +442,46 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
             var selected = $('.btn.btn-tool.selected');
             var data = $(selected[0]).data();
             var posted = false;
+            var self = this;
             if ($('#toggle-two')[0].checked == true) {
                 posted = "posted"
             }
+            rpc.query({
+                model: "account.move",
+                method: "get_currency",
+            }).then(function (result) {
+                currency = result;
+            })
             rpc.query({
                 model: "account.move",
                 method: "get_total_invoice_current_month",
                 args: [posted],
             })
                 .then(function (result) {
-
-//                    $('#total_supplier_invoice_paid').hide();
-//                    $('#total_supplier_invoice').hide();
-//                    $('#total_customer_invoice_paid').hide();
-//                    $('#total_customer_invoice').hide();
-//                    $('#tot_invoice').hide();
-//                    $('#tot_supplier_inv').hide();
-//                    $('#total_supplier_invoice_paid_current_month').empty();
-//                    $('#total_supplier_invoice_current_month').empty();
-//                    $('#total_customer_invoice_paid_current_month').empty();
-//                    $('#total_customer_invoice_current_month').empty();
-//                    $('#tot_invoice_current_month').empty();
-//                    $('#tot_supplier_inv_current_month').empty();
-//                    $('#total_supplier_invoice_paid_current_year').hide();
-//                    $('#total_supplier_invoice_current_year').hide();
-//                    $('#total_customer_invoice_paid_current_year').hide();
-//                    $('#total_customer_invoice_current_year').hide();
-//                    $('#tot_invoice_current_year').hide();
-//                    $('#tot_supplier_inv_current_year').hide();
-//                    $('#total_supplier_invoice_paid_current_month').show();
-//                    $('#total_supplier_invoice_current_month').show();
-//                    $('#total_customer_invoice_paid_current_month').show();
-//                    $('#total_customer_invoice_current_month').show();
-//                    $('#tot_invoice_current_month').show();
-//                    $('#tot_supplier_inv_current_month').show();
+                    $('#total_supplier_invoice_paid').hide();
+                    $('#total_supplier_invoice').hide();
+                    $('#total_customer_invoice_paid').hide();
+                    $('#total_customer_invoice').hide();
+                    $('#tot_invoice').hide();
+                    $('#tot_supplier_inv').hide();
+                    $('#total_supplier_invoice_paid_current_month').empty();
+                    $('#total_supplier_invoice_current_month').empty();
+                    $('#total_customer_invoice_paid_current_month').empty();
+                    $('#total_customer_invoice_current_month').empty();
+                    $('#tot_invoice_current_month').empty();
+                    $('#tot_supplier_inv_current_month').empty();
+                    $('#total_supplier_invoice_paid_current_year').hide();
+                    $('#total_supplier_invoice_current_year').hide();
+                    $('#total_customer_invoice_paid_current_year').hide();
+                    $('#total_customer_invoice_current_year').hide();
+                    $('#tot_invoice_current_year').hide();
+                    $('#tot_supplier_inv_current_year').hide();
+                    $('#total_supplier_invoice_paid_current_month').show();
+                    $('#total_supplier_invoice_current_month').show();
+                    $('#total_customer_invoice_paid_current_month').show();
+                    $('#total_customer_invoice_current_month').show();
+                    $('#tot_invoice_current_month').show();
+                    $('#tot_supplier_inv_current_month').show();
                     var tot_invoice_current_month = result[0][0]
                     var tot_credit_current_month = result[1][0]
                     var tot_supplier_inv_current_month = result[2][0]
@@ -476,6 +502,12 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
 
                     $('#tot_invoice_current_month').attr("value", customer_invoice_paid_current_month);
                     $('#tot_invoice_current_month').attr("max", customer_invoice_total_current_month);
+
+                    customer_invoice_paid_current_month = self.format_currency(currency, customer_invoice_paid_current_month);
+                    customer_invoice_total_current_month = self.format_currency(currency, customer_invoice_total_current_month);
+                    supplier_invoice_paid_current_month = self.format_currency(currency, supplier_invoice_paid_current_month);
+                    supplier_invoice_total_current_month = self.format_currency(currency, supplier_invoice_total_current_month);
+
 
                     $('#total_customer_invoice_paid_current_month').append('<div class="logo">' + '<span>' + customer_invoice_paid_current_month + '</span><span>Total Paid<span></div>');
                     $('#total_customer_invoice_current_month').append('<div" class="logo">' + '<span>' + customer_invoice_total_current_month + '</span><span>Total Invoice<span></div>');
@@ -578,7 +610,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                 args: [posted,f],
             })
                 .then(function (result) {
-
                     // Doughnut Chart
                     $(document).ready(function () {
                         var options = {
@@ -709,7 +740,9 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
 
                 })
         },
+
         renderElement: function (ev) {
+            var self = this;
             $.when(this._super())
                 .then(function (ev) {
 
@@ -923,6 +956,11 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
 
                             $('#tot_invoice_current_month').attr("value", customer_invoice_paid_current_month);
                             $('#tot_invoice_current_month').attr("max", customer_invoice_total_current_month);
+                            currency = result[8]
+                            customer_invoice_paid_current_month = self.format_currency(currency, customer_invoice_paid_current_month);
+                            customer_invoice_total_current_month = self.format_currency(currency, customer_invoice_total_current_month);
+                            supplier_invoice_paid_current_month = self.format_currency(currency, supplier_invoice_paid_current_month);
+                            supplier_invoice_total_current_month = self.format_currency(currency, supplier_invoice_total_current_month);
 
                             $('#total_customer_invoice_paid_current_month').append('<div class="logo">' + '<span>' + customer_invoice_paid_current_month + '</span><span>Total Paid<span></div>');
                             $('#total_customer_invoice_current_month').append('<div" class="logo">' + '<span>' + customer_invoice_total_current_month + '</span><span>Total Invoice<span></div>');
@@ -1011,11 +1049,12 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                         args: [posted,f]
                     }).then(function (result) {
                             var due_count = 0;
+                            var amount;
                             _.forEach(result, function (x) {
-
                                 $('#top_10_customers_this_month').show();
                                 due_count++;
-                                $('#top_10_customers_this_month').append('<li><div id="line_' + x.parent + '" data-user-id="' + x.parent + '">' + x.customers + '</div>' + '<div id="line_' + x.parent + '" data-user-id="' + x.parent + '">' + x.amount.toFixed(2) + ' ' + currency + '</div>' + '</li>');
+                                amount = self.format_currency(currency, x.amount);
+                                $('#top_10_customers_this_month').append('<li><div id="line_' + x.parent + '" data-user-id="' + x.parent + '">' + x.customers + '</div>' + '<div id="line_' + x.parent + '" data-user-id="' + x.parent + '">' + amount + '</div>' + '</li>');
 
                             });
                         })
@@ -1026,10 +1065,12 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                     })
                         .then(function (result) {
                             var banks = result['banks'];
+                            var amount;
                             var balance = result['banking'];
                             for (var k = 0; k < banks.length; k++) {
+                                amount = self.format_currency(currency, balance[k]);
                                 //                                $('#charts').append('<li><a ' + banks[k] + '" data-user-id="' + banks[k] + '">' + banks[k] + '</a>'+  '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + '<span>'+ balance[k] +'</span>' + '</li>' );
-                                $('#current_bank_balance').append('<li><div>' + banks[k] + '</div><div>' + balance[k].toFixed(2) + '&nbsp;' + currency + '</div></li>');
+                                $('#current_bank_balance').append('<li><div>' + banks[k] + '</div><div>' + amount + '</div></li>');
                                 //                                $('#current_bank_balance').append('<li>' + banks[k] +'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+ balance[k] +  '</li>' );
                                 $('#drop_charts_balance').append('<li>' + balance[k].toFixed(2) + '</li>');
                             }
@@ -1129,8 +1170,8 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                         .then(function (result) {
                             var income = result[0].debit - result[0].credit;
                             income = -income;
-
-                            $('#total_income').append('<span>' + income.toFixed(2) + ' ' + currency + '</span>')
+                            income = self.format_currency(currency, income);
+                            $('#total_income').append('<span>' + income + '</span>')
                         })
                     rpc.query({
                         model: "account.move",
@@ -1140,13 +1181,14 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                         .then(function (result) {
                             var incomes_ = result[0].debit - result[0].credit;
                             if (incomes_) {
-                                incomes_ = -incomes_.toFixed(2);
-
-                                $('#total_incomes_').append('<span>' + incomes_.toFixed(2) + ' ' + currency + '</span><div class="title">This month</div>')
+                                incomes_ = -incomes_;
+                                incomes_ = self.format_currency(currency, incomes_);
+                                $('#total_incomes_').append('<span>' + incomes_ + '</span><div class="title">This month</div>')
 
                             } else {
-                                incomes_ = -incomes_.toFixed(2);
-                                $('#total_incomes_').append('<span>' + 0.0 + ' ' + currency + '</span><div class="title">This month</div>')
+                                incomes_ = -incomes_;
+                                incomes_ = self.format_currency(currency, incomes_);
+                                $('#total_incomes_').append('<span>' + incomes_ + '</span><div class="title">This month</div>')
                             }
                         })
 
@@ -1157,8 +1199,8 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                         .then(function (result) {
                             var incomes_last = result[0].debit - result[0].credit;
                             incomes_last = -incomes_last;
-
-                            $('#total_incomes_last').append('<span>' + incomes_last + ' ' + currency + '</span><div class="title">Last month</div>')
+                            incomes_last = self.format_currency(currency, incomes_last);
+                            $('#total_incomes_last').append('<span>' + incomes_last + '</span><div class="title">Last month</div>')
                         })
 
                     rpc.query({
@@ -1167,8 +1209,9 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                     })
                         .then(function (result) {
                             var expense = result[0].debit - result[0].credit;
-                            var expenses = expense.toFixed()
-                            $('#total_expense').append('<span>' + expenses + ' ' + currency + '</span>')
+                            var expenses = expense;
+                            expenses = self.format_currency(currency, expenses);
+                            $('#total_expense').append('<span>' + expenses + '</span>')
                         })
                     rpc.query({
                         model: "account.move",
@@ -1178,11 +1221,13 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                             var expense_this_month = result[0].debit - result[0].credit;
                             if (expense_this_month) {
 
-                                var expenses_this_month_ = expense_this_month.toFixed(2)
-                                $('#total_expenses_').append('<span>' + expenses_this_month_ + ' ' + currency + '</span><div class="title">This month</div>')
+                                var expenses_this_month_ = expense_this_month;
+                                expenses_this_month_ = self.format_currency(currency, expenses_this_month_);
+                                $('#total_expenses_').append('<span>' + expenses_this_month_ + '</span><div class="title">This month</div>')
                             } else {
-                                var expenses_this_month_ = expense_this_month.toFixed(2)
-                                $('#total_expenses_').append('<span>' + 0.0 + ' ' + currency + '</span><div class="title">This month</div>')
+                                var expenses_this_month_ = expense_this_month;
+                                expenses_this_month_ = self.format_currency(currency, expenses_this_month_);
+                                $('#total_expenses_').append('<span>' + expenses_this_month_ + '</span><div class="title">This month</div>')
 
                             }
                         })
@@ -1194,13 +1239,13 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                             var expense_this_year = result[0].debit - result[0].credit;
                             if (expense_this_year) {
 
-                                var expenses_this_year_ = expense_this_year.toFixed(2)
-
-                                $('#total_expense_this_year').append('<span >' + expenses_this_year_ + ' ' + currency + '</span><div class="title">This Year</div>')
+                                var expenses_this_year_ = expense_this_year;
+                                expenses_this_year_ = self.format_currency(currency, expenses_this_year_);
+                                $('#total_expense_this_year').append('<span >' + expenses_this_year_ + '</span><div class="title">This Year</div>')
                             } else {
-                                var expenses_this_year_ = expense_this_year.toFixed(2)
-
-                                $('#total_expense_this_year').append('<span >' + 0.0 + ' ' + currency + '</span><div class="title">This Year</div>')
+                                var expenses_this_year_ = expense_this_year;
+                                expenses_this_year_ = self.format_currency(currency, expenses_this_year_);
+                                $('#total_expense_this_year').append('<span >' + expenses_this_year_ + '</span><div class="title">This Year</div>')
                             }
                         })
                     rpc.query({
@@ -1210,8 +1255,8 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                         .then(function (result) {
                             var incomes_last_year = result[0].debit - result[0].credit;
                             incomes_last_year = -incomes_last_year
-
-                            $('#total_incomes_last_year').append('<span>' + incomes_last_year + '' + currency + '</span><div class="title">Last Year</div>')
+                            incomes_last_year = self.format_currency(currency, incomes_last_year);
+                            $('#total_incomes_last_year').append('<span>' + incomes_last_year + '</span><div class="title">Last Year</div>')
                         })
                     rpc.query({
                         model: "account.move",
@@ -1221,13 +1266,13 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                         .then(function (result) {
                             var incomes_this_year = result[0].debit - result[0].credit;
                             if (incomes_this_year) {
-
-                                incomes_this_year = -incomes_this_year.toFixed(2);
-
-                                $('#total_incomes_this_year').append('<span>' + incomes_this_year.toFixed(2) + ' ' + currency + '</span><div class="title">This Year</div>')
+                                incomes_this_year = -incomes_this_year;
+                                incomes_this_year = self.format_currency(currency, incomes_this_year);
+                                $('#total_incomes_this_year').append('<span>' + incomes_this_year + '</span><div class="title">This Year</div>')
                             } else {
-                                incomes_this_year = -incomes_this_year.toFixed(2);
-                                $('#total_incomes_this_year').append('<span>' + 0.0 + '' + currency + '</span><div class="title">This Year</div>')
+                                incomes_this_year = -incomes_this_year;
+                                incomes_this_year = self.format_currency(currency, incomes_this_year);
+                                $('#total_incomes_this_year').append('<span>' + incomes_this_year + '</span><div class="title">This Year</div>')
                             }
 
                         })
@@ -1260,16 +1305,18 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                             }
                             var profit_this_months = net_profit;
                             if (profit_this_months) {
-                                var net_profit_this_months = profit_this_months.toFixed(2)
+                                var net_profit_this_months = profit_this_months;
+                                net_profit_this_months = self.format_currency(currency, net_profit_this_months);
                                 $('#net_profit_this_months').empty();
-                                $('#net_profit_this_months').append('<div class="title">Net Profit/Loss &nbsp;&nbsp;&nbsp;</div><span>' + net_profit_this_months + ' ' + currency + '</span>')
-                                $('#net_profit_current_months').append('<span>' + net_profit_this_months + ' ' + currency + '</span> <div class="title">This Month</div>')
+                                $('#net_profit_this_months').append('<div class="title">Net Profit/Loss &nbsp;&nbsp;&nbsp;</div><span>' + net_profit_this_months + '</span>')
+                                $('#net_profit_current_months').append('<span>' + net_profit_this_months + '</span> <div class="title">This Month</div>')
 
                             } else {
-                                var net_profit_this_months = profit_this_months.toFixed(2)
+                                var net_profit_this_months = profit_this_months;
+                                net_profit_this_months = self.format_currency(currency, net_profit_this_months);
                                 $('#net_profit_this_months').empty();
-                                $('#net_profit_this_months').append('<div class="title">Net Profit/Loss &nbsp;&nbsp;&nbsp;</div><span>' + 0.0 + ' ' + currency + '</span>')
-                                $('#net_profit_current_months').append('<span>' + 0.0 + ' ' + currency + '</span> <div class="title">This Month</div>')
+                                $('#net_profit_this_months').append('<div class="title">Net Profit/Loss &nbsp;&nbsp;&nbsp;</div><span>' + net_profit_this_months + '</span>')
+                                $('#net_profit_current_months').append('<span>' + net_profit_this_months + '</span> <div class="title">This Month</div>')
                             }
                         })
 
@@ -1302,24 +1349,37 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                             } else {
                                 net_profit = -result[1] - result[0]
                             }
-
-
                             var profit_this_year = net_profit;
                             if (profit_this_year) {
-                                var net_profit_this_year = profit_this_year.toFixed(2)
+                                var net_profit_this_year = profit_this_year;
+                                net_profit_this_year = self.format_currency(currency, net_profit_this_year);
                                 $('#net_profit_this_year').empty();
-                                $('#net_profit_this_year').append('<div class="title">Net Profit/Loss &nbsp;&nbsp;&nbsp;</div><span>' + net_profit_this_year + ' ' + currency + '</span>')
-                                $('#net_profit_current_year').append('<span>' + net_profit_this_year + ' ' + currency + '</span> <div class="title">This Year</div>')
+                                $('#net_profit_this_year').append('<div class="title">Net Profit/Loss &nbsp;&nbsp;&nbsp;</div><span>' + net_profit_this_year + '</span>')
+                                $('#net_profit_current_year').append('<span>' + net_profit_this_year + '</span> <div class="title">This Year</div>')
                             } else {
-                                var net_profit_this_year = profit_this_year.toFixed(2)
+                                var net_profit_this_year = profit_this_year;
+                                net_profit_this_year = self.format_currency(currency, net_profit_this_year);
                                 $('#net_profit_this_year').empty();
-                                $('#net_profit_this_year').append('<div class="title">Net Profit/Loss &nbsp;&nbsp;&nbsp;</div><span>' + 0.0 + ' ' + currency + '</span>')
-                                $('#net_profit_current_year').append('<span>' + 0.0 + ' ' + currency + '</span> <div class="title">This Year</div>')
+                                $('#net_profit_this_year').append('<div class="title">Net Profit/Loss &nbsp;&nbsp;&nbsp;</div><span>' + net_profit_this_year + '</span>')
+                                $('#net_profit_current_year').append('<span>' + net_profit_this_year + '</span> <div class="title">This Year</div>')
 
                             }
                         })
                 });
         },
+
+        format_currency: function(currency, amount){
+             if (typeof(amount) != 'number'){
+                amount = parseFloat(amount);
+             }
+             var formatted_value = (parseInt(amount)).toLocaleString(currency.language, {minimumFractionDigits: 2})
+             if (currency.position === "after") {
+                return formatted_value += ' ' + currency.symbol;
+             } else {
+                return currency.symbol + ' ' + formatted_value;
+             }
+        },
+
         willStart: function () {
             var self = this;
             self.drpdn_show = false;
