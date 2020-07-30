@@ -22,7 +22,7 @@
 
 {
     'name': 'Product Attachments on Website',
-    'version': '13.0.1.0.0',
+    'version': '13.0.1.0.1',
     'summary': """This Module Allows Customer to Download Documents
     That Are Attached to the Products From Website""",
     'description': 'This Module allows customer to download documents '

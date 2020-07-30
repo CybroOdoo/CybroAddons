@@ -60,7 +60,7 @@ class WebsiteSale(WebsiteSale):
             product_context['pricelist'] = pricelist.id
             product = product.with_context(product_context)
 
-        attachments = request.env['ir.attachment'].search(
+        attachments = request.env['ir.attachment'].sudo().search(
             [('res_model', '=', 'product.template'),
              ('res_id', '=', product.id)], order='id')
 
@@ -95,10 +95,7 @@ class WebsiteSale(WebsiteSale):
     @http.route(['/attachment/download',], type='http', auth='public')
     def download_attachment(self, attachment_id):
         # Check if this is a valid attachment id
-        attachment = request.env['ir.attachment'].sudo().search_read(
-            [('id', '=', int(attachment_id))],
-            ["name", "datas", "res_model", "res_id", "type", "url"]
-        )
+        attachment = request.env['ir.attachment'].sudo().search([('id', '=', int(attachment_id))])
 
         if attachment:
             attachment = attachment[0]
