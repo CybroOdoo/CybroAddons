@@ -8,9 +8,9 @@ Installation
 	- Install our custom addon
 
 License
--------
-General Public License, Version 3 (LGPL v3).
-(https://www.odoo.com/documentation/user/13.0/legal/licenses/licenses.html)
+=======
+GNU AFFERO GENERAL PUBLIC LICENSE, Version 3 (AGPLv3)
+(http://www.gnu.org/licenses/agpl.html)
 
 Company
 -------
