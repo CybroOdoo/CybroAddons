@@ -88,3 +88,8 @@
 #### Version 13.0.4.8.10
 #### UPDT
 - Multi Company in Dashboard
+
+#### 10.09.2020
+#### Version 13.0.4.8.11
+#### UPDT
+- Credit note, refund removed from dashboard

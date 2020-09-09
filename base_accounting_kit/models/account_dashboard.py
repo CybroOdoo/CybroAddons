@@ -776,21 +776,8 @@ class DashBoard(models.Model):
                             AND account_move.company_id in ''' + str(tuple(company_id)) + '''      
                         ''') % (states_arg))
         record_supplier_current_year = self._cr.dictfetchall()
-
-        self._cr.execute(('''select sum(-(amount_total_signed)) - sum(-(amount_residual_signed)) as credit_note from account_move where type ='out_refund'
-                            AND  %s                               
-                            AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
-                            AND account_move.company_id in ''' + str(tuple(company_id)) + '''      
-                        ''') % (states_arg))
-        result_credit_note_current_year = self._cr.dictfetchall()
-
-        self._cr.execute(('''select sum(-(amount_total_signed)) as refund from account_move where type ='in_refund'
-                            AND %s                               
-                            AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
-                            AND account_move.company_id in ''' + str(tuple(company_id)) + '''   
-                        ''') % (states_arg))
-        result_refund_current_year = self._cr.dictfetchall()
-
+        result_credit_note_current_year = [{'credit_note': 0.0}]
+        result_refund_current_year = [{'refund': 0.0}]
         self._cr.execute(('''select sum(amount_total_signed) - sum(amount_residual_signed)  as customer_invoice_paid from account_move where type ='out_invoice'
                                     AND   %s
                                     AND invoice_payment_state = 'paid'
@@ -806,23 +793,8 @@ class DashBoard(models.Model):
                                     AND account_move.company_id in ''' + str(tuple(company_id)) + '''
                                 ''') % (states_arg))
         result_paid_supplier_invoice_current_year = self._cr.dictfetchall()
-
-        self._cr.execute(('''select sum(-(amount_total_signed)) - sum(-(amount_residual_signed))  as customer_credit_paid from account_move where type ='out_refund'
-                                            AND   %s
-                                            AND invoice_payment_state = 'paid'
-                                            AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
-                                            AND account_move.company_id in ''' + str(tuple(company_id)) + '''
-                                        ''') % (states_arg))
-        record_paid_customer_credit_current_year = self._cr.dictfetchall()
-
-        self._cr.execute(('''select sum(amount_total_signed) - sum(amount_residual_signed)  as supplier_refund_paid from account_move where type ='in_refund'
-                                            AND   %s
-                                            AND  invoice_payment_state = 'paid'
-                                            AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
-                                            AND account_move.company_id in ''' + str(tuple(company_id)) + '''
-                                        ''') % (states_arg))
-        result_paid_supplier_refund_current_year = self._cr.dictfetchall()
-
+        record_paid_customer_credit_current_year = [{'customer_credit_paid': 0.0}]
+        result_paid_supplier_refund_current_year = [{'supplier_refund_paid': 0.0}]
         customer_invoice_current_year = [item['customer_invoice'] for item in record_customer_current_year]
         supplier_invoice_current_year = [item['supplier_invoice'] for item in record_supplier_current_year]
 
@@ -867,23 +839,8 @@ class DashBoard(models.Model):
                                     AND account_move.company_id in ''' + str(tuple(company_id)) + '''      
                                 ''') % (states_arg))
         record_supplier_current_month = self._cr.dictfetchall()
-
-        self._cr.execute(('''select sum(-(amount_total_signed)) - sum(-(amount_residual_signed)) as credit_note from account_move where type ='out_refund'
-                                    AND  %s                               
-                                    AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))
-                                    AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
-                                    AND account_move.company_id in ''' + str(tuple(company_id)) + '''      
-                                ''') % (states_arg))
-        result_credit_note_current_month = self._cr.dictfetchall()
-
-        self._cr.execute(('''select sum(-(amount_total_signed)) as refund from account_move where type ='in_refund'
-                                    AND %s                               
-                                    AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))
-                                    AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
-                                    AND account_move.company_id in ''' + str(tuple(company_id)) + '''   
-                                ''') % (states_arg))
-        result_refund_current_month = self._cr.dictfetchall()
-
+        result_credit_note_current_month = [{'credit_note': 0.0}]
+        result_refund_current_month = [{'refund': 0.0}]
         self._cr.execute(('''select sum(amount_total_signed) - sum(amount_residual_signed)  as customer_invoice_paid from account_move where type ='out_invoice'
                                             AND   %s
                                             AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))
@@ -899,24 +856,8 @@ class DashBoard(models.Model):
                                             AND account_move.company_id in ''' + str(tuple(company_id)) + '''
                                         ''') % (states_arg))
         result_paid_supplier_invoice_current_month = self._cr.dictfetchall()
-
-        self._cr.execute(('''select sum(-(amount_total_signed)) - sum(-(amount_residual_signed))  as customer_credit_paid from account_move where type ='out_refund'
-                                                    AND   %s
-                                                    AND invoice_payment_state = 'paid'
-                                                    AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))
-                                                    AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
-                                                    AND account_move.company_id in ''' + str(tuple(company_id)) + '''
-                                                ''') % (states_arg))
-        record_paid_customer_credit_current_month = self._cr.dictfetchall()
-
-        self._cr.execute(('''select sum(amount_total_signed) - sum(amount_residual_signed)  as supplier_refund_paid from account_move where type ='in_refund'
-                                                    AND   %s
-                                                    AND  invoice_payment_state = 'paid'
-                                                    AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))
-                                                    AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
-                                                    AND account_move.company_id in ''' + str(tuple(company_id)) + '''
-                                                ''') % (states_arg))
-        result_paid_supplier_refund_current_month = self._cr.dictfetchall()
+        record_paid_customer_credit_current_month = [{'customer_credit_paid': 0.0}]
+        result_paid_supplier_refund_current_month = [{'supplier_refund_paid': 0.0}]
 
         customer_invoice_current_month = [item['customer_invoice'] for item in record_customer_current_month]
         supplier_invoice_current_month = [item['supplier_invoice'] for item in record_supplier_current_month]
