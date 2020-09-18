@@ -19,7 +19,7 @@
 ##############################################################################
 {
     'name': "Odoo Debranding",
-    'version': "11.0.3.0",
+    'version': "11.0.3.0.1",
     'summary': """Debrand Odoo""",
     'description': """Debrand Odoo""",
     'author': "Cybrosys Techno Solutions",
