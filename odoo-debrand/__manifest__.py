@@ -22,7 +22,7 @@
 
 {
     'name': "Odoo Debranding",
-    'version': "12.0.1.1.1",
+    'version': "12.0.1.1.2",
     'summary': """Debrand Odoo""",
     'description': """Debrand Odoo,Debranding""",
     'author': "Cybrosys Techno Solutions",

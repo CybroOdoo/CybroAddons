@@ -14,3 +14,8 @@ Bug Fixed, Issue in New Db Creation
 #### Version 12.0.1.1.1
 #### FIX
 Bug Fixed, Icon in database manager.
+
+#### 18.09.2020
+#### Version 12.0.1.1.2
+#### FIX
+Bug Fixed, Icon in database manager.
