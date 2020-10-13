@@ -4,3 +4,10 @@
 #### Version 14.0.1.0.0
 #### ADD
 - Initial commit for Odoo 14 accounting
+
+#### 13.10.2020
+#### Version 14.0.1.1.1
+#### UPDT
+- Trial Balane missing issue
+
+
