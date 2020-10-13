@@ -8,6 +8,6 @@
 #### 13.10.2020
 #### Version 14.0.1.1.1
 #### UPDT
-- Trial Balane missing issue
+- Trial Balane missing issue updated
 
 
