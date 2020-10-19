@@ -10,4 +10,9 @@
 #### UPDT
 - Trial Balane missing issue updated
 
+#### 18.10.2020
+#### Version 14.0.1.2.2
+#### UPDT
+- Added action in dashboard
+
 
