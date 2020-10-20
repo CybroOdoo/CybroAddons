@@ -1,0 +1,307 @@
+<odoo>
+    <data>
+        <template id="assets_backend" inherit_id="web.assets_backend">
+            <xpath expr="." position="inside">
+                <style>
+                    .Your_custom_class { height: 80px; width: 80px; overflow:hidden;}
+                    .openerp .oe_form .oe_form_field_image img { max-width:80px; max-height: 80px; }
+                </style>
+            </xpath>
+        </template>
+
+        <record id="mobile_service_sequence" model="ir.sequence">
+            <field name="name">Service Code</field>
+            <field name="code">mobile.service</field>
+            <field name="prefix">SERV/</field>
+            <field eval="4" name="padding"/>
+<!--            <field eval="False" name="mobile_brand_models"/>-->
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="mobile_service_request_search_view" model="ir.ui.view">
+            <field name="name">service.request.search1</field>
+            <field name="model">mobile.service</field>
+            <field name="arch" type="xml">
+                <search string="Search in requests">
+                    <field name="person_name" widget="res_partner_many2one"
+                           context="{'res_partner_search_mode': 'customer'}"/>
+                    <field name="contact_no"/>
+                    <field name="technician_name"/>
+                    <field name="imei_no"/>
+                    <field name="return_date"/>
+                    <field name="service_state"/>
+
+                    <filter string="Returned" name="Service Status" domain="[('service_state', '=', 'returned')]"/>
+                    <filter string="Draft" name="Service Status" domain="[('service_state', '=', 'draft')]"/>
+                    <filter string="Not Solved" name="Service Status" domain="[('service_state', '=', 'not_solved')]"/>
+
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Service State" name="service_state" domain="[]"
+                                context="{'group_by': 'service_state'}"/>
+                        <filter string="Technician" name="technician" domain="[]"
+                                context="{'group_by': 'technician_name'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="mobile_service_request_form_view" model="ir.ui.view">
+            <field name="name">mobile.service.request.form</field>
+            <field name="model">mobile.service</field>
+            <field name="arch" type="xml">
+                <form string="Mobile Shop">
+                    <header>
+                        <button string="Assign to technician" type="object" name="approve"
+                                class="oe_highlight"
+                                attrs="{'invisible': [('service_state','not in',('draft'))]}"
+                                groups="mobile_service_shop.mobile_service_group_manager"/>
+                        <button string="Completed" type="object" name="complete"
+                                class="oe_highlight"
+                                attrs="{'invisible': [('service_state','not in',('assigned'))]}"/>
+
+                        <button string="Return advance" type="object" name="return_advance"
+                                class="oe_highlight"
+                                attrs="{'invisible': [('service_state','not in',('not_solved'))]}"
+                                groups="mobile_service_shop.mobile_service_group_manager"/>
+
+                        <button name="action_invoice_create_wizard" string="Create Invoice"
+                                attrs="{'invisible': [('service_state','not in',('completed', 'assigned'))]}"
+                                type="object" class="oe_highlight"
+                                groups="mobile_service_shop.mobile_service_group_manager"/>
+
+                        <button name="action_post_stock" string="Post Stock moves"
+                                attrs="{'invisible': [('service_state','not in',('completed', 'assigned'))]}"
+                                type="object" class="oe_highlight"
+                                groups="mobile_service_shop.mobile_service_group_manager"/>
+
+                        <button string="Return to customer" type="object" name="return_to"
+                                attrs="{'invisible': [('service_state','not in',('completed'))]}"
+                                groups="mobile_service_shop.mobile_service_group_manager"/>
+
+                        <button string="Not Solved" type="object" name="not_solved"
+                                attrs="{'invisible': [('service_state','not in',('assigned'))]}"/>
+
+                        <button name="get_ticket" string="Print Ticket" type="object" class="oe_highlight"
+                                groups="mobile_service_shop.mobile_service_group_manager"/>
+
+                        <button name="action_send_mail" string="Send email" type="object"
+                                attrs="{'invisible': [('service_state','=',('draft'))]}"
+                                groups="mobile_service_shop.mobile_service_group_manager"/>
+
+
+                        <field name="service_state" widget="statusbar" statusbar_visible="draft,returned,not_solved"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name='action_view_invoice' class="oe_stat_button" type="object" icon="fa-money"
+                                    attrs="{'invisible': [('service_state','=',('draft'))]}">
+                                <field string="Invoice" name="invoice_count" widget="statinfo"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <div>
+                                <field name="is_in_warranty"
+                                       attrs="{'readonly': [('service_state','in',('returned','not_solved'))]}"/>
+                                <label for="is_in_warranty"/>
+                                <field name="re_repair"
+                                       attrs="{'readonly': [('service_state','in',('returned','not_solved'))]}"/>
+                                <label for="re_repair"/>
+                            </div>
+                        </group>
+
+                        <group>
+                            <group>
+                                <field name="person_name" widget="res_partner_many2one"
+                                       context="{'res_partner_search_mode': 'customer'}" style="width:50%;"
+                                       attrs="{'readonly': [('service_state','not in',('draft'))]}"/>
+                                <field name="contact_no" style="width:50%;"
+                                       attrs="{'readonly': [('service_state','in',('returned','not_solved'))]}"/>
+                                <field name="email_id" style="width:50%;"
+                                       attrs="{'readonly': [('service_state','in',('returned','not_solved'))]}"/>
+                                <label for="street" string="Address"/>
+                                <div class="o_address_format">
+                                    <field name="street" placeholder="Street..." class="o_address_street"/>
+                                    <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+                                    <field name="city" placeholder="City" class="o_address_city"/>
+                                    <field name="state_id" class="o_address_state" placeholder="State"
+                                           options='{"no_open": True}'/>
+                                    <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                                    <field name="country_id" placeholder="Country" class="o_address_country"
+                                           options='{"no_open": True, "no_create": True}'/>
+                                </div>
+                            </group>
+                            <group>
+                                <label for="brand_name"/>
+                                <div class="o_row">
+                                    <field name="brand_name" placeholder="Brand name"
+                                           attrs="{'readonly': [('service_state','not in',('draft'))]}"/>
+                                    <field name="model_name" placeholder="Model name"
+                                           attrs="{'readonly': [('service_state','not in',('draft'))]}"/>
+                                </div>
+                                <field name="date_request" style="width:50%;"
+                                       attrs="{'readonly': [('service_state','not in',('draft'))]}"/>
+                                <field name="return_date" style="width:50%;"
+                                       attrs="{'readonly': [('service_state','in',('returned','not_solved'))]}"/>
+                                <field name="technician_name" style="width:50%;"
+                                       attrs="{'readonly': [('service_state','not in',('draft'))]}"/>
+                                <field name="picking_count" invisible="1"/>
+                            </group>
+
+                        </group>
+                        <notebook>
+                            <page string="Description">
+                                <group>
+                                    <group>
+                                        <field name="imei_no" style="width:50%;" colspan="1"
+                                               attrs="{'readonly': [('service_state','not in',('draft'))]}"/>
+                                        <field name="warranty_number" style="width:50%;" attrs="{'readonly': [('service_state','not in',('draft'))],
+                                                    'required': [('is_in_warranty', '=', True)], 'invisible': [('is_in_warranty', '!=', True)]}"/>
+                                    </group>
+                                    <group>
+                                        <field name="internal_notes"
+                                               placeholder="Notes used internally (eg: device password)"
+                                               attrs="{'readonly': [('service_state','in',('returned','not_solved'))]}"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Complaints">
+                                <field name="complaints_tree" mode="tree"
+                                       attrs="{'readonly': [('service_state','in',('returned','not_solved'))]}">
+                                    <tree string="Complaints" editable="bottom">
+                                        <field name="complaint_type_tree"/>
+                                        <field name="description_tree"/>
+                                    </tree>
+                                    <form>
+                                        <field name="complaint_type_tree"/>
+                                        <field name="description_tree"/>
+                                    </form>
+                                </field>
+                            </page>
+                            <page string="Parts Usage">
+                                <field name="product_order_line" mode="tree"
+                                       attrs="{'readonly': [('service_state','in',('returned','not_solved'))]}">
+                                    <tree string="Complaints" editable="bottom">
+                                        <field name="product_id"/>
+                                        <field name="product_uom_qty"/>
+                                        <field name="product_uom"/>
+                                        <field name="price_unit"/>
+                                        <field name="qty_stock_move"/>
+                                        <field name="qty_invoiced"/>
+                                        <field name="part_price"/>
+                                    </tree>
+                                    <form>
+                                        <field name="product_id"/>
+                                        <field name="product_uom_qty"/>
+                                    </form>
+                                </field>
+                            </page>
+
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="service_request_view_kanban" model="ir.ui.view">
+            <field name="name">mobile.service.kanban</field>
+            <field name="model">mobile.service</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_small_column">
+                    <field name="image_medium"/>
+                    <field name="id"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_card oe_kanban_global_click">
+                                <div class="o_kanban_image">
+                                    <img t-att-alt="product.name" t-att-src="kanban_image('mobile.service', 'image_medium', record.id.raw_value)"/>
+                                </div>
+                                <div class="oe_kanban_content">
+                                    <div>
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                    <div class="text-muted o_kanban_record_subtitle">
+                                        <field name="person_name" widget="res_partner_many2one"
+                                               context="{'res_partner_search_mode': 'customer'}"/>
+                                        <br/>
+                                        <field name="service_state"/>
+                                    </div>
+                                </div>
+                                <div class="oe_clear"></div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="mobile_service_graph" model="ir.ui.view">
+            <field name="name">mobile.service.graph</field>
+            <field name="model">mobile.service</field>
+            <field name="arch" type="xml">
+                <graph string="Service Graph">
+                    <field name="technician_name" type="row"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id="mobile_service_request_tree_view" model="ir.ui.view">
+            <field name="name">mobile.service.request.tree</field>
+            <field name="model">mobile.service</field>
+            <field name="arch" type="xml">
+                <tree decoration-danger="service_state == 'not_solved'" decoration-muted="service_state=='returned'"
+                      default_order="name desc">
+                    <field name="name"/>
+                    <field name="person_name"/>
+                    <field name="contact_no"/>
+                    <field name="brand_name"/>
+                    <field name="model_name"/>
+                    <field name="imei_no"/>
+                    <field name="image_medium" widget='image' class="Your_custom_class"/>
+                    <field name="technician_name"/>
+                    <field name="return_date"/>
+                    <field name="service_state"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_mobile_service_request" model="ir.actions.act_window">
+            <field name="name">Service Request</field>
+            <field name="res_model">mobile.service</field>
+            <field name="view_mode">tree,form,kanban,pivot,graph</field>
+            <field name="search_view_id" ref="mobile_service_request_search_view"/>
+            <field name="view_id" ref="mobile_service_request_tree_view"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to Create a New Record.
+                </p>
+            </field>
+        </record>
+
+
+        <menuitem id="mobile_service_main_menu" web_icon="mobile_service_shop,static/description/web-icon.png"
+                  name="Mobile Service" sequence="20"/>
+
+        <menuitem id="mobile_service_shop_menu" parent="mobile_service_main_menu" sequence="20"/>
+
+        <menuitem action="action_mobile_service_request" id="mobile_service_shop_menu2"
+                  parent="mobile_service_main_menu"
+                  name="Service Request" sequence="1"/>
+
+        <menuitem id="mobile_service_shop_configuration" parent="mobile_service_main_menu"
+                  name="Configuration" sequence="3"/>
+
+
+    </data>
+</odoo>
