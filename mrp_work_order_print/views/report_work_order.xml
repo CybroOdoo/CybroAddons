@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_workorder">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.internal_layout">
+                    <div class="page">
+                        <div class="oe_structure"/>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <h3>Work Order to : <span t-field="o.workcenter_id.name"/></h3>
+                            </div><br/>
+                        </div>
+                        <table class="table table-condensed">
+                            <tr>
+                                <td class="col-xs-3"><strong>Manufacturing Order</strong></td>
+                                <td class="col-xs-3"><strong>Product</strong></td>
+                                <td class="col-xs-3"><strong>Quantity Producing</strong></td>
+                                <td class="col-xs-3"><strong>Quantity Produced</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="col-xs-3"><span t-field="o.production_id.name"/></td>
+                                <td class="col-xs-3">
+                                    <span t-field="o.product_id.default_code"/>
+                                    <span t-field="o.product_id.name"/></td>
+                                <td class="col-xs-3">
+                                    <span t-field="o.qty_producing"/>
+                                    <span t-field="o.product_uom_id.name" groups="product.group_uom"/></td>
+                                <td class="col-xs-3">
+                                    <span t-field="o.qty_produced"/>/<span t-field="o.qty_producing"/>
+                                    <span t-field="o.product_uom_id.name" groups="product.group_uom"/></td>
+                            </tr>
+                        </table>
+                        <table class="table table-condensed">
+                            <tr>
+                                <td class="col-xs-3"><strong>Planned Date</strong></td>
+                                <td class="col-xs-3"><strong>Expected Duration</strong></td>
+                                <td class="col-xs-3"><strong>Real Duration</strong></td>
+                                <td class="col-xs-3"></td>
+                            </tr>
+                            <tr>
+                                <td class="col-xs-3"><span t-field="o.date_planned_start"/></td>
+                                <td class="col-xs-3"><span t-field="o.duration_expected"/></td>
+                                <td class="col-xs-3"><span t-field="o.duration"/></td>
+                                <td class="col-xs-3"></td>
+                            </tr>
+                        </table>
+                        <div t-if="o.move_raw_ids">
+                            <h4>Lots Consumption Details</h4>
+                            <table class="table table-condensed">
+                                <tr>
+                                    <td class="text-center"><strong>Product</strong></td>
+                                    <td class="text-center"><strong>To Consume</strong></td>
+                                    <td class="text-center"><strong>Lots</strong></td>
+                                    <td class="text-center"><strong>Done</strong></td>
+                                </tr>
+                                <tr t-foreach="o.move_raw_ids" t-as="line">
+                                    <td class="text-center"><span t-field="line.product_id.default_code"/><span t-field="line.product_id.name"/></td>
+                                    <td class="text-center"><span t-field="line.product_uom_qty"/></td>
+                                    <td class="text-center"><span t-field="line.move_line_ids.lot_id.name"/></td>
+                                    <td class="text-center"><span t-field="line.forecast_availability"/></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div t-if="o.time_ids">
+                            <h4>Time Tracking</h4>
+                            <table class="table table-condensed">
+                                <tr>
+                                    <td class="text-center"><strong>Start Time</strong></td>
+                                    <td class="text-center"><strong>End Time</strong></td>
+                                    <td class="text-center"><strong>Duration</strong></td>
+                                    <td class="text-center"><strong>User</strong></td>
+                                    <td class="text-center"><strong>Efficiency</strong></td>
+                                </tr>
+                                <tr t-foreach="o.time_ids" t-as="time">
+                                    <td class="text-center"><span t-field="time.date_start"/></td>
+                                    <td class="text-center"><span t-field="time.date_end"/></td>
+                                    <td class="text-center"><span t-field="time.duration"/></td>
+                                    <td class="text-center"><span t-field="time.user_id.name"/></td>
+                                    <td class="text-center"><span t-field="time.loss_id.name"/></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <data>
+        <report
+            string="Work Order Details"
+            id="action_report_work_order"
+            model="mrp.workorder"
+            name="mrp_work_order_print.report_workorder"
+            file="mrp_work_order_print.report.report_work_order"
+            report_type="qweb-pdf"
+        />
+    </data>
+</odoo>
