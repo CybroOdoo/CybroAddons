@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model='ir.ui.view' id='wizard_employee_form'>
+        <field name="name">wizard.employee.form</field>
+        <field name="model">wizard.employee.stage</field>
+        <field name="arch" type="xml">
+            <form string="Set as Employee">
+                <group>
+                    <field name="related_user"/>
+                </group>
+                <footer>
+                    <button name="set_as_employee" string="Set as Employee" type="object" class="oe_highlight"/>
+                    or
+                    <button string="Cancel" class="oe_link" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record model='ir.actions.act_window' id='wizard_employee_act'>
+        <field name="name">Set as Employee</field>
+        <field name="res_model">wizard.employee.stage</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="wizard_employee_form"/>
+        <field name="target">new</field>
+    </record>
+
+    <record model="ir.ui.view" id="hr_employee_stages_inherit_form_view">
+        <field name="name">hr.employee.form.view</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="start_grounding" string="Start Grounding" type="object" states="joined"/>
+                <button name="start_test_period" string="Start Test Period" type="object" states="grounding"/>
+                <button name="%(employee_stages.wizard_employee_act)d" string="Set as Employee" type="action"
+                        states="joined,test_period" context="{'employee_id':id}"/>
+                <button name="start_notice_period" string="Start Notice Period" type="object" states="employment"/>
+                <button name="relived" string="Relieved" type="object" states="notice_period"/>
+                <button name="terminate" string="Terminate" type="object" states="grounding,employment"/>
+                <field name="state" widget="statusbar" statusbar_visible="joined,grounding,employment"/>
+            </xpath>
+            <page name="hr_settings" position="after">
+                <page name="stage_history" string="Status History">
+                    <field name="stages_history">
+                        <tree>
+                            <field name="state"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <field name="duration" sum="Total"/>
+                        </tree>
+                    </field>
+                </page>
+            </page>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="hr_employee_stages_inherit_tree_view">
+        <field name="name">hr.employee.tree.view</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <field name="parent_id" position="after">
+                <field name="state"/>
+            </field>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="hr_employee_stages_inherit_search_view">
+        <field name="name">hr.employee.search.view</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_filter"/>
+        <field name="arch" type="xml">
+            <field name="job_id" position="after">
+                <field name="state"/>
+                <filter string="Employees" name="employee" domain="[('state','=','employment')]"/>
+            </field>
+            <xpath expr="//group" position="inside">
+                <filter name="state" string="State" domain="[]" context="{'group_by':'state'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="hr_employee_stages_inherit_kanban_view">
+        <field name="name">hr.employee.kanban.view</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.hr_kanban_view_employees"/>
+        <field name="arch" type="xml">
+            <xpath expr="//li[3]" position="after">
+                <li t-if="record.state.raw_value"><field name="state"/></li>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr.open_view_employee_list_my" model="ir.actions.act_window">
+        <field name="name">Employees</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{"search_default_employee":1}</field>
+        <field name="view_id" eval="False"/>
+        <field name="search_view_id" ref="hr.view_employee_filter"/>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to add a new employee.
+          </p><p>
+            With just a quick glance on the Odoo employee screen, you
+            can easily find all the information you need for each person;
+            contact data, job position, availability, etc.
+          </p>
+        </field>
+    </record>
+</odoo>
