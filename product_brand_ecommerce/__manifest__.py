@@ -21,7 +21,7 @@
 
 {
     'name': 'Product Brand in eCommerce',
-    'version': '13.0.1.0.0',
+    'version': '13.0.1.1.0',
     'category': 'eCommerce',
     'summary': 'Product Brand in eCommerce',
     'description': 'Product Brand in eCommerce',
