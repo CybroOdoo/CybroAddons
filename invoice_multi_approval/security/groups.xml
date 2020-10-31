@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data noupdate="1">
+        <record model="ir.module.category" id="group_invoice_multi_approval">
+            <field name="name">Invoice Approval</field>
+            <field name="description">Access to the invoice approval menu</field>
+            <field name="sequence">3</field>
+        </record>
+        <record id="group_approver" model="res.groups">
+            <field name="name">Approvers</field>
+            <field name="category_id" ref="invoice_multi_approval.group_invoice_multi_approval"/>
+        </record>
+        <record id="group_approve_manager" model="res.groups">
+            <field name="name">Approve Manager</field>
+            <field name="category_id" ref="invoice_multi_approval.group_invoice_multi_approval"/>
+            <field name="implied_ids"
+                   eval="[(4, ref('invoice_multi_approval.group_approver'))]"/>
+        </record>
+        <record id="account.group_account_manager" model="res.groups">
+            <field name="name">Billing Administrator</field>
+            <field name="category_id" ref="base.module_category_accounting_accounting"/>
+            <field name="implied_ids"
+                   eval="[(4, ref('account.group_account_invoice')), (4, ref('invoice_multi_approval.group_approve_manager'))]"/>
+        </record>
+        <record id="account.group_account_invoice" model="res.groups">
+            <field name="name">Billing</field>
+            <field name="category_id" ref="base.module_category_accounting_accounting"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user')),(4, ref('account.group_account_invoice'))]"/>
+        </record>
+    </data>
+</odoo>
