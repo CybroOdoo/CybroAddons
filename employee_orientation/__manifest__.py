@@ -21,7 +21,7 @@
 
 {
     'name': "Employee Orientation & Training",
-    'version': '14.0.1.0.0',
+    'version': '14.0.1.1.0',
     'category': "Generic Modules/Human Resources",
     'summary': """Employee Orientation/Training Program""",
     'description':'Complete Employee Orientation/Training Program',
