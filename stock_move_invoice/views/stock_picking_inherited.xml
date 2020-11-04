@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="stock_picking_form_view_inherited" model="ir.ui.view">
+            <field name="name">stock.picking.form.view.inherited</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='picking_type_id']" position="after">
+                    <field name="operation_code" invisible="1"/>
+                    <field name="is_return" invisible="1"/>
+                </xpath>
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_open_picking_invoice" type="object"
+                            class="oe_stat_button" icon="fa-file-text"
+                            attrs="{'invisible': [('invoice_count','=', 0)]}">
+                        <field name="invoice_count" widget="statinfo"/>
+                    </button>
+                </xpath>
+                <xpath expr="//button[@name='action_toggle_is_locked']" position="after">
+                    <button name="create_invoice" class="oe_highlight"
+                            string="Create Invoice" type="object"
+                            attrs="{'invisible': ['|','|','|',('invoice_count','!=', 0),('state','!=','done'),('operation_code','=','incoming'),('is_return','=',True)]}"/>
+                    <button name="create_bill" class="oe_highlight"
+                            string="Create Bill" type="object"
+                            attrs="{'invisible': ['|','|','|',('invoice_count','!=', 0),('state','!=','done'),('operation_code','=','outgoing'),('is_return','=',True)]}"/>
+                    <button name="create_customer_credit" class="oe_highlight"
+                            string="Create Credit Note" type="object"
+                            attrs="{'invisible': ['|','|','|',('invoice_count','!=', 0),('state','!=','done'),('operation_code','=','outgoing'),('is_return','=',False)]}"/>
+                    <button name="create_vendor_credit" class="oe_highlight"
+                            string="Create Vendor Credit" type="object"
+                            attrs="{'invisible': ['|','|','|',('invoice_count','!=', 0),('state','!=','done'),('operation_code','=','incoming'),('is_return','=',False)]}"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
