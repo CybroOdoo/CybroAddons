@@ -17,3 +17,8 @@ Bug Fixed.
 #### FIX
 
 Bug Fixed In Invoice
+
+#### 06.11.2020
+#### Version 13.0.2.1.2
+#### FIX
+Depends added

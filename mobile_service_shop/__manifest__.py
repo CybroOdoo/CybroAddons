@@ -21,13 +21,13 @@
 #############################################################################
 {
     'name': 'Mobile Service Management',
-    'version': '13.0.1.1.2',
+    'version': '13.0.2.1.2',
     'summary': 'Module for managing mobile service shop daily activities.',
     'category': 'Industries',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['base', 'stock_account', 'mail', 'product', 'account'],
+    'depends': ['base', 'stock_account', 'mail', 'product', 'account', 'sale'],
     'data': ['security/security.xml',
              'security/ir.model.access.csv',
              'views/mobile_service_views.xml',
