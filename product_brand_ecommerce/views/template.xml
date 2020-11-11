@@ -1,0 +1,31 @@
+<odoo>
+ <template id="brands_recursive" name="Category list">
+        <li class="nav-item">
+            <a t-att-href="keep('/shop/brand/' + slug(c), brand=0)" t-attf-class="nav-link #{'active' if c.id==brand.id else ''}">
+                <span t-field="c.name"/>
+            </a>
+        </li>
+    </template>
+
+    <template id="products_categories" inherit_id="website_sale.products" active="False" customize_show="True" name="Product Brand Filter">
+        <xpath expr="//div[@id='products_grid_before']" position="before">
+            <t t-set="enable_left_column" t-value="True"/>
+        </xpath>
+        <xpath expr="//div[@id='products_grid_before']" position="inside">
+            <button type="button" class="btn btn-link d-lg-none"
+                data-target="#wsale_products_brands_collapse" data-toggle="collapse">
+                Show Brands
+            </button>
+            <div class="collapse d-lg-block" id="wsale_products_brands_collapse">
+                <ul class="nav nav-pills flex-column mb-2">
+                    <li class="nav-item">
+                       <a t-att-href="keep('/shop', brand=0)" t-attf-class="nav-link #{'' if brand else 'active'} o_not_editable">All Brands</a>
+                    </li>
+                    <t t-foreach="brands" t-as="c">
+                        <t t-call="product_brand_ecommerce.brands_recursive" />
+                    </t>
+                </ul>
+            </div>
+        </xpath>
+    </template>
+</odoo>
