@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-#############################################################################
 from datetime import datetime, date, timedelta
 from odoo import models, fields, api, _
 from odoo.exceptions import Warning, UserError
@@ -33,8 +32,8 @@ class MobileServiceShop(models.Model):
 
     name = fields.Char(string='Service Number', copy=False, default="New")
     person_name = fields.Many2one('res.partner', string="Customer Name", required=True)
-    contact_no = fields.Char(related='person_name.mobile', string="Contact Number")
-    email_id = fields.Char(related='person_name.email', string="Email")
+    contact_no = fields.Char(string="Contact Number")
+    email_id = fields.Char(string="Email")
 
     street = fields.Char(related='person_name.street', string="Address")
     street2 = fields.Char(related='person_name.street2', string="Address")
@@ -100,6 +99,16 @@ class MobileServiceShop(models.Model):
     picking_transfer_id = fields.Many2one('stock.picking.type', 'Deliver To', required=True,
                                           default=_default_picking_transfer,
                                           help="This will determine picking type of outgoing shipment")
+
+    @api.onchange('person_name')
+    def onchange_person_name(self):
+        if self.person_name:
+            if self.person_name.mobile:
+                self.contact_no = self.person_name.mobile
+            elif self.person_name.phone:
+                self.contact_no = self.person_name.phone
+            if self.person_name.email:
+                self.email_id = self.person_name.email
 
     @api.onchange('return_date')
     def check_date(self):
