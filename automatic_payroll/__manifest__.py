@@ -1,0 +1,18 @@
+{
+    'name': 'Automatic Payroll',
+    'version': '14.0.1.0.0',
+    'category': 'Generic Modules/Human Resources',
+    'description': """Generate payslips automatically""",
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'website': "https://www.cybrosys.com",
+    'maintainer': 'Cybrosys Techno Solutions',
+    'depends': ['base', 'hr_payroll_community'],
+    'data': ['views/schedule_cron.xml',
+             'views/res_config_settings_view.xml'],
+    'images': ['static/description/banner.png'],
+    'license': 'AGPL-3',
+    'installable': True,
+    'auto_install': False,
+    'application': False,
+}
