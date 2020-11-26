@@ -36,9 +36,9 @@ class BankBookWizard(models.TransientModel):
                                     ('all', 'All Entries')], string='Target Moves', required=True,
                                    default='posted')
     date_from = fields.Date(string='Start Date', default=date.today(),
-                            requred=True)
+                            required=True)
     date_to = fields.Date(string='End Date', default=date.today(),
-                          requred=True)
+                          required=True)
     display_account = fields.Selection(
         [('all', 'All'), ('movement', 'With movements'),
          ('not_zero', 'With balance is not equal to 0')],

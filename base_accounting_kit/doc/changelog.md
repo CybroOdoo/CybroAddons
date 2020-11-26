@@ -93,3 +93,8 @@
 #### Version 13.0.4.8.11
 #### UPDT
 - Credit note, refund removed from dashboard
+
+#### 19.11.2020
+#### Version 13.0.4.9.12
+#### UPDT
+- Field parameter spelling mistake
