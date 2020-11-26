@@ -45,9 +45,9 @@ class DayBookWizard(models.TransientModel):
                                    'Accounts')
 
     date_from = fields.Date(string='Start Date', default=date.today(),
-                            requred=True)
+                            required=True)
     date_to = fields.Date(string='End Date', default=date.today(),
-                          requred=True)
+                          required=True)
 
     def _build_contexts(self, data):
         result = {}
