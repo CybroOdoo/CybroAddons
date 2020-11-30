@@ -23,6 +23,7 @@
     'name': 'Barcode scanning support for sale and Purchase',
     'version': '14.0.1.0.0',
     'category': 'Sales',
+    'live_test_url': 'https://www.youtube.com/watch?v=6tJZAfPu__s&feature=youtu.be',
     'summary': 'This module will help you to use barcode scanner in sales and purchase.',
     'author': 'Cybrosys Techno solutions',
     'company': 'Cybrosys Techno Solutions',

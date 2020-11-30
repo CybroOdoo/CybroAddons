@@ -3,6 +3,7 @@
 {
     'name': 'Odoo14 Payroll Accounting',
     'category': 'Generic Modules/Human Resources',
+    'live_test_url': 'https://www.youtube.com/watch?v=Ykni1o8VBlc&feature=youtu.be',
     'summary': """
           Generic Payroll system Integrated with Accounting,Expense Encoding,Payment Encoding,Company Contribution Management
     """,

@@ -22,6 +22,7 @@
 {
     'name': 'Barcode scanning in Inventory',
     'version': '14.0.1.0.0',
+    'live_test_url': 'https://www.youtube.com/watch?v=ylSHZVbajoE&feature=youtu.be',
     'summary': 'Barcode Support in Stock Picking.',
     'author': 'Cybrosys Techno solutions',
     'maintainer': 'Cybrosys Techno Solutions',
