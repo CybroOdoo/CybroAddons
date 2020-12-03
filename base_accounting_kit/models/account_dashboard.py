@@ -421,9 +421,9 @@ class DashBoard(models.Model):
 
         states_arg = ""
         if post != ('posted',):
-            states_arg = """ state in ('posted', 'draft')"""
+            states_arg = """ account_move.state in ('posted', 'draft')"""
         else:
-            states_arg = """ state = 'posted'"""
+            states_arg = """ account_move.state = 'posted'"""
 
         self._cr.execute(('''  select res_partner.name as partner, res_partner.commercial_partner_id as res  ,
                             account_move.commercial_partner_id as parent, sum(account_move.amount_total) as amount
@@ -470,9 +470,9 @@ class DashBoard(models.Model):
 
         states_arg = ""
         if post != ('posted',):
-            states_arg = """ state in ('posted', 'draft')"""
+            states_arg = """ account_move.state in ('posted', 'draft')"""
         else:
-            states_arg = """ state = 'posted'"""
+            states_arg = """ account_move.state = 'posted'"""
 
         self._cr.execute((''' select res_partner.name as partner, res_partner.commercial_partner_id as res  ,
                              account_move.commercial_partner_id as parent, sum(account_move.amount_total) as amount
@@ -513,9 +513,9 @@ class DashBoard(models.Model):
 
         states_arg = ""
         if post[0] != 'posted':
-            states_arg = """ state in ('posted', 'draft')"""
+            states_arg = """ account_move.state in ('posted', 'draft')"""
         else:
-            states_arg = """ state = 'posted'"""
+            states_arg = """ account_move.state = 'posted'"""
 
         company_id = self.get_current_company_value()
         if post[1] == 'this_month':
@@ -573,9 +573,9 @@ class DashBoard(models.Model):
 
         states_arg = ""
         if post[0] != 'posted':
-            states_arg = """ state in ('posted', 'draft')"""
+            states_arg = """ account_move.state in ('posted', 'draft')"""
         else:
-            states_arg = """ state = 'posted'"""
+            states_arg = """ account_move.state = 'posted'"""
 
         if post[1] == 'this_month':
             self._cr.execute((''' 
@@ -629,12 +629,11 @@ class DashBoard(models.Model):
         record_invoice = {}
         record_refund = {}
         company_id = self.get_current_company_value()
-
         states_arg = ""
         if post[0] != 'posted':
-            states_arg = """ state in ('posted', 'draft')"""
+            states_arg = """ account_move.state in ('posted', 'draft')"""
         else:
-            states_arg = """ state = 'posted'"""
+            states_arg = """ account_move.state = 'posted'"""
         if post[1] == 'this_month':
             self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
                                     sum(account_move.amount_total) as amount from account_move, res_partner
@@ -642,28 +641,25 @@ class DashBoard(models.Model):
                                     AND account_move.company_id in %s 
                                     AND account_move.type = 'out_invoice' 
                                     AND %s   
-                                    AND Extract(month FROM account_move.invoice_date_due) = Extract(month FROM DATE(NOW()))
-                                    AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))                      
+                                    AND Extract(month FROM account_move.invoice_date) = Extract(month FROM DATE(NOW()))
+                                    AND Extract(YEAR FROM account_move.invoice_date) = Extract(YEAR FROM DATE(NOW()))                      
                                     group by parent, customers
                                     order by amount desc 
                                     limit 10
                                     ''') % (tuple(company_id), states_arg))
-
             record_invoice = self._cr.dictfetchall()
-
             self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
                                     sum(account_move.amount_total) as amount from account_move, res_partner
                                     where account_move.commercial_partner_id = res_partner.id
                                     AND account_move.company_id in %s
                                     AND account_move.type = 'out_refund' 
                                     AND %s      
-                                    AND Extract(month FROM account_move.invoice_date_due) = Extract(month FROM DATE(NOW()))
-                                    AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))                   
+                                    AND Extract(month FROM account_move.invoice_date) = Extract(month FROM DATE(NOW()))
+                                    AND Extract(YEAR FROM account_move.invoice_date) = Extract(YEAR FROM DATE(NOW()))                   
                                     group by parent, customers
                                     order by amount desc 
                                     limit 10
                                     ''') % (tuple(company_id), states_arg))
-
             record_refund = self._cr.dictfetchall()
         else:
             one_month_ago = (datetime.now() - relativedelta(months=1)).month
@@ -673,30 +669,26 @@ class DashBoard(models.Model):
                                             AND account_move.company_id in %s
                                             AND account_move.type = 'out_invoice' 
                                             AND %s            
-                                            AND Extract(month FROM account_move.invoice_date_due) = ''' + str(
+                                            AND Extract(month FROM account_move.invoice_date) = ''' + str(
                 one_month_ago) + '''
                                             group by parent, customers
                                             order by amount desc 
                                             limit 10
                                             ''') % (tuple(company_id), states_arg))
-
             record_invoice = self._cr.dictfetchall()
-
             self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
                                             sum(account_move.amount_total) as amount from account_move, res_partner
                                             where account_move.commercial_partner_id = res_partner.id
                                             AND account_move.company_id in %s 
                                             AND account_move.type = 'out_refund' 
                                             AND %s       
-                                            AND Extract(month FROM account_move.invoice_date_due) = ''' + str(
+                                            AND Extract(month FROM account_move.invoice_date) = ''' + str(
                 one_month_ago) + '''                  
                                             group by parent, customers
                                             order by amount desc 
                                             limit 10
                                             ''') % (tuple(company_id), states_arg))
-
             record_refund = self._cr.dictfetchall()
-
         summed = []
         for out_sum in record_invoice:
             parent = out_sum['parent']
@@ -709,7 +701,6 @@ class DashBoard(models.Model):
                 'amount': su,
                 'parent': parent
             })
-
         return summed
 
     # function to get total invoice
@@ -843,6 +834,7 @@ class DashBoard(models.Model):
         result_refund_current_month = [{'refund': 0.0}]
         self._cr.execute(('''select sum(amount_total_signed) - sum(amount_residual_signed)  as customer_invoice_paid from account_move where type ='out_invoice'
                                             AND   %s
+                                            AND invoice_payment_state = 'paid'
                                             AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))
                                             AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
                                             AND account_move.company_id in ''' + str(tuple(company_id)) + '''
@@ -851,6 +843,7 @@ class DashBoard(models.Model):
 
         self._cr.execute(('''select sum(-(amount_total_signed)) - sum(-(amount_residual_signed))  as supplier_invoice_paid from account_move where type ='in_invoice'
                                             AND   %s
+                                            AND invoice_payment_state = 'paid'
                                             AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))
                                             AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
                                             AND account_move.company_id in ''' + str(tuple(company_id)) + '''
@@ -952,7 +945,6 @@ class DashBoard(models.Model):
 
     @api.model
     def unreconcile_items_this_month(self, *post):
-
         company_id = self.get_current_company_value()
 
         states_arg = ""
@@ -999,7 +991,6 @@ class DashBoard(models.Model):
 
     @api.model
     def unreconcile_items_this_year(self, *post):
-
         company_id = self.get_current_company_value()
 
         states_arg = ""
@@ -1010,12 +1001,314 @@ class DashBoard(models.Model):
 
         self._cr.execute(('''  select count(*) FROM account_move_line l,account_account a
                                   where Extract(year FROM l.date) = Extract(year FROM DATE(NOW())) AND
-                                  L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                                  l.account_id=a.id AND l.full_reconcile_id IS NULL AND 
                                   l.balance != 0 AND a.reconcile IS TRUE  
                                   AND l.%s
                                   AND  l.company_id in ''' + str(tuple(company_id)) + '''       
                                   ''') % (states_arg))
         record = self._cr.dictfetchall()
+        return record
+
+    @api.model
+    def click_expense_month(self, *post):
+        company_id = self.get_current_company_value()
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ parent_state in ('posted', 'draft')"""
+        else:
+            states_arg = """ parent_state = 'posted'"""
+        self._cr.execute((''' select account_move_line.id from  account_account, account_move_line where 
+                            account_move_line.account_id = account_account.id AND account_account.internal_group = 'expense' AND  
+                            %s                
+                            AND Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW()))
+                            AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW())) 
+                            AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
+                                 ''') % (states_arg))
+        record = [row[0] for row in self._cr.fetchall()]
+        return record
+
+    @api.model
+    def click_expense_year(self, *post):
+        company_id = self.get_current_company_value()
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ parent_state in ('posted', 'draft')"""
+        else:
+            states_arg = """ parent_state = 'posted'"""
+        self._cr.execute((''' select account_move_line.id from  account_account, account_move_line where
+                                account_move_line.account_id = account_account.id AND account_account.internal_group = 'expense' AND  
+                                %s                         
+                                AND Extract(YEAR FROM account_move_line.date) = Extract(YEAR FROM DATE(NOW())) 
+                                AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
+                                ''') % (states_arg))
+        record = [row[0] for row in self._cr.fetchall()]
+        return record
+
+    @api.model
+    def click_total_income_month(self, *post):
+        company_id = self.get_current_company_value()
+
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ parent_state in ('posted', 'draft')"""
+        else:
+            states_arg = """ parent_state = 'posted'"""
+
+        self._cr.execute(('''select account_move_line.id from account_account, account_move_line where
+                                account_move_line.account_id = account_account.id AND account_account.internal_group = 'income'
+                               AND %s
+                               AND Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW())) 
+                               AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW())) 
+                               AND account_move_line.company_id in ''' + str(tuple(company_id)) + ''' 
+
+                                     ''') % (states_arg))
+        record = [row[0] for row in self._cr.fetchall()]
+        return record
+
+    @api.model
+    def click_total_income_year(self, *post):
+
+        company_id = self.get_current_company_value()
+
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ parent_state in ('posted', 'draft')"""
+        else:
+            states_arg = """ parent_state = 'posted'"""
+
+        self._cr.execute((''' select account_move_line.id from account_account, account_move_line where                           
+                             account_move_line.account_id = account_account.id AND account_account.internal_group = 'income'
+                             AND %s
+                          AND Extract(YEAR FROM account_move_line.date) = Extract(YEAR FROM DATE(NOW())) 
+                          AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
+                        ''') % (states_arg))
+        record = [row[0] for row in self._cr.fetchall()]
+        return record
+
+    @api.model
+    def click_profit_income_month(self, *post):
+
+        company_id = self.get_current_company_value()
+
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ parent_state in ('posted', 'draft')"""
+        else:
+            states_arg = """ parent_state = 'posted'"""
+
+        self._cr.execute(('''select account_move_line.id from  account_account, account_move_line where 
+                                       account_move_line.account_id = account_account.id AND
+                                       %s AND
+                                       (account_account.internal_group = 'income' or    
+                                       account_account.internal_group = 'expense' ) 
+                                       AND Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW())) 
+                                       AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))   
+                                       AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''        
+                                        ''') % (states_arg))
+        profit = [row[0] for row in self._cr.fetchall()]
+        return profit
+
+    @api.model
+    def click_profit_income_year(self, *post):
+        company_id = self.get_current_company_value()
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ parent_state in ('posted', 'draft')"""
+        else:
+            states_arg = """ parent_state = 'posted'"""
+
+        self._cr.execute(('''select account_move_line.id from  account_account, account_move_line where 
+                                            account_move_line.account_id = account_account.id AND
+                                            %s AND
+                                           (account_account.internal_group = 'income' or    
+                                           account_account.internal_group = 'expense' )                                       
+                                           AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))  
+                                           AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''           
+                                            ''') % (states_arg))
+        profit = [row[0] for row in self._cr.fetchall()]
+        return profit
+
+    @api.model
+    def click_bill_year(self, *post):
+        company_id = self.get_current_company_value()
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ state in ('posted', 'draft')"""
+        else:
+            states_arg = """ state = 'posted'"""
+        self._cr.execute(('''select account_move.id from account_move where type ='in_invoice'
+                               AND  %s                              
+                               AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
+                               AND account_move.company_id in ''' + str(tuple(company_id)) + '''      
+                           ''') % (states_arg))
+        record_supplier_current_year = [row[0] for row in self._cr.fetchall()]
+        return record_supplier_current_year
+
+    @api.model
+    def click_bill_year_paid(self, *post):
+        company_id = self.get_current_company_value()
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ state in ('posted', 'draft')"""
+        else:
+            states_arg = """ state = 'posted'"""
+
+        self._cr.execute(('''select account_move.id from account_move where type ='in_invoice'
+                                       AND   %s
+                                       AND  invoice_payment_state = 'paid'
+                                       AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
+                                       AND account_move.company_id in ''' + str(tuple(company_id)) + '''
+                                   ''') % (states_arg))
+        result_paid_supplier_invoice_current_year = [row[0] for row in self._cr.fetchall()]
+        return result_paid_supplier_invoice_current_year
+
+    @api.model
+    def click_invoice_year_paid(self, *post):
+        company_id = self.get_current_company_value()
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ state in ('posted', 'draft')"""
+        else:
+            states_arg = """ state = 'posted'"""
+        self._cr.execute(('''select account_move.id from account_move where type ='out_invoice'
+                                       AND   %s
+                                       AND invoice_payment_state = 'paid'
+                                       AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
+                                       AND account_move.company_id in ''' + str(tuple(company_id)) + '''
+                                   ''') % (states_arg))
+        record_paid_customer_invoice_current_year = [row[0] for row in self._cr.fetchall()]
+        return record_paid_customer_invoice_current_year
+
+    @api.model
+    def click_invoice_year(self, *post):
+        company_id = self.get_current_company_value()
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ state in ('posted', 'draft')"""
+        else:
+            states_arg = """ state = 'posted'"""
+        self._cr.execute(('''select account_move.id  from account_move where type ='out_invoice'
+                               AND   %s                               
+                               AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
+                               AND account_move.company_id in ''' + str(tuple(company_id)) + '''           
+                           ''') % (states_arg))
+        record_customer_current_year = [row[0] for row in self._cr.fetchall()]
+        return record_customer_current_year
+
+    @api.model
+    def click_bill_month(self, *post):
+        company_id = self.get_current_company_value()
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ state in ('posted', 'draft')"""
+        else:
+            states_arg = """ state = 'posted'"""
+        self._cr.execute(('''select account_move.id from account_move where type ='in_invoice'
+                                            AND   %s
+                                            AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))
+                                            AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
+                                            AND account_move.company_id in ''' + str(tuple(company_id)) + '''
+                                        ''') % (states_arg))
+        bill_month = [row[0] for row in self._cr.fetchall()]
+        return bill_month
+
+    @api.model
+    def click_bill_month_paid(self, *post):
+        company_id = self.get_current_company_value()
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ state in ('posted', 'draft')"""
+        else:
+            states_arg = """ state = 'posted'"""
+        self._cr.execute(('''select account_move.id from account_move where type ='in_invoice'
+                                            AND   %s
+                                            AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))
+                                            AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
+                                            AND invoice_payment_state = 'paid'
+                                            AND account_move.company_id in ''' + str(tuple(company_id)) + '''
+                                        ''') % (states_arg))
+        result_paid_supplier_invoice_current_month = [row[0] for row in self._cr.fetchall()]
+        return result_paid_supplier_invoice_current_month
+
+    @api.model
+    def click_invoice_month_paid(self, *post):
+        company_id = self.get_current_company_value()
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ state in ('posted', 'draft')"""
+        else:
+            states_arg = """ state = 'posted'"""
+        self._cr.execute(('''select account_move.id from account_move where type ='out_invoice'
+                                            AND   %s
+                                            AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))
+                                            AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
+                                            AND invoice_payment_state = 'paid'
+                                            AND account_move.company_id in ''' + str(tuple(company_id)) + '''
+                                        ''') % (states_arg))
+        record_paid_customer_invoice_current_month = [row[0] for row in self._cr.fetchall()]
+        return record_paid_customer_invoice_current_month
+
+    @api.model
+    def click_invoice_month(self, *post):
+        company_id = self.get_current_company_value()
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ state in ('posted', 'draft')"""
+        else:
+            states_arg = """ state = 'posted'"""
+        self._cr.execute(('''select account_move.id from account_move where type ='out_invoice'
+                                    AND   %s                               
+                                    AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))
+                                    AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
+                                    AND account_move.company_id in ''' + str(tuple(company_id)) + '''           
+                                ''') % (states_arg))
+        record_customer_current_month = [row[0] for row in self._cr.fetchall()]
+        return record_customer_current_month
+
+    @api.model
+    def click_unreconcile_month(self, *post):
+        company_id = self.get_current_company_value()
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ parent_state in ('posted', 'draft')"""
+        else:
+            states_arg = """ parent_state = 'posted'"""
+        qry = ''' select count(*) FROM account_move_line l,account_account a
+                              where Extract(month FROM l.date) = Extract(month FROM DATE(NOW())) AND
+                              Extract(YEAR FROM l.date) = Extract(YEAR FROM DATE(NOW())) AND
+                              L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                              l.balance != 0 AND a.reconcile IS F 
+                              AND l.''' + states_arg + '''
+                              AND  l.company_id in ''' + str(tuple(company_id)) + '''                              
+                               '''
+
+        self._cr.execute((''' select l.id FROM account_move_line l,account_account a
+                              where Extract(month FROM l.date) = Extract(month FROM DATE(NOW())) AND
+                              Extract(YEAR FROM l.date) = Extract(YEAR FROM DATE(NOW())) AND
+                              L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                              l.balance != 0 AND a.reconcile IS TRUE 
+                              AND l.%s
+                              AND  l.company_id in ''' + str(tuple(company_id)) + '''                              
+                               ''') % (states_arg))
+        record = [row[0] for row in self._cr.fetchall()]
+        return record
+
+    @api.model
+    def click_unreconcile_year(self, *post):
+        company_id = self.get_current_company_value()
+        states_arg = ""
+        if post != ('posted',):
+            states_arg = """ parent_state in ('posted', 'draft')"""
+        else:
+            states_arg = """ parent_state = 'posted'"""
+        self._cr.execute(('''  select l.id FROM account_move_line l,account_account a
+                                  where Extract(year FROM l.date) = Extract(year FROM DATE(NOW())) AND
+                                  L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                                  l.balance != 0 AND a.reconcile IS TRUE  
+                                  AND l.%s
+                                  AND  l.company_id in ''' + str(tuple(company_id)) + '''       
+                                  ''') % (states_arg))
+        record = [row[0] for row in self._cr.fetchall()]
         return record
 
     # function to get unreconcile items last year
@@ -1048,7 +1341,6 @@ class DashBoard(models.Model):
 
     @api.model
     def month_income_this_month(self, *post):
-
         company_id = self.get_current_company_value()
 
         states_arg = ""
@@ -1303,7 +1595,8 @@ class DashBoard(models.Model):
         else:
             states_arg = """ parent_state in ('posted', 'draft')"""
 
-        self._cr.execute((''' select account_account.name as name, sum(balance) as balance from account_move_line left join
+        self._cr.execute((''' select account_account.name as name, sum(balance) as balance,
+                            min(account_account.id) as id from account_move_line left join
                             account_account on account_account.id = account_move_line.account_id join
                             account_account_type on account_account_type.id = account_account.user_type_id
                             where account_account_type.name = 'Bank and Cash'
@@ -1319,9 +1612,12 @@ class DashBoard(models.Model):
 
         banking = [item['balance'] for item in record]
 
+        bank_ids = [item['id'] for item in record]
+
         records = {
             'banks': banks,
             'banking': banking,
+            'bank_ids': bank_ids
 
         }
         return records

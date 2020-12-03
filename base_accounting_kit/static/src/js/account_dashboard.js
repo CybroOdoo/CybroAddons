@@ -10,10 +10,7 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
     var self = this;
     var currency;
     var ActionMenu = AbstractAction.extend({
-
         template: 'Invoicedashboard',
-
-
         events: {
             'click .invoice_dashboard': 'onclick_dashboard',
             'click #prog_bar': 'onclick_prog_bar',
@@ -59,16 +56,325 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                             this.onclick_top_10_month(this.$('#top_10_customer_value').val());
                                                         },
             'change #toggle-two': 'onclick_toggle_two',
-
+            'click #unreconciled_counts_this_year': 'unreconciled_year',
+            'click #unreconciled_items_': 'unreconciled_month',
+            'click #total_customer_invoice_paid_current_month': 'invoice_month_paid',
+            'click #total_customer_invoice_current_month': 'invoice_month',
+            'click #total_supplier_invoice_paid_current_month': 'bill_month_paid',
+            'click #total_supplier_invoice_current_month': 'bill_month',
+            'click #total_customer_invoice_paid_current_year': 'invoice_year_paid',
+            'click #total_customer_invoice_current_year': 'invoice_year',
+            'click #total_supplier_invoice_paid_current_year': 'bill_year_paid',
+            'click #total_supplier_invoice_current_year': 'bill_year',
+            'click #net_profit_current_year': 'profit_income_year',
+            'click #net_profit_current_months': 'profit_income_month',
+            'click #total_incomes_this_year': 'total_income_year',
+            'click #total_incomes_': 'total_income_month',
+            'click #total_expense_this_year': 'expense_year',
+            'click #total_expenses_': 'expense_month',
         },
+        profit_income_year: function (ev){
+            var posted = false;
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_profit_income_year",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move.line',
+                    name: _t('Net Profit or Loss'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+        profit_income_month: function (ev){
+            var posted = false;
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_profit_income_month",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move.line',
+                    name: _t('Net Profit or Loss'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+        total_income_year: function (ev){
+            var posted = false;
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_total_income_year",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move.line',
+                    name: _t('Total Income'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+        total_income_month: function (ev){
+            var posted = false;
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_total_income_month",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move.line',
+                    name: _t('Total Income'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+        expense_year: function (ev){
+            var posted = false;
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_expense_year",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move.line',
+                    name: _t('Total Expenses'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+        expense_month: function (ev){
+            var posted = false;
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_expense_month",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move.line',
+                    name: _t('Total Expenses'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+        unreconciled_year: function (ev) {
+            var posted = false;
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_unreconcile_year",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move.line',
+                    name: _t('Unreconciled'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+        unreconciled_month: function (ev) {
+            var posted = false;
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_unreconcile_month",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move.line',
+                    name: _t('Unreconciled'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+        invoice_month_paid: function (ev) {
+            var posted = false;
+            if ($('#toggle-two')[0].checked == true) {
+                posted = "posted"
+            }
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_invoice_month_paid",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move',
+                    name: _t('Paid'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+        invoice_month: function (ev) {
+            var posted = false;
+            if ($('#toggle-two')[0].checked == true) {
+                posted = "posted"
+            }
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_invoice_month",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move',
+                    name: _t('Invoice'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+        bill_month_paid: function (ev) {
+            var posted = false;
+            if ($('#toggle-two')[0].checked == true) {
+                posted = "posted"
+            }
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_bill_month_paid",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move',
+                    name: _t('Paid'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+        bill_month: function (ev) {
+            var posted = false;
+            if ($('#toggle-two')[0].checked == true) {
+                posted = "posted"
+            }
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_bill_month",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move',
+                    name: _t('Invoice'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+        bill_year: function (ev) {
+            var posted = false;
+            if ($('#toggle-two')[0].checked == true) {
+                posted = "posted"
+            }
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_bill_year",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move',
+                    name: _t('Invoice'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+        bill_year_paid: function (ev) {
+            var posted = false;
+            if ($('#toggle-two')[0].checked == true) {
+                posted = "posted"
+            }
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_bill_year_paid",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move',
+                    name: _t('Paid'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+        invoice_year: function (ev) {
+            var posted = false;
+            if ($('#toggle-two')[0].checked == true) {
+                posted = "posted"
+            }
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_invoice_year",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move',
+                    name: _t('Invoice'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+        invoice_year_paid: function (ev) {
+            var posted = false;
+            if ($('#toggle-two')[0].checked == true) {
+                posted = "posted"
+            }
+            var self = this;
+            rpc.query({
+                model: "account.move",
+                method: "click_invoice_year_paid",
+                args: [posted],
+            }).then(function (result) {
+                    self.do_action({
+                    res_model: 'account.move',
+                    name: _t('Paid'),
+                    views: [[false, 'list'], [false, 'form']],
+                    type: 'ir.actions.act_window',
+                    domain: [['id', 'in', result]],
+                    });
+                })
+        },
+
         onclick_toggle_two: function (ev) {
-
             this.onclick_aged_payable(this.$('#aged_receivable_values').val());
-
             this.onclick_aged_receivable(this.$('#aged_payable_value').val());
             this.onclick_invoice_this_year(ev);
             this.onclick_invoice_this_month(ev);
-
             this.onclick_income_this_month(ev);
             this.onclick_income_last_month(ev);
             this.onclick_income_last_year(ev);
@@ -107,8 +413,18 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                         due_count++;
                         var amount = self.format_currency(currency, x.amount);
                         $('#top_10_customers_this_month').append('<li><div id="line_' + x.parent + '" data-user-id="' + x.parent + '">' + x.customers + '</div>' + '<div id="line_' + x.parent + '" data-user-id="' + x.parent + '">' + amount + '</div>' + '</li>');
-
+                        $('#line_'+ x.parent).on("click", function () {
+                            self.do_action({
+                                res_model: 'res.partner',
+                                name: _t('Partner'),
+                                views: [[false, 'form']],
+                                type: 'ir.actions.act_window',
+                                res_id: x.parent,
+                            });
+                        });
                     });
+
+
                 })
         },
 
@@ -190,7 +506,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
 
                 })
         },
-
         onclick_income_last_month: function (ev) {
             ev.preventDefault();
             var selected = $('.btn.btn-tool.income');
@@ -349,8 +664,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
 
                 })
         },
-
-
         onclick_invoice_this_year: function (ev) {
             ev.preventDefault();
             var selected = $('.btn.btn-tool.selected');
@@ -517,7 +830,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
 
                 })
         },
-
         onclick_income_this_month: function (ev) {
             ev.preventDefault();
             var selected = $('.btn.btn-tool.income');
@@ -593,7 +905,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
 
                 })
         },
-
         onclick_aged_payable: function (f) {
 
 //            ev.preventDefault();
@@ -662,8 +973,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
 
                 })
         },
-
-
         onclick_aged_receivable: function (f) {
             var selected = $('.btn.btn-tool.expense');
             var data = $(selected[0]).data();
@@ -1055,6 +1364,15 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                                 due_count++;
                                 amount = self.format_currency(currency, x.amount);
                                 $('#top_10_customers_this_month').append('<li><div id="line_' + x.parent + '" data-user-id="' + x.parent + '">' + x.customers + '</div>' + '<div id="line_' + x.parent + '" data-user-id="' + x.parent + '">' + amount + '</div>' + '</li>');
+                                $('#line_'+ x.parent).on("click", function () {
+                                self.do_action({
+                                    res_model: 'res.partner',
+                                    name: _t('Partner'),
+                                    views: [[false, 'form']],
+                                    type: 'ir.actions.act_window',
+                                    res_id: x.parent,
+                                });
+                        });
 
                             });
                         })
@@ -1067,12 +1385,22 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                             var banks = result['banks'];
                             var amount;
                             var balance = result['banking'];
+                            var bnk_ids = result['bank_ids'];
                             for (var k = 0; k < banks.length; k++) {
                                 amount = self.format_currency(currency, balance[k]);
                                 //                                $('#charts').append('<li><a ' + banks[k] + '" data-user-id="' + banks[k] + '">' + banks[k] + '</a>'+  '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + '<span>'+ balance[k] +'</span>' + '</li>' );
-                                $('#current_bank_balance').append('<li><div>' + banks[k] + '</div><div>' + amount + '</div></li>');
+                                $('#current_bank_balance').append('<li><div val="'+bnk_ids[k]+'"id="b_'+bnk_ids[k]+'">' + banks[k] + '</div><div>' + amount + '</div></li>');
                                 //                                $('#current_bank_balance').append('<li>' + banks[k] +'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+ balance[k] +  '</li>' );
                                 $('#drop_charts_balance').append('<li>' + balance[k].toFixed(2) + '</li>');
+                                $('#b_'+ bnk_ids[k]).on("click", function (ev) {
+                                    self.do_action({
+                                        res_model: 'account.account',
+                                        name: _t('Account'),
+                                        views: [[false, 'form']],
+                                        type: 'ir.actions.act_window',
+                                        res_id: parseInt(this.id.replace('b_', '')),
+                                    });
+                                });
                             }
                         })
 
@@ -1367,7 +1695,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                         })
                 });
         },
-
         format_currency: function(currency, amount){
              if (typeof(amount) != 'number'){
                 amount = parseFloat(amount);
@@ -1379,7 +1706,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function (require) {
                 return currency.symbol + ' ' + formatted_value;
              }
         },
-
         willStart: function () {
             var self = this;
             self.drpdn_show = false;

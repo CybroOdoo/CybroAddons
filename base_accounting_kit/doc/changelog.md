@@ -98,3 +98,8 @@
 #### Version 13.0.4.9.12
 #### UPDT
 - Field parameter spelling mistake
+
+#### 12.12.2020
+#### Version 13.0.4.9.13
+#### UPDT
+- Actions added in dashboard
