@@ -26,6 +26,7 @@
     'summary': """This module will helps you to give the vehicles for Rent.""",
     'description': "Module Helps You To Manage Rental Contracts, Odoo13, Odoo 13, Fleet, Rental, Rent, Vehicle management",
     'category': "Industries",
+    'live_test_url': 'https://youtu.be/chN-n7nB3Ac',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
