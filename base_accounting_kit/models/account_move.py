@@ -35,8 +35,7 @@ class AccountMove(models.Model):
 
     asset_depreciation_ids = fields.One2many('account.asset.depreciation.line',
                                              'move_id',
-                                             string='Assets Depreciation Lines',
-                                             ondelete="restrict")
+                                             string='Assets Depreciation Lines')
 
     def button_cancel(self):
         for move in self:

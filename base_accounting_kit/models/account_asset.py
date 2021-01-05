@@ -168,7 +168,7 @@ class AccountAssetAsset(models.Model):
     method_progress_factor = fields.Float(string='Degressive Factor',
                                           readonly=True, default=0.3, states={
             'draft': [('readonly', False)]})
-    value_residual = fields.Float(compute='_amount_residual', method=True,
+    value_residual = fields.Float(compute='_amount_residual',
                                   digits=0, string='Residual Value')
     method_time = fields.Selection(
         [('number', 'Number of Entries'), ('end', 'Ending Date')],
@@ -623,11 +623,9 @@ class AccountAssetDepreciationLine(models.Model):
                                      required=True)
     depreciation_date = fields.Date('Depreciation Date', index=True)
     move_id = fields.Many2one('account.move', string='Depreciation Entry')
-    move_check = fields.Boolean(compute='_get_move_check', string='Linked',
-                                track_visibility='always', store=True)
+    move_check = fields.Boolean(compute='_get_move_check', string='Linked', store=True)
     move_posted_check = fields.Boolean(compute='_get_move_posted_check',
-                                       string='Posted',
-                                       track_visibility='always', store=True)
+                                       string='Posted', store=True)
 
     @api.depends('move_id')
     def _get_move_check(self):
