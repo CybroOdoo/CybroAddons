@@ -25,4 +25,9 @@
 #### UPDT
 - Removed warnings, Updated access rules.
 
+#### 18.01.2021
+#### Version 14.0.2.4.4
+#### UPDT
+- Reconciliation Widget Added.
+
 
