@@ -20,6 +20,7 @@
     'summary': """User Can Access His Account Only From Specified IP Address""",
     'version': '14.0.1.0.0',
     'description': """User Can Access His Account Only From Specified IP Address""",
+    'live_test_url': 'https://youtu.be/nn6dAL6eKPc',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
