@@ -30,4 +30,9 @@
 #### UPDT
 - Reconciliation Widget Added.
 
+#### 12.02.2021
+#### Version 14.0.2.5.4
+#### UPDT
+- Translation Added
+
 
