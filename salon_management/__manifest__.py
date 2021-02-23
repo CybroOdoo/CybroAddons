@@ -25,6 +25,7 @@
     'author': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
+    'live_test_url': 'https://www.youtube.com/watch?v=TFmupz8MRm0&feature=youtu.be',
     "category": "Industries",
     'depends': ['base','base_setup', 'account', 'mail', 'website'],
     'data': [
