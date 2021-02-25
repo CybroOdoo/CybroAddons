@@ -35,4 +35,11 @@
 #### UPDT
 - Translation Added
 
+#### 25.02.2021
+#### Version 14.0.2.5.5
+#### UPDT
+- Bank Book, Cash Book Issue updated
+- Tax report Issue updated
+- Asset Issue updated
+
 

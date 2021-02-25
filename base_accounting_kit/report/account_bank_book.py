@@ -153,6 +153,13 @@ class ReportBankBook(models.AbstractModel):
         account_ids = data['form']['account_ids']
         accounts = self.env['account.account'].search(
             [('id', 'in', account_ids)])
+        if not accounts:
+            journals = self.env['account.journal'].search([('type', '=', 'bank')])
+            accounts = []
+            for journal in journals:
+                accounts.append(journal.payment_credit_account_id.id)
+            accounts = self.env['account.account'].search([('id', 'in', accounts)])
+
         accounts_res = self.with_context(data['form'].get('used_context', {}))._get_account_move_entry(
             accounts,
             init_balance,

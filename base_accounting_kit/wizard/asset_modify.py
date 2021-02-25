@@ -33,7 +33,7 @@ def setup_modifiers(node, field=None, context=None, in_tree_view=False):
     if field is not None:
         transfer_field_to_modifiers(field, modifiers)
     transfer_node_to_modifiers(
-        node, modifiers, context=context, in_tree_view=in_tree_view)
+        node, modifiers, context=context)
     transfer_modifiers_to_node(modifiers, node)
 
 
