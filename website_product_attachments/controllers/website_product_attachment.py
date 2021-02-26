@@ -36,7 +36,7 @@ class WebsiteSale(WebsiteSale):
     def product(self, product, category='', search='', **kwargs):
         product_context = dict(request.env.context, active_id=product.id)
         ProductCategory = request.env['product.public.category']
-        Rating = request.env['rating.rating']
+        Rating = request.env['rating.rating'].sudo()
         if category:
             category = ProductCategory.browse(int(category)).exists()
 
