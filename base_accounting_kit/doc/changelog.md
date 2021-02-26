@@ -103,3 +103,8 @@
 #### Version 13.0.4.9.13
 #### UPDT
 - Actions added in dashboard
+
+#### 26.02.2021
+#### Version 13.0.4.9.14
+#### FIX
+- Tax Report issue fixed

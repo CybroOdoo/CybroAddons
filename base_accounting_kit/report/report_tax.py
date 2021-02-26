@@ -89,11 +89,11 @@ class ReportTax(models.AbstractModel):
             else:
                 taxes[tax.id] = {'tax': 0, 'net': 0, 'name': tax.name,
                                  'type': tax.type_tax_use}
-        if options['date_from']:
+        if options['date_from'] and not options['date_to']:
             self.with_context(date_from=options['date_from'],
                               strict_range=True)._compute_from_amls(options,
                                                                     taxes)
-        elif options['date_to']:
+        elif options['date_to'] and not options['date_from']:
             self.with_context(date_to=options['date_to'],
                               strict_range=True)._compute_from_amls(options,
                                                                     taxes)
