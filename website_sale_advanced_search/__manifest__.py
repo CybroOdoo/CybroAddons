@@ -20,7 +20,7 @@
 
 {
     'name': "Advanced Search in E-commerce ",
-    'version': '13.0.1.0.0',
+    'version': '13.0.1.0.1',
     'summary': """E-commerce Advanced Search.""",
     'description': """
        Odoo e-commerce advanced search. Autocomplete search product with category and display name

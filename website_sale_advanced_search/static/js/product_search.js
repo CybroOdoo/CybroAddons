@@ -1,16 +1,13 @@
 odoo.define('website_sale_advanced_search.product_search', function (require) {
 "use strict";
 var ajax = require('web.ajax');
-var core = require('web.core');
-var session = require('web.session');
-var base = require('web_editor.base');
-var _t = core._t;
-base.url_translations = '/website/translations';
-var _t = core._t;
+
+
 $(function() {
     $('.search-panel .dropdown-menu').find('a').click(function(e) {
 		e.preventDefault();
 		var param = $(this).attr("href").replace("#","");
+
 		var concept = $(this).text();
 		$('.search-panel span#search_concept').text(concept);
 		$('.input-group #search_param').val(param);
