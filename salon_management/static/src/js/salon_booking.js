@@ -1,12 +1,12 @@
 odoo.define('salon_management.website_salon_booking_system', function (require) {
 'use strict';
     var ajax = require('web.ajax');
-    var base = require('web_editor.base');
     var core = require('web.core');
     var _t = core._t;
     var rpc = require('web.rpc');
     var QWeb = core.qweb;
     $(document).on('click',"#submit_button",function() {
+        console.log("jd")
         var name = $("#name").val();
         var date = $("#date").val();
         var time = $("#time").val();
