@@ -23,8 +23,8 @@
 
 from werkzeug.exceptions import NotFound
 from odoo.addons.http_routing.models.ir_http import slug
-from addons.website.controllers.main import QueryURL
-from addons.website_sale.controllers.main import TableCompute
+from odoo.addons.website.controllers.main import QueryURL
+from odoo.addons.website_sale.controllers.main import TableCompute
 from odoo import http
 from ast import literal_eval
 from odoo.http import request
