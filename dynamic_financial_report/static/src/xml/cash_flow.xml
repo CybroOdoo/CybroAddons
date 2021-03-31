@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+	<t t-name="CashFlow">
+		<div class="container-cf">
+			<div>
+				<div class="cf-filter"></div>
+			</div>
+			<div class="container-cf-data">
+				<div class="container-cf-main"></div>
+			</div>
+		</div>
+	</t>
+	<t t-name="CashFlowData">
+		<div>
+			<table cellspacing="0" width="100%">
+				<thead>
+					<tr>
+						<th colspan="6">Name</th>
+						<th class="amd">Cash In</th>
+						<th class="amd">Cash Out</th>
+						<th class="amd">Balance</th>
+
+					</tr>
+				</thead>
+				<tbody>
+					<t t-foreach="account_data" t-as="account">
+						<t t-set="common_id" t-value=""/>
+						<t t-if="(level=='detailed' or level=='very' or level==false )">
+							<tr style="border: .5px solid black;" class="cf-line"
+                                data-toggle="collapse"
+                                t-att-data-account-id="account['id']"
+                                t-attf-data-target=".a{{account['id']}}">
+
+								<td colspan="6" style="border: 0px solid black;">
+									<i class="fa fa-caret-down" role="img" aria-label="Unfolded" title="Unfolded"></i>
+									<span>
+										<t t-if="account['month_part']">
+										<t t-esc="account['month_part']"/>
+										</t>
+										<t t-esc="account['code']"/>
+										<t t-esc="account['name']"/>
+									</span>
+								</td>
+								<td class="amd">
+									<t t-raw="account['total_debit']"/>
+								</td>
+								<td class="amd">
+									<t t-raw="account['total_credit']"/>
+								</td>
+								<td class="amd">
+									<t t-raw="account['total_balance']"/>
+								</td>
+							</tr>
+
+						</t>
+					<t t-else="">
+
+							<tr style="border: 1.5px solid black;" class=""
+                                data-toggle="collapse"
+                                t-att-data-account-id="account['id']"
+                                t-attf-data-target=".a{{account['id']}}">
+
+								<td colspan="6" style="border: 0px solid black;">
+									<span>
+										<t t-if="account['month_part']">
+										<t t-esc="account['month_part']"/>
+										</t>
+										<t t-esc="account['code']"/>
+
+										<t t-esc="account['name']"/>
+									</span>
+								</td>
+								<td class="amd">
+									<t t-raw="account['total_debit']"/>
+								</td>
+								<td class="amd">
+									<t t-raw="account['total_credit']"/>
+								</td>
+								<td class="amd">
+									<t t-raw="account['total_balance']"/>
+								</td>
+							</tr>
+						</t>
+						<tr t-attf-class="collapse a{{account['id']}}">
+							<td colspan="10">
+								<ul>
+
+								</ul>
+							</td>
+						</tr>
+					</t>
+				</tbody>
+
+
+			</table>
+		</div>
+	</t>
+
+	<t t-name="SubSectionCF">
+<!--		<div class="cf-table-div">-->
+
+			<table cellspacing="0" width="100%">
+				<thead>
+					<tr>
+						<th colspan="6">Name</th>
+						<th class="amd">Cash In</th>
+						<th class="amd">Cash Out</th>
+						<th class="amd">Balance</th>
+					</tr>
+				</thead>
+				<tbody>
+					<t t-foreach="account_data" t-as="data">
+
+							<t t-if="data.id == line_id">
+								<t t-foreach="data.journal_lines" t-as="account_line">
+									<t t-set="style" t-value="'font-style: italic;'"/>
+									<tr data-toggle=""
+											t-att-data-account-id="data.id"
+											t-attf-data-target=".a{{data.id}}">
+										<td colspan="6" style="border: 0px solid black;">
+											<t t-esc="account_line.name"/>
+										</td>
+										<t t-if="data_currency.company_currency_position == 'before'">
+										<td class="amd">
+											<t t-esc="data_currency.company_currency_symbol"/><t t-raw="account_line.total_debit"/>
+										</td>
+										<td class="amd">
+											<t t-esc="data_currency.company_currency_symbol"/><t t-raw="account_line.total_credit"/>
+										</td>
+										<td class="amd">
+											<t t-esc="data_currency.company_currency_symbol"/><t t-raw="account_line.balance"/>
+										</td>
+										</t>
+										<t t-if="data_currency.company_currency_position == 'after'">
+										<td class="amd">
+											<t t-raw="account_line.total_debit"/><t t-esc="data_currency.company_currency_symbol"/>
+										</td>
+										<td class="amd">
+											<t t-raw="account_line.total_credit"/><t t-esc="data_currency.company_currency_symbol"/>
+										</td>
+										<td class="amd">
+											<t t-raw="account_line.balance"/><t t-esc="data_currency.company_currency_symbol"/>
+										</td>
+										</t>
+									</tr>
+								</t>
+							</t>
+						</t>
+				</tbody>
+
+
+			</table>
+
+<!--		</div>-->
+	</t>
+
+	<t t-name="ChildSubSectionCF">
+		<div class="c-cf-table-div">
+			<table cellspacing="1" width="100%">
+				<thead>
+					<t t-foreach="account_data" t-as="acc_data">
+						<t t-if="acc_data.id == line_id">
+							<t t-foreach="acc_data.journal_lines" t-as="data">
+								<tr style="">
+									<th colspan="6"><t t-esc="data.name"/> </th>
+									<t t-if="data_currency.company_currency_position == 'before'">
+									<th class="amd" style="left: 100px;"><t t-esc="data_currency.company_currency_symbol"/><t t-esc="data.total_debit"/></th>
+									<th class="amd"><t t-esc="data_currency.company_currency_symbol"/><t t-esc="data.total_credit"/></th>
+									<th class="amd"><t t-esc="data_currency.company_currency_symbol"/><t t-esc="data.total_balance"/></th>
+									</t>
+									<t t-if="data_currency.company_currency_position == 'after'">
+									<th class="amd" style="left: 100px;"><t t-esc="data.total_debit"/><t t-esc="data_currency.company_currency_symbol"/></th>
+									<th class="amd"><t t-esc="data.total_credit"/><t t-esc="data_currency.company_currency_symbol"/></th>
+									<th class="amd"><t t-esc="data.total_balance"/><t t-esc="data_currency.company_currency_symbol"/></th>
+									</t>
+
+								</tr>
+
+							<t t-foreach="acc_data.move_lines" t-as="account_line">
+								<t t-if="account_line.j_id == data.id">
+								<tr>
+
+							<td colspan="6">
+								<t t-esc="account_line.move_name"/>
+							</td>
+							<t t-if="data_currency.company_currency_position == 'before'">
+							<td class="amd">
+								<t t-esc="data_currency.company_currency_symbol"/>
+								<t t-raw="account_line.total_debit"/>
+							</td>
+							<td class="amd">
+								<t t-esc="data_currency.company_currency_symbol"/>
+								<t t-raw="account_line.total_credit"/>
+							</td>
+							<td class="amd">
+								<t t-esc="data_currency.company_currency_symbol"/>
+								<t t-raw="account_line.balance"/>
+							</td>
+							</t>
+							<t t-if="data_currency.company_currency_position == 'after'">
+							<td class="amd">
+								<t t-if="account_line.total_debit==0"/>
+								<t t-esc="data_currency.company_currency_symbol"/>
+							</td>
+							<td class="amd">
+
+								<t t-raw="account_line.total_credit"/>
+								<t t-esc="data_currency.company_currency_symbol"/>
+							</td>
+							<td class="amd">
+
+								<t t-raw="account_line.balance"/>
+								<t t-esc="data_currency.company_currency_symbol"/>
+							</td>
+								</t>
+								</tr>
+								</t>
+							</t>
+
+							<tr t-attf-class="collapse a{{data.id}}">
+
+								<td colspan=""></td>
+							</tr>
+<!--						</t>-->
+							</t>
+						</t>
+					</t>
+				</thead>
+			</table>
+		</div>
+	</t>
+
+
+
+		<t t-name="FilterSectionCF">
+		<div class="py-control-div">
+			<span class="cf-breadcrumb">
+				<li>Cash Flow Statement</li>
+			</span>
+		</div>
+		<div class="py-control-div">
+			<div class="py-cntrl-left">
+				<div class="py-ctrl-buttons">
+					<button type="button" class="btn py-btn-primary" id="pdf" action="print_pdf" style="position: relative;">Print (PDF)</button>
+					<button type="button" class="btn py-btn-primary" id="xlsx" action="print_xlsx" style="position: relative;">Export (XLSX)</button>
+				</div>
+			</div>
+			<div class="py_cntrl_right">
+				<div class="py-search-buttons">
+					<button type="button" id="filter_apply_button" class="btn py-btn-secondary" action="apply_filter" style="position: relative;">Apply</button>
+					<div class="py-search-btn-date">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+							<span class="fa fa-calendar" title="Dates" role="img" aria-label="Dates"></span>
+Custom
+						</a>
+						<div class="dropdown-menu py-filters-menu" role="menu">
+							<div class="o_foldable_menu o_closed_menu o_account_report_search" data-filter="custom_filter_date">
+								<label class="custom-date" for="date_from">Start Date :</label>
+								<div class="form-group custom-date">
+									<div class="o_datepicker" aria-atomic="true" id="datepicker10" data-target-input="nearest">
+										<input type="text" id="date_from"></input>
+										<span class="o_datepicker_button"></span>
+									</div>
+								</div>
+								<label class="custom-date" for="date_to">End Date :</label>
+								<div class="form-group custom-date">
+									<div class="o_datepicker" aria-atomic="true" id="datepicker11" data-target-input="nearest">
+										<input type="text" id="date_to"></input>
+										<span class="o_datepicker_button"></span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="py-search-journals">
+
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown">
+							<span class="fa fa-book"></span>
+Target Moves:
+						</a>
+						<select class="dropdown-menu py-filters-menu target-moves" name="states[]" >
+							<option value="all">All Entries</option>
+							<option value="posted">Posted</option>
+
+						</select>
+						<span id="target_res"> </span>
+					</div>
+					<div class="py-search-reconciled">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown">
+							<span class="fa fa-book"></span>
+Level:
+						</a>
+						<select class="dropdown-menu py-filters-menu level" id="level" name="states[]" multiple="multiple">
+							<option value="summary">Summary</option>
+							<option value="consolidated">Consolidated</option>
+							<option value="detailed">Detailed</option>
+							<option value="very">Very Detailed</option>
+						</select>
+						<span id="level_res"> </span>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</t>
+</templates>

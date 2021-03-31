@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+	<t t-name="TrialBalance">
+		<div class="container-tb">
+			<div>
+				<div class="tb-filter"></div>
+			</div>
+			<div class="container-tb-data">
+				<div class="container-tb-main"></div>
+			</div>
+		</div>
+	</t>
+    <t t-name="TrialBalanceData">
+		<div>
+			<table cellspacing="0" width="100%">
+				<thead>
+					<tr>
+
+						<th colspan="6">Account</th>
+						<t t-if="filter['date_from']">
+							<th class="amt">Initial Debit</th>
+							<th class="amt">Initial Credit</th>
+
+						</t>
+						<th class="amt">Debit</th>
+						<th class="amt">Credit</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<t t-foreach="account_data" t-as="account">
+						<t t-set="common_id" t-value=""/>
+						<t t-if="account_data[account]['count']">
+							<tr style="border: 1.5px solid black;" class="gl-line"
+                                data-toggle="collapse"
+                                t-att-data-account-id="account_data[account]['id']"
+                                t-attf-data-target=".a{{account_data[account]['id']}}">
+								<td colspan="6" style="border: 0px solid black;">
+									<span>
+										<t t-esc="account_data[account]['code']"/>
+                                        -
+										<t t-esc="account_data[account]['name']"/>
+									</span>
+									<div class="py-search-btn-date">
+									<a type="button" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+									</a>
+										<div class="dropdown-menu " role="menu">
+											<div class="o_foldable_menu o_closed_menu " >
+												<div class="form-group ">
+													<div class="" aria-atomic="true" id="" data-target-input="">
+														<li role="presentation">
+															<a role="menuitem" t-att-data-account-id="account_data[account]['id']" class="open-gl" >View General Ledger</a>
+														</li>
+													</div>
+												</div>
+
+											</div>
+										</div>
+									</div>
+								</td>
+								<t t-if="filter['date_from']">
+									<t t-foreach="account_data[account]['lines']" t-as="line">
+										<t t-if="(line['initial_bal'] == true and line['move_name'] == 'Initial Balance')">
+											<td class="amt">
+												<t t-raw="line['debit']"/>
+											</td>
+											<td class="amt">
+												<t t-raw="line['credit']"/>
+											</td>
+										</t>
+									</t>
+								</t>
+								<td class="amt">
+									<t t-raw="account_data[account]['debit']"/>
+								</td>
+								<td class="amt">
+									<t t-raw="account_data[account]['credit']"/>
+								</td>
+
+								<t t-set="common_id" t-value="'a'+account_data[account]['id']"/>
+							</tr>
+						</t>
+					</t>
+							<td colspan="6" style="" class=""><strong>Total</strong></td>
+							<t t-if="filter['date_from']">
+
+							<td class="amt" style=""><strong></strong></td>
+							<td class="amt" style=""><strong></strong></td>
+							</t>
+							<td class="amt" style=""><strong><t t-esc="total_b['debit']"/></strong></td>
+							<td class="amt" style=""><strong><t t-esc="total_b['credit']"/></strong></td>
+
+				</tbody>
+			</table>
+		</div>
+	</t>
+	<t t-name="FilterSectionTB">
+		<div class="py-control-div">
+			<ol class="tl-breadcrumb">
+				<li>Trial Balance</li>
+			</ol>
+		</div>
+		<div class="py-control-div">
+			<div class="py-cntrl-left">
+				<div class="py-ctrl-buttons">
+					<button type="button" class="btn py-btn-primary" id="pdf" style="position: relative;">Print (PDF)</button>
+					<button type="button" class="btn py-btn-primary" id="xlsx" style="position: relative;">Export (XLSX)</button>
+				</div>
+			</div>
+			<div class="py_cntrl_right">
+				<div class="py-search-buttons">
+					<button type="button" id="filter_apply_button" class="btn py-btn-secondary" style="position: relative;">Apply</button>
+					<div class="py-search-btn-date">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+							<span class="fa fa-calendar" title="Dates" role="img" aria-label="Dates"></span>
+Date Range
+						</a>
+						<div class="dropdown-menu py-filters-menu" role="menu">
+							<div class="o_foldable_menu o_closed_menu o_account_report_search" data-filter="custom_filter_date">
+								<label class="custom-date" for="date_from">Start Date :</label>
+								<div class="form-group custom-date">
+									<div class="o_datepicker" aria-atomic="true" id="datepicker10" data-target-input="nearest">
+										<input type="text" id="date_from"></input>
+										<span class="o_datepicker_button"></span>
+									</div>
+								</div>
+								<label class="custom-date" for="date_to">End Date :</label>
+								<div class="form-group custom-date">
+									<div class="o_datepicker" aria-atomic="true" id="datepicker11" data-target-input="nearest">
+										<input type="text" id="date_to"></input>
+										<span class="o_datepicker_button"></span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="py-search-journals">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown">
+							<span class="fa fa-book"></span>
+Journals:
+						</a>
+						<select class="dropdown-menu py-filters-menu journal" name="states[]" multiple="multiple">
+							<b role="menuitem" class="dropdown-item-text">
+								<t t-esc="filter_data.company_name"/>
+							</b>
+							<div role="separator" class="dropdown-divider"></div>
+							<t t-foreach="filter_data.journals_list" t-as="journal">
+								<option t-attf-value="{{journal[0]}}">
+									<t t-esc="journal[1]"/>
+								</option>
+							</t>
+						</select>
+						<span id="journal_res"></span>
+					</div>
+
+
+					<div class="py-search-analytics">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown">
+							<span class="fa fa-book"></span>
+Analytic:
+						</a>
+						<select class="dropdown-menu py-filters-menu analytic" name="states[]" multiple="multiple">
+							<t t-foreach="filter_data.analytics_list" t-as="analytic">
+								<option t-attf-value="{{analytic[0]}}">
+									<t t-esc="analytic[1]"/>
+								</option>
+							</t>
+						</select>
+						<span id="analic_res"></span>
+					</div>
+
+
+
+					<div class="py-search-entries">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown">
+							<span class="fa fa-filter"></span>
+Options:
+						</a>
+						<select id="entries" class="dropdown-menu py-filters-menu entries" name="states[]">
+								<option value="all">All Entries </option>
+								<option value="posted">Posted Entries</option>
+						</select>
+						<span id="post_res"></span>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</t>
+</templates>

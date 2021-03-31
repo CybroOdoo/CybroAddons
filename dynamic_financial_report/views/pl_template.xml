@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="partner_ledger">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <div class="page">
+                    <h3><span t-esc="res_company.name"/>: Partner Ledger</h3>
+                    <br></br>
+                        <div class="row mt32">
+                            <div class="col-2">
+                                <strong>Partners:</strong>
+                                <t t-foreach="report_data[0]['partners']"
+                                   t-as="data">
+                                    <t t-esc="data"/>
+                                </t>
+                            </div>
+                            <div class="col-2">
+                                <strong>Journals:</strong>
+                                <t t-foreach="report_data[0]['journals']"
+                                   t-as="data">
+                                    <t t-esc="data"/>
+                                </t>
+                            </div>
+                            <div class="col-2">
+                                <strong>Partners Tag:</strong>
+                                <t t-foreach="report_data[0]['categories']"
+                                   t-as="data">
+                                    <t t-esc="data"/>
+                                </t>
+                            </div>
+                            <div class="col-2">
+                                <strong>Account Type :</strong>
+                                <p t-esc="report_data[0]['type']"/>
+                            </div>
+                            <div class="col-2">
+                                <strong>Accounts:</strong>
+                                <t t-foreach="report_data[0]['accounts']"
+                                   t-as="data">
+                                    <t t-esc="data"/>
+                                </t>
+                            </div>
+                            <div class="col-2">
+                                <strong>Target Moves:</strong>
+                                <p t-esc="report_data[0]['target_moves']"/>
+                            </div>
+                        </div>
+                    <div class="row mt32">
+                        <t t-if="report_data[0].get('date_from')">
+                                <div class="col-2">
+                                    <strong>From Date :</strong>
+                                    <p t-esc="report_data[0]['date_from']"/>
+                                </div>
+                            </t>
+                            <t t-if="report_data[0].get('date_to')">
+                                <div class="col-2">
+                                    <strong>To Date :</strong>
+                                    <p t-esc="report_data[0]['date_to']"/>
+                                </div>
+                            </t>
+                        <t t-if="report_data[0].get('reconciled')">
+                                <div class="col-2">
+                                    <strong>Reconciliation status :</strong>
+                                    <p t-esc="report_data[0]['reconciled']"/>
+                                </div>
+                            </t>
+                    </div>
+10:27
+<t t-set="data_report_margin_top" t-value="0"/>
+                        <table class="table table-sm table-reports" style="top:0px;">
+                            <thead>
+                                <tr class="text-center">
+                                    <th style="text-align:left;">Date</th>
+                                    <th style="text-align:left;">Journal</th>
+                                    <th style="text-align:left;">Account</th>
+                                    <th style="text-align:left;">Move</th>
+                                    <th style="text-align:left;">Reference</th>
+                                    <th style="text-align:right;">Debit</th>
+                                    <th style="text-align:right;">Credit</th>
+                                    <th style="text-align:right;">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <t t-foreach="account_data" t-as="line">
+                                <t t-if="account_data[line]['count']">
+                                    <tr style="border-bottom: 2px solid black;">
+                                        <td colspan="5">
+                                            <span style="color: white;"
+                                                  t-esc="'..'"/>
+                                            <strong>
+                                                <span t-esc="account_data[line]['name']"/>
+                                            </strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <strong>
+                                                <span t-esc="account_data[line]['debit']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <strong>
+                                                <span t-esc="account_data[line]['credit']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <strong>
+                                                <span t-esc="account_data[line]['balance']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                    <t t-foreach="account_data[line]['lines']"
+                                       t-as="sub_line">
+                                        <t t-if="sub_line['initial_bal']">
+                                            <tr>
+                                                <td colspan="5"
+                                                    class="text-right">
+                                                    <span>Initial Balance</span>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-esc="sub_line['debit']"
+                                                          t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-esc="sub_line['credit']"
+                                                          t-options="{'widgetaccount_data': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-esc="sub_line['balance']"
+                                                          t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <t t-if="not sub_line['initial_bal'] and not sub_line['ending_bal']">
+                                            <tr>
+                                                <td>
+                                                    <t t-esc="sub_line.get('ldate')"
+                                                       t-options='{"widget": "date"}'/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="sub_line.get('lcode')"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="sub_line.get('account_code')"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="sub_line.get('move_name')"/>
+                                                </td>
+                                                <td style="width:30%;">
+                                                    <t t-esc="sub_line.get('lname')"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <t t-esc="sub_line.get('debit')"
+                                                       t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <t t-esc="sub_line.get('credit')"
+                                                       t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <t t-esc="sub_line.get('balance')"
+                                                       t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <t t-if="sub_line['ending_bal']">
+                                            <tr>
+                                                <td colspan="5"
+                                                    class="text-right">
+                                                    <span>Ending Balance</span>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-esc="sub_line['debit']"
+                                                          t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-esc="sub_line['credit']"
+                                                          t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-esc="sub_line['balance']"
+                                                          t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                </t>
+                            </t>
+                            </tbody>
+                        </table>
+                </div>
+            </t>
+        </t>
+    </template>
+    <report id="action_print_partner_ledger"
+            model="dynamic.partner.ledger"
+            report_type="qweb-pdf"
+            menu="False"
+            string="Partner Ledger"
+            name="dynamic_financial_report.partner_ledger"
+            file="dynamic_financial_report.partner_ledger"
+    />
+</odoo>
