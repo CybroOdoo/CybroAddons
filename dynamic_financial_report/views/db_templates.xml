@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="dynamic_financial_report.dynamic_day_book">
+       <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <div class="page">
+                    <div class="oe_structure"/>
+                    <h3><span t-esc="res_company.name"/>: Day Book
+                    </h3>
+                    <br></br>
+                    <div>
+                        <div class="row mt32">
+                             <div class="col-3">
+                            <span t-if="Filters.get('date_from')">
+                                <strong>From:</strong>
+                                <t t-esc="report_data[0]['date_from']"/>
+                            </span>
+                             </div>
+                             <div class="col-3">
+                            <span t-if="Filters.get('date_to')">
+                                <strong>To:</strong>
+                                <t t-esc="report_data[0]['date_to']"/>
+                            </span>
+                             </div>
+                        </div>
+                        <br></br>
+                        <div class="row mb32">
+                            <div class="col-3">
+                                <strong>Journals: </strong>
+                                <t t-foreach="report_data[0]['journals']"
+                                   t-as="data">
+                                    <t t-esc="data"/>
+
+                                </t>
+                            </div>
+                             <div class="col-3">
+                                <strong>Account: </strong>
+                                <t t-foreach="report_data[0]['accounts']"
+                                   t-as="data">
+                                    <t t-esc="data"/>
+                                </t>
+                            </div>
+                         <div class="col-3">
+                            <strong>Target Moves:</strong>
+                            <p t-esc="report_data[0]['entries']"/>
+                        </div>
+
+
+                    </div>
+
+                        <table  class="table table-sm table-reports">
+                            <thead>
+                                <tr class="text-center">
+                                    <th style="text-align:left;" >Date</th>
+                                    <th style="text-align:left;"  >JRNL</th>
+                                    <th style="text-align:left;" >Partner</th>
+
+                                    <th style="text-align:left;" >Move</th>
+                                     <th style="text-align:left;" >Entry Label</th>
+
+                                    <th style="text-align:right;" colspan="1">Debit</th>
+                                    <th style="text-align:right;" colspan="2">Credit</th>
+                                    <th style="text-align:right;" colspan="2">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <t t-foreach="account_data" t-as="line">
+                                <t t-if="account_data[line]['count']">
+
+                                    <tr style="border-bottom: 2px solid black;">
+
+                                        <td colspan="4">
+                                            <span style="color: white;" t-esc="'..'"/>
+                                            <strong>
+                                                <span t-esc="account_data[line]['date']"/>
+
+                                            </strong>
+
+                                        </td>
+                                         <td class="text-right" colspan="2">
+                                            <strong>
+                                                 <span t-esc="account_data[line]['debit']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+
+                                            </strong>
+
+                                        </td>
+                                        <td class="text-right" colspan="2">
+                                            <strong>
+                                                 <span t-esc="account_data[line]['credit']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+
+                                            </strong>
+
+                                        </td>
+                                        <td class="text-right" colspan="2">
+                                            <strong>
+                                                <span t-esc="account_data[line]['balance']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+
+                                            </strong>
+
+                                        </td>
+
+                                    </tr>
+                                    <br></br>
+<!--                                </t>-->
+                                    <t t-foreach="lines[2]" t-as="sub_line">
+                                        <t t-if="sub_line['ldate'] == account_data[line]['date']">
+
+                                            <tr>
+                                                <td style="text-align:left;">
+                                                    <t t-esc="sub_line.get('ldate')"/>
+                                                </td >
+                                                <td  style="text-align:left;">
+                                                    <t t-esc="sub_line.get('lcode')"/>
+                                                </td>
+                                                 <td style="text-align:left;">
+                                                    <t t-esc="sub_line.get('partner_name')"/>
+                                                </td>
+                                                 <td style="text-align:left;">
+                                                    <t t-esc="sub_line.get('move_name')"/>
+                                                </td>
+                                                 <td colspan="1" style="text-align:left;">
+                                                    <t t-esc="sub_line.get('lname')"/>
+                                                </td>
+<!--
+                                               ">&ndash;&gt;-->
+
+                                                <td colspan="1" style="text-align:right;">
+                                                    <t t-esc="sub_line.get('debit')"
+                                                    t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                                 <td colspan="2" style="text-align:right;">
+                                                    <t t-esc="sub_line.get('credit')"
+                                                    t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                                <td colspan="2" style="text-align:right;">
+                                                    <t t-esc="sub_line.get('balance')"
+                                                    t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                            </tr>
+
+                                        </t>
+                                    </t>
+                                </t>
+                            </t>
+                            </tbody>
+                        </table>
+                    </div>
+                    <br></br>
+                </div>
+            </t>
+        </t>
+    </template>
+
+
+
+
+    <report id="action_print_day_book"
+            model="dynamic.day.book"
+            report_type="qweb-pdf"
+            menu="False"
+            string="Day Book"
+            name="dynamic_financial_report.dynamic_day_book"
+            file="dynamic_financial_report.dynamic_day_book"
+    />
+
+</odoo>

@@ -1,0 +1,292 @@
+<templates xml:space="preserve">
+	<t t-name="AgeingPartner">
+		<div class="container-al">
+			<div>
+				<div class="al-filter"></div>
+			</div>
+			<div class="container-al-data">
+				<div class="container-al-main"/>
+			</div>
+		</div>
+	</t>
+	<t t-name="AgeingPartnerData">
+		<div>
+			<table cellspacing="0" width="100%">
+				<thead>
+					<tr>
+						<th colspan="2">Account</th>
+						<th class="amt">Not Due</th>
+						<th class="amt">0-20</th>
+						<th class="amt">21-40</th>
+						<th class="amt">41-60</th>
+						<th class="amt">61-80</th>
+						<th class="amt">81-100</th>
+						<th class="amt">100+</th>
+						<th class="amt">Total</th>
+					</tr>
+				</thead>
+				<tbody>
+
+					<t t-foreach="account_data" t-as="account">
+
+						<t t-set="common_id" t-value=""/>
+						<t t-if="account_data[account]['count']">
+							<tr style="border: 1.5px solid black;" class="al-line"
+                                data-toggle="collapse"
+                                t-att-data-account-id="account_data[account]['id']"
+                                t-attf-data-target=".a{{account_data[account]['id']}}">
+								<td colspan="2" style="border: 0px solid black;">
+									<i class="fa fa-caret-down" role="img" aria-label="Unfolded" title="Unfolded"></i>
+									<span>
+										<t t-esc="account_data[account]['partner_name']"/>
+									</span>
+								</td>
+								<td class="amt"  >
+									<t t-raw="account_data[account]['Not']"/>
+								</td>
+								<td class="amt" >
+									<t t-raw="account_data[account]['value_20']"/>
+								</td>
+								<td class="amt" >
+									<t t-raw="account_data[account]['2140']"/>
+								</td>
+								<td class="amt" >
+									<t t-raw="account_data[account]['4160']"/>
+								</td>
+								<td class="amt" >
+									<t t-raw="account_data[account]['6180']"/>
+								</td>
+								<td class="amt" >
+									<t t-raw="account_data[account]['81100']"/>
+								</td>
+								<td class="amt" >
+									<t t-raw="account_data[account]['100']"/>
+								</td>
+								<td class="amt" >
+									<t t-raw="account_data[account]['total']"/>
+								</td>
+<!--								<td class="amt"></td>-->
+								<t t-set="common_id" t-value="'a'+account_data[account]['id']"/>
+							</tr>
+						</t>
+						<tr t-attf-class="collapse a{{account_data[account]['id']}}">
+							<td colspan="10">
+								<ul>
+									<t t-if="!account_data[account]['single_page']">
+										<t t-foreach="account_data[account]['pages']" t-as="i">
+											<t t-esc="i"/>
+											<li>
+												<a
+                                                   t-att-data-page-number="i"
+                                                   t-att-data-count="account_data[account]['count']"
+                                                   t-att-data-account-id="account_data[account]['id']">
+													<t t-esc="i"/>
+												</a>
+											</li>
+										</t>
+									</t>
+								</ul>
+
+							</td>
+						</tr>
+					</t>
+				</tbody>
+			</table>
+		</div>
+	</t>
+	<t t-name="FilterSection-al">
+		<div class="py-control-div">
+			<ol class="al-breadcrumb">
+				<li>Partner Ageing</li>
+			</ol>
+		</div>
+		<div class="py-control-div">
+			<div class="py-cntrl-left">
+				<div class="py-ctrl-buttons">
+					<button type="button" class="btn py-btn-primary" id="pdf" action="print_pdf" style="position: relative;">Pint (PDF)</button>
+					<button type="button" class="btn py-btn-primary" id="xlsx" action="print_xlsx" style="position: relative;">Export (XLSX)</button>
+				</div>
+			</div>
+			<div class="py_cntrl_right">
+				<div class="py-search-buttons">
+					<button type="button" id="filter_apply_button" class="btn py-btn-secondary" action="apply_filter" style="position: relative;">Apply</button>
+					<div class="py-search-btn-date">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+							<span class="fa fa-calendar" title="Dates" role="img" aria-label="Dates"></span>
+As On Date
+						</a>
+						<div class="dropdown-menu py-filters-menu" role="menu">
+							<div class="o_foldable_menu o_closed_menu o_account_report_search" data-filter="custom_filter_date">
+								<label class="custom-date" for="as_on_date">As On Date :</label>
+								<div class="form-group custom-date">
+									<div class="o_datepicker" aria-atomic="true" id="datepicker10" data-target-input="nearest">
+										<input type="text" id="as_on_date"></input>
+										<span class="o_datepicker_button"></span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="py-search-accounts">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown">
+							<span class="fa fa-book"></span>
+Account Type:
+						</a>
+						<select class="dropdown-menu py-filters-menu account" name="states[]" multiple="multiple">
+								<option value="receivable">Receivable Accounts Only</option>
+								<option value="payable">Payable Accounts Only</option>
+						</select>
+						<span id="type_res"></span>
+					</div>
+					<div class="py-search-partner-type">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown">
+							<span class="fa fa-filter"></span>
+Partner Type:
+						</a>
+						<select class="dropdown-menu py-filters-menu partner-type" name="states[]" multiple="multiple">
+								<option value="customer">Customer Only</option>
+								<option value="supplier">Supplier Only</option>
+						</select>
+						<span id="partner_type_res"></span>
+					</div>
+					<div class="py-search-partners">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown">
+							<span class="fa fa-users"></span>
+Partners:
+						</a>
+						<select class="dropdown-menu py-filters-menu partners" name="states[]" multiple="multiple">
+							<t t-foreach="filter_data.partners_list" t-as="partners">
+								<option t-attf-value="{{partners[0]}}">
+									<t t-esc="partners[1]"/>
+								</option>
+							</t>
+						</select>
+						<span id="partner_res"></span>
+					</div>
+					<div class="py-search-partner-tag">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown">
+							<span class="fa fa-filter"></span>
+Partner Tag:
+						</a>
+						<select class="dropdown-menu py-filters-menu partner-tag" name="states[]" multiple="multiple">
+							<t t-foreach="filter_data.category_list" t-as="partner_tag">
+								<option t-attf-value="{{partner_tag[0]}}">
+									<t t-esc="partner_tag[1]"/>
+								</option>
+							</t>
+						</select>
+						<span id="category_res"></span>
+					</div>
+					<div class="py-search-targetmoves">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown">
+							<span class="fa fa-book"></span>
+Target Moves:
+						</a>
+						<select class="dropdown-menu py-filters-menu target-moves" name="states[]" >
+							<option value="draft">All Entries</option>
+							<option value="posted">Posted</option>
+
+						</select>
+						<span id="target_res"></span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</t>
+	<t t-name="SubSection_al">
+		<div class="al-table-div">
+			<table class="table table-sm o_main_table"
+                   style="border: 0px solid black;display compact;">
+				<thead>
+					<tr style="">
+						<th>Entry Label</th>
+						<th>Due Date</th>
+						<th>Journal</th>
+						<th>Account</th>
+						<th class="text-right">Not Due</th>
+						<th class="text-right">0-20</th>
+						<th class="text-right">21-40</th>
+						<th class="text-right">41-60</th>
+						<th class="text-right">61-80</th>
+						<th class="text-right">81-100</th>
+						<th class="text-right" >100+</th>
+
+					</tr>
+				</thead>
+				<tbody>
+					<t t-foreach="account_data" t-as="account_line">
+							<t t-set="style" t-value="'font-style: italic;'"/>
+<!--					</t>-->
+						<tr>
+							<td>
+								<t t-if="account_line.move_name">
+									<div class="dropdown dropdown-toggle">
+										<a data-toggle="dropdown" href="#">
+											<span class="caret"></span>
+											<span data-id="17">
+												<t t-esc="account_line.move_name"/>
+											</span>
+										</a>
+										<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+											<li>
+												<a class="view-move" tabindex="-1" href="#"
+                                                   t-att-data-move-id="account_line.move_id">
+											View Source move
+
+										</a>
+											</li>
+										</ul>
+									</div>
+								</t>
+							</td>
+							<td>
+								<t t-esc="account_line.date_maturity"/>
+							</td>
+							<td>
+								<t t-esc="account_line.journal_name"/>
+							</td>
+							<td >
+								<span>
+										<t t-esc="account_line.account_code"/>
+                                        -
+
+
+
+										<t t-esc="account_line.account_name"/>
+									</span>
+							</td>
+							<td class="text-right"
+>
+								<t t-esc="account_line.range_0"/>
+							</td>
+							<td class="text-right"
+>
+								<t t-esc="account_line.range_1"/>
+							</td>
+							<td class="text-right"
+>
+								<t t-esc="account_line.range_2"/>
+							</td>
+							<td class="text-right"
+>
+								<t t-esc="account_line.range_3"/>
+							</td>
+							<td class="text-right"
+>
+								<t t-esc="account_line.range_4"/>
+							</td>
+							<td class="text-right"
+>
+								<t t-esc="account_line.range_5"/>
+							</td>
+							<td class="text-right"
+>
+								<t t-esc="account_line.range_6"/>
+							</td>
+						</tr>
+					</t>
+				</tbody>
+			</table>
+		</div>
+	</t>
+</templates>
