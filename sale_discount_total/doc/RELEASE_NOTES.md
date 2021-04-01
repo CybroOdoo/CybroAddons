@@ -10,5 +10,10 @@ Initial commit for Sale Discount On Total Amount
 #### FIX
 Bug Fixed, discount not updating to invoice
 
+#### 01.04.2021
+#### Version 13.0.1.1.1
+#### FIX
+discount roundoff issue
+
 
 

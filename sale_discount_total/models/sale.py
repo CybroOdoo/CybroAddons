@@ -45,9 +45,9 @@ class SaleOrder(models.Model):
                 'amount_total': amount_untaxed + amount_tax,
             })
 
-
     discount_type = fields.Selection([('percent', 'Percentage'), ('amount', 'Amount')], string='Discount type',
-                                     readonly=True,states={'draft': [('readonly', False)], 'sent': [('readonly', False)]},
+                                     readonly=True,
+                                     states={'draft': [('readonly', False)], 'sent': [('readonly', False)]},
                                      default='percent')
     discount_rate = fields.Float('Discount Rate', digits=dp.get_precision('Account'),
                                  readonly=True, states={'draft': [('readonly', False)], 'sent': [('readonly', False)]})
@@ -78,7 +78,7 @@ class SaleOrder(models.Model):
                 for line in order.order_line:
                     line.discount = discount
 
-    def _prepare_invoice(self,):
+    def _prepare_invoice(self, ):
         invoice_vals = super(SaleOrder, self)._prepare_invoice()
         invoice_vals.update({
             'discount_type': self.discount_type,
@@ -86,19 +86,13 @@ class SaleOrder(models.Model):
         })
         return invoice_vals
 
-
-
     def button_dummy(self):
 
         self.supply_rate()
         return True
 
 
-
-
-
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
     discount = fields.Float(string='Discount (%)', digits=(16, 20), default=0.0)
-
