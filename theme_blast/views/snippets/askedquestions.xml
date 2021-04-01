@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="askedquestions" inherit_id="website.snippets" name="Asked Questions Snippet">
+        <xpath expr="//div[@id='snippet_structure']/div[hasclass('o_panel_body')]" position="inside">
+            <t t-snippet="theme_blast.asked_questions_template"
+               t-thumbnail="/theme_blast/static/src/img/1.jpg"/>
+        </xpath>
+    </template>
+
+    <template id="asked_questions_template" name="Asked Question Snippet">
+        <section class="faq gap" id="faq"  style="background-image:url(/theme_blast/static/src/img/banner/as.jpg)">
+            <div class="container">
+                <div class="section_heading">
+                    <h3>Asked Questions</h3>
+                    <hr/>
+                    <p>A wonderful serenity has taken possession of my entire soul, like these
+                        <br/>
+                        sweet mornings of spring which I
+                        enjoy with
+                    </p>
+                </div>
+                <div class="faq_contents">
+                    <div class="row">
+                        <div class="col-lg-6 col-12">
+                            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                                <t t-set="asked_questions"
+                                   t-value="request.env['blast.configuration'].search([],limit=1).asked_questions_ids"/>
+                                <t t-set="counter" t-value="1"/>
+                                <t t-foreach="asked_questions" t-as="asked_question">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" role="tab" t-attf-id="heading#{counter}">
+                                            <h4 class="panel-title">
+                                                <t t-set="href_collapse" t-value="'#collapse' + str(counter)"/>
+                                                <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                                   t-attf-href="#{href_collapse}" aria-expanded="true"
+                                                   t-attf-aria-controls="collapse#{counter}">
+                                                    <span t-esc="asked_question.question"/>
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div t-attf-id="collapse#{counter}" class="panel-collapse collapse in"
+                                             role="tabpanel"
+                                             t-attf-aria-labelledby="heading#{counter}">
+                                            <div class="panel-body" t-esc="asked_question.answer">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <t t-set="counter" t-value="counter + 1"/>
+                                </t>
+                                <t t-if="not asked_questions">
+                                    <div>
+                                        Please add Question and Answer in the Blast Configuration
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-12">
+                            <div class="wrapper_img">
+                                <img src="/theme_blast/static/src/img/faq/faq.jpg" alt=""/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+</odoo>

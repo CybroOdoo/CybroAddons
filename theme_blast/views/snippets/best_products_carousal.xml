@@ -1,0 +1,116 @@
+<odoo>
+    <data>
+
+        <template id="best_product_carousel" name="Best Products Carousel">
+            <section class="best_products_carousel product gap" id="section3">
+            </section>
+        </template>
+
+        <template id="best_product_carousel_snippet">
+            <div class="container" t-ignore="True">
+                <div class="section_heading">
+                    <h3>Best Products</h3>
+                    <hr/>
+                    <p>A wonderful serenity has taken possession of my entire soul, like these
+                        <br/>
+                        sweet mornings of spring which I
+                        enjoy with
+                    </p>
+                </div>
+                <div class="product_content">
+                    <div class="row">
+                        <div class="owl-carousel" id="product">
+                            <t t-if="products">
+                                <t t-foreach="products" t-as="product_id">
+                                <form action="/shop/cart/update" method="post" id="product_carousal"
+                                      itemscope="itemscope" itemtype="http://schema.org/Product">
+                                    <t t-set="combination_info"
+                                       t-value="product_id.product_tmpl_id._get_combination_info(product_id=product_id.id, add_qty=add_qty or 1, pricelist=pricelist)"/>
+                                    <div>
+                                        <div class="sub_wrapper">
+                                        <div class="wrapper ">
+                                            <div class="product_img">
+                                                <span t-if="product_id" t-esc="product_id.image_1920"
+                                                      t-options="{'widget': 'image', 'preview_image': 'image_1024' if product_image_big else 'image_256'}"
+                                                      class="first-image"/>
+                                            </div>
+                                            <ul class="star">
+                                                <li>
+                                                    <a href="#">
+                                                        <img src="/theme_blast/static/src/img/icons/star.svg"/>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="#">
+                                                        <img src="/theme_blast/static/src/img/icons/star.svg"/>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="#">
+                                                        <img src="/theme_blast/static/src/img/icons/star.svg"/>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="#">
+                                                        <img src="/theme_blast/static/src/img/icons/star.svg"/>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="#">
+                                                        <img src="/theme_blast/static/src/img/icons/star.svg"/>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                            <div class="wrapper-body">
+                                                <a class="text-center" href="javascript:{}"
+                                                   onclick="document.getElementById('product_carousal').submit();"
+                                                   role="button">
+                                                    Add to cart
+                                                </a>
+                                                <input name="product_id" t-att-value="product_id.id" type="hidden"/>
+                                                <input type="hidden" name="csrf_token"
+                                                       t-att-value="request.csrf_token()"/>
+                                                <div class="price">
+                                                    <span class="discount" t-if="combination_info['price']"
+                                                          t-esc="combination_info['price']"
+                                                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                                    <span t-attf-class="cross mr-2 {{'' if combination_info['has_discounted_price'] else 'd-none'}}"
+                                                          style="white-space: nowrap; text-decoration: line-through;"
+                                                          t-esc="combination_info['list_price']"
+                                                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                                </div>
+                                                <h4>
+                                                    <span t-if="product_id" t-esc="product_id.display_name"/>
+                                                </h4>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </t>
+                            </t>
+                        </div>
+                        <div class="slider-counter">
+                        </div>
+                        <t t-if="not products">
+                            <div>
+                                Please add  Best Products in the Blast Configuration.
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template id="best_products_snippet" inherit_id="website.snippets"
+                  name="Best Products Snippet">
+            <xpath expr="//div[@id='snippet_structure']" position="inside">
+                <div class="o_panel_body">
+                    <t t-snippet="theme_blast.best_product_carousel"
+                       t-thumbnail="/theme_blast/static/src/img/snippets/s_product_list.svg"/>
+                </div>
+            </xpath>
+        </template>
+
+
+    </data>
+</odoo>

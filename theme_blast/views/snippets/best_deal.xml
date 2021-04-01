@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <template id="best_deal_snippet_template" name="Best Deal">
+            <section class="best_deal deal gap">
+            </section>
+        </template>
+
+        <template id="best_deal_template">
+            <form action="/shop/cart/update" method="post"
+                  itemscope="itemscope" itemtype="http://schema.org/Product">
+                <div class="container" t-ignore="True">
+                    <div class="section_heading">
+                        <h3>Best Deals</h3>
+                        <hr/>
+                        <p>A wonderful serenity has taken possession of my entire soul, like these
+                            <br/>
+                            sweet mornings of spring which I
+                            enjoy with
+                        </p>
+                    </div>
+                    <div class="deal_content">
+                        <div class="row">
+                            <div class=" col-12">
+                                <t t-if="product_id">
+                                    <t t-set="combination_info"
+                                       t-value="product_id.product_tmpl_id._get_combination_info(product_id=product_id.id, add_qty=add_qty or 1, pricelist=pricelist)"/>
+                                    <div class="wrapper">
+                                        <div class="deal_img">
+                                            <span t-if="product_id" t-esc="product_id.image_1920"
+                                                  t-options="{'widget': 'image', 'preview_image': 'image_1024' if product_image_big else 'image_256'}"/>
+                                        </div>
+                                        <div class="deal_info">
+                                            <ul class="star">
+                                                <li>
+                                                    <a href="#">
+                                                        <img src="/theme_blast/static/src/img/icons/star.svg"/>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="#">
+                                                        <img src="/theme_blast/static/src/img/icons/star.svg"/>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="#">
+                                                        <img src="/theme_blast/static/src/img/icons/star.svg"/>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="#">
+                                                        <img src="/theme_blast/static/src/img/icons/star.svg"/>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="#">
+                                                        <img src="/theme_blast/static/src/img/icons/star.svg"/>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                            <h4>
+                                                <span t-if="product_id" t-esc="product_id.display_name"/>
+                                            </h4>
+                                            <div t-if="product_id" t-esc="product_id.description_sale"/>
+                                            <div class="price">
+                                                <span style="font-size: 40px;" t-if="combination_info['price']" t-esc="combination_info['price']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                                <span t-attf-class="cross text-danger mr-2 {{'' if combination_info['has_discounted_price'] else 'd-none'}}"
+                                                      style="white-space: nowrap;" t-esc="combination_info['list_price']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                            </div>
+                                            <p id="countdown">
+                                            </p>
+                                            <input name="product_id" t-att-value="product_id.id" type="hidden"/>
+                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                            <button type="submit" class="btn btn-primary">Buy now</button>
+                                        </div>
+                                    </div>
+                                </t>
+                                <t t-if="not product_id">
+                                    <div>
+                                        Please add Best deal Product in the Blast Configuration
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </template>
+
+
+        <template id="best_deal_snippet" inherit_id="website.snippets"
+                  name="Best Deal Snippet">
+            <xpath expr="//div[@id='snippet_structure']" position="inside">
+                <div class="o_panel_body">
+                    <t t-snippet="theme_blast.best_deal_snippet_template"
+                       t-thumbnail="/theme_blast/static/src/img/snippets/s_card.svg"/>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>
