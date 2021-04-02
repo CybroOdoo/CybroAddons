@@ -39,17 +39,18 @@ class EmployeeFleet(models.Model):
         check_availability = 0
         for i in fleet_obj:
             for each in i.reserved_time:
-                if each.date_from <= self.date_from <= each.date_to:
-                    check_availability = 1
-                elif self.date_from < each.date_from:
-                    if each.date_from <= self.date_to <= each.date_to:
+                if each.date_from and each.date_to:
+                    if each.date_from <= self.date_from <= each.date_to:
                         check_availability = 1
-                    elif self.date_to > each.date_to:
-                        check_availability = 1
+                    elif self.date_from < each.date_from:
+                        if each.date_from <= self.date_to <= each.date_to:
+                            check_availability = 1
+                        elif self.date_to > each.date_to:
+                            check_availability = 1
+                        else:
+                            check_availability = 0
                     else:
                         check_availability = 0
-                else:
-                    check_availability = 0
         if check_availability == 0:
             reserved_id = self.fleet.reserved_time.create({'employee': self.employee.id,
                                                            'date_from': self.date_from,
