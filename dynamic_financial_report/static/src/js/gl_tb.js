@@ -700,7 +700,7 @@ odoo.define('dynamic_financial_report.DynamicReport', function(require) {
             }).then(function(datas) {
                 self.filter_data = datas[0]
                 self.account_data = datas[1]
-                      if (datas[2].currency_details){
+                      if (datas[2].currency_details.length > 0){
                         var currency_format = {
                             currency_id: datas[2].currency_details[0].currency,
                             position: datas[2].currency_details[0].position,
