@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <template id="xtream_products" name="Xtream Products" inherit_id="website_sale.products">
+            <xpath expr="//div[@id='products_grid']" position="replace">
+                <section class="Shop_product col-lg-9 col-md-12 col-12">
+                    <div class="container">
+                        <div class="row">
+                            <t t-if="category">
+                                <t t-set='editor_msg'>Drag building blocks here to customize the header for "<t t-esc='category.name'/>" category.</t>
+                                <div class="mb16" id="category_header" t-att-data-editor-message="editor_msg" t-field="category.website_description"/>
+                            </t>
+                            <t t-foreach="bins" t-as="tr_product">
+                                <t t-foreach="tr_product" t-as="td_product">
+                                    <t t-if="td_product">
+                                        <t t-set="product" t-value="td_product['product']" />
+                                        <div class="col-12 col-sm-6 col-md-4 column all">
+                                            <div class="content">
+                                                <div t-att-data-ribbon-id="td_product['ribbon'].id">
+                                                    <div t-attf-class="img_zoom">
+                                                        <div id="zoomIn">
+                                                            <t t-call="website_sale.products_item">
+                                                            </t>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </t>
+                            </t>
+                        </div>
+                    </div>
+                </section>
+            </xpath>
+        </template>
+        <template id="xtream_shop_cart" inherit_id="website_sale.products_add_to_cart" name="Xtream Cart Logo">
+            <xpath expr="//span[hasclass('fa')]" position="replace">
+                <span class="fa fa-plus"/>
+            </xpath>
+        </template>
+        <template id="xtream_shop_details" inherit_id="website_sale.products_item" name="Xtream Shop Details">
+            <xpath expr="//div[hasclass('o_wsale_product_information_text')]" position="replace">
+                <div class="p-2 o_wsale_product_information_text">
+                    <div class="product_price" itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
+                        <del t-attf-class="text-danger mr-2 {{'' if combination_info['has_discounted_price'] else 'd-none'}}" style="white-space: nowrap;" t-esc="combination_info['list_price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" />
+                        <span t-if="combination_info['price']" t-esc="combination_info['price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <span itemprop="price" style="display:none;" t-esc="combination_info['price']" />
+                        <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name" />
+                    </div>
+                    <h6 class="o_wsale_products_item_title">
+                        <a itemprop="name" t-att-href="product_href" t-att-content="product.name" t-field="product.name" />
+                        <a role="button" t-if="not product.website_published" t-att-href="product_href" class="btn btn-sm btn-danger" title="This product is unpublished.">Unpublished</a>
+                    </h6>
+                </div>
+            </xpath>
+        </template>
+        <template id="xtream_products_description" inherit_id="theme_xtream.xtream_shop_details" active="True" customize_show="True" name="Xtream Product Description">
+            <xpath expr="//h6[hasclass('o_wsale_products_item_title')]" position="after">
+                <div class="oe_subdescription" contenteditable="false">
+                    <div itemprop="description" t-field="product.description_sale"/>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>
