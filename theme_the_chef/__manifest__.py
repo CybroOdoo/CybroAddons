@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2020-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -19,15 +19,16 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 {
-    'name': 'The Chef Theme',
-    'description': 'The Chef Theme',
+    'name': 'Theme The Chef',
+    'description': 'Theme The Chef is a popular attractive and unique front end theme for your restaurant website.',
+    'summary': 'Theme The Chef is a popular attractive and unique front end theme for your restaurant website',
+    'category': 'Theme/Creative',
     'version': '14.0.1.0.0',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'category': 'Theme/Corporate',
+    'website': "https://www.cybrosys.com",
     'depends': ['website'],
     'data': [
         'views/assets.xml',
@@ -43,11 +44,12 @@
         'views/snippets/special_left.xml',
         'views/snippets/team.xml',
     ],
-    'license': 'LGPL-3',
     'images': [
         'static/description/banner.jpg',
         'static/description/theme_screenshot.jpg',
     ],
+    'license': 'LGPL-3',
     'installable': True,
     'application': True,
+    'auto_install': False,
 }
