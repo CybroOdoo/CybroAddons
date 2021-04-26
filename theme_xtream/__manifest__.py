@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Theme Xtream Fashion',
-    'description': """Design eCommerce Website with Theme Xtream Fashion""",
+    'description': 'Design eCommerce Website with Theme Xtream Fashion',
     'summary': 'Theme Xtream Fashion',
     'category': 'Theme/eCommerce',
     'version': '14.0.1.0.0',
