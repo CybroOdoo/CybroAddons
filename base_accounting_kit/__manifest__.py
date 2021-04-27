@@ -22,7 +22,7 @@
 
 {
     'name': 'Odoo 14 Full Accounting Kit',
-    'version': '14.0.2.7.6',
+    'version': '14.0.3.7.7',
     'category': 'Accounting',
     'live_test_url': 'https://www.youtube.com/watch?v=peAp2Tx_XIs',
     'summary': """ Asset and Budget Management,
@@ -58,6 +58,7 @@
         'data/followup_levels.xml',
         'data/account_asset_data.xml',
         'data/recurring_entry_cron.xml',
+        'data/multiple_invoice_data.xml',
         'views/assets.xml',
         'views/dashboard_views.xml',
         'views/reports_config_view.xml',
@@ -76,6 +77,8 @@
         'views/account_asset_templates.xml',
         'views/product_template_views.xml',
         'views/payment_matching.xml',
+        'views/multiple_invoice_layout_view.xml',
+        'views/multiple_invoice_form.xml',
         'wizard/financial_report.xml',
         'wizard/general_ledger.xml',
         'wizard/partner_ledger.xml',
@@ -101,6 +104,8 @@
         'report/account_day_book_view.xml',
         'report/account_asset_report_views.xml',
         'report/report.xml',
+        'report/multiple_invoice_layouts.xml',
+        'report/multiple_invoice_report.xml',
     ],
     'qweb': [
         'static/src/xml/template.xml',
