@@ -18,6 +18,8 @@ var QuotationPopupWidget = PopupWidget.extend({
     }),
     show: function(options){
         options = options || {};
+        if (options.title === undefined)
+            options.title = _t('My Create Quotation');
         var self = this;
         this._super(options);
         this.renderElement();
@@ -300,6 +302,14 @@ screens.define_action_button({
         return this.pos.config.enable_quotation;
     }
 });
+
+return {
+    QuotationPopupWidget: QuotationPopupWidget,
+    QuotationResultPopupWidget: QuotationResultPopupWidget,
+    QuotationListScreenWidget: QuotationListScreenWidget,
+    QuotationListButton: QuotationListButton,
+    QuotationButton: QuotationButton,
+};
 
 });
 
