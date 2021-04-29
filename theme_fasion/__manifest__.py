@@ -23,7 +23,7 @@
 {
     'name': 'Theme Fashion',
     'description': 'Design Web Pages with theme Fashion',
-    'summary': 'Design Web Pages with theme Fashion',
+    'summary': 'Theme Fashion',
     'category': 'Theme/eCommerce',
     'version': '14.0.1.0.0',
     'author': 'Cybrosys Techno Solutions',
