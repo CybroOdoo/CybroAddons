@@ -21,7 +21,7 @@
 
 {
     'name': "Customize Odoo",
-    'version': "14.0.1.0.0",
+    'version': "14.0.1.1.1",
     'summary': """Customize Odoo, odoo14""",
     'description': """Customize Odoo, odoo14""",
     'live_test_url': 'https://www.youtube.com/watch?v=fYSPARjmYA4',
@@ -33,11 +33,9 @@
     'depends': ['website', 'base_setup'],
     'data': [
         'views/views.xml',
-        'views/res_config_views.xml',
         'views/ir_module_views.xml'
     ],
-    'qweb': ["static/src/xml/base.xml",
-             "static/src/xml/res_config_edition.xml"],
+    'qweb': ["static/src/xml/base.xml"],
     'images': ['static/description/banner.jpg'],
     'license': "LGPL-3",
     'installable': True,
