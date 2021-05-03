@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Odoo 14 Budget Management',
-    'version': '14.0.1.0.0',
+    'version': '14.0.1.0.1',
     'summary': """ Budget Management for Odoo 14 Community Edition. """,
     'description': """ This module allows accountants to manage analytic and budgets.
 
@@ -47,7 +47,7 @@
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'depends': ['base', 'account', 'base_accounting_kit'],
+    'depends': ['base', 'account'],
     'website': 'https://www.cybrosys.com',
     'data': [
         'security/ir.model.access.csv',

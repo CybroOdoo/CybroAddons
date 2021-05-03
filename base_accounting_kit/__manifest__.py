@@ -22,7 +22,7 @@
 
 {
     'name': 'Odoo 14 Full Accounting Kit',
-    'version': '14.0.3.7.7',
+    'version': '14.0.3.8.8',
     'category': 'Accounting',
     'live_test_url': 'https://www.youtube.com/watch?v=peAp2Tx_XIs',
     'summary': """ Asset and Budget Management,
@@ -48,7 +48,7 @@
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'depends': ['base', 'account', 'sale', 'account_check_printing'],
+    'depends': ['base', 'account', 'sale', 'account_check_printing', 'base_account_budget'],
     'data': [
         'security/ir.model.access.csv',
         'security/security.xml',
