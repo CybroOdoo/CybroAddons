@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <template id="rozz_opt_blog_cover_post_fullwidth_design"
+                  name="Full-Width Cover"
+                  inherit_id="website_blog.blog_post_short" active="True"
+                  customize_show="True">
+            <xpath expr="//div[@id='o_wblog_blog_top']"
+                   position="replace">
+                <section>
+                    <div class="page-title-area blog-bg">
+                        <div class="d-table">
+                            <div class="d-table-cell">
+                                <div class="container">
+                                    <div class="title-item">
+                                        <h2>Blog</h2>
+                                        <ul>
+                                            <li>
+                                                <a href="/?">Home</a>
+                                            </li>
+                                            <li>
+                                                <i class='bx bx-chevrons-right'></i>
+                                            </li>
+                                            <li>
+                                                <span>Blog</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </xpath>
+        </template>
+
+        <template id="rozz_blog_post_loop"
+                  name="Blog Loop"
+                  inherit_id="website_blog.posts_loop" active="True"
+                  customize_show="True">
+            <xpath expr="//t[@t-foreach='posts']"
+                   position="replace">
+                <t t-foreach="posts" t-as="blog_post">
+                <!-- Assign 'colWidth': 'col-12' is default for List-View and mobile -->
+                <div t-attf-class="pb-4 col-12 #{colWidth}">
+                    <article t-attf-class="o_wblog_post position-relative #{'card h-100' if opt_blog_cards_design else ''}" name="blog_post">
+                        <!-- List-View Design -->
+                        <t t-if="opt_blog_list_view">
+                            <div t-att-class="opt_blog_cards_design and 'card-body py-3'">
+                                <t t-call="website_blog.post_heading"/>
+                            </div>
+                            <div t-if="not opt_blog_cards_design" class="py-2">
+                                <t t-call="website_blog.post_info"></t>
+                            </div>
+                            <div t-if="opt_posts_loop_show_cover">
+                                <t t-call="website_blog.post_cover_image"/>
+                            </div>
+                            <div t-if="is_view_active('website_blog.opt_posts_loop_show_teaser')" t-att-class="opt_blog_cards_design and 'card-body pt-0'">
+                                <t t-call="website_blog.post_teaser"/>
+                            </div>
+                            <div t-if="opt_blog_cards_design" t-attf-class="opt_blog_cards_design and 'card-body pt-0 pb-2'}">
+                                <t t-call="website_blog.post_info"></t>
+                            </div>
+                            <div t-else="" class="mt-3">
+                                <a t-attf-href="/blog/#{slug(blog_post.blog_id)}/#{slug(blog_post)}" class="btn btn-primary">
+                                    Read more <i class="fa fa-chevron-right ml-2"/>
+                                </a>
+                            </div>
+                        </t>
+                        <!-- Grid-View Design -->
+                      <div class="blog-item">
+                        <t t-if="not opt_blog_list_view">
+                            <t t-if="opt_posts_loop_show_cover" t-call="website_blog.post_cover_image"/>
+                            <div t-att-class="opt_blog_cards_design and 'card-body px-2 py-0 mb-2'">
+                                <div class="blog-bottom">
+                                    <h3><t t-call="website_blog.post_heading"/></h3>
+                                <div t-if="is_view_active('website_blog.opt_posts_loop_show_teaser')">
+                                    <t t-call="website_blog.post_teaser"/>
+                                </div>
+                                </div>
+                            </div>
+                            <div t-attf-class="o_wblog_normalize_font #{'card-footer px-2 pb-2' if opt_blog_cards_design else 'pr-2 pb-2'}">
+                                <t t-call="website_blog.post_info"></t>
+                            </div>
+                        </t>
+                      </div>
+                        <!-- Add 'unpublished' badge -->
+                        <span t-if="not blog_post.website_published" class="bg-danger small py-1 px-2 position-absolute o_not_editable" style="top:0; right:0">unpublished</span>
+                    </article>
+                </div>
+                <!-- List-View Design, add <hr> after post -->
+                <div t-if="opt_blog_list_view and not blog_post_last" class="col-12 mt-2 mb-5 px-2"><hr/></div>
+            </t>
+
+
+            </xpath>
+        </template>
+    </data>
+</odoo>
