@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <template id="address_lego" inherit_id="website_sale.checkout"
+                  name="checkout">
+            <xpath expr="//div[hasclass('oe_cart')]" position="replace">
+                <div class="col-12 col-xl order-xl-1 oe_cart">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <h3 class="o_page_header mt8">Billing Address</h3>
+                        </div>
+                        <div class="col-lg-6 one_kanban">
+                            <t t-call="website_sale.address_kanban">
+                                <t t-set='contact' t-value="order.partner_id"/>
+                                <t t-set='selected' t-value="1"/>
+                                <t t-set='readonly' t-value="1"/>
+                            </t>
+                        </div>
+                    </div>
+                    <t t-if="not only_services"
+                       groups="sale.group_delivery_invoice_address">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h3 class="o_page_header mt16 mb4">Shipping
+                                    Address
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="row all_shipping">
+                            <div class="col-lg-12">
+                                <div class="row mt8">
+                                    <div class="col-md-12 col-lg-12 one_kanban">
+                                        <form action="/shop/address"
+                                              method="post" class=''>
+                                            <input type="hidden"
+                                                   name="csrf_token"
+                                                   t-att-value="request.csrf_token()"/>
+                                            <a role="button" href="#"
+                                               class='a-submit btn btn-cartd mb16 btn-block'>
+                                                <i class="fa fa-plus-square"/>
+                                                <span>Add an address</span>
+                                            </a>
+                                        </form>
+                                    </div>
+                                    <t t-foreach="shippings" t-as="ship">
+                                        <div class="col-md-12 col-lg-6 one_kanban">
+                                            <t t-call="website_sale.address_kanban">
+                                                <t t-set="actual_partner"
+                                                   t-value="order.partner_id"/>
+                                                <t t-set='contact'
+                                                   t-value="ship"/>
+                                                <t t-set='selected'
+                                                   t-value="order.partner_shipping_id==ship"/>
+                                                <t t-set='readonly'
+                                                   t-value="bool(len(shippings)==1)"/>
+                                                <t t-set='edit_billing'
+                                                   t-value="bool(ship==order.partner_id)"/>
+                                            </t>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                    <div class="d-flex justify-content-between mt-3">
+                        <a role="button" href="/shop/cart"
+                           class="btn btn-cartd mb32">
+                            <i class="fa fa-chevron-left"/>
+                            <span>Return to Cart</span>
+                        </a>
+                        <a role="button" href="/shop/confirm_order"
+                           class="btn btn-cartd mb32">
+                            <span>Confirm</span>
+                            <i class="fa fa-chevron-right"/>
+                        </a>
+                    </div>
+                </div>
+
+            </xpath>
+        </template>
+    </data>
+</odoo>

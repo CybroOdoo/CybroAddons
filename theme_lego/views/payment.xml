@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <template id="cart_payment_lego" inherit_id="website_sale.payment"
+                  name="cart payment">
+            <xpath expr="//div[hasclass('oe_website_sale')]" position="replace">
+                    <div class="container oe_website_sale py-2">
+                        <div class="row">
+                            <div class='col-12'>
+                                <t t-call="website_sale.wizard_checkout">
+                                    <t t-set="step" t-value="40"/>
+                                </t>
+                            </div>
+                            <div class="col-12" t-if="errors">
+                                <t t-foreach="errors" t-as="error">
+                                    <div class="alert alert-danger" t-if="error"
+                                         role="alert">
+                                        <h4>
+                                            <t t-esc="error[0]"/>
+                                        </h4>
+                                        <t t-esc="error[1]"/>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="col-12 col-xl-auto order-xl-2">
+                                <t t-call="website_sale.cart_summary"/>
+                            </div>
+                            <div class="col-12 col-xl order-xl-1 oe_cart">
+                                <div class="card">
+                                    <div class="card-body"
+                                         id="shipping_and_billing">
+                                        <a class='float-right no-decoration'
+                                           href='/shop/checkout'>
+                                            <i class="fa fa-edit"/>
+                                            Edit
+                                        </a>
+                                        <t t-set="same_shipping"
+                                           t-value="bool(order.partner_shipping_id==order.partner_id or only_services)"/>
+                                        <div>
+                                            <b>Billing<t
+                                                    t-if="same_shipping and not only_services">
+                                                &amp; Shipping</t>:
+                                            </b>
+                                            <span t-esc='order.partner_id'
+                                                  t-options="dict(widget='contact', fields=['address'], no_marker=True, separator=', ')"
+                                                  class="address-inline"/>
+                                        </div>
+                                        <div t-if="not same_shipping and not only_services"
+                                             groups="sale.group_delivery_invoice_address">
+                                            <b>Shipping:</b>
+                                            <span t-esc='order.partner_shipping_id'
+                                                  t-options="dict(widget='contact', fields=['address'], no_marker=True, separator=', ')"
+                                                  class="address-inline"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="oe_structure clearfix mt-3"
+                                     id="oe_structure_website_sale_payment_1"/>
+
+                                <div id="payment_method" class="mt-3"
+                                     t-if="(acquirers or tokens) and website_sale_order.amount_total">
+                                    <h3 class="mb24">Pay with</h3>
+                                    <t t-call="payment.payment_tokens_list">
+                                        <t t-set="mode" t-value="'payment'"/>
+                                        <t t-set="submit_txt">Pay Now</t>
+                                        <t t-set="icon_right" t-value="1"/>
+                                        <t t-set="icon_class"
+                                           t-value="'fa-chevron-right'"/>
+                                        <t t-set="submit_class"
+                                           t-value="'btn btn-cartd'"/>
+                                        <t t-set="pms" t-value="tokens"/>
+                                        <t t-set="form_action"
+                                           t-value="'/shop/payment/token'"/>
+                                        <t t-set="prepare_tx_url"
+                                           t-value="'/shop/payment/transaction/'"/>
+                                        <t t-set="partner_id"
+                                           t-value="partner"/>
+
+                                        <t t-set="back_button_icon_class"
+                                           t-value="'fa-chevron-left'"/>
+                                        <t t-set="back_button_txt">Return to
+                                            Cart
+                                        </t>
+                                        <t t-set="back_button_class"
+                                           t-value="'btn btn-cartd'"/>
+                                        <t t-set="back_button_link"
+                                           t-value="'/shop/cart'"/>
+                                    </t>
+                                </div>
+
+                                <div t-if="not acquirers" class="mt-2">
+                                    <a role="button" class="btn-link"
+                                       groups="base.group_system"
+                                       t-attf-href="/web#action=#{payment_action_id}">
+                                        <i class="fa fa-arrow-right"></i>
+                                        Add payment acquirers
+                                    </a>
+                                </div>
+                                <div class="js_payment mt-3"
+                                     t-if="not website_sale_order.amount_total"
+                                     id="payment_method">
+                                    <form target="_self"
+                                          action="/shop/payment/validate"
+                                          method="post" class="float-right">
+                                        <input type="hidden" name="csrf_token"
+                                               t-att-value="request.csrf_token()"/>
+                                        <a role="button"
+                                           class="btn btn-cartd a-submit"
+                                           href="#">
+                                            <span t-if="order.amount_total &gt; 0">
+                                                Pay Now
+                                                <span class="fa fa-chevron-right"></span>
+                                            </span>
+                                            <span t-if="order.amount_total == 0">
+                                                Confirm Order
+                                                <span class="fa fa-chevron-right"></span>
+                                            </span>
+                                        </a>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="oe_structure"
+                         id="oe_structure_website_sale_payment_2"/>
+            </xpath>
+        </template>
+
+
+        <template id="payment_banner_lego" inherit_id="website_sale.payment"
+                  name="payment banner">
+            <xpath expr="//div[hasclass('oe_website_sale')]" position="before">
+                <section class="banner_product">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="banner_content">
+                                    <div class="product_heading">
+                                        <h1>Checkout</h1>
+                                        <nav aria-label="breadcrumb">
+                                            <ol class="breadcrumb">
+                                                <li class="breadcrumb-item">
+                                                    <a href="/">Home</a>
+                                                    <i class="material-icons"
+                                                       style="font-size:12px;color:#ffffff;">
+                                                        arrow_forward
+                                                    </i>
+                                                </li>
+                                                <li class="breadcrumb-item active"
+                                                    aria-current="page">CHECKOUT
+                                                </li>
+                                            </ol>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </xpath>
+        </template>
+
+
+        <template id="confirmation_banner_lego" inherit_id="website_sale.confirmation"
+                  name="confirmation banner">
+            <xpath expr="//div[hasclass('oe_website_sale')]" position="before">
+                <section class="banner_product">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="banner_content">
+                                    <div class="product_heading">
+                                        <h1>Confirmation</h1>
+                                        <nav aria-label="breadcrumb">
+                                            <ol class="breadcrumb">
+                                                <li class="breadcrumb-item">
+                                                    <a href="/">Home</a>
+                                                    <i class="material-icons"
+                                                       style="font-size:12px;color:#ffffff;">
+                                                        arrow_forward
+                                                    </i>
+                                                </li>
+                                                <li class="breadcrumb-item active"
+                                                    aria-current="page">
+                                                    CONFIRMATION
+                                                </li>
+                                            </ol>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </xpath>
+        </template>
+
+
+<!--        compare button-->
+        <template id="comparison_button_lego" inherit_id="website_sale_comparison.product_compare"
+                  name="comparison button">
+            <xpath expr="//table[@id='o_comparelist_table']" position="replace">
+                <table class="table table-bordered table-hover text-center mt16 table-comparator"
+                       id="o_comparelist_table">
+                    <t t-set="categories"
+                       t-value="products._prepare_categories_for_display()"/>
+                    <thead>
+                        <tr>
+                            <td t-if="len(categories)"
+                                class='o_ws_compare_image td-top-left border-bottom-0'/>
+                            <td t-foreach="products" t-as="product"
+                                class="o_ws_compare_image position-relative border-bottom-0">
+                                <a href="#"
+                                   t-att-data-product_product_id="product.id"
+                                   class="o_comparelist_remove"
+                                   t-if="len(products) &gt; 2">
+                                    <strong>x</strong>
+                                </a>
+                                <a t-att-href="product.website_url">
+                                    <img t-attf-src="/web/image/product.product/#{product.id}/image_256"
+                                         class="img img-fluid"
+                                         style="margin:auto;"
+                                         alt="Product image"/>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td t-if="len(categories)"
+                                class='td-top-left border-top-0'/>
+                            <td t-foreach="products" t-as="product"
+                                class="border-top-0">
+                                <t t-set="combination_info"
+                                   t-value="product._get_combination_info_variant()"/>
+                                <div class='product_summary'>
+                                    <a class="o_product_comparison_table"
+                                       t-att-href="product.website_url">
+                                        <span t-esc="combination_info['display_name']"></span>
+                                        <br/>
+                                    </a>
+
+                                    <span>
+                                        <strong>Price:</strong>
+                                        <del t-attf-class="text-danger mr8 {{'' if combination_info['has_discounted_price'] else 'd-none'}}"
+                                             style="white-space: nowrap;"
+                                             t-esc="combination_info['list_price']"
+                                             t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                        <span t-esc="combination_info['price']"
+                                              t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"></span>
+                                    </span>
+
+                                    <form action="/shop/cart/update"
+                                          method="post" class="text-center">
+                                        <input type="hidden" name="csrf_token"
+                                               t-att-value="request.csrf_token()"/>
+                                        <input name="product_id"
+                                               t-att-value="product.id"
+                                               type="hidden"/>
+                                        <a role="button"
+                                           class="btn btn-cartd btn-block a-submit"
+                                           href="#"><i
+                                                class="fa fa-shopping-cart"></i>&amp;nbsp;Add
+                                            to Cart
+                                        </a>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="categories" t-as="category">
+                            <t t-if="len(categories) &gt; 1">
+                                <tr class="clickable" data-toggle="collapse"
+                                    t-att-data-target="'.o_ws_category_%d' % category.id">
+                                    <th class="text-left"
+                                        t-att-colspan="len(products) + 1">
+                                        <i class="fa fa-chevron-circle-down o_product_comparison_collpase"
+                                           role="img" aria-label="Collapse"
+                                           title="Collapse"></i>
+                                        <span t-if="category"
+                                              t-field="category.name"/>
+                                        <span t-else="">Uncategorized</span>
+                                    </th>
+                                </tr>
+                            </t>
+                            <tr t-foreach="categories[category]"
+                                t-as="attribute"
+                                t-att-class="'collapse show o_ws_category_%d' % category.id">
+                                <td>
+                                    <span t-field="attribute.name"/>
+                                </td>
+                                <td t-foreach="categories[category][attribute]"
+                                    t-as="product">
+                                    <t t-foreach="categories[category][attribute][product]"
+                                       t-as="ptav">
+                                        <span t-field="ptav.name"/>
+                                        <t t-if="not ptav_last">,</t>
+                                    </t>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </xpath>
+        </template>
+
+
+        <!--        compare banner-->
+        <template id="comparison_banner_lego" inherit_id="website_sale_comparison.product_compare"
+                  name="comparison banner">
+            <xpath expr="//div[hasclass('oe_website_sale')]" position="before">
+                <section class="banner_product">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="banner_content">
+                                    <div class="product_heading">
+                                        <h1>Comparison</h1>
+                                        <nav aria-label="breadcrumb">
+                                            <ol class="breadcrumb">
+                                                <li class="breadcrumb-item">
+                                                    <a href="/">Home</a>
+                                                    <i class="material-icons"
+                                                       style="font-size:12px;color:#ffffff;">
+                                                        arrow_forward
+                                                    </i>
+                                                </li>
+                                                <li class="breadcrumb-item active"
+                                                    aria-current="page">
+                                                    COMPARISON
+                                                </li>
+                                            </ol>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </xpath>
+        </template>
+
+<!--        wishlist-->
+        <template id="wishlist_banner_lego" inherit_id="website_sale_wishlist.product_wishlist"
+                  name="wishlist banner">
+            <xpath expr="//div[hasclass('oe_website_sale')]" position="before">
+                <section class="banner_product">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="banner_content">
+                                    <div class="product_heading">
+                                        <h1>Wishlist</h1>
+                                        <nav aria-label="breadcrumb">
+                                            <ol class="breadcrumb">
+                                                <li class="breadcrumb-item">
+                                                    <a href="/">Home</a>
+                                                    <i class="material-icons"
+                                                       style="font-size:12px;color:#ffffff;">
+                                                        arrow_forward
+                                                    </i>
+                                                </li>
+                                                <li class="breadcrumb-item active"
+                                                    aria-current="page">
+                                                    WISHLIST
+                                                </li>
+                                            </ol>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </xpath>
+        </template>
+
+    </data>
+</odoo>

@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <template id="add_cart_product_lego" inherit_id="website_sale.product"
+                  name="add to cart product">
+            <xpath expr="//section[@id='product_detail']" position="replace">
+                <section
+                        t-attf-class="container py-2 oe_website_sale #{'discount' if combination_info['has_discounted_price'] else ''}"
+                        id="product_detail"
+                        t-att-data-view-track="view_track and '1' or '0'">
+                    <div class="Poduct_preview">
+                        <div class="row">
+                            <div class="col-lg-6 col-12">
+                                <div class="preview_img">
+                                    <t t-call="website_sale.shop_product_carousel"/>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6 col-12">
+                                <div class="preview_details">
+                                    <h4 class="preview_heading"
+                                        itemprop="name"
+                                        t-field="product.name">Product Name
+                                    </h4>
+                                    <span itemprop="url"
+                                          style="display:none;"
+                                          t-esc="product.website_url"/>
+                                    <div class="price">
+                                        <t t-call="website_sale.product_price"/>
+                                    </div>
+
+                                    <form t-if="product._is_add_to_cart_possible()"
+                                          action="/shop/cart/update"
+                                          method="POST">
+                                        <input type="hidden" name="csrf_token"
+                                               t-att-value="request.csrf_token()"/>
+                                        <div class="js_product js_main_product">
+                                            <t t-placeholder="select">
+                                                <input type="hidden"
+                                                       class="product_id"
+                                                       name="product_id"
+                                                       t-att-value="product_variant.id"/>
+                                                <input type="hidden"
+                                                       class="product_template_id"
+                                                       name="product_template_id"
+                                                       t-att-value="product.id"/>
+                                                <t t-if="combination"
+                                                   t-call="sale.variants">
+                                                    <t t-set="ul_class"
+                                                       t-value="'flex-column'"/>
+                                                    <t t-set="parent_combination"
+                                                       t-value="None"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <ul class="d-none js_add_cart_variants"
+                                                        t-att-data-attribute_exclusions="{'exclusions: []'}"/>
+                                                </t>
+                                            </t>
+                                            <p t-if="True"
+                                               class="css_not_available_msg alert alert-warning">
+                                                This combination does not
+                                                exist.
+                                            </p>
+                                            <div class="css_quantity input-group" contenteditable="false">
+                                                <div class="input-group-prepend">
+                                                    <a t-attf-href="#" class="btn btn-secondary js_add_cart_json" aria-label="Remove one"
+                                                       title="Remove one">
+                                                        <i class="fa fa-minus"/>
+                                                    </a>
+                                                </div>
+                                                <input type="text" class="form-control quantity" data-min="1" name="add_qty"
+                                                       t-att-value="add_qty or 1"/>
+                                                <div class="input-group-append">
+                                                    <a t-attf-href="#" class="btn btn-secondary float_left js_add_cart_json" aria-label="Add one"
+                                                       title="Add one">
+                                                        <i class="fa fa-plus"/>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <a role="button"
+                                               id="add_to_cart"
+                                               class="btn btn-cart btn-lg mt16 js_check_product a-submit d-block d-sm-inline-block"
+                                               href="#">
+                                                <i class="fa fa-shopping-cart"/>
+                                                Add to Cart
+                                            </a>
+                                            <div id="product_option_block"
+                                                 class="btn btn-link mt16 o_add_wishlist_dyn"/>
+                                        </div>
+                                    </form>
+                                    <p t-elif="not product.active"
+                                       class="alert alert-warning">This product
+                                        is no longer available.
+                                    </p>
+                                    <p t-else="" class="alert alert-warning">
+                                        This product has no valid combination.
+                                    </p>
+                                    <hr t-if="product.description_sale"/>
+                                    <div>
+                                        <p t-field="product.description_sale"
+                                           class="text-muted mt-3"
+                                           placeholder="A short description that will also appear on documents."/>
+                                        <div id="product_attributes_simple">
+                                            <hr t-if="sum([(1 if len(l.value_ids)==1 else 0) for l in product.attribute_line_ids])"/>
+                                            <p class="text-muted">
+                                                <t t-set="single_value_attributes"
+                                                   t-value="product.valid_product_template_attribute_line_ids._prepare_single_value_for_display()"/>
+                                                <t t-foreach="single_value_attributes"
+                                                   t-as="attribute">
+                                                    <span t-field="attribute.name"/>
+                                                    :
+                                                    <t t-foreach="single_value_attributes[attribute]"
+                                                       t-as="ptal">
+                                                        <span t-field="ptal.product_template_value_ids._only_active().name"/>
+                                                        <t t-if="not ptal_last">
+                                                            ,
+                                                        </t>
+                                                    </t>
+                                                    <br/>
+                                                </t>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </xpath>
+        </template>
+
+
+        <template id="add_cart_banner_lego" inherit_id="website_sale.product"
+                  name="add to cart banner">
+            <xpath expr="//section[@id='product_detail']" position="before">
+                <section class="banner_product">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="banner_content">
+                                    <div class="product_heading">
+                                        <h1>Product preview</h1>
+                                        <nav aria-label="breadcrumb">
+                                            <ol class="breadcrumb">
+                                                <li class="breadcrumb-item">
+                                                    <a href="/">Home</a>
+                                                    <i class="material-icons"
+                                                       style="font-size:12px;color:#ffffff;">
+                                                        arrow_forward
+                                                    </i>
+                                                </li>
+                                                <li class="breadcrumb-item">
+                                                    <a href="/shop">SHOP</a>
+                                                    <i class="material-icons"
+                                                       style="font-size:12px;color:#ffffff;">
+                                                        arrow_forward
+                                                    </i>
+                                                </li>
+                                                <li class="breadcrumb-item active"
+                                                    aria-current="page">PODUCTS
+                                                    PREVIEW
+                                                </li>
+                                            </ol>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </xpath>
+        </template>
+
+
+        <template id="add_cart_product_spec_lego"
+                  inherit_id="website_sale_comparison.product_attributes_body"
+                  name="add to cart product specification">
+            <xpath expr="//section[@id='product_full_spec']" position="replace">
+
+                <section class="container pt-5" id="product_full_spec">
+                    <div class="preview_tab">
+                        <t t-set="categories"
+                           t-value="product.valid_product_template_attribute_line_ids._prepare_categories_for_display()"/>
+                        <t t-if="categories">
+                            <div class="nav nav-pills mb-3">
+                                <div class="nav-item">
+                                    <h3 class="nav-link active">Specification
+                                    </h3>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class='col-lg-8 offset-lg-2'
+                                     id='product_specifications'>
+                                    <table class='table table-striped table-sm table-hover'>
+                                        <t t-foreach="categories"
+                                           t-as="category">
+                                            <t t-if="len(categories) > 1">
+                                                <tr class="clickable"
+                                                    data-toggle="collapse"
+                                                    t-att-data-target="'.o_ws_category_%d' % category.id">
+                                                    <th class="text-left"
+                                                        t-att-colspan="2">
+                                                        <span t-if="category"
+                                                              t-field="category.name"/>
+                                                        <span t-else="">
+                                                            Uncategorized
+                                                        </span>
+                                                    </th>
+                                                </tr>
+                                            </t>
+                                            <tr t-foreach="categories[category].filtered(lambda l: len(l.value_ids) > 1)"
+                                                t-as="ptal"
+                                                t-att-class="'collapse show o_ws_category_%d' % category.id">
+                                                <td>
+                                                    <span t-field="ptal.attribute_id.name"/>
+                                                </td>
+                                                <td>
+                                                    <t t-foreach="ptal.value_ids"
+                                                       t-as="pav">
+                                                        <span t-field="pav.name"/>
+                                                        <t t-if="not pav_last">
+                                                            or
+                                                        </t>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <t t-set="single_value_attributes"
+                                               t-value="categories[category]._prepare_single_value_for_display()"/>
+                                            <tr t-foreach="single_value_attributes"
+                                                t-as="attribute"
+                                                t-att-class="'collapse show o_ws_category_%d' % category.id">
+                                                <td>
+                                                    <span t-field="attribute.name"/>
+                                                </td>
+                                                <td>
+                                                    <t t-foreach="single_value_attributes[attribute]"
+                                                       t-as="ptal">
+                                                        <span t-field="ptal.product_template_value_ids._only_active().name"/>
+                                                        <t t-if="not ptal_last">
+                                                            ,
+                                                        </t>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </table>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </section>
+            </xpath>
+        </template>
+
+    </data>
+</odoo>
