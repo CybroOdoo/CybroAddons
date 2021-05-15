@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_product_template_approval_form" model="ir.ui.view">
+        <field name="name">approval</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <header>
+                <button name="confirm_product_approval" type="object"
+                        attrs="{'invisible': [('approve_state','!=','draft')]}"
+                        string="Confirm"
+                        groups="product_approval_management.product_manager"/>
+                <button name="reset_product_approval" type="object"
+                        attrs="{'invisible': [('approve_state','!=','confirmed')]}"
+                        string="Reset To Draft"
+                        groups="product_approval_management.product_manager"/>
+                <field name="approve_state" widget="statusbar"
+                       statusbar_visible="draft,confirmed"/>
+            </header>
+
+        </field>
+    </record>
+
+    <record id="inherited_sale_order_line_view" model="ir.ui.view">
+        <field name="name">approval</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree/field[@name='product_id']" position="attributes">
+                <attribute name="domain">[('approve_state', '=', 'confirmed'), ('sale_ok', '=', True), '|', ('company_id', '=', False),('company_id', '=', company_id)]
+                </attribute>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
+
