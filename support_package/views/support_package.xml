@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="search_view_inherit_support" model="ir.ui.view">
+        <field name="name">Inherit Product Search Support</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="priority">25</field>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='services']" position="before">
+                <filter string="Support Packages"
+                       name="filter_is_support"
+                       domain="[('is_support','=',True)]"/>
+                <separator/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_inherit_support_package" model="ir.ui.view">
+        <field name="name">Inherit Product Product: Support Package</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="priority">25</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='purchase_ok']/.." position="after">
+                <field name="is_support"/>
+                <label for="is_support"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_inherit_support_package" model="ir.ui.view">
+        <field name="name">Inherit Product Template: Support Product</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="priority">25</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='purchase_ok']/.." position="after">
+                <field name="is_support"/>
+                <label for="is_support"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="project_project_support_package" model="ir.ui.view">
+        <field name="name">Project Project : Support Package</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.project_project_view_form_simplified"/>
+        <field name="priority">25</field>
+        <field name="arch" type="xml">
+            <xpath expr="//group" position="after">
+                <group id="is_support_package" class="oe_inline">
+                    <field name="is_support_package"/>
+                    <field name="support_count" class="oe_inline" attrs="{'invisible':[('is_support_package', '=', False)]}"/>
+                    <field name="support_duration" class="oe_inline" widget="timesheet_uom" attrs="{'invisible':[('is_support_package', '=', False)]}"/>
+                    <label string="Maximum Validity" for="support_validity_number" attrs="{'invisible':[('is_support_package', '=', False)]}"/>
+                    <div name="support_validity_number" class="o_row" attrs="{'invisible':[('is_support_package', '=', False)]}">
+                        <field name="support_validity_number" class="oe_inline"/>
+                        <field name="validity_rule" class="oe_inline"/>
+                    </div>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="project_support_package_form" model="ir.ui.view">
+        <field name="name">Inherit project form : Support Package</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="priority">25</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='privacy_visibility']/.." position='attributes'>
+                <attribute name="attrs">
+                    {'invisible':[('is_support_package', '=', True)]}
+                </attribute>
+            </xpath>
+            <xpath expr="//field[@name='allowed_internal_user_ids']/.." position='attributes'>
+                <attribute name="attrs">
+                    {'invisible':['|',
+                    ('is_support_package', '=', True),
+                    ('privacy_visibility', '!=', 'followers')]}
+                </attribute>
+            </xpath>
+            <xpath expr="//field[@name='allowed_internal_user_ids']/.." position="before">
+                <group>
+                    <field name="privacy_visibility_support" widget="radio" string="Visibility"
+                           attrs="{'invisible':[('is_support_package', '=', False)]}"/>
+                    <field name="allowed_internal_user_support_ids" widget="many2many_tags"
+                           attrs="{'invisible': [('privacy_visibility_support', '!=', 'followers')]}"/>
+                </group>
+            </xpath>
+            <xpath expr="//div[@id='rating_settings']/.." position="before">
+                <div class="row mt16 o_settings_container">
+                    <div class="col-lg-6 o_setting_box" id="support_package">
+                        <div class="o_setting_left_pane">
+                            <field name="is_support_package"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="is_support_package"
+                                   string="Support Package"/>
+                            <div class="text-muted">
+                                This project is a Support Package
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+            <xpath expr="//group[@name='extra_settings']/.." position="after">
+                <br/>
+                <group>
+                    <group name="support_package_info" string="Support Package info"
+                           attrs="{'invisible':[('is_support_package', '=', False)]}">
+                        <field name="support_count"/>
+                        <field name="support_duration" widget="timesheet_uom"/>
+                        <label string="Package Validity" for="support_validity_number"/>
+                        <div name="support_validity_number" class="o_row">
+                            <field name="support_validity_number"/>
+                            <field name="validity_rule"/>
+                        </div>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="project_all_support_package" model="ir.actions.act_window">
+        <field name="name">Support Package</field>
+        <field name="res_model">project.project</field>
+        <field name="domain">[('is_support_package', '=', True)]</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="view_id" ref="project.view_project_kanban"/>
+        <field name="search_view_id" ref="project.view_project_project_filter"/>
+        <field name="target">main</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No packages found. Let's create one!
+            </p>
+        </field>
+    </record>
+
+    <record id="project_all_support_package_config" model="ir.actions.act_window">
+        <field name="name">Support Package : Configration</field>
+        <field name="res_model">project.project</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_support_package', '=', True)]</field>
+        <field name="search_view_id" ref="project.view_project_project_filter"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No packages found. Let's create one!
+            </p>
+        </field>
+    </record>
+
+    <record id="action_support_products" model="ir.actions.act_window">
+        <field name="name">Products</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">kanban,tree,form,activity</field>
+        <field name="view_id" ref="product.product_template_kanban_view"/>
+        <field name="search_view_id" ref="product.product_template_search_view"/>
+        <field name="context">{
+            'search_default_filter_is_support': True,
+            'search_default_filter_to_sell':1,
+            'default_type':'service',
+            'default_is_support':True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new product
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="support_menu_root"
+              name="Support"
+              action="support_package.project_all_support_package"
+              sequence="1"/>
+
+    <menuitem id="support_menu_project_support_package"
+              name="Packages"
+              parent="support_package.support_menu_root"
+              sequence="5"/>
+
+    <menuitem id="packages_menu_project_packages"
+              name="Packages"
+              parent="support_package.support_menu_project_support_package"
+              action="support_package.project_all_support_package"
+              sequence="7"/>
+
+    <menuitem id="packages_menu_project_support_products"
+              name="Products"
+              parent="support_package.support_menu_project_support_package"
+              action="support_package.action_support_products"
+              sequence="9"/>
+
+    <menuitem id="support_menu_configuration"
+              name="Configuration"
+              parent="support_package.support_menu_root"
+              sequence="20"/>
+
+    <menuitem id="menu_configuration_package"
+              name="Package Configuration"
+              parent="support_package.support_menu_configuration"
+              action="support_package.project_all_support_package_config"
+              sequence="21"/>
+
+</odoo>

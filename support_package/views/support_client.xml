@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="support_view_client_search_form" model="ir.ui.view">
+        <field name="name">Inherit Client Search Support</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_search_form"/>
+        <field name="priority">25</field>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='my_tasks']" position="before">
+                <field name="is_support_package"/>
+                <filter string="Customers of Support"
+                       name="filter_is_support"
+                       domain="[('is_support_package','=',True)]"/>
+                <separator/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_view_all_task_customers" model="ir.actions.act_window">
+        <field name="name">Customers</field>
+        <field name="res_model">project.task</field>
+        <field name="search_view_id" ref="project.view_task_search_form"/>
+        <field name="view_mode">tree,kanban,form,calendar,pivot,graph,activity</field>
+        <field name="context">{'search_default_filter_is_support': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No customers found. Let's create one!
+            </p>
+        </field>
+    </record>
+
+    <record id="view_task_form2_support_inherited" model="ir.ui.view">
+        <field name="name">project.task.form.inherited</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2" />
+        <field name="groups_id" eval="[(6,0, (ref('hr_timesheet.group_hr_timesheet_user'),))]"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='unit_amount']" position="after">
+                <field name="support_count" force_save="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_task_tree2_support_inherited" model="ir.ui.view">
+        <field name="name">project.task.tree.inherited</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_tree2"/>
+        <field name="priority">25</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='project_id']" position="after">
+                <field name="partner_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="quick_create_form_support_customers" model="ir.ui.view">
+        <field name="name">Inherit Task Kanban Quick create : Package Customer</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.quick_create_task_form"/>
+        <field name="priority">25</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']/.." position="before">
+                <div class="o_kanban_record_headings" id="view_task_kanban_title_replace">
+                    <group name="quick_create_support_package_client"
+                           attrs="{'invisible': [('is_support_package', '=', False)]}">
+                        <field name="partner_id" string="Customer"/>
+                        <field name="start_date" string="Start Date"/>
+                        <field name="support_count" invisible="1"/>
+                        <field name="count_used" invisible="1"/>
+                        <field name="count_remaining" invisible="1"/>
+                        <field name="support_duration" invisible="1"/>
+                        <field name="planned_hours" invisible="1"/>
+                        <field name="is_support_package" invisible="1"/>
+                        <field name="package_validity" invisible="1"/>
+                        <field name="start_date" invisible="1"/>
+                        <field name="end_date" invisible="1"/>
+                        <field name="date_deadline" invisible="1"/>
+                    </group>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_task_form2_support_package_customers" model="ir.ui.view">
+        <field name="name">Inherit Project Task Form: Package Customers</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="priority">25</field>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_assign_to_me']" position="after">
+                <button name="action_renew" string="Renewal Quotation" type="object" class="oe_highlight"
+                            attrs="{'invisible' : [('to_renew', '=', False)]}"/>
+            </xpath>
+            <xpath expr="//page[@name='extra_info']" position="before">
+                <page name="support_details" string="Support Details"
+                      attrs="{'invisible': [('is_support_package', '=', False)]}">
+                    <group>
+                        <group name="support_details" string="Details">
+                            <field name="is_support_package" attrs="{'readonly':True}"/>
+                            <field name="support_count" attrs="{'readonly':True}"/>
+                            <field name="support_duration" widget="timesheet_uom" attrs="{'readonly':True}"/>
+                            <label string="Package Validity" for="package_validity"/>
+                            <div class="o_row">
+                                <field name="package_validity" attrs="{'readonly':True}"/>
+                                day(s)
+                            </div>
+                            <field name="start_date" attrs="{'readonly':False}"/>
+                            <field name="end_date" attrs="{'readonly':True}"/>
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="after">
+                <div class="badge-pill badge-warning float-right"
+                     attrs="{'invisible': [('to_renew', '=', False)]}">For Renewal</div>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="count_used"
+                       attrs="{'readonly':True, 'invisible': [('is_support_package', '=', False)]}"/>
+                <field name="count_remaining" string="Remaining Tickets"
+                       attrs="{'readonly':True, 'invisible': [('is_support_package', '=', False)]}"/>
+                <field name="to_renew"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_task_kanban_support_customer" model="ir.ui.view">
+        <field name="name">Inherit Project Task Kanban: Support Customers</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_kanban"/>
+        <field name="priority">25</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="to_renew" invisible="1"/>
+                <div class="badge badge-pill badge-info badge-warning mt4 mr16"
+                     attrs="{'invisible': [('to_renew', '=', False)]}">
+                    To Renew
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <menuitem id="support_incident_menu_clients"
+              name="Customers"
+              parent="support_package.support_menu_root"
+              action="support_package.action_view_all_task_customers"
+              sequence="10"/>
+
+</odoo>
