@@ -30,6 +30,8 @@
                  Credit Limit, Follow Ups, 
                  Day-Bank-Cash book reports.""",
     'description': """
+                    AccountingKit, Fullaccounting, Odoo accounting, Odooaccounting, all in one accounting,
+                    allinoneaccounting, accounting, 
                     Odoo 14 Accounting,Accounting Reports, Odoo 14 Accounting 
                     PDF Reports, Asset Management, Budget Management, 
                     Customer Credit Limit, Recurring Payment,

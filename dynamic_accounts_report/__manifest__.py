@@ -26,7 +26,8 @@
     'category': 'Accounting',
     'summary': """Dynamic Financial Reports with drill 
                 down and filters– Community Edition""",
-    'description': "This module creates dynamic Accounting General Ledger, Trial Balance, Balance Sheet "
+    'description': "Dynamic Financial Reports, DynamicFinancialReports, FinancialReport, Accountingreports, odoo reports, odoo"
+                   "This module creates dynamic Accounting General Ledger, Trial Balance, Balance Sheet "
                    "Proft and Loss, Cash Flow Statements, Partner Ledger,"
                    "Partner Ageing, Day book"
                    "Bank book and Cash book reports in Odoo 14 community edition.",
