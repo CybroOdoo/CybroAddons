@@ -113,7 +113,7 @@ var QuotationPopupWidget = PopupWidget.extend({
             self.gui.close_popup();
             self.pos.delete_current_order();
             self.gui.show_popup('pos_quot_result',{
-            'body': _t('Quotation Ref : ')+ order['name'] ,
+            'body': _t('Quotation Ref: ')+ order['name'] ,
             });
         });
     }
