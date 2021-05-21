@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="deal_week_banner" inherit_id="website.snippets" name="Deal Week banner">
+        <xpath expr="//div[@id='snippet_structure']/div[hasclass('o_panel_body')]" position="inside">
+            <t t-snippet="theme_boec.deal_week_snippet" t-thumbnail="/theme_boec/static/src/images/snippets/deal.jpg"/>
+        </xpath>
+    </template>
+
+    <template id="deal_week_snippet" name="Deal of the Week">
+        <section class="deal_week_snippet_class">
+        </section>
+    </template>
+
+    <template id="deal_week" name="Deal of the Week">
+        <form action="/shop/cart/update" method="post"
+              itemscope="itemscope" itemtype="http://schema.org/Product">
+            <section class="deal">
+                <div class="wrapper">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg-3 col-12">
+                                <div class="first">
+                                    <div class="box"/>
+                                    <div class="one">
+                                        Cloathing hot
+                                    </div>
+                                    <div class="two">
+                                        Glass Collection
+                                    </div>
+                                    <div class="three_deal">
+                                        Accessories
+                                    </div>
+                                </div>
+                            </div>
+                            <t t-if="product_id">
+                                <t t-set="combination_info"
+                                   t-value="product_id.product_tmpl_id._get_combination_info(product_id=product_id.id, add_qty=add_qty or 1, pricelist=pricelist)"/>
+                                <div class="col-lg-5 col-12">
+                                    <div class="deal_product">
+                                        <div class="tag">
+                                            <p class="nn">Sale of</p>
+                                            <div class="price">
+                                                <span t-if="combination_info['price']" t-esc="combination_info['price']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                                <span t-attf-class="cross text-danger mr-2 {{'' if combination_info['has_discounted_price'] else 'd-none'}}"
+                                                      t-esc="combination_info['list_price']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                            </div>
+                                        </div>
+                                        <span t-if="product_id" t-esc="product_id.image_1920"
+                                              t-options="{'widget': 'image', 'preview_image': 'image_1024' if product_image_big else 'image_256'}"/>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-12">
+                                    <div class="counter">
+                                        <div class="left">
+                                            <div class="wrappers">
+                                                <div class="deals">
+                                                    Deal of the week
+                                                </div>
+                                                <span class="bt">Who are in extremely love with eco friendly system.</span>
+                                                <p id="countdown"/>
+                                            </div>
+                                            <input name="product_id" t-att-value="product_id.id" type="hidden"/>
+                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                            <button type="submit" class="btn btn-shop">
+                                                SHOP NOW
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                            <t t-if="not product_id">
+                                <div>
+                                    <h4>Please add Deal of the Week Product in the Boec Configuration</h4>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </form>
+    </template>
+</odoo>

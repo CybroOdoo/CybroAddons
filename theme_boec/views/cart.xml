@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <template id="boec_cart" name="Boec Cart" inherit_id="website_sale.cart">
+            <xpath expr="//div[hasclass('container')]" position="before">
+                <Section class="banner_sub">
+                    <div class="wrapper">
+                        <div class="container">
+                            <div class="row">
+                                <div class="sub_page">
+                                    <div class="name">
+                                        Cart
+                                    </div>
+                                    <nav aria-label="breadcrumb " class="brd">
+                                        <ol class="breadcrumb">
+                                            <li class="breadcrumb-item"><a href="/">Home</a></li>
+                                            <i class="material-icons">&#xe315;</i>
+                                            <li class="breadcrumb-item"><a href="/shop">Shop</a></li>
+                                            <i class="material-icons">&#xe315;</i>
+                                            <li class="breadcrumb-item active" aria-current="page">Cart</li>
+                                        </ol>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </Section>
+            </xpath>
+            <xpath expr="//div[@id='o_cart_summary']" position="replace"/>
+            <xpath expr="//div[hasclass('oe_cart')]" position="replace">
+                <div class="col-12 col-xl-12 oe_cart">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div t-if="abandoned_proceed or access_token" class="mt8 mb8 alert alert-info" role="alert"> <!-- abandoned cart choices -->
+                                <t t-if="abandoned_proceed">
+                                    <p>Your previous cart has already been completed.</p>
+                                    <p t-if="website_sale_order">Please proceed your current cart.</p>
+                                </t>
+                                <t t-if="access_token">
+                                    <p>This is your current cart.</p>
+                                    <p>
+                                        <strong><a t-attf-href="/shop/cart/?access_token=#{access_token}&amp;revive=squash">Click here</a></strong> if you want to restore your previous cart. Your current cart will be replaced with your previous cart.</p>
+                                    <p>
+                                        <strong><a t-attf-href="/shop/cart/?access_token=#{access_token}&amp;revive=merge">Click here</a></strong> if you want to merge your previous cart into current cart.
+                                    </p>
+                                </t>
+                            </div>
+                            <t t-call="website_sale.cart_lines" />
+                            <div class="clearfix" />
+                            <a role="button" href="/shop" class="btn btn-update mb32 d-none d-xl-inline-block">
+                                <span class="fa fa-chevron-left" />
+                                <span class="">Continue Shopping</span>
+                            </a>
+                            <a role="button" t-if="website_sale_order and website_sale_order.website_order_line" class="btn btn-cartd float-right d-none d-xl-inline-block" href="/shop/checkout?express=1">
+                                <span class="">Process Checkout</span>
+                                <span class="fa fa-chevron-right" />
+                            </a>
+                            <div class="oe_structure" id="oe_structure_website_sale_cart_1"/>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_cart')]" position="after">
+                <div class="col-12 col-xl-8 oe_cart"/>
+                <div class="col-12 col-xl-4" id="o_cart_summary">
+                    <t t-call="website_sale.short_cart_summary"/>
+                    <div class="d-xl-none mt8">
+                        <a role="button" href="/shop" class="btn btn-cartc mb32">
+                            <span class="fa fa-chevron-left" />
+                            Continue<span class="d-none d-md-inline"> Shopping</span>
+                        </a>
+                        <a role="button" t-if="website_sale_order and website_sale_order.website_order_line" class="btn btn-cartd float-right" href="/shop/checkout?express=1">
+                            <span class="">Process Checkout</span>
+                            <span class="fa fa-chevron-right" />
+                        </a>
+                    </div>
+                </div>
+            </xpath>
+        </template>
+
+        <template id="boec_cart_button" name="Boec Cart Button" inherit_id="website_sale.short_cart_summary">
+            <xpath expr="//a[@role='button']" position="replace">
+                <a role="button" t-if="website_sale_order and website_sale_order.website_order_line" class="btn btn-cartd float-right d-none d-xl-inline-block" href="/shop/checkout?express=1">
+                    <span>Process Checkout</span>
+                </a>
+            </xpath>
+        </template>
+
+        <template id="boec_cart_line" name="Boec Cart Line" inherit_id="website_sale.cart_lines">
+            <xpath expr="//div[hasclass('css_quantity')]" position="replace">
+                <div class="quantity">
+                    <input type="number" min="1" max="20" step="1" class="js_quantity form-control quantity"
+                           t-att-data-line-id="line.id" t-att-data-product-id="line.product_id.id"
+                           t-att-value="int(line.product_uom_qty) == line.product_uom_qty and int(line.product_uom_qty) or line.product_uom_qty"/>
+                </div>
+            </xpath>
+        </template>
+
+        <template id="boec_cart_coupon" name="Boec Cart Coupon" inherit_id="website_sale.coupon_form">
+            <xpath expr="//div[hasclass('input-group')]" position="replace">
+                <div class="input-group md-form form-sm form-2">
+                    <input name="promo" class="form-control red-border" type="text" placeholder="Coupon code"
+                           t-att-value="website_sale_order.pricelist_id.code or None"/>
+                    <div class="input-group-append">
+                        <a href="#" role="button" class="input-group-text a-submit">APPLY</a>
+                    </div>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>
