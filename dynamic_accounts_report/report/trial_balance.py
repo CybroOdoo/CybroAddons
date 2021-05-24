@@ -13,5 +13,6 @@ class TrialBalance(models.AbstractModel):
                              'Filters': data.get('report_data')['filters'],
                              'debit_total': data.get('report_data')['debit_total'],
                              'credit_total': data.get('report_data')['credit_total'],
+                             'company': self.env.company,
                              })
         return data

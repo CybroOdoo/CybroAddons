@@ -186,7 +186,6 @@ odoo.define('dynamic_accounts_report.partner_ledger', function (require) {
                         ],
                     }).then(function(data) {
                     for (var i = 0; i < data['report_lines'].length; i++) {
-                                    console.log(data['report_lines'][i]['move_lines'])
 
                         if (account_id == data['report_lines'][i]['id'] ){
                             $(event.currentTarget).next('tr').find('td .pl-table-div').remove();
@@ -358,7 +357,7 @@ odoo.define('dynamic_accounts_report.partner_ledger', function (require) {
 
             if ($(".reconciled").length){
             var reconciled_res = document.getElementById("reconciled_res")
-            filter_data_selected.reconciled = $(".reconciled")[1].value
+            filter_data_selected.reconciled = $(".reconciled")[0].value
             reconciled_res.value = $(".reconciled")[0].value
             reconciled_res.innerHTML=reconciled_res.value;
             if ($(".reconciled").value==""){

@@ -6,10 +6,6 @@ class BalanceSheet(models.TransientModel):
     _inherit = "dynamic.balance.sheet.report"
 
     def view_report_pdf(self, acc, form):
-        """This function will be executed when we click the view button
-        from the wizard. Based on the values provided in the wizard, this
-        function will print pdf report"""
-
         data = dict()
         report_lines = acc
         data['form'] = form

@@ -5,7 +5,10 @@
 #### ADD
 - Initial commit for Odoo 14 dynamic financial reports
 
-
+#### 21.05.2021
+#### Version 14.0.1.1.1
+#### UPDT
+- Updated Style and Currency Format
 
 
 

@@ -341,7 +341,7 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
             post_res.value = $(".target_move")[0].value
                     post_res.innerHTML=post_res.value;
               if ($(".target_move")[0].value == "") {
-              post_res.innerHTML="all";
+              post_res.innerHTML="posted";
 
               }
             }

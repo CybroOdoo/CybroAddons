@@ -4,6 +4,7 @@ from datetime import timedelta, datetime
 from odoo import fields, models, api, _
 import io
 import json
+from odoo.exceptions import AccessError, UserError, AccessDenied
 
 try:
     from odoo.tools.misc import xlsxwriter
@@ -81,13 +82,14 @@ class AgeingView(models.TransientModel):
         filters['accounts_list'] = data.get('accounts_list')
         filters['journals_list'] = data.get('journals_list')
         filters['company_name'] = data.get('company_name')
+        filters['target_move'] = data.get('target_move').capitalize()
 
         return filters
 
     def get_filter_data(self, option):
         r = self.env['account.day.book'].search([('id', '=', option[0])])
         default_filters = {}
-        company_id = r.env.user.company_id
+        company_id = self.env.company
         company_domain = [('company_id', '=', company_id.id)]
         journals = self.journal_ids if self.journal_ids else self.env[
             'account.journal'].search(company_domain)
@@ -116,10 +118,14 @@ class AgeingView(models.TransientModel):
         accounts = self.env['account.account'].search(
             [('id', 'in', active_acc)]) if data['form']['account_ids'] else \
             self.env['account.account'].search([])
+        if not accounts:
+            raise UserError(_("No Accounts Found! Please Add One"))
         active_jrnl = data['form']['journal_ids']
         journals = self.env['account.journal'].search(
             [('id', 'in', active_jrnl)]) if data['form']['journal_ids'] else \
             self.env['account.journal'].search([])
+        if not journals:
+            raise UserError(_("No journals Found!"))
 
 
         date_start = datetime.strptime(str(form_data['date_from']),
@@ -151,11 +157,13 @@ class AgeingView(models.TransientModel):
 
     @api.model
     def create(self, vals):
-        vals['target_move'] = 'all'
+        vals['target_move'] = 'posted'
         res = super(AgeingView, self).create(vals)
         return res
 
     def write(self, vals):
+        if vals.get('target_move'):
+            vals.update({'target_move': vals.get('target_move').lower()})
         if vals.get('journal_ids'):
             vals.update({'journal_ids': [(6, 0, vals.get('journal_ids'))]})
         if vals.get('journal_ids') == []:
@@ -221,9 +229,8 @@ class AgeingView(models.TransientModel):
             self.env.context.get('default_journal_id', False))
         if journal.currency_id:
             return journal.currency_id.id
-        currency_array = [self.env.user.company_id.currency_id.symbol,
-                          self.env.user.company_id.currency_id.position]
-
+        currency_array = [self.env.company.currency_id.symbol,
+                          self.env.company.currency_id.position]
         return currency_array
 
     def get_dynamic_xlsx_report(self, data, response, report_data, dfr_data):
@@ -242,7 +249,7 @@ class AgeingView(models.TransientModel):
         txt_l = workbook.add_format(
             {'font_size': '10px', 'border': 1, 'bold': True})
         sheet.merge_range('A2:D3',
-                          self.env.user.company_id.name + ':' + ' Day Book',
+                          filters.get('company_name') + ':' + ' Day Book',
                           head)
         date_head = workbook.add_format({'align': 'center', 'bold': True,
                                          'font_size': '10px'})

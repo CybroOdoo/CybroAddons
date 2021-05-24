@@ -51,7 +51,7 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function (require) {
             var offset = 0;
             var td = $(event.currentTarget).next('tr').find('td');
             if (td.length == 1) {
-            rpc.query({
+            self._rpc({
                 model: 'account.cash.flow',
                 method: 'view_report',
                 args: [
@@ -255,7 +255,7 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function (require) {
             post_res.value = $(".target_move")[0].value
                     post_res.innerHTML=post_res.value;
               if ($(".target_move")[0].value == "") {
-              post_res.innerHTML="all";
+              post_res.innerHTML="posted";
 
               }
             }

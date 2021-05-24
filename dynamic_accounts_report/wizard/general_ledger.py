@@ -1,8 +1,9 @@
 import time
-from odoo import fields, models, api
+from odoo import fields, models, api, _
 
 import io
 import json
+from odoo.exceptions import AccessError, UserError, AccessDenied
 try:
     from odoo.tools.misc import xlsxwriter
 except ImportError:
@@ -62,15 +63,18 @@ class GeneralView(models.TransientModel):
             'journals': journals,
             'target_move': r.target_move,
             'accounts': r.account_ids,
+            'account_tags': r.account_tag_ids,
+            'analytics': r.analytic_ids,
+            'analytic_tags': r.analytic_tag_ids,
 
         }
         if r.date_from:
             data.update({
-                'date_from':r.date_from,
+                'date_from': r.date_from,
             })
         if r.date_to:
             data.update({
-                'date_to':r.date_to,
+                'date_to': r.date_to,
             })
 
         filters = self.get_filter(option)
@@ -110,11 +114,13 @@ class GeneralView(models.TransientModel):
         if data.get('date_to'):
             filters['date_to'] = data.get('date_to')
         if data.get('analytic_ids', []):
-            filters['analytics'] = data.get('analytic_ids')
+            filters['analytics'] = self.env['account.analytic.account'].browse(
+                data.get('analytic_ids', [])).mapped('name')
         else:
             filters['analytics'] = ['All']
         if data.get('analytic_tag_ids', []):
-            filters['analytic_tags'] = data.get('analytic_tag_ids')
+            filters['account_tags'] = self.env['account.account.tag'].browse(
+                data.get('account_tag_ids', [])).mapped('name')
         else:
             filters['analytic_tags'] = ['All']
 
@@ -125,13 +131,14 @@ class GeneralView(models.TransientModel):
         filters['analytic_list'] = data.get('analytic_list')
         filters['analytic_tag_list'] = data.get('analytic_tag_list')
         filters['company_name'] = data.get('company_name')
+        filters['target_move'] = data.get('target_move').capitalize()
 
         return filters
 
     def get_filter_data(self, option):
         r = self.env['account.general.ledger'].search([('id', '=', option[0])])
         default_filters = {}
-        company_id = r.env.user.company_id
+        company_id = self.env.company
         company_domain = [('company_id', '=', company_id.id)]
         journals = r.journal_ids if r.journal_ids else self.env['account.journal'].search(company_domain)
         accounts = self.account_ids if self.account_ids else self.env['account.account'].search(company_domain)
@@ -167,6 +174,8 @@ class GeneralView(models.TransientModel):
         init_balance = True
         journals = data['journals']
         accounts = self.env['account.account'].search([])
+        if not accounts:
+            raise UserError(_("No Accounts Found! Please Add One"))
         account_res = self._get_accounts(accounts, init_balance, display_account, data)
         debit_total = 0
         debit_total = sum(x['debit'] for x in account_res)
@@ -184,11 +193,13 @@ class GeneralView(models.TransientModel):
 
     @api.model
     def create(self, vals):
-        vals['target_move'] = 'all'
+        vals['target_move'] = 'posted'
         res = super(GeneralView, self).create(vals)
         return res
 
     def write(self, vals):
+        if vals.get('target_move'):
+            vals.update({'target_move': vals.get('target_move').lower()})
         if vals.get('journal_ids'):
             vals.update({'journal_ids': [(6, 0, vals.get('journal_ids'))]})
         if vals.get('journal_ids') == []:
@@ -360,7 +371,8 @@ class GeneralView(models.TransientModel):
             self.env.context.get('default_journal_id', False))
         if journal.currency_id:
             return journal.currency_id.id
-        currency_array = [self.env.user.company_id.currency_id.symbol, self.env.user.company_id.currency_id.position]
+        currency_array = [self.env.company.currency_id.symbol,
+                          self.env.company.currency_id.position]
         return currency_array
 
     def get_dynamic_xlsx_report(self, data, response ,report_data, dfr_data):
@@ -378,7 +390,7 @@ class GeneralView(models.TransientModel):
              'border_color': 'black'})
         txt = workbook.add_format({'font_size': '10px', 'border': 1})
         txt_l = workbook.add_format({'font_size': '10px', 'border': 1, 'bold': True})
-        sheet.merge_range('A2:J3', self.env.user.company_id.name + ':' + name_data.get('name'), head)
+        sheet.merge_range('A2:J3', filters.get('company_name') + ':' + name_data.get('name'), head)
         date_head = workbook.add_format({'align': 'center', 'bold': True,
                                          'font_size': '10px'})
         date_style = workbook.add_format({'align': 'center',
@@ -387,8 +399,20 @@ class GeneralView(models.TransientModel):
             sheet.merge_range('B4:C4', 'From: ' + filters.get('date_from'), date_head)
         if filters.get('date_to'):
             sheet.merge_range('H4:I4', 'To: ' + filters.get('date_to'), date_head)
-        sheet.merge_range('A5:J6', 'Journals: ' + ', '.join(
-            [lt or '' for lt in filters['journals']]) + '  Target Moves: ' + filters.get('target_move'), date_head)
+        # sheet.merge_range('A5:J6', 'Journals: ' + ', '.join(
+        #     [lt or '' for lt in filters['journals']]) + '  Target Moves: ' + filters.get('target_move'), date_head)
+
+        sheet.merge_range('A5:J6', '  Journals: ' + ', '.join(
+            [lt or '' for lt in
+             filters['journals']]) + '  Accounts: ' + ', '.join(
+            [lt or '' for lt in
+             filters['accounts']]) + '  Account Tags: ' + ', '.join(
+            [lt or '' for lt in
+             filters['analytic_tags']]) + '  Analytic: ' + ', '.join(
+            [at or '' for at in
+             filters['analytics']]) + '  Target Moves : ' + filters.get('target_move'),
+                          date_head)
+
 
         sheet.write('A8', 'Code', sub_heading)
         sheet.write('B8', 'Amount', sub_heading)

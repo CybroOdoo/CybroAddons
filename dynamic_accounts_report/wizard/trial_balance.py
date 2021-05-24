@@ -1,8 +1,10 @@
 import time
-from odoo import fields, models, api
+from odoo import fields, models, api, _
 
 import io
 import json
+from odoo.exceptions import AccessError, UserError, AccessDenied
+
 try:
     from odoo.tools.misc import xlsxwriter
 except ImportError:
@@ -74,13 +76,14 @@ class TrialView(models.TransientModel):
         filters['company_id'] = ''
         filters['journals_list'] = data.get('journals_list')
         filters['company_name'] = data.get('company_name')
+        filters['target_move'] = data.get('target_move').capitalize()
 
         return filters
 
     def get_filter_data(self, option):
         r = self.env['account.trial.balance'].search([('id', '=', option[0])])
         default_filters = {}
-        company_id = r.env.user.company_id
+        company_id = self.env.company
         company_domain = [('company_id', '=', company_id.id)]
         journals = r.journal_ids if r.journal_ids else self.env['account.journal'].search(company_domain)
 
@@ -101,6 +104,8 @@ class TrialView(models.TransientModel):
         display_account = data['display_account']
         journals = data['journals']
         accounts = self.env['account.account'].search([])
+        if not accounts:
+            raise UserError(_("No Accounts Found! Please Add One"))
         account_res = self._get_accounts(accounts, display_account, data)
         debit_total = 0
         debit_total = sum(x['debit'] for x in account_res)
@@ -116,11 +121,13 @@ class TrialView(models.TransientModel):
 
     @api.model
     def create(self, vals):
-        vals['target_move'] = 'all'
+        vals['target_move'] = 'posted'
         res = super(TrialView, self).create(vals)
         return res
 
     def write(self, vals):
+        if vals.get('target_move'):
+            vals.update({'target_move': vals.get('target_move').lower()})
         if vals.get('journal_ids'):
             vals.update({'journal_ids': [(6, 0, vals.get('journal_ids'))]})
         if vals.get('journal_ids') == []:
@@ -225,7 +232,8 @@ class TrialView(models.TransientModel):
             self.env.context.get('default_journal_id', False))
         if journal.currency_id:
             return journal.currency_id.id
-        currency_array = [self.env.user.company_id.currency_id.symbol, self.env.user.company_id.currency_id.position]
+        currency_array = [self.env.company.currency_id.symbol,
+                          self.env.company.currency_id.position]
         return currency_array
 
     def get_dynamic_xlsx_report(self, data, response ,report_data, dfr_data):
@@ -243,7 +251,7 @@ class TrialView(models.TransientModel):
              'border_color': 'black'})
         txt = workbook.add_format({'font_size': '10px', 'border': 1})
         txt_l = workbook.add_format({'font_size': '10px', 'border': 1, 'bold': True})
-        sheet.merge_range('A2:D3', self.env.user.company_id.name + ':' + ' Trial Balance', head)
+        sheet.merge_range('A2:D3', filters.get('company_name') + ':' + ' Trial Balance', head)
         date_head = workbook.add_format({'align': 'center', 'bold': True,
                                          'font_size': '10px'})
         date_style = workbook.add_format({'align': 'center',

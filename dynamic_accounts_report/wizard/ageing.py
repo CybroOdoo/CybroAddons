@@ -101,6 +101,7 @@ class AgeingView(models.TransientModel):
         filters['partners_list'] = data.get('partners_list')
         filters['category_list'] = data.get('category_list')
         filters['company_name'] = data.get('company_name')
+        filters['target_move'] = data.get('target_move').capitalize()
 
 
         return filters
@@ -108,7 +109,7 @@ class AgeingView(models.TransientModel):
     def get_filter_data(self, option):
         r = self.env['account.partner.ageing'].search([('id', '=', option[0])])
         default_filters = {}
-        company_id = r.env.user.company_id
+        company_id = self.env.company
         company_domain = [('company_id', '=', company_id.id)]
         partner = r.partner_ids if r.partner_ids else self.env[
             'res.partner'].search([])
@@ -160,11 +161,13 @@ class AgeingView(models.TransientModel):
 
     @api.model
     def create(self, vals):
-        vals['target_move'] = 'all'
+        vals['target_move'] = 'posted'
         res = super(AgeingView, self).create(vals)
         return res
 
     def write(self, vals):
+        if vals.get('target_move'):
+            vals.update({'target_move': vals.get('target_move').lower()})
 
         if vals.get('partner_ids'):
             vals.update(
@@ -540,9 +543,8 @@ class AgeingView(models.TransientModel):
             self.env.context.get('default_journal_id', False))
         if journal.currency_id:
             return journal.currency_id.id
-        currency_array = [self.env.user.company_id.currency_id.symbol,
-                          self.env.user.company_id.currency_id.position]
-
+        currency_array = [self.env.company.currency_id.symbol,
+                          self.env.company.currency_id.position]
         return currency_array
 
     def get_dynamic_xlsx_report(self, data, response, report_data, dfr_data ):
@@ -570,7 +572,7 @@ class AgeingView(models.TransientModel):
         txt_v = workbook.add_format(
             {'align': 'right', 'font_size': '10px', 'border': 1})
         sheet.merge_range('A2:H3',
-                          self.env.user.company_id.name + ':' + ' Partner Ageing',
+                          filters.get('company_name') + ':' + ' Partner Ageing',
                           head)
         date_head = workbook.add_format({'align': 'center', 'bold': True,
                                          'font_size': '10px'})

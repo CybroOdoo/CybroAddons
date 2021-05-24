@@ -230,6 +230,9 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
                     $(event.currentTarget).next('tr').find('td ul').after(
                         QWeb.render('SubSection', {
                             account_data: data['report_lines'][i]['move_lines'],
+                            currency_symbol : data.currency[0],
+                            currency_position : data.currency[1],
+
                         }))
                     $(event.currentTarget).next('tr').find('td ul li:first a').css({
                         'background-color': '#00ede8',
@@ -397,7 +400,7 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
             post_res.value = $(".target_move")[0].value
                     post_res.innerHTML=post_res.value;
               if ($(".target_move")[0].value == "") {
-              post_res.innerHTML="all";
+              post_res.innerHTML="posted";
 
               }
             }

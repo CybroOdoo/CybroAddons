@@ -100,13 +100,14 @@ class AccountCasgFlow(models.TransientModel):
         filters['accounts_list'] = data.get('accounts_list')
         filters['journals_list'] = data.get('journals_list')
         filters['company_name'] = data.get('company_name')
+        filters['target_move'] = data.get('target_move').capitalize()
 
         return filters
 
     def get_filter_data(self, option):
         r = self.env['account.cash.flow'].search([('id', '=', option[0])])
         default_filters = {}
-        company_id = r.env.user.company_id
+        company_id = self.env.company
         company_domain = [('company_id', '=', company_id.id)]
         journals = r.journal_ids if r.journal_ids else self.env['account.journal'].search(company_domain)
         accounts = self.account_ids if self.account_ids else self.env['account.account'].search(company_domain)
@@ -129,7 +130,7 @@ class AccountCasgFlow(models.TransientModel):
     def _get_report_values(self, data, option):
         cr = self.env.cr
         data = self.get_filter(option)
-        company_id = self.env.user.company_id
+        company_id = self.env.company
         currency = company_id.currency_id
         symbol = company_id.currency_id.symbol
         rounding = company_id.currency_id.rounding
@@ -423,11 +424,13 @@ class AccountCasgFlow(models.TransientModel):
 
     @api.model
     def create(self, vals):
-        vals['target_move'] = 'all'
+        vals['target_move'] = 'posted'
         res = super(AccountCasgFlow, self).create(vals)
         return res
 
     def write(self, vals):
+        if vals.get('target_move'):
+            vals.update({'target_move': vals.get('target_move').lower()})
         if vals.get('journal_ids'):
             vals.update({'journal_ids': [(6, 0, vals.get('journal_ids'))]})
         if vals.get('journal_ids') == []:
@@ -446,7 +449,8 @@ class AccountCasgFlow(models.TransientModel):
             self.env.context.get('default_journal_id', False))
         if journal.currency_id:
             return journal.currency_id.id
-        currency_array = [self.env.user.company_id.currency_id.symbol, self.env.user.company_id.currency_id.position]
+        currency_array = [self.env.company.currency_id.symbol,
+                          self.env.company.currency_id.position]
         return currency_array
 
     def get_dynamic_xlsx_report(self, data, response, report_data, dfr_data):
@@ -460,7 +464,7 @@ class AccountCasgFlow(models.TransientModel):
         journal_res = report_data.get('journal_res')
         fetched = report_data.get('fetched')
         account_type_id = self.env.ref('account.data_account_type_liquidity').id
-        currency_symbol = self.env.user.company_id.currency_id.symbol
+        currency_symbol = self.env.company.currency_id.symbol
 
 
         logged_users = self.env['res.company']._company_default_get('account.account')

@@ -1,8 +1,10 @@
 import time
-from odoo import fields, models, api
+from odoo import fields, models, api, _
 
 import io
 import json
+from odoo.exceptions import AccessError, UserError, AccessDenied
+
 
 try:
     from odoo.tools.misc import xlsxwriter
@@ -12,16 +14,14 @@ except ImportError:
 
 class BalanceSheetView(models.TransientModel):
     _name = 'dynamic.balance.sheet.report'
-    _inherit = "account.common.report"
+
+    company_id = fields.Many2one('res.company', required=True,
+                                 default=lambda self: self.env.company)
 
     journal_ids = fields.Many2many('account.journal',
-
                                    string='Journals', required=True,
                                    default=[])
-    account_ids = fields.Many2many(
-        "account.account",
-        string="Accounts",
-    )
+    account_ids = fields.Many2many("account.account",string="Accounts")
 
     account_tag_ids = fields.Many2many("account.account.tag",
                                        string="Account Tags")
@@ -38,10 +38,16 @@ class BalanceSheetView(models.TransientModel):
          ('not_zero', 'With balance is not equal to 0')],
         string='Display Accounts', required=True, default='movement')
 
+    target_move = fields.Selection(
+        [('all', 'All'), ('posted', 'Posted')],
+        string='Target Move', required=True, default='posted')
+
+    date_from = fields.Date(string="Start date")
+    date_to = fields.Date(string="End date")
+
     @api.model
     def view_report(self, option, tag):
         r = self.env['dynamic.balance.sheet.report'].search([('id', '=', option[0])])
-
         data = {
             'display_account': r.display_account,
             'model': self,
@@ -62,7 +68,7 @@ class BalanceSheetView(models.TransientModel):
                 'date_to': r.date_to,
             })
 
-        company_id = self.env.user.company_id
+        company_id = self.env.company
         company_domain = [('company_id', '=', company_id.id)]
         if r.account_tag_ids:
             company_domain.append(
@@ -77,6 +83,7 @@ class BalanceSheetView(models.TransientModel):
 
         filters = self.get_filter(option)
         records = self._get_report_values(data)
+
 
         if filters['account_tags'] != ['All']:
             tag_accounts = list(map(lambda x: x.code, new_account_ids))
@@ -205,7 +212,7 @@ class BalanceSheetView(models.TransientModel):
             sum_list_new = filter_sum(final_report_lines)
             assign_sum(final_report_lines)
 
-        company_id = self.env.user.company_id
+        company_id = self.env.company
         currency = company_id.currency_id
         symbol = currency.symbol
         rounding = currency.rounding
@@ -289,18 +296,17 @@ class BalanceSheetView(models.TransientModel):
         filters['account_tag_list'] = data.get('account_tag_list')
         filters['analytic_tag_list'] = data.get('analytic_tag_list')
         filters['company_name'] = data.get('company_name')
-
+        filters['target_move'] = data.get('target_move').capitalize()
         return filters
 
     def get_filter_data(self, option):
         r = self.env['dynamic.balance.sheet.report'].search([('id', '=', option[0])])
         default_filters = {}
-        company_id = r.env.user.company_id
+        company_id = self.env.company
         company_domain = [('company_id', '=', company_id.id)]
 
         journals = r.journal_ids if r.journal_ids else self.env[
             'account.journal'].search(company_domain)
-
 
         analytics = self.analytic_ids if self.analytic_ids else self.env[
             'account.analytic.account'].search(
@@ -349,6 +355,8 @@ class BalanceSheetView(models.TransientModel):
         init_balance = True
         journals = data['journals']
         accounts = self.env['account.account'].search([])
+        if not accounts:
+            raise UserError(_("No Accounts Found! Please Add One"))
         account_res = self._get_accounts(accounts, init_balance,
                                          display_account, data)
         debit_total = 0
@@ -367,49 +375,39 @@ class BalanceSheetView(models.TransientModel):
 
     @api.model
     def create(self, vals):
-        vals['target_move'] = 'all'
+        vals['target_move'] = 'posted'
         res = super(BalanceSheetView, self).create(vals)
         return res
 
     def write(self, vals):
 
+        if vals.get('target_move'):
+            vals.update({'target_move': vals.get('target_move').lower()})
         if vals.get('journal_ids'):
             vals.update({'journal_ids': [(6, 0, vals.get('journal_ids'))]})
-        if vals.get('journal_ids') == []:
+        if not vals.get('journal_ids'):
             vals.update({'journal_ids': [(5,)]})
         if vals.get('account_ids'):
             vals.update(
                 {'account_ids': [(4, j) for j in vals.get('account_ids')]})
-        if vals.get('account_ids') == []:
+        if not vals.get('account_ids'):
             vals.update({'account_ids': [(5,)]})
         if vals.get('analytic_ids'):
             vals.update(
                 {'analytic_ids': [(4, j) for j in vals.get('analytic_ids')]})
-        if vals.get('analytic_ids') == []:
+        if not vals.get('analytic_ids'):
             vals.update({'analytic_ids': [(5,)]})
-
-        if vals.get('analytic_tags'):
-            vals.update(
-                {'analytic_tags': [(4, j) for j in vals.get('analytic_tags')]})
-        if vals.get('analytic_tags') == []:
-            vals.update({'analytic_tags': [(5,)]})
-
-        if vals.get('account_tags'):
-            vals.update(
-                {'account_tags': [(4, j) for j in vals.get('account_tags')]})
-        if vals.get('account_tags') == []:
-            vals.update({'account_tags': [(5,)]})
 
         if vals.get('account_tag_ids'):
             vals.update({'account_tag_ids': [(4, j) for j in
                                              vals.get('account_tag_ids')]})
-        if vals.get('account_tag_ids') == []:
+        if not vals.get('account_tag_ids'):
             vals.update({'account_tag_ids': [(5,)]})
 
         if vals.get('analytic_tag_ids'):
             vals.update({'analytic_tag_ids': [(4, j) for j in
                                               vals.get('analytic_tag_ids')]})
-        if vals.get('analytic_tag_ids') == []:
+        if not vals.get('analytic_tag_ids'):
             vals.update({'analytic_tag_ids': [(5,)]})
 
         res = super(BalanceSheetView, self).write(vals)
@@ -436,6 +434,7 @@ class BalanceSheetView(models.TransientModel):
             new_final_filter += " AND m.state = 'posted'"
         else:
             new_final_filter += " AND m.state in ('draft','posted')"
+
         if data.get('date_from'):
             new_final_filter += " AND l.date >= '%s'" % data.get('date_from')
         if data.get('date_to'):
@@ -516,8 +515,8 @@ class BalanceSheetView(models.TransientModel):
             self.env.context.get('default_journal_id', False))
         if journal.currency_id:
             return journal.currency_id.id
-        currency_array = [self.env.user.company_id.currency_id.symbol,
-                          self.env.user.company_id.currency_id.position]
+        currency_array = [self.env.company.currency_id.symbol,
+                          self.env.company.currency_id.position]
         return currency_array
 
     def get_dynamic_xlsx_report(self, options, response, report_data, dfr_data):
@@ -557,7 +556,7 @@ class BalanceSheetView(models.TransientModel):
         txt = workbook.add_format({'font_size': '10px', 'border': 1})
 
         sheet.merge_range('A2:D3',
-                          self.env.user.company_id.name + ' : ' + i_data,
+                          filters.get('company_name') + ' : ' + i_data,
                           head)
         date_head = workbook.add_format({'align': 'center', 'bold': True,
                                          'font_size': '10px'})

@@ -311,7 +311,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                 filter_data_selected.date_from = dateString;
             }
             if ($("#date_to").val()) {
-                var dateString = $("#date_from").val();
+                var dateString = $("#date_to").val();
                 filter_data_selected.date_to = dateString;
             }
 
@@ -321,7 +321,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                 post_res.value = $(".target_move")[0].value
                         post_res.innerHTML=post_res.value;
                   if ($(".target_move")[0].value == "") {
-                  post_res.innerHTML="all";
+                  post_res.innerHTML="posted";
 
                   }
             }

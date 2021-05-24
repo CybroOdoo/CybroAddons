@@ -204,6 +204,8 @@ odoo.define('dynamic_partner_daybook.daybook', function (require) {
                         QWeb.render('SubSectiondb', {
 
                             account_data: data['report_lines'][i]['child_lines'],
+                            currency_symbol : data.currency[0],
+                            currency_position : data.currency[1],
                         }))
 
                     $(event.currentTarget).next('tr').find('td ul li:first a').css({
@@ -332,7 +334,7 @@ odoo.define('dynamic_partner_daybook.daybook', function (require) {
             post_res.value = $(".target_move")[0].value
                     post_res.innerHTML=post_res.value;
               if ($(".target_move")[0].value == "") {
-              post_res.innerHTML="all";
+              post_res.innerHTML="posted";
 
               }
             }
