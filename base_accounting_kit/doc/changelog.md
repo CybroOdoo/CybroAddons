@@ -65,3 +65,8 @@
 #### UPDT
 - Cash flow style updated
 
+#### 24.05.2021
+#### Version 14.0.3.10.8
+#### UPDT
+- Report Configuration Sequence
+
