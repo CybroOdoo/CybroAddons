@@ -46,7 +46,7 @@
                     Reconciliation Widget For Odoo14,
                     Payments Matching
                     """,
-    'author': ' Odoo SA,Cybrosys Techno Solutions',
+    'author': 'Cybrosys Techno Solutions, Odoo SA',
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
