@@ -108,3 +108,9 @@
 #### Version 13.0.4.9.14
 #### FIX
 - Tax Report issue fixed
+
+
+#### 26.05.2021
+#### Version 13.0.4.11.14
+#### UPDT
+- Report sequence issue fixed

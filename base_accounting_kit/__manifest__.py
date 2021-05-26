@@ -22,7 +22,7 @@
 
 {
     'name': 'Odoo 13 Full Accounting Kit',
-    'version': '13.0.4.10.14',
+    'version': '13.0.4.11.14',
     'category': 'Accounting',
     'live_test_url': 'https://www.youtube.com/watch?v=peAp2Tx_XIs',
     'summary': """ Asset and Budget Management,
@@ -41,7 +41,7 @@
                     Full Accounting Package, 
                     Financial Reports, Financial Report for Odoo 13
                     """,
-    'author': ' Odoo SA,Cybrosys Techno Solutions',
+    'author': 'Cybrosys Techno Solutions, Odoo SA',
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
