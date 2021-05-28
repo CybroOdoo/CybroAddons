@@ -72,6 +72,12 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
                                     self.$el.find('.category').select2({
                                         placeholder: ' Partner Category...',
                                     });
+                                    self.$el.find('.target_move').select2({
+                                        placeholder: ' Target Move...',
+                                    });
+                                    self.$el.find('.result_selection').select2({
+                                        placeholder: ' Account Type...',
+                                    });
 
                             }
                             var child=[];
@@ -337,10 +343,12 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
             if ($(".target_move").length) {
 
             var post_res = document.getElementById("post_res")
-            filter_data_selected.target_move = $(".target_move")[0].value
-            post_res.value = $(".target_move")[0].value
+            filter_data_selected.target_move = $(".target_move")[1].value
+                        console.log($(".target_move"))
+
+            post_res.value = $(".target_move")[1].value
                     post_res.innerHTML=post_res.value;
-              if ($(".target_move")[0].value == "") {
+              if ($(".target_move")[1].value == "") {
               post_res.innerHTML="posted";
 
               }
@@ -348,10 +356,10 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
 
             if ($(".result_selection").length) {
             var account_res = document.getElementById("account_res")
-            filter_data_selected.result_selection = $(".result_selection")[0].value
-            account_res.value = $(".result_selection")[0].value
+            filter_data_selected.result_selection = $(".result_selection")[1].value
+            account_res.value = $(".result_selection")[1].value
                    account_res.innerHTML=account_res.value;
-              if ($(".result_selection")[0].value == "") {
+              if ($(".result_selection")[1].value == "") {
               account_res.innerHTML="customer";
 
               }
