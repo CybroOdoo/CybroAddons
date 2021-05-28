@@ -70,3 +70,9 @@
 #### UPDT
 - Report Configuration Sequence
 
+#### 28.05.2021
+#### Version 14.0.3.11.9
+#### UPDT
+- 2 * Dashboard Issue
+- Report Configuration Sequence
+
