@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template id="classic_store_topbar" name="Classic Store Topbar" inherit_id="website_sale.products">
+        <xpath expr="//div[hasclass('container')]" position="before">
+            <section class="banner_search">
+                <div class="container">
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <!-- Advance Search -->
+                            <div class="advance-search">
+                                <form>
+                                    <div class="form-row d-flex justify-content-center">
+                                        <div class="form-group col-md-9">
+                                            <input type="search" name="search" class="search-query form-control oe_search_box" data-limit="5" data-display-description="true" data-display-price="true" data-display-image="true" data-oe-model="ir.ui.view" data-oe-id="3225" data-oe-field="arch" data-oe-xpath="/data/xpath[3]/form/t[1]/div[1]/input[1]" placeholder="Search..." value="" autocomplete="off"/>
+                                        </div>
+
+                                        <div class="form-group col-md-2 text-left">
+                                            <button type="submit" class="btn btn-primary oe_search_button" aria-label="Search" title="Search"><a>Search Now</a></button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </xpath>
+
+        <xpath expr="//div[hasclass('products_pager')]" position="replace">
+            <section class="Products_main" style="margin-bottom:5px;">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-3 ">
+                        </div>
+                        <div class="col-lg-9 col-md-9">
+                            <div class="product_right_top">
+                                <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-12">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+    </template>
+
+    <template id="categories_recursive" name="Category list">
+        <li><a t-attf-href="/shop/category/#{slug(c)}" t-attf-class="nav-link #{'active' if c.id == category.id else ''}" style="font-size: 18px; display: flex !important;justify-content: space-between !important; color: #565656; text-decoration: none;"><t t-esc="c.name"/><span><t t-esc="c.category_count"/></span></a></li>
+        <ul t-if="c.child_id" class="nav nav-pills flex-column nav-hierarchy pl-3">
+            <t t-foreach="c.child_id" t-as="c">
+                <t t-if="not search or c.id in search_categories_ids">
+                    <t t-call="theme_classic_store.categories_recursive" />
+                </t>
+            </t>
+        </ul>
+    </template>
+
+    <template id="classic_shop_categories" name="Classic Store Categories" inherit_id="website_sale.products_categories" customize_show="True" priority="1" active="True">
+        <xpath expr="//div[@id='wsale_products_categories_collapse']" position="replace">
+            <div class="col">
+                <div class="product_sidebar">
+                    <div class="wrapper">
+                        <div class="widget_header">
+                            <hr/>
+                            <a t-att-href="keep('/shop', category=0)" t-attf-class="nav-link #{'' if category else 'active'} o_not_editable"><h4 style="color:black; font-size: 20px; display: inline;">All Category</h4></a>
+                            <hr/>
+                            <t t-foreach="categories" t-as="c">
+                                <t t-call="theme_classic_store.categories_recursive" />
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="classic_store_price_filter" name="Classic Store Price Filter" inherit_id="website_sale.products_attributes" active="True" customize_show="True" priority="22">
+        <xpath expr="//form[hasclass('js_attributes')]/ul" position="after">
+            <div class="product_sidebar mr-1">
+                <div class="wrapper">
+                    <div class="widget_header">
+                        <hr/>
+                        <h4 style="color:black; font-size: 20px; display: inline;">Price Filter</h4>
+                        <hr/>
+                        <div class="sidebar__filter">
+                            <div class="filter-range-wrap">
+                                <div id="slider-range"/>
+                                <div class="price_wrapper">
+                                    <p>PRICE: <span t-esc="res_company.currency_id.symbol"/></p>
+                                    <input type="text" id="amount" style="border:0; font-weight:bold;"/>
+                                    <br/>
+                                    <div><br/><button class="price_filter_button btn btn-secondary">Filter</button></div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="classic_store_max_price" name="classic_store_max_price"
+                                   t-att-value="request.env['classic_store.config'].search([],limit=1).max_price"/>
+                            <input type="hidden" id="minimum" name="minimum"/>
+                            <input type="hidden" id="maximum" name="maximum"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="classic_store_attributes" name="Classic Store Attributes" inherit_id="website_sale.products_attributes" customize_show="True" priority="20" active="True">
+        <xpath expr="//div[@id='wsale_products_attributes_collapse']" position="replace">
+            <div class="product_sidebar">
+                <div class="wrapper">
+                    <div class="widget_header">
+                        <form class="js_attributes mb-2" method="get">
+                            <input t-if="category" type="hidden" name="category" t-att-value="category.id" />
+                            <input type="hidden" name="search" t-att-value="search" />
+                            <ul class="nav nav-pills flex-column">
+                                <t t-foreach="attributes" t-as="a">
+                                    <li t-if="a.value_ids and len(a.value_ids) &gt; 1" class="nav-item">
+                                        <div>
+                                            <hr/>
+                                                <h4 style="color:black; font-size: 20px; display: inline;"><t t-esc="a.name"/> </h4>
+                                            <hr/>
+                                        </div>
+                                        <t t-if="a.display_type == 'select'">
+                                            <select class="form-control" name="attrib">
+                                                <option value="" />
+                                                <t t-foreach="a.value_ids" t-as="v">
+                                                    <option t-att-value="'%s-%s' % (a.id,v.id)" t-esc="v.name" t-att-selected="v.id in attrib_set" />
+                                                </t>
+                                            </select>
+                                        </t>
+                                        <t t-if="a.display_type == 'radio'">
+                                            <ul class="nav nav-pills flex-column">
+                                                <t t-foreach="a.value_ids" t-as="v">
+                                                    <li class="nav-item">
+                                                        <label style="padding: 0.25rem 0rem; margin: 0" t-attf-class="nav-link#{' active' if v.id in attrib_set else ''}">
+                                                            <input type="checkbox" name="attrib" t-att-value="'%s-%s' % (a.id,v.id)" t-att-checked="'checked' if v.id in attrib_set else None" />
+                                                            <span style="font-weight: normal" t-field="v.name" />
+                                                        </label>
+                                                    </li>
+                                                </t>
+                                            </ul>
+                                        </t>
+                                        <t t-if="a.display_type == 'color'">
+                                            <t t-foreach="a.value_ids" t-as="v">
+                                                <label t-attf-style="background-color:#{v.html_color or v.name}" t-attf-class="css_attribute_color #{'active' if v.id in attrib_set else ''}">
+                                                    <input type="checkbox" name="attrib" t-att-value="'%s-%s' % (a.id,v.id)" t-att-checked="'checked' if v.id in attrib_set else None" t-att-title="v.name" />
+                                                </label>
+                                            </t>
+                                        </t>
+                                    </li>
+                                </t>
+                            </ul>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

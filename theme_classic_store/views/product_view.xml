@@ -1,0 +1,214 @@
+<odoo>
+    <template id="classic_product_header" inherit_id="website_sale.product" active="True" customize_show="True" name="Product Header">
+        <xpath expr="//div[hasclass('js_sale')]" position="before">
+            <section class="banner_search">
+                <div class="container">
+                    <div class="row">
+                         <div class="col-md-4 mt-3">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a t-att-href="keep(category=0)">Products</a>
+                                </li>
+                                <li t-if="category" class="breadcrumb-item">
+                                    <a style="color: #763242 !important;" t-att-href="keep('/shop/category/%s' % slug(category), category=0)" t-field="category.name"/>
+                                </li>
+                                <li class="breadcrumb-item active">
+                                    <span t-field="product.name" />
+                                </li>
+                            </ol>
+                        </div>
+                        <div class="col-md-8 mt-3">
+                            <div class="form-inline justify-content-end">
+                                <t t-call="website_sale.pricelist_list">
+                                    <t t-set="_classes" t-valuef="ml-3"/>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+    </template>
+
+    <template id="product_price">
+      <div itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer" class="product_price mt16">
+          <div class="price_box" style="background-color: #763242;text-align: center;padding: 30px;margin-bottom: 50px;">
+                <p style="color: #fff;font-size: 18px;font-weight: 600;padding-bottom: 5px;">Price</p>
+                    <h4 class="oe_price_h4 css_editable_mode_hidden">
+                  <span t-attf-class="text-danger oe_default_price {{'' if combination_info['has_discounted_price'] else 'd-none'}}" style="color: #fff;font-size: 18px;font-weight: 600;padding-bottom: 5px;"
+                      t-esc="combination_info['list_price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+                  />
+                  <b class="oe_price" style="color: #fff;font-size: 30px;font-weight: 600;padding-bottom: 5px;" t-esc="combination_info['price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                  <span itemprop="price" style="display:none;" t-esc="combination_info['price']"/>
+                  <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name"/>
+              </h4>
+            </div>
+      </div>
+    </template>
+
+    <template id="classic_product_view" inherit_id="website_sale.product" name="Classic Store Products">
+        <xpath expr="//div[hasclass('js_sale')]" position="replace">
+
+            <div itemscope="itemscope" itemtype="http://schema.org/Product" id="wrap" class="js_sale">
+                <section t-attf-class="container py-2 oe_website_sale #{'discount' if combination_info['has_discounted_price'] else ''}" id="product_detail" t-att-data-view-track="view_track and '1' or '0'">
+                    <div class="row">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-xl-8">
+                            <h1 itemprop="name" t-field="product.name" class="align-center">Product Name</h1>
+                            <hr/>
+                            <t t-call="website_sale.shop_product_carousel"/>
+                        </div>
+                        <div class="col-md-6 col-xl-4" id="product_details">
+                            <t t-call="theme_classic_store.product_price" />
+                            <span itemprop="url" style="display:none;" t-esc="product.website_url"/>
+                            <form t-if="product._is_add_to_cart_possible()" action="/shop/cart/update" method="POST">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()" />
+                                <div class="js_product js_main_product">
+                                    <t t-placeholder="select">
+                                        <input type="hidden" class="product_id" name="product_id" t-att-value="product_variant.id" />
+                                        <input type="hidden" class="product_template_id" name="product_template_id" t-att-value="product.id" />
+                                        <t t-if="combination" t-call="sale.variants">
+                                            <t t-set="ul_class" t-value="'flex-column'" />
+                                            <t t-set="parent_combination" t-value="None" />
+                                        </t>
+                                        <t t-else="">
+                                            <ul class="d-none js_add_cart_variants" t-att-data-attribute_exclusions="{'exclusions: []'}"/>
+                                        </t>
+                                    </t>
+                                    <p t-if="True" class="css_not_available_msg alert alert-warning">This combination does not exist.</p>
+                                    <a role="button" id="add_to_cart" class="btn btn-primary btn-lg mt16 js_check_product a-submit d-block d-sm-inline-block" href="#"><i class="fa fa-shopping-cart"/> Add to Cart</a>
+                                    <div id="product_option_block"/>
+                                </div>
+                            </form>
+                            <p t-elif="not product.active" class="alert alert-warning">This product is no longer available.</p>
+                            <p t-else="" class="alert alert-warning">This product has no valid combination.</p>
+                            <hr t-if="product.description_sale" />
+                            <div>
+                                <p t-field="product.description_sale" class="text-muted mt-3" placeholder="A short description that will also appear on documents." />
+                                <div id="product_attributes_simple">
+                                    <hr t-if="sum([(1 if len(l.value_ids)==1 else 0) for l in product.attribute_line_ids])"/>
+                                    <p class="text-muted">
+                                        <t t-set="single_value_attributes" t-value="product.valid_product_template_attribute_line_ids._prepare_single_value_for_display()"/>
+                                        <t t-foreach="single_value_attributes" t-as="attribute">
+                                            <span t-field="attribute.name"/>:
+                                            <t t-foreach="single_value_attributes[attribute]" t-as="ptal">
+                                                <span t-field="ptal.product_template_value_ids._only_active().name"/><t t-if="not ptal_last">, </t>
+                                            </t>
+                                            <br/>
+                                        </t>
+                                    </p>
+                                </div>
+                            </div>
+                            <hr />
+                        </div>
+                    </div>
+                </section>
+                <div itemprop="description" t-field="product.website_description" class="oe_structure oe_empty mt16" id="product_full_description"/>
+            </div>
+
+            <section class="product_single">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 col-12">
+
+                            <div class="tabs">
+                                <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home"
+                                            role="tab" aria-controls="pills-home" aria-selected="true">Product Details</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-profile"
+                                            role="tab" aria-controls="pills-profile" aria-selected="false">Specification</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="pills-contact-tab" data-toggle="pill" href="#pills-contact"
+                                            role="tab" aria-controls="pills-contact" aria-selected="false">Reviews</a>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content" id="pills-tabContent">
+                                    <div class="tab-pane fade show active" id="pills-home" role="tabpanel"
+                                        aria-labelledby="pills-home-tab">
+
+                                        <div class="p_details">
+                                            <h4>Product Description</h4>
+
+                                            <p>
+                                                <t t-esc="product.description_sale"/>
+                                            </p>
+
+                                            <p>
+                                                <t t-esc="product.website_description"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="pills-profile" role="tabpanel"
+                                        aria-labelledby="pills-profile-tab">
+                                        <div class="p_spec">
+                                            <h4>Product Specification</h4>
+                                            <section id="product_full_spec">
+                                                <t t-set="categories" t-value="product.valid_product_template_attribute_line_ids._prepare_categories_for_display()"/>
+                                                <t t-if="categories">
+                                                    <div class="row">
+                                                        <div id='product_specifications'>
+                                                            <table class='table table-bordered mt-5'>
+                                                                <t t-foreach="categories" t-as="category">
+                                                                    <t t-if="len(categories) > 1">
+                                                                        <tr class="clickable" data-toggle="collapse" t-att-data-target="'.o_ws_category_%d' % category.id">
+                                                                            <th class="text-left" t-att-colspan="2">
+                                                                                <span t-if="category" t-field="category.name"/>
+                                                                                <span t-else="">Uncategorized</span>
+                                                                            </th>
+                                                                        </tr>
+                                                                    </t>
+                                                                    <tr t-foreach="categories[category].filtered(lambda l: len(l.value_ids) > 1)" t-as="ptal" t-att-class="'collapse show o_ws_category_%d' % category.id">
+                                                                        <td><span t-field="ptal.attribute_id.name"/></td>
+                                                                        <td>
+                                                                            <t t-foreach="ptal.value_ids" t-as="pav">
+                                                                                <span t-field="pav.name"/><t t-if="not pav_last"> or</t>
+                                                                            </t>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <t t-set="single_value_attributes" t-value="categories[category]._prepare_single_value_for_display()"/>
+                                                                    <tr t-foreach="single_value_attributes" t-as="attribute" t-att-class="'collapse show o_ws_category_%d' % category.id">
+                                                                        <td><span t-field="attribute.name"/></td>
+                                                                        <td>
+                                                                            <t t-foreach="single_value_attributes[attribute]" t-as="ptal">
+                                                                                <span t-field="ptal.product_template_value_ids._only_active().name"/><t t-if="not ptal_last">, </t>
+                                                                            </t>
+                                                                        </td>
+                                                                    </tr>
+                                                                </t>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </t>
+                                            </section>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="pills-contact" role="tabpanel"
+                                        aria-labelledby="pills-contact-tab">
+
+                                        <div class="P_review">
+                                            <h4>
+                                                Product Review
+                                            </h4>
+                                            <t t-call="portal.message_thread">
+                                                <t t-set="object" t-value="product"/>
+                                                <t t-set="display_rating" t-value="True"/>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+    </template>
+
+</odoo>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <!-- Header templates -->
+
+        <!-- "Default" template -->
+        <template id="template_header_default" inherit_id="website.layout" name="Template Header Default" active="True">
+            <xpath expr="//header//nav" position="replace">
+                    <section class="navigation">
+                        <div class="container">
+                            <nav class="navbar navbar-expand-lg navbar-dark">
+                                <a class="navbar-brand waves-effect" href="index.html">CLASSIC <span>STORE</span></a>
+                                <button class="navbar-toggler waves-effect" type="button" data-toggle="collapse"
+                                    data-target="#main_nav">
+                                    <span class="navbar-toggler-icon"/>
+                                </button>
+                                <div class="collapse navbar-collapse" id="main_nav">
+                                    <ul class="navbar-nav m-auto">
+                                        <li class="nav-item dropdown">
+                                    <!-- Navbar Collapse -->
+                                        <t t-call="website.navbar_nav">
+                                            <t t-set="_nav_class" t-value="'flex-grow-1'"/>
+                                            <!-- Menu -->
+                                            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                                <t t-call="theme_classic_store.submenu">
+                                                    <t t-set="item_class" t-value="'nav-item'"/>
+                                                    <t t-set="link_class" t-value="'nav-link'"/>
+                                                </t>
+                                            </t>
+                                        </t>
+                                        </li>
+
+                                    </ul>
+                                </div>
+                                <!-- WishList -->
+                                <div class="classic-icon">
+                                    <t t-set="wishcount" t-value="len(request.env['product.wishlist'].current())"/>
+                                    <t t-set="show_wishes" t-value="True"/>
+                                    <li t-attf-class="o_wsale_my_wish #{not show_wishes and 'd-none'} #{_item_class}">
+                                        <a href="/shop/wishlist" t-attf-class="#{_link_class}">
+                                            <i class="far fa-heart"/>
+                                            <span t-if="_text">Wishlist</span>
+                                            <sup t-esc="wishcount" t-attf-class="my_wish_quantity o_animate_blink badge badge-primary"/>
+                                        </a>
+                                    </li>
+                                </div>
+
+                                <!-- Cart -->
+                                <div class="classic-icon">
+                                    <t t-set="website_sale_order" t-value="website.sale_get_order()" />
+                                    <t t-set="show_cart" t-value="true"/>
+                                    <li t-attf-class="nav-item} divider d-none"/> <!-- Make sure the cart and related menus are not folded (see autohideMenu) -->
+                                    <li t-attf-class="o_wsale_my_cart #{not show_cart and 'd-none'} nav-item">
+                                        <a href="/shop/cart" t-attf-class="nav-link">
+                                            <i class="fas fa-shopping-cart"/>
+                                            <span t-if="_text">My Cart</span>
+                                            <sup class="my_cart_quantity badge badge-primary" t-esc="website_sale_order and website_sale_order.cart_quantity or '0'" t-att-data-order-id="website_sale_order and website_sale_order.id or ''"/>
+                                        </a>
+                                    </li>
+                                </div>
+
+                                <!-- navbar-collapse.// -->
+                                <div class="login align-right">
+                                    <!-- Sign In -->
+                                    <t t-call="portal.placeholder_user_sign_in">
+                                        <t t-set="_item_class" t-value="'nav-item ml-lg-auto'"/>
+                                        <t t-set="_link_class" t-value="'nav-link font-weight-bold'"/>
+                                    </t>
+                                    <!-- User Dropdown -->
+                                    <t t-call="portal.user_dropdown">
+                                        <t t-set="_user_name" t-value="true"/>
+                                        <t t-set="_item_class" t-value="'nav-item dropdown ml-lg-auto'"/>
+                                        <t t-set="_link_class" t-value="'nav-link font-weight-bold'"/>
+                                    </t>
+
+                                </div>
+                            <!-- Language Selector -->
+                                <t t-call="website.placeholder_header_language_selector">
+                                    <t t-set="_div_classes" t-value="'ml-2'"/>
+                                </t>
+                                <!-- Button -->
+                                <div class="oe_structure oe_structure_solo" id="oe_structure_header_default_1"/>
+                            </nav>
+                        </div>
+                    </section>
+            </xpath>
+        </template>
+
+        <template id="submenu" name="Submenu">
+            <t t-set="has_visible_submenu" t-value="(submenu.is_mega_menu and submenu.is_visible) or submenu.child_id.filtered(lambda menu: menu.is_visible)"/>
+            <li t-if="submenu.is_visible and not has_visible_submenu" t-attf-class="#{item_class or ''}">
+                <a t-att-href="submenu.clean_url()"
+                    t-attf-class="#{link_class or ''} #{'active' if submenu.clean_url() and unslug_url(request.httprequest.path) == unslug_url(submenu.clean_url()) else ''}"
+                    role="menuitem"
+                    t-ignore="true"
+                    t-att-target="'_blank' if submenu.new_window else None">
+                    <span t-field="submenu.name" id="arrow"/>
+                </a>
+            </li>
+            <li t-if="has_visible_submenu" t-attf-class="#{item_class or ''} dropdown #{
+                (submenu.clean_url() and submenu.clean_url() != '/' and any(request.httprequest.path == child.url for child in submenu.child_id if child.url) or
+                 (submenu.clean_url() and request.httprequest.path == submenu.clean_url())) and 'active'
+                } #{submenu.is_mega_menu and 'position-static'}">
+                <a t-attf-class="#{link_class or ''} dropdown-toggle #{submenu.is_mega_menu and 'o_mega_menu_toggle'}" data-toggle="dropdown" href="#">
+                    <span t-field="submenu.name" id="arrow"/>
+                </a>
+                <div t-if="submenu.is_mega_menu"
+                     t-attf-class="dropdown-menu o_mega_menu #{submenu.mega_menu_classes}"
+                     data-name="Mega Menu"
+                     t-field="submenu.mega_menu_content"/>
+                <ul t-else="" class="dropdown-menu" role="menu">
+                    <t t-foreach="submenu.child_id" t-as="submenu">
+                        <t t-call="website.submenu">
+                            <t t-set="item_class" t-value="None"/>
+                            <t t-set="link_class" t-value="'dropdown-item'"/>
+                        </t>
+                    </t>
+                </ul>
+            </li>
+        </template>
+    </data>
+</odoo>

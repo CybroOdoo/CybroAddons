@@ -1,0 +1,80 @@
+<odoo>
+    <template id="product_custom_text" inherit_id="theme_classic_store.classic_product_view" active="True" customize_show="True" name="Terms and Conditions">
+        <xpath expr="//div[@id='product_details']" position="inside">
+            <p class="text-muted">
+                <a href="/shop/terms">Terms and Conditions</a><br/>
+                30-day money-back guarantee<br/>
+                Shipping: 2-3 Business Days
+            </p>
+        </xpath>
+    </template>
+
+    <template inherit_id='theme_classic_store.classic_product_view' id="product_picture_magnify" customize_show="True" name="Image Zoom">
+        <xpath expr='//div[hasclass("js_sale")]' position='attributes'>
+            <attribute name="class" separator=" " add="ecom-zoomable zoomodoo-next" />
+        </xpath>
+    </template>
+
+    <template inherit_id='theme_classic_store.classic_product_view' id="product_picture_magnify_auto" active="False" customize_show="True" name="Automatic Image Zoom">
+        <xpath expr='//div[hasclass("js_sale")]' position='attributes'>
+            <attribute name="data-ecom-zoom-auto">1</attribute>
+            <attribute name="class" separator=" " add="ecom-zoomable zoomodoo-next" />
+
+        </xpath>
+    </template>
+
+     <template id="recommended_products" inherit_id="theme_classic_store.classic_product_view" customize_show="True" name="Alternative Products">
+        <xpath expr="//div[@id='product_full_description']" position="after">
+            <div class="container mt32" t-if="product.alternative_product_ids">
+                <h3>Alternative Products:</h3>
+                <div class="row mt16" style="">
+                    <t t-foreach="product.alternative_product_ids" t-as="alt_product">
+                        <div class="col-lg-2" style="width: 170px; height:130px; float:left; display:inline; margin-right: 10px; overflow:hidden;">
+                            <div class="mt16 text-center" style="height: 100%;">
+                                <t t-set="combination_info" t-value="alt_product._get_combination_info()"/>
+                                <t t-set="product_variant" t-value="alt_product.env['product.product'].browse(combination_info['product_id'])"/>
+                                <div t-if="product_variant" t-field="product_variant.image_128" t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'rounded shadow o_alternative_product o_image_64_max' }" />
+                                <div t-else="" t-field="alt_product.image_128" t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'rounded shadow o_alternative_product o_image_64_max' }" />
+                                <h6>
+                                    <a t-att-href="alt_product.website_url" style="display: block">
+                                        <span t-att-title="alt_product.name" t-field="alt_product.name" class="o_text_overflow" style="display: block;" />
+                                    </a>
+                                </h6>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="recently_viewed_products_product" inherit_id="theme_classic_store.classic_product_view" active="True" customize_show="True" name="Recently Viewed Products" priority="16">
+        <xpath expr="//div[@t-field='product.website_description']" position="after">
+            <t t-snippet-call="website_sale.s_products_recently_viewed"/>
+        </xpath>
+    </template>
+
+    <template id="product_quantity" inherit_id="theme_classic_store.classic_product_view" customize_show="True" name="Select Quantity">
+      <xpath expr="//a[@id='add_to_cart']" position="before">
+        <div class="css_quantity input-group" contenteditable="false">
+            <div class="input-group-prepend">
+                <a t-attf-href="#" class="btn btn-secondary js_add_cart_json" aria-label="Remove one" title="Remove one">
+                    <i class="fa fa-minus"/>
+                </a>
+            </div>
+            <input type="text" class="form-control quantity" data-min="1" name="add_qty" t-att-value="add_qty or 1"/>
+            <div class="input-group-append">
+                <a t-attf-href="#" class="btn btn-secondary float_left js_add_cart_json" aria-label="Add one" title="Add one">
+                    <i class="fa fa-plus"/>
+                </a>
+            </div>
+        </div>
+      </xpath>
+    </template>
+
+    <template id="product_buy_now" inherit_id="theme_classic_store.classic_product_view" active="False" customize_show="True" name="Buy Now Button">
+        <xpath expr="//a[@id='add_to_cart']" position="after">
+            <a role="button" id="buy_now" class="btn btn-outline-primary btn-lg mt16 d-block d-sm-inline-block" href="#"><i class="fa fa-bolt"/> Buy Now</a>
+        </xpath>
+    </template>
+</odoo>

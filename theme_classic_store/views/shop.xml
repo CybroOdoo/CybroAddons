@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="classic_store_products" name="Classic Store Products" inherit_id="website_sale.products">
+        <xpath expr="//div[@id='products_grid']" position="replace">
+            <div id="products_grid" t-attf-class="col #{'o_wsale_layout_list' if layout_mode == 'list' else ''}">
+
+                <t t-if="category">
+                    <t t-set='editor_msg'>Drag building blocks here to customize the header for "<t t-esc='category.name'/>" category.</t>
+                    <div class="mb16" id="category_header" t-att-data-editor-message="editor_msg" t-field="category.website_description"/>
+                </t>
+                <section t-attf-class="shop gap col #{'o_wsale_layout_list' if layout_mode == 'list' else ''}">
+                    <div class="wrapper">
+                        <div class="container">
+                            <div class="row d-flex justify-content-between">
+                                <div class="col-10 align-left">
+                                    <t t-call="website_sale.pricelist_list">
+                                        <t t-set="_classes" t-valuef="mt-2 ml-md-2"/>
+                                    </t>
+
+                                </div>
+                                <div class="col-2 align-right">
+                                    <t t-set="list_price_desc_label">Catalog price: High to Low</t>
+                                    <t t-set="list_price_asc_label">Catalog price: Low to High</t>
+                                    <t t-set="name_asc_label">Name: A to Z</t>
+                                    <t t-set="name_desc_label">Name: Z to A</t>
+                                    <t t-set="website_sale_sortable" t-value="[
+                                        (list_price_desc_label, 'list_price desc'),
+                                        (list_price_asc_label, 'list_price asc'),
+                                        (name_asc_label, 'name asc'),
+                                        (name_desc_label, 'name desc')
+                                    ]"/>
+                                    <t t-set="website_sale_sortable_current" t-value="[sort for sort in website_sale_sortable if sort[1]==request.params.get('order', '')]"/>
+                                    <div class="dropdown mt-2 ml-md-2 dropdown_sorty_by">
+                                        <a role="button" href="#" class="dropdown-toggle btn btn-secondary" data-toggle="dropdown">
+                                            <span class="d-none d-lg-inline">
+                                                <t t-if='len(website_sale_sortable_current)'>
+                                                    Sorting by : <t t-raw='website_sale_sortable_current[0][0]'/>
+                                                </t>
+                                                <t t-else='1'>
+                                                    Sort by
+                                                </t>
+                                            </span>
+                                            <i class="fa fa-sort-amount-asc d-lg-none"/>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right" role="menu">
+                                            <t t-foreach="website_sale_sortable" t-as="sortby">
+                                                <a role="menuitem" rel="noindex,nofollow" t-att-href="keep('/shop', order=sortby[1])" class="dropdown-item">
+                                                    <span t-raw="sortby[0]"/>
+                                                </a>
+                                            </t>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <br/>
+                            </div>
+                            <div class="row">
+                                <br/>
+                                <hr/>
+                            </div>
+                            <div class="row">
+                                <div class="shop_content">
+                                    <div t-if="bins" class="row pt">
+                                        <t t-foreach="bins" t-as="tr_product">
+                                            <t t-foreach="tr_product" t-as="td_product">
+                                                <t t-if="td_product">
+                                                    <t t-set="product" t-value="td_product['product']" />
+                                                    <t t-attf-class="wrapper"
+                                                       t-att-data-ribbon-id="td_product['ribbon'].id">
+                                                        <div t-attf-class="img_wrapper">
+                                                            <t t-call="website_sale.products_item"/>
+                                                        </div>
+                                                    </t>
+                                                </t>
+                                                <t t-else=""/>
+                                            </t>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="classic_store_products_item" name="Classic Store Products" inherit_id="website_sale.products_item">
+        <xpath expr="//div[hasclass('o_wsale_product_information')]" position="replace">
+            <div class="product_right_bottom">
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 col-6">
+                        <div class="card h-100" style="width: 18rem;">
+                            <a t-att-href="product_href" >
+                                <img t-att-href="product_href" t-attf-src="/web/image?model=product.template&amp;field=image_1920&amp;id=#{product.id}"
+                                             class="card-img-top" style=" width:100%; height: 200px;"/>
+                                <li class="list-group-item" style="padding:0; border:0;">
+                                    <div class="o_wsale_product_btn"/>
+                                </li>
+                            </a>
+
+                            <div class="card-body">
+                                <h5 class="card-title" style="padding-left:10px">
+                                    <a itemprop="name" t-att-href="product_href" t-att-content="product.name" t-field="product.name" style="font-size: 16px; color: black;"/>
+                                    <a role="button" t-if="not product.website_published" t-att-href="product_href" class="btn btn-sm btn-danger" title="This product is unpublished.">Unpublished</a>
+                                </h5>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <a>
+                                            <span class="far fa-folder-open"/>
+                                            <t t-esc="product.public_categ_ids.name"/>
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <del t-attf-class="text-danger mr-2 {{'' if combination_info['has_discounted_price'] else 'd-none'}}" style="white-space: nowrap;" t-esc="combination_info['list_price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" />
+                                        <span t-if="combination_info['price']" t-esc="combination_info['price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" class="text-left"/>
+                                         <span itemprop="price" style="display:none;" t-esc="combination_info['price']" />
+                                        <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name" />
+                                    </li>
+                                    <li class="list-group-item">
+                                        <t t-set="rating_avg" t-value="product.rating_avg"/>
+                                        <t t-set="rating_avg" t-value="round(rating_avg * 100) / 100"/>
+                                        <t t-set="val_decimal" t-value="round(rating_avg % 1, 1)"/>
+                                        <t t-set="val_integer" t-value="int(rating_avg)"/>
+                                        <t t-set="empty_star" t-value="5 - (val_integer+1) if val_decimal else 5 - val_integer"/>
+                                        <div class="o_website_rating_static" t-att-style="inline_mode and 'display:inline'" t-att-title="rating_avg">
+                                            <t t-foreach="range(0, val_integer)" t-as="num">
+                                                <i class="fa fa-star" style="font-size:18px;" role="img"></i>
+                                            </t>
+                                            <t t-if="val_decimal">
+                                                <i class="fa fa-star-half-o" style="font-size:18px;" role="img"></i>
+                                            </t>
+                                            <t t-foreach="range(0, empty_star)" t-as="num">
+                                                <i class="fa fa-star text-black-25"  style="font-size:18px;" role="img"></i>
+                                            </t>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
