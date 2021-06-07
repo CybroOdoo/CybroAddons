@@ -26,6 +26,7 @@ from odoo import models, api, fields
 class WhatsappSendMessage(models.TransientModel):
 
     _name = 'whatsapp.message.wizard'
+    _description = "Whatsapp Wizard"
 
     user_id = fields.Many2one('res.partner', string="Recipient")
     mobile = fields.Char(related='user_id.mobile', required=True)
