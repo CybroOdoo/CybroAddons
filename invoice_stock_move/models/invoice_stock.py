@@ -38,8 +38,8 @@ class InvoiceStockMove(models.Model):
                 if line.code == 'incoming':
                     return line
 
-    picking_count = fields.Integer(string="Count")
-    invoice_picking_id = fields.Many2one('stock.picking', string="Picking Id")
+    picking_count = fields.Integer(string="Count", copy=False)
+    invoice_picking_id = fields.Many2one('stock.picking', string="Picking Id", copy=False)
 
     picking_type_id = fields.Many2one('stock.picking.type', 'Picking Type',
                                       default=_get_stock_type_ids,
