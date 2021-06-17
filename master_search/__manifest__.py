@@ -31,7 +31,7 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'license': 'AGPL-3',
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'depends': ['base', 'stock', 'sale', 'purchase'],
     'data': [
         'security/ir.model.access.csv',

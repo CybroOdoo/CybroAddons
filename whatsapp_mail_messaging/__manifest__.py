@@ -41,7 +41,7 @@
         'static/src/xml/whatsapp_button.xml',
         'static/src/xml/mail_button.xml',
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,

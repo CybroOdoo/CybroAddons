@@ -36,7 +36,7 @@
         'views/hr_employee_inherit_view.xml',
         'views/templates.xml',
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'application': True,

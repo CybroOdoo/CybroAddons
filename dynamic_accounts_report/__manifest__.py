@@ -59,7 +59,7 @@
             'static/src/xml/daybook.xml',
     ],
     'license': 'LGPL-3',
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,
     'application': True,
