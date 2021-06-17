@@ -20,10 +20,10 @@
 ##############################################################################
 
 {
-    'name': 'Odoo14 Master Search',
+    'name': 'Global Search',
     'version': '14.0.1.0.0',
     'summary': """Easy Search in Customers, Products, Sale, Purchase, Inventory and Accounting modules""",
-    'description': """Easy Search in Customers, Products, Sale, Purchase, Inventory and Accounting modules, 
+    'description': """Search, Master Search, Quick Search, Easy Search, Easy Search in Customers, Products, Sale, Purchase, Inventory and Accounting modules, 
                       Search, Advance search, master search, odoo14, """,
     'category': 'Settings',
     'author': 'Cybrosys Techno Solutions',
