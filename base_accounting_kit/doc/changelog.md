@@ -76,3 +76,8 @@
 - 2 * Dashboard Issue
 - Report Configuration Sequence
 
+#### 17.06.2021
+#### Version 14.0.3.11.10
+#### FIX
+- Invalid field 'post_at' in Journal - issue fixed
+

@@ -1062,7 +1062,8 @@ class AccountBankStatementLine(models.Model):
             )
             aml_rec.with_context(check_move_validity=False).write({"statement_line_id": self.id})
             counterpart_moves = counterpart_moves | aml_rec.move_id
-            if aml_rec.journal_id.post_at == "bank_rec" and aml_rec.payment_id and aml_rec.move_id.state == "draft":
+            # Update
+            if aml_rec.payment_id and aml_rec.move_id.state == "draft":
                 # In case the journal is set to only post payments when performing bank
                 #reconciliation, we modify its date and post it.
                 aml_rec.move_id.date = self.date
