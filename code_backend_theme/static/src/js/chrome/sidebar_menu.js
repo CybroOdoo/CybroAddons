@@ -35,6 +35,18 @@ odoo.define('code_backend_theme.SidebarMenu', function (require) {
         var navbar_id = navbar.data("id");
         $("nav").addClass(navbar_id);
         navbar.addClass("small_nav");
+
+        //add class in action-manager
+        var action_manager = $(".o_action_manager");
+        var action_manager_id = action_manager.data("id");
+        $("div").addClass(action_manager_id);
+        action_manager.addClass("sidebar_margin");
+
+        //add class in top_heading
+        var top_head = $(".top_heading");
+        var top_head_id = top_head.data("id");
+        $("div").addClass(top_head_id);
+        top_head.addClass("sidebar_margin");
     });
     $(document).on("click", "#closeSidebar", function(event){
         $("#sidebar_panel").css({'display':'none'});
@@ -46,6 +58,18 @@ odoo.define('code_backend_theme.SidebarMenu', function (require) {
         var navbar_id = navbar.data("id");
         $("nav").removeClass(navbar_id);
         navbar.removeClass("small_nav");
+
+        //remove class in action-manager
+        var action_manager = $(".o_action_manager");
+        var action_manager_id = action_manager.data("id");
+        $("div").removeClass(action_manager_id);
+        action_manager.removeClass("sidebar_margin");
+
+        //remove class in top_heading
+        var top_head = $(".top_heading");
+        var top_head_id = top_head.data("id");
+        $("div").removeClass(top_head_id);
+        top_head.removeClass("sidebar_margin");
     });
 
     $(document).on("click", ".sidebar a", function(event){
@@ -68,5 +92,17 @@ odoo.define('code_backend_theme.SidebarMenu', function (require) {
         var navbar_id = navbar.data("id");
         $("nav").removeClass(navbar_id);
         navbar.removeClass("small_nav");
+
+        //remove class in action-manager
+        var action_manager = $(".o_action_manager");
+        var action_manager_id = action_manager.data("id");
+        $("div").removeClass(action_manager_id);
+        action_manager.removeClass("sidebar_margin");
+
+        //remove class in top_heading
+        var top_head = $(".top_heading");
+        var top_head_id = top_head.data("id");
+        $("div").removeClass(top_head_id);
+        top_head.removeClass("sidebar_margin");
     });
 });
