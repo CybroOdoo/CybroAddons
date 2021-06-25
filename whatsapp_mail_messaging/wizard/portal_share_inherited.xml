@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Product Template -->
+    <record id="view_portal_share_form_inherit" model="ir.ui.view">
+        <field name="name">view.portal.share.form.inherit</field>
+        <field name="model">portal.share</field>
+        <field name="inherit_id" ref="portal.portal_share_wizard"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='share_link']" position="before">
+                <field name="share_type" widget="radio"/>
+            </xpath>
+            <xpath expr="//button[@name='action_send_mail']" position="replace">
+                <button string="Send" name="action_send_mail"
+                        attrs="{'invisible': ['|',('access_warning', '!=', ''),('share_type', '=', 'whatsapp')]}"
+                        type="object" class="btn-primary"/>
+            </xpath>
+            <xpath expr="//button[@name='action_send_mail']" position="after">
+                <button string="Send" name="action_send_whatsapp"
+                        attrs="{'invisible': ['|',('access_warning', '!=', ''),('share_type', '=', 'mail')]}"
+                        type="object" class="oe_highlight" icon="fa-whatsapp"/>
+            </xpath>
+            <xpath expr="//field[@name='partner_ids']" position="replace">
+                <field name="partner_ids" widget="many2many_tags_email"
+                       attrs="{'invisible': [('share_type', '=', 'whatsapp')],'required': [('share_type','==','mail')]}"
+                       placeholder="Add contacts to share the document..."/>
+            </xpath>
+            <xpath expr="//field[@name='share_link']" position="after">
+                <field name="partner_id"
+                       attrs="{'invisible': [('share_type', '=', 'mail')],'required': [('share_type','==','whatsapp')]}"/>
+                <field name="mobile_number"
+                       attrs="{'invisible': [('share_type', '=', 'mail')],'required': [('share_type','==','whatsapp')]}"/>
+            </xpath>
+            <xpath expr="//field[@name='note']" position="replace">
+                <field name="note" placeholder="Add a note" widget="text_emojis"
+                       attrs="{'required': [('share_type','==','whatsapp')]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

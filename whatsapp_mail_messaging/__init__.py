@@ -4,7 +4,7 @@
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2020-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Sayooj A O(<https://www.cybrosys.com>)
+#    Author: Sayooj A O (<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -19,4 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
+from . import model
 from . import wizard

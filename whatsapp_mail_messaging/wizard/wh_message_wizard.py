@@ -47,6 +47,8 @@ class WhatsappSendMessage(models.TransientModel):
             for msg in message:
                 message_string = message_string + msg + '%20'
             message_string = message_string[:(len(message_string) - 3)]
+            message_post_content = message_string
+            self.partner_id.message_post(body=message_post_content)
             return {
                 'type': 'ir.actions.act_url',
                 'url': "https://api.whatsapp.com/send?phone=" + self.mobile + "&text=" + message_string,

@@ -4,7 +4,7 @@
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2020-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Sayooj A O(<https://www.cybrosys.com>)
+#    Author: Sayooj A O (<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -20,5 +20,6 @@
 #
 #############################################################################
 
-from . import wh_message_wizard
-from . import portal_share
+from . import website
+from . import sale_order
+from . import account_move
