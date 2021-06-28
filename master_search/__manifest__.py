@@ -21,10 +21,10 @@
 
 {
     'name': 'Global Search',
-    'version': '14.0.1.0.0',
+    'version': '14.0.1.1.0',
     'summary': """Easy Search in Customers, Products, Sale, Purchase, Inventory and Accounting modules""",
-    'description': """Search, Master Search, Quick Search, Easy Search, Easy Search in Customers, Products, Sale, Purchase, Inventory and Accounting modules, 
-                      Search, Advance search, master search, odoo14, """,
+    'description': """Search, Global Search, Quick Search, Easy Search, Easy Search in Customers, Products, Sale, Purchase, Inventory and Accounting modules, 
+                      Search, Advance search, global search, odoo14, """,
     'category': 'Settings',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
