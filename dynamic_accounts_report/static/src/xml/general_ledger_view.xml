@@ -46,7 +46,8 @@
                                         </t>
                                         <t t-else="">
                                             <t t-esc="currency[0]"/>
-                                            <t t-raw="Math.round(account['debit'] * Math.pow(10, 2)) / Math.pow(10, 2)"/>
+                                            <t t-esc="account['debit']"/>
+<!--                                            <t t-raw="Math.round(account['debit'] * Math.pow(10, 2)) / Math.pow(10, 2)"/>-->
                                         </t>
                                     </td>
                                     <td class="mon_fld">
@@ -55,7 +56,8 @@
                                         </t>
                                         <t t-else="">
                                             <t t-esc="currency[0]"/>
-                                            <t t-raw="Math.round(account['credit'] * Math.pow(10, 2)) / Math.pow(10, 2)"/>
+                                            <t t-esc="account['credit']"/>
+<!--                                            <t t-raw="Math.round(account['credit'] * Math.pow(10, 2)) / Math.pow(10, 2)"/>-->
                                         </t>
                                     </td>
                                     <td class="mon_fld">
@@ -64,7 +66,8 @@
                                         </t>
                                         <t t-else="">
                                             <t t-esc="currency[0]"/>
-                                            <t t-raw="Math.round(account['balance'] * Math.pow(10, 2)) / Math.pow(10, 2)"/>
+                                            <t t-esc="account['balance']"/>
+<!--                                            <t t-raw="Math.round(account['balance'] * Math.pow(10, 2)) / Math.pow(10, 2)"/>-->
                                         </t>
                                     </td>
 
@@ -75,7 +78,8 @@
                                             <span>-</span>
                                         </t>
                                         <t t-else="">
-                                            <t t-raw="Math.round(account['debit'] * Math.pow(10, 2)) / Math.pow(10, 2)"/>
+                                            <t t-esc="account['debit']"/>
+<!--                                            <t t-raw="Math.round(account['debit'] * Math.pow(10, 2)) / Math.pow(10, 2)"/>-->
                                             <t t-esc="currency[0]"/>
                                         </t>
                                     </td>
@@ -84,7 +88,8 @@
                                             <span>-</span>
                                         </t>
                                         <t t-else="">
-                                            <t t-raw="Math.round(account['credit'] * Math.pow(10, 2)) / Math.pow(10, 2)"/>
+                                            <t t-esc="account['credit']"/>
+<!--                                            <t t-raw="Math.round(account['credit'] * Math.pow(10, 2)) / Math.pow(10, 2)"/>-->
                                             <t t-esc="currency[0]"/>
                                         </t>
                                     </td>
@@ -93,7 +98,8 @@
                                             <span>-</span>
                                         </t>
                                         <t t-else="">
-                                            <t t-raw="Math.round(account['balance'] * Math.pow(10, 2)) / Math.pow(10, 2)"/>
+                                            <t t-esc="account['balance']"/>
+<!--                                            <t t-raw="Math.round(account['balance'] * Math.pow(10, 2)) / Math.pow(10, 2)"/>-->
                                             <t t-esc="currency[0]"/>
                                         </t>
                                     </td>
@@ -123,7 +129,7 @@
 
     <t t-name="GLFilterView">
         <div>
-                <h1>
+                <h1 style="padding:10px">
                     <t t-esc="title"/>
                 </h1>
 
@@ -132,11 +138,11 @@
             <div class="sub_container_left">
                 <div class="report_print">
                     <button type="button" class="btn btn-primary" id="pdf"
-                            style="height:25px;position: relative;color:white;background-color: #00A0AD;border-color: #00A0AD;">
+                            style="left:10px; height:30px;position: relative;color:white;background-color: #00A0AD;border-color: #00A0AD; padding:3px;">
                         Print (PDF)
                     </button>
                     <button type="button" class="btn btn-primary" id="xlsx"
-                            style="height:25px;position: relative;color:white;background-color: #00A0AD;border-color: #00A0AD;">
+                            style="left:10px; height:30px;position: relative;color:white;background-color: #00A0AD;border-color: #00A0AD; padding:3px;">
                         Export (XLSX)
                     </button>
                 </div>
@@ -238,8 +244,8 @@
                             </a>
                             <select id="entries" class="dropdown-menu target_move" name="states[]">
                                 <div role="separator" class="dropdown-divider"></div>
-                                <option value="all">All Entries</option>
-                                <option value="posted">Posted Entries</option>
+                                <option value="Posted">Posted Entries</option>
+                                <option value="All">All Entries</option>
                             </select>
                             <span id="post_res"></span>
                         </div>
@@ -248,7 +254,7 @@
                 </div>
                 <div style="">
                     <button type="button" id="apply_filter" class="btn btn-primary"
-                            style="top:0px;height:25px;right:0px;position: absolute;color:white;background-color: #00A0AD;border-color: #00A0AD;">
+                            style="top:0px;height:30px;right:20px;position: absolute;color:white;background-color: #00A0AD;border-color: #00A0AD;">
                         Apply
                     </button>
 
@@ -277,6 +283,7 @@
                 <tbody>
                     <t t-foreach="account_data" t-as="account_line">
                      <t t-set="style" t-value="''"/>
+                     <t t-set="style_right" t-value="'text-align:right;'"/>
                          <tr>
                             <td>
                                 <t t-if="account_line.ldate">
@@ -311,60 +318,66 @@
                             <td t-att-style="style">
                                 <t t-esc="account_line.lname"/>
                             </td>
-                            <t t-if="account_line.currency_position == 'before'">
-                                <td t-att-style="style" class="amt">
+                            <t t-if="currency_position == 'before'">
+                                <td t-att-style="style_right" class="amt">
                                     <t t-if="account_line.debit == 0">
                                         <span>-</span>
                                     </t>
                                     <t t-else="">
                                         <t t-esc="account_line.currency_code"/>
-                                        <t t-esc="Math.round(account_line.debit * Math.pow(10, 2)) / Math.pow(10, 2)"/>
+                                        <t t-esc="account_line.debit"/>
+<!--                                        <t t-esc="Math.round(account_line.debit * Math.pow(10, 2)) / Math.pow(10, 2)"/>-->
                                     </t>
                                 </td>
-                                <td t-att-style="style" class="amt">
+                                <td t-att-style="style_right" class="amt">
                                     <t t-if="account_line.credit == 0">
                                         <span>-</span>
                                     </t>
                                     <t t-else="">
                                         <t t-esc="account_line.currency_code"/>
-                                        <t t-esc="Math.round(account_line.credit * Math.pow(10, 2)) / Math.pow(10, 2)"/>
+                                        <t t-esc="account_line.credit"/>
+<!--                                        <t t-esc="Math.round(account_line.credit * Math.pow(10, 2)) / Math.pow(10, 2)"/>-->
                                     </t>
                                 </td>
-                                <td t-att-style="style" class="amt">
+                                <td t-att-style="style_right" class="amt">
                                     <t t-if="account_line.balance == 0">
                                         <span>-</span>
                                     </t>
                                     <t t-else="">
                                         <t t-esc="account_line.currency_code"/>
-                                        <t t-esc="Math.round(account_line.balance * Math.pow(10, 2)) / Math.pow(10, 2)"/>
+                                        <t t-esc="account_line.balance"/>
+<!--                                        <t t-esc="Math.round(account_line.balance * Math.pow(10, 2)) / Math.pow(10, 2)"/>-->
                                     </t>
                                 </td>
                             </t>
                             <t t-else="">
-                                <td t-att-style="style" class="amt">
+                                <td t-att-style="style_right" class="amt">
                                     <t t-if="account_line.debit == 0">
                                         <span>-</span>
                                     </t>
                                     <t t-else="">
-                                        <t t-esc="Math.round(account_line.debit * Math.pow(10, 2)) / Math.pow(10, 2)"/>
+                                        <t t-esc="account_line.debit"/>
+<!--                                        <t t-esc="Math.round(account_line.debit * Math.pow(10, 2)) / Math.pow(10, 2)"/>-->
                                         <t t-esc="account_line.currency_code"/>
                                     </t>
                                 </td>
-                                <td t-att-style="style" class="amt">
+                                <td t-att-style="style_right" class="amt">
                                     <t t-if="account_line.credit == 0">
                                         <span>-</span>
                                     </t>
                                     <t t-else="">
-                                        <t t-esc="Math.round(account_line.credit * Math.pow(10, 2)) / Math.pow(10, 2)"/>
+                                        <t t-esc="account_line.credit"/>
+<!--                                        <t t-esc="Math.round(account_line.credit * Math.pow(10, 2)) / Math.pow(10, 2)"/>-->
                                         <t t-esc="account_line.currency_code"/>
                                     </t>
                                 </td>
-                                <td t-att-style="style" class="amt">
+                                <td t-att-style="style_right" class="amt">
                                     <t t-if="account_line.balance == 0">
                                         <span>-</span>
                                     </t>
                                     <t t-else="">
-                                        <t t-esc="Math.round(account_line.balance * Math.pow(10, 2)) / Math.pow(10, 2)"/>
+                                        <t t-esc="account_line.balance"/>
+<!--                                        <t t-esc="Math.round(account_line.balance * Math.pow(10, 2)) / Math.pow(10, 2)"/>-->
                                         <t t-esc="account_line.currency_code"/>
                                     </t>
                                 </td>

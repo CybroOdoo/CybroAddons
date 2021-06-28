@@ -15,5 +15,6 @@ class InsReportBalanceSheet(models.AbstractModel):
                     'report_lines': data.get('report_data')['bs_lines'],
                     'report_name': data.get('report_name'),
                     'title': data.get('report_data')['name'],
+                    'company': self.env.company,
                 })
         return data

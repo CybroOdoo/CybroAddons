@@ -1,8 +1,10 @@
 import time
-from odoo import fields, models, api
+from odoo import fields, models, api, _
 
 import io
 import json
+from odoo.exceptions import AccessError, UserError, AccessDenied
+
 try:
     from odoo.tools.misc import xlsxwriter
 except ImportError:
@@ -124,18 +126,16 @@ class PartnerView(models.TransientModel):
         filters['partners_list'] = data.get('partners_list')
         filters['category_list'] = data.get('category_list')
         filters['account_type_list'] = data.get('account_type_list')
+        filters['target_move'] = data.get('target_move').capitalize()
         return filters
 
     def get_filter_data(self, option):
         r = self.env['account.partner.ledger'].search([('id', '=', option[0])])
         default_filters = {}
-        company_id = self.env.user.company_id
-        print(company_id)
-        account_domain = [('company_id', '=', company_id.id), (
-            'user_type_id.type', 'in', ('receivable', 'payable'))]
+        company_id = self.env.company
         company_domain = [('company_id', '=', company_id.id)]
         journals = r.journal_ids if r.journal_ids else self.env['account.journal'].search(company_domain)
-        accounts = self.account_ids if self.account_ids else self.env['account.account'].search(account_domain)
+        accounts = self.account_ids if self.account_ids else self.env['account.account'].search(company_domain)
 
         partner = r.partner_ids if r.partner_ids else self.env[
             'res.partner'].search([])
@@ -181,7 +181,8 @@ class PartnerView(models.TransientModel):
         if data['partner_tags']:
             partners = self.env['res.partner'].search(
                 [('category_id', 'in', data['partner_tags'].ids)])
-
+        if not accounts:
+            raise UserError(_("No Accounts Found! Please Add One"))
         partner_res = self._get_partners(partners,accounts, init_balance, display_account, data)
 
         debit_total = 0
@@ -200,11 +201,13 @@ class PartnerView(models.TransientModel):
 
     @api.model
     def create(self, vals):
-        vals['target_move'] = 'all'
+        vals['target_move'] = 'posted'
         res = super(PartnerView, self).create(vals)
         return res
 
     def write(self, vals):
+        if vals.get('target_move'):
+            vals.update({'target_move': vals.get('target_move').lower()})
         if vals.get('journal_ids'):
             vals.update({'journal_ids': [(6, 0, vals.get('journal_ids'))]})
         if not vals.get('journal_ids'):
@@ -307,7 +310,7 @@ class PartnerView(models.TransientModel):
 
         partner_res = []
         for partner in partners:
-            company_id = self.env.user.company_id
+            company_id = self.env.company
             currency = company_id.currency_id
             res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
             res['name'] = partner.name
@@ -332,7 +335,12 @@ class PartnerView(models.TransientModel):
             self.env.context.get('default_journal_id', False))
         if journal.currency_id:
             return journal.currency_id.id
-        currency_array = [self.env.user.company_id.currency_id.symbol, self.env.user.company_id.currency_id.position]
+        lang = self.env.user.lang
+        if not lang:
+            lang = 'en_US'
+        lang = lang.replace("_", '-')
+        currency_array = [self.env.company.currency_id.symbol,
+                          self.env.company.currency_id.position, lang]
         return currency_array
 
     def get_dynamic_xlsx_report(self, data, response, report_data, dfr_data):
@@ -355,7 +363,7 @@ class PartnerView(models.TransientModel):
              'border': 1,
              'border_color': 'black'})
         sheet.merge_range('A1:H2',
-                          self.env.user.company_id.name + ':' + 'Partner Ledger',
+                          filters.get('company_name') + ':' + 'Partner Ledger',
                           head)
         date_head = workbook.add_format({'align': 'center', 'bold': True,
                                          'font_size': '10px'})

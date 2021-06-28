@@ -56,11 +56,22 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
                 self.$(".categ").empty();
                 try{
                     var self = this;
-                    rpc.query({
+                    self._rpc({
                         model: 'account.partner.ageing',
                         method: 'view_report',
                         args: [[this.wizard_id]],
                     }).then(function(datas) {
+                    _.each(datas['report_lines'][0], function(rep_lines) {
+                            rep_lines.total = self.format_currency(datas['currency'],rep_lines.total);
+                            rep_lines[4] = self.format_currency(datas['currency'],rep_lines[4]);
+                            rep_lines[3] = self.format_currency(datas['currency'],rep_lines[3]);
+                            rep_lines[2] = self.format_currency(datas['currency'],rep_lines[2]);
+                            rep_lines[1] = self.format_currency(datas['currency'],rep_lines[1]);
+                            rep_lines[0] = self.format_currency(datas['currency'],rep_lines[0]);
+
+                            rep_lines['direction'] = self.format_currency(datas['currency'],rep_lines['direction']);
+
+                             });
 
                             if (initial_render) {
                                     self.$('.filter_view_tb').html(QWeb.render('AgeingFilterView', {
@@ -71,6 +82,12 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
                                     });
                                     self.$el.find('.category').select2({
                                         placeholder: ' Partner Category...',
+                                    });
+                                    self.$el.find('.target_move').select2({
+                                        placeholder: ' Target Move...',
+                                    });
+                                    self.$el.find('.result_selection').select2({
+                                        placeholder: ' Account Type...',
                                     });
 
                             }
@@ -90,6 +107,15 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
                 catch (el) {
                     window.location.href
                     }
+            },
+            format_currency: function(currency, amount) {
+                if (typeof(amount) != 'number') {
+                    amount = parseFloat(amount);
+                }
+                var formatted_value = (parseInt(amount)).toLocaleString(currency[2],{
+                    minimumFractionDigits: 2
+                })
+                return formatted_value
             },
 
             print_pdf: function(e) {
@@ -208,8 +234,6 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
             var td = $(event.currentTarget).next('tr').find('td');
             if (td.length == 1) {
 
-
-
                     self._rpc({
                         model: 'account.partner.ageing',
                         method: 'view_report',
@@ -217,19 +241,23 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
                             [self.wizard_id]
                         ],
                     }).then(function(data) {
+
+
+                    _.each(data['report_lines'][0], function(rep_lines) {
+                    _.each(rep_lines['child_lines'], function(child_line) {
+                            child_line.amount = self.format_currency(data['currency'],child_line.amount);
+
+                            });
+                             });
+
+
                     for (var i = 0; i < data['report_lines'][0].length; i++) {
-
-
                     if (account_id == data['report_lines'][0][i]['partner_id'] ){
-
-
                     $(event.currentTarget).next('tr').find('td .gl-table-div').remove();
                     $(event.currentTarget).next('tr').find('td ul').after(
                         QWeb.render('SubSectional', {
                             account_data: data['report_lines'][0][i]['child_lines'],
-
                         }))
-
                     $(event.currentTarget).next('tr').find('td ul li:first a').css({
                         'background-color': '#00ede8',
                         'font-weight': 'bold',
@@ -337,21 +365,22 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
             if ($(".target_move").length) {
 
             var post_res = document.getElementById("post_res")
-            filter_data_selected.target_move = $(".target_move")[0].value
-            post_res.value = $(".target_move")[0].value
+            filter_data_selected.target_move = $(".target_move")[1].value
+
+            post_res.value = $(".target_move")[1].value
                     post_res.innerHTML=post_res.value;
-              if ($(".target_move")[0].value == "") {
-              post_res.innerHTML="all";
+              if ($(".target_move")[1].value == "") {
+              post_res.innerHTML="posted";
 
               }
             }
 
             if ($(".result_selection").length) {
             var account_res = document.getElementById("account_res")
-            filter_data_selected.result_selection = $(".result_selection")[0].value
-            account_res.value = $(".result_selection")[0].value
+            filter_data_selected.result_selection = $(".result_selection")[1].value
+            account_res.value = $(".result_selection")[1].value
                    account_res.innerHTML=account_res.value;
-              if ($(".result_selection")[0].value == "") {
+              if ($(".result_selection")[1].value == "") {
               account_res.innerHTML="customer";
 
               }

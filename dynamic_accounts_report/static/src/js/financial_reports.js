@@ -47,11 +47,12 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                 self.$(".categ").empty();
                 try{
                     var self = this;
-                    rpc.query({
+                    self._rpc({
                         model: 'dynamic.balance.sheet.report',
                         method: 'view_report',
                         args: [[this.wizard_id], action_title],
                     }).then(function(datas) {
+
                             if (initial_render) {
                                     self.$('.filter_view_dfr').html(QWeb.render('DfrFilterView', {
                                         filter_data: datas['filters'],
@@ -90,6 +91,16 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                 catch (el) {
                     window.location.href
                     }
+            },
+
+    format_currency: function(currency, amount) {
+                if (typeof(amount) != 'number') {
+                    amount = parseFloat(amount);
+                }
+                var formatted_value = (parseInt(amount)).toLocaleString(currency[2],{
+                    minimumFractionDigits: 2
+                })
+                return formatted_value
             },
 
     show_gl: function(e) {
@@ -311,7 +322,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                 filter_data_selected.date_from = dateString;
             }
             if ($("#date_to").val()) {
-                var dateString = $("#date_from").val();
+                var dateString = $("#date_to").val();
                 filter_data_selected.date_to = dateString;
             }
 
@@ -321,7 +332,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                 post_res.value = $(".target_move")[0].value
                         post_res.innerHTML=post_res.value;
                   if ($(".target_move")[0].value == "") {
-                  post_res.innerHTML="all";
+                  post_res.innerHTML="posted";
 
                   }
             }

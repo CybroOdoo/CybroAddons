@@ -56,6 +56,12 @@ odoo.define('dynamic_partner_daybook.daybook', function (require) {
                         method: 'view_report',
                         args: [[this.wizard_id]],
                     }).then(function(datas) {
+                     _.each(datas['report_lines'], function(rep_lines) {
+                            rep_lines.debit = self.format_currency(datas['currency'],rep_lines.debit);
+                            rep_lines.credit = self.format_currency(datas['currency'],rep_lines.credit);
+                            rep_lines.balance = self.format_currency(datas['currency'],rep_lines.balance);
+
+                            });
 
                             if (initial_render) {
 
@@ -86,6 +92,17 @@ odoo.define('dynamic_partner_daybook.daybook', function (require) {
                 catch (el) {
                     window.location.href
                     }
+            },
+
+
+            format_currency: function(currency, amount) {
+                if (typeof(amount) != 'number') {
+                    amount = parseFloat(amount);
+                }
+                var formatted_value = (parseInt(amount)).toLocaleString(currency[2],{
+                    minimumFractionDigits: 2
+                })
+                return formatted_value
             },
 
             print_pdf: function(e) {
@@ -196,6 +213,16 @@ odoo.define('dynamic_partner_daybook.daybook', function (require) {
                             [self.wizard_id]
                         ],
                     }).then(function(data) {
+                    _.each(data['report_lines'], function(rep_lines) {
+                            _.each(rep_lines['child_lines'], function(move_line) {
+
+                             move_line.debit = self.format_currency(data['currency'],move_line.debit);
+                            move_line.credit = self.format_currency(data['currency'],move_line.credit);
+                            move_line.balance = self.format_currency(data['currency'],move_line.balance);
+
+
+                             });
+                             });
                     for (var i = 0; i < data['report_lines'].length; i++) {
 
                     if (account_id == data['report_lines'][i]['id'] ){
@@ -204,6 +231,8 @@ odoo.define('dynamic_partner_daybook.daybook', function (require) {
                         QWeb.render('SubSectiondb', {
 
                             account_data: data['report_lines'][i]['child_lines'],
+                            currency_symbol : data.currency[0],
+                            currency_position : data.currency[1],
                         }))
 
                     $(event.currentTarget).next('tr').find('td ul li:first a').css({
@@ -332,7 +361,7 @@ odoo.define('dynamic_partner_daybook.daybook', function (require) {
             post_res.value = $(".target_move")[0].value
                     post_res.innerHTML=post_res.value;
               if ($(".target_move")[0].value == "") {
-              post_res.innerHTML="all";
+              post_res.innerHTML="posted";
 
               }
             }

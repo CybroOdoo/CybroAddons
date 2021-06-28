@@ -6,10 +6,6 @@ class BalanceSheet(models.TransientModel):
     _inherit = "dynamic.balance.sheet.report"
 
     def view_report_pdf(self, acc, form):
-        """This function will be executed when we click the view button
-        from the wizard. Based on the values provided in the wizard, this
-        function will print pdf report"""
-
         data = dict()
         report_lines = acc
         data['form'] = form
@@ -254,6 +250,7 @@ class BalanceSheet(models.TransientModel):
                         sub_lines.append(vals)
                 lines += sorted(sub_lines,
                                 key=lambda sub_line: sub_line['name'])
+
         return lines
 
     def find_journal_items(self, report_lines, form):
@@ -300,3 +297,9 @@ class BalanceSheet(models.TransientModel):
                     j['type'] = 'journal_item'
                     journal_items.append(j)
         return journal_items
+
+
+
+
+
+

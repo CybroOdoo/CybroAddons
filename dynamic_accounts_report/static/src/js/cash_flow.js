@@ -51,13 +51,44 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function (require) {
             var offset = 0;
             var td = $(event.currentTarget).next('tr').find('td');
             if (td.length == 1) {
-            rpc.query({
+            self._rpc({
                 model: 'account.cash.flow',
                 method: 'view_report',
                 args: [
                     [self.wizard_id]
                 ],
             }).then(function(datas) {
+            _.each(datas['journal_res'], function(journal_lines) {
+                    _.each(journal_lines['journal_lines'], function(rep_lines) {
+                        rep_lines.total_debit = self.format_currency(datas['currency'],rep_lines.total_debit);
+                        rep_lines.total_credit = self.format_currency(datas['currency'],rep_lines.total_credit);
+                        rep_lines.balance = self.format_currency(datas['currency'],rep_lines.balance);
+
+
+
+
+                    });
+
+            });
+            _.each(datas['account_res'], function(journal_lines) {
+                    _.each(journal_lines['journal_lines'], function(rep_lines) {
+                        rep_lines.total_debit = self.format_currency(datas['currency'],rep_lines.total_debit);
+                        rep_lines.total_credit = self.format_currency(datas['currency'],rep_lines.total_credit);
+                        rep_lines.total_balance = self.format_currency(datas['currency'],rep_lines.total_balance);
+
+
+                    });
+                    _.each(journal_lines['move_lines'], function(move_lines) {
+                        move_lines.total_debit = self.format_currency(datas['currency'],move_lines.total_debit);
+                        move_lines.total_credit = self.format_currency(datas['currency'],move_lines.total_credit);
+                        move_lines.balance = self.format_currency(datas['currency'],move_lines.balance);
+
+
+
+
+                    });
+            });
+
 
                     if(datas['levels']== 'detailed'){
                         $(event.currentTarget).next('tr').find('td ul').after(
@@ -95,11 +126,22 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function (require) {
                 self.$(".categ").empty();
                 try{
                     var self = this;
-                    rpc.query({
+                    self._rpc({
                         model: 'account.cash.flow',
                         method: 'view_report',
                         args: [[this.wizard_id]],
                     }).then(function(datas) {
+
+
+                            _.each(datas['fetched_data'], function(rep_lines) {
+                            rep_lines.total_debit = self.format_currency(datas['currency'],rep_lines.total_debit);
+                            rep_lines.total_credit = self.format_currency(datas['currency'],rep_lines.total_credit);
+                            rep_lines.total_balance = self.format_currency(datas['currency'],rep_lines.total_balance);
+
+
+
+
+                            });
                             if (initial_render) {
                                     self.$('.filter_view_tb').html(QWeb.render('CashFilterView', {
                                         filter_data: datas['filters'],
@@ -123,6 +165,16 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function (require) {
                 catch (el) {
                     window.location.href
                     }
+            },
+
+            format_currency: function(currency, amount) {
+                if (typeof(amount) != 'number') {
+                    amount = parseFloat(amount);
+                }
+                var formatted_value = (parseInt(amount)).toLocaleString(currency[2],{
+                    minimumFractionDigits: 2
+                })
+                return formatted_value
             },
 
             show_gl: function(e) {
@@ -255,7 +307,7 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function (require) {
             post_res.value = $(".target_move")[0].value
                     post_res.innerHTML=post_res.value;
               if ($(".target_move")[0].value == "") {
-              post_res.innerHTML="all";
+              post_res.innerHTML="posted";
 
               }
             }

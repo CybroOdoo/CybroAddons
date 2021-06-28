@@ -12,6 +12,7 @@ class PartnerAgeing(models.AbstractModel):
                 data.update(
                     {'account_data': data.get('report_data')['report_lines'][0],
                      'Filters': data.get('report_data')['filters'],
+                     'company': self.env.company,
 
                      })
 

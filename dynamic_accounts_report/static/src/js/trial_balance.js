@@ -50,11 +50,19 @@ odoo.define('dynamic_cash_flow_statements.trial', function (require) {
                 self.$(".categ").empty();
                 try{
                     var self = this;
-                    rpc.query({
+                    self._rpc({
                         model: 'account.trial.balance',
                         method: 'view_report',
                         args: [[this.wizard_id]],
                     }).then(function(datas) {
+                            _.each(datas['report_lines'], function(rep_lines) {
+                            rep_lines.debit = self.format_currency(datas['currency'],rep_lines.debit);
+                            rep_lines.credit = self.format_currency(datas['currency'],rep_lines.credit);
+                            rep_lines.balance = self.format_currency(datas['currency'],rep_lines.balance);
+
+
+
+                            });
                             if (initial_render) {
                                     self.$('.filter_view_tb').html(QWeb.render('TrialFilterView', {
                                         filter_data: datas['filters'],
@@ -70,8 +78,8 @@ odoo.define('dynamic_cash_flow_statements.trial', function (require) {
                                             report_lines : datas['report_lines'],
                                             filter : datas['filters'],
                                             currency : datas['currency'],
-                                            credit_total : datas['credit_total'],
-                                            debit_total : datas['debit_total'],
+                                            credit_total : self.format_currency(datas['currency'],datas['debit_total']),
+                                            debit_total : self.format_currency(datas['currency'],datas['debit_total']),
                                         }));
                 });
 
@@ -129,6 +137,17 @@ odoo.define('dynamic_cash_flow_statements.trial', function (require) {
                 };
                 return self.do_action(action);
             });
+        },
+
+
+        format_currency: function(currency, amount) {
+            if (typeof(amount) != 'number') {
+                amount = parseFloat(amount);
+            }
+            var formatted_value = (parseInt(amount)).toLocaleString(currency[2],{
+                minimumFractionDigits: 2
+            })
+            return formatted_value
         },
 
         print_xlsx: function() {
@@ -219,7 +238,7 @@ odoo.define('dynamic_cash_flow_statements.trial', function (require) {
             post_res.value = $(".target_move")[0].value
                     post_res.innerHTML=post_res.value;
               if ($(".target_move")[0].value == "") {
-              post_res.innerHTML="all";
+              post_res.innerHTML="posted";
 
               }
             }

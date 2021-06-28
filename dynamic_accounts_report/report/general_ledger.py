@@ -15,5 +15,6 @@ class GeneralLedger(models.AbstractModel):
                              'debit_total': data.get('report_data')['debit_total'],
                              'credit_total': data.get('report_data')['credit_total'],
                              'title': data.get('report_data')['name'],
+                             'company': self.env.company,
                              })
         return data

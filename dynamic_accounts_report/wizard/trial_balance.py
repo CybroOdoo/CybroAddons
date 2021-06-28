@@ -22,6 +22,10 @@ class TrialView(models.TransientModel):
          ('not_zero', 'With balance is not equal to 0')],
         string='Display Accounts', required=True, default='movement')
 
+    # target_move = fields.Selection([('posted', 'All Posted Entries'),
+    #                                 ('all', 'All Entries')],
+    #                                string='Target Moves', required=True)
+
     @api.model
     def view_report(self, option):
         r = self.env['account.trial.balance'].search([('id', '=', option[0])])
@@ -135,7 +139,7 @@ class TrialView(models.TransientModel):
         tables, where_clause, where_params = self.env['account.move.line']._query_get()
         tables = tables.replace('"', '')
         if not tables:
-            tables = 'account_move_line LEFT JOIN account_move AS account_move_line__move_id ON (account_move_line.move_id = account_move_line__move_id.id)JOIN account_journal jrnl ON (account_move_line.journal_id=jrnl.id)'
+            tables = 'account_move_line LEFT JOIN account_move AS account_move_line__move_id ON (account_move_line.move_id = account_move_line__move_id.id) JOIN account_journal jrnl ON (account_move_line.journal_id=jrnl.id)'
         wheres = [""]
         if where_clause.strip():
             wheres.append(where_clause.strip())
@@ -151,7 +155,7 @@ class TrialView(models.TransientModel):
 
         if data['journals']:
             filters += ' AND jrnl.id IN %s' % str(tuple(data['journals'].ids) + tuple([0]))
-        # tables += 'JOIN account_journal jrnl ON (account_move_line.journal_id=jrnl.id)'
+        # tables += ' JOIN account_journal jrnl ON (account_move_line.journal_id=jrnl.id)'
         # compute the balance, debit and credit for the provided accounts
         request = (
                     "SELECT account_id AS id, SUM(debit) AS debit, SUM(credit) AS credit, (SUM(debit) - SUM(credit)) AS balance" + \
@@ -199,16 +203,17 @@ class TrialView(models.TransientModel):
             if where_clause.strip():
                 wheres.append(where_clause.strip())
             filters = " AND ".join(wheres)
+            tables += ' JOIN account_move am ON (account_move_line.move_id=am.id)'
             if data['target_move'] == 'posted':
-                filters += " AND account_move_line__move_id.state = 'posted'"
+                filters += " AND am.state = 'posted'"
             else:
-                filters += " AND account_move_line__move_id.state in ('draft','posted')"
+                filters += " AND am.state in ('draft','posted')"
             if data.get('date_from'):
                 filters += " AND account_move_line.date < '%s'" % data.get('date_from')
 
             if data['journals']:
                 filters += ' AND jrnl.id IN %s' % str(tuple(data['journals'].ids) + tuple([0]))
-            tables += 'JOIN account_journal jrnl ON (account_move_line.journal_id=jrnl.id)'
+            tables += ' JOIN account_journal jrnl ON (account_move_line.journal_id=jrnl.id)'
 
             # compute the balance, debit and credit for the provided accounts
             request = (
@@ -225,7 +230,13 @@ class TrialView(models.TransientModel):
             self.env.context.get('default_journal_id', False))
         if journal.currency_id:
             return journal.currency_id.id
-        currency_array = [self.env.user.company_id.currency_id.symbol, self.env.user.company_id.currency_id.position]
+        lang = self.env.user.lang
+        if not lang:
+            lang = 'en_US'
+        lang = lang.replace("_", '-')
+        currency_array = [self.env.company.currency_id.symbol,
+                          self.env.company.currency_id.position,
+                          lang]
         return currency_array
 
     def get_dynamic_xlsx_report(self, data, response ,report_data, dfr_data):
