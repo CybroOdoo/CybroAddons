@@ -25,7 +25,7 @@ from odoo.exceptions import UserError
 
 class MasterSearch(models.Model):
     _name = 'master.search'
-    _description = "Model for master search"
+    _description = "Model for global search"
     _rec_name = 'name'
     _order = "create_date desc"
 
