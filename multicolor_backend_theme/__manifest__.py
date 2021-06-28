@@ -29,7 +29,7 @@
     """,
     'images': [
         'static/description/banner.png',
-        'static/description/theme_screenshot.jpg',
+        'static/description/theme_screenshot.png',
     ],
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
