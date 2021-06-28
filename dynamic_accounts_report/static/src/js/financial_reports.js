@@ -52,6 +52,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                         method: 'view_report',
                         args: [[this.wizard_id], action_title],
                     }).then(function(datas) {
+
                             if (initial_render) {
                                     self.$('.filter_view_dfr').html(QWeb.render('DfrFilterView', {
                                         filter_data: datas['filters'],
@@ -90,6 +91,16 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                 catch (el) {
                     window.location.href
                     }
+            },
+
+    format_currency: function(currency, amount) {
+                if (typeof(amount) != 'number') {
+                    amount = parseFloat(amount);
+                }
+                var formatted_value = (parseInt(amount)).toLocaleString(currency[2],{
+                    minimumFractionDigits: 2
+                })
+                return formatted_value
             },
 
     show_gl: function(e) {

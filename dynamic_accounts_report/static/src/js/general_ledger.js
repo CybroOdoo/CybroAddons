@@ -70,6 +70,15 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
                         method: 'view_report',
                         args: [[this.wizard_id], action_title],
                     }).then(function(datas) {
+                    _.each(datas['report_lines'], function(rep_lines) {
+                            rep_lines.debit = self.format_currency(datas['currency'],rep_lines.debit);
+                            rep_lines.credit = self.format_currency(datas['currency'],rep_lines.credit);
+                            rep_lines.balance = self.format_currency(datas['currency'],rep_lines.balance);
+
+
+
+
+                            });
 
                             if (initial_render) {
                                     self.$('.filter_view_tb').html(QWeb.render('GLFilterView', {
@@ -205,6 +214,15 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
             });
 
         },
+        format_currency: function(currency, amount) {
+                if (typeof(amount) != 'number') {
+                    amount = parseFloat(amount);
+                }
+                var formatted_value = (parseInt(amount)).toLocaleString(currency[2],{
+                    minimumFractionDigits: 2
+                })
+                return formatted_value
+            },
 
         show_drop_down: function(event) {
             event.preventDefault();
@@ -221,6 +239,16 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
                             [self.wizard_id], action_title
                         ],
                     }).then(function(data) {
+                    _.each(data['report_lines'], function(rep_lines) {
+                            _.each(rep_lines['move_lines'], function(move_line) {
+
+                             move_line.debit = self.format_currency(data['currency'],move_line.debit);
+                            move_line.credit = self.format_currency(data['currency'],move_line.credit);
+                            move_line.balance = self.format_currency(data['currency'],move_line.balance);
+
+
+                             });
+                             });
 
                     for (var i = 0; i < data['report_lines'].length; i++) {
 
@@ -390,7 +418,7 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
                 filter_data_selected.date_from = dateString;
             }
             if ($("#date_to").val()) {
-                var dateString = $("#date_from").val();
+                var dateString = $("#date_to").val();
                 filter_data_selected.date_to = dateString;
             }
 

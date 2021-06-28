@@ -5,7 +5,6 @@ import io
 import json
 from odoo.exceptions import AccessError, UserError, AccessDenied
 
-
 try:
     from odoo.tools.misc import xlsxwriter
 except ImportError:
@@ -17,37 +16,30 @@ class BalanceSheetView(models.TransientModel):
 
     company_id = fields.Many2one('res.company', required=True,
                                  default=lambda self: self.env.company)
-
     journal_ids = fields.Many2many('account.journal',
                                    string='Journals', required=True,
                                    default=[])
-    account_ids = fields.Many2many("account.account",string="Accounts")
-
+    account_ids = fields.Many2many("account.account", string="Accounts")
     account_tag_ids = fields.Many2many("account.account.tag",
                                        string="Account Tags")
-
     analytic_ids = fields.Many2many(
-        "account.analytic.account", string="Analytic Accounts"
-    )
-
+        "account.analytic.account", string="Analytic Accounts")
     analytic_tag_ids = fields.Many2many("account.analytic.tag",
                                         string="Analytic Tags")
-
     display_account = fields.Selection(
         [('all', 'All'), ('movement', 'With movements'),
          ('not_zero', 'With balance is not equal to 0')],
         string='Display Accounts', required=True, default='movement')
-
     target_move = fields.Selection(
         [('all', 'All'), ('posted', 'Posted')],
         string='Target Move', required=True, default='posted')
-
     date_from = fields.Date(string="Start date")
     date_to = fields.Date(string="End date")
 
     @api.model
     def view_report(self, option, tag):
-        r = self.env['dynamic.balance.sheet.report'].search([('id', '=', option[0])])
+        r = self.env['dynamic.balance.sheet.report'].search(
+            [('id', '=', option[0])])
         data = {
             'display_account': r.display_account,
             'model': self,
@@ -57,7 +49,6 @@ class BalanceSheetView(models.TransientModel):
             'account_tags': r.account_tag_ids,
             'analytics': r.analytic_ids,
             'analytic_tags': r.analytic_tag_ids,
-
         }
         if r.date_from:
             data.update({
@@ -77,13 +68,9 @@ class BalanceSheetView(models.TransientModel):
             company_domain.append(('id', 'in', r.account_ids.ids))
 
         new_account_ids = self.env['account.account'].search(company_domain)
-        data.update({
-            'accounts': new_account_ids,
-        })
-
+        data.update({'accounts': new_account_ids,})
         filters = self.get_filter(option)
         records = self._get_report_values(data)
-
 
         if filters['account_tags'] != ['All']:
             tag_accounts = list(map(lambda x: x.code, new_account_ids))
@@ -98,7 +85,7 @@ class BalanceSheetView(models.TransientModel):
             records['Accounts'] = new_records
 
         account_report_id = self.env['account.financial.report'].search([
-                    ('name', 'ilike', tag)])
+            ('name', 'ilike', tag)])
 
         new_data = {'id': self.id, 'date_from': False,
                     'enable_filter': True,
@@ -108,7 +95,7 @@ class BalanceSheetView(models.TransientModel):
                     'view_format': 'vertical',
                     'company_id': self.company_id,
                     'used_context': {'journal_ids': False,
-                                     'state': filters['target_move'],
+                                     'state': filters['target_move'].lower(),
                                      'date_from': filters['date_from'],
                                      'date_to': filters['date_to'],
                                      'strict_range': False,
@@ -153,7 +140,6 @@ class BalanceSheetView(models.TransientModel):
                     rec['balance'] = move_lines_dict[rec['code']]['balance']
 
         parent_list = list(set(parent_list))
-
         max_level = 0
         for rep in report_lines_move:
             if rep['level'] > max_level:
@@ -162,21 +148,18 @@ class BalanceSheetView(models.TransientModel):
         def get_parents(obj):
             for item in report_lines_move:
                 for each in obj:
-                    if item['report_type'] != 'account_type' and each in item[
-                        'c_ids']:
+                    if item['report_type'] != 'account_type' and \
+                            each in item['c_ids']:
                         obj.append(item['r_id'])
-
                 if item['report_type'] == 'account_report':
                     obj.append(item['r_id'])
                     break
 
         get_parents(parent_list)
-
         for i in range(max_level):
             get_parents(parent_list)
 
         parent_list = list(set(parent_list))
-
         final_report_lines = []
 
         for rec in report_lines_move:
@@ -203,8 +186,8 @@ class BalanceSheetView(models.TransientModel):
 
         def assign_sum(obj):
             for each in obj:
-                if each['r_id'] in parent_list and each[
-                    'report_type'] != 'account_report':
+                if each['r_id'] in parent_list and \
+                        each['report_type'] != 'account_report':
                     each['debit'] = sum_list_new[each['r_id']]['s_debit']
                     each['credit'] = sum_list_new[each['r_id']]['s_credit']
 
@@ -223,15 +206,20 @@ class BalanceSheetView(models.TransientModel):
             rec['credit'] = round(rec['credit'], 2)
             rec['balance'] = rec['debit'] - rec['credit']
             rec['balance'] = round(rec['balance'], 2)
-            if position == "before":
-                rec['m_debit'] = symbol + " " + str(rec['debit'])
-                rec['m_credit'] = symbol + " " + str(rec['credit'])
-                rec['m_balance'] = symbol + " " + str(rec['balance'])
+            if (rec['balance_cmp'] < 0 and rec['balance'] > 0) or (
+                    rec['balance_cmp'] > 0 and rec['balance'] < 0):
+                rec['balance'] = rec['balance'] * -1
 
+            if position == "before":
+                rec['m_debit'] = symbol + " " + "{:,.2f}".format(rec['debit'])
+                rec['m_credit'] = symbol + " " + "{:,.2f}".format(rec['credit'])
+                rec['m_balance'] = symbol + " " + "{:,.2f}".format(
+                    rec['balance'])
             else:
-                rec['m_debit'] = str(rec['debit']) + " " + symbol
-                rec['m_credit'] = str(rec['credit']) + " " + symbol
-                rec['m_balance'] = str(rec['balance']) + " " + symbol
+                rec['m_debit'] = "{:,.2f}".format(rec['debit']) + " " + symbol
+                rec['m_credit'] = "{:,.2f}".format(rec['credit']) + " " + symbol
+                rec['m_balance'] = "{:,.2f}".format(
+                    rec['balance']) + " " + symbol
 
         return {
             'name': tag,
@@ -300,14 +288,13 @@ class BalanceSheetView(models.TransientModel):
         return filters
 
     def get_filter_data(self, option):
-        r = self.env['dynamic.balance.sheet.report'].search([('id', '=', option[0])])
+        r = self.env['dynamic.balance.sheet.report'].search(
+            [('id', '=', option[0])])
         default_filters = {}
         company_id = self.env.company
         company_domain = [('company_id', '=', company_id.id)]
-
         journals = r.journal_ids if r.journal_ids else self.env[
             'account.journal'].search(company_domain)
-
         analytics = self.analytic_ids if self.analytic_ids else self.env[
             'account.analytic.account'].search(
             company_domain)
@@ -326,12 +313,10 @@ class BalanceSheetView(models.TransientModel):
 
         accounts = self.account_ids if self.account_ids else self.env[
             'account.account'].search(company_domain)
-
         filter_dict = {
             'journal_ids': r.journal_ids.ids,
             'account_ids': r.account_ids.ids,
             'analytic_ids': r.analytic_ids.ids,
-
             'company_id': company_id.id,
             'date_from': r.date_from,
             'date_to': r.date_to,
@@ -520,7 +505,6 @@ class BalanceSheetView(models.TransientModel):
         return currency_array
 
     def get_dynamic_xlsx_report(self, options, response, report_data, dfr_data):
-
         i_data = str(report_data)
         filters = json.loads(options)
         j_data = dfr_data

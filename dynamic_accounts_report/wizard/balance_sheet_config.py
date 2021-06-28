@@ -250,6 +250,7 @@ class BalanceSheet(models.TransientModel):
                         sub_lines.append(vals)
                 lines += sorted(sub_lines,
                                 key=lambda sub_line: sub_line['name'])
+
         return lines
 
     def find_journal_items(self, report_lines, form):
@@ -296,3 +297,9 @@ class BalanceSheet(models.TransientModel):
                     j['type'] = 'journal_item'
                     journal_items.append(j)
         return journal_items
+
+
+
+
+
+

@@ -229,8 +229,12 @@ class AgeingView(models.TransientModel):
             self.env.context.get('default_journal_id', False))
         if journal.currency_id:
             return journal.currency_id.id
+        lang = self.env.user.lang
+        if not lang:
+            lang = 'en_US'
+        lang = lang.replace("_", '-')
         currency_array = [self.env.company.currency_id.symbol,
-                          self.env.company.currency_id.position]
+                          self.env.company.currency_id.position, lang]
         return currency_array
 
     def get_dynamic_xlsx_report(self, data, response, report_data, dfr_data):
