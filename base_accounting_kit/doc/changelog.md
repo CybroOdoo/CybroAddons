@@ -81,3 +81,8 @@
 #### FIX
 - Invalid field 'post_at' in Journal - issue fixed
 
+#### 05.07.2021
+#### Version 14.0.3.11.11
+#### FIX
+- 'Journal entry already posted' issue fixed.
+
