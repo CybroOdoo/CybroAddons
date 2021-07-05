@@ -24,6 +24,7 @@
     'name': 'Dynamic Financial Reports',
     'version': '14.0.1.2.2',
     'category': 'Accounting',
+    'live_test_url': 'https://www.youtube.com/watch?v=gVQi9q9Rs-E&t=5s',
     'summary': """Dynamic Financial Reports with drill 
                 down and filters– Community Edition""",
     'description': "Dynamic Financial Reports, DynamicFinancialReports, FinancialReport, Accountingreports, odoo reports, odoo"
@@ -50,13 +51,13 @@
         'report/daybook.xml',
     ],
     'qweb': [
-            'static/src/xml/general_ledger_view.xml',
-            'static/src/xml/trial_balance_view.xml',
-            'static/src/xml/cash_flow_view.xml',
-            'static/src/xml/financial_reports_view.xml',
-            'static/src/xml/partner_ledger_view.xml',
-            'static/src/xml/ageing.xml',
-            'static/src/xml/daybook.xml',
+        'static/src/xml/general_ledger_view.xml',
+        'static/src/xml/trial_balance_view.xml',
+        'static/src/xml/cash_flow_view.xml',
+        'static/src/xml/financial_reports_view.xml',
+        'static/src/xml/partner_ledger_view.xml',
+        'static/src/xml/ageing.xml',
+        'static/src/xml/daybook.xml',
     ],
     'license': 'LGPL-3',
     'images': ['static/description/banner.png'],

@@ -30,6 +30,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
+    'live_test_url': 'https://youtu.be/LGiDWPFdkbks',
     'category': 'Tools',
     'version': '14.0.1.0.0',
     'depends': ['base', 'mail'],
