@@ -22,7 +22,7 @@
 
 {
     'name': 'Invoice Format Editor',
-    'version': '14.0.1.1.0',
+    'version': '14.0.1.1.1',
     'category': 'Accounting',
     'summary': 'Invoice Format Editor',
     'description': """Invoice Format Editor For Configuring the Invoice Templates""",

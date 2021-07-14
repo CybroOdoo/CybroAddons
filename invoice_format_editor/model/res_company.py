@@ -90,6 +90,7 @@ class BaseDocumentLayout(models.TransientModel):
                     wizard.preview = ir_ui_view._render_template(
                         'invoice_format_editor.report_preview_old',
                         {'company': wizard, 'preview_css': preview_css, })
-
                 else:
                     wizard.preview = False
+            else:
+                wizard.preview = False
