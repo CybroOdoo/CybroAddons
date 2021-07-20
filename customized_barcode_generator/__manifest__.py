@@ -3,7 +3,7 @@
     'name': 'Cost Price as Code in Barcode',
     'version': '14.0.1.0.0',
     'summary': """Print user defined product labels.""",
-    'description': """The module enables user to print customized product labels.
+    'description': """The module enables user to print customized product labels, Barcode, Barcode Generator, Barcode Label, Product Label, Product Barcode Generator, Product Barcode, Label Print, Product Label Print
                     """,
     'category': 'Tools',
     'author': 'Cybrosys Techno Solutions',
