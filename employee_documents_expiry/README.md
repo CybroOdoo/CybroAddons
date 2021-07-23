@@ -19,8 +19,4 @@ If you have any question/queries/additional works on this module, You can drop a
 Contacts
 --------
 
-info - info@cybrosys.com
 Cybrosys Odoo - odoo@cybrosys.com
-Nilmar Shereef - shereef@cybrosys.in
-Jesni Banu - jesni@cybrosys.in
-

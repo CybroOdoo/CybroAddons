@@ -30,8 +30,6 @@ Developers
 Contact
 -------
 * Mail Contact : odoo@cybrosys.com
-* Mail Contact : shereef@cybrosys.in
-* Mail Contact : info@cybrosys.com
 
 Related Blog
 -------
