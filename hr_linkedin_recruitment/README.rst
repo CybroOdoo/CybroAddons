@@ -19,7 +19,6 @@ Developers
 Contact
 -------
 * Mail Contact : odoo@cybrosys.com
-* Mail Contact : info@cybrosys.com
 
 Related Blog
 -------
