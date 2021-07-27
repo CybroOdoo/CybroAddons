@@ -6,7 +6,7 @@ odoo.define('code_backend_theme.SideBar', function (require) {
         events: _.extend({}, Widget.prototype.events, {
             'click .nav-link': '_onAppsMenuItemClicked',
         }),
-        template: "code_backend_theme.SideBar",
+        template: "code_backend_theme.Sidebar",
 
         init: function (parent, menuData) {
             this._super.apply(this, arguments);
