@@ -86,3 +86,9 @@
 #### FIX
 - 'Journal entry already posted' issue fixed.
 
+#### 02.08.2021
+#### Version 14.0.3.13.11
+#### UPDT
+- Account Parent Group added
+
+
