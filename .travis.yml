@@ -1,0 +1,39 @@
+language: python
+
+python:
+  - "3.6"
+  
+sudo: false
+cache:
+  apt: true
+  directories:
+    - $HOME/.cache/pip3
+
+addons:
+  postgresql: "9.6"
+  apt:
+    packages:
+      - expect-dev
+      - python-lxml
+
+matrix:
+  include:
+    - python: 3.6
+      env:
+        VERSION="14.0" ODOO_REPO="odoo/odoo" TESTS="1" LINT_CHECK="0"
+
+before_install:
+  - pip install codecov coverage
+  - pip install httpagentparser
+
+install:
+  - git clone --depth=1 https://github.com/OCA/maintainer-quality-tools.git ${HOME}/maintainer-quality-tools
+  - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
+  - LINT_CHECK="1" travis_install_nightly
+
+script:
+  - travis_run_tests
+  - test_pylint
+
+after_success:
+  - LINT_CHECK="0" travis_after_tests_success
