@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="zen_blog" name="Zen Blog"
+              inherit_id="website_blog.blog_post_short">
+        <xpath expr="//div[@id='o_wblog_blog_top']" position="replace">
+            <section class="main_body_blog">
+                <section class="header">
+                    <div class="container-fluid p-0">
+                        <div class="wrapper_blog">
+                            <div id="banner ">
+                                <div>
+                                    <div class="banner_blog">
+                                        <div class="row p-0 m-0">
+                                            <div class="col-lg-6 col-12 p-0 m-0">
+                                                <div class="banner_bg">
+
+                                                    <div class="card w-75">
+                                                        <div class="card-body">
+                                                            <p class="card-text first"
+                                                               id="demo">Check
+                                                                our<br/>latest
+                                                                news<br/>and
+                                                                stories
+                                                            </p>
+                                                            <p class="text-bottom second">
+                                                                <span>
+                                                                    client:peter
+                                                                    Duri
+                                                                </span>
+                                                                <span>year:2020
+                                                                </span>
+                                                                <span>
+                                                                    roll:website
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-6  p-0 m-0">
+                                                <div class="banner_left">
+                                                    <div class="card w-75">
+                                                        <div class="card-body">
+                                                            <p class="card-text first"
+                                                               id="demo">
+                                                                Torquent Vitae
+                                                                <br/>Maecenas
+                                                                <br/>Maecenas
+                                                            </p>
+                                                            <p class="text-bottom second">
+                                                                <span>
+                                                                    client:peter
+                                                                    Duri
+                                                                </span>
+                                                                <span>year:2020
+                                                                </span>
+                                                                <span>
+                                                                    roll:website
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="b_wrapp">
+                                <a href="#section03" class="btn btn-down">
+                                    Scroll
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- Header Section ends here -->
+            </section>
+        </xpath>
+    </template>
+
+    <template id="zen_blog_search" name="Zen Blog Search"
+              inherit_id="website_blog.sidebar_blog_index">
+        <xpath expr="//div[@id='o_wblog_sidebar']" position="replace">
+            <t t-call="theme_zen_dark.zen_sidebar"/>
+        </xpath>
+    </template>
+
+    <template id="zen_sidebar" name="Zen Sidebar">
+        <section class="main_body_blog">
+            <div class="sidebar">
+                <div class="wrapper_s">
+                    <div class="categories">
+                        <h4>
+                            categories
+                        </h4>
+                        <ul>
+                            <li>
+                                <a href="/blog"
+                                   t-attf-class="nav-link font-weight-bold #{(not blog) and ''}">
+                                    All
+                                </a>
+                            </li>
+                            <li t-foreach="blogs" t-as="nav_blog">
+                                <a t-attf-href="/blog/#{slug(nav_blog)}"
+                                   t-attf-class="nav-link #{(blog and nav_blog.id == blog.id) and '' or ''}">
+                                    <b t-field="nav_blog.name"/>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="recent_post">
+                        <h4>
+                            RECENT POST
+                        </h4>
+                        <t t-call="theme_zen_dark.recent_post_zen"/>
+
+                    </div>
+                    <div class="tags">
+                        <div t-if="other_tags or tag_category"
+                             class="o_wblog_sidebar_block pb-5">
+                            <h4 class="text-uppercase pb-2 mb-4 border-bottom font-weight-bold">
+                                TAG CLOUDS
+                            </h4>
+                            <div class="wrapper_t">
+                                <div class="tt">
+                                    <div class="inner-zen">
+                                        <t t-call="website_blog.tags_list">
+                                            <t t-set='hide_title'
+                                               t-value='not len(tag_category)'/>
+                                            <t t-set='categ_title'>Others</t>
+                                            <t t-set='tags'
+                                               t-value='other_tags'/>
+                                            <t t-set="showInactive"
+                                               t-value="True"/>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <template id="zen_blog_view" name="Zen Blog View"
+              inherit_id="website_blog.posts_loop">
+        <xpath expr="//div[@id='o_wblog_posts_loop']" position="replace">
+            <div id="o_wblog_posts_loop"
+                 t-att-class="'o_wblog_list_view' if opt_blog_list_view else ''">
+
+                <!-- Allow to filter post by published state. Visible only in edit-mode
+                     and if both published/unpublished number is > 0 -->
+                <t t-if="state_info" t-set="state"
+                   t-value="state_info['state']"/>
+
+                <!-- Check for active options -->
+                <t t-set="opt_posts_loop_show_cover"
+                   t-value="is_view_active('website_blog.opt_posts_loop_show_cover')"/>
+
+                <div groups="website.group_website_designer"
+                     t-if="state_info and (state_info['published'] > 0 and state_info['unpublished'] > 0)">
+                    <div class="bg-200 py-2 mb-4 alert alert-dismissable">
+                        <button type="button" class="close" data-dismiss="alert"
+                                aria-label="Close">&#215;
+                        </button>
+                        <span class="mr-1">Show:</span>
+                        <div class="btn-group btn-group-sm">
+                            <a t-attf-class="btn #{state == 'published' and 'btn-success' or 'btn-default bg-white border'}"
+                               t-attf-href="#{state == 'published' and blog_url(state='') or blog_url(state='published')}">
+                                <i t-attf-class="fa mr-1 #{state == 'published' and 'fa-check-square-o' or 'fa-square-o'}"/>
+                                Published (<t t-esc="state_info['published']"/>)
+                            </a>
+                            <a t-attf-class="btn #{state == 'unpublished' and 'btn-success' or 'btn-default bg-white border'}"
+                               t-attf-href="#{state == 'unpublished' and blog_url(state='') or blog_url(state='unpublished')}">
+                                <i t-attf-class="fa mr-1 #{state == 'unpublished' and 'fa-check-square-o' or 'fa-square-o'}"/>
+                                Unpublished (<t
+                                    t-esc="state_info['unpublished']"/>)
+                            </a>
+                        </div>
+                        <div class="pt-1 font-italic small">This box will not be
+                            visible to your visitors
+                        </div>
+                    </div>
+                </div>
+
+                <div t-attf-class="row #{posts and not opt_blog_readable and 'mx-n2'}">
+                    <!-- Filters -->
+                    <div t-if="tag or date_begin or search" class="col-12 mb-3">
+                        <div t-if="posts" class="h4 mb-3">
+                            <t t-esc="len(posts)"/>
+                            <t t-if="len(posts) &lt; 2">Article</t>
+                            <t t-else="">Articles</t>
+                        </div>
+                        <span t-if="search"
+                              class="align-items-baseline border d-inline-flex pl-2 rounded mb-2">
+                            <i class="fa fa-search mr-2 text-muted"/>
+                            <t t-esc="search"/>
+                            <a t-att-href="blog_url(search=False, tag=tag)"
+                               class="btn border-0 py-1 post_link">&#215;
+                            </a>
+                        </span>
+                        <t t-if="tag">
+                            <!-- Show active tags with a category set -->
+                            <t t-foreach="tag_category" t-as="nav_tag_category">
+                                <t t-call="website_blog.tags_list">
+                                    <t t-set='tags'
+                                       t-value='nav_tag_category.tag_ids'/>
+                                    <t t-set='dismissibleBtn' t-value="True"/>
+                                </t>
+                            </t>
+
+                            <!-- Show active tags without a category set -->
+                            <t t-call="website_blog.tags_list">
+                                <t t-set='tags' t-value='other_tags'/>
+                                <t t-set='dismissibleBtn' t-value="True"/>
+                            </t>
+                        </t>
+                        <span t-if="date_begin"
+                              class="align-items-baseline border d-inline-flex pl-2 rounded mb-2">
+                            <i class="fa fa-calendar-o mr-2 text-muted"/>
+                            <t t-esc="date_begin"
+                               t-options="{'widget': 'date', 'format': 'MMM yyyy'}"></t>
+                            <a t-attf-href="#{blog_url(date_begin=False, date_end=False)}"
+                               class="btn border-0 py-1">
+                                &#215;
+                            </a>
+                        </span>
+                        <hr class="mt-2"/>
+                    </div>
+
+                    <!-- No blog post yet -->
+                    <div t-if="not posts" class="col">
+                        <t t-set="no_results_str">No results for "%s".</t>
+                        <h2 t-if="search" t-esc="no_results_str % search"
+                            class="font-weight-bold"/>
+                        <h2 t-else="">No blog post yet.</h2>
+                        <div class="alert alert-info"
+                             groups="website.group_website_designer">
+                            Click on "<b>New</b>" in the top-right corner to
+                            write your first blog post.
+                        </div>
+                    </div>
+
+                    <!-- Posts -->
+
+                    <!-- Define 'colWidth' qWeb variable, to be assigned later.
+                    Adjust accordingly if sidebar and/or readability modes are active. -->
+                    <t t-if="not opt_blog_list_view">
+                        <t t-if="opt_blog_readable">
+                            <t t-if="opt_blog_sidebar_show" t-set="colWidth"
+                               t-value="'col-md-6'"/>
+                            <t t-else="" t-set="colWidth"
+                               t-value="'col-md-6 col-xl-4'"/>
+                        </t>
+                        <t t-else="">
+                            <t t-if="opt_blog_sidebar_show" t-set="colWidth"
+                               t-value="'px-2 col-md-6 col-xl-4'"/>
+                            <t t-else="" t-set="colWidth"
+                               t-value="'px-2 col-sm-6 col-lg-4 col-xl-3'"/>
+                        </t>
+                    </t>
+                    <div class="blog_wrapper">
+                        <!-- Loop through posts: exclude the first one if already displayed as top banner -->
+                        <t t-foreach="posts" t-as="blog_post">
+                            <a t-attf-href="/blog/#{slug(blog_post.blog_id)}/#{slug(blog_post)}">
+                                <!-- Assign 'colWidth': 'col-12' is default for List-View and mobile -->
+                                <div t-attf-class="pb-4 col-12 #{colWidth}">
+                                    <article
+                                            t-attf-class="position-relative #{'card h-100' if opt_blog_cards_design else ''}"
+                                            name="blog_post">
+                                        <div>
+                                            <!-- List-View Design -->
+                                            <div class="card-zen">
+                                                <div t-if="opt_posts_loop_show_cover"
+                                                     class="img_wrapper-zen">
+                                                    <t t-call="website_blog.post_cover_image">
+                                                        <t t-set="additionnal_classes"
+                                                           t-value="'card-img-top-zen'"/>
+                                                    </t>
+                                                </div>
+                                                <div class="card-body-zen">
+                                                    <h5>
+                                                        <a t-attf-href="/blog/#{slug(blog_post.blog_id)}/#{slug(blog_post)}"
+                                                           class="text-reset text-decoration-none">
+                                                            <div t-field="blog_post.name"
+                                                                 class="card-title-zen tracking-in-expand-zen"/>
+                                                        </a>
+                                                    </h5>
+                                                    <a t-attf-href="/blog/#{slug(blog_post.blog_id)}/#{slug(blog_post)}"
+                                                       class="title-details-zen text-reset text-decoration-none">
+                                                        <div t-field="blog_post.teaser"
+                                                             class="title-details-zen"/>
+                                                    </a>
+                                                    <div class="blog-links">
+                                                       <ul>
+                                                            <li>
+                                                                <i class="icon">
+                                                                    <img src="/theme_zen_dark/static/src/img/icons/blog/tag.svg"
+                                                                         alt=""/>
+                                                                </i>
+                                                            </li>
+                                                            <t t-foreach="blog_post.tag_ids"
+                                                               t-as="one_tag">
+                                                                <li>
+                                                                    <a t-attf-href="#{blog_url(tag=tags_list(active_tag_ids, one_tag.id))}"
+                                                                       t-attf-class="post_link"
+                                                                       t-att-rel="len(active_tag_ids) and 'nofollow'"
+                                                                       t-esc="one_tag.name"/>
+                                                                </li>
+                                                            </t>
+                                                        </ul>
+                                                    </div>
+                                                    <p class="card-text-group">
+                                                        <span>
+                                                            <a t-esc="blog_post.author_name" class="card-text-zen"/>
+                                                        </span>
+                                                        <span>
+                                                            <a t-esc="blog_post.published_date"
+                                                               class="card-text-zen"
+                                                               t-options="{'widget': 'date', 'format': 'MMMM dd yyyy'}"/>
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Grid-View Design -->
+                                        <t t-if="not opt_blog_list_view">
+                                            <t t-if="opt_posts_loop_show_cover"
+                                               t-call="website_blog.post_cover_image"/>
+                                            <div t-att-class="opt_blog_cards_design and 'card-body px-2 py-0 mb-2'">
+                                                <t t-call="website_blog.post_heading"/>
+                                                <div t-if="is_view_active('website_blog.opt_posts_loop_show_teaser')">
+                                                    <t t-call="website_blog.post_teaser"/>
+                                                </div>
+                                            </div>
+                                            <div t-attf-class="o_wblog_normalize_font #{'card-footer px-2 pb-2' if opt_blog_cards_design else 'pr-2 pb-2'}">
+                                                <t t-call="website_blog.post_info"></t>
+                                            </div>
+                                        </t>
+                                        <!-- Add 'unpublished' badge -->
+                                        <span t-if="not blog_post.website_published"
+                                              class="bg-danger small py-1 px-2 position-absolute o_not_editable"
+                                              style="top:0; right:0">unpublished
+                                        </span>
+                                    </article>
+                                </div>
+                                <!-- List-View Design, add <hr> after post -->
+                                <div t-if="opt_blog_list_view and not blog_post_last"
+                                     class="col-12 mt-2 mb-5 px-2">
+                                    <hr/>
+                                </div>
+                            </a>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

@@ -1,0 +1,131 @@
+<odoo>
+
+    <template id="zen_shop_banner" name="zen Shop" inherit_id="website_sale.products">
+            <xpath expr="//div[hasclass('container')]" position="before">
+                <Section class="banner_about">
+                    <div class="container">
+                        <h4 class="b_head">
+                            Shop
+                        </h4>
+                    </div>
+                </Section>
+            </xpath>
+    </template>
+
+    <template id="zen_dark_shop" name="Zen Dark Product"
+              inherit_id="website_sale.products">
+        <xpath expr="//table[hasclass('table')]" position="replace">
+            <div class="product">
+                <div class="container">
+                    <div class="row">
+                        <div t-if="bins" class="row pt">
+                            <t t-foreach="bins" t-as="tr_product">
+                                <t t-foreach="tr_product"
+                                   t-as="td_product">
+                                    <t t-if="td_product">
+                                        <t t-set="product"
+                                           t-value="td_product['product']"/>
+                                        <t t-attf-class="wrapper"
+                                           t-att-data-ribbon-id="td_product['ribbon'].id">
+                                            <div class="product_wrapper">
+                                                <t t-call="website_sale.products_item">
+                                                </t>
+                                            </div>
+                                        </t>
+                                    </t>
+                                    <t t-else=""/>
+                                </t>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+
+    <template id="zen_dark_grid_button" name="Zen Grid Button"
+              inherit_id="website_sale.add_grid_or_list_option">
+        <xpath expr="//div[hasclass('o_wsale_apply_layout')]"
+               position="replace"/>
+    </template>
+
+
+    <template id="zen_dark_pricelist_button" name="Zen Pricelist Button" inherit_id="website_sale.products">
+        <xpath expr="//div[hasclass('justify-content-md-center')]" position="replace">
+            <div class="products_pager form-inline flex-md-nowrap justify-content-between justify-content-md-center">
+                <t t-call="website_sale.search">
+                    <t t-set="_classes" t-valuef="w-100 w-md-auto mt-2"/>
+                </t>
+                <t t-call="website_sale.pricelist_list">
+                    <t t-set="_classes" t-valuef="mt-2 ml-md-2"/>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="zen_sort" inherit_id="website_sale.products" customize_show="True" name="Show Sort by">
+        <xpath expr="//div[hasclass('products_pager')]/t[@t-call][last()]" position="after">
+            <t t-set="list_price_desc_label">Catalog price: High to Low</t>
+            <t t-set="list_price_asc_label">Catalog price: Low to High</t>
+            <t t-set="name_asc_label">Name: A to Z</t>
+            <t t-set="name_desc_label">Name: Z to A</t>
+            <t t-set="website_sale_sortable" t-value="[
+                (list_price_desc_label, 'list_price desc'),
+                (list_price_asc_label, 'list_price asc'),
+                (name_asc_label, 'name asc'),
+                (name_desc_label, 'name desc')
+            ]"/>
+            <t t-set="website_sale_sortable_current" t-value="[sort for sort in website_sale_sortable if sort[1]==request.params.get('order', '')]"/>
+            <div class="dropdown mt-2 ml-md-2 dropdown_sorty_by">
+                <a role="button" href="#" class="dropdown-toggle btn btn-secondary" data-toggle="dropdown">
+                    <span class="d-none d-lg-inline">
+                        <t t-if='len(website_sale_sortable_current)'>
+                            Sorting by : <t t-raw='website_sale_sortable_current[0][0]'/>
+                        </t>
+                        <t t-else='1'>
+                            Sort by
+                        </t>
+                    </span>
+                    <i class="fa fa-sort-amount-asc d-lg-none"/>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" role="menu">
+                    <t t-foreach="website_sale_sortable" t-as="sortby">
+                        <a role="menuitem" rel="noindex,nofollow" t-att-href="keep('/shop', order=sortby[1])" class="dropdown-item">
+                            <span t-raw="sortby[0]"/>
+                        </a>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+
+    <template id="zen_pager" name="Zen pager">
+        <div class="pagination1">
+            <a t-att-href=" pager['page_previous']['url'] if pager['page']['num'] != 1 else None" ><i class="fa fa-chevron-left"></i></a>
+
+            <t t-foreach="pager['pages']" t-as="page">
+                <a t-att-href="page['url']"  t-raw="page['num']"></a>
+            </t>
+            <a t-att-href="pager['page_next']['url'] if pager['page']['num'] != pager['page_count'] else None" ><i class="fa fa-chevron-right"></i></a>
+            <div class="bar1"></div>
+        </div>
+    </template>
+
+
+    <template id="zen_pagination" name="Zen pagination" inherit_id="website_sale.products">
+        <xpath expr="//div[hasclass('justify-content-center')]" position="replace">
+            <div class="justify-content-center">
+                <t t-call="theme_zen_dark.zen_pager"/>
+            </div>
+        </xpath>
+    </template>
+
+
+    <template id="zen_wishlist" inherit_id="website_sale_wishlist.add_to_wishlist" customize_show="True" name="Wishlist" priority="20">
+        <xpath expr="//button[hasclass('btn')]" position="replace">
+            <button t-if="product_variant_id" type="button" role="button" class="btn-change1 btn btn-secondary o_add_wishlist" t-att-disabled='in_wish or None' title="Add to Wishlist" t-att-data-product-template-id="product.id" t-att-data-product-product-id="product_variant_id" data-action="o_wishlist"><span class="fa fa-heart" role="img" aria-label="Add to wishlist"></span></button>
+        </xpath>
+    </template>
+</odoo>
