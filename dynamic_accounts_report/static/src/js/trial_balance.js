@@ -70,6 +70,9 @@ odoo.define('dynamic_cash_flow_statements.trial', function (require) {
                                     self.$el.find('.journals').select2({
                                         placeholder: 'Select Journals...',
                                     });
+                                    self.$el.find('.target_move').select2({
+                                        placeholder: 'Target Move...',
+                                    });
                             }
                             var child=[];
 
@@ -234,10 +237,10 @@ odoo.define('dynamic_cash_flow_statements.trial', function (require) {
 
             if ($(".target_move").length) {
             var post_res = document.getElementById("post_res")
-            filter_data_selected.target_move = $(".target_move")[0].value
-            post_res.value = $(".target_move")[0].value
+            filter_data_selected.target_move = $(".target_move")[1].value
+            post_res.value = $(".target_move")[1].value
                     post_res.innerHTML=post_res.value;
-              if ($(".target_move")[0].value == "") {
+              if ($(".target_move")[1].value == "") {
               post_res.innerHTML="posted";
 
               }

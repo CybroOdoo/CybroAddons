@@ -149,6 +149,12 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function (require) {
                                     self.$el.find('.journals').select2({
                                         placeholder: 'Select Journals...',
                                     });
+                                    self.$el.find('.target_move').select2({
+                                        placeholder: 'Target Move...',
+                                    });
+                                    self.$el.find('.levels').select2({
+                                        placeholder: 'Levels...',
+                                    });
                             }
                             var child=[];
 
@@ -283,8 +289,8 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function (require) {
 
             if ($(".levels").length){
             var level_res = document.getElementById("level_res")
-            filter_data_selected.levels = $(".levels")[0].value
-            level_res.value = $(".levels")[0].value
+            filter_data_selected.levels = $(".levels")[1].value
+            level_res.value = $(".levels")[1].value
             level_res.innerHTML=level_res.value;
             if ($(".levels").value==""){
             type_res.innerHTML="summary";
@@ -303,10 +309,10 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function (require) {
 
             if ($(".target_move").length) {
             var post_res = document.getElementById("post_res")
-            filter_data_selected.target_move = $(".target_move")[0].value
-            post_res.value = $(".target_move")[0].value
+            filter_data_selected.target_move = $(".target_move")[1].value
+            post_res.value = $(".target_move")[1].value
                     post_res.innerHTML=post_res.value;
-              if ($(".target_move")[0].value == "") {
+              if ($(".target_move")[1].value == "") {
               post_res.innerHTML="posted";
 
               }
