@@ -283,7 +283,6 @@ class AccountReconciliation(models.AbstractModel):
         aml_ids = self._context.get('active_ids') and self._context.get('active_model') == 'account.move.line' and tuple(self._context.get('active_ids'))
         if aml_ids:
             aml = MoveLine.browse(aml_ids)
-            aml._check_reconcile_validity()
             account = aml[0].account_id
             currency = account.currency_id or account.company_id.currency_id
             return {

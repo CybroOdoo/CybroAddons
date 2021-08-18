@@ -95,3 +95,8 @@
 #### Version 14.0.3.13.12
 #### UPDT
 - Dashboard issue fixed, 'state' field is ambigous
+
+#### 18.08.2021
+#### Version 14.0.3.13.13
+#### UPDT
+- Reconciliation issue fixed
