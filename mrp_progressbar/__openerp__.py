@@ -22,7 +22,7 @@
     'summary': """Work Order Progressbar In form view & Tree View""",
     'version': '9.0.1.0.0',
     'author': 'Cybrosys Techno Solutions',
-    'website': "http://www.cybrosys.com",
+    'website': "https://www.cybrosys.com/odoo/industries/manufacturing-erp-software/",
     'company': 'Cybrosys Techno Solutions',
     "category": "Manufacturing",
     'depends': ['mrp_operations'],
