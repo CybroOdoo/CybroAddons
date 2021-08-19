@@ -86,10 +86,11 @@ class ResPartner(models.Model):
         today = date.today()
         for this in self:
             if this.invoice_list:
-                min_list = this.invoice_list.mapped('invoice_date_due')
-                while False in min_list:
-                    min_list.remove(False)
-                return min(min_list)
+                if this.invoice_list.mapped('invoice_date_due'):
+                    min_list = this.invoice_list.mapped('invoice_date_due')
+                    while False in min_list:
+                        min_list.remove(False)
+                    return min(min_list)
             else:
                 return today
 
