@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="diva_product_view" name="Diva Product View"
+              inherit_id="website_sale.product">
+        <xpath expr="//div[hasclass('form-inline')]" position="replace">
+        </xpath>
+        <xpath expr="//a[@id='add_to_cart']" position="replace">
+            <a role="button" id="add_to_cart" style="margin-right:-30px;" class="btn btn-add btn-primary btn-lg mt16 js_check_product a-submit d-block d-sm-inline-block" href="#"><i class="bi bi-cart2"/> Add to Cart</a>
+        </xpath>
+        <xpath expr="//h1[@t-field='product.name']" position="replace">
+            <h1 itemprop="name" t-field="product.name" style="margin-right:155px;">Product Name</h1>
+        </xpath>
+        <xpath expr="//h1[@t-field='product.name']" position="after">
+            <div class="rate row" style="padding-bottom:20px;">
+                <div class="o_shop_discussion_rating">
+                    <t t-set="val_decimal"
+                       t-value="round(product.rating_count % 1, 1)"/>
+                    <t t-set="val_integer"
+                       t-value="int(product.rating_count)"/>
+                    <t t-set="empty_star"
+                       t-value="5 - (val_integer+1) if val_decimal else 5 - val_integer"/>
+                    <div class="o_website_rating_static"
+                         t-att-style="inline_mode and 'display:inline'">
+                        <t t-foreach="range(0, val_integer)"
+                           t-as="num">
+                            <i class="fa fa-star"
+                               style="color:#50449c;"
+                               role="img"/>
+                        </t>
+                        <t t-if="val_decimal">
+                            <i class="fa fa-star-half-o"
+                               style="color:#50449c;"
+                               role="img"/>
+                        </t>
+                        <t t-foreach="range(0, empty_star)"
+                           t-as="num">
+                            <i class="fa fa-star text-black-25"
+                               style="color:#50449c;"
+                               role="img"/>
+                        </t>
+                    </div>
+                </div>
+                &amp;nbsp&amp;nbsp&amp;nbsp&amp;nbsp
+                <div class="review" style="color: #3ec1b6">
+                    <t t-esc="product.rating_total"/>
+                    reviews(s)
+                </div>
+                &amp;nbsp&amp;nbsp&amp;nbsp&amp;nbsp
+                <div class="review">
+                    <a href="#home-tab">
+                        Write a review
+                    </a>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//div[@id='product_full_description']" position="after">
+            <div class="row">
+                <div class="tab_section"
+                     style="padding-left:100px; padding-right:100px;">
+                    <div class="wrapp">
+                        <ul class="nav nav-tabs" id="myTab"
+                            role="tablist">
+                            <li class="nav-item"
+                                role="presentation">
+                                <button class="nav-link active"
+                                        id="home-tab"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#home"
+                                        type="button" role="tab"
+                                        aria-controls="home"
+                                        aria-selected="false">
+                                    Description
+                                </button>
+                            </li>
+                            <li class="nav-item"
+                                role="presentation">
+                                <button class="nav-link"
+                                        id="profile-tab"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#profile"
+                                        type="button" role="tab"
+                                        aria-controls="profile"
+                                        aria-selected="true">
+                                    Customer Review
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="tab-content"
+                             id="myTabContent">
+                            <div class="tab-pane fade show active"
+                                 id="home" role="tabpanel"
+                                 aria-labelledby="home-tab">
+                                <div class="wrapp">
+                                    <p t-field="product.description_sale"
+                                       class="abt"
+                                       placeholder="A short description that will also appear on documents."/>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade"
+                                 id="profile" role="tabpanel"
+                                 aria-labelledby="profile-tab">
+                                <div class="o_shop_discussion_rating">
+                                    <section class="container mt16 mb16">
+                                        <div class="row">
+                                            <div class="col-lg-8 offset-lg-2">
+                                                <t t-call="portal.message_thread">
+                                                    <t t-set="object"
+                                                       t-value="product"/>
+                                                    <t t-set="display_rating"
+                                                       t-value="True"/>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <template id="product_quantity" inherit_id="website_sale.product_quantity">
+        <xpath expr="//div[hasclass('css_quantity')]" position="replace">
+            <div class="css_quantity input-group"
+                 style="border:1px solid; width:max-content; margin-top: 15px; margin-right:52px; margin-bottom:0px;"
+                 contenteditable="false">
+                <div class="input-group-prepend">
+                    <a t-attf-href="#"
+                       class="btn js_add_cart_json"
+                       aria-label="Remove one" title="Remove one">
+                        <i class="fa fa-minus"></i>
+                    </a>
+                </div>
+                <input type="text" class="form-control quantity" data-min="1"
+                       name="add_qty" t-att-value="add_qty or 1"/>
+                <div class="input-group-append">
+                    <a t-attf-href="#"
+                       class="btn float_left js_add_cart_json"
+                       aria-label="Add one" title="Add one">
+                        <i class="fa fa-plus"></i>
+                    </a>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <template id="alternative_products"
+              inherit_id="website_sale.recommended_products">
+        <xpath expr="//div[hasclass('mt32')]" position="replace">
+            <div class="related_product"
+                 t-if="product.alternative_product_ids">
+                <div class="abt_heading">
+                    <h3 style="font-weight: 700; font-size: 30px;">Alternative
+                        Products:
+                    </h3>
+                </div>
+                <div class="re_wrapper">
+                    <div class="container">
+                        <div class="row">
+                            <t t-foreach="product.alternative_product_ids"
+                               t-as="alt_product">
+                                <div class="col-lg-3 col-md-6 com-sm-6 col-12">
+                                    <div class="feature_wrapper">
+                                        <div class="img_wrapper">
+                                            <t t-set="combination_info"
+                                               t-value="alt_product._get_combination_info()"/>
+                                            <t t-set="product_variant"
+                                               t-value="alt_product.env['product.product'].browse(combination_info['product_id'])"/>
+                                            <div t-if="product_variant"
+                                                 t-field="product_variant.image_128"
+                                                 t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'rounded shadow o_alternative_product o_image_64_max' }"/>
+                                            <div t-else=""
+                                                 t-field="alt_product.image_128"
+                                                 t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'rounded shadow o_alternative_product o_image_64_max' }"/>
+                                        </div>
+                                        <div class="product_bottom">
+                                            <h6>
+                                                <a class="sp_name"
+                                                   t-att-href="alt_product.website_url"
+                                                   style="display: block">
+                                                    <span t-att-title="alt_product.name"
+                                                          t-field="alt_product.name"
+                                                          class="o_text_overflow"
+                                                          style="display: block;"/>
+                                                </a>
+                                            </h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <template id="product_rating" inherit_id="website_sale.product_comment">
+        <xpath expr="//div[@t-field='product.website_description']"
+               position="replace">
+
+        </xpath>
+    </template>
+    <template id="diva_product_price" inherit_id="website_sale.product_price">
+        <xpath expr="//div[hasclass('product_price')]"
+               position="replace">
+            <div itemprop="offers" itemscope="itemscope"
+                 itemtype="http://schema.org/Offer" class="product_price mt16">
+                <h4 class="oe_price_h4 css_editable_mode_hidden">
+                    <span t-attf-class="text-danger oe_default_price {{'' if combination_info['has_discounted_price'] else 'd-none'}}"
+                          style="text-decoration: line-through; white-space: nowrap;"
+                          t-esc="combination_info['list_price']"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+                    />
+                    <b class="oe_price" style="white-space: nowrap; margin-right:250px;"
+                       t-esc="combination_info['price']"
+                       t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+
+                    <span itemprop="price" style="display:none;"
+                          t-esc="combination_info['price']"/>
+                    <span itemprop="priceCurrency" style="display:none;"
+                          t-esc="website.currency_id.name"/>
+                </h4>
+                <h4 class="css_non_editable_mode_hidden decimal_precision"
+                    t-att-data-precision="str(website.currency_id.decimal_places)">
+                    <span t-field="product.list_price"
+                          t-options='{
+                   "widget": "monetary",
+                   "display_currency": product.currency_id,
+               }'/>
+                </h4>
+            </div>
+        </xpath>
+    </template>
+</odoo>

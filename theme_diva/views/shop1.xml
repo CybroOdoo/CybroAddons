@@ -1,0 +1,263 @@
+<odoo>
+    <template id="product_page" inherit_id="website_sale.products"
+              active="True" name="Products 1">
+        <xpath expr="//div[hasclass('container')]" position="before">
+            <Section class="banner_sub">
+                <div class="wrapper" style=" background-color: #b0dbf081; padding: 50px 0;">
+                    <div class="container">
+                        <div class="row">
+                            <div class="sub_page">
+                                <div class="name" style="color: #222831;font-size: 28px;font-weight: 700;padding-left: 12px">
+                                    Shop
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Section>
+        </xpath>
+
+        <xpath expr="//table[hasclass('table')]" position="replace">
+            <div class="product">
+                <div class="container">
+                    <div class="row">
+                        <div t-if="bins" class="row pt">
+                            <t t-foreach="bins" t-as="tr_product">
+                                <t t-foreach="tr_product"
+                                   t-as="td_product">
+                                    <t t-if="td_product">
+                                        <t t-set="product"
+                                           t-value="td_product['product']"/>
+                                        <t t-attf-class="wrapper"
+                                           t-att-data-ribbon-id="td_product['ribbon'].id">
+                                            <div t-attf-class="img_wrapper">
+                                                <t t-call="theme_diva.diva_shop_images"/>
+                                            </div>
+                                        </t>
+                                    </t>
+                                    <t t-else=""/>
+                                </t>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+     <template id="diva_layout_button" name="Diva Layout Button" inherit_id="website_sale.add_grid_or_list_option">
+            <xpath expr="//div[hasclass('o_wsale_apply_layout')]" position="replace"/>
+        </template>
+
+    <template id="diva_pricelist_button" name="Diva Pricelist Button" inherit_id="website_sale.products">
+            <xpath expr="//div[hasclass('justify-content-md-center')]" position="replace">
+                <div class="products_pager form-inline flex-md-nowrap justify-content-between justify-content-md-center">
+                    <t t-call="website_sale.search">
+                        <t t-set="_classes" t-valuef="mr-auto mt-2"/>
+                    </t>
+
+                    <t t-set="list_price_desc_label">Catalog price: High to Low</t>
+                    <t t-set="list_price_asc_label">Catalog price: Low to High</t>
+                    <t t-set="name_asc_label">Name: A to Z</t>
+                    <t t-set="name_desc_label">Name: Z to A</t>
+                    <t t-set="website_sale_sortable" t-value="[
+                    (list_price_desc_label, 'list_price desc'),
+                    (list_price_asc_label, 'list_price asc'),
+                    (name_asc_label, 'name asc'),
+                    (name_desc_label, 'name desc')
+                    ]"/>
+                    <t t-set="website_sale_sortable_current" t-value="[sort for sort in website_sale_sortable if sort[1]==request.params.get('order', '')]"/>
+
+                    <div class="dropdown mt-2 ml-md-2 dropdown_sorty_by">
+                        <a role="button" href="#" class="dropdown-toggle btn btn-sort" style="width: 250px;height: 40px;border-top: #222 solid 1px !important;border-radius: 0px !important;" data-toggle="dropdown">
+                            <span class="d-none d-lg-inline">
+                                <t t-if='len(website_sale_sortable_current)'>
+                                    Sorting by : <t t-raw='website_sale_sortable_current[0][0]'/>
+                                </t>
+                                <t t-else='1'>
+                                    Sort by
+                                </t>
+                            </span>
+                            <i class="fa fa-sort-amount-asc d-lg-none"/>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right" role="menu" style="transform: translate3d(0px, 30px, 0px);">
+                            <t t-foreach="website_sale_sortable" t-as="sortby">
+                                <a role="menuitem" style="display: block;width: 100%;padding: .75rem 2.0rem;clear: both;font-weight: 400;color:#212529;text-align: inherit;white-space: nowrap;background-color: white;border: 0;border-top-color: currentcolor;border-top-style: none;border-top-width: 0px;border-top: #222 solid 1px;" rel="noindex,nofollow" t-att-href="keep('/shop', order=sortby[1])" class="item-boec">
+                                    <span t-raw="sortby[0]"/>
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </template>
+
+    <template id="diva_search" name="diva Search" inherit_id="website.website_search_box">
+            <xpath expr="//div[@role='search']" position="replace">
+                <div class="sidebar" style="margin-top: 10px; margin-right:auto;">
+                    <div class="wrapper">
+                        <div class="box">
+                            <form class="o_wsale_products_searchbar_form example dropdown show" method="get" action="/shop" style="margin:auto;max-width:600px">
+                                <div t-attf-class="input-group #{_classes}" role="search">
+                                    <input type="text" name="search" class="search-query" placeholder="Search.." style="padding: 10px;font-size: 17px; border: 1px solid #ccc;float: left;width: 100%;background: #ffffff;"/>
+                                    <button type="submit" style="padding: 10px;background: transparent;color: #e2e2e2;font-size: 17px;border: 1px solid #ccc;border-left-color: rgb(204, 204, 204);border-left-style: solid;border-left-width: 1px;border-left: none;border-bottom: none;cursor: pointer;position: absolute;right: 0;z-index: 999;"><i class="fa fa-search"/></button>
+                                </div>
+                                <input name="order" type="hidden" class="o_wsale_search_order_by" value=""/>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </template>
+
+    <template id="products_featured" inherit_id="website_sale.products"
+              active="False" customize_show="True" name="Featured Products">
+        <xpath expr="//div[@id='products_grid_before']" position="before">
+            <t t-set="enable_left_column" t-value="True"/>
+        </xpath>
+        <xpath expr="//div[@id='products_grid_before']" position="inside">
+            <div class="sidebar">
+                <div class="sidebar_head">
+                    <div class="abt_heading"
+                         style="color:black;">
+                        <strong style="font-size:16px;">
+                            FEATURED PRODUCTS
+                        </strong>
+                    </div>
+                </div>
+                <div class="sidebar_content">
+                    <t t-foreach="featured_products"
+                       t-as="fp">
+                        <div class="sidebar_product">
+                            <div class="product_img">
+                                <span t-field="fp.product.image_128"
+                                      t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'rounded o_image_64_max'}"/>
+                            </div>
+                            <div class="product_info">
+                                <div class="row">
+                                    <div class="price col-lg-4">
+                                        <a t-att-href="'/shop/product/%s' % slug(fp.product)">
+                                            <span style="font-size:14px;"
+                                                  t-esc="fp.product.name"/>
+                                        </a>
+
+                                        <span t-field="fp.product.lst_price"
+                                              t-options='{"widget": "monetary","display_currency": fp.product.currency_id}'/>
+                                        <div class="o_shop_discussion_rating">
+                                            <t t-set="val_decimal"
+                                               t-value="round(fp.product.rating_count % 1, 1)"/>
+                                            <t t-set="val_integer"
+                                               t-value="int(fp.product.rating_count)"/>
+                                            <t t-set="empty_star"
+                                               t-value="5 - (val_integer+1) if val_decimal else 5 - val_integer"/>
+                                            <div class="o_website_rating_static"
+                                                 style="margin-right:-65px;">
+                                                <t t-foreach="range(0, val_integer)"
+                                                   t-as="num">
+                                                    <i class="fa fa-star"
+                                                       style="color:#50449c;"
+                                                       role="img"/>
+                                                </t>
+                                                <t t-if="val_decimal">
+                                                    <i class="fa fa-star-half-o"
+                                                       style="color:#50449c;"
+                                                       role="img"/>
+                                                </t>
+                                                <t t-foreach="range(0, empty_star)"
+                                                   t-as="num">
+                                                    <i class="fa fa-star text-black-25"
+                                                       style="color:#50449c;"
+                                                       role="img"/>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="diva_shop_images" name="Diva Shop Images"
+              inherit_id="website_sale.products_item">
+        <xpath expr="//div[hasclass('oe_product_image')]"
+               position="replace">
+            <t t-set="product" t-value="product"/>
+            <div class="card-body p-1 oe_product_image">
+                <input type="hidden" name="csrf_token"
+                       t-att-value="request.csrf_token()"/>
+                <a t-att-href="product_href" class="d-block h-100"
+                   itemprop="url">
+                    <t t-set="image_holder"
+                       t-value="product._get_image_holder()"/>
+                    <span t-field="image_holder.image_1920"
+                          t-options="{'widget': 'image', 'preview_image': 'image_1920'}"
+                          class="d-flex h-100 justify-content-center align-items-center">
+                    </span>
+                </a>
+            </div>
+        </xpath>
+        <xpath expr="//div[hasclass('o_wsale_product_information')]"
+               position="replace">
+            <div class="card-body p-0 text-center o_wsale_product_information">
+                <div class="p-2 o_wsale_product_information_text">
+                    <h6 class="o_wsale_products_item_title">
+                        <a style="color:#50449c;" itemprop="name"
+                           t-att-href="product_href"
+                           t-att-content="product.name"
+                           t-field="product.name"/>
+                        <a role="button"
+                           t-if="not product.website_published"
+                           t-att-href="product_href"
+                           class="btn btn-sm btn-danger"
+                           title="This product is unpublished.">Unpublished
+                        </a>
+                    </h6>
+                    <div class="product_price" itemprop="offers"
+                         itemscope="itemscope"
+                         itemtype="http://schema.org/Offer">
+                        <del t-attf-class="text-danger mr-2 {{'' if combination_info['has_discounted_price'] else 'd-none'}}"
+                             style="white-space: nowrap;"
+                             t-esc="combination_info['list_price']"
+                             t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <span t-if="combination_info['price']"
+                              t-esc="combination_info['price']"
+                              t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <span itemprop="price" style="display:none;"
+                              t-esc="combination_info['price']"/>
+                        <span itemprop="priceCurrency" style="display:none;"
+                              t-esc="website.currency_id.name"/>
+                    </div>
+                    <div class="o_shop_discussion_rating">
+                        <t t-set="val_decimal"
+                           t-value="round(product.rating_count % 1, 1)"/>
+                        <t t-set="val_integer"
+                           t-value="int(product.rating_count)"/>
+                        <t t-set="empty_star"
+                           t-value="5 - (val_integer+1) if val_decimal else 5 - val_integer"/>
+                        <div class="o_website_rating_static"
+                             t-att-style="inline_mode and 'display:inline'">
+                            <t t-foreach="range(0, val_integer)" t-as="num">
+                                <i class="fa fa-star" style="color:#50449c;"
+                                   role="img"/>
+                            </t>
+                            <t t-if="val_decimal">
+                                <i class="fa fa-star-half-o"
+                                   style="color:#50449c;"
+                                   role="img"/>
+                            </t>
+                            <t t-foreach="range(0, empty_star)" t-as="num">
+                                <i class="fa fa-star text-black-25"
+                                   style="color:#50449c;" role="img"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+                <div class="o_wsale_product_btn"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>
