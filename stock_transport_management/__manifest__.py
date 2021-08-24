@@ -6,7 +6,7 @@
     'description': """This Module Manage Transport Management Of Stocks""",
     'author': "Cybrosys Techno Solutions",
     'company': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
+    'website': "https://www.cybrosys.com/odoo/industries/warehouse-management/",
     'category': 'Warehouse',
     'depends': ['base', 'sale', 'stock', 'report_xlsx'],
     'data': [

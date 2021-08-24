@@ -25,7 +25,7 @@
     'description': """Odoo e-commerce Featured Products.""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
-    'website': "https://cybrosys.com/",
+    'website': "https://www.cybrosys.com/odoo/field-of-expertise/ecommerce-website/",
     'category': 'eCommerce',
     'depends': ['base',
                 'website_sale',

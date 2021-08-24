@@ -26,7 +26,7 @@
     """,
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
-    'website': "http://www.cybrosys.com",
+    'website': "https://www.cybrosys.com/odoo/industries/complete-sales-management-erp/",
     'category': 'Sales',
     'depends': ['base', 'sale'],
     'data': ['views/product_brand.xml'],
