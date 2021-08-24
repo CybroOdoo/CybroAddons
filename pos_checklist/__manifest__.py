@@ -8,7 +8,7 @@
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'website': "",
+    'website': "https://www.cybrosys.com/odoo/industries/pos/",
     'depends': ['base', 'point_of_sale', 'document', 'hr'],
     'data': [
              'views/admin_view.xml',
