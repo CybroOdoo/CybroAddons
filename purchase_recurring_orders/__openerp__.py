@@ -24,7 +24,7 @@
     'description': 'This module allows you to create recurring orders for purchases.',
     'category': 'Purchases',
     'author': 'Cybrosys Techno Solutions',
-    'website': 'http://www.cybrosys.com',
+    'website': 'https://www.cybrosys.com/odoo/industries/purchasing-management-software/',
     'company': 'Cybrosys Techno Solutions',
     'depends': ['purchase'],
     'data': [

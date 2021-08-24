@@ -5,7 +5,7 @@
     'summary': "Change Table of Order in POS ",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
-    'website': 'http://www.cybrosys.com',
+    'website': 'https://www.cybrosys.com/odoo/industries/restaurant-management/',
     'description': """
 
 

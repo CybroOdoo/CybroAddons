@@ -26,7 +26,7 @@
     'description': """Generate CRM XLS Report of Won/Lost leads""",
     'author': "Cybrosys Techno Solutions",
     'company': "Cybrosys Techno Solutions",
-    'website': "https://www.cybrosys.com",
+    'website': "https://www.cybrosys.com/odoo/industries/crm/",
     'depends': ['base', 'crm', 'report_xlsx'],
     'data': [
            'views/new_menu_view.xml',

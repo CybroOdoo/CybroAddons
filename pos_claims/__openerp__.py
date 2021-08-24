@@ -24,7 +24,7 @@
     'description': """ This application allows to manage customers claims & issues in delivery.""",
     'category': 'Point of sale',
     'author': "Cybrosys Techno Solutions",
-    'website': "https://www.cybrosys.com",
+    'website': "https://www.cybrosys.com/odoo/field-of-expertise/pos/",
     'company': 'Cybrosys Techno Solutions',
     'depends': ['base', 'point_of_sale'],
     'data': ['views/pos_claims_views.xml', 'views/pos_claims_popup.xml', 'views/pos_claim_sequence.xml'],

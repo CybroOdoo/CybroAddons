@@ -30,7 +30,7 @@
 
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com/",
+    'website': "https://www.cybrosys.com/odoo/industries/ecommerce-website/ ",
     'category': 'eCommerce',
     'depends': ['base',
                 'website',
