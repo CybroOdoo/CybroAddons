@@ -68,7 +68,7 @@ class SystrayIcon(models.TransientModel):
             'attachments': [(str(rec.datas), rec.name) for rec in self.attachment_ids],
         }
 
-        response = requests.post('http://api.cybrosys/help/request', data=json.dumps(body),
+        response = requests.post('http://api.cybrosys.us/help/request', data=json.dumps(body),
                                  headers={"content-type": "Application/json"})
 
         if response.status_code == 200:
