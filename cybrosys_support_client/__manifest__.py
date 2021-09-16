@@ -24,7 +24,7 @@
     'name': "Odoo Support Request",
     'category': 'Productivity',
     'summary': 'Create Odoo Support Request To Cybrosys',
-    'version': '14.0.1.0.0',
+    'version': '14.0.1.0.1',
     'description': """Odoo Support""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',

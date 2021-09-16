@@ -59,7 +59,6 @@ class SystrayIcon(models.TransientModel):
             return url_open
 
     def confirm_button(self):
-
         body = {
             'name': self.name,
             'email': self.email,
@@ -67,9 +66,10 @@ class SystrayIcon(models.TransientModel):
             't_type': self.t_type,
             'attachments': [(str(rec.datas), rec.name) for rec in self.attachment_ids],
         }
-
-        response = requests.post('http://api.cybrosys.us/help/request', data=json.dumps(body),
-                                 headers={"content-type": "Application/json"})
+        print(body)
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        response = requests.post(url='https://api.cybrosys.us/help/request', json=body,
+                                 headers=headers, data=json.dumps(body))
 
         if response.status_code == 200:
             return {
