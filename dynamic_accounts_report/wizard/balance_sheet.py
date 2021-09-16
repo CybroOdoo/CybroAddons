@@ -35,6 +35,9 @@ class BalanceSheetView(models.TransientModel):
         string='Target Move', required=True, default='posted')
     date_from = fields.Date(string="Start date")
     date_to = fields.Date(string="End date")
+    debit_credit = fields.Selection(
+        [('show', 'Show'), ('hide', 'Hide')],
+        string='Debit/Credit', required=True, default='show')
 
     @api.model
     def view_report(self, option, tag):
@@ -120,10 +123,9 @@ class BalanceSheetView(models.TransientModel):
 
         def filter_movelines_parents(obj):
             for each in obj:
-                if each['report_type'] == 'accounts':
-                    if each['code'] in move_line_accounts:
-                        report_lines_move.append(each)
-                        parent_list.append(each['p_id'])
+                if each['report_type'] == 'accounts' and each.get('code') in move_line_accounts:
+                    report_lines_move.append(each)
+                    parent_list.append(each['p_id'])
 
                 elif each['report_type'] == 'account_report':
                     report_lines_move.append(each)
@@ -133,11 +135,10 @@ class BalanceSheetView(models.TransientModel):
         filter_movelines_parents(report_lines)
 
         for rec in report_lines_move:
-            if rec['report_type'] == 'accounts':
-                if rec['code'] in move_line_accounts:
-                    rec['debit'] = move_lines_dict[rec['code']]['debit']
-                    rec['credit'] = move_lines_dict[rec['code']]['credit']
-                    rec['balance'] = move_lines_dict[rec['code']]['balance']
+            if rec['report_type'] == 'accounts' and rec.get('code') in move_line_accounts:
+                rec['debit'] = move_lines_dict[rec['code']]['debit']
+                rec['credit'] = move_lines_dict[rec['code']]['credit']
+                rec['balance'] = move_lines_dict[rec['code']]['balance']
 
         parent_list = list(set(parent_list))
         max_level = 0
@@ -163,7 +164,7 @@ class BalanceSheetView(models.TransientModel):
         final_report_lines = []
 
         for rec in report_lines_move:
-            if rec['report_type'] != 'accounts':
+            if rec['report_type'] != 'accounts' or not rec.get('code'):
                 if rec['r_id'] in parent_list:
                     final_report_lines.append(rec)
             else:
@@ -285,6 +286,7 @@ class BalanceSheetView(models.TransientModel):
         filters['analytic_tag_list'] = data.get('analytic_tag_list')
         filters['company_name'] = data.get('company_name')
         filters['target_move'] = data.get('target_move').capitalize()
+        filters['debit_credit'] = data.get('debit_credit')
         return filters
 
     def get_filter_data(self, option):
@@ -330,6 +332,7 @@ class BalanceSheetView(models.TransientModel):
                                   analytic_tags],
             'account_tag_ids': r.account_tag_ids.ids,
             'account_tag_list': [(a.id, a.name) for a in account_tags],
+            'debit_credit': r.debit_credit,
         }
         filter_dict.update(default_filters)
         return filter_dict
@@ -361,6 +364,7 @@ class BalanceSheetView(models.TransientModel):
     @api.model
     def create(self, vals):
         vals['target_move'] = 'posted'
+        vals['debit_credit'] = 'show'
         res = super(BalanceSheetView, self).create(vals)
         return res
 
@@ -394,6 +398,8 @@ class BalanceSheetView(models.TransientModel):
                                               vals.get('analytic_tag_ids')]})
         if not vals.get('analytic_tag_ids'):
             vals.update({'analytic_tag_ids': [(5,)]})
+        if vals.get('debit_credit'):
+            vals.update({'debit_credit': vals.get('debit_credit').lower()})
 
         res = super(BalanceSheetView, self).write(vals)
         return res
@@ -586,23 +592,38 @@ class BalanceSheetView(models.TransientModel):
         col = 0
 
         row += 2
-        sheet.write(row, col, '', sub_heading)
-        sheet.write(row, col + 1, 'Debit', sub_heading)
-        sheet.write(row, col + 2, 'Credit', sub_heading)
+        if filters['debit_credit'] == 'show':
+            sheet.write(row, col, '', sub_heading)
+            sheet.write(row, col + 1, 'Debit', sub_heading)
+            sheet.write(row, col + 2, 'Credit', sub_heading)
+        else:
+            sheet.merge_range('A{}:C{}'.format(str(row + 1), str(row + 1)), '', sub_heading)
         sheet.write(row, col + 3, 'Balance', sub_heading)
 
         if rl_data:
             for fr in rl_data:
 
                 row += 1
-                if fr['level'] == 1:
-                    sheet.write(row, col, fr['name'], side_heading_main)
-                elif fr['level'] == 2:
-                    sheet.write(row, col, fr['name'], side_heading_sub)
+
+                txt_name = workbook.add_format({'font_size': '10px', 'border': 1})
+                txt_name.set_indent(fr['level'] - 1)
+
+                if filters['debit_credit'] == 'show':
+                    if fr['level'] == 1:
+                        sheet.write(row, col, fr['name'], side_heading_main)
+                    elif fr['level'] == 2:
+                        sheet.write(row, col, fr['name'], side_heading_sub)
+                    else:
+                        sheet.write(row, col, fr['name'], txt_name)
+                    sheet.write(row, col + 1, fr['debit'], txt)
+                    sheet.write(row, col + 2, fr['credit'], txt)
                 else:
-                    sheet.write(row, col, fr['name'], txt_name)
-                sheet.write(row, col + 1, fr['debit'], txt)
-                sheet.write(row, col + 2, fr['credit'], txt)
+                    if fr['level'] == 1:
+                        sheet.merge_range('A{}:C{}'.format(str(row + 1), str(row + 1)), fr['name'], side_heading_main)
+                    elif fr['level'] == 2:
+                        sheet.merge_range('A{}:C{}'.format(str(row + 1), str(row + 1)), fr['name'], side_heading_sub)
+                    else:
+                        sheet.merge_range('A{}:C{}'.format(str(row + 1), str(row + 1)), fr['name'], txt_name)
                 sheet.write(row, col + 3, fr['balance'], txt)
 
         workbook.close()

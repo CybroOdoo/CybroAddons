@@ -19,8 +19,8 @@
                     <thead>
                         <tr>
                             <th colspan="6"></th>
-                            <th style="text-align: right; padding-right: 50px;">Debit</th>
-                            <th style="text-align: right; padding-right: 50px;">Credit</th>
+                            <th style="text-align: right; padding-right: 50px;" t-if="filter['debit_credit'] == 'show'">Debit</th>
+                            <th style="text-align: right; padding-right: 50px;" t-if="filter['debit_credit'] == 'show'">Credit</th>
                             <th style="text-align: right; padding-right: 50px;">Balance</th>
                         </tr>
                     </thead>
@@ -28,17 +28,20 @@
 
 						<t t-set="none_value" t-value="_"/>
 						<t t-foreach="bs_lines" t-as="a">
+							<t t-set="padding_left" t-value="5 + a['level'] * 10"/>
 							<t t-if="a['code']">
 								<t t-foreach="report_lines" t-as="account">
 
 
 									<t t-set="common_id" t-value="0"/>
 									<t t-if="account['code'] == a['code']">
-										<tr style="border: 1.5px solid black;" class="gl-line"
+										<t t-set="style" t-value="'border: 0px solid black; padding-left: ' + padding_left + 'px;'"/>
+										<tr style="border: 1.5px solid black;display:none;" class="gl-line"
 											data-toggle="collapse"
 											t-att-data-account-id="account['id']"
+											t-att-data-p-id="a['p_id']"
 											t-attf-data-target=".a{{account['id']}}">
-											<td colspan="6" style="border: 0px solid black; padding-left: 50px;">
+											<td colspan="6" t-att-style="style">
 												<span>
 													<t t-esc="account['code']"/>
 													-
@@ -61,8 +64,8 @@
 													</div>
 												</div>
 											</td>
-											<td t-att-style="fr_padding"><t t-esc="a['m_debit']" t-att-style="style"/></td>
-											<td t-att-style="fr_padding"><t t-esc="a['m_credit']" t-att-style="style"/></td>
+											<td t-att-style="fr_padding" t-if="filter['debit_credit'] == 'show'"><t t-esc="a['m_debit']" t-att-style="style"/></td>
+											<td t-att-style="fr_padding" t-if="filter['debit_credit'] == 'show'"><t t-esc="a['m_credit']" t-att-style="style"/></td>
 											<td t-att-style="fr_padding"><t t-esc="a['m_balance']" t-att-style="style"/></td>
 
 
@@ -78,25 +81,27 @@
 								<t t-set="fr_head" t-value="'border-bottom: double;'"/>
 								<t t-set="fr_padding" t-value="'padding-top: 5px; text-align: right;padding-right: 50px; vertical-align: bottom;'"/>
 								<t t-if="a['level'] == 1">
-									<t t-set="style" t-value="'padding: 5px;padding-left: 15px; padding-top: 15px;'"/>
+									<t t-set="style" t-value="'padding: 5px;padding-top: 15px;'"/>
 								</t>
 								<t t-if="a['level'] == 2">
-									<t t-set="style" t-value="'padding: 5px;padding-left: 25px; padding-top: 25px;'"/>
+									<t t-set="style" t-value="'padding: 5px;padding-top: 25px;'"/>
 								</t>
 								<t t-if="a['level'] == 3">
-									<t t-set="style" t-value="'padding: 5px;padding-left: 50px;'"/>
+									<t t-set="style" t-value="'padding: 5px;'"/>
 									<t t-set="fr_head" t-value="'border-bottom: 1px solid black;'"/>
 								</t>
 								<t t-if="a['level'] &gt; 3">
-									<t t-set="style" t-value="'padding: 5px;padding-left: 50px;'"/>
+									<t t-set="style" t-value="'padding: 5px;'"/>
 									<t t-set="fr_head" t-value="'border-bottom: 1px solid black;'"/>
 								</t>
+								<t t-set="style" t-value="style + 'padding-left: ' + padding_left + 'px;'"/>
 								<tr t-att-style="fr_head">
 									<th colspan="6" t-att-style="style">
+										<i class="fa fa-caret-right show-account" style="cursor: pointer;" t-att-data-r-id="a['r_id']" role="img" aria-label="Unfolded" title="Unfolded" t-if="a['report_type'] == 'accounts' or a['report_type'] == 'account_type'"></i>
 										<t t-esc="a['name']"/>
 									</th>
-									<td t-att-style="fr_padding"><t t-esc="a['m_debit']"/></td>
-									<td t-att-style="fr_padding"><t t-esc="a['m_credit']"/></td>
+									<td t-att-style="fr_padding" t-if="filter['debit_credit'] == 'show'"><t t-esc="a['m_debit']"/></td>
+									<td t-att-style="fr_padding" t-if="filter['debit_credit'] == 'show'"><t t-esc="a['m_credit']"/></td>
 									<td t-att-style="fr_padding"><t t-esc="a['m_balance']"/></td>
 								</tr>
 							</t>
@@ -248,6 +253,19 @@ Target Move:
 
 						</select>
 						<span id="post_res"></span>
+					</div>
+					<div class="show-debit-credit" style="">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown">
+							<span class="fa fa-filter"></span>
+Debit/Credit:
+						</a>
+						<select class="dropdown-menu debit_credit" name="states[]" >
+							<div role="separator" class="dropdown-divider"></div>
+								<option value="Show">Show</option>
+								<option value="Hide">Hide</option>
+
+						</select>
+						<span id="debit_credit_res"></span>
 					</div>
 					</div>
 

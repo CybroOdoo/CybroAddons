@@ -19,6 +19,8 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
             'click #pdf': 'print_pdf',
             'click #xlsx': 'print_xlsx',
             'click .show-gl': 'show_gl',
+            'click .show-account': 'show_account',
+            'click .hide-account': 'hide_account',
         },
 
         init: function(parent, action) {
@@ -76,6 +78,9 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                                     self.$el.find('.target_move').select2({
                                         placeholder: 'Target Move...',
                                     });
+                                    self.$el.find('.debit_credit').select2({
+                                        placeholder: 'Debit/Credit...',
+                                    })
 
                             }
                             var child=[];
@@ -123,6 +128,25 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                 return this.do_action(action);
         },
 
+    show_account: function(e) {
+        $('tr[data-p-id=' + $(e.target).data('r-id') + ']').show();
+        $(e.target).removeClass("fa-caret-right show-account").addClass("fa-caret-down hide-account");
+    },
+
+    hide_account: function(e) {
+        $('tr[data-p-id=' + $(e.target).data('r-id') + ']').hide();
+        $(e.target).removeClass("fa-caret-down hide-account").addClass("fa-caret-right show-account");
+    },
+
+    remove_bs_lines: function(data) {
+        var r_ids = [];
+        $('.show-account').each(function(i, obj) {
+            r_ids.push($(this).data('r-id'));
+        });
+        data['bs_lines'] = data['bs_lines'].filter(line => {return !r_ids.includes(line['p_id'])});
+        return data;
+    },
+
     print_pdf: function(e) {
             e.preventDefault();
             var self = this;
@@ -134,6 +158,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                     [self.wizard_id], action_title
                 ],
             }).then(function(data) {
+                data = self.remove_bs_lines(data);
                 var action = {
                     'type': 'ir.actions.report',
                     'report_type': 'qweb-pdf',
@@ -164,6 +189,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                     [self.wizard_id],  action_title
                 ],
             }).then(function(data) {
+                data = self.remove_bs_lines(data);
                 var action = {
                     'type': 'ir_actions_dynamic_xlsx_download',
                     'data': {
@@ -338,6 +364,16 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                   post_res.innerHTML="posted";
 
                   }
+            }
+
+            if ($(".debit_credit").length) {
+                var debit_credit_res = document.getElementById("debit_credit_res")
+                filter_data_selected.debit_credit = $(".debit_credit")[1].value
+                debit_credit_res.value = $(".debit_credit")[1].value
+                debit_credit_res.innerHTML = debit_credit_res.value;
+                if ($(".debit_credit")[1].value == "") {
+                    debit_credit_res.innerHTML = "show";
+                }
             }
             rpc.query({
                 model: 'dynamic.balance.sheet.report',
