@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="web.ControlPanel" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('o_control_panel')]" position="replace">
+<!--        <xpath t-jquery="div.o_control_panel" t-operation="replace">-->
+
+            <div class="o_control_panel">
+<!--                <div class="o_cp_bottom_left">-->
+                    <div class="o_cp_searchview"
+                        role="search"
+                        t-ref="searchView"
+                        >
+                        <div t-if="props.withSearchBar" class="o_searchview" role="search" aria-autocomplete="list" >
+                            <i class="o_searchview_icon fa fa-search"
+                                title="Search..."
+                                role="img"
+                                aria-label="Search..."
+                            />
+                            <SearchBar t-if="props.withSearchBar" fields="fields"/>
+                        </div>
+                    </div>
+<!--                </div>-->
+                <div class="o_cp_bottom_right">
+                        <div class="btn-group o_search_options position-static"
+                            role="search"
+                            t-ref="searchViewButtons"
+                            >
+                            <t t-if="props.withSearchBar">
+                                <FilterMenu t-if="props.searchMenuTypes.includes('filter')"
+                                    class="o_filter_menu"
+                                    fields="fields"
+                                />
+                                <GroupByMenu t-if="props.searchMenuTypes.includes('groupBy')"
+                                    class="o_group_by_menu"
+                                    fields="fields"
+                                />
+                                <ComparisonMenu t-if="props.searchMenuTypes.includes('comparison') and model.get('filters', f => f.type === 'comparison').length"
+                                    class="o_comparison_menu"
+                                />
+                                <FavoriteMenu t-if="props.searchMenuTypes.includes('favorite')"
+                                    class="o_favorite_menu"
+                                />
+                            </t>
+                        </div>
+                        <div class="o_cp_pager" role="search" t-ref="pager">
+                            <Pager t-if="props.pager and props.pager.limit" t-props="props.pager"/>
+                        </div>
+                        <nav t-if="props.views.length gt 1" class="btn-group o_cp_switch_buttons" role="toolbar" aria-label="View switcher">
+                            <t t-foreach="props.views" t-as="view" t-key="view.type">
+                                <t t-call="web.ViewSwitcherButton"/>
+                            </t>
+                        </nav>
+                    </div>
+
+
+                <div class="o_cp_top">
+                    <div class="o_cp_top_left">
+                        <ol t-if="props.withBreadcrumbs" class="breadcrumb" role="navigation">
+                            <li t-foreach="props.breadcrumbs" t-as="bc" t-key="bc.controllerID"
+                                class="breadcrumb-item"
+                                t-att-class="{ o_back_button: bc_index === props.breadcrumbs.length - 1 }"
+                                t-att-accesskey="bc_last and 'b'"
+                                t-on-click.prevent="trigger('breadcrumb-clicked', { controllerID: bc.controllerID })"
+                                >
+                                <a t-if="bc.title" href="#" t-esc="bc.title"/>
+                                <em t-else="" class="text-warning">Unnamed</em>
+                            </li>
+                            <li class="breadcrumb-item active">
+                                <t t-if="props.title" t-esc="props.title"/>
+                                <em t-else="" class="text-warning">Unnamed</em>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="o_cp_bottom">
+                    <div class="o_cp_bottom_left">
+                        <div class="o_cp_buttons" role="toolbar" aria-label="Control panel buttons" t-ref="buttons">
+                            <t t-slot="buttons"/>
+                        </div>
+                        <ActionMenus t-if="props.actionMenus and props.actionMenus.items"
+                            t-props="props.actionMenus"
+                        />
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </t>
+</templates>
