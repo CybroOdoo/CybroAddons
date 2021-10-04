@@ -76,7 +76,7 @@ odoo.define('master_search.FormRenderer', function(require) {
             var $form = this._renderNode(this.arch).addClass(this.className);
             delete this.defs;
 
-            return Promise.all(defs).then(function () {
+            return Promise.all(defs).then(() => this.__renderView()).then(function () {
                 self._updateView($form.contents());
                 if (self.state.res_id in self.alertFields) {
                     self.displayTranslationAlert();
