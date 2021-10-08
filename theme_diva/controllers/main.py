@@ -67,11 +67,8 @@ class WebsiteProduct(http.Controller):
             [('website_published', '=', True)]).ids
         featured_products1 = env['product.featured.relation'].sudo().search(
             [('featured_rel', 'in', published_list_ids)], limit=4)
-        featured_products2 = env['product.featured.relation'].sudo().search(
-            [('featured_rel', 'in', published_list_ids)], limit=8)
         values = {
             'featured_products1': featured_products1,
-            'featured_products2': featured_products2,
         }
         response = http.Response(template='theme_diva.diva_index_features',
                                  qcontext=values)

@@ -25,7 +25,7 @@
     'description': 'Design Web Pages with Theme Diva',
     'summary': 'Design Web Pages with Theme Diva',
     'category': 'Theme/Corporate',
-    'version': '14.0.1.0.0',
+    'version': '14.0.1.1.1',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
