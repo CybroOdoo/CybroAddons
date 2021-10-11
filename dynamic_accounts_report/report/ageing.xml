@@ -1,0 +1,168 @@
+<odoo>
+    <template id="dynamic_accounts_report.partner_ageing">
+        <t t-call="web.html_container">
+            <t t-set="data_report_margin_top" t-value="12"/>
+            <t t-set="data_report_header_spacing" t-value="9"/>
+            <t t-set="data_report_dpi" t-value="110"/>
+            <t t-call="web.internal_layout">
+                <div class="page">
+                    <div class="oe_structure"/>
+                    <h3 style="text-align:centre;left:50%;"><span t-esc="Filters.get('company_name')"/>: Partner Ageing
+                    </h3>
+                    <strong> As On Date:</strong>
+                    <t t-esc="Filters['date_from']"/>
+                    <div>
+                        <div style="text-align:centre;left:50%;" class="row">
+                                <div class="col-3">
+                                    <strong>Target move:</strong>
+                                        <li>
+                                            <t t-esc="Filters['target_move']"/>
+                                        </li>
+                                </div>
+                                <div class="col-3">
+                                    <strong>Account Type:</strong>
+                                        <li>
+                                            <t t-esc="Filters['result_selection']"/>
+                                        </li>
+                                </div>
+                                 <div class="col-3" style="">
+                                    <strong>Partners :</strong>
+                                    <t t-foreach="Filters['partners']" t-as="pa">
+                                        <li>
+                                            <t t-esc="pa"/>
+                                        </li>
+                                    </t>
+                                </div>
+                                 <div class="col-3" style="">
+                                    <strong>Partner Tag :</strong>
+                                    <t t-foreach="Filters['partner_tags']" t-as="pt">
+                                        <li>
+                                            <t t-esc="pt"/>
+                                        </li>
+                                    </t>
+                                </div>
+                        </div>
+
+
+                        <br></br>
+                    <table class="table table-sm table-reports">
+                        <thead>
+                            <tr class="text-center">
+                                <th>Entry Label</th>
+                                <th>Due date</th>
+                                <th>JRNL</th>
+                                <th>Account</th>
+                                <th>Not Due</th>
+                                <th>0 - 30</th>
+                                <th>30 - 60</th>
+                                <th>60 - 90</th>
+                                <th>90 - 120</th>
+                                <th>120 +</th>
+                                <th> Total</th>
+                                <th groups="base.group_multi_currency">Currency</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="account_data" t-as="account">
+                                <tr style="font-weight: bold;">
+                                    <td colspan="4">
+                                        <span style="color: white;" t-esc="'..'"/>
+                                        <span t-esc="account['name']"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="account['direction']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="account['4']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="account['3']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="account['2']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="account['1']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="account['0']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="account['total']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+
+                                    <td groups="base.group_multi_currency"/>
+                                </tr>
+                                <tr t-foreach="account['child_lines']" t-as="line">
+                                    <td><span t-esc="line['move']"/></td>
+                                    <td><span t-esc="line['date']"/></td>
+                                    <td><span t-esc="line['jrnl']"/></td>
+                                    <td><span t-esc="line['acc_code']"/></td>
+                                    <td class="text-right">
+                                        <span t-if="line.get('period6')"
+                                              t-esc="line['amount']"
+                                              t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                        <span t-else="">
+                                            <span>-</span>
+                                        </span>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-if="line.get('period5')"
+                                              t-esc="line['amount']"
+                                              t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                         <span t-else="">
+                                            <span>-</span>
+                                        </span>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-if="line.get('period4')"
+                                              t-esc="line['amount']"
+                                              t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                         <span t-else="">
+                                            <span>-</span>
+                                        </span>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-if="line.get('period3')"
+                                              t-esc="line['amount']"
+                                              t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                        <span t-else="">
+                                            <span>-</span>
+                                        </span>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-if="line.get('period2')"
+                                              t-esc="line['amount']"
+                                              t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                        <span t-else="">
+                                            <span>-</span>
+                                        </span>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-if="line.get('period1')"
+                                              t-esc="line['amount']"
+                                              t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                        <span t-else="">
+                                            <span>-</span>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    </div>
+                    <br></br>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_print_ageing_partner" model="ir.actions.report">
+            <field name="name">Partner Ageing</field>
+            <field name="model">account.partner.ageing</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">dynamic_accounts_report.partner_ageing</field>
+            <field name="report_file">dynamic_accounts_report.partner_ageing</field>
+    </record>
+
+</odoo>

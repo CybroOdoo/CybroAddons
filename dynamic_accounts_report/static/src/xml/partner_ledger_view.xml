@@ -1,0 +1,340 @@
+<templates>
+    <t t-name="PartnerTemp">
+        <div class="">
+            <div class="">
+                <h1 style="padding:10px">
+                    Partner Ledger
+                </h1>
+            </div>
+
+            <div>
+                <div class="filter_view_tb"></div>
+            </div>
+            <br></br>
+            <div>
+                <div class="table_view_tb" style="right:20px;"></div>
+            </div>
+        </div>
+    </t>
+    <t t-name="PLTable">
+        <div>
+            <div class="table_main_view">
+                <table cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th colspan="6">Partner</th>
+                            <th style="text-align:right;">Debit</th>
+                            <th style="text-align:right;">Credit</th>
+                            <th style="text-align:right;">Balance</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <t t-set="none_value" t-value="_"/>
+                        <t t-foreach="report_lines" t-as="account">
+                            <t t-set="common_id" t-value="0"/>
+                            <tr style="border: 1.5px solid black;" class="pl-line"
+                                data-toggle="collapse"
+                                t-att-data-account-id="account['id']"
+                                t-attf-data-target=".a{{account['id']}}">
+                                <td colspan="6" style="border: 0px solid black;">
+                                    <i class="fa fa-caret-down" role="img" aria-label="Unfolded" title="Unfolded"></i>
+                                    <span>
+                                        <t t-esc="account['name']"/>
+                                    </span>
+                                </td>
+
+                                <t t-if="currency[1] == 'before'">
+                                    <td style="text-align:right;">
+                                        <t t-esc="currency[0]"/>
+                                        <t t-out="account['debit']"/>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <t t-esc="currency[0]"/>
+                                        <t t-out="account['credit']"/>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <t t-esc="currency[0]"/>
+                                        <t t-out="account['balance']"/>
+                                    </td>
+
+                                </t>
+                                <t t-else="">
+                                    <td style="text-align:right;">
+                                        <t t-out="account['debit']"/>
+                                        <t t-esc="currency[0]"/>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <t t-out="account['credit']"/>
+                                        <t t-esc="currency[0]"/>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <t t-out="account['balance']"/>
+                                        <t t-esc="currency[0]"/>
+                                    </td>
+
+                                </t>
+                                <t t-set="common_id" t-value="'a'+account['id']"/>
+                            </tr>
+                            <tr t-attf-class="collapse a{{account['id']}}">
+                                <td colspan="10">
+                                    <ul>
+                                    </ul>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="PLFilterView">
+        <div class="" style="position: relative;">
+            <div class="sub_container_left">
+                <div class="report_print">
+                    <button type="button" class="btn btn-primary" id="pdf"
+                            style="left:10px; height:30px;position: relative;color:white;background-color: #00A0AD;border-color: #00A0AD; padding:3px;">
+                        Print (PDF)
+                    </button>
+                    <button type="button" class="btn btn-primary" id="xlsx"
+                            style="left:10px; height:30px;position: relative;color:white;background-color: #00A0AD;border-color: #00A0AD; padding:3px;">
+                        Export (XLSX)
+                    </button>
+                </div>
+            </div>
+            <br></br>
+            <div class="sub_container_right" style="width:50%;height:3%;right:0px;top:0px;position: absolute;">
+                <div class="" style="right:80x;">
+
+                    <br></br>
+                    <div class="row" style="right:80px;top:0px;position: absolute;width:50;">
+                        <div class="time_range" style="">
+                            <a type="button" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                <span class="fa fa-calendar" title="Dates" role="img" aria-label="Dates"></span>
+                                Date Range
+                            </a>
+                            <div class="dropdown-menu" role="menu">
+                                <div class="">
+                                    <label class="" for="date_from">Start Date :</label>
+                                    <div class="">
+                                        <div class="" aria-atomic="true" id="">
+                                            <input type="date" id="date_from"></input>
+                                        </div>
+                                    </div>
+                                    <label class="" for="date_to">End Date :</label>
+                                    <div class="">
+                                        <div class="" aria-atomic="true" id="">
+                                            <input type="date" id="date_to"></input>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="partner_filter" style="">
+                            <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+                                <span class="fa fa-users"></span>
+                                Partners:
+                            </a>
+                            <select class="dropdown-menu partners " name="states[]" multiple="multiple">
+                                <t t-foreach="filter_data.partners_list" t-as="partner">
+                                    <option t-attf-value="{{partner[0]}}">
+                                        <t t-esc="partner[1]"/>
+                                    </option>
+                                </t>
+                            </select>
+                            <span id="partner_res"></span>
+
+                        </div>
+
+                        <div class="acccount_type_filter">
+                            <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+                                <span class="fa fa-book"></span>
+                                Account Type
+                            </a>
+                            <select class="dropdown-menu type" name="states[]" multiple="multiple">
+                                <t t-foreach="filter_data.account_type_list" t-as="type">
+                                    <option t-attf-value="{{type[0]}}">
+                                        <t t-esc="type[1]"/>
+                                    </option>
+                                </t>
+                            </select>
+                            <span id="type_res"></span>
+
+                        </div>
+                        <div class="category_filter">
+                            <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+                                <span class="fa fa-filter"></span>
+                                Partner tag:
+                            </a>
+                            <select class="dropdown-menu category" name="states[]" multiple="multiple">
+                                <t t-foreach="filter_data.category_list" t-as="category">
+                                    <option t-attf-value="{{category[0]}}">
+                                        <t t-esc="category[1]"/>
+                                    </option>
+                                </t>
+                            </select>
+                            <span id="category_res"></span>
+
+                        </div>
+
+                        <div class="journals_filter" style="">
+                            <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+                                <span class="fa fa-book"></span>
+                                Journals:
+                            </a>
+                            <select class="dropdown-menu  journals" name="states[]" multiple="multiple">
+                                <div role="separator" class="dropdown-divider"></div>
+                                <t t-foreach="filter_data.journals_list" t-as="journal">
+                                    <option t-attf-value="{{journal[0]}}">
+                                        <t t-esc="journal[1]"/>
+                                    </option>
+                                </t>
+                            </select>
+                            <span id="journal_res"></span>
+                        </div>
+                        <div class="acc_filter">
+                            <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+                                <span class="fa fa-book"></span>
+                                Accounts:
+                            </a>
+                            <select class="dropdown-menu account" name="states[]" multiple="multiple">
+                                <t t-foreach="filter_data.accounts_list" t-as="account">
+                                    <option t-attf-value="{{account[0]}}">
+                                        <t t-esc="account[1]"/>
+                                    </option>
+                                </t>
+                            </select>
+                            <span id="account_res"></span>
+
+
+                        </div>
+
+
+                        <div class="search-Target-move" style="">
+                            <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+                                <span class="fa fa-filter"></span>
+                                Target Move:
+                            </a>
+                            <select id="entries" class="dropdown-menu target_move" name="states[]">
+                                <div role="separator" class="dropdown-divider"></div>
+                                <option value="Posted">Posted Entries</option>
+                                <option value="All">All Entries</option>
+                            </select>
+                            <span id="post_res"></span>
+                        </div>
+                    </div>
+
+                </div>
+                <div style="">
+                    <button type="button" id="apply_filter" class="btn btn-primary"
+                            style="top:0px;height:30px;right:20px;position: absolute;color:white;background-color: #00A0AD;border-color: #00A0AD;">
+                        Apply
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="SubSectionPL">
+        <div class="pl-table-div">
+            <table class="table table-sm o_main_table"
+                   style="border: 0px solid black;display compact;">
+                <thead>
+                    <tr style="">
+                        <th>Date</th>
+                        <th>JRNL</th>
+                        <th>Account</th>
+                        <th>Move</th>
+                        <th>Entry Label</th>
+                        <th style="text-align:right;">Debit</th>
+                        <th style="text-align:right;">Credit</th>
+                        <th style="text-align:right;">Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="account_data" t-as="account_line">
+
+                        <t t-set="style" t-value="'text-align:right;'"/>
+                        <t t-set="styleleft" t-value="'text-align:left;'"/>
+                        <tr>
+                            <td>
+                                <t t-if="account_line.ldate">
+                                    <div class="dropdown dropdown-toggle">
+                                        <a data-toggle="dropdown" href="#">
+                                            <span class="caret"></span>
+                                            <span>
+                                                <t t-esc="account_line.ldate"/>
+                                            </span>
+                                        </a>
+                                        <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+                                            <li>
+                                                <a class="view-account-move" tabindex="-1" href="#"
+                                                   t-att-data-move-id="account_line.move_id">
+                                                    View Source move
+
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </t>
+                            </td>
+                            <td>
+                                <t t-esc="account_line.lcode"/>
+
+                            </td>
+                            <td>
+                                <span>
+                                    <t t-esc="account_line.account_name"/>
+                                </span>
+                            </td>
+                            <td t-att-style="styleleft">
+                                <t t-esc="account_line.move_name"/>
+                            </td>
+                            <td t-att-style="styleleft">
+                                <t t-esc="account_line.lname"/>
+                            </td>
+                            <t t-if="account_line.currency_position == 'before'">
+                                <td t-att-style="style" class="amt">
+                                    <t t-out="account_line.currency_code"/>
+                                    <t t-out="account_line.debit"/>
+
+                                </td>
+                                <td t-att-style="style" class="amt">
+                                    <t t-out="account_line.currency_code"/>
+                                    <t t-out="account_line.credit"/>
+
+                                </td>
+                                <td t-att-style="style" class="amt">
+                                    <t t-out="account_line.currency_code"/>
+                                    <t t-out="account_line.balance"/>
+
+                                </td>
+
+                            </t>
+                            <t t-else="">
+                                <td t-att-style="style" class="amt">
+                                    <t t-out="account_line.debit"/>
+                                    <t t-out="account_line.currency_code"/>
+                                </td>
+                                <td t-att-style="style" class="amt">
+                                    <t t-out="account_line.credit"/>
+                                    <t t-out="account_line.currency_code"/>
+                                </td>
+                                <td t-att-style="style" class="amt">
+                                    <t t-out="account_line.balance"/>
+                                    <t t-out="account_line.currency_code"/>
+                                </td>
+
+                            </t>
+
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+    </t>
+
+</templates>

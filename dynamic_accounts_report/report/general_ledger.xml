@@ -1,0 +1,153 @@
+<odoo>
+
+    <template id="dynamic_accounts_report.general_ledger">
+        <t t-call="web.html_container">
+            <t t-set="data_report_margin_top" t-value="12"/>
+            <t t-set="data_report_header_spacing" t-value="9"/>
+            <t t-set="data_report_dpi" t-value="110"/>
+            <t t-call="web.internal_layout">
+                <div class="page">
+                    <div class="oe_structure"/>
+                    <h3 style="text-align:centre;left:50%;"><span t-esc="Filters.get('company_name')"/>: <t t-esc="title"/>
+                    </h3>
+
+                    <span t-if="Filters.get('date_from')">
+                    <strong> From:</strong>
+                    <t t-esc="Filters['date_from']"/>
+                    </span>
+
+
+
+                    <span t-if="Filters.get('date_to')">
+                    <strong>To:</strong>
+                    <t t-esc="Filters['date_to']"/>
+                    </span>
+
+
+                    <div>
+                        <div style="width:100%;">
+                            <div style="text-align:centre;" class="row">
+
+                                <div class="col-2">
+                                    <strong>Journals:</strong>
+                                    <t t-foreach="Filters['journals']" t-as="ps">
+                                        <li>
+                                            <t t-esc="ps"/>
+                                        </li>
+                                    </t>
+                                </div>
+
+                                <div class="col-2">
+                                        <strong>Accounts:</strong>
+                                        <t t-foreach="Filters['accounts']" t-as="ps">
+                                            <li>
+                                                <t t-esc="ps"/>
+                                            </li>
+                                        </t>
+                                </div>
+
+                                <div class="col-2">
+                                    <strong>Analytic:</strong>
+                                    <t t-foreach="Filters['analytics']" t-as="ps">
+                                        <li>
+                                            <t t-esc="ps"/>
+                                        </li>
+                                    </t>
+                                </div>
+
+                                 <div class="col-2">
+                                        <strong>Analytic Tag:</strong>
+                                        <t t-foreach="Filters['analytic_tags']" t-as="ps">
+                                            <li>
+                                                <t t-esc="ps"/>
+                                            </li>
+                                        </t>
+                                </div>
+
+                                <div class="col-3">
+                                    <strong>Target move:</strong>
+                                        <li>
+                                            <t t-esc="Filters['target_move']"/>
+                                        </li>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <br></br>
+                    <table class="table table-sm table-reports">
+                        <thead>
+                            <tr class="text-right">
+                                <th>Date</th>
+                                <th>JRNL</th>
+                                <th>Partner</th>
+                                <th>Ref</th>
+                                <th>Move</th>
+                                <th>Entry Label</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                                <th>Balance</th>
+                                <th groups="base.group_multi_currency">Currency</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="account_data" t-as="account">
+                                <tr style="font-weight: bold;">
+                                    <td colspan="6">
+                                        <span style="color: white;" t-esc="'..'"/>
+                                        <span t-esc="account['code']"/>
+                                        <span t-esc="account['name']"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="account['debit']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="account['credit']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="account['balance']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+                                    <td groups="base.group_multi_currency"/>
+                                </tr>
+                                <tr t-foreach="account['move_lines']" t-as="line">
+                                    <td><span t-esc="line['ldate']"/></td>
+                                    <td><span t-esc="line['lcode']"/></td>
+                                    <td><span t-esc="line['partner_name']"/></td>
+                                    <td><span t-if="line['lref']" t-esc="line['lref']"/></td>
+                                    <td><span t-esc="line['move_name']"/></td>
+                                    <td><span t-esc="line['lname']"/></td>
+                                    <td class="text-right">
+                                        <span t-esc="line['debit']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="line['credit']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="line['balance']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+                                    <t t-if="line['amount_currency']">
+                                        <td class="text-right" groups="base.group_multi_currency">
+                                            <span t-esc="line['amount_currency'] if line['amount_currency'] > 0.00 else ''"/>
+                                            <span t-esc="line['currency_code'] if line['amount_currency'] > 0.00 else ''"/>
+                                        </td>
+                                    </t>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    </div>
+                    <br></br>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_print_General_ledger" model="ir.actions.report">
+            <field name="name">Report</field>
+            <field name="model">account.general.ledger</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">dynamic_accounts_report.general_ledger</field>
+            <field name="report_file">dynamic_accounts_report.general_ledger</field>
+    </record>
+
+</odoo>

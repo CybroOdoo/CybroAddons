@@ -1,0 +1,351 @@
+
+<templates>
+    <t t-name="CFTemp">
+        <div class="">
+            <div class="">
+               <h1 style="padding:10px">
+                    Cash Flow Statement
+                </h1>
+
+            </div>
+
+            <div>
+                <div class="filter_view_tb"></div>
+            </div>
+			<br></br>
+			<div>
+                <div class="table_view_tb" style="right:20px;"></div>
+            </div>
+		</div>
+	</t>
+	<t t-name="CashTable">
+		<div>
+            <div class="table_main_view">
+                <table cellspacing="0" width="100%">
+				<thead>
+					<tr>
+						<th colspan="6">Name</th>
+						<th class="cf_fld">Cash In</th>
+						<th class="cf_fld">Cash Out</th>
+						<th class="cf_fld">Balance</th>
+
+					</tr>
+				</thead>
+				<tbody>
+					<t t-foreach="account_data" t-as="account">
+						<t t-set="common_id" t-value=""/>
+						<t t-if="(level=='detailed' or level=='very' or level==false )">
+							<tr style="border: .5px solid black;" class="cf-line"
+                                data-toggle="collapse"
+                                t-att-data-account-id="account['id']"
+                                t-attf-data-target=".a{{account['id']}}">
+
+								<td colspan="6" style="border: 0px solid black;">
+									<i class="fa fa-caret-down" role="img" aria-label="Unfolded" title="Unfolded"></i>
+									<span>
+										<t t-if="account['month_part']">
+										<t t-esc="account['month_part']"/>
+										</t>
+										<t t-esc="account['code']"/>
+										<t t-esc="account['name']"/>
+									</span>
+								</td>
+								<t t-if="currency[1] == 'before'">
+									<td class="cf_fld">
+										<t t-esc="currency[0]"/> <t t-out="account['total_debit']"/>
+									</td>
+									<td class="cf_fld">
+										<t t-esc="currency[0]"/> <t t-out="account['total_credit']"/>
+									</td>
+									<td class="cf_fld">
+										<t t-esc="currency[0]"/> <t t-out="account['total_balance']"/>
+									</td>
+
+								</t>
+								<t t-else="">
+									<td class="cf_fld">
+										<t t-out="account['total_debit']"/><t t-esc="currency[0]"/>
+									</td>
+									<td class="cf_fld">
+										<t t-out="account['total_credit']"/><t t-esc="currency[0]"/>
+									</td>
+									<td class="cf_fld">
+										<t t-out="account['total_balance']"/><t t-esc="currency[0]"/>
+									</td>
+								</t>
+							</tr>
+
+						</t>
+					<t t-else="">
+
+							<tr style="border: 1.5px solid black;" class=""
+                                data-toggle="collapse"
+                                t-att-data-account-id="account['id']"
+                                t-attf-data-target=".a{{account['id']}}">
+
+								<td colspan="6" style="border: 0px solid black;">
+									<span>
+										<t t-if="account['month_part']">
+										<t t-esc="account['month_part']"/>
+										</t>
+										<t t-esc="account['code']"/>
+
+										<t t-esc="account['name']"/>
+									</span>
+								</td>
+								<t t-if="currency[1] == 'before'">
+									<td class="cf_fld">
+										<t t-esc="currency[0]"/> <t t-out="account['total_debit']"/>
+									</td>
+									<td class="cf_fld">
+										<t t-esc="currency[0]"/> <t t-out="account['total_credit']"/>
+									</td>
+									<td class="cf_fld">
+										<t t-esc="currency[0]"/> <t t-out="account['total_balance']"/>
+									</td>
+
+								</t>
+								<t t-else="">
+									<td class="cf_fld">
+										<t t-out="account['total_debit']"/><t t-esc="currency[0]"/>
+									</td>
+									<td class="cf_fld">
+										<t t-out="account['total_credit']"/><t t-esc="currency[0]"/>
+									</td>
+									<td class="cf_fld">
+										<t t-out="account['total_balance']"/><t t-esc="currency[0]"/>
+									</td>
+								</t>
+							</tr>
+						</t>
+						<tr t-attf-class="collapse a{{account['id']}}">
+							<td colspan="10">
+								<ul>
+
+								</ul>
+							</td>
+						</tr>
+					</t>
+				</tbody>
+
+
+			</table>
+            </div>
+        </div>
+    </t>
+
+
+
+
+    <t t-name="CashFilterView">
+
+		<div class="" style="position: relative;">
+			<div class="sub_container_left">
+				<div class="report_print">
+					<button type="button" class="btn btn-primary" id="pdf" style="left:10px; height:30px;position: relative;color:white;background-color: #00A0AD;border-color: #00A0AD; padding:3px;">Print (PDF)</button>
+					<button type="button" class="btn btn-primary" id="xlsx" style="left:10px; height:30px;position: relative;color:white;background-color: #00A0AD;border-color: #00A0AD; padding:3px;">Export (XLSX)</button>
+				</div>
+			</div>
+			<br></br>
+			<div class="sub_container_right" style="width:50%;height:3%;right:0px;top:0px;position: absolute;">
+				<div class="" style="right:80x;">
+
+					<br></br>
+					<div class="row" style="right:110px;top:0px;position: absolute;width:50;">
+						<div class="time_range" style="">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+							<span class="fa fa-calendar" title="Dates" role="img" aria-label="Dates"></span>
+Date Range
+						</a>
+						<div class="dropdown-menu" role="menu">
+							<div class="" >
+								<label class="" for="date_from">Start Date :</label>
+								<div class="">
+									<div class="" aria-atomic="true" id="" >
+										<input type="date" id="date_from"></input>
+									</div>
+								</div>
+								<label class="" for="date_to">End Date :</label>
+								<div class="">
+									<div class="" aria-atomic="true" id="" >
+										<input type="date" id="date_to"></input>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+
+					<div class="search-Target-move" style="">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown">
+							<span class="fa fa-filter"></span>
+Target Move:
+						</a>
+						<select id="entries" class="dropdown-menu target_move" name="states[]" >
+							<div role="separator" class="dropdown-divider"></div>
+								<option value="Posted">Posted Entries</option>
+								<option value="All">All Entries </option>
+						</select>
+						<span id="post_res"></span>
+					</div>
+
+					<div class="search-levels">
+						<a type="button" class="dropdown-toggle" data-toggle="dropdown">
+							<span class="fa fa-book"></span>
+Level:
+						</a>
+						<select class="dropdown-menu levels" id="levels" name="states[]">
+							<option value="summary">Summary</option>
+							<option value="consolidated">Consolidated</option>
+							<option value="detailed">Detailed</option>
+							<option value="very">Very Detailed</option>
+						</select>
+						<span id="level_res"> </span>
+					</div>
+
+
+					</div>
+
+				</div>
+				<div style="">
+						<button type="button" id="apply_filter" class="btn btn-primary" style="top:0px;height:30px;right:20px;position: absolute;color:white;background-color: #00A0AD;border-color: #00A0AD;">Apply</button>
+
+				</div>
+			</div>
+		</div>
+	</t>
+
+
+
+		<t t-name="SubSectionCF">
+
+			<table cellspacing="0" width="100%">
+				<thead>
+					<tr>
+						<th colspan="6">Name</th>
+						<th class="cf_fld">Cash In</th>
+						<th class="cf_fld">Cash Out</th>
+						<th class="cf_fld">Balance</th>
+					</tr>
+				</thead>
+				<tbody>
+					<t t-foreach="account_data" t-as="data">
+
+							<t t-if="data.id == line_id">
+								<t t-foreach="data.journal_lines" t-as="account_line">
+									<t t-set="style" t-value="'font-style: italic;'"/>
+									<tr data-toggle=""
+											t-att-data-account-id="data.id"
+											t-attf-data-target=".a{{data.id}}">
+										<td colspan="6" style="border: 0px solid black;">
+											<t t-esc="account_line.name"/>
+										</td>
+										<t t-if="currency[1] == 'before'">
+										<td class="cf_fld">
+											<t t-esc="currency[0]"/><t t-out="account_line.total_debit"/>
+										</td>
+										<td class="cf_fld">
+											<t t-esc="currency[0]"/><t t-out="account_line.total_credit"/>
+										</td>
+										<td class="cf_fld">
+											<t t-esc="currency[0]"/><t t-out="account_line.balance"/>
+										</td>
+										</t>
+										<t t-else="">
+										<td class="cf_fld">
+											<t t-out="account_line.total_debit"/><t t-esc="currency[0]"/>
+										</td>
+										<td class="cf_fld">
+											<t t-out="account_line.total_credit"/><t t-esc="currency[0]"/>
+										</td>
+										<td class="cf_fld">
+											<t t-out="account_line.balance"/><t t-esc="currency[0]"/>
+										</td>
+										</t>
+									</tr>
+								</t>
+							</t>
+						</t>
+				</tbody>
+
+
+			</table>
+
+	</t>
+
+	<t t-name="ChildSubSectionCF">
+		<div class="c-cf-table-div">
+			<table cellspacing="1" width="100%">
+				<thead>
+					<t t-foreach="account_data" t-as="acc_data">
+						<t t-if="acc_data.id == line_id">
+							<t t-foreach="acc_data.journal_lines" t-as="data">
+								<tr style="">
+									<th colspan="6"><t t-esc="data.name"/> </th>
+									<t t-if="currency[1] == 'before'">
+									<th class="cf_fld" style="left: 100px;"><t t-esc="currency[0]"/><t t-esc="data.total_debit"/></th>
+									<th class="cf_fld"><t t-esc="currency[0]"/><t t-esc="data.total_credit"/></th>
+									<th class="cf_fld"><t t-esc="currency[0]"/><t t-esc="data.total_balance"/></th>
+									</t>
+									<t t-else="">
+									<th class="cf_fld" style="left: 100px;"><t t-esc="data.total_debit"/><t t-esc="currency[0]"/></th>
+									<th class="cf_fld"><t t-esc="data.total_credit"/><t t-esc="currency[0]"/></th>
+									<th class="cf_fld"><t t-esc="data.total_balance"/><t t-esc="currency[0]"/></th>
+									</t>
+
+								</tr>
+
+							<t t-foreach="acc_data.move_lines" t-as="account_line">
+								<t t-if="account_line.j_id == data.id">
+								<tr>
+
+							<td colspan="6">
+								<t t-esc="account_line.move_name"/>
+							</td>
+							<t t-if="currency[1] == 'before'">
+							<td class="cf_fld">
+								<t t-esc="currency[0]"/>
+								<t t-out="account_line.total_debit"/>
+							</td>
+							<td class="cf_fld">
+								<t t-esc="currency[0]"/>
+								<t t-out="account_line.total_credit"/>
+							</td>
+							<td class="cf_fld">
+								<t t-esc="currency[0]"/>
+								<t t-out="account_line.balance"/>
+							</td>
+							</t>
+							<t t-else="">
+							<td class="cf_fld">
+								<t t-if="account_line.total_debit==0"/>
+								<t t-esc="currency[0]"/>
+							</td>
+							<td class="cf_fld">
+
+								<t t-out="account_line.total_credit"/>
+								<t t-esc="currency[0]"/>
+							</td>
+							<td class="cf_fld">
+
+								<t t-out="account_line.balance"/>
+								<t t-esc="currency[0]"/>
+							</td>
+								</t>
+								</tr>
+								</t>
+							</t>
+
+							<tr t-attf-class="collapse a{{data.id}}">
+
+								<td colspan=""></td>
+							</tr>
+							</t>
+						</t>
+					</t>
+				</thead>
+			</table>
+		</div>
+	</t>
+
+</templates>
