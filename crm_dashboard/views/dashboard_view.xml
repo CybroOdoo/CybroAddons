@@ -1,0 +1,61 @@
+<odoo>
+    <data>
+        <record id="crm_manager_view" model="ir.ui.view">
+            <field name="name">crm.manager.select</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='company_id']"
+                       position="after">
+                    <field name="crm_manager_id"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="sales_team_inherit">
+            <field name="name">sales.team.inherit.view</field>
+            <field name="model">crm.team</field>
+            <field name="inherit_id" ref="sales_team.crm_team_view_form"/>
+            <field name="arch" type="xml">
+                <field name="alias_contact" position="after">
+                    <field name="crm_lead_state_id"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="view_users_form_inherit" model="ir.ui.view">
+            <field name="name">res.users.form.inherit</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="base.view_users_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='access_rights']//group" position="after">
+                    <group string="CRM dashboard" >
+                        <field name="sales"  widget="monetary" options="{'no_create': True}"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="action_crm_lead_all_dashboard" model="ir.actions.client">
+            <field name="name">CRM</field>
+            <field name="tag">crm_dashboard</field>
+        </record>
+
+        <record id="campaign_smart_button" model="ir.ui.view">
+            <field name="name">Campaign Win Lose Smart Button</field>
+            <field name="model">utm.campaign</field>
+            <field name="inherit_id" ref="utm.utm_campaign_view_form"/>
+            <field name="arch" type="xml">
+                <div name="button_box" position="inside">
+                    <button class="oe_stat_button" type="object" name="get_ratio" icon="fa-percent">
+                        <field string="Ratio" name="total_ratio" widget="statinfo"/>
+                    </button>
+                </div>
+            </field>
+        </record>
+
+        <menuitem name="Dashboard" id="menu_crm_dashboard_new" parent="crm.crm_menu_root"
+                  sequence="0" action="action_crm_lead_all_dashboard"/>
+        <menuitem id="crm.crm_menu_root" action="action_crm_lead_all_dashboard"/>
+    </data>
+</odoo>
