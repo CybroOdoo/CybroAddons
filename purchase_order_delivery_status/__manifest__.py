@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-###############################################################################
+#############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
@@ -18,23 +18,21 @@
 #    (LGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-###############################################################################
+#############################################################################
 
 {
     'name': "Delivery Status on Purchase Order",
     'summary': """Delivery Status on Purchase Order""",
-    'description': "This module adds Delivery Status on Purchase Order",
+    'description': "This module adds delivery status on purchase order",
     'author': "Cybrosys Techno Solutions",
     'company': "Cybrosys Techno Solutions",
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
+    'website': "http://www.cybrosys.com",
     'category': 'Purchase',
-    'version': '14.0.1.0.0',
+    'version': '14.0.1.0.1',
     'depends': ['purchase', 'stock', 'purchase_stock'],
     'data': ['views/purchase_order.xml'],
-    'images': ['static/description/banner.png'],
-    'license': 'LGPL-3',
+    'images': ['static/description/banner.jpg'],
+    'license': 'AGPL-3',
     'installable': True,
-    'application': False,
     'auto_install': False,
 }

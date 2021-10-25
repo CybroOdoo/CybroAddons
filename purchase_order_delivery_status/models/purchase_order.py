@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-###############################################################################
+#############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions (<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -18,7 +18,7 @@
 #    (LGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-###############################################################################
+#############################################################################
 
 from odoo import models, fields, api, _
 
@@ -39,7 +39,7 @@ class PurchaseOrder(models.Model):
             pickings = self.env['stock.picking'].search([
                 ('purchase_id', '=', rec.id)])
             orderlines = rec.mapped('order_line')
-            if not pickings:
+            if not pickings and not orderlines.filtered(lambda x:x.product_id.type == 'service'):
                 rec.delivery_status = 'nothing'
             elif all(o.qty_received == 0 for o in orderlines):
                 rec.delivery_status = 'to_receive'

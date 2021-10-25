@@ -28,4 +28,7 @@ class DiscountRestrictCat(models.Model):
 
     limited_discount = fields.Integer(string="Discount Limit")
 
-
+    def get_employee_disc_limit(self):
+        visible_emp_ids = self.search([('id', 'in', self.ids)])
+        employees_data = self.sudo().search_read([('id', 'in', visible_emp_ids.ids)], ['limited_discount'])
+        return employees_data
