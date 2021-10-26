@@ -28,7 +28,7 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'category': 'Sales',
-    'version': '14.0.1.0.0',
+    'version': '14.0.1.0.1',
     'depends': ['sale_stock', 'sale_management'],
     'data': ['views/sales_order.xml'],
     'images': ['static/description/banner.png'],

@@ -18,7 +18,7 @@ class SalesOrder(models.Model):
         for rec in self:
             pickings = self.env['stock.picking'].search([('sale_id', '=', rec.id)])
             orderlines = rec.mapped('order_line')
-            if not pickings:
+            if not pickings and not orderlines.filtered(lambda x:x.product_id.type == 'service'):
                 rec.delivery_status = 'nothing'
             elif all(o.qty_delivered == 0 for o in orderlines):
                 rec.delivery_status = 'to_deliver'
