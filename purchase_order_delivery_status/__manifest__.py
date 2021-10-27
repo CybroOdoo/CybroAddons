@@ -31,7 +31,7 @@
     'version': '14.0.1.0.1',
     'depends': ['purchase', 'stock', 'purchase_stock'],
     'data': ['views/purchase_order.xml'],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
