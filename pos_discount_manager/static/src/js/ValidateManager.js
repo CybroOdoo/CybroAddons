@@ -61,7 +61,6 @@ odoo.define('pos_discount_manager.ValidateManager', function(require) {
                 }
 
                 this.currentOrder.initialize_validation_date();
-                this.currentOrder.finalized = true;
 
                 let syncedOrderBackendIds = [];
 
@@ -144,6 +143,8 @@ odoo.define('pos_discount_manager.ValidateManager', function(require) {
                     }
 
                 }
+
+                this.currentOrder.finalized = true;
 
                 this.showScreen(this.nextScreen);
 
