@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="web.NavBar" t-inherit-mode="extension"
+       owl="1">
+           <xpath expr="//t[@t-call='web.NavBar.AppsMenu']" position="replace">
+              <t t-call="web.NavBar.AppsMenu">
+                    <t t-set="apps" t-value="menuService.getApps()"/>
+              </t>
+               <MenuItem
+                       t-if="currentApp"
+                       href="getMenuItemHref(currentApp)"
+                       payload="currentApp"
+                       t-esc="currentApp.name"
+                       class="o_menu_brand"
+                       t-ref="menuBrand"
+               />
+
+          </xpath>
+
+    </t>
+    <t t-inherit="web_enterprise.EnterpriseNavBar" t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//a" position="replace">
+
+                <span class="side_bar_icon">
+                    <a id="openSidebar"
+                       style="display: block; cursor: pointer;">
+                        <i class="fa fa-arrow-circle-right fa-2x"/>
+                    </a>
+                    <a id="closeSidebar"
+                       style="display: none; cursor: pointer;">
+                        <i class="fa fa-arrow-circle-left fa-2x"/>
+                    </a>
+                </span>
+            <span>
+                    <a href="#" class="fa o_menu_toggle" accesskey="h"
+                       t-ref="menuApps" t-on-click.prevent="hm.toggle()"/>
+                </span>
+        </xpath>
+
+        <xpath expr="//nav" position="after">
+      <span class="sidebar_panel" id="sidebar_panel">
+        <div class="sidebar">
+			<div class="sidebar_close">
+				<a id="closeSidebar" style="cursor: pointer;">
+					<img src="/code_backend_theme/static/src/img/icons/close.png"/>
+                </a>
+			</div>
+            <div class="sidebar_logo">
+				<img src="/web/binary/company_logo" class="logo_img"/>
+			</div>
+            <h6 class="sidebar_head">MENU</h6>
+            <ul class="sidebar_menu">
+	            <t t-foreach="menuService.getApps()" t-as="app">
+		            <li>
+		            	<a role="menuitem"
+                           t-attf-href="#menu_id={{app.id}}"
+                           class="nav-link">
+		                	<img class="sidebar_img"
+                                 t-attf-src="{{app.webIconData}}"/>
+                            <span class="sidebar_app_name">
+								<t t-esc="app.name"/>
+							</span>
+		            	 </a>
+		            </li>
+		    	</t>
+	        </ul>
+	    </div>
+    </span>
+      </xpath>
+    </t>
+
+</templates>
