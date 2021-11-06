@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="mrp_production_sec_uom_form_view" model="ir.ui.view">
+            <field name="name">mrp.production.uom.form</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+            <field name="arch" type="xml">
+                <!--*********************IN MO Form****************************************-->
+                <xpath expr="//field[@name='bom_id']" position="before">
+                    <label for="mrp_sec_qty" string="Product Secondary Quantity"/>
+                    <div class="o_row">
+                        <field name="mrp_sec_qty" attrs="{'readonly': [('has_moves', '=', True)]}" style="width:94px;"/>
+                        <field name="mrp_sec_uom" attrs="{'readonly': [('has_moves', '=', True)]}" style="width:100px;" groups="product.group_uom"/>
+                        <field name="mrp_ratio_sec_uom" invisible="1"/>
+                    </div>
+                </xpath>
+                <!--*********************STOCK MOVES IN MO****************************************-->
+                <xpath expr="//notebook/page[2]/field[@name='move_finished_ids']/tree/field[@name='product_uom_qty']" position="after">
+                    <field name="stock_move_sec_qty_to_produce"/>
+                </xpath>
+                <xpath expr="//notebook/page[2]/field[@name='move_finished_ids']/tree/field[@name='quantity_done']" position="after">
+                    <field name="stock_move_sec_qty_produced"/>
+                    <field name="stock_move_sec_uom" groups="product.group_uom"/>
+                    <field name="ratio_sec_uom" invisible="1" />
+                </xpath>
+                <!--******************************************************************************-->
+            </field>
+        </record>
+
+        <!--*********************Update wizard****************************************-->
+        <record id="view_mrp_product_produce_wizard_sec_uom" model="ir.ui.view">
+            <field name="name">MRP Product Produce</field>
+            <field name="model">mrp.product.produce</field>
+            <field name="inherit_id" ref="mrp.view_mrp_product_produce_wizard"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_tracking']" position="before">
+                    <!--<div class="o_row">-->
+                        <!--<field name="product_qty" class="oe_inline" colspan="2"/>-->
+                        <!--<field name="product_uom_id" style="width:94px;" readonly="1"  groups="product.group_uom"/>-->
+                    <!--</div>-->
+                    <field name="ratio_sec_uom" invisible="1"/>
+                    <field name="product_produce_sec_qty" />
+                    <field name="product_produce_sec_uom" options='{"no_open":True}' readonly="1" groups="product.group_uom"/>
+                </xpath>
+                <!--******************************************************************************-->
+            </field>
+        </record>
+
+
+        <!--*********************Change Product Quantity And Secondary UoM****************************************-->
+        <record id="view_change_production_mrp_sec_qty_wizard" model="ir.ui.view">
+            <field name="name">Change Product Qty</field>
+            <field name="model">change.production.qty</field>
+            <field name="inherit_id" ref="mrp.view_change_production_qty_wizard"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_qty']" position="after">
+                     <field name="mrp_sec_qty"/>
+                     <field name="mrp_sec_uom" style="width:96px;" groups="product.group_uom"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

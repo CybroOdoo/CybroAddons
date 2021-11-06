@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <record model="ir.cron" id="employee_birthday_reminder">
+            <field name="name">Employee Birthday Notification</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="(DateTime.now() + relativedelta(days=1)).strftime('%Y-%m-%d 00:00:00')" />
+            <field name="doall" eval="False"/>
+            <field name="model" eval="'hr.employee'"/>
+            <field name="function" eval="'mail_reminder'"/>
+            <field name="args" eval="'()'" />
+        </record>
+        <record id="birthday_notification" model="mail.template">
+            <field name="name">Birthday Notification For Employees</field>
+            <field name="model_id" ref="birth_day_notification.model_hr_employee"/>
+            <field name="subject">Birthday Notification</field>
+            <field name="body_html"><![CDATA[
+<div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+<div style="padding:0px;width:600px;margin:auto;background: #FFFFFF repeat top /100%;color:#777777">
+    <p>Dear ${object.name},</p>
+    <p>Birthday Wishes</p>
+    <p>Hope you have a great Year Ahead. Stay Healthy, Stay Happy.Cheers.</p>
+</div>
+<div style="padding:0px;width:600px;margin:auto; margin-top: 10px; background: #fff repeat top /100%;color:#777777">
+    <p style="font-size: 11px; margin-top: 10px;">
+    <br></br>
+    Your Family at
+        <strong>${user.company_id.name}</strong>
+    </p>
+</div>]]>
+            </field>
+            <field name="user_signature" eval="False"/>
+        </record>
+    </data>
+</openerp>

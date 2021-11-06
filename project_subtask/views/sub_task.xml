@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+         <record model="ir.ui.view" id="project_sub_task_form">
+            <field name="name">Sub Task form</field>
+            <field name="model">project.sub_task</field>
+            <field name="arch" type="xml">
+                <form string="Project">
+                    <header>
+                        <field name="stage_id" widget="statusbar" clickable="True" options="{'fold_field': 'fold'}"/>
+                    </header>
+                    <sheet string="Sub Task">
+                         <div class="oe_button_box" name="button_box">
+                           <button name="toggle_active" type="object" groups="base.group_user"
+                                class="oe_stat_button" icon="fa-archive">
+                                <field name="active" widget="boolean_button"
+                                    options='{"terminology": "archive"}'/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                        <h1 class="o_row">
+                            <field name="priority" widget="priority"/>
+                            <field name="name" placeholder="Sub Task Title..."/>
+                        </h1>
+                    </div>
+                        <group>
+                            <group>
+                                <field name="task_ref"/>
+                                <field name="assigned_user"/>
+                            </group>
+                            <group>
+                                <field name="date_deadline"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="sub_task_description_page" string="Sub Task Description">
+                                <field name="description" type="html"/>
+                                <div class="oe_clear"/>
+                            </page>
+                            <page name="sub_task_extra_info_page" string="Extra Info">
+                                <group col="4">
+                                    <group col="2">
+                                        <field name="sequence" groups="base.group_no_one"/>
+                                        <field name="partner_id"/>
+                                        <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                                        <field name="displayed_image_id" groups="base.group_no_one"/>
+                                    </group>
+                                    <group col="2">
+                                        <field name="date_start" groups="base.group_no_one"/>
+                                        <field name="date_assign" groups="base.group_no_one"/>
+                                        <field name="project_id" readonly="1"/>
+                                        <field name="date_last_stage_update" groups="base.group_no_one"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="project_sub_task_tree">
+            <field name="name">project.sub_task.tree</field>
+            <field name="model">project.sub_task</field>
+            <field name="arch" type="xml">
+                    <tree>
+                        <field name="name"/>
+                        <field name="assigned_user"/>
+                        <field name="name"/>
+                    </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="project_sub_task_kanban">
+            <field name="name">project.sub_task.kanban</field>
+            <field name="model">project.sub_task</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="stage_id" >
+                    <field name="color"/>
+                    <field name="priority"/>
+                    <field name="stage_id"/>
+                    <field name="assigned_user"/>
+                    <field name="description"/>
+                    <field name="sequence"/>
+                    <field name="date_deadline"/>
+                    <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)} oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div><b><field name="name"/></b></div>
+                                <div>
+                                    <field name="project_id"/><br/>
+                                    <t t-if="record.date_deadline.raw_value and record.date_deadline.raw_value lt (new Date())" t-set="red">oe_kanban_text_red</t>
+                                    <span t-attf-class="#{red || ''}"><i><field name="date_deadline"/></i></span>
+                                </div>
+                                <!--<div class="oe_kanban_footer_left">-->
+                                    <!--<span groups="project.group_time_work_estimation_tasks" title="Remaining hours">-->
+                                        <!--<span class="oe_e">N</span>-->
+                                        <!--<t t-esc="Math.round(record.remaining_hours.raw_value)"/>-->
+                                    <!--</span>-->
+                                <!--</div>-->
+                                <div class="oe_kanban_bottom_right">
+                                    <img t-att-src="kanban_image('res.users', 'image_small', record.assigned_user.raw_value)" t-att-title="record.assigned_user.value" width="24" height="24" class="oe_kanban_avatar pull-right"/>
+                                    <div class="pull-left" groups="base.group_user">
+                                        <field name="priority" widget="priority"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="oe_clear"></div>
+                        </div>
+                    </t>
+                    </templates>
+                </kanban>
+            </field>
+         </record>
+
+        <record id="project_sub_task_action_n" model="ir.actions.act_window">
+            <field name="name">Sub Task Details</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">project.sub_task</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add new Sub Task.
+                </p>
+            </field>
+        </record>
+        <menuitem id="sub_task_main_menu" name="Sub Tasks" parent="project.menu_project_management" sequence="5" action="project_sub_task_action_n"/>
+    </data>
+</odoo>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_agedpartnerbalance" inherit_id="account.report_agedpartnerbalance">
+        <xpath expr="//div[@class='page']/div[2]" position="after">
+            <div class="row mb32">
+                <div class="col-xs-3">
+                    <strong>Report Type:</strong>
+                    <p>
+                        <span t-if="data['report_type'] == 'bill'">Bill-Wise</span>
+                        <span t-if="data['report_type'] == 'customer'">Customer-Wise</span>
+                    </p>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//div[@class='page']/table[1]" position="replace">
+            <table class="table table-condensed">
+                <thead>
+                    <tr>
+                        <th>Partners</th>
+                        <th class="text-right">
+                            <span>Not due</span>
+                        </th>
+                        <th class="text-right"><span t-esc="data['4']['name']"/></th>
+                        <th class="text-right"><span t-esc="data['3']['name']"/></th>
+                        <th class="text-right"><span t-esc="data['2']['name']"/></th>
+                        <th class="text-right"><span t-esc="data['1']['name']"/></th>
+                        <th class="text-right"><span t-esc="data['0']['name']"/></th>
+                        <th class="text-right">Total</th>
+                    </tr>
+                    <tr t-if="get_partner_lines">
+                        <th style="border-bottom:2px solid !important;">Account Total</th>
+                        <th style="border-bottom:2px solid !important;" class="text-right"><span t-esc="get_direction[6]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                        <th style="border-bottom:2px solid !important;" class="text-right"><span t-esc="get_direction[4]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                        <th style="border-bottom:2px solid !important;" class="text-right"><span t-esc="get_direction[3]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                        <th style="border-bottom:2px solid !important;" class="text-right"><span t-esc="get_direction[2]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                        <th style="border-bottom:2px solid !important;" class="text-right"><span t-esc="get_direction[1]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                        <th style="border-bottom:2px solid !important;" class="text-right"><span t-esc="get_direction[0]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                        <th style="border-bottom:2px solid !important;" class="text-right"><span t-esc="get_direction[5]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="get_partner_lines" t-as="partner">
+                        <tr style="font-weight:bold !important;border-top:1px solid !important;">
+                            <td style="border-top:1px solid !important;">
+                                <span t-esc="partner['name']"/>
+                            </td>
+                            <td class="text-right" style="border-top:1px solid !important;">
+                                <span t-esc="partner['direction']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td class="text-right" style="border-top:1px solid !important;">
+                                <span t-esc="partner['4']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td class="text-right" style="border-top:1px solid !important;">
+                                <span t-esc="partner['3']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td class="text-right" style="border-top:1px solid !important;">
+                                <span t-esc="partner['2']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td class="text-right" style="border-top:1px solid !important;">
+                                <span t-esc="partner['1']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td class="text-right" style="border-top:1px solid !important;">
+                                <span t-esc="partner['0']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td class="text-right" style="border-top:1px solid !important;">
+                                <span t-esc="partner['total']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                        </tr>
+                        <t t-if="data['report_type'] == 'bill'">
+                            <t t-foreach="lines[partner['partner_id']]" t-as="line">
+                                <t t-if="line['amount'] > 0">
+                                    <tr>
+                                        <td class="text-right">
+                                            <span t-esc="line['line'].invoice_id.number"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="line['intervals'].get('5')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="line['intervals'].get('4')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="line['intervals'].get('3')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="line['intervals'].get('2')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="line['intervals'].get('1')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="line['intervals'].get('0')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="line['intervals'].get('total')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </t>
+                        </t>
+                    </t>
+                </tbody>
+            </table>
+        </xpath>
+    </template>
+</odoo>

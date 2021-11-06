@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="project_view_extended" model="ir.ui.view">
+            <field name="name">project.new.form</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.edit_project"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='resource_calendar_id']" position="after">
+                    <field name="planned_amount"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="project_report_print_wizard_view" model="ir.ui.view">
+            <field name="name">project.status.report</field>
+            <field name="model">project.status_report</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="print_report_xls" string="Generate" type="object" class="oe_highlight"
+                            style="margin: 0 5px;" context="{'xls_export':1}" icon='fa-arrow-circle-down' widget="url"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="project_report_wizard_view_action" model="ir.actions.act_window">
+            <field name="name">Project Status Report</field>
+            <field name="res_model">project.status_report</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="project_report_print_wizard_view"/>
+            <field name="target">new</field>
+            <field name="context">{}</field>
+        </record>
+
+        <record id="project_status_report" model="ir.values">
+            <field name="model">project.status_report</field>
+            <field name="name">xls report</field>
+            <field name="key2">client_print_multi</field>
+            <field name="value" eval="'ir.actions.act_window,' + str(ref('project_report_wizard_view_action'))" />
+            <field name="key">action</field>
+            <field name="model">project.project</field>
+        </record>
+    </data>
+</odoo>

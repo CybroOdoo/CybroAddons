@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+    <record id="hr_salary_rule_overtime" model="hr.salary.rule">
+        <field name="code">OVT</field>
+        <field name="name">Overtime</field>
+        <field name="category_id" ref="hr_payroll.ALW"/>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">
+total_hour = 0
+over_time = 0
+try:
+    for rec in payslip.worked_days_line_ids:
+        if rec.name == 'Overtime Hours':
+            over_time += rec.number_of_hours
+        if rec.name == 'Normal Working Days paid at 100%':
+            total_hour += rec.number_of_hours
+    overtime_timesheet = ((contract.wage / total_hour) * over_time)
+except:
+    overtime_timesheet = 0
+result = overtime_timesheet
+        </field>
+        <field name="sequence" eval="6"/>
+        <field name="note">
+            overtime = (Wage(in contract) / Total Hour in normal working hour) * Total Overtime Hours
+        </field>
+    </record>
+</data>
+</odoo>
