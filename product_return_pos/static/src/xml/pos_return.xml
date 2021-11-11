@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="ReturnButton" owl="1">
+        <div class='control-button'>
+            <i class='fa fa-rotate-left'/>
+            Return
+        </div>
+    </t>
+
+    <t t-name="OrderLine" owl="1">
+        <div>
+        <tr class='order-line' t-att-data-id='order.id'>
+            <td><t t-esc='order.pos_reference' /></td>
+            <td><t t-if="order.return_ref">
+                <t t-esc='order.return_ref'/>
+            </t></td>
+            <td><t t-esc='order.partner_id[1]' /></td>
+            <td><t t-esc='order.date_order' /></td>
+            <td><span class="return-button return_order" t-on-click="return_click">Return</span></td>
+        </tr>
+        </div>
+    </t>
+
+    <t t-name="OrderListScreenWidget" owl="1">
+        <div class="ticket-screen screen">
+            <div class="screen-content">
+                <section class="top-content">
+                    <span class='button back' t-on-click="back">
+                        <i class='fa fa-angle-double-left'></i>
+                        Cancel
+                    </span>
+
+                    <SearchBar config="searchBarConfig" style="right: auto; margin-left: 90px; margin-top:8px;" placeholder="'Search Orders...'" />
+
+                    <span class='button refresh refreshbutton' t-on-click="reload" style="right: auto; margin-left: 180px; margin-top:8px; left: 85%;">
+                        <i class="fa fa-refresh"></i>
+                        Refresh
+                    </span>
+
+                </section>
+                <div class="orders">
+                    <div class="header-row">
+                        <div class="col start wide">Date</div>
+                        <div class="col start wide">Receipt Number</div>
+                        <div class="col start">Customer</div>
+                        <div class="col start">Return Ref</div>
+                    </div>
+                    <t t-foreach="ordersList" t-as="order" t-key="order.cid">
+                        <div class="order-row pointer" t-on-click="return_click(order)">
+                            <div class="col start wide">
+                                <t t-esc="order.date_order"></t>
+                            </div>
+                            <div class="col start wide">
+                                <t t-esc="order.pos_reference"></t>
+                            </div>
+                            <div class="col start">
+                                <t t-esc="order.partner_id[1]"></t>
+                            </div>
+                            <div class="col start">
+                                <t t-if="order.return_ref == false">
+                                </t>
+                                <t t-else="">
+                                    <t t-esc="order.return_ref"></t>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="ReturnWidget" owl="1">
+        <div class="modal-dialog" role="dialog">
+            <div class="popup popup-selection product_return_pos" style="height: 80%; width: 150%;" >
+                <p class="title">Return Order</p>
+                <div class='selection scrollable-y touch-scrollable'>
+                    <table id="list" cellspacing="1px" cellpadding="10px" text-align="center"
+                           width="100%" style="border:1px;padding-left:1.16cm;">
+                        <thead>
+                            <tr>
+                                <td>ID</td>
+                                <td>Price</td>
+                                <td>Name</td>
+                                <td>Qty</td>
+                                <td>Dis</td>
+                                <td>Line ID</td>
+                                <td>Returned Quantity</td>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="footer">
+                    <div class="button confirm" t-on-click="click_confirm">
+                            Return
+                        </div>
+                    <div class="button cancel" t-on-click="cancel">
+                        Cancel
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
