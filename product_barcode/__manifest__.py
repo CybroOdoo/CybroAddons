@@ -22,7 +22,7 @@
 
 {
     'name': 'Product Barcode Generator',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.1.1',
     'summary': 'Generates EAN13 Standard Barcode for Product.',
     'live_test_url': 'https://www.youtube.com/watch?v=0BrFcOEkWu4&feature=youtu.be',
     'category': 'Inventory',
@@ -31,9 +31,6 @@
     'company': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'depends': ['stock', 'product'],
-    'data': [
-        'views/product_label.xml',
-    ],
     'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
