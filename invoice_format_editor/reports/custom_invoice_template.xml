@@ -1,0 +1,460 @@
+<odoo>
+    <data>
+        <!--Normal Template View-->
+        <template id="custom_template_report_invoice_normal">
+            <t t-if="o and 'company_id' in o">
+                <t t-set="company" t-value="o.company_id"/>
+            </t>
+            <t t-if="not o or not 'company_id' in o">
+                <t t-set="company" t-value="res_company"/>
+            </t>
+            <div class="header row mt32 mb32">
+                <div class="page-header col-12">
+                    <div t-attf-class="pull-left">
+                        <img t-if="company.logo"
+                             t-att-src="'data:image/png;base64,%s' % to_text(company.logo)"
+                             style="max-height: 80px;"/>
+                    </div>
+                    <div t-attf-class="pull-left"
+                         t-attf-style="font:14px lucida-console,sans-serif; color:#{o.theme_id.company_text_color} !important;">
+                        <span t-field="company.partner_id"/>
+                        <br/>
+                        <span t-field="company.partner_id.street"/>
+                        <br/>
+                        <span t-field="company.partner_id.street2"/>
+                        <br/>
+                        <span t-field="company.partner_id.city"/>
+                        <br/>
+                        <span t-field="company.partner_id.country_id"/>
+                        <br/>
+                        <span t-field="company.partner_id.vat"/>
+                        <br/>
+                    </div>
+                </div>
+            </div>
+            <t t-call="web.external_layout">
+                <t t-set="o"
+                   t-value="o.with_context({'lang':o.partner_id.lang})"/>
+                <table class="table table-borderless">
+                    <tr>
+                        <th scope="col"
+                            t-attf-style=" background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                            <font>
+                                <strong>Customer Address</strong>
+                            </font>
+                        </th>
+                        <span t-if="o.invoice_date">
+                            <th scope="col"
+                                t-attf-style=" background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                                <font>
+                                    <strong>Invoice Date</strong>
+                                </font>
+                            </th>
+                        </span>
+                        <span t-if="o.invoice_date_due">
+                            <th scope="col"
+                                t-attf-style=" background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                                <font>
+                                    <strong>Due Date</strong>
+                                </font>
+                            </th>
+                        </span>
+                        <span t-if="o.invoice_payment_term_id">
+                            <th scope="col"
+                                t-attf-style=" background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                                <font>
+                                    <strong>Payment Term</strong>
+                                </font>
+                            </th>
+                        </span>
+
+                        <span t-if="o.theme_id.sales_person">
+                            <span t-if="o.user_id">
+                                <th scope="col"
+                                    t-attf-style=" background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                                    <font>
+                                        <strong>SalesPerson</strong>
+                                    </font>
+                                </th>
+                            </span>
+                        </span>
+                        <span t-if="o.theme_id.reference">
+                            <span t-if="o.ref">
+                                <th scope="col"
+                                    t-attf-style=" background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                                    <font>
+                                        <strong>Reference</strong>
+                                    </font>
+                                </th>
+                            </span>
+                        </span>
+                        <span t-if="o.theme_id.source">
+                            <span t-if="o.invoice_origin">
+                                <th scope="col"
+                                    t-attf-style=" background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                                    <font>
+                                        <strong>Source</strong>
+                                    </font>
+                                </th>
+                            </span>
+                        </span>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span style="color:#{o.theme_id.customer_text_color} !important;"
+                                  t-field="o.partner_id"/>
+                            <br/>
+                            <span t-if="o.theme_id.address">
+                            <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
+                                  t-field="o.partner_id.street"/>
+                            <br/>
+                            <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
+                                  t-field="o.partner_id.street2"/>
+                            <br/>
+                            </span>
+
+                            <span t-if="o.theme_id.city">
+                            <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
+                                  t-field="o.partner_id.city"/>
+                            <br/>
+                            </span>
+
+                            <span t-if="o.theme_id.country">
+                            <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
+                                  t-field="o.partner_id.country_id"/>
+                            <br/>
+                            </span>
+                            <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
+                                  t-field="o.partner_id.vat"/>
+                            <br/>
+                        </td>
+                        <span t-if="o.invoice_date">
+                            <td>
+                                <font>
+                                    <p t-field="o.invoice_date"/>
+                                </font>
+                            </td>
+                        </span>
+                        <span t-if="o.invoice_date_due">
+                            <td>
+                                <font>
+                                    <p t-field="o.invoice_date_due"/>
+                                </font>
+                            </td>
+                        </span>
+                        <span t-if="o.invoice_payment_term_id">
+                            <td>
+                                <font>
+                                    <p t-field="o.invoice_payment_term_id"/>
+                                </font>
+                            </td>
+                        </span>
+                        <span t-if="o.theme_id.sales_person">
+                            <span t-if="o.user_id">
+                                <td>
+                                    <font>
+                                        <p t-field="o.user_id"/>
+                                    </font>
+                                </td>
+                            </span>
+                        </span>
+                        <span t-if="o.theme_id.reference">
+                            <span t-if="o.ref">
+                                <td>
+                                    <font>
+                                        <p t-field="o.ref"/>
+                                    </font>
+                                </td>
+                            </span>
+                        </span>
+                        <span t-if="o.theme_id.source">
+                            <span t-if="o.invoice_origin">
+                                <td>
+                                    <font>
+                                        <p t-field="o.invoice_origin"/>
+                                    </font>
+                                </td>
+                            </span>
+                        </span>
+                    </tr>
+                </table>
+                <div class="page">
+                    <div t-attf-style="padding:2%">
+                        <h2>
+                            <center>
+                                <span t-if="o.move_type == 'out_invoice' and (o.state == 'draft' or o.state == 'posted')">
+                                    <font>Invoice</font>
+                                </span>
+                                <span t-if="o.move_type == 'out_invoice' and o.state == 'proforma2'">
+                                    <font t-attf-style="color:#{o.theme_id.heading_text_color}">
+                                        PRO-FORMA
+                                    </font>
+                                </span>
+                                <span t-if="o.move_type == 'out_invoice' and o.state == 'draft'">
+                                    <font t-attf-style="color:#{o.theme_id.heading_text_color}">
+                                        Draft Invoice
+                                    </font>
+                                </span>
+                                <span t-if="o.move_type == 'out_invoice' and o.state == 'cancel'">
+                                    <font t-attf-style="color:#{o.theme_id.heading_text_color}">
+                                        Cancelled Invoice
+                                    </font>
+                                </span>
+                                <span t-if="o.move_type == 'out_refund'">
+                                    <font t-attf-style="color:#{o.theme_id.heading_text_color}">
+                                        Refund
+                                    </font>
+                                </span>
+                                <span t-if="o.move_type == 'in_refund'">
+                                    <font t-attf-style=" color:#{o.theme_id.heading_text_color}">
+                                        Vendor Refund
+                                    </font>
+                                </span>
+                                <span t-if="o.move_type == 'in_invoice'">
+                                    <font t-attf-style="color:#{o.theme_id.heading_text_color}">
+                                        Vendor Bill
+                                    </font>
+                                </span>
+                                <font>
+                                    <span t-field="o.name"/>
+                                </font>
+                            </center>
+                        </h2>
+                    </div>
+                    <div style="padding-top:20px;width:100%">
+                        <div style="padding-top:20px;"/>
+                        <t t-set="display_discount"
+                           t-value="any([l.discount for l in o.invoice_line_ids])"/>
+                        <table class="table table">
+                            <thead>
+                                <tr>
+                                    <th t-attf-style=" background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                                        Product
+                                    </th>
+                                    <span t-if="o.theme_id.description">
+                                        <th t-attf-style=" background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                                            Description
+                                        </th>
+                                    </span>
+                                    <span t-if="o.theme_id.hsn_code">
+                                        <th class="text-right"
+                                            t-attf-style=" background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                                            HSN/SAC
+                                        </th>
+                                    </span>
+                                    <th class="text-right"
+                                        t-attf-style=" background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                                        Quantity
+                                    </th>
+                                    <th class="text-right"
+                                        t-attf-style=" background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                                        Unit Price
+                                    </th>
+                                    <th t-if="display_discount"
+                                        class="text-right"
+                                        t-attf-style=" background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                                        Disc.(%)
+                                    </th>
+                                    <span t-if="o.theme_id.tax_value">
+                                        <th class="text-right"
+                                            t-attf-style=" background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                                            Taxes
+                                        </th>
+                                    </span>
+                                    <th class="text-right"
+                                        t-attf-style=" background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                                        Price
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="invoice_tbody">
+                                <tr t-foreach="o.invoice_line_ids" t-as="l">
+                                    <td t-attf-style="color:#{o.theme_id.text_color};">
+                                        <span t-field="l.product_id.name"/>
+                                    </td>
+                                    <span t-if="o.theme_id.description">
+                                        <td t-attf-style="color:#{o.theme_id.text_color};">
+                                            <span t-field="l.name"/>
+                                        </td>
+                                    </span>
+                                    <span t-if="o.theme_id.hsn_code">
+                                        <td class="text-right"
+                                            t-attf-style="color:#{o.theme_id.text_color};">
+                                            <t t-if="l.product_id.l10n_in_hsn_code">
+                                                <span t-field="l.product_id.l10n_in_hsn_code"/>
+                                            </t>
+                                        </td>
+                                    </span>
+                                    <td class="text-right"
+                                        t-attf-style="color:#{o.theme_id.text_color};">
+                                        <t t-if="l.quantity">
+                                            <span t-field="l.quantity"/>
+                                        </t>
+                                    </td>
+                                    <td class="text-right"
+                                        t-attf-style="color:#{o.theme_id.text_color};">
+                                        <t t-if="l.price_unit">
+                                            <span t-field="l.price_unit"/>
+                                        </t>
+                                    </td>
+                                    <td t-if="display_discount"
+                                        class="text-right"
+                                        t-attf-style="color:#{o.theme_id.text_color};">
+                                        <span t-field="l.discount"/>
+                                    </td>
+                                    <span t-if="o.theme_id.tax_value">
+                                        <td t-attf-style="color:#{o.theme_id.text_color};">
+                                            <span t-esc="', '.join(map(lambda x: (x.description or x.name), l.tax_ids))"/>
+                                        </td>
+                                    </span>
+                                    <td class="text-right"
+                                        t-attf-style="color:#{o.theme_id.text_color};">
+                                        <t t-if="l.price_subtotal">
+                                            <span t-field="l.price_subtotal"
+                                                  t-field-options="{'widget': 'monetary','display_currency':'o.currency_id'}"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <div class="col-4 pull-right">
+                            <table class="table table-condensed">
+                                <t t-set="tax_totals" t-value="json.loads(o.tax_totals_json)"/>
+                                <t t-foreach="tax_totals['subtotals']" t-as="subtotal">
+                                    <tr class="border-black o_subtotal">
+                                        <td>
+                                            <strong t-esc="subtotal['name']"/>
+                                        </td>
+
+                                        <td class="text-right">
+                                            <span
+                                                t-att-class="oe_subtotal_footer_separator"
+                                                t-esc="subtotal['amount']"
+                                                t-options='{"widget": "monetary", "display_currency": o.currency_id}'
+                                            />
+                                        </td>
+                                    </tr>
+
+                                    <t t-set="subtotal_to_show" t-value="subtotal['name']"/>
+                                    <t t-call="account.tax_groups_totals"/>
+                                </t>
+
+                                <!--Total amount with all taxes-->
+                                <tr class="border-black o_total">
+                                    <td>
+                                        <strong>Total</strong>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="tax_totals['amount_total']"
+                                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div style="padding-top:10%;" class="col-12">
+                        <p t-if="not is_html_empty(o.narration)">
+                            <strong>Comment:</strong>
+                            <span t-field="o.narration"/>
+                        </p>
+                        <p t-if="o.fiscal_position_id.note">
+                            <strong>Fiscal Position Remark:</strong>
+                            <span t-field="o.fiscal_position_id.note"/>
+                        </p>
+                        <br/>
+                        <br/>
+                        <p t-if="o.move_type in ('out_invoice','in_refund')">
+                            Please use the following communication for your
+                            payment :
+                            <b>
+                                <span t-field="o.payment_reference"/>
+                            </b>
+                        </p>
+                        <p t-if="o.invoice_payment_term_id" name="payment_term">
+                            <span t-field="o.invoice_payment_term_id.note"/>
+                        </p>
+                        <p t-if="o.fiscal_position_id.note" name="note">
+                            <span t-field="o.fiscal_position_id.note"/>
+                        </p>
+                        <t t-if="o.company_id.country_id.code == 'IN'">
+                            <p id="total_in_words" class="mb16">
+                                <strong>Total (In Words):</strong>
+                                <span t-field="o.amount_total_words"/>
+                            </p>
+                        </t>
+                        <div id="qrcode"
+                             t-if="(o.company_id.qr_code) and (o.currency_id.name == 'EUR') and (o.invoice_partner_bank_id.acc_number != False)">
+                            <p t-if="(o.invoice_partner_bank_id.qr_code_valid)">
+                                <strong class="text-center">Scan me with your
+                                    banking app.
+                                </strong>
+                                <br/>
+                                <br/>
+                                <img class="border border-dark rounded"
+                                     t-att-src="o.invoice_partner_bank_id.build_qr_code_url(o.amount_residual, o.ref or o.name)"/>
+                            </p>
+                            <p t-if="(o.invoice_partner_bank_id.qr_code_valid == False)">
+                                <strong class="text-center">The SEPA QR Code
+                                    informations are not set correctly.
+                                </strong>
+                                <br/>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+        <template id="account.report_invoice_with_payments">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="lang"
+                       t-value="o.invoice_user_id.sudo().lang if o.move_type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
+                    <t t-set="print_with_payments" t-value="True"/>
+                    <t t-if="o.company_id.base_layout == 'normal'">
+                        <t t-call="invoice_format_editor.custom_template_report_invoice_normal"
+                           t-lang="o.partner_id.lang"/>
+                    </t>
+                    <t t-if="o.company_id.base_layout == 'old'">
+                        <t t-call="invoice_format_editor.old_std_report_invoice_document"
+                           t-lang="o.partner_id.lang"/>
+                    </t>
+                    <t t-if="o.company_id.base_layout == 'modern'">
+                        <t t-call="invoice_format_editor.custom_template_report_invoice_modern"
+                           t-lang="o.partner_id.lang"/>
+                    </t>
+                    <t t-if="o.company_id.base_layout == 'default'">
+                        <t t-call="invoice_format_editor.report_invoice_document"
+                           t-lang="o.partner_id.lang"/>
+                    </t>
+                </t>
+            </t>
+        </template>
+        <template id="account.report_invoice">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="lang"
+                       t-value="o.invoice_user_id.sudo().lang if o.move_type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
+                    <t t-set="print_with_payments" t-value="True"/>
+                    <t t-if="o.company_id.base_layout == 'normal'">
+                        <t t-call="invoice_format_editor.custom_template_report_invoice_normal"
+                           t-lang="o.partner_id.lang"/>
+                    </t>
+                    <t t-if="o.company_id.base_layout == 'old'">
+                        <t t-call="invoice_format_editor.old_std_report_invoice_document"
+                           t-lang="o.partner_id.lang"/>
+                    </t>
+                    <t t-if="o.company_id.base_layout == 'modern'">
+                        <t t-call="invoice_format_editor.custom_template_report_invoice_modern"
+                           t-lang="o.partner_id.lang"/>
+                    </t>
+                    <t t-if="o.company_id.base_layout == 'default'">
+                        <t t-call="invoice_format_editor.report_invoice_document"
+                           t-lang="o.partner_id.lang"/>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>
