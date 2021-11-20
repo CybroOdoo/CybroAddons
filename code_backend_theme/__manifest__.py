@@ -25,7 +25,7 @@
     "description": """Minimalist and elegant backend theme for Odoo 14, Backend Theme, Theme""",
     "summary": "Code Backend Theme V15 is an attractive theme for backend",
     "category": "Theme/Backend",
-    "version": "15.0.1.0.0",
+    "version": "15.0.0.0.1",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -51,7 +51,6 @@
             ('replace', '/web/static/src/views/graph/graph_arch_parser.js', '/code_backend_theme/static/src/js/fields/graph_arch_parser.js'),
             ('replace', '/web/static/src/views/graph/graph_view.js', '/code_backend_theme/static/src/js/fields/graph_view.js'),
             'code_backend_theme/static/src/js/chrome/sidebar_menu.js',
-            ('replace', '/web/static/src/webclient/user_menu/user_menu.js', '/code_backend_theme/static/src/js/user_menu/user_menu.js'),
         ],
         'web.assets_qweb': [
             'code_backend_theme/static/src/xml/styles.xml',
