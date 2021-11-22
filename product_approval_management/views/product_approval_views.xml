@@ -20,6 +20,20 @@
 
         </field>
     </record>
+    <record id="product_template_search_approval_view" model="ir.ui.view">
+        <field name="name">mrp.product.template.approval_state.search</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+              <xpath expr="//search/group/filter[@name='type']" position="after">
+                <filter string="Status" name="approve_state" context="{'group_by':'approve_state'}"/>
+            </xpath>
+              <xpath expr="//search/filter[@name='consumable']" position="after">
+                <filter string="Status" name="approve_state"  domain="[('approve_state', 'in', ['draft', 'confirmed'])]"/>
+            </xpath>
+        </field>
+    </record>
+
 
     <record id="inherited_sale_order_line_view" model="ir.ui.view">
         <field name="name">approval</field>
@@ -27,7 +41,8 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//tree/field[@name='product_id']" position="attributes">
-                <attribute name="domain">[('approve_state', '=', 'confirmed'), ('sale_ok', '=', True), '|', ('company_id', '=', False),('company_id', '=', company_id)]
+                <attribute name="domain">[('approve_state', '=', 'confirmed'), ('sale_ok', '=', True), '|',
+                                          ('company_id', '=', False), ('company_id', '=', company_id)]
                 </attribute>
             </xpath>
 
