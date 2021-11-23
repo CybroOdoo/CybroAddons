@@ -133,7 +133,6 @@ class CarRentalContract(models.Model):
 
     def set_to_done(self):
         invoice_ids = self.env['account.move'].search([('invoice_origin', '=', self.name)])
-        print("self.name", self.name)
         f = 0
         for each in invoice_ids:
             if each.payment_state != 'paid':
@@ -498,7 +497,7 @@ class CarRentalContract(models.Model):
                 if each.cost_frequency == 'monthly':
                     rental_days = int(rental_days / 30)
                 for each1 in range(0, rental_days + 1):
-                    if rent_date > datetime.strptime(each.rent_end_date, "%Y-%m-%d").date():
+                    if rent_date > datetime.strptime(str(each.rent_end_date), "%Y-%m-%d").date():
                         break
                     each.fleet_scheduler1(rent_date)
                     if each.cost_frequency == 'daily':
