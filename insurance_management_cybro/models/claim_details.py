@@ -25,6 +25,7 @@ from odoo import models, fields, api, _
 
 class ClaimDetails(models.Model):
     _name = 'claim.details'
+    _description = 'Claim Details'
 
     name = fields.Char(string='Name', required=True, copy=False, readonly=True, index=True,
                        default=lambda self: _('New'))

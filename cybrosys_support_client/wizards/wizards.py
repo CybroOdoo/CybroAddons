@@ -99,5 +99,6 @@ class SystrayIcon(models.TransientModel):
 
 class CustomPopMessage(models.TransientModel):
     _name = "custom.pop.message"
+    _description = "Custom Pop Message"
 
     name = fields.Char('Message')

@@ -26,6 +26,7 @@ from odoo.exceptions import UserError
 
 class EmployeeDetails(models.Model):
     _name = 'employee.details'
+    _description = 'Employee Details'
 
     name = fields.Char(string='Name', required=True)
     related_partner = fields.Many2one('res.users', string='Related User', copy=False)

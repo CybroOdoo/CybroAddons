@@ -176,6 +176,7 @@ class Appointment(models.Model):
 
 class LabAppointmentLines(models.Model):
     _name = 'lab.appointment.lines'
+    _description = 'Lab Appointment Lines'
 
     lab_test = fields.Many2one('lab.test', string="Test")
     cost = fields.Float(string="Cost")

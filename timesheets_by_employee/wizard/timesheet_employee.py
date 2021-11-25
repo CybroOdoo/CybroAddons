@@ -24,6 +24,7 @@ from odoo import models, fields
 
 class EmployeeTimesheet(models.TransientModel):
     _name = 'timesheet.wizard'
+    _description = 'Employee Timesheet'
 
     employee = fields.Many2one('res.users', string="Employee", required=True)
     from_date = fields.Date(string="Starting Date")

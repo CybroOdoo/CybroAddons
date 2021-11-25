@@ -13,6 +13,7 @@ except ImportError:
 
 class BalanceSheetView(models.TransientModel):
     _name = 'dynamic.balance.sheet.report'
+    _description = "Balance Sheet View"
 
     company_id = fields.Many2one('res.company', required=True,
                                  default=lambda self: self.env.company)

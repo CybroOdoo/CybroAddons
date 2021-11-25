@@ -32,6 +32,7 @@ from odoo import models, fields, _
 class ProductImport(models.Model):
 
     _name = 'product.import'
+    _description = 'Product Import'
 
     file = fields.Binary(string="Upload File")
     file_name = fields.Char(string="File Name")

@@ -63,6 +63,7 @@ class VisitDetails(models.Model):
 
 class PersonalBelongings(models.Model):
     _name = 'fo.belongings'
+    _description = 'Personal Belongings'
 
     property_name = fields.Char(string="Property", help='Employee belongings name')
     property_count = fields.Char(string="Count", help='Count of property')
@@ -91,6 +92,7 @@ class PersonalBelongings(models.Model):
 
 class VisitPurpose(models.Model):
     _name = 'fo.purpose'
+    _description = 'Visit Purpose'
 
     name = fields.Char(string='Purpose', required=True, help='Meeting purpose in short term.eg:Meeting.')
     description = fields.Text(string='Description Of Purpose', help='Description for the Purpose.')

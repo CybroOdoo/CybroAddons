@@ -26,6 +26,7 @@ from odoo.exceptions import UserError
 
 class InsuranceDetails(models.Model):
     _name = 'insurance.details'
+    _description = 'Insurance Details'
 
     name = fields.Char(string='Name', required=True, copy=False, readonly=True, index=True,
                        default=lambda self: _('New'))
