@@ -48,7 +48,7 @@ class Orientation(models.Model):
         ('confirm', 'Confirmed'),
         ('cancel', 'Canceled'),
         ('complete', 'Completed'),
-    ], string='Status', readonly=True, copy=False, index=True, track_visibility='onchange', default='draft')
+    ], string='Status', readonly=True, copy=False, index=True, tracking=True, default='draft')
 
     def confirm_orientation(self):
         self.write({'state': 'confirm'})

@@ -54,5 +54,5 @@ class WebsiteProductFeatured(models.Model):
                                     string="Featured List",
                                     default=_default_featured_list)
     user_id = fields.Many2one('res.users', string="Person Responsible",
-                              track_visibility='onchange',
+                              tracking=True,
                               default=lambda self: self.env.uid)

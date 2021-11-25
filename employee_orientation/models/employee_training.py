@@ -54,7 +54,7 @@ class EmployeeTraining(models.Model):
         ('cancel', 'Canceled'),
         ('complete', 'Completed'),
         ('print', 'Print'),
-    ], string='Status', readonly=True, copy=False, index=True, track_visibility='onchange', default='new')
+    ], string='Status', readonly=True, copy=False, index=True, tracking=True, default='new')
 
     @api.onchange('program_department')
     def employee_details(self):

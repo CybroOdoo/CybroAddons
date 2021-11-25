@@ -71,7 +71,7 @@ class Budget(models.Model):
         ('confirm', 'Confirmed'),
         ('validate', 'Validated'),
         ('done', 'Done')
-    ], 'Status', default='draft', index=True, required=True, readonly=True, copy=False, track_visibility='always')
+    ], 'Status', default='draft', index=True, required=True, readonly=True, copy=False, tracking=True)
     budget_line = fields.One2many('budget.lines', 'budget_id', 'Budget Lines',
                                   states={'done': [('readonly', True)]}, copy=True)
     company_id = fields.Many2one('res.company', 'Company', required=True,

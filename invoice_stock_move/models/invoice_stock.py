@@ -54,7 +54,7 @@ class InvoiceStockMove(models.Model):
         ('cancel', 'Cancelled'),
         ('done', 'Received'),
     ], string='Status', index=True, readonly=True, default='draft',
-        track_visibility='onchange', copy=False)
+        tracking=True, copy=False)
 
     def action_stock_move(self):
         if not self.picking_type_id:

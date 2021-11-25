@@ -27,7 +27,7 @@ class VisitDetails(models.Model):
         ('check_in', 'Checked In'),
         ('check_out', 'Checked Out'),
         ('cancel', 'Cancelled'),
-    ], track_visibility='onchange', default='draft')
+    ], tracking=True, default='draft')
 
     @api.model
     def create(self, vals):
@@ -73,7 +73,7 @@ class PersonalBelongings(models.Model):
         ('0', 'Allowed'),
         ('1', 'Not Allowed'),
         ('2', 'Allowed With Permission'),
-        ], 'Permission', required=True, index=True, default='0', track_visibility='onchange')
+        ], 'Permission', required=True, index=True, default='0')
 
     @api.depends('belongings_id_fov_visitor', 'belongings_id_fov_employee')
     def get_number(self):

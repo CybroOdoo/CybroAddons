@@ -103,7 +103,7 @@ class EmployeeFormInherit(models.Model):
                               ('notice_period', 'Notice Period'),
                               ('relieved', 'Resigned'),
                               ('terminate', 'Terminated')], string='Status', default='joined',
-                             track_visibility='always', copy=False,
+                             tracking=True, copy=False,
                              help="Employee Stages.\nSlap On: Joined\nGrounding: Training\nTest period : Probation")
     stages_history = fields.One2many('hr.employee.status.history', 'employee_id', string='Stage History',
                                      help='It shows the duration and history of each stages')

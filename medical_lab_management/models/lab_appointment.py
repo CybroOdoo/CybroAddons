@@ -54,7 +54,7 @@ class Appointment(models.Model):
         ('to_invoice', 'To Invoice'),
         ('invoiced', 'Done'),
         ('cancel', 'Cancelled'),
-    ], string='Status', readonly=True, copy=False, index=True, track_visibility='onchange', default='draft',
+    ], string='Status', readonly=True, copy=False, index=True, tracking=True, default='draft',
     )
 
     priority = fields.Selection([
