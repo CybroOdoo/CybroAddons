@@ -22,7 +22,7 @@
     "name": "Chameleon Multi Color Backend Theme",
     "summary": "Configurable multi color backend theme for Odoo 14",
     "version": "14.0.1.0.0",
-    "category": "Theme/Backend",
+    "category": "Themes/Backend",
     "website": "https://www.cybrosys.com",
     "description": """
         Configurable multi color backend theme for Odoo 14

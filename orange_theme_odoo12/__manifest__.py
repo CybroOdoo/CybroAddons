@@ -29,7 +29,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     "website": "https://www.cybrosys.com",
-    "category": "Theme/Backend",
+    "category": "Themes/Backend",
     'images': [
         'static/description/banner.png',
         'static/description/theme_screenshot.png',

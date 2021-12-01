@@ -4,7 +4,7 @@
     "name": "Dodger Blue Backend Theme",
     "summary": "Outrageous Blue Backend Theme",
     "version": "14.0.1.0.0",
-    "category": "Theme/Backend",
+    "category": "Themes/Backend",
     "website": "https://www.cybrosys.com",
     "description": """Backend theme for Odoo 14.0 community edition. Blue theme blue backend theme odoo backend theme""",
     'author': 'Cybrosys Techno Solutions',
