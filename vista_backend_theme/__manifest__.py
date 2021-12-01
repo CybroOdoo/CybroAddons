@@ -24,7 +24,7 @@
     "name": "Vista Backend Theme V15",
     "description": """Minimalist and elegant backend theme for Odoo 14, Backend Theme, Theme""",
     "summary": "Vista Backend Theme V15 is an attractive theme for backend",
-    "category": "Theme/Backend",
+    "category": "Themes/Backend",
     "version": "15.0.1.0.1",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',

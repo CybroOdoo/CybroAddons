@@ -24,7 +24,7 @@
     "name": "Dark Mode Backend Theme",
     "description": """Minimalist and elegant backend theme for Odoo 15, Backend Theme, Theme""",
     "summary": "Dark Mode Backend Theme V15 is an attractive theme for backend",
-    "category": "Theme/Backend",
+    "category": "Themes/Backend",
     "version": "15.0.1.0.0",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',

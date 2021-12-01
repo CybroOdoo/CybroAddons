@@ -24,7 +24,7 @@
     "name": "Jazzy Backend Theme v15",
     "description": """Minimalist and elegant backend theme for Odoo 15, Backend Theme, Theme""",
     "summary": "Jazzy backed Theme V15 is an attractive theme for backend",
-    "category": "Theme/Backend",
+    "category": "Themes/Backend",
     "version": "15.0.1.0.0",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
@@ -52,7 +52,7 @@
     },
     'images': [
         'static/description/banner.png',
-        'static/description/theme_screenshot.png',
+        'static/description/theme_screenshot.gif',
     ],
     'license': 'LGPL-3',
     'installable': True,

@@ -24,7 +24,7 @@
     "name": "Code Backend Theme V15 Enterprise",
     "summary": "Minimalist and elegant backend theme for Odoo 15 Enterprise",
     "description": """Minimalist and elegant backend theme for Odoo 15 Backend Theme Enterprise, Enterprise Theme, Backend Theme, Enterprise Backend Theme, V15 Theme""",
-    "category": "Theme/Backend",
+    "category": "Themes/Backend",
     "version": "15.0.1.0.0",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
