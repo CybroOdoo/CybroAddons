@@ -39,6 +39,11 @@ class ApproveProduct(models.Model):
         for rec in self:
             rec.approve_state = 'draft'
 
+    def confirm_products(self):
+        active_ids = self.env.context.get('active_ids')
+        products = self.env['product.template'].browse(active_ids)
+        products.confirm_product_approval()
+
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
