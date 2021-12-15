@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <template id="boec_shop" name="Boec Shop" inherit_id="website_sale.products">
+
+            <xpath expr="//div[@id='wrap']" position="before">
+                <Section class="banner_sub">
+                    <div class="wrapper">
+                        <div class="container">
+                            <div class="row">
+                                <div class="sub_page">
+                                    <div class="name">
+                                        Shop
+                                    </div>
+                                    <nav aria-label="breadcrumb">
+                                        <ol class="breadcrumb">
+                                            <li class="breadcrumb-item">
+                                                <a href="/">Home</a>
+                                            </li>
+                                            <i class="material-icons">&#xe315;</i>
+                                            <li class="breadcrumb-item active" aria-current="page">Shop</li>
+                                        </ol>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </Section>
+
+            </xpath>
+
+            <xpath expr="//div[@id='wrap']/div[hasclass('container','oe_website_sale','pt-2')]/div[hasclass('row','o_wsale_products_main_row')]/div[@id='products_grid']"
+                   position="replace">
+                <t t-if="category">
+                    <t t-set='editor_msg'>Drag building blocks here to customize the header for "<t
+                            t-esc='category.name'/>" category.
+                    </t>
+                    <div class="mb16" id="category_header" t-att-data-editor-message="editor_msg"
+                         t-field="category.website_description"/>
+                </t>
+                <section t-attf-class="shop gap col #{'o_wsale_layout_list' if layout_mode == 'list' else ''}">
+                    <div class="wrapper">
+                        <div class="container">
+                            <div class="row">
+                                <div class="shop_content">
+                                    <div t-if="bins" class="row pt">
+                                        <t t-foreach="bins" t-as="tr_product">
+                                            <t t-foreach="tr_product" t-as="td_product">
+                                                <t t-if="td_product">
+                                                    <t t-set="product" t-value="td_product['product']"/>
+                                                    <t t-attf-class="wrapper"
+                                                       t-att-data-ribbon-id="td_product['ribbon'].id">
+                                                        <div t-attf-class="img_wrapper">
+                                                            <t t-call="website_sale.products_item"/>
+                                                        </div>
+                                                    </t>
+                                                </t>
+                                                <t t-else=""/>
+                                            </t>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="products_pager form-inline justify-content-center py-3">
+                        <t t-call="website.pager"/>
+                    </div>
+                </section>
+
+            </xpath>
+        </template>
+
+        <template id="boec_shop_add_to_cart" name="Boec Shop Cart Button" inherit_id="website_sale.products_item"
+                  customize_show="True" priority="2" active="True">
+            <xpath expr="//h6[hasclass('o_wsale_products_item_title')]" position="before">
+                <div class="add_to_c">
+                    <t t-set="product_variant_id" t-value="product._get_first_possible_variant_id()"/>
+                    <input name="product_id" t-att-value="product_variant_id" type="hidden"/>
+                    <t t-if="product_variant_id">
+                        <a href="#" aria-label="Shopping cart" title="Shopping cart" class="a-submit">
+                            + Add to cart
+                        </a>
+                    </t>
+                </div>
+            </xpath>
+        </template>
+
+    </data>
+</odoo>
