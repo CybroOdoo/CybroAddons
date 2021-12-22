@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="1">
+        <record id="orientation_request_mailer" model="mail.template">
+            <field name="name">Employee Orientation Request</field>
+            <field name="email_from">{{(object.user_id.email or object.company_id.email)}}</field>
+            <field name="email_to">{{(object.partner_id.email)}}</field>
+            <field name="subject">Employee Orientation Request</field>
+            <field name="model_id" ref="employee_orientation.model_orientation_request"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html" type="html">
+                <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hello
+                        <t t-out="object.partner_id.name"/>,
+                    </p>
+                    <p>
+                        You are requested to conduct orientation program listed below.
+                    </p>
+                    <p>
+                        Check Line:
+                        <t t-out="object.request_name"/>
+                    </p>
+                    <p>
+                        Employee:
+                        <t t-out="object.employee_id.name"/>
+                    </p>
+                    <t t-if=" object.request_expected_date">
+                        <p>
+                            Expected Date:
+                            <t t-out="object.request_expected_date"/>
+                        </p>
+                    </t>
+                    <br/>
+                    <p>
+                        Thank you!
+                    </p>
+                    <br/>
+                    <div style="width: 375px; margin: 0px; padding: 0px; background-color: #8E0000; border-top-left-radius: 5px 5px; border-top-right-radius: 5px 5px; background-repeat: repeat no-repeat;">
+                        <h3 style="margin: 0px; padding: 2px 14px; font-size: 12px; color: #DDD;">
+                            <strong style="text-transform:uppercase;">
+                                <t t-out="object.company_id.name"/>
+                            </strong>
+                        </h3>
+                    </div>
+                    <div style="width: 347px; margin: 0px; padding: 5px 14px; line-height: 16px; background-color: #F2F2F2;">
+                        <span style="color: #222; margin-bottom: 5px; display: block; ">
+                            <t t-out="object.company_id.partner_id.sudo().with_context(show_address=True).name_get()[0][1]"/>
+                        </span>
+                        <t t-if="object.company_id.phone">
+                            <div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; ">
+                                Phone:
+                                <t t-out="object.company_id.phone"/>
+                            </div>
+                        </t>
+                        <t t-if=" object.company_id.website">
+                            <div>
+                                Web :
+                                <a href="'%s' % object.company_id.website">
+                                    <t t-out="object.company_id.website"/>
+                                </a>
+                            </div>
+
+                        </t>
+                        <p></p>
+                    </div>
+                </div>
+            </field>
+        </record>
+
+        <record id="orientation_training_mailer" model="mail.template">
+            <field name="name">Employee Training program</field>
+            <field name="email_from">{{(object.user_id.email or object.company_id.email)}}</field>
+            <field name="email_to">{{(object.program_convener.email)}}</field>
+            <field name="subject">Employee Training Request</field>
+            <field name="model_id" ref="employee_orientation.model_employee_training"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html" type="html">
+                <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+                    <p>
+                        Hello <t t-out="object.program_convener.name"/>,
+                    </p>
+                    <p>
+                        You are requested to conduct
+                        <t t-out="object.program_name"/>
+                        Training program for
+                        <t t-out="object.program_department.name"/>
+                        department
+                        <t t-if=" object.date_from and object.date_to">
+                            from
+                            <t t-out="object.date_from"/>
+                            to
+                            <t t-out="object.date_to"/>
+                        </t>
+                        .
+                    </p>
+                    <br/>
+                    <p>
+                        Thank you!
+                    </p>
+                    <br/>
+                    <div style="width: 375px; margin: 0px; padding: 0px; background-color: #8E0000; border-top-left-radius: 5px 5px; border-top-right-radius: 5px 5px; background-repeat: repeat no-repeat;">
+                        <h3 style="margin: 0px; padding: 2px 14px; font-size: 12px; color: #DDD;">
+                            <strong style="text-transform:uppercase;">
+                                <t t-out="object.company_id.name"/>
+                            </strong>
+                        </h3>
+                    </div>
+                    <div style="width: 347px; margin: 0px; padding: 5px 14px; line-height: 16px; background-color: #F2F2F2;">
+                        <span style="color: #222; margin-bottom: 5px; display: block; ">
+                            <t t-out="object.company_id.partner_id.sudo().with_context(show_address=True).name_get()[0][1]"/>
+
+                        </span>
+                        <t t-if=" object.company_id.phone">
+                            <div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; ">
+                                Phone:
+                                <t t-out="object.company_id.phone"/>
+                            </div>
+                        </t>
+                        <t t-if=" object.company_id.website">
+                            <div>
+                                Web :
+                                <a href="'%s' % object.company_id.website">
+                                    <t t-out="object.company_id.website"/>
+                                </a>
+                            </div>
+                        </t>
+                        <p></p>
+                    </div>
+                </div>
+            </field>
+        </record>
+    </data>
+</openerp>
