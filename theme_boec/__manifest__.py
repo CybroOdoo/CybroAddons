@@ -64,6 +64,8 @@
             ('replace', 'website_sale/static/src/js/website_sale_utils.js',
              'theme_boec/static/src/js/sale_utils.js'),
             "/theme_boec/static/src/css/style.css",
+            "/theme_boec/static/src/css/style.css.map",
+            "/theme_boec/static/src/css/style.scss",
             "/theme_boec/static/src/css/owl_carousel_min.css",
             "/theme_boec/static/src/css/owl_theme_default_min.css",
             "/theme_boec/static/src/js/owl.carousel.js",
