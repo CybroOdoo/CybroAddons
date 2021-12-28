@@ -95,7 +95,7 @@ class SalonBooking(models.Model):
             self.env['salon.order.line'].create(service_data)
         template = self.env.ref(
             'salon_management.mail_template_salon_approved')
-        self.env['mail.template'].browse(template.id).send_mail(self.id)
+        self.env['mail.template'].browse(template.id).send_mail(self.id, force_send=True)
         self.state = "approved"
 
     def action_reject_booking(self):
@@ -104,5 +104,5 @@ class SalonBooking(models.Model):
         """
         template = self.env.ref(
             'salon_management.mail_template_salon_rejected')
-        self.env['mail.template'].browse(template.id).send_mail(self.id)
+        self.env['mail.template'].browse(template.id).send_mail(self.id, force_send=True)
         self.state = "rejected"
