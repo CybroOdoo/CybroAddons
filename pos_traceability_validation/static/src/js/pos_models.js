@@ -29,13 +29,22 @@ odoo.define('pos_traceability_validation.pos_models', function (require) {
 
                             if(result != true){
                                 if(result[0] == 'no_stock'){
-                                    alert("Insufficient stock for " + result[1])
+                                     this.showPopup('ErrorPopup', {
+                                        'title': this.env._t('Insufficient stock'),
+                                        'body': this.env._t("Insufficient stock for " + result[1]),
+                                    });
                                 }
                                 else if(result[0] == 'duplicate'){
-                                    alert("Duplicate entry for " + result[1])
+                                     this.showPopup('ErrorPopup', {
+                                        'title': this.env._t('Duplicate entry'),
+                                        'body': this.env._t("Duplicate entry for " + result[1]),
+                                    });
                                 }
                                 else if(result[0] == 'except'){
-                                    alert("Exception occured with " + result[1])
+                                     this.showPopup('ErrorPopup', {
+                                        'title': this.env._t('Exception'),
+                                        'body': this.env._t("Exception occured with" + result[1]),
+                                    });
                                 }
                             }
                             else{
