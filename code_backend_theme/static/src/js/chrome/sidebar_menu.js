@@ -13,7 +13,7 @@ odoo.define('code_backend_theme.SidebarMenu', function (require) {
     $(document).on("click", "#openSidebar", function(event){
         $("#sidebar_panel").css({'display':'block'});
         $(".o_action_manager").css({'margin-left': '200px','transition':'all .1s linear'});
-        $(".top_heading").css({'margin-left': '200px','transition':'all .1s linear'});
+        $(".top_heading").css({'margin-left': '200px','transition':'all .1s linear', 'width':'auto'});
 
         //add class in navbar
         var navbar = $(".o_main_navbar");
@@ -36,7 +36,7 @@ odoo.define('code_backend_theme.SidebarMenu', function (require) {
     $(document).on("click", "#closeSidebar", function(event){
         $("#sidebar_panel").css({'display':'none'});
         $(".o_action_manager").css({'margin-left': '0px'});
-        $(".top_heading").css({'margin-left': '0px'});
+        $(".top_heading").css({'margin-left': '0px', 'width':'100%'});
 
         //remove class in navbar
         var navbar = $(".o_main_navbar");
@@ -68,7 +68,7 @@ odoo.define('code_backend_theme.SidebarMenu', function (require) {
         //sidebar close on menu-item click
         $("#sidebar_panel").css({'display':'none'});
         $(".o_action_manager").css({'margin-left': '0px'});
-        $(".top_heading").css({'margin-left': '0px'});
+        $(".top_heading").css({'margin-left': '0px', 'width':'100%'});
         $("#closeSidebar").hide();
         $("#openSidebar").show();
 
