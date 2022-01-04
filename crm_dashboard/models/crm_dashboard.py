@@ -322,8 +322,8 @@ class CRMLead(models.Model):
         """Top 10 Deals Table"""
         self._cr.execute('''SELECT crm_lead.user_id,crm_lead.id,crm_lead.expected_revenue,
         crm_lead.name,crm_lead.company_id, (SELECT crm_team.name FROM crm_team
-        WHERE crm_lead.team_id = crm_team.id) from crm_lead
-        where crm_lead.expected_revenue is not null GROUP BY crm_lead.user_id,
+        WHERE crm_lead.team_id = crm_team.id) from crm_lead where crm_lead.expected_revenue
+        is not null and crm_lead.type = 'opportunity' GROUP BY crm_lead.user_id,
         crm_lead.id,crm_lead.expected_revenue,crm_lead.name,crm_lead.company_id
         order by crm_lead.expected_revenue DESC limit 10''')
         data1 = self._cr.fetchall()
@@ -350,10 +350,11 @@ class CRMLead(models.Model):
         """Monthly Goal Gauge"""
         uid = request.session.uid
         leads = self.env['crm.lead'].search([('date_deadline', '!=', False),
-                                             ('user_id', '=', uid)])
+                                             ('user_id', '=', uid),
+                                             ('type', '=', 'opportunity')])
         leads_won = self.env['crm.lead'].search([('date_closed', '!=', False),
-                                                 ('stage_id', '=', 4),
-                                                 ('user_id', '=', uid)])
+                                                 ('stage_id', '=', 4), ('user_id', '=', uid),
+                                                 ('type', '=', 'opportunity')])
         currency_symbol = self.env.company.currency_id.symbol
 
         goals = []
@@ -490,23 +491,23 @@ class CRMLead(models.Model):
 
         return test
 
-    @api.model
-    def get_lost_reason_count(self):
-        """Top 5 Lost Reason and Count"""
-        self._cr.execute('''select lost_reason,count(lost_reason) as counts
-        from crm_lead where probability=0 and active=false and lost_reason is not null
-        group by lost_reason order by counts desc limit 5''')
-        data1 = self._cr.fetchall()
-
-        reason_count = []
-        for rec in data1:
-            reason_id = rec[0]
-            reason_id_obj = self.env['crm.lost.reason'].browse(reason_id)
-            rec_list = list(rec)
-            rec_list[0] = reason_id_obj.name
-            reason_count.append(rec_list)
-
-        return {'reason_count': reason_count}
+    # @api.model
+    # def get_lost_reason_count(self):
+    #     """Top 5 Lost Reason and Count"""
+    #     self._cr.execute('''select lost_reason_id,count(lost_reason_id) as counts
+    #     from crm_lead where probability=0 and active=false and lost_reason_id is not null
+    #     group by lost_reason_id order by counts desc limit 5''')
+    #     data1 = self._cr.fetchall()
+    #
+    #     reason_count = []
+    #     for rec in data1:
+    #         reason_id = rec[0]
+    #         reason_id_obj = self.env['crm.lost.reason'].browse(reason_id)
+    #         rec_list = list(rec)
+    #         rec_list[0] = reason_id_obj.name
+    #         reason_count.append(rec_list)
+    #
+    #     return {'reason_count': reason_count}
 
     @api.model
     def get_ratio_based_country(self):

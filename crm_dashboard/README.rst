@@ -1,5 +1,5 @@
 CRM Dashboard
-=============
+==================
 * CRM Dashboard module for Odoo 15.
 
 Installation

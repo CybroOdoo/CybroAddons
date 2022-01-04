@@ -1,8 +1,5 @@
-console.log("entered to dashboard_view js")
-
 odoo.define('crm_dashboard.CRMDashboard', function (require) {
     'use strict';
-    console.log("dashboard_view js loaded")
 
     var AbstractAction = require('web.AbstractAction');
     var ajax = require('web.ajax');
@@ -48,24 +45,25 @@ odoo.define('crm_dashboard.CRMDashboard', function (require) {
                     this.onclick_lost_last_month($target.val());
                 }
             },
-            'change #total_loosed_crm_sub': function(e) {
-                e.stopPropagation();
-                var $target = $(e.target);
-                var value = $target.val();
-                if (value=="sub_lost_last_12months"){
-                    this.onclick_sub_lost_last_12months($target.val());
-                }else if (value=="sub_lost_last_6months"){
-                    this.onclick_sub_lost_last_6months($target.val());
-                }else if (value=="sub_lost_last_month"){
-                    this.onclick_sub_lost_last_month($target.val());
-                }
-            },
+//            'change #total_loosed_crm_sub': function(e) {
+//                e.stopPropagation();
+//                var $target = $(e.target);
+//                var value = $target.val();
+//                if (value=="sub_lost_last_12months"){
+//                    this.onclick_sub_lost_last_12months($target.val());
+//                }else if (value=="sub_lost_last_6months"){
+//                    this.onclick_sub_lost_last_6months($target.val());
+//                }else if (value=="sub_lost_last_month"){
+//                    this.onclick_sub_lost_last_month($target.val());
+//                }
+//            },
         },
 
         init: function(parent, context) {
             this._super(parent, context);
             this.upcoming_events = [];
-            this.dashboards_templates = ['LoginUser','Managercrm','Admincrm', 'SubDashboard'];
+//            this.dashboards_templates = ['LoginUser','Managercrm','Admincrm', 'SubDashboard'];
+            this.dashboards_templates = ['LoginUser','Managercrm','Admincrm'];
             this.login_employee = [];
         },
 
@@ -135,13 +133,13 @@ odoo.define('crm_dashboard.CRMDashboard', function (require) {
                     self.top_country_count = res['country_count'];
                 });
 
-                var def7 = self._rpc({
-                    model: "crm.lead",
-                    method: "get_lost_reason_count",
-                })
-                .then(function (res) {
-                    self.top_reason_count = res['reason_count'];
-                });
+//                var def7 = self._rpc({
+//                    model: "crm.lead",
+//                    method: "get_lost_reason_count",
+//                })
+//                .then(function (res) {
+//                    self.top_reason_count = res['reason_count'];
+//                });
 
                 var def8 = self._rpc({
                     model: "crm.lead",
@@ -191,12 +189,12 @@ odoo.define('crm_dashboard.CRMDashboard', function (require) {
                     self.top_sp_by_invoice = res['sales_person_invoice'];
                 });
 
-                return $.when(def0, def1, def2, def3, def4, def5, def6, def7, def8, def9, def10, def11, def12, def13);
+//                return $.when(def0, def1, def2, def3, def4, def5, def6, def7, def8, def9, def10, def11, def12, def13);
+                return $.when(def0, def1, def2, def3, def4, def5, def6, def8, def9, def10, def11, def12, def13);
             });
         },
 
         onclick_this_year: function (ev) {
-            console.log("onclick_this_year");
             var self = this;
             rpc.query({
                 model: 'crm.lead',
@@ -253,7 +251,6 @@ odoo.define('crm_dashboard.CRMDashboard', function (require) {
         },
 
         onclick_this_quarter: function (ev) {
-            console.log("onclick_this_quarter");
             var self = this;
             rpc.query({
                 model: 'crm.lead',
@@ -310,7 +307,6 @@ odoo.define('crm_dashboard.CRMDashboard', function (require) {
         },
 
         onclick_this_month: function (ev) {
-            console.log("onclick_this_month");
             var self = this;
             rpc.query({
                 model: 'crm.lead',
@@ -367,7 +363,6 @@ odoo.define('crm_dashboard.CRMDashboard', function (require) {
         },
 
         onclick_this_week: function (ev) {
-            console.log("onclick_this_week");
             var self = this;
             rpc.query({
                 model: 'crm.lead',
@@ -424,7 +419,6 @@ odoo.define('crm_dashboard.CRMDashboard', function (require) {
         },
 
         renderElement: function (ev) {
-            console.log("renderElement");
             var self = this;
             $.when(this._super())
             .then(function (ev) {
@@ -566,19 +560,11 @@ odoo.define('crm_dashboard.CRMDashboard', function (require) {
             self.render_medium_leads_graph();
             self.render_source_leads_graph();
             self.onclick_lost_last_12months();
-            self.onclick_sub_lost_last_12months();
+//            self.onclick_sub_lost_last_12months();
             self.render_lost_leads_graph();
             self.render_lost_leads_by_stage_graph();
             self.render_revenue_count_pie();
-//            self.render_monthly_goal();
         },
-//        render_monthly_goal: function () {
-//            console.log("month");
-//            var percentage_crm = this.$('#percentage_crm').val();
-//            console.log("percentage_crm",percentage_crm);
-//            var gauge = new Gauge(document.getElementById("gauge"));
-//            gauge.value(percentage_crm);
-//        },
 
         funnel_chart: function () {
             rpc.query({
@@ -1374,136 +1360,136 @@ odoo.define('crm_dashboard.CRMDashboard', function (require) {
             });
         },
 
-        onclick_sub_lost_last_12months: function(ev) {
-            var self = this;
-            if( self.is_manager == true){
-                self.initial_render = true;
-                rpc.query({
-                    model: "crm.lead",
-                    method: "get_total_lost_crm",
-                    args: ['12']
-                }).then(function(result){
-                    var ctx = document.getElementById('canvas_graph').getContext('2d');
-                    // Define the data
-                    var lost_reason = result.month; // Add data values to array
-                    var count = result.count;
-                    var myChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: lost_reason,//x axis
-                            datasets: [{
-                                label: 'Count', // Name the series
-                                data: count, // Specify the data values array
-                                backgroundColor: '#66aecf',
-                                borderColor: '#66aecf',
-                                barPercentage: 0.5,
-                                barThickness: 6,
-                                maxBarThickness: 8,
-                                minBarLength: 0,
-                                borderWidth: 1, // Specify bar border width
-                                type: 'bar', // Set this data to a line chart
-                                fill: false
-                            }]
-                        },
-                        options: {
-                            scales: {
-                                y: {
-                                    beginAtZero: true
-                                }
-                            },
-                            responsive: true, // Instruct chart js to respond nicely.
-                            maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height
-                        }
-                    });
-                });
-            };
-        },
-
-        onclick_sub_lost_last_6months: function(ev) {
-            var self = this;
-            self.initial_render = true;
-            rpc.query({
-                model: "crm.lead",
-                method: "get_total_lost_crm",
-                args: ['6']
-            }).then(function(result){
-                var ctx = document.getElementById("canvas_graph").getContext('2d');
-                // Define the data
-                var lost_reason = result.month // Add data values to array
-                var count = result.count;
-                var myChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: lost_reason,//x axis
-                        datasets: [{
-                            label: 'Count', // Name the series
-                            data: count, // Specify the data values array
-                            backgroundColor: '#66aecf',
-                            borderColor: '#66aecf',
-                            barPercentage: 0.5,
-                            barThickness: 6,
-                            maxBarThickness: 8,
-                            minBarLength: 0,
-                            borderWidth: 1, // Specify bar border width
-                            type: 'bar', // Set this data to a line chart
-                            fill: false
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        },
-                        responsive: true, // Instruct chart js to respond nicely.
-                        maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height
-                    }
-                });
-            });
-        },
-
-        onclick_sub_lost_last_month: function(ev) {
-            var self = this;
-            self.initial_render = true;
-            rpc.query({
-                model: "crm.lead",
-                method: "get_total_lost_crm",
-                args: ['1']
-            }).then(function(result){
-                var ctx = document.getElementById("canvas_graph").getContext('2d');
-                // Define the data
-                var lost_reason = result.month // Add data values to array
-                var count = result.count;
-                var myChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: lost_reason,//x axis
-                        datasets: [{
-                            label: 'Count', // Name the series
-                            data: count, // Specify the data values array
-                            backgroundColor: '#66aecf',
-                            borderColor: '#66aecf',
-                            barPercentage: 0.5,
-                            barThickness: 6,
-                            maxBarThickness: 8,
-                            minBarLength: 0,
-                            borderWidth: 1, // Specify bar border width
-                            type: 'bar', // Set this data to a line chart
-                            fill: false
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        },
-                        responsive: true, // Instruct chart js to respond nicely.
-                        maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height
-                    }
-                });
-            });
-        },
+//        onclick_sub_lost_last_12months: function(ev) {
+//            var self = this;
+//            if( self.is_manager == true){
+//                self.initial_render = true;
+//                rpc.query({
+//                    model: "crm.lead",
+//                    method: "get_total_lost_crm",
+//                    args: ['12']
+//                }).then(function(result){
+//                    var ctx = document.getElementById('canvas_graph').getContext('2d');
+//                    // Define the data
+//                    var lost_reason = result.month; // Add data values to array
+//                    var count = result.count;
+//                    var myChart = new Chart(ctx, {
+//                        type: 'bar',
+//                        data: {
+//                            labels: lost_reason,//x axis
+//                            datasets: [{
+//                                label: 'Count', // Name the series
+//                                data: count, // Specify the data values array
+//                                backgroundColor: '#66aecf',
+//                                borderColor: '#66aecf',
+//                                barPercentage: 0.5,
+//                                barThickness: 6,
+//                                maxBarThickness: 8,
+//                                minBarLength: 0,
+//                                borderWidth: 1, // Specify bar border width
+//                                type: 'bar', // Set this data to a line chart
+//                                fill: false
+//                            }]
+//                        },
+//                        options: {
+//                            scales: {
+//                                y: {
+//                                    beginAtZero: true
+//                                }
+//                            },
+//                            responsive: true, // Instruct chart js to respond nicely.
+//                            maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height
+//                        }
+//                    });
+//                });
+//            };
+//        },
+//
+//        onclick_sub_lost_last_6months: function(ev) {
+//            var self = this;
+//            self.initial_render = true;
+//            rpc.query({
+//                model: "crm.lead",
+//                method: "get_total_lost_crm",
+//                args: ['6']
+//            }).then(function(result){
+//                var ctx = document.getElementById("canvas_graph").getContext('2d');
+//                // Define the data
+//                var lost_reason = result.month // Add data values to array
+//                var count = result.count;
+//                var myChart = new Chart(ctx, {
+//                    type: 'bar',
+//                    data: {
+//                        labels: lost_reason,//x axis
+//                        datasets: [{
+//                            label: 'Count', // Name the series
+//                            data: count, // Specify the data values array
+//                            backgroundColor: '#66aecf',
+//                            borderColor: '#66aecf',
+//                            barPercentage: 0.5,
+//                            barThickness: 6,
+//                            maxBarThickness: 8,
+//                            minBarLength: 0,
+//                            borderWidth: 1, // Specify bar border width
+//                            type: 'bar', // Set this data to a line chart
+//                            fill: false
+//                        }]
+//                    },
+//                    options: {
+//                        scales: {
+//                            y: {
+//                                beginAtZero: true
+//                            }
+//                        },
+//                        responsive: true, // Instruct chart js to respond nicely.
+//                        maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height
+//                    }
+//                });
+//            });
+//        },
+//
+//        onclick_sub_lost_last_month: function(ev) {
+//            var self = this;
+//            self.initial_render = true;
+//            rpc.query({
+//                model: "crm.lead",
+//                method: "get_total_lost_crm",
+//                args: ['1']
+//            }).then(function(result){
+//                var ctx = document.getElementById("canvas_graph").getContext('2d');
+//                // Define the data
+//                var lost_reason = result.month // Add data values to array
+//                var count = result.count;
+//                var myChart = new Chart(ctx, {
+//                    type: 'bar',
+//                    data: {
+//                        labels: lost_reason,//x axis
+//                        datasets: [{
+//                            label: 'Count', // Name the series
+//                            data: count, // Specify the data values array
+//                            backgroundColor: '#66aecf',
+//                            borderColor: '#66aecf',
+//                            barPercentage: 0.5,
+//                            barThickness: 6,
+//                            maxBarThickness: 8,
+//                            minBarLength: 0,
+//                            borderWidth: 1, // Specify bar border width
+//                            type: 'bar', // Set this data to a line chart
+//                            fill: false
+//                        }]
+//                    },
+//                    options: {
+//                        scales: {
+//                            y: {
+//                                beginAtZero: true
+//                            }
+//                        },
+//                        responsive: true, // Instruct chart js to respond nicely.
+//                        maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height
+//                    }
+//                });
+//            });
+//        },
 
         fetch_data: function() {
             var self = this;
@@ -1568,13 +1554,13 @@ odoo.define('crm_dashboard.CRMDashboard', function (require) {
                 self.top_country_count = res['country_count'];
             });
 
-            var def7 = self._rpc({
-                model: "crm.lead",
-                method: "get_lost_reason_count",
-            })
-            .then(function (res) {
-                self.top_reason_count = res['reason_count'];
-            });
+//            var def7 = self._rpc({
+//                model: "crm.lead",
+//                method: "get_lost_reason_count",
+//            })
+//            .then(function (res) {
+//                self.top_reason_count = res['reason_count'];
+//            });
 
             var def8 = self._rpc({
                 model: "crm.lead",
@@ -1624,7 +1610,8 @@ odoo.define('crm_dashboard.CRMDashboard', function (require) {
                 self.top_sp_by_invoice = res['sales_person_invoice'];
             });
 
-            return $.when(def0, def1, def2, def3, def4, def5, def6, def7, def8, def9, def10, def11, def12, def13);
+//            return $.when(def0, def1, def2, def3, def4, def5, def6, def7, def8, def9, def10, def11, def12, def13);
+            return $.when(def0, def1, def2, def3, def4, def5, def6, def8, def9, def10, def11, def12, def13);
         },
 
         render_dashboards: function() {
@@ -1632,7 +1619,8 @@ odoo.define('crm_dashboard.CRMDashboard', function (require) {
             if (this.login_employee){
                 var templates = []
                 if( self.is_manager == true){
-                    templates = ['LoginUser', 'Managercrm', 'Admincrm', 'SubDashboard'];
+//                    templates = ['LoginUser', 'Managercrm', 'Admincrm', 'SubDashboard'];
+                    templates = ['LoginUser', 'Managercrm', 'Admincrm'];
                 }
                 else{
                     templates = ['LoginUser','Managercrm'];
