@@ -6,9 +6,14 @@ odoo.define('dynamic_accounts_report.trial_balance', function (require) {
     var rpc = require('web.rpc');
     var session = require('web.session');
     var utils = require('web.utils');
+
     var QWeb = core.qweb;
     var _t = core._t;
     var framework = require('web.framework');
+
+
+    var datepicker = require('web.datepicker');
+    var time = require('web.time');
 
 //    import framework from 'web.framework';
 //    import { download } from "@web/core/network/download";
@@ -27,6 +32,7 @@ odoo.define('dynamic_accounts_report.trial_balance', function (require) {
             'click #pdf': 'print_pdf',
             'click #xlsx': 'print_xlsx',
             'click .show-gl': 'show_gl',
+            'mousedown div.input-group.date[data-target-input="nearest"]': '_onCalendarIconClick',
         },
 
         init: function(parent, action) {
@@ -63,6 +69,9 @@ odoo.define('dynamic_accounts_report.trial_balance', function (require) {
                         method: 'view_report',
                         args: [[this.wizard_id]],
                     }).then(function(datas) {
+
+
+
                             _.each(datas['report_lines'], function(rep_lines) {
                             rep_lines.debit = self.format_currency(datas['currency'],rep_lines.debit);
                             rep_lines.credit = self.format_currency(datas['currency'],rep_lines.credit);
@@ -81,6 +90,9 @@ odoo.define('dynamic_accounts_report.trial_balance', function (require) {
                                     self.$el.find('.target_move').select2({
                                         placeholder: 'Target Move...',
                                     });
+//                                    self.$el.find('#start_dateee').select2({
+//                                        placeholder: 'Date.',
+//                                    });
                             }
                             var child=[];
 
@@ -92,6 +104,7 @@ odoo.define('dynamic_accounts_report.trial_balance', function (require) {
                                             credit_total : self.format_currency(datas['currency'],datas['debit_total']),
                                             debit_total : self.format_currency(datas['currency'],datas['debit_total']),
                                         }));
+
                 });
 
                     }
@@ -149,6 +162,36 @@ odoo.define('dynamic_accounts_report.trial_balance', function (require) {
                 return self.do_action(action);
             });
         },
+
+        _onCalendarIconClick: function (ev) {
+        var $calendarInputGroup = $(ev.currentTarget);
+
+        var calendarOptions = {
+
+//        minDate: moment({ y: 1000 }),
+//            maxDate: moment().add(200, 'y'),
+//            calendarWeeks: true,
+//            defaultDate: moment().format(),
+//            sideBySide: true,
+//            buttons: {
+//                showClear: true,
+//                showClose: true,
+//                showToday: true,
+//            },
+
+            icons : {
+                date: 'fa fa-calendar',
+
+            },
+            locale : moment.locale(),
+            format : time.getLangDateFormat(),
+             widgetParent: 'body',
+             allowInputToggle: true,
+        };
+
+        $calendarInputGroup.datetimepicker(calendarOptions);
+    },
+
 
 
         format_currency: function(currency, amount) {
@@ -222,6 +265,9 @@ odoo.define('dynamic_accounts_report.trial_balance', function (require) {
             var self = this;
             self.initial_render = false;
 
+
+
+
             var filter_data_selected = {};
              var journal_ids = [];
             var journal_text = [];
@@ -246,14 +292,23 @@ odoo.define('dynamic_accounts_report.trial_balance', function (require) {
             }
             filter_data_selected.journal_ids = journal_ids
 
-            if ($("#date_from").val()) {
-                var dateString = $("#date_from").val();
-                filter_data_selected.date_from = dateString;
+            if (this.$el.find('.datetimepicker-input[name="date_from"]').val()) {
+                filter_data_selected.date_from = moment(this.$el.find('.datetimepicker-input[name="date_from"]').val(), time.getLangDateFormat()).locale('en').format('YYYY-MM-DD');
             }
-            if ($("#date_to").val()) {
-                var dateString = $("#date_to").val();
-                filter_data_selected.date_to = dateString;
+
+            if (this.$el.find('.datetimepicker-input[name="date_to"]').val()) {
+                filter_data_selected.date_to = moment(this.$el.find('.datetimepicker-input[name="date_to"]').val(), time.getLangDateFormat()).locale('en').format('YYYY-MM-DD');
             }
+//            if ($("#date_from").val()) {
+//                var dateString = $("#date_from").val();
+//                filter_data_selected.date_from = dateString;
+//            }
+
+
+//            if ($("#date_to").val()) {
+//                var dateString = $("#date_to").val();
+//                filter_data_selected.date_to = dateString;
+//            }
 
             if ($(".target_move").length) {
             var post_res = document.getElementById("post_res")

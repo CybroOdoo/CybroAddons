@@ -10,6 +10,9 @@ odoo.define('dynamic_accounts_report.general_ledger', function (require) {
     var _t = core._t;
     var trial = require('dynamic_accounts_report.trial_balance');
 
+    var datepicker = require('web.datepicker');
+    var time = require('web.time');
+
     window.click_num = 0;
     var GeneralLedger = AbstractAction.extend({
     template: 'GeneralTemp',
@@ -21,6 +24,7 @@ odoo.define('dynamic_accounts_report.general_ledger', function (require) {
             'click #xlsx': 'print_xlsx',
             'click .gl-line': 'show_drop_down',
             'click .view-account-move': 'view_acc_move',
+            'mousedown div.input-group.date[data-target-input="nearest"]': '_onCalendarIconClick',
         },
 
         init: function(parent, action) {
@@ -58,6 +62,36 @@ odoo.define('dynamic_accounts_report.general_ledger', function (require) {
                 })
             }
         },
+
+
+        _onCalendarIconClick: function (ev) {
+        var $calendarInputGroup = $(ev.currentTarget);
+
+        var calendarOptions = {
+
+        minDate: moment({ y: 1000 }),
+            maxDate: moment().add(200, 'y'),
+            calendarWeeks: true,
+            defaultDate: moment().format(),
+            sideBySide: true,
+            buttons: {
+                showClear: true,
+                showClose: true,
+                showToday: true,
+            },
+
+            icons : {
+                date: 'fa fa-calendar',
+
+            },
+            locale : moment.locale(),
+            format : time.getLangDateFormat(),
+             widgetParent: 'body',
+             allowInputToggle: true,
+        };
+
+        $calendarInputGroup.datetimepicker(calendarOptions);
+    },
 
 
         load_data: function (initial_render = true) {
@@ -422,14 +456,22 @@ odoo.define('dynamic_accounts_report.general_ledger', function (require) {
             }
             filter_data_selected.analytic_tag_ids = analytic_tag_ids
 
-            if ($("#date_from").val()) {
+//            if ($("#date_from").val()) {
+//
+//                var dateString = $("#date_from").val();
+//                filter_data_selected.date_from = dateString;
+//            }
+//            if ($("#date_to").val()) {
+//                var dateString = $("#date_to").val();
+//                filter_data_selected.date_to = dateString;
+//            }
 
-                var dateString = $("#date_from").val();
-                filter_data_selected.date_from = dateString;
+ if (this.$el.find('.datetimepicker-input[name="gen_date_from"]').val()) {
+                filter_data_selected.date_from = moment(this.$el.find('.datetimepicker-input[name="gen_date_from"]').val(), time.getLangDateFormat()).locale('en').format('YYYY-MM-DD');
             }
-            if ($("#date_to").val()) {
-                var dateString = $("#date_to").val();
-                filter_data_selected.date_to = dateString;
+
+            if (this.$el.find('.datetimepicker-input[name="gen_date_to"]').val()) {
+                filter_data_selected.date_to = moment(this.$el.find('.datetimepicker-input[name="gen_date_to"]').val(), time.getLangDateFormat()).locale('en').format('YYYY-MM-DD');
             }
 
             if ($(".target_move").length) {

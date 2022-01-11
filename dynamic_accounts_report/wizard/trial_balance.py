@@ -81,6 +81,8 @@ class TrialView(models.TransientModel):
         filters['journals_list'] = data.get('journals_list')
         filters['company_name'] = data.get('company_name')
         filters['target_move'] = data.get('target_move').capitalize()
+        filters['date_from'] = data.get('date_from')
+        filters['date_to'] = data.get('date_to')
 
         return filters
 
