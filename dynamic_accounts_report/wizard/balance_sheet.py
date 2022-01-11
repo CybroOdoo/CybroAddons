@@ -84,7 +84,7 @@ class BalanceSheetView(models.TransientModel):
             new_records = list(filter(filter_code, records['Accounts']))
             records['Accounts'] = new_records
 
-        account_report_id = self.env['account.financial.report'].search([
+        account_report_id = self.env['account.financial.report'].with_context(lang='en_US').search([
             ('name', 'ilike', tag)])
 
         new_data = {'id': self.id, 'date_from': False,
