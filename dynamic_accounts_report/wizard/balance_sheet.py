@@ -38,6 +38,7 @@ class BalanceSheetView(models.TransientModel):
 
     @api.model
     def view_report(self, option, tag):
+
         r = self.env['dynamic.balance.sheet.report'].search(
             [('id', '=', option[0])])
         data = {
@@ -84,7 +85,7 @@ class BalanceSheetView(models.TransientModel):
             new_records = list(filter(filter_code, records['Accounts']))
             records['Accounts'] = new_records
 
-        account_report_id = self.env['account.financial.report'].search([
+        account_report_id = self.env['account.financial.report'].with_context(lang='en_US').search([
             ('name', 'ilike', tag)])
 
         new_data = {'id': self.id, 'date_from': False,
@@ -161,7 +162,6 @@ class BalanceSheetView(models.TransientModel):
 
         parent_list = list(set(parent_list))
         final_report_lines = []
-
         for rec in report_lines_move:
             if rec['report_type'] != 'accounts':
                 if rec['r_id'] in parent_list:
@@ -220,7 +220,6 @@ class BalanceSheetView(models.TransientModel):
                 rec['m_credit'] = "{:,.2f}".format(rec['credit']) + " " + symbol
                 rec['m_balance'] = "{:,.2f}".format(
                     rec['balance']) + " " + symbol
-
         return {
             'name': tag,
             'type': 'ir.actions.client',

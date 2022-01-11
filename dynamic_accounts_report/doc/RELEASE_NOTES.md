@@ -11,5 +11,10 @@
 #### UPDT
 - Updated
 
+#### 20.12.2021
+#### Version 13.0.1.0.2
+#### UPDT
+- Translation issue and Calendar format issue
+
 
 

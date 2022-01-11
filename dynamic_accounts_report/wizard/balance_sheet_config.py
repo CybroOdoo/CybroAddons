@@ -39,7 +39,6 @@ class BalanceSheet(models.TransientModel):
                 item['level'] = set_report_level(item)
         data['journal_items'] = journal_items
         data['report_lines'] = report_lines
-
         return data
 
     def _compute_account_balance(self, accounts):

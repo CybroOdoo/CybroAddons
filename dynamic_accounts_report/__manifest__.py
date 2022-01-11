@@ -22,7 +22,7 @@
 
 {
     'name': 'Dynamic Financial Reports',
-    'version': '13.0.1.0.1',
+    'version': '13.0.1.0.2',
     'category': 'Accounting',
     'summary': """Dynamic Financial Reports with drill 
                 down and filters– Community Edition""",
