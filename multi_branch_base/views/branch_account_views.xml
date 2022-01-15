@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+    <data>
+        <record id="view_account_form_branch_inherit" model="ir.ui.view">
+        	<field name="name">view.account.form.inherit</field>
+        	<field name="model">account.account</field>
+        	<field name="inherit_id" ref="account.view_account_form"/>
+			<field name="arch" type="xml">
+                <xpath expr="//group[@name='left_main_group']//field[@name='company_id']" position="after">
+                    <field name="branch_id" options="{'no_create': True}"/>
+                </xpath>
+                <xpath expr="//group[@name='security_group']//field[@name='allowed_journal_ids']" position="replace">
+					<field name="allowed_journal_ids" widget="many2many_tags"
+						   domain="[('company_id','=',company_id), '|', ('branch_id', '=', branch_id), ('branch_id', '=', False)]"
+						   options="{'no_create_edit': True}"/>
+				</xpath>
+			</field>
+        </record>
+		<record id="view_account_list_inherit" model="ir.ui.view">
+            <field name="name">view.account.list.inherit</field>
+            <field name="model">account.account</field>
+            <field name="inherit_id" ref="account.view_account_list"/>
+            <field name="arch" type="xml">
+                <field name="company_id" position="after">
+                    <field name="branch_id" options="{'no_create': True}"/>
+                </field>
+            </field>
+        </record>
+        <record id="view_account_search_inherit" model="ir.ui.view">
+			<field name="name">.view.account.search.inherit</field>
+			<field name="model">account.account</field>
+			<field name="inherit_id" ref="account.view_account_search"/>
+			<field name="arch" type="xml">
+				<xpath expr="//search" position="inside">
+					<filter string="Branch" name="Branch" context="{'group_by':'branch_id'}"/>
+				</xpath>
+			</field>
+		</record>
+    </data>
+</odoo>

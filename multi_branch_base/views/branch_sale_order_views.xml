@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_sale_order_form_inherit" model="ir.ui.view">
+        	<field name="name">sale.order.form.inherit</field>
+        	<field name="model">sale.order</field>
+        	<field name="inherit_id" ref="sale.view_order_form"/>
+			<field name="arch" type="xml">
+                <xpath expr="//page[@name='other_information']//field[@name='company_id']" position="after">
+					<field name="branch_id" options="{'no_create': True}" domain="[('company_id', '=', company_id)]" required="1"/>
+				</xpath>
+				<xpath expr="//page[@name='other_information']//field[@name='warehouse_id']" position="replace">
+					<field name="warehouse_id" options="{'no_create': True}"
+						   domain="['|', ('branch_id', '=', branch_id), ('branch_id', '=', False)]"
+						   groups="stock.group_stock_multi_warehouses"
+						   force_save="1"/>
+				</xpath>
+			</field>
+        </record>
+
+		<record id="view_sale_order_search_view_inherit" model="ir.ui.view">
+			<field name="name">sale.order.search.view.inherit</field>
+			<field name="model">sale.order</field>
+			<field name="inherit_id" ref="sale.sale_order_view_search_inherit_sale"/>
+			<field name="arch" type="xml">
+				<xpath expr="//search/group" position="inside">
+					<filter string="Branch" name="Branch" context="{'group_by':'branch_id'}"/>
+				</xpath>
+			</field>
+		</record>
+
+		<record id="sale_order_view_search_inherit_quotation_inherit" model="ir.ui.view">
+			<field name="name">sale.quotation.search.view.inherit</field>
+			<field name="model">sale.order</field>
+			<field name="inherit_id" ref="sale.sale_order_view_search_inherit_quotation"/>
+			<field name="arch" type="xml">
+				<xpath expr="//search/group" position="inside">
+					<filter string="Branch" name="Branch" context="{'group_by':'branch_id'}"/>
+				</xpath>
+			</field>
+		</record>
+
+		<record id="view_order_tree_inherit" model="ir.ui.view">
+            <field name="name">view.order.tree</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_tree"/>
+            <field name="arch" type="xml">
+                <field name="company_id" position="after">
+                    <field name="branch_id" optional="show"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</odoo>
