@@ -42,18 +42,20 @@ class GeneralView(models.TransientModel):
     def view_report(self, option, title):
         r = self.env['account.general.ledger'].search([('id', '=', option[0])])
         new_title = ''
+        trans_title = self.env['ir.translation'].search([('value', '=', title), ('module', '=', 'dynamic_accounts_report')], limit=1).src
+
         journals = r.journal_ids
-        if title == 'General Ledger':
+        if title == 'General Ledger' or trans_title == 'General Ledger':
             journals = r.journal_ids
-            new_title = 'General Ledger'
-        if title == 'Bank Book':
+            new_title = title
+        if title == 'Bank Book' or trans_title == 'Bank Book':
             journals = self.env['account.journal'].search([('type', '=', 'bank')],
                                                           limit=1)
-            new_title = 'Bank Book'
-        if title == 'Cash Book':
+            new_title = title
+        if title == 'Cash Book' or trans_title == 'Cash Book':
             journals = self.env['account.journal'].search([('type', '=', 'cash')],
                                                           limit=1)
-            new_title = 'Cash Book'
+            new_title = title
         r.write({
             'titles': new_title,
         })

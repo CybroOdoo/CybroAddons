@@ -16,5 +16,10 @@
 #### UPDT
 - Translation issue and Calendar format issue
 
+#### 15.01.2022
+#### Version 13.0.1.0.3
+#### UPDT
+- Arabic Translation added
+
 
 
