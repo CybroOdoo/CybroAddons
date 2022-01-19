@@ -301,6 +301,7 @@ class AgeingView(models.TransientModel):
         aml_ids = cr.fetchall()
         aml_ids = aml_ids and [x[0] for x in aml_ids] or []
         for line in self.env['account.move.line'].browse(aml_ids):
+            print("skljskl", line.partner_id)
             partner_id = line.partner_id.id or False
             move_id = line.move_id.id
             move_name = line.move_id.name
@@ -415,88 +416,93 @@ class AgeingView(models.TransientModel):
                     partners_amount[partner_id] += line_amount
                     if i + 1 == 5:
                         period5 = i + 1
-                        lines[partner_id].append({
-                            'period5': period5,
-                            'line': line,
-                            'partner_id': partner_id,
-                            'move': move_name,
-                            'currency': currency_id,
-                            'symbol': currency_symbol,
-                            'jrnl': jrnl_id,
-                            'acc_name': account_id,
-                            'mov_id': move_id,
-                            'acc_code': account_code,
-                            'date': date_maturity,
-                            'amount': line_amount,
-                        })
+                        if partner_id:
+                            lines[partner_id].append({
+                                'period5': period5,
+                                'line': line,
+                                'partner_id': partner_id,
+                                'move': move_name,
+                                'currency': currency_id,
+                                'symbol': currency_symbol,
+                                'jrnl': jrnl_id,
+                                'acc_name': account_id,
+                                'mov_id': move_id,
+                                'acc_code': account_code,
+                                'date': date_maturity,
+                                'amount': line_amount,
+                            })
                     elif i + 1 == 4:
                         period4 = i + 1
-                        lines[partner_id].append({
+                        if partner_id:
+                            lines[partner_id].append({
 
-                            'period4': period4,
-                            'line': line,
-                            'partner_id': partner_id,
-                            'move': move_name,
-                            'jrnl': jrnl_id,
-                            'acc_name': account_id,
-                            'currency': currency_id,
-                            'symbol': currency_symbol,
-                            'mov_id': move_id,
-                            'acc_code': account_code,
-                            'date': date_maturity,
-                            'amount': line_amount,
-                        })
+                                'period4': period4,
+                                'line': line,
+                                'partner_id': partner_id,
+                                'move': move_name,
+                                'jrnl': jrnl_id,
+                                'acc_name': account_id,
+                                'currency': currency_id,
+                                'symbol': currency_symbol,
+                                'mov_id': move_id,
+                                'acc_code': account_code,
+                                'date': date_maturity,
+                                'amount': line_amount,
+                            })
                     elif i + 1 == 3:
                         period3 = i + 1
-                        lines[partner_id].append({
+                        if partner_id:
+                            lines[partner_id].append({
 
-                            'period3': period3,
-                            'line': line,
-                            'partner_id': partner_id,
-                            'move': move_name,
-                            'jrnl': jrnl_id,
-                            'acc_name': account_id,
-                            'currency': currency_id,
-                            'symbol': currency_symbol,
-                            'mov_id': move_id,
-                            'acc_code': account_code,
-                            'date': date_maturity,
-                            'amount': line_amount,
-                        })
+                                'period3': period3,
+                                'line': line,
+                                'partner_id': partner_id,
+                                'move': move_name,
+                                'jrnl': jrnl_id,
+                                'acc_name': account_id,
+                                'currency': currency_id,
+                                'symbol': currency_symbol,
+                                'mov_id': move_id,
+                                'acc_code': account_code,
+                                'date': date_maturity,
+                                'amount': line_amount,
+                            })
                     elif i + 1 == 2:
                         period2 = i + 1
-                        lines[partner_id].append({
+                        if partner_id:
+                            lines[partner_id].append({
 
-                            'period2': period2,
-                            'line': line,
-                            'partner_id': partner_id,
-                            'move': move_name,
-                            'jrnl': jrnl_id,
-                            'acc_name': account_id,
-                            'currency': currency_id,
-                            'symbol': currency_symbol,
-                            'mov_id': move_id,
-                            'acc_code': account_code,
-                            'date': date_maturity,
-                            'amount': line_amount,
-                        })
+                                'period2': period2,
+                                'line': line,
+                                'partner_id': partner_id,
+                                'move': move_name,
+                                'jrnl': jrnl_id,
+                                'acc_name': account_id,
+                                'currency': currency_id,
+                                'symbol': currency_symbol,
+                                'mov_id': move_id,
+                                'acc_code': account_code,
+                                'date': date_maturity,
+                                'amount': line_amount,
+                            })
                     else:
                         period1 = i + 1
-                        lines[partner_id].append({
+                        if partner_id:
+                            lines[partner_id].append({
 
-                            'period1': period1,
-                            'line': line,
-                            'partner_id': partner_id,
-                            'move': move_name,
-                            'jrnl': jrnl_id,
-                            'acc_name': account_id,
-                            'currency': currency_id,
-                            'symbol': currency_symbol,
-                            'mov_id': move_id,
-                            'acc_code': account_code,
-                            'date': date_maturity,
-                            'amount': line_amount,
-                        })
+                                'period1': period1,
+                                'line': line,
+                                'partner_id': partner_id,
+                                'move': move_name,
+                                'jrnl': jrnl_id,
+                                'acc_name': account_id,
+                                'currency': currency_id,
+                                'symbol': currency_symbol,
+                                'mov_id': move_id,
+                                'acc_code': account_code,
+                                'date': date_maturity,
+                                'amount': line_amount,
+                            })
 
             history.append(partners_amount)
 

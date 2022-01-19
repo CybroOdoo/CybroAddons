@@ -37,7 +37,7 @@ class BalanceSheetView(models.TransientModel):
     date_to = fields.Date(string="End date")
 
     @api.model
-    def view_report(self, option, tag):
+    def view_report(self, option, tag, lang):
         r = self.env['dynamic.balance.sheet.report'].search(
             [('id', '=', option[0])])
         data = {
@@ -86,8 +86,17 @@ class BalanceSheetView(models.TransientModel):
             new_records = list(filter(filter_code, records['Accounts']))
             records['Accounts'] = new_records
 
+        trans_tag = self.env['ir.translation'].search([('value', '=', tag), ('module', '=', 'dynamic_accounts_report')],limit=1).src
+
+        if trans_tag:
+            tag_upd = trans_tag
+        else:
+            tag_upd = tag
+
+
         account_report_id = self.env['account.financial.report'].search([
-            ('name', 'ilike', tag)])
+            ('name', 'ilike', tag_upd)])
+
 
         new_data = {'id': self.id, 'date_from': False,
                     'enable_filter': True,
@@ -224,6 +233,8 @@ class BalanceSheetView(models.TransientModel):
                 rec['m_credit'] = "{:,.2f}".format(rec['credit']) + " " + symbol
                 rec['m_balance'] = "{:,.2f}".format(
                     rec['balance']) + " " + symbol
+
+
 
         return {
             'name': tag,

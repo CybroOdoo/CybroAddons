@@ -83,7 +83,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                     self._rpc({
                         model: 'dynamic.balance.sheet.report',
                         method: 'view_report',
-                        args: [[this.wizard_id], action_title],
+                        args: [[this.wizard_id], action_title, self.searchModel.config.context.lang],
                     }).then(function(datas) {
 
                             if (initial_render) {
@@ -164,7 +164,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                 model: 'dynamic.balance.sheet.report',
                 method: 'view_report',
                 args: [
-                    [self.wizard_id], action_title
+                    [self.wizard_id], action_title,  self.searchModel.config.context.lang
                 ],
             }).then(function(data) {
                 var action = {
@@ -194,7 +194,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                 model: 'dynamic.balance.sheet.report',
                 method: 'view_report',
                 args: [
-                    [self.wizard_id],  action_title
+                    [self.wizard_id],  action_title,  self.searchModel.config.context.lang
                 ],
             }).then(function(data) {
                 var action = {
