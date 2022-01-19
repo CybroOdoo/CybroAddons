@@ -22,7 +22,7 @@
 
 {
     'name': 'Dynamic Financial Reports',
-    'version': '14.0.1.2.4',
+    'version': '14.0.1.2.5',
     'category': 'Accounting',
     'live_test_url': 'https://www.youtube.com/watch?v=gVQi9q9Rs-E&t=5s',
     'summary': """Dynamic Financial Reports with drill 
