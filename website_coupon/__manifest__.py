@@ -20,7 +20,7 @@
 ##############################################################################
 {
     'name': 'Website Coupon Code',
-    'version': '10.0.2.0.0',
+    'version': '10.0.2.0.1',
     'summary': 'Manage Website Coupon Codes for Products/Categories/All Products & Its Redeem Operations',
     'category': 'Website',
     'author': 'Cybrosys Techno Solutions',
@@ -33,6 +33,7 @@
         'views/gift_voucher.xml',
         'views/applied_coupons.xml',
         'views/templates.xml',
+        'wizards/res_config/sale_config_settings.xml',
         'security/ir.model.access.csv'
     ],
     'images': ['static/description/banner.jpg'],
@@ -40,4 +41,5 @@
     'installable': True,
     'auto_install': False,
     'application': False,
+    "post_init_hook": "post_init_hook",
 }
