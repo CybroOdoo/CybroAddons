@@ -541,7 +541,11 @@ class CRMLead(models.Model):
             if len(data) != 3:
                 del data
             else:
-                ratio = round(data[1] / data[2], 2)
+                data[1] = 0
+                if data[2] == 0:
+                    ratio = 0
+                else:
+                    ratio = round(data[1] / data[2], 2)
                 data.append(str(ratio))
                 country_wise_ratio.append(data)
 
