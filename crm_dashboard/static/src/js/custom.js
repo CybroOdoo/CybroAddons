@@ -1,5 +1,6 @@
 odoo.define('crm_dashboard.custom', function (require) {
     'use strict';
+
     var rpc = require('web.rpc');
     var manager = false;
     rpc.query({
@@ -8,8 +9,9 @@ odoo.define('crm_dashboard.custom', function (require) {
     })
     .then(function (res) {
         manager = res;
-    })
-    $(document).on("mousemove", ".dashboard_main_section", function(event){
+    });
+
+    $(document).on("mouseenter", ".dashboard_main_section", function(event){
         if (manager) {
             var percentage_crm = $('#percentage_crm').val();
             var gauge = new Gauge(document.getElementById("gauge"));
