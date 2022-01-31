@@ -25,7 +25,7 @@
     "description": """Minimalist and elegant backend theme for Odoo 14, Backend Theme, Theme""",
     "summary": "Code Backend Theme V15 is an attractive theme for backend",
     "category": "Themes/Backend",
-    "version": "15.0.1.0.2",
+    "version": "15.0.1.0.3",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -45,11 +45,8 @@
             'code_backend_theme/static/src/scss/datetimepicker.scss',
             'code_backend_theme/static/src/scss/theme.scss',
             'code_backend_theme/static/src/scss/sidebar.scss',
-            ('replace', '/web/static/src/views/graph/colors.js', '/code_backend_theme/static/src/js/fields/colors.js'),
-            ('replace', '/web/static/src/views/graph/graph_renderer.js', '/code_backend_theme/static/src/js/fields/graph_renderer.js'),
-            ('replace', '/web/static/src/views/graph/graph_model.js', '/code_backend_theme/static/src/js/fields/graph_model.js'),
-            ('replace', '/web/static/src/views/graph/graph_arch_parser.js', '/code_backend_theme/static/src/js/fields/graph_arch_parser.js'),
-            ('replace', '/web/static/src/views/graph/graph_view.js', '/code_backend_theme/static/src/js/fields/graph_view.js'),
+
+            'code_backend_theme/static/src/js/fields/colors.js',
             'code_backend_theme/static/src/js/chrome/sidebar_menu.js',
         ],
         'web.assets_qweb': [
