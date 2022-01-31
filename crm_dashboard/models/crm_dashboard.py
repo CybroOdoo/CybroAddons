@@ -321,8 +321,8 @@ class CRMLead(models.Model):
         """Top 10 Deals Table"""
         self._cr.execute('''SELECT crm_lead.user_id,crm_lead.id,crm_lead.expected_revenue,
         crm_lead.name,crm_lead.company_id, (SELECT crm_team.name FROM crm_team
-        WHERE crm_lead.team_id = crm_team.id) from crm_lead
-        where crm_lead.expected_revenue is not null GROUP BY crm_lead.user_id,
+        WHERE crm_lead.team_id = crm_team.id) from crm_lead where crm_lead.expected_revenue
+        is not null and crm_lead.type = 'opportunity' GROUP BY crm_lead.user_id,
         crm_lead.id,crm_lead.expected_revenue,crm_lead.name,crm_lead.company_id
         order by crm_lead.expected_revenue DESC limit 10''')
         data1 = self._cr.fetchall()
@@ -349,10 +349,11 @@ class CRMLead(models.Model):
         """Monthly Goal Gauge"""
         uid = request.session.uid
         leads = self.env['crm.lead'].search([('date_deadline', '!=', False),
-                                             ('user_id', '=', uid)])
+                                             ('user_id', '=', uid),
+                                             ('type', '=', 'opportunity')])
         leads_won = self.env['crm.lead'].search([('date_closed', '!=', False),
-                                                 ('stage_id', '=', 4),
-                                                 ('user_id', '=', uid)])
+                                                 ('stage_id', '=', 4), ('user_id', '=', uid),
+                                                 ('type', '=', 'opportunity')])
         currency_symbol = self.env.company.currency_id.symbol
 
         goals = []
@@ -371,7 +372,7 @@ class CRMLead(models.Model):
         self.achievement_amount = achievement
 
         percent = 0
-        if achievement != 0:
+        if total != 0:
             percent = (achievement * 100 / total) / 100
 
         goals.append(achievement)
@@ -536,7 +537,11 @@ class CRMLead(models.Model):
             if len(data) != 3:
                 del data
             else:
-                ratio = round(data[1] / data[2], 2)
+                data[1] = 0
+                if data[2] == 0:
+                    ratio = 0
+                else:
+                    ratio = round(data[1] / data[2], 2)
                 data.append(str(ratio))
                 country_wise_ratio.append(data)
 
