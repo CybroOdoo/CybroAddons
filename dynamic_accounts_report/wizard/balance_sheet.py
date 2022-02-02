@@ -59,8 +59,8 @@ class BalanceSheetView(models.TransientModel):
                 'date_to': r.date_to,
             })
 
-        company_id = self.env.company
-        company_domain = [('company_id', '=', company_id.id)]
+        company_ids = self.env.companies.ids
+        company_domain = [('company_id', 'in', company_ids)]
         if r.account_tag_ids:
             company_domain.append(
                 ('tag_ids', 'in', r.account_tag_ids.ids))
@@ -83,10 +83,8 @@ class BalanceSheetView(models.TransientModel):
 
             new_records = list(filter(filter_code, records['Accounts']))
             records['Accounts'] = new_records
-
         trans_tag = self.env['ir.translation'].search([('value', '=', tag), ('module', '=', 'dynamic_accounts_report')],
                                                       limit=1).src
-
         if trans_tag:
             tag_upd = trans_tag
         else:
@@ -94,7 +92,6 @@ class BalanceSheetView(models.TransientModel):
 
         account_report_id = self.env['account.financial.report'].with_context(lang='en_US').search([
             ('name', 'ilike', tag_upd)])
-
 
         new_data = {'id': self.id, 'date_from': False,
                     'enable_filter': True,
@@ -118,19 +115,18 @@ class BalanceSheetView(models.TransientModel):
         move_lines_dict = {}
 
         for rec in records['Accounts']:
-            move_line_accounts.append(rec['code'])
-            move_lines_dict[rec['code']] = {}
-            move_lines_dict[rec['code']]['debit'] = rec['debit']
-            move_lines_dict[rec['code']]['credit'] = rec['credit']
-            move_lines_dict[rec['code']]['balance'] = rec['balance']
-
+            move_line_accounts.append(rec['id'])
+            move_lines_dict[rec['id']] = {}
+            move_lines_dict[rec['id']]['debit'] = rec['debit']
+            move_lines_dict[rec['id']]['credit'] = rec['credit']
+            move_lines_dict[rec['id']]['balance'] = rec['balance']
         report_lines_move = []
         parent_list = []
 
         def filter_movelines_parents(obj):
             for each in obj:
                 if each['report_type'] == 'accounts':
-                    if each['code'] in move_line_accounts:
+                    if each['account'] in move_line_accounts:
                         report_lines_move.append(each)
                         parent_list.append(each['p_id'])
 
@@ -143,10 +139,10 @@ class BalanceSheetView(models.TransientModel):
 
         for rec in report_lines_move:
             if rec['report_type'] == 'accounts':
-                if rec['code'] in move_line_accounts:
-                    rec['debit'] = move_lines_dict[rec['code']]['debit']
-                    rec['credit'] = move_lines_dict[rec['code']]['credit']
-                    rec['balance'] = move_lines_dict[rec['code']]['balance']
+                if rec['account'] in move_line_accounts:
+                    rec['debit'] = move_lines_dict[rec['account']]['debit']
+                    rec['credit'] = move_lines_dict[rec['account']]['credit']
+                    rec['balance'] = move_lines_dict[rec['account']]['balance']
 
         parent_list = list(set(parent_list))
         max_level = 0
@@ -300,10 +296,11 @@ class BalanceSheetView(models.TransientModel):
         r = self.env['dynamic.balance.sheet.report'].search(
             [('id', '=', option[0])])
         default_filters = {}
-        company_id = self.env.company
-        company_domain = [('company_id', '=', company_id.id)]
-        journals = r.journal_ids if r.journal_ids else self.env[
-            'account.journal'].search(company_domain)
+        company_ids = self.env.companies.ids
+        company_domain = [('company_id', 'in', company_ids)]
+        company_names = ', '.join(self.env.companies.mapped('name'))
+        journal_ids = r.journal_ids if r.journal_ids else self.env[
+            'account.journal'].search(company_domain, order="company_id, name")
         analytics = self.analytic_ids if self.analytic_ids else self.env[
             'account.analytic.account'].search(
             company_domain)
@@ -313,27 +310,48 @@ class BalanceSheetView(models.TransientModel):
         analytic_tags = self.analytic_tag_ids if self.analytic_tag_ids else \
             self.env[
                 'account.analytic.tag'].sudo().search(
-                ['|', ('company_id', '=', company_id.id),
+                ['|', ('company_id', 'in', company_ids),
                  ('company_id', '=', False)])
 
         if r.account_tag_ids:
             company_domain.append(
                 ('tag_ids', 'in', r.account_tag_ids.ids))
 
-        accounts = self.account_ids if self.account_ids else self.env[
-            'account.account'].search(company_domain)
+        accounts_ids = self.account_ids if self.account_ids else self.env[
+            'account.account'].search(company_domain, order="company_id, name")
+
+        journals = []
+        o_company = False
+        for j in journal_ids:
+            if j.company_id != o_company:
+                journals.append(('divider', j.company_id.name))
+                o_company = j.company_id
+            journals.append((j.id, j.name, j.code))
+
+        accounts = []
+
+        o_company = False
+        for j in accounts_ids:
+            if j.company_id != o_company:
+                accounts.append(('divider', j.company_id.name))
+                o_company = j.company_id
+            accounts.append((j.id, j.name))
+
+
+
+
         filter_dict = {
             'journal_ids': r.journal_ids.ids,
             'account_ids': r.account_ids.ids,
             'analytic_ids': r.analytic_ids.ids,
-            'company_id': company_id.id,
+            'company_id': company_ids,
             'date_from': r.date_from,
             'date_to': r.date_to,
             'target_move': r.target_move,
-            'journals_list': [(j.id, j.name, j.code) for j in journals],
-            'accounts_list': [(a.id, a.name) for a in accounts],
+            'journals_list': journals,
+            'accounts_list': accounts,
             'analytic_list': [(anl.id, anl.name) for anl in analytics],
-            'company_name': company_id and company_id.name,
+            'company_name': company_names,
             'analytic_tag_ids': r.analytic_tag_ids.ids,
             'analytic_tag_list': [(anltag.id, anltag.name) for anltag in
                                   analytic_tags],
@@ -471,6 +489,7 @@ class BalanceSheetView(models.TransientModel):
             params = tuple(where_params)
         else:
             params = (tuple(accounts.ids),) + tuple(where_params)
+
         cr.execute(sql, params)
 
         for row in cr.dictfetchall():

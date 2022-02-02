@@ -24,7 +24,6 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
             'click .gl-line': 'show_drop_down',
             'click .view-account-move': 'view_acc_move',
             'mousedown div.input-group.date[data-target-input="nearest"]': '_onCalendarIconClick',
-
         },
 
         init: function(parent, action) {

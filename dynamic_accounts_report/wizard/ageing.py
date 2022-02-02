@@ -109,8 +109,8 @@ class AgeingView(models.TransientModel):
     def get_filter_data(self, option):
         r = self.env['account.partner.ageing'].search([('id', '=', option[0])])
         default_filters = {}
-        company_id = self.env.company
-        company_domain = [('company_id', '=', company_id.id)]
+        company_id = self.env.companies
+        company_domain = [('company_id', 'in', company_id.ids)]
         partner = r.partner_ids if r.partner_ids else self.env[
             'res.partner'].search([])
         categories = r.partner_category_ids if r.partner_category_ids \
@@ -119,14 +119,14 @@ class AgeingView(models.TransientModel):
         filter_dict = {
             'partners': r.partner_ids.ids,
             'partner_tags': r.partner_category_ids.ids,
-            'company_id': company_id.id,
+            'company_id': company_id.ids,
             'date_from': r.date_from,
 
             'target_move': r.target_move,
             'result_selection': r.result_selection,
             'partners_list': [(p.id, p.name) for p in partner],
             'category_list': [(c.id, c.name) for c in categories],
-            'company_name': company_id and company_id.name,
+            'company_name': ', '.join(self.env.companies.mapped('name')),
         }
         filter_dict.update(default_filters)
         return filter_dict
@@ -210,7 +210,9 @@ class AgeingView(models.TransientModel):
 
         user_currency = user_company.currency_id
         ResCurrency = self.env['res.currency'].with_context(date=date_from)
-        company_ids = self._context.get('company_ids') or [user_company.id]
+        # company_ids = self._context.get('company_ids') or [user_company.id]
+
+        company_ids = self.env.companies.ids
         move_state = ['draft', 'posted']
         if target_move == 'posted':
             move_state = ['posted']
@@ -226,7 +228,6 @@ class AgeingView(models.TransientModel):
         if reconciled_after_date:
             reconciliation_clause = '(l.reconciled IS FALSE OR l.id IN %s)'
             arg_list += (tuple(reconciled_after_date),)
-
         arg_list += (date_from, tuple(company_ids),)
         partner_list = '(l.partner_id IS NOT  NULL)'
         if partners:

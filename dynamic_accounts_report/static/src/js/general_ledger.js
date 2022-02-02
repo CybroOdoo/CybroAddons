@@ -358,7 +358,6 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
 
             var account_ids = [];
             var account_text = [];
-
             var account_res = document.getElementById("acc_res")
             var account_list = $(".account").select2('data')
             for (var i = 0; i < account_list.length; i++) {
@@ -379,8 +378,7 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
             }
             filter_data_selected.account_ids = account_ids
 
-
-
+            if (self._title == "General Ledger"){
              var journal_ids = [];
             var journal_text = [];
             var journal_res = document.getElementById("journal_res")
@@ -404,6 +402,9 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
             }
             filter_data_selected.journal_ids = journal_ids
 
+            }
+
+
             var analytic_ids = []
             var analytic_text = [];
             var analytic_res = document.getElementById("analytic_res")
@@ -426,7 +427,6 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
 
             }
             filter_data_selected.analytic_ids = analytic_ids
-
             var analytic_tag_ids = []
             var analytic_tag_text = [];
             var analytic_tag_res = document.getElementById("analytic_tag_res")
@@ -466,6 +466,7 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
             if (this.$el.find('.datetimepicker-input[name="gen_date_to"]').val()) {
                 filter_data_selected.date_to = moment(this.$el.find('.datetimepicker-input[name="gen_date_to"]').val(), time.getLangDateFormat()).locale('en').format('YYYY-MM-DD');
             }
+
 
             if ($(".target_move").length) {
             var post_res = document.getElementById("post_res")

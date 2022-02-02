@@ -43,25 +43,30 @@ class GeneralView(models.TransientModel):
         r = self.env['account.general.ledger'].search([('id', '=', option[0])])
         new_title = ''
         trans_title = self.env['ir.translation'].search([('value', '=', title), ('module', '=', 'dynamic_accounts_report')], limit=1).src
-
-        journals = r.journal_ids
-        if title == 'General Ledger' or trans_title == 'General Ledger':
+        company_id = self.env.companies.ids
+        if r.journal_ids:
             journals = r.journal_ids
+        else:
+            journals = self.env['account.journal'].search([('company_id', 'in', company_id)])
+        if title == 'General Ledger' or trans_title == 'General Ledger':
+            if r.journal_ids:
+                journals = r.journal_ids
+            else:
+                journals = self.env['account.journal'].search([('company_id', 'in', company_id)])
             new_title = title
         if title == 'Bank Book' or trans_title == 'Bank Book':
-            journals = self.env['account.journal'].search([('type', '=', 'bank')],
-                                                          limit=1)
+            journals = self.env['account.journal'].search([('type', '=', 'bank'), ('company_id', 'in', company_id)])
+
             new_title = title
         if title == 'Cash Book' or trans_title == 'Cash Book':
-            journals = self.env['account.journal'].search([('type', '=', 'cash')],
-                                                          limit=1)
+            journals = self.env['account.journal'].search([('type', '=', 'cash'), ('company_id', 'in', company_id)])
             new_title = title
         r.write({
             'titles': new_title,
         })
         data = {
             'display_account': r.display_account,
-            'model':self,
+            'model': self,
             'journals': journals,
             'target_move': r.target_move,
             'accounts': r.account_ids,
@@ -78,7 +83,6 @@ class GeneralView(models.TransientModel):
             data.update({
                 'date_to': r.date_to,
             })
-
         filters = self.get_filter(option)
         records = self._get_report_values(data)
         currency = self._get_currency()
@@ -140,42 +144,72 @@ class GeneralView(models.TransientModel):
     def get_filter_data(self, option):
         r = self.env['account.general.ledger'].search([('id', '=', option[0])])
         default_filters = {}
-        company_id = self.env.company
-        company_domain = [('company_id', '=', company_id.id)]
-        journals = r.journal_ids if r.journal_ids else self.env['account.journal'].search(company_domain)
-        accounts = self.account_ids if self.account_ids else self.env['account.account'].search(company_domain)
+        company_id = self.env.companies
+        company_domain = [('company_id', 'in', company_id.ids)]
+
         account_tags = r.account_tag_ids if r.account_tag_ids else self.env[
             'account.account.tag'].search([])
         analytics = r.analytic_ids if r.analytic_ids else self.env['account.analytic.account'].search(
             company_domain)
         analytic_tags = r.analytic_tag_ids if r.analytic_tag_ids else self.env[
             'account.analytic.tag'].search([])
+
+
+        journal_ids = r.journal_ids if r.journal_ids else self.env['account.journal'].search(company_domain, order="company_id, name")
+        accounts_ids = self.account_ids if self.account_ids else self.env['account.account'].search(company_domain, order="company_id, name")
+        journals = []
+        o_company = False
+        for j in journal_ids:
+            if j.company_id != o_company:
+                journals.append(('divider', j.company_id.name))
+                o_company = j.company_id
+            journals.append((j.id, j.name, j.code))
+
+        accounts = []
+
+        o_company = False
+        for j in accounts_ids:
+            if j.company_id != o_company:
+                accounts.append(('divider', j.company_id.name))
+                o_company = j.company_id
+            accounts.append((j.id, j.name))
+
+
+
         filter_dict = {
             'journal_ids': r.journal_ids.ids,
             'analytic_ids': r.analytic_ids.ids,
             'analytic_tag_ids': r.analytic_tag_ids.ids,
             'account_ids': r.account_ids.ids,
             'account_tag_ids': r.account_tag_ids.ids,
-            'company_id': company_id.id,
+            'company_id': company_id.ids,
             'date_from': r.date_from,
             'date_to': r.date_to,
             'target_move': r.target_move,
-            'journals_list': [(j.id, j.name, j.code) for j in journals],
-            'accounts_list': [(a.id, a.name) for a in accounts],
+            # 'journals_list': [(j.id, j.name, j.code) for j in journals],
+            'journals_list': journals,
+            # 'accounts_list': [(a.id, a.name) for a in accounts],
+            'accounts_list': accounts,
             'account_tag_list': [(a.id, a.name) for a in account_tags],
             'analytic_list': [(anl.id, anl.name) for anl in analytics],
             'analytic_tag_list': [(anltag.id, anltag.name) for anltag in analytic_tags],
-            'company_name': company_id and company_id.name,
+            'company_name': ', '.join(self.env.companies.mapped('name')),
         }
         filter_dict.update(default_filters)
         return filter_dict
 
     def _get_report_values(self, data):
+
         docs = data['model']
         display_account = data['display_account']
         init_balance = True
         journals = data['journals']
-        accounts = self.env['account.account'].search([])
+        if not journals:
+            raise UserError(_("No journals Found! Please Add One"))
+
+        company_id = self.env.companies
+        company_domain = [('company_id', 'in', company_id.ids)]
+        accounts = self.env['account.account'].search(company_domain)
         if not accounts:
             raise UserError(_("No Accounts Found! Please Add One"))
         account_res = self._get_accounts(accounts, init_balance, display_account, data)
@@ -334,7 +368,6 @@ class GeneralView(models.TransientModel):
             params = tuple(where_params)
         else:
             params = (tuple(accounts.ids),) + tuple(where_params)
-
         cr.execute(sql, params)
 
         for row in cr.dictfetchall():

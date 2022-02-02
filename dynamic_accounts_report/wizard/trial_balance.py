@@ -3,6 +3,7 @@ from odoo import fields, models, api, _
 
 import io
 import json
+from odoo.http import request
 from odoo.exceptions import AccessError, UserError, AccessDenied
 
 try:
@@ -80,21 +81,46 @@ class TrialView(models.TransientModel):
 
         return filters
 
+    def get_current_company_value(self):
+
+        cookies_cids = [int(r) for r in request.httprequest.cookies.get('cids').split(",")] \
+            if request.httprequest.cookies.get('cids') \
+            else [request.env.user.company_id.id]
+        for company_id in cookies_cids:
+            if company_id not in self.env.user.company_ids.ids:
+                cookies_cids.remove(company_id)
+        if not cookies_cids:
+            cookies_cids = [self.env.company.id]
+        if len(cookies_cids) == 1:
+            cookies_cids.append(0)
+        return cookies_cids
+
     def get_filter_data(self, option):
         r = self.env['account.trial.balance'].search([('id', '=', option[0])])
         default_filters = {}
-        company_id = self.env.company
-        company_domain = [('company_id', '=', company_id.id)]
-        journals = r.journal_ids if r.journal_ids else self.env['account.journal'].search(company_domain)
+        company_id = self.env.companies.ids
+        company_domain = [('company_id', 'in', company_id)]
+        journal_ids = r.journal_ids if r.journal_ids else self.env['account.journal'].search(company_domain, order="company_id, name")
+
+
+        journals = []
+        o_company = False
+        for j in journal_ids:
+            if j.company_id != o_company:
+                journals.append(('divider', j.company_id.name))
+                o_company = j.company_id
+            journals.append((j.id, j.name, j.code))
 
         filter_dict = {
             'journal_ids': r.journal_ids.ids,
-            'company_id': company_id.id,
+            'company_id': company_id,
             'date_from': r.date_from,
             'date_to': r.date_to,
             'target_move': r.target_move,
-            'journals_list': [(j.id, j.name, j.code) for j in journals],
-            'company_name': company_id and company_id.name,
+            'journals_list': journals,
+            # 'journals_list': [(j.id, j.name, j.code) for j in journals],
+
+            'company_name': ', '.join(self.env.companies.mapped('name')),
         }
         filter_dict.update(default_filters)
         return filter_dict
@@ -215,7 +241,7 @@ class TrialView(models.TransientModel):
 
             if data['journals']:
                 filters += ' AND jrnl.id IN %s' % str(tuple(data['journals'].ids) + tuple([0]))
-            tables += 'JOIN account_journal jrnl ON (account_move_line.journal_id=jrnl.id)'
+            tables += ' JOIN account_journal jrnl ON (account_move_line.journal_id=jrnl.id)'
 
             # compute the balance, debit and credit for the provided accounts
             request = (
