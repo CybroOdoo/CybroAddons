@@ -1168,7 +1168,7 @@ odoo.define('AccountingDashboard.AccountingDashboard', function(require) {
                         .then(function(result) {
                             currency = result;
 
-                        })
+                        
 
 
                     rpc.query({
@@ -1816,6 +1816,8 @@ odoo.define('AccountingDashboard.AccountingDashboard', function(require) {
 
                             }
                         })
+
+                    })// get currency
                 });
         },
 
