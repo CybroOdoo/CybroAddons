@@ -19,7 +19,7 @@
 
 {
     'name': "Task Deadline Reminder",
-    'version': "12.0.1.0.0",
+    'version': "12.0.2.0.0",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
