@@ -39,9 +39,7 @@
     'depends': ['base', 'base_accounting_kit'],
     'data': [
         'security/ir.model.access.csv',
-        'views/templates.xml',
         'views/views.xml',
-        'views/kit_menus.xml',
         'report/trial_balance.xml',
         'report/general_ledger.xml',
         'report/cash_flow_report.xml',
