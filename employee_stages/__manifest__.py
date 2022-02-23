@@ -23,7 +23,7 @@
 
 {
     'name': 'Employee Stages',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'summary': """Manages Employee Stages""",
     'description': """This module is used to tracking employee's different stages.""",
     'category': "Generic Modules/Human Resources",

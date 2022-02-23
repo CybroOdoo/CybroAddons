@@ -145,3 +145,9 @@ class WizardEmployee(models.TransientModel):
         employee_obj.set_as_employee()
 
     related_user = fields.Many2one('res.users', string="Related User")
+
+
+class HrEmployeePublic(models.Model):
+    _inherit = 'hr.employee.public'
+
+    state = fields.Selection(related='employee_id.state', string='Stage')
