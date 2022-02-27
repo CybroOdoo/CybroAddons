@@ -24,6 +24,7 @@ import odoo
 import odoo.modules.registry
 from odoo.tools.translate import _
 from odoo import http
+import ipaddress
 
 
 class Home(main.Home):
@@ -46,15 +47,19 @@ class Home(main.Home):
         if request.httprequest.method == 'POST':
             old_uid = request.uid
             ip_address = request.httprequest.environ['REMOTE_ADDR']
+            login_ip = ipaddress.ip_network(ip_address)
             if request.params['login']:
                 user_rec = request.env['res.users'].sudo().search([('login', '=', request.params['login'])])
                 if user_rec.allowed_ips:
-                    ip_list = []
-                    print ("ip_list",ip_list)
+                    ip_ok = False
                     for rec in user_rec.allowed_ips:
-                        ip_list.append(rec.ip_address)
-                        print("ipaddressssssss",ip_list)
-                    if ip_address in ip_list:
+                        try:
+                            if login_ip.subnet_of(ipaddress.ip_network(rec.ip_address,False)):
+                                ip_ok = True
+                                break
+                        except ValueError:
+                            continue
+                    if ip_ok:
                         uid = request.session.authenticate(request.session.db, request.params['login'], request.params['password'])
                         print("uiddddddddd",uid)
                         if uid is not False:
@@ -77,6 +82,5 @@ class Home(main.Home):
                         return http.redirect_with_hash(redirect)
                     request.uid = old_uid
                     values['error'] = _("Wrong login/password")
-
 
         return request.render('web.login', values)
