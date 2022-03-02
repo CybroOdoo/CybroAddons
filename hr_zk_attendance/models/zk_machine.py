@@ -31,6 +31,7 @@ from struct import unpack
 from odoo import api, fields, models
 from odoo import _
 from odoo.exceptions import UserError, ValidationError
+
 _logger = logging.getLogger(__name__)
 try:
     from zk import ZK, const
@@ -48,7 +49,7 @@ class HrAttendance(models.Model):
 
 class ZkMachine(models.Model):
     _name = 'zk.machine'
-    
+
     name = fields.Char(string='Machine IP', required=True)
     port_no = fields.Integer(string='Port No', required=True)
     address_id = fields.Many2one('res.partner', string='Working Address')
@@ -60,7 +61,7 @@ class ZkMachine(models.Model):
             return conn
         except:
             return False
-    
+
     def clear_attendance(self):
         for info in self:
             try:
@@ -114,9 +115,9 @@ class ZkMachine(models.Model):
     @api.model
     def cron_download(self):
         machines = self.env['zk.machine'].search([])
-        for machine in machines :
+        for machine in machines:
             machine.download_attendance()
-        
+
     def download_attendance(self):
         _logger.info("++++++++++++Cron Executed++++++++++++++++++++++")
         zk_attendance = self.env['zk.machine.attendance']
@@ -156,7 +157,7 @@ class ZkMachine(models.Model):
                             for uid in user:
                                 if uid.user_id == each.user_id:
                                     get_user_id = self.env['hr.employee'].search(
-                                        [('device_id', '=', each.user_id)])
+                                        [('device_id', '=', each.user_id)], limit=1)
                                     if get_user_id:
                                         duplicate_atten_ids = zk_attendance.search(
                                             [('device_id', '=', each.user_id), ('punching_time', '=', atten_time)])
@@ -172,11 +173,11 @@ class ZkMachine(models.Model):
                                             att_var = att_obj.search([('employee_id', '=', get_user_id.id),
                                                                       ('check_out', '=', False)])
                                             print('ddfcd', str(each.status))
-                                            if each.punch == 0: #check-in
+                                            if each.punch == 0:  # check-in
                                                 if not att_var:
                                                     att_obj.create({'employee_id': get_user_id.id,
                                                                     'check_in': atten_time})
-                                            if each.punch == 1: #check-out
+                                            if each.punch == 1:  # check-out
                                                 if len(att_var) == 1:
                                                     att_var.write({'check_out': atten_time})
                                                 else:
