@@ -541,7 +541,6 @@ class CRMLead(models.Model):
             if len(data) != 3:
                 del data
             else:
-                data[1] = 0
                 if data[2] == 0:
                     ratio = 0
                 else:
