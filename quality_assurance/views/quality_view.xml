@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <menuitem name="Quality" id="menu_quality_root" sequence="30"
+        groups="quality_assurance.group_quality_user"
+        web_icon="quality_assurance,static/description/icon.png"/>
+
+    <!-- ################# Quality Measures ################# -->
+
+        <record id="quality_measure_tree" model="ir.ui.view">
+            <field name="name">quality.measure.tree</field>
+            <field name="model">quality.measure</field>
+            <field name="arch" type="xml">
+                <tree string="Quality Alerts">
+                    <field name="name"/>
+                    <field name="product_id"/>
+                    <field name="type"/>
+                    <field name="quantity_min"/>
+                    <field name="quantity_max"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="quality_measure_form_view" model="ir.ui.view">
+            <field name="name">quality.measure.form</field>
+            <field name="model">quality.measure</field>
+            <field name="arch" type="xml">
+                <form string="Quality Measure">
+
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="toggle_active" type="object"
+                                    class="oe_stat_button" icon="fa-archive">
+                                <field name="active" widget="boolean_button"
+                                    options='{"terminology": "archive"}'/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <label for="name" string="Test"/>
+                            <h3><field name="name" placeholder="Name"/></h3>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="product_id"/>
+                                <field name="type"/>
+                            </group>
+                            <group>
+                                <field name="quantity_min" attrs="{'invisible':[('type', '=', 'quality')]}"/>
+                                <field name="quantity_max" attrs="{'invisible':[('type', '=', 'quality')]}"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="trigger_time"/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="quality_measure_view_search" model="ir.ui.view">
+            <field name="name">quality.measure.search</field>
+            <field name="model">quality.measure</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="product_id"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Product" name="group_by_product_id" domain="[]" context="{'group_by':'product_id'}"/>
+                        <filter string="Type" name="group_by_type" domain="[]" context="{'group_by':'type'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="quality_measure_action">
+            <field name="name">Quality Measure</field>
+            <field name="res_model">quality.measure</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="quality_measure_view_search"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click here to add a new Quality Measure
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_quality_config_settings" name="Configuration" parent="menu_quality_root"
+            sequence="100" groups="group_quality_manager"/>
+
+        <menuitem id="menu_quality_measure" name="Quality Measures" parent="menu_quality_config_settings" action="quality_measure_action"/>
+
+    <!-- ################# Quality Alerts ################# -->
+
+        <menuitem id="menu_quality_assurance" name="Quality Assurance" parent="menu_quality_root"/>
+
+
+        <record id="quality_alert_tree" model="ir.ui.view">
+            <field name="name">quality.alert.tree</field>
+            <field name="model">quality.alert</field>
+            <field name="arch" type="xml">
+                <tree string="Quality Alerts">
+                    <field name="name"/>
+                    <field name="product_id"/>
+                    <field name="origin"/>
+                    <field name="date"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="quality_alert_form" model="ir.ui.view">
+            <field name="name">quality.alert.form</field>
+            <field name="model">quality.alert</field>
+            <field name="arch" type="xml">
+                <form string="Quality Alert">
+                    <header>
+                        <button name="generate_tests" string="Generate Tests" type="object" class="oe_highlight" groups="quality_assurance.group_quality_user"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h2><field name="name" placeholder="Name" readonly="1"/></h2>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="product_id"/>
+                                <field name="user_id"/>
+                            </group>
+                            <group>
+                                <field name="date"/>
+                                <field name="picking_id" readonly="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Tests">
+                                <field name="tests"  nolabel="1">
+                                    <tree create="false" editable="1">
+                                        <field name="name"/>
+                                        <field name="test_type" invisible="1"/>
+                                        <field name="quantity_min" invisible="1"/>
+                                        <field name="quantity_max" invisible="1"/>
+                                        <field name="test_user_id"/>
+                                        <field name="test_result" string="Quantitative Result" attrs="{'readonly':[('test_type', '=', 'quality')]}"/>
+                                        <field name="test_result2" string="Qualitative Result" attrs="{'readonly':[('test_type', '=', 'quantity')]}"/>
+                                        <field name="test_status"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="quality_alert_view_search" model="ir.ui.view">
+            <field name="name">quality.alert.search</field>
+            <field name="model">quality.alert</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="origin"/>
+                    <field name="product_id"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Source Document" name="groupby_origin" domain="[]" context="{'group_by':'origin'}"/>
+                        <filter string="Product" name="groupby_product_id" domain="[]" context="{'group_by':'product_id'}"/>
+                        <filter string="Creation Date" name="groupby_createmonth" domain="[]" context="{'group_by':'date'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="quality_alert_action">
+            <field name="name">Quality Alerts</field>
+            <field name="res_model">quality.alert</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="quality_alert_view_search"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click here to add a new Quality Alert
+                </p><p>
+                  Quality alerts will be created automatically when your inventory team try to process inventory operations.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_quality_alert" name="Quality Alerts" parent="menu_quality_assurance" action="quality_alert_action"/>
+
+    <!-- ################# Quality Tests ################# -->
+
+        <record id="quality_test_tree" model="ir.ui.view">
+            <field name="name">quality.test.tree</field>
+            <field name="model">quality.test</field>
+            <field name="arch" type="xml">
+                <tree string="Quality Tests">
+                    <field name="name"/>
+                    <field name="product_id"/>
+                    <field name="test_type"/>
+                    <field name="test_status"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="quality_test_form" model="ir.ui.view">
+            <field name="name">quality.test.form</field>
+            <field name="model">quality.test</field>
+            <field name="arch" type="xml">
+                <form string="Quality Test">
+                    <sheet>
+                        <div class="oe_title">
+                            <h2><field name="name" placeholder="Name" readonly="1"/></h2>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="test_type"/>
+                                <field name="quantity_min" attrs="{'invisible':[('test_type', '=', 'quality')]}"/>
+                                <field name="quantity_max" attrs="{'invisible':[('test_type', '=', 'quality')]}"/>
+                                <field name="test_result" attrs="{'invisible':[('test_type', '=', 'quality')]}"/>
+                                <field name="test_result2" attrs="{'invisible':[('test_type', '=', 'quantity')]}"/>
+                                <field name="test_status"/>
+                            </group>
+                            <group>
+                                <field name="quality_measure"/>
+                                <field name="alert_id"/>
+                                <field name="product_id"/>
+                                <field name="test_user_id"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="quality_test_view_search" model="ir.ui.view">
+            <field name="name">quality.test.search</field>
+            <field name="model">quality.test</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="product_id"/>
+                    <filter string="My Tests" name="my_tests" domain="[('test_user_id','=',uid)]"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="quality_test_action">
+            <field name="name">Quality Tests</field>
+            <field name="res_model">quality.test</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_my_tests': 1}</field>
+        </record>
+
+        <menuitem id="menu_quality_test" name="Quality Tests" parent="menu_quality_assurance" action="quality_test_action"/>
+    </data>
+</odoo>
