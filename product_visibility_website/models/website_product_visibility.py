@@ -89,12 +89,13 @@ class WebsiteGuestVisibility(models.TransientModel):
         res = super(WebsiteGuestVisibility, self).get_values()
         product_ids = literal_eval(self.env['ir.config_parameter'].sudo().get_param('website_product_visibility.available_product_ids', 'False'))
         cat_ids = literal_eval(self.env['ir.config_parameter'].sudo().get_param('website_product_visibility.available_cat_ids', 'False'))
-        mod = self.env['ir.config_parameter'].sudo().get_param('filter_mode')
-        res.update(
-            product_visibility_guest_user=self.env['ir.config_parameter'].sudo().get_param(
-                'product_visibility_guest_user'),
-            filter_mode=mod if mod else 'product_only',
-            available_product_ids=[(6, 0, product_ids)],
-            available_cat_ids=[(6, 0, cat_ids)],
-        )
+        if self.env['ir.config_parameter'].sudo().get_param('filter_mode'):
+            mod = self.env['ir.config_parameter'].sudo().get_param('filter_mode')
+            res.update(
+                product_visibility_guest_user=self.env['ir.config_parameter'].sudo().get_param(
+                    'product_visibility_guest_user'),
+                filter_mode=mod if mod else 'product_only',
+                available_product_ids=[(6, 0, product_ids)],
+                available_cat_ids=[(6, 0, cat_ids)],
+            )
         return res
