@@ -21,7 +21,7 @@
 ##############################################################################
 {
     'name': 'POS Product Multiple UOM',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'category': 'Point of Sale',
     'sequence': -100,
     'summary': 'Multiple UOM for Products',
@@ -33,7 +33,6 @@
     'data': [
              'views/pos_view_extended.xml',
             ],
-    # 'qweb': ['static/src/xml/pos.xml'],
     'images': ['static/description/banner.png',
                'static/description/icon.png'],
     'assets': {
