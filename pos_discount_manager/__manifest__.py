@@ -30,7 +30,6 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': "Cybrosys Techno Solutions",
     'website': "http://www.cybrosys.com",
-    'version': '14.0.1.0.0',
     'depends': ['point_of_sale', 'hr'],
     'data': [
         'views/hr_employee_inherit_view.xml',
