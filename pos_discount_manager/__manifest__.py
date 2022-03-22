@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "POS Discount Manager Approval",
-    'version': '14.0.1.0.2',
+    'version': '14.0.1.0.3',
     'summary': """Discount limit for each employee in every  point of sale""",
     'description': """"This module helps you to set a discount limit for each employee in every  point of sale. 
     It facilitate the manager approval when discount over the limit of employee""",
@@ -30,7 +30,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': "Cybrosys Techno Solutions",
     'website': "http://www.cybrosys.com",
-    'depends': ['point_of_sale', 'hr'],
+    'depends': ['point_of_sale', 'pos_discount', 'hr'],
     'data': [
         'views/hr_employee_inherit_view.xml',
         'views/templates.xml',
