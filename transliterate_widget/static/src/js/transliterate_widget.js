@@ -1,8 +1,9 @@
-odoo.define('transliterate_widget.TransliterateWidget', function(require) {
+odoo.define('transliterate_widget.TransliterateWidgets', function(require) {
     "use strict";
     var field_registry = require('web.field_registry');
     var fields = require('web.basic_fields');
     var rpc = require('web.rpc');
+    console.log("google", google)
 
     google.load("elements", "1", {
         packages: "transliteration"
@@ -25,6 +26,7 @@ odoo.define('transliterate_widget.TransliterateWidget', function(require) {
                     shadow: true,
                 })
                 .then(function (result) {
+                    console.log("result", result)
                     var options = {
                         sourceLanguage: google.elements.transliteration.LanguageCode.ENGLISH,
                         destinationLanguage: [result],
