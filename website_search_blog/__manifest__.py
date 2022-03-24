@@ -21,7 +21,7 @@
 
 {
     'name': 'Website Blog Search',
-    'version': '13.0.1.0.0',
+    'version': '13.0.1.0.1',
     "category": "Website",
     'author': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",

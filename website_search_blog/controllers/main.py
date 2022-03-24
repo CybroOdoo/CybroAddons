@@ -45,7 +45,7 @@ class BlogInherit(WebsiteBlog):
 
         domain = request.website.website_domain()
         blog_post = request.env['blog.post']
-        blogs = request.env['blog.blog'].search(domain, order="create_date asc", limit=2)
+        blogs = request.env['blog.blog'].search(domain, order="create_date asc")
         # retrocompatibility to accept tag as slug
         active_tag_ids = tag and [int(unslug(t)[1]) for t in tag.split(',')] if tag else []
         if active_tag_ids:
