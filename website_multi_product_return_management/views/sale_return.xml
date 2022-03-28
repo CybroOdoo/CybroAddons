@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sale_return_form_view" model="ir.ui.view">
+        <field name="name">Sale Return</field>
+        <field name="model">sale.return</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="return_confirm" string="Confirm" class="oe_highlight"
+                            type="object" states="draft"/>
+                    <button name="return_cancel" string="Cancel" type="object" states="draft,confirm"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_picking" type="object" class="oe_stat_button"
+                                icon="fa-pencil-square-o" attrs="{'invisible': [('picking_count', '=', 0)]}">
+                            <field name="picking_count" widget="statinfo" string="Return Picking"/>
+                        </button>
+                        <button name="action_view_delivery" type="object" class="oe_stat_button"
+                                icon="fa-pencil-square-o" attrs="{'invisible': [('delivery_count', '=', 0)]}">
+                            <field name="delivery_count" widget="statinfo" string="Delivery order"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="sale_order"/>
+                            <field name="partner_id"/>
+
+                        </group>
+                        <group>
+                            <field name="create_date"/>
+                            <field name="user_id"/>
+                            <field name="stock_picking" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                         <page string="Return Lines" name="order_line">
+                             <field name="return_line_ids" context="{'order_id':sale_order}">
+                                <tree editable="bottom">
+                                    <field name="product_id" />
+                                    <field name="product_tmpl_id" invisible="1"/>
+                                    <field name="quantity" readonly="1" force_save="1"/>
+                                    <field name="received_qty"/>
+                                    <field name="reason"/>
+                                    <field name="to_refund" optional="hide"/>
+                                </tree>
+                            </field>
+
+                        </page>
+
+                        <page string="Delivery Order" name="delivery_order">
+                            <field name="source_pick"/>
+                        </page>
+                        <page string="Return Picking" name="return_picking">
+                            <field name="stock_picking"/>
+                        </page>
+                        <page string="Other" name="other_info">
+                            <separator colspan="4" string="Other Datails"/>
+                            <field name="note" colspan="4" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="sale_return_tree_view">
+        <field name="name">Sale Return</field>
+        <field name="model">sale.return</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="sale_order"/>
+                <field name="partner_id"/>
+                <field name="create_date"/>
+                <field name="user_id"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_sale_return_search" model="ir.ui.view">
+        <field name="name">sale.return.search</field>
+        <field name="model">sale.return</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="sale_order" string="Sale order"/>
+                <field name="partner_id" string="Customer"/>
+                <filter string="Done" name="done" domain="[('state', '=', 'done')]" help="Done order"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Status" name="status" domain="[]" context="{'group_by':'state'}"/>
+                    <filter string="Sale Order" name="order" context="{'group_by':'sale_order'}"/>
+                    <filter string="Customer" name="customer" domain="[]" context="{'group_by':'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="sale_return_action" model="ir.actions.act_window">
+        <field name="name">Sale Return</field>
+        <field name="res_model">sale.return</field>
+        <field name="view_mode">tree,form</field>
+
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">Create The First Return
+            </p>
+        </field>
+    </record>
+    <menuitem id="sale_return_menu"
+              parent="sale.sale_menu_root"
+              name="Return Orders"
+              action="website_multi_product_return_management.sale_return_action"/>
+</odoo>
