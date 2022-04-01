@@ -48,7 +48,6 @@ odoo.define('dynamic_accounts_report.partner_ledger', function (require) {
             })
         },
 
-
         _onCalendarIconClick: function (ev) {
         var $calendarInputGroup = $(ev.currentTarget);
 

@@ -21,5 +21,8 @@
 #### UPDT
 - Arabic Translation added
 
-
+#### 05.02.2022
+#### Version 13.0.1.0.4
+#### UPDT AND BUGFIX
+- Multi-company and Translation Update and Bugfix
 
