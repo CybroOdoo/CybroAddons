@@ -4,7 +4,6 @@ from datetime import timedelta, datetime
 from odoo import fields, models, api, _
 import io
 import json
-from odoo.http import request
 from odoo.exceptions import AccessError, UserError, AccessDenied
 
 try:
@@ -58,19 +57,6 @@ class AgeingView(models.TransientModel):
             'report_lines': records['Accounts'],
             'currency': currency,
         }
-    def get_current_company_value(self):
-
-        cookies_cids = [int(r) for r in request.httprequest.cookies.get('cids').split(",")] \
-            if request.httprequest.cookies.get('cids') \
-            else [request.env.user.company_id.id]
-        for company_id in cookies_cids:
-            if company_id not in self.env.user.company_ids.ids:
-                cookies_cids.remove(company_id)
-        if not cookies_cids:
-            cookies_cids = [self.env.company.id]
-        if len(cookies_cids) == 1:
-            cookies_cids.append(0)
-        return cookies_cids
 
     def get_filter(self, option):
         data = self.get_filter_data(option)
@@ -103,46 +89,61 @@ class AgeingView(models.TransientModel):
     def get_filter_data(self, option):
         r = self.env['account.day.book'].search([('id', '=', option[0])])
         default_filters = {}
-        # company_id = self.env.company
-        company = self.get_current_company_value()[0]
-        company_id = self.env['res.company'].search([('id', '=', int(company))])
-        company_domain = [('company_id', '=', company_id.id)]
-        journals = self.journal_ids if self.journal_ids else self.env[
-            'account.journal'].search(company_domain)
-        accounts = self.account_ids if self.account_ids else self.env[
-            'account.account'].search(company_domain)
+        company_id = self.env.companies
+        company_domain = [('company_id', 'in', company_id.ids)]
+        # journals = self.journal_ids if self.journal_ids else self.env[
+        #     'account.journal'].search(company_domain)
+        # accounts = self.account_ids if self.account_ids else self.env[
+        #     'account.account'].search(company_domain)
+
+        journal_ids = self.journal_ids if self.journal_ids else self.env['account.journal'].search(company_domain, order="company_id, name")
+        accounts_ids = self.account_ids if self.account_ids else self.env['account.account'].search(company_domain, order="company_id, name")
+        journals = []
+        o_company = False
+        for j in journal_ids:
+            if j.company_id != o_company:
+                journals.append(('divider', j.company_id.name))
+                o_company = j.company_id
+            journals.append((j.id, j.name, j.code))
+
+        accounts = []
+
+        o_company = False
+        for j in accounts_ids:
+            if j.company_id != o_company:
+                accounts.append(('divider', j.company_id.name))
+                o_company = j.company_id
+            accounts.append((j.id, j.name))
+
 
         filter_dict = {
             'journal_ids': self.journal_ids.ids,
             'account_ids': self.account_ids.ids,
-            'company_id': company_id.id,
+            'company_id': company_id.ids,
             'date_from': r.date_from,
             'date_to':r.date_to,
 
             'target_move': r.target_move,
-            'journals_list': [(j.id, j.name, j.code) for j in journals],
-            'accounts_list': [(a.id, a.name) for a in accounts],
+            'journals_list': journals,
+            'accounts_list': accounts,
 
-            'company_name': company_id and company_id.name,
+            'company_name': ', '.join(self.env.companies.mapped('name')),
         }
         filter_dict.update(default_filters)
         return filter_dict
 
     def _get_report_values(self, data=None):
         form_data = data['form']
-        company = self.get_current_company_value()[0]
-        company_id = self.env['res.company'].search([('id', '=', int(company))])
-        company_domain = [('company_id', '=', company_id.id)]
         active_acc = data['form']['account_ids']
         accounts = self.env['account.account'].search(
             [('id', 'in', active_acc)]) if data['form']['account_ids'] else \
-            self.env['account.account'].search(company_domain)
+            self.env['account.account'].search([])
         if not accounts:
             raise UserError(_("No Accounts Found! Please Add One"))
         active_jrnl = data['form']['journal_ids']
         journals = self.env['account.journal'].search(
             [('id', 'in', active_jrnl)]) if data['form']['journal_ids'] else \
-            self.env['account.journal'].search(company_domain)
+            self.env['account.journal'].search([])
         if not journals:
             raise UserError(_("No journals Found!"))
 
@@ -196,19 +197,19 @@ class AgeingView(models.TransientModel):
         return res
 
     def _get_account_move_entry(self, accounts, form_data,journals, pass_date):
-        company = self.get_current_company_value()[0]
-        company_id = self.env['res.company'].search([('id', '=', int(company))])
         cr = self.env.cr
         move_line = self.env['account.move.line']
         tables, where_clause, where_params = move_line._query_get()
-        where_params[0] = int(company_id.id)
         wheres = [""]
+        companies = self.env.companies.ids
+        companies.append(0)
+        target_move = "AND l.company_id in %s" % str(tuple(companies))
         if where_clause.strip():
             wheres.append(where_clause.strip())
         if form_data['target_move'] == 'posted':
-            target_move = "AND m.state = 'posted'"
+            target_move += " AND m.state = 'posted'"
         else:
-            target_move = ''
+            target_move += """AND m.state in ('draft','posted') """
         sql = ('''
                 SELECT l.id AS lid,m.id AS move_id, acc.name as accname, l.account_id AS account_id, l.date AS ldate, j.code AS lcode, l.currency_id, 
                 l.amount_currency, l.ref AS lref, l.name AS lname, COALESCE(l.debit,0) AS debit, COALESCE(l.credit,0) AS credit, 
@@ -247,9 +248,6 @@ class AgeingView(models.TransientModel):
 
     @api.model
     def _get_currency(self):
-        company = self.get_current_company_value()[0]
-        company_id = self.env['res.company'].search([('id', '=', int(company))])
-
         journal = self.env['account.journal'].browse(
             self.env.context.get('default_journal_id', False))
         if journal.currency_id:
@@ -258,10 +256,8 @@ class AgeingView(models.TransientModel):
         if not lang:
             lang = 'en_US'
         lang = lang.replace("_", '-')
-        # currency_array = [self.env.company.currency_id.symbol,
-        #                   self.env.company.currency_id.position, lang]
-        currency_array = [company_id.currency_id.symbol,
-                          company_id.currency_id.position, lang]
+        currency_array = [self.env.company.currency_id.symbol,
+                          self.env.company.currency_id.position, lang]
         return currency_array
 
     def get_dynamic_xlsx_report(self, data, response, report_data, dfr_data):

@@ -86,6 +86,8 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                         args: [[this.wizard_id], action_title, self.searchModel.config.context.lang],
                     }).then(function(datas) {
 
+
+
                             if (initial_render) {
                                     self.$('.filter_view_dfr').html(QWeb.render('DfrFilterView', {
                                         filter_data: datas['filters'],

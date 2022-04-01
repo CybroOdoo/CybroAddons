@@ -15,14 +15,11 @@ except ImportError:
 class TrialView(models.TransientModel):
     _inherit = "account.common.report"
     _name = 'account.trial.balance'
-    _check_company_auto = True
 
     journal_ids = fields.Many2many('account.journal',
 
                                    string='Journals', required=True,
                                    default=[])
-    company_id = fields.Many2one('res.company', string='Company', required=True, default=lambda self: self.env['res.company']._company_default_get(
-                                     'account.trial.balance'))
     display_account = fields.Selection(
         [('all', 'All'), ('movement', 'With movements'),
          ('not_zero', 'With balance is not equal to 0')],
@@ -81,31 +78,8 @@ class TrialView(models.TransientModel):
         filters['journals_list'] = data.get('journals_list')
         filters['company_name'] = data.get('company_name')
         filters['target_move'] = data.get('target_move').capitalize()
-        filters['date_from'] = data.get('date_from')
-        filters['date_to'] = data.get('date_to')
 
         return filters
-
-    def get_filter_data(self, option):
-        r = self.env['account.trial.balance'].search([('id', '=', option[0])])
-        default_filters = {}
-        company = self.get_current_company_value()[0]
-        company_id = self.env['res.company'].search([('id', '=', int(company))])
-        # company_id = self.env.company
-        company_domain = [('company_id', '=', company_id.id)]
-        journals = r.journal_ids if r.journal_ids else self.env['account.journal'].search(company_domain)
-
-        filter_dict = {
-            'journal_ids': r.journal_ids.ids,
-            'company_id': company_id.id,
-            'date_from': r.date_from,
-            'date_to': r.date_to,
-            'target_move': r.target_move,
-            'journals_list': [(j.id, j.name, j.code) for j in journals],
-            'company_name': company_id and company_id.name,
-        }
-        filter_dict.update(default_filters)
-        return filter_dict
 
     def get_current_company_value(self):
 
@@ -121,15 +95,41 @@ class TrialView(models.TransientModel):
             cookies_cids.append(0)
         return cookies_cids
 
+    def get_filter_data(self, option):
+        r = self.env['account.trial.balance'].search([('id', '=', option[0])])
+        default_filters = {}
+        company_id = self.env.companies.ids
+        company_domain = [('company_id', 'in', company_id)]
+        journal_ids = r.journal_ids if r.journal_ids else self.env['account.journal'].search(company_domain, order="company_id, name")
+
+
+        journals = []
+        o_company = False
+        for j in journal_ids:
+            if j.company_id != o_company:
+                journals.append(('divider', j.company_id.name))
+                o_company = j.company_id
+            journals.append((j.id, j.name, j.code))
+
+        filter_dict = {
+            'journal_ids': r.journal_ids.ids,
+            'company_id': company_id,
+            'date_from': r.date_from,
+            'date_to': r.date_to,
+            'target_move': r.target_move,
+            'journals_list': journals,
+            # 'journals_list': [(j.id, j.name, j.code) for j in journals],
+
+            'company_name': ', '.join(self.env.companies.mapped('name')),
+        }
+        filter_dict.update(default_filters)
+        return filter_dict
+
     def _get_report_values(self, data):
         docs = data['model']
-        company = self.get_current_company_value()[0]
-        company_id = self.env['res.company'].search([('id', '=', int(company))])
-        company_domain = [('company_id', '=', company_id.id)]
         display_account = data['display_account']
         journals = data['journals']
-        # accounts = self.env['account.account'].search([])
-        accounts = self.env['account.account'].search(company_domain)
+        accounts = self.env['account.account'].search([])
         if not accounts:
             raise UserError(_("No Accounts Found! Please Add One"))
         account_res = self._get_accounts(accounts, display_account, data)
@@ -162,12 +162,10 @@ class TrialView(models.TransientModel):
         return res
 
     def _get_accounts(self, accounts, display_account, data):
-        company = self.get_current_company_value()[0]
-        company_id = self.env['res.company'].search([('id', '=', int(company))])
+
         account_result = {}
         # Prepare sql query base on selected parameters from wizard
         tables, where_clause, where_params = self.env['account.move.line']._query_get()
-        where_params[0] = int(company_id.id)
         tables = tables.replace('"', '')
         if not tables:
             tables = 'account_move_line'
@@ -176,9 +174,9 @@ class TrialView(models.TransientModel):
             wheres.append(where_clause.strip())
         filters = " AND ".join(wheres)
         if data['target_move'] == 'posted':
-            filters += " AND  account_move_line.parent_state = 'posted'"
+            filters += " AND account_move_line.parent_state = 'posted'"
         else:
-            filters += " AND  account_move_line.parent_state in ('draft','posted')"
+            filters += " AND account_move_line.parent_state in ('draft','posted')"
         if data.get('date_from'):
             filters += " AND account_move_line.date >= '%s'" % data.get('date_from')
         if data.get('date_to'):
@@ -186,7 +184,7 @@ class TrialView(models.TransientModel):
 
         if data['journals']:
             filters += ' AND jrnl.id IN %s' % str(tuple(data['journals'].ids) + tuple([0]))
-        tables += 'JOIN account_journal jrnl ON (account_move_line.journal_id=jrnl.id)'
+        tables += ' JOIN account_journal jrnl ON (account_move_line.journal_id=jrnl.id)'
         # compute the balance, debit and credit for the provided accounts
         request = (
                     "SELECT account_id AS id, SUM(debit) AS debit, SUM(credit) AS credit, (SUM(debit) - SUM(credit)) AS balance" + \
@@ -235,15 +233,15 @@ class TrialView(models.TransientModel):
                 wheres.append(where_clause.strip())
             filters = " AND ".join(wheres)
             if data['target_move'] == 'posted':
-                filters += " AND  account_move_line.parent_state = 'posted'"
+                filters += " AND account_move_line.parent_state = 'posted'"
             else:
-                filters += " AND  account_move_line.parent_state in ('draft','posted')"
+                filters += " AND account_move_line.parent_state in ('draft','posted')"
             if data.get('date_from'):
                 filters += " AND account_move_line.date < '%s'" % data.get('date_from')
 
             if data['journals']:
                 filters += ' AND jrnl.id IN %s' % str(tuple(data['journals'].ids) + tuple([0]))
-            tables += 'JOIN account_journal jrnl ON (account_move_line.journal_id=jrnl.id)'
+            tables += ' JOIN account_journal jrnl ON (account_move_line.journal_id=jrnl.id)'
 
             # compute the balance, debit and credit for the provided accounts
             request = (
@@ -256,8 +254,6 @@ class TrialView(models.TransientModel):
 
     @api.model
     def _get_currency(self):
-        company = self.get_current_company_value()[0]
-        company_id = self.env['res.company'].search([('id', '=', int(company))])
         journal = self.env['account.journal'].browse(
             self.env.context.get('default_journal_id', False))
         if journal.currency_id:
@@ -266,11 +262,8 @@ class TrialView(models.TransientModel):
         if not lang:
             lang = 'en_US'
         lang = lang.replace("_", '-')
-        # currency_array = [self.env.company.currency_id.symbol,
-        #                   self.env.company.currency_id.position,
-        #                   lang]
-        currency_array = [company_id.currency_id.symbol,
-                          company_id.currency_id.position,
+        currency_array = [self.env.company.currency_id.symbol,
+                          self.env.company.currency_id.position,
                           lang]
         return currency_array
 

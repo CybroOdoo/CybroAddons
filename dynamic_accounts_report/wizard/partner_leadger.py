@@ -4,7 +4,7 @@ from odoo import fields, models, api, _
 import io
 import json
 from odoo.exceptions import AccessError, UserError, AccessDenied
-from odoo.http import request
+
 try:
     from odoo.tools.misc import xlsxwriter
 except ImportError:
@@ -78,20 +78,6 @@ class PartnerView(models.TransientModel):
             'currency': currency,
         }
 
-    def get_current_company_value(self):
-
-        cookies_cids = [int(r) for r in request.httprequest.cookies.get('cids').split(",")] \
-            if request.httprequest.cookies.get('cids') \
-            else [request.env.user.company_id.id]
-        for company_id in cookies_cids:
-            if company_id not in self.env.user.company_ids.ids:
-                cookies_cids.remove(company_id)
-        if not cookies_cids:
-            cookies_cids = [self.env.company.id]
-        if len(cookies_cids) == 1:
-            cookies_cids.append(0)
-        return cookies_cids
-
     def get_filter(self, option):
         data = self.get_filter_data(option)
 
@@ -146,13 +132,11 @@ class PartnerView(models.TransientModel):
     def get_filter_data(self, option):
         r = self.env['account.partner.ledger'].search([('id', '=', option[0])])
         default_filters = {}
-        # company_id = self.env.company
-        company = self.get_current_company_value()
-        company_id = self.env['res.company'].search([('id', 'in', company)])
-        company_domain = [('company_id', 'in', company)]
-        journals = r.journal_ids if r.journal_ids else self.env['account.journal'].search(company_domain)
-        company_domain += [('user_type_id.type', 'in', ('receivable', 'payable'))]
-        accounts = self.account_ids if self.account_ids else self.env['account.account'].search(company_domain)
+        company_id = self.env.companies.ids
+        company_domain = [('company_id', 'in', company_id)]
+        journal_ids = r.journal_ids if r.journal_ids else self.env['account.journal'].search(company_domain, order="company_id, name")
+        accounts_ids = self.account_ids if self.account_ids else self.env['account.account'].search(company_domain, order="company_id, name")
+
 
         partner = r.partner_ids if r.partner_ids else self.env[
             'res.partner'].search([])
@@ -161,16 +145,36 @@ class PartnerView(models.TransientModel):
         account_types = r.account_type_ids if r.account_type_ids \
             else self.env['account.account.type'].search([('type', 'in', ('receivable', 'payable'))])
 
+        journals = []
+        o_company = False
+        for j in journal_ids:
+            if j.company_id != o_company:
+                journals.append(('divider', j.company_id.name))
+                o_company = j.company_id
+            journals.append((j.id, j.name, j.code))
+
+        accounts = []
+
+        o_company = False
+        for j in accounts_ids:
+            if j.company_id != o_company:
+                accounts.append(('divider', j.company_id.name))
+                o_company = j.company_id
+            accounts.append((j.id, j.name))
+
+
+
         filter_dict = {
             'journal_ids': r.journal_ids.ids,
             'account_ids': r.account_ids.ids,
-            'company_id': company_id[0].id,
+            'company_id': company_id,
             'date_from': r.date_from,
             'date_to': r.date_to,
             'target_move': r.target_move,
-            'journals_list': [(j.id, j.name, j.code) for j in journals],
-            'accounts_list': [(a.id, a.name) for a in accounts],
-            'company_name': company_id[0] and company_id[0].name,
+            'journals_list': journals,
+            'accounts_list': accounts,
+            # 'company_name': company_id and company_id.name,
+            'company_name': ', '.join(self.env.companies.mapped('name')),
             'partners': r.partner_ids.ids,
             'reconciled': r.reconciled,
             'account_type': r.account_type_ids.ids,
@@ -187,13 +191,12 @@ class PartnerView(models.TransientModel):
         docs = data['model']
         display_account = data['display_account']
         init_balance = True
-        company = self.get_current_company_value()
-        company_id = self.env['res.company'].search([('id', 'in', company)])
+        company_id = self.env.companies.ids
         accounts = self.env['account.account'].search([('user_type_id.type', 'in', ('receivable', 'payable')),
-                                                       ('company_id', 'in', company)])
+                                                       ('company_id', 'in', company_id)])
         if data['account_type']:
             accounts = self.env['account.account'].search(
-                [('user_type_id.id', 'in', data['account_type'].ids), ('company_id', '=', company_id.id)])
+                [('user_type_id.id', 'in', data['account_type'].ids),('company_id', 'in', company_id)])
 
         partners = self.env['res.partner'].search([])
 
@@ -202,7 +205,7 @@ class PartnerView(models.TransientModel):
                 [('category_id', 'in', data['partner_tags'].ids)])
         if not accounts:
             raise UserError(_("No Accounts Found! Please Add One"))
-        partner_res = self._get_partners(partners, accounts, init_balance, display_account, data)
+        partner_res = self._get_partners(partners,accounts, init_balance, display_account, data)
 
         debit_total = 0
         debit_total = sum(x['debit'] for x in partner_res)
@@ -261,10 +264,8 @@ class PartnerView(models.TransientModel):
         move_line = self.env['account.move.line']
         move_lines = {x: [] for x in partners.ids}
         currency_id = self.env.company.currency_id
-        company = self.get_current_company_value()[0]
-        company_id = self.env['res.company'].search([('id', '=', int(company))])
+
         tables, where_clause, where_params = move_line._query_get()
-        where_params[0] = int(company_id.id)
         wheres = [""]
         if where_clause.strip():
             wheres.append(where_clause.strip())
@@ -318,6 +319,7 @@ class PartnerView(models.TransientModel):
         cr.execute(sql, params)
 
         account_list = {x.id: {'name': x.name, 'code': x.code} for x in accounts}
+
         for row in cr.dictfetchall():
             balance = 0
             if row['partner_id'] in move_lines:
@@ -330,9 +332,7 @@ class PartnerView(models.TransientModel):
 
         partner_res = []
         for partner in partners:
-            # company_id = self.env.company
-            company = self.get_current_company_value()
-            company_id = self.env['res.company'].search([('id', 'in', company)])
+            company_id = self.env.company
             currency = company_id.currency_id
             res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
             res['name'] = partner.name
@@ -353,8 +353,6 @@ class PartnerView(models.TransientModel):
 
     @api.model
     def _get_currency(self):
-        company = self.get_current_company_value()
-        company_id = self.env['res.company'].search([('id', 'in', company)])
         journal = self.env['account.journal'].browse(
             self.env.context.get('default_journal_id', False))
         if journal.currency_id:
@@ -363,10 +361,8 @@ class PartnerView(models.TransientModel):
         if not lang:
             lang = 'en_US'
         lang = lang.replace("_", '-')
-        # currency_array = [self.env.company.currency_id.symbol,
-        #                   self.env.company.currency_id.position, lang]
-        currency_array = [company_id[0].currency_id.symbol,
-                          company_id[0].currency_id.position, lang]
+        currency_array = [self.env.company.currency_id.symbol,
+                          self.env.company.currency_id.position, lang]
         return currency_array
 
     def get_dynamic_xlsx_report(self, data, response, report_data, dfr_data):

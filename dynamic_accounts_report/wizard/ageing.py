@@ -4,7 +4,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from odoo import fields, models, api, _
 from odoo.tools import float_is_zero
-from odoo.http import request
+
 import io
 import json
 
@@ -109,9 +109,7 @@ class AgeingView(models.TransientModel):
     def get_filter_data(self, option):
         r = self.env['account.partner.ageing'].search([('id', '=', option[0])])
         default_filters = {}
-        company = self.get_current_company_value()
-        company_id = self.env['res.company'].search([('id', 'in', company)])
-        # company_id = self.env.company
+        company_id = self.env.companies
         company_domain = [('company_id', 'in', company_id.ids)]
         partner = r.partner_ids if r.partner_ids else self.env[
             'res.partner'].search([])
@@ -121,14 +119,14 @@ class AgeingView(models.TransientModel):
         filter_dict = {
             'partners': r.partner_ids.ids,
             'partner_tags': r.partner_category_ids.ids,
-            'company_id': company_id[0].id,
+            'company_id': company_id.ids,
             'date_from': r.date_from,
 
             'target_move': r.target_move,
             'result_selection': r.result_selection,
             'partners_list': [(p.id, p.name) for p in partner],
             'category_list': [(c.id, c.name) for c in categories],
-            'company_name': company_id and company_id[0].name,
+            'company_name': ', '.join(self.env.companies.mapped('name')),
         }
         filter_dict.update(default_filters)
         return filter_dict
@@ -160,19 +158,6 @@ class AgeingView(models.TransientModel):
             'Partners': account_res,
 
         }
-
-    def get_current_company_value(self):
-        cookies_cids = [int(r) for r in request.httprequest.cookies.get('cids').split(",")] \
-            if request.httprequest.cookies.get('cids') \
-            else [request.env.user.company_id.id]
-        for company_id in cookies_cids:
-            if company_id not in self.env.user.company_ids.ids:
-                cookies_cids.remove(company_id)
-        if not cookies_cids:
-            cookies_cids = [self.env.company.id]
-        if len(cookies_cids) == 1:
-            cookies_cids.append(0)
-        return cookies_cids
 
     @api.model
     def create(self, vals):
@@ -221,14 +206,13 @@ class AgeingView(models.TransientModel):
         res = []
         total = []
         cr = self.env.cr
-        company = self.get_current_company_value()[0]
-        user_company = self.env['res.company'].search([('id', '=', int(company))])
-        # user_company = self.env.company
+        user_company = self.env.company
 
         user_currency = user_company.currency_id
         ResCurrency = self.env['res.currency'].with_context(date=date_from)
         # company_ids = self._context.get('company_ids') or [user_company.id]
-        company_ids = self._context.get('company_ids') or [user_company.id]
+
+        company_ids = self.env.companies.ids
         move_state = ['draft', 'posted']
         if target_move == 'posted':
             move_state = ['posted']
@@ -244,7 +228,6 @@ class AgeingView(models.TransientModel):
         if reconciled_after_date:
             reconciliation_clause = '(l.reconciled IS FALSE OR l.id IN %s)'
             arg_list += (tuple(reconciled_after_date),)
-
         arg_list += (date_from, tuple(company_ids),)
         partner_list = '(l.partner_id IS NOT  NULL)'
         if partners:
@@ -301,7 +284,6 @@ class AgeingView(models.TransientModel):
         aml_ids = cr.fetchall()
         aml_ids = aml_ids and [x[0] for x in aml_ids] or []
         for line in self.env['account.move.line'].browse(aml_ids):
-            print("skljskl", line.partner_id)
             partner_id = line.partner_id.id or False
             move_id = line.move_id.id
             move_name = line.move_id.name
@@ -561,8 +543,6 @@ class AgeingView(models.TransientModel):
 
     @api.model
     def _get_currency(self):
-        company = self.get_current_company_value()[0]
-        company_id = self.env['res.company'].search([('id', '=', int(company))])
         journal = self.env['account.journal'].browse(
             self.env.context.get('default_journal_id', False))
         if journal.currency_id:
@@ -571,11 +551,8 @@ class AgeingView(models.TransientModel):
         if not lang:
             lang = 'en_US'
         lang = lang.replace("_", '-')
-        # currency_array = [self.env.company.currency_id.symbol,
-        #                   self.env.company.currency_id.position, lang]
-        currency_array = [company_id.currency_id.symbol,
-                          company_id.currency_id.position, lang]
-
+        currency_array = [self.env.company.currency_id.symbol,
+                          self.env.company.currency_id.position, lang]
         return currency_array
 
     def get_dynamic_xlsx_report(self, data, response, report_data, dfr_data ):

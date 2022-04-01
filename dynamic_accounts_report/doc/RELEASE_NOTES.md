@@ -16,3 +16,8 @@
 #### Version 15.0.1.0.2
 #### UPDT
 - Arabic Translation added
+
+#### 01.02.2022
+#### Version 15.0.1.0.3
+#### UPDT AND BUGFIX
+- Multi-company and Translation Update and Bugfix
