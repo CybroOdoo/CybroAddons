@@ -124,7 +124,7 @@ class Home(main.Home):
 
                 if not ip_ok:
                     request.uid = old_uid
-                    values['error'] = _("Not allowed to login from this IP")
+                    values['error'] = _("Not allowed to login from this IP (%s)" % ip_address)
 
                     if not odoo.tools.config['list_db']:
                         values['disable_database_manager'] = True
