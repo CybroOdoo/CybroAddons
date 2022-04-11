@@ -54,33 +54,26 @@ class Home(main.Home):
                     ip_ok = False
                     for rec in user_rec.allowed_ips:
                         try:
-                            if login_ip.subnet_of(ipaddress.ip_network(rec.ip_address,False)):
+                            if login_ip.subnet_of(ipaddress.ip_network(rec.ip_address, False)):
                                 ip_ok = True
                                 break
                         except ValueError:
                             continue
-                    if ip_ok:
-                        uid = request.session.authenticate(request.session.db, request.params['login'], request.params['password'])
-                        print("uiddddddddd",uid)
-                        if uid is not False:
-                                request.params['login_success'] = True
-                                if not redirect:
-                                    redirect = '/web'
-                                return http.redirect_with_hash(redirect)
+
+                    if not ip_ok:
+
                         request.uid = old_uid
-                        values['error'] = _("Wrong login/password")
-                    request.uid = old_uid
-                    values['error'] = _("Not allowed to login from this IP")
-                    print("ippppppppppp",ip_list)
-                else:
-                    uid = request.session.authenticate(request.session.db, request.params['login'],
+                        values['error'] = _("Not allowed to login from this IP")
+                        return request.render('web.login', values)
+
+                uid = request.session.authenticate(request.session.db, request.params['login'],
                                                        request.params['password'])
-                    if uid is not False:
-                        request.params['login_success'] = True
-                        if not redirect:
-                            redirect = '/web'
-                        return http.redirect_with_hash(redirect)
-                    request.uid = old_uid
-                    values['error'] = _("Wrong login/password")
+                if uid is not False:
+                    request.params['login_success'] = True
+                    if not redirect:
+                        redirect = '/web'
+                    return http.redirect_with_hash(redirect)
+                request.uid = old_uid
+                values['error'] = _("Wrong login/password")
 
         return request.render('web.login', values)
