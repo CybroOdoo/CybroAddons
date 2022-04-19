@@ -21,3 +21,8 @@
 #### Version 15.0.1.0.3
 #### UPDT AND BUGFIX
 - Multi-company and Translation Update and Bugfix
+
+#### 16.04.2022
+#### Version 15.0.1.0.4
+#### UPDT AND BUGFIX
+- Loading issue and orderby date
