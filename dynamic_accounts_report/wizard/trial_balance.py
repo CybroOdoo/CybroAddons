@@ -31,7 +31,7 @@ class TrialView(models.TransientModel):
 
         data = {
             'display_account': r.display_account,
-            'model':self,
+            'model': self,
             'journals': r.journal_ids,
             'target_move': r.target_move,
 

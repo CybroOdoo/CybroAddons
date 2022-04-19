@@ -22,8 +22,7 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function (require) {
             'click #pdf': 'print_pdf',
             'click #xlsx': 'print_xlsx',
             'click .cf-line': 'get_move_lines',
-                        'mousedown div.input-group.date[data-target-input="nearest"]': '_onCalendarIconClick',
-
+            'mousedown div.input-group.date[data-target-input="nearest"]': '_onCalendarIconClick',
         },
 
         init: function(parent, action) {
