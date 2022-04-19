@@ -22,7 +22,7 @@
 
 {
     'name': "Multi Branch Operations",
-    'version': "14.0.1.0.0",
+    'version': "14.0.1.0.1",
     'summary': """ Multiple Branch Unit Operation Setup for All 
                    Modules In Odoo""",
     'description': """Multiple Branch Unit Operation Setup for All 
