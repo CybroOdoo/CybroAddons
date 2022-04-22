@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="SessionSummaryReceipt" owl="1">
+        <div class="pos-receipt">
+            <t t-if="company.logo">
+                <img class="pos-receipt-logo" t-att-src="company.logo" alt="Logo"/>
+                <br/>
+            </t>
+            <t t-if="!company.logo">
+                <h2 class="pos-receipt-center-align">
+                    <t t-esc="company.name" />
+                </h2>
+                <br/>
+            </t>
+            <div class="pos-receipt-contact">
+                <t t-if="company.contact_address">
+                    <div><t t-esc="company.contact_address" /></div>
+                </t>
+                <t t-if="company.phone">
+                    <div>Tel:<t t-esc="company.phone" /></div>
+                </t>
+                <t t-if="company.vat">
+                    <div><t t-esc="company.vat_label"/>:<t t-esc="company.vat" /></div>
+                </t>
+                <t t-if="company.email">
+                    <div><t t-esc="company.email" /></div>
+                </t>
+                <t t-if="company.website">
+                    <div><t t-esc="company.website" /></div>
+                </t>
+
+                <t t-if="cashier">
+                    <div class="cashier">
+                        <div>--------------------------------</div>
+                        <div>Served by <t t-esc="cashier.name" /></div>
+                    </div>
+                </t>
+            </div>
+            <br />
+
+            <h3 class="pos-receipt-center-align">
+                Session Summary
+            </h3>
+
+            <table style="width: 100%; font-size:14px !important;" t-if="session_summary">
+                <tr>
+                    <td style="text-align:left;"><strong>Session</strong></td>
+                    <td style="text-align:right;"><t t-esc="session_summary.session_name"/></td>
+
+                </tr>
+                <tr>
+                    <td style="text-align:left;"><strong>Opening Date</strong></td>
+                    <td style="text-align:right;"><t t-esc="session_summary.start_date"/></td>
+                </tr>
+                <tr t-if="session_summary.end_date">
+                    <td style="text-align:left;"><strong>Closing Date</strong></td>
+                    <td style="text-align:right;"><t t-esc="session_summary.start_date"/></td>
+                </tr>
+                <tr>
+                    <td style="text-align:left;"><strong>Opening Balance</strong></td>
+                    <td style="text-align:right;"><t t-esc="env.pos.format_currency_no_symbol(session_summary.opening_balance)"/></td>
+                </tr>
+                <tr t-if="session_summary.closing_balance">
+                    <td style="text-align:left;"><strong>Closing Balance</strong></td>
+                    <td style="text-align:right;"><t t-esc="env.pos.format_currency_no_symbol(session_summary.closing_balance)"/></td>
+                </tr>
+            </table>
+
+            <h4 class="pos-receipt-center-align">
+                Products
+            </h4>
+
+            <table t-if="session_summary" style="margin-top:10px; font-size:14px !important; margin-left: auto; margin-right: auto;" class="receipt-orderlines">
+                <colgroup>
+                   <col style="width: 60%;"/>
+                   <col style="width: 20%;"/>
+                   <col style="width: 20%;"/>
+                </colgroup>
+                <thead style="border-bottom: 1px solid black;">
+					<tr>
+						<th>Product</th>
+						<th style="text-align: center;">Quantity</th>
+						<th style="text-align: right;">Total</th>
+					</tr>
+				</thead>
+				<tbody>
+                    <t t-set="total_qty" t-value="0"/>
+                    <t t-set="total" t-value="0"/>
+					<tr t-foreach="session_summary.product_summary" t-as="product">
+						<td>
+                            <t t-if="product.code">[<t t-esc="product.code"/>] </t><t t-esc="product.name"/>
+						</td>
+						<td style="text-align: center;">
+							<t t-esc="product.qty"/>
+						</td>
+                        <td style="text-align: right;">
+							<t t-esc="env.pos.format_currency_no_symbol(product.total)"/>
+						</td>
+                        <t t-set="total_qty" t-value="total_qty + product.qty"/>
+                        <t t-set="total" t-value="total + product.total"/>
+					</tr>
+					<br />
+					<tr style="border-top: 2px solid black;">
+						<td>Total:</td>
+						<td style="text-align: center;">
+							<t t-esc="total_qty"/>
+						</td>
+                        <td style="text-align: right;">
+							<t t-esc="env.pos.format_currency_no_symbol(total)"/>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+            <h4 class="pos-receipt-center-align">
+                Payments
+            </h4>
+
+            <table t-if="session_summary" style="margin-top:10px; font-size:14px !important; width:100%;" class="receipt-orderlines">
+                <colgroup>
+                   <col style="width: 50%;"/>
+                   <col style="width: 50%;"/>
+                </colgroup>
+                <thead style="border-bottom: 1px solid black;">
+					<tr>
+						<th>Payment Method</th>
+						<th style="text-align: right;">Amount</th>
+					</tr>
+				</thead>
+				<tbody>
+                    <t t-set="sub_total" t-value="0"/>
+					<tr t-foreach="session_summary.payments_summary" t-as="payment">
+						<td>
+							<t t-esc="payment.name"/>
+						</td>
+						<td style="text-align: right;">
+							<t t-esc="env.pos.format_currency_no_symbol(payment.total)"/>
+						</td>
+                        <t t-set="sub_total" t-value="sub_total + payment.total"/>
+					</tr>
+					<br />
+					<tr style="border-top: 2px solid black;">
+						<td>Total:</td>
+						<td style="text-align: right;">
+							<t t-esc="env.pos.format_currency_no_symbol(sub_total)"/>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+        </div>
+    </t>
+
+</templates>
