@@ -181,7 +181,6 @@ var DynamicDashboard = AbstractAction.extend({
                     var type = block['graph_type']
                     var chart_type = 'self.get_values_' + `${type}(block)`
                     var data = eval(chart_type)
-                    console.log(data[1],"dyfjjjjjjjjjjjjjjjjjjjjjjj")
                   //create Chart class object
                   var chart = new Chart(ctx, {
                     type: type,
