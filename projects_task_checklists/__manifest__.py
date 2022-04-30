@@ -42,6 +42,7 @@
             'projects_task_checklists/static/src/xml/progress.xml',
         ],
     },
+    'images': ['static/description/banner.png'],
     'license': 'LGPL-3',
     'installable': True,
     'application': False,
