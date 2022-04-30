@@ -35,6 +35,7 @@
         'views/template.xml',
     ],
     'qweb': ['static/src/xml/progress.xml'],
+    'images': ['static/description/banner.png'],
     'license': 'LGPL-3',
     'installable': True,
     'application': False,
