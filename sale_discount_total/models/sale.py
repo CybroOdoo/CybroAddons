@@ -21,7 +21,6 @@
 #############################################################################
 
 from odoo import api, fields, models
-import odoo.addons.decimal_precision as dp
 
 
 class SaleOrder(models.Model):
@@ -49,7 +48,7 @@ class SaleOrder(models.Model):
                                      readonly=True,
                                      states={'draft': [('readonly', False)], 'sent': [('readonly', False)]},
                                      default='percent')
-    discount_rate = fields.Float('Discount Rate', digits=dp.get_precision('Account'),
+    discount_rate = fields.Float('Discount Rate', digits='Account',
                                  readonly=True, states={'draft': [('readonly', False)], 'sent': [('readonly', False)]})
     amount_untaxed = fields.Monetary(string='Untaxed Amount', store=True, readonly=True, compute='_amount_all',
                                      tracking=True)
@@ -58,7 +57,7 @@ class SaleOrder(models.Model):
     amount_total = fields.Monetary(string='Total', store=True, readonly=True, compute='_amount_all',
                                    tracking=True)
     amount_discount = fields.Monetary(string='Discount', store=True, readonly=True, compute='_amount_all',
-                                      digits=dp.get_precision('Account'), tracking=True)
+                                      digits='Account', tracking=True)
 
     @api.onchange('discount_type', 'discount_rate', 'order_line')
     def supply_rate(self):
