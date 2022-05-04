@@ -26,7 +26,7 @@
     'category': 'Accounting',
     'summary': """ This modules enables approval feature in the payment.""",
     'description': """This modules enables approval feature in the payment. """,
-    'author': ' Cybrosys Techno Solutions',
+    'author': 'Frontware, Cybrosys Techno Solutions',
     'company': 'Frontware, Cybrosys Techno Solutions',
     'maintainer': 'Frontware, Cybrosys Techno Solutions',
     'website': "https://github.com/Frontware/CybroAddons",
