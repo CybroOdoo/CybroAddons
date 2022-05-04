@@ -28,11 +28,11 @@
                     You can see all products in kanban, list and form view.You can also view the recent transfer 
                     history of the selected product along with the option to update the quantity, Inventory, Add Multiple Products""",
     'category': 'Stock',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
     'depends': ['base', 'stock'],
-    'website': 'https://www.cybrosys.com',
+    'website': "https://github.com/Frontware/CybroAddons",
     'data': [
         'security/ir.model.access.csv',
         'wizards/wizard.xml',

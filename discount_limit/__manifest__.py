@@ -28,10 +28,10 @@
         This module is used to limit the discount on pos product category and 
         also restrict the global discount for selected cashiers.""",    
     'version': '14.0.1.0.0',
-    'author': "Cybrosys Techno Solutions",
-    'website': "https://www.cybrosys.com",
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
+    'author': "Frontware, Cybrosys Techno Solutions",
+    'website': "https://github.com/Frontware/CybroAddons",
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
     'category': 'Point of Sale',
     'depends': ['point_of_sale','hr'],
     'data': [

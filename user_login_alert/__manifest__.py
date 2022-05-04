@@ -25,9 +25,9 @@
     'version': '14.0.1.0.0',
     'description': """Secure your Odoo account by alerts at right time. If any successful login to your
                     account happens, an alert mail will be send to you with the browser and IP details, Odoo 13, Odoo13""",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'category': 'Tools',
     'depends': ['base', 'mail'],
     'license': 'AGPL-3',

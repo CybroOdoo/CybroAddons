@@ -27,9 +27,9 @@
     'summary': """Manages Employee Stages""",
     'description': """This module is used to tracking employee's different stages.""",
     'category': "Generic Modules/Human Resources",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'depends': ['base', 'hr'],
     'data': [
         'security/ir.model.access.csv',

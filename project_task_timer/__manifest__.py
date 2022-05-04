@@ -23,8 +23,8 @@
     'summary': """Task Timer With Start & Stop""",
     'description': """"This module helps you to track time sheet in project automatically.""",
     'category': 'Project',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
     'website': "http://www.cybrosys.com",
     'depends': ['base', 'project', 'hr_timesheet'],
     'data': [

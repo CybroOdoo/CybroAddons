@@ -26,11 +26,11 @@
     'description': """This module allow you to create manufacturing orders with out 
                     taking the work orders or work centers.""",
     'category': 'Manufacturing/Manufacturing',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
     'depends': ['mail', 'stock'],
-    'website': 'https://www.cybrosys.com',
+    'website': "https://github.com/Frontware/CybroAddons",
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',

@@ -26,8 +26,8 @@
     'category': 'Sales Management',
     'live_test_url': 'https://www.youtube.com/watch?v=CigmHe9iC4s&feature=youtu.be',
     'summary': "Discount on Total in Sale and Invoice With Discount Limit and Approval",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
     'description': """
 

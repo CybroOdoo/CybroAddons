@@ -25,9 +25,9 @@
     'description': """
        Each customer have unique number code, Odoo 13, Odoo
     """,
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'website': "https://cybrosys.com/",
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'category': 'Sales',
     'depends': ['sale_management'],
     'data': [

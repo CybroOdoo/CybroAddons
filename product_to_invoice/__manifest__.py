@@ -29,10 +29,10 @@
                     You can see all products in kanban, list and form view.You can also view the recent invoice/bill 
                     history of the selected product along with the option to update the quantity, Change price, 
                     Add Multiple Products""",
-    'author': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
     'depends': ['base', 'account'],
     'data': [
         'security/ir.model.access.csv',

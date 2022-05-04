@@ -25,10 +25,10 @@
     'summary': """Customize Odoo, odoo14""",
     'description': """Customize Odoo, odoo14""",
     'live_test_url': 'https://www.youtube.com/watch?v=fYSPARjmYA4',
-    'author': "Cybrosys Techno Solutions",
-    'company': "Cybrosys Techno Solutions",
+    'author': "Frontware, Cybrosys Techno Solutions",
+    'company': "Frontware, Cybrosys Techno Solutions",
     'maintainer': "Cybrosys Techno Solutions",
-    'website': "https://cybrosys.com/",
+    'website': "https://github.com/Frontware/CybroAddons",
     'category': 'Tools',
     'depends': ['website', 'base_setup'],
     'data': [

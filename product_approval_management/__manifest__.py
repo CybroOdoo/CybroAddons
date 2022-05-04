@@ -29,10 +29,10 @@
              sale order line
         """,
     'category': "Sales/Sales",
-    'author': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
     'depends': ['sale_management'],
     'data': [
         'security/approve_security.xml',

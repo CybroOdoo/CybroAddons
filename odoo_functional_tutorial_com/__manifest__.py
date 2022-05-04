@@ -9,9 +9,9 @@
         Odoo functional video presentation of all Application:
     """,
 
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     # 'live_test_url': '',
     'category': 'Extra Tools',
     'version': '14.0.1.0.0',

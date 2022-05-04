@@ -27,8 +27,8 @@
     'description': """"This module helps you to set a logo for every point of sale. This will help you to
                  identify the point of sale easily. You can also see this logo in pos screen and pos receipt.""",
     'category': 'Point Of Sale',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
     'website': "http://www.cybrosys.com",
     'depends': ['base', 'point_of_sale'],
     'data': [

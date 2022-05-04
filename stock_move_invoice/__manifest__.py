@@ -28,10 +28,10 @@
     'description': """In this module creating customer invoice,vendor bill, customer
     credit note and refund from stock picking""",
     'category': 'Stock',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'depends': ['stock', 'account'],
     'data': [
         'views/account_move_inherited.xml',

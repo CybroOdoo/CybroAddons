@@ -27,10 +27,10 @@
                    Modules In Odoo""",
     'description': """Multiple Branch Unit Operation Setup for All 
                       Modules In Odoo, Branch, Branch Operations, Multiple Branch, Branch Setup""",
-    'author': "Cybrosys Techno Solutions",
-    'company': "Cybrosys Techno Solutions",
+    'author': "Frontware, Cybrosys Techno Solutions",
+    'company': "Frontware, Cybrosys Techno Solutions",
     'maintainer': "Cybrosys Techno Solutions",
-    'website': "https://www.cybrosys.com",
+    'website': "https://github.com/Frontware/CybroAddons",
     'category': 'Tools',
     'depends': ['sale_management',
                 'sale_stock', 'purchase_stock',

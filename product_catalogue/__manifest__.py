@@ -32,10 +32,10 @@
                 from the E-commerce website
                 including details like images and specifications""",
     'category': 'Inventory',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'sequence': 1,
     'depends': ['base', 'stock', 'website_sale'],
     'data': [

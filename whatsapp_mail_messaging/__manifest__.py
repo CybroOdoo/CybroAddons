@@ -28,10 +28,10 @@
     'description': """Added options for sending Whatsapp messages and Mails in systray bar,sale order, invoices, 
     website portal view and share the access url of documents using share option available in each records through 
     Whatsapp web..""",
-    'author': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
     'depends': ['sale', 'account', 'website'],
     'data': [
         'views/assets.xml',

@@ -27,10 +27,10 @@
                    "Employee Vaccination Details, Vaccination Details, Vaccination, Covid Vaccination, Covid Vaccine,"
                    "Vaccine, Covid, Covid19, Corona",
     'category': 'Generic Modules/Human Resources',
-    'author': 'Cybrosys Techno solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'depends': ['hr'],
     'data': [
         'security/ir.model.access.csv',

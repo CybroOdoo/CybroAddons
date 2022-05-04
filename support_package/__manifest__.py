@@ -26,9 +26,9 @@
                      It enables users to create, manage, optimize, and monitor 
                      the entire service request from a centralized application.
                      """,
-    'author': "Cybrosys Techno Solutions",
-    'website': "https://www.cybrosys.com",
-    'company': "Cybrosys Techno Solutions",
+    'author': "Frontware, Cybrosys Techno Solutions",
+    'website': "https://github.com/Frontware/CybroAddons",
+    'company': "Frontware, Cybrosys Techno Solutions",
     'maintainer': "Cybrosys Techno Solutions",
     'category': 'Project',
     'Version': '14.0.1.0.0',

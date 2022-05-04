@@ -6,11 +6,11 @@
     'description': """The module enables user to print customized product labels, Barcode, Barcode Generator, Barcode Label, Product Label, Product Barcode Generator, Product Barcode, Label Print, Product Label Print
                     """,
     'category': 'Tools',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
     'depends': ['base', 'web', 'product','account'],
-    'website': 'https://www.cybrosys.com',
+    'website': "https://github.com/Frontware/CybroAddons",
     'data': [
         'report/product_label_template.xml',
         'views/barcode_generator_view.xml',

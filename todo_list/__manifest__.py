@@ -26,10 +26,10 @@
     'description': """
         Scheduling Activities For each model  and General Activities.
             """,
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'live_test_url': 'https://youtu.be/LGiDWPFdkbks',
     'category': 'Tools',
     'version': '14.0.1.0.0',

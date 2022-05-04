@@ -26,8 +26,8 @@
     'description': """"This module helps you to set a discount limit for each employee in every  point of sale. 
     It facilitate the manager approval when discount over the limit of employee""",
     'category': 'Point Of Sale',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
     'maintainer': "Cybrosys Techno Solutions",
     'website': "http://www.cybrosys.com",
     'version': '14.0.1.0.0',

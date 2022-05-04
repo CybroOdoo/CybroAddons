@@ -27,9 +27,9 @@
     'summary': """ This modules enables approval feature in the payment.""",
     'description': """This modules enables approval feature in the payment. """,
     'author': ' Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'depends': ['account'],
     'data': [
         'views/res_config_settings_views.xml',

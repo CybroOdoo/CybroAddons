@@ -25,10 +25,10 @@
     'summary': 'Multiple Reference Per Product',
     'description': """Add multiple reference code for a product template or product variant. Easily manage between the
                    different codes as default code for the product.""",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://cybrosys.com/",
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'category': 'Inventory/Inventory',
     'depends': ['stock'],
     'data': [

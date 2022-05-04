@@ -27,10 +27,10 @@
     'description': """This module has been developed for listing and printing product stock by location. 
                     Get an overview of Available, Forecasted, Incoming and Outgoing quantity of product from the
                     product form. The user can print these details in a PDF report.""",
-    'author': "Cybrosys Techno Solutions",
-    'website': "https://www.cybrosys.com",
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
+    'author': "Frontware, Cybrosys Techno Solutions",
+    'website': "https://github.com/Frontware/CybroAddons",
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
     'category': 'Inventory/Inventory',
     'depends': ['stock', 'account'],
     'data': [

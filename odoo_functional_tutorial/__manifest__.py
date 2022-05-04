@@ -33,10 +33,10 @@
         Contacts, Calender, Notes, Document, Sign, Helpdesk, Live Chat, eLearning, Events, Lunch, Members, Rental,
         Subscription, Fleet, Approvals, Email Marketing, SMS Marketing, Social Marketing and Studio
     """,
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
     'maintainer': "Cybrosys Techno Solutions",
-    'website': 'https://www.cybrosys.com',
+    'website': "https://github.com/Frontware/CybroAddons",
     # 'live_test_url': '',
     'category': 'Extra Tools',
     'version': '14.0.1.0.0',
