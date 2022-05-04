@@ -56,6 +56,7 @@ odoo.define('pos_quotation_order.models', function (require) {
                         self.quotations.splice(index, 1);
                     }
                 });
+                return server_ids;
             });
         }
     });
