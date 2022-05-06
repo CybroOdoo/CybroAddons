@@ -104,15 +104,15 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
                         method: 'view_report',
                         args: [[this.wizard_id], action_title],
                     }).then(function(datas) {
-                    _.each(datas['report_lines'], function(rep_lines) {
-                            rep_lines.debit = self.format_currency(datas['currency'],rep_lines.debit);
-                            rep_lines.credit = self.format_currency(datas['currency'],rep_lines.credit);
-                            rep_lines.balance = self.format_currency(datas['currency'],rep_lines.balance);
-
-
-
-
-                            });
+//                    _.each(datas['report_lines'], function(rep_lines) {
+//                            rep_lines.debit = self.format_currency(datas['currency'],rep_lines.debit);
+//                            rep_lines.credit = self.format_currency(datas['currency'],rep_lines.credit);
+//                            rep_lines.balance = self.format_currency(datas['currency'],rep_lines.balance);
+//
+//
+//
+//
+//                            });
 
                             if (initial_render) {
                                     self.$('.filter_view_tb').html(QWeb.render('GLFilterView', {
@@ -271,21 +271,21 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
                     var action_title = self._title
                     self._rpc({
                         model: 'account.general.ledger',
-                        method: 'view_report',
+                        method: 'get_accounts_line',
                         args: [
-                            [self.wizard_id], action_title
+                            [self.wizard_id], account_id, action_title
                         ],
                     }).then(function(data) {
-                    _.each(data['report_lines'], function(rep_lines) {
-                            _.each(rep_lines['move_lines'], function(move_line) {
-
-                             move_line.debit = self.format_currency(data['currency'],move_line.debit);
-                            move_line.credit = self.format_currency(data['currency'],move_line.credit);
-                            move_line.balance = self.format_currency(data['currency'],move_line.balance);
-
-
-                             });
-                             });
+//                    _.each(data['report_lines'], function(rep_lines) {
+//                            _.each(rep_lines['move_lines'], function(move_line) {
+//
+//                             move_line.debit = self.format_currency(data['currency'],move_line.debit);
+//                            move_line.credit = self.format_currency(data['currency'],move_line.credit);
+//                            move_line.balance = self.format_currency(data['currency'],move_line.balance);
+//
+//
+//                             });
+//                             });
 
                     for (var i = 0; i < data['report_lines'].length; i++) {
 

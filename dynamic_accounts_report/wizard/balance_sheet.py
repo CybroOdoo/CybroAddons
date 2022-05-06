@@ -471,55 +471,26 @@ class BalanceSheetView(models.TransientModel):
                 tuple(data.get('analytic_tags').ids) + tuple([0]))
 
         # Get move lines base on sql query and Calculate the total balance of move lines
-        sql = ('''SELECT l.id AS lid,m.id AS move_id, l.account_id AS account_id,
-                    l.date AS ldate, j.code AS lcode, l.currency_id, l.amount_currency, l.ref AS lref,
-                    l.name AS lname, COALESCE(l.debit,0) AS debit, COALESCE(l.credit,0) AS credit, 
-                    COALESCE(SUM(l.balance),0) AS balance,\
-                    m.name AS move_name, c.symbol AS currency_code,c.position AS currency_position, p.name AS partner_name\
-                    FROM account_move_line l\
-                    JOIN account_move m ON (l.move_id=m.id)\
-                    LEFT JOIN res_currency c ON (l.currency_id=c.id)\
-                    LEFT JOIN res_partner p ON (l.partner_id=p.id)\
-                    LEFT JOIN account_analytic_account anl ON (l.analytic_account_id=anl.id)\
-                    LEFT JOIN account_analytic_tag_account_move_line_rel anltag ON (anltag.account_move_line_id = l.id)\
-                    JOIN account_journal j ON (l.journal_id=j.id)\
-                    JOIN account_account acc ON (l.account_id = acc.id) '''
-               + WHERE + new_final_filter + ''' GROUP BY l.id, m.id,  l.account_id, l.date, j.code, l.currency_id, l.amount_currency, l.ref, l.name, m.name, c.symbol, c.position, p.name''')
+        sql = ('''SELECT l.account_id AS account_id, a.code AS code,a.id AS id, a.name AS name, ROUND(COALESCE(SUM(l.debit),0),2) AS debit, ROUND(COALESCE(SUM(l.credit),0),2) AS credit, ROUND(COALESCE(SUM(l.balance),0),2) AS balance
+
+                                            FROM account_move_line l\
+                                            JOIN account_move m ON (l.move_id=m.id)\
+                                            LEFT JOIN res_currency c ON (l.currency_id=c.id)\
+                                            LEFT JOIN res_partner p ON (l.partner_id=p.id)\
+                                            LEFT JOIN account_analytic_account anl ON (l.analytic_account_id=anl.id)
+                                            LEFT JOIN account_account_tag_account_move_line_rel acc ON (acc.account_move_line_id=l.id)
+                                            LEFT JOIN account_analytic_tag_account_move_line_rel anltag ON (anltag.account_move_line_id=l.id)
+                                            JOIN account_journal j ON (l.journal_id=j.id)\
+                                            JOIN account_account a ON (l.account_id = a.id) '''
+               + WHERE + new_final_filter + ''' GROUP BY l.account_id, a.code, a.name, a.id''')
+
         if data.get('accounts'):
             params = tuple(where_params)
         else:
             params = (tuple(accounts.ids),) + tuple(where_params)
 
         cr.execute(sql, params)
-
-        for row in cr.dictfetchall():
-            balance = 0
-            for line in move_lines.get(row['account_id']):
-                balance += round(line['debit'], 2) - round(line['credit'], 2)
-            row['balance'] += (round(balance, 2))
-            row['m_id'] = row['account_id']
-            move_lines[row.pop('account_id')].append(row)
-        # Calculate the debit, credit and balance for Accounts
-        account_res = []
-        for account in accounts:
-            currency = account.currency_id and account.currency_id or account.company_id.currency_id
-            res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
-            res['code'] = account.code
-            res['name'] = account.name
-            res['id'] = account.id
-            res['move_lines'] = move_lines[account.id]
-            for line in res.get('move_lines'):
-                res['debit'] += round(line['debit'], 2)
-                res['credit'] += round(line['credit'], 2)
-                res['balance'] = round(line['balance'], 2)
-            if display_account == 'all':
-                account_res.append(res)
-            if display_account == 'movement' and res.get('move_lines'):
-                account_res.append(res)
-            if display_account == 'not_zero' and not currency.is_zero(
-                    res['balance']):
-                account_res.append(res)
-
+        account_res = cr.dictfetchall()
         return account_res
 
     @api.model

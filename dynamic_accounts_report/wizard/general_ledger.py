@@ -38,9 +38,13 @@ class GeneralView(models.TransientModel):
                                     ('all', 'All Entries')],
                                    string='Target Moves', required=True)
 
+    date_from = fields.Date(string='Start Date')
+    date_to = fields.Date(string='End Date')
+
     @api.model
     def view_report(self, option, title):
         r = self.env['account.general.ledger'].search([('id', '=', option[0])])
+        self = r
         new_title = ''
         trans_title = self.env['ir.translation'].search([('value', '=', title), ('module', '=', 'dynamic_accounts_report')], limit=1).src
         company_id = self.env.companies.ids
@@ -352,54 +356,57 @@ class GeneralView(models.TransientModel):
                 tuple(data.get('analytic_tags').ids) + tuple([0]))
 
         # Get move lines base on sql query and Calculate the total balance of move lines
-        sql = ('''SELECT l.id AS lid,m.id AS move_id, l.account_id AS account_id, l.date AS ldate, j.code AS lcode, l.currency_id, l.amount_currency, l.ref AS lref, l.name AS lname, COALESCE(l.debit,0) AS debit, COALESCE(l.credit,0) AS credit, COALESCE(SUM(l.balance),0) AS balance,\
-                    m.name AS move_name, c.symbol AS currency_code, p.name AS partner_name\
-                    FROM account_move_line l\
-                    JOIN account_move m ON (l.move_id=m.id)\
-                    LEFT JOIN res_currency c ON (l.currency_id=c.id)\
-                    LEFT JOIN res_partner p ON (l.partner_id=p.id)\
-                    LEFT JOIN account_analytic_account anl ON (l.analytic_account_id=anl.id)
-                    LEFT JOIN account_account_tag_account_move_line_rel acc ON (acc.account_move_line_id=l.id)
-                    LEFT JOIN account_analytic_tag_account_move_line_rel anltag ON (anltag.account_move_line_id=l.id)
-                    JOIN account_journal j ON (l.journal_id=j.id)\
-                    JOIN account_account a ON (l.account_id = a.id) '''
-                    + WHERE + new_final_filter + ''' GROUP BY l.id, m.id,  l.account_id, l.date, j.code, l.currency_id, l.amount_currency, l.ref, l.name, m.name, c.symbol, c.position, p.name''' )
+        sql = ('''SELECT l.account_id AS account_id, a.code AS code,a.id AS id, a.name AS name, ROUND(COALESCE(SUM(l.debit),0),2) AS debit, ROUND(COALESCE(SUM(l.credit),0),2) AS credit, ROUND(COALESCE(SUM(l.balance),0),2) AS balance
+
+                            FROM account_move_line l\
+                            JOIN account_move m ON (l.move_id=m.id)\
+                            LEFT JOIN res_currency c ON (l.currency_id=c.id)\
+                            LEFT JOIN res_partner p ON (l.partner_id=p.id)\
+                            LEFT JOIN account_analytic_account anl ON (l.analytic_account_id=anl.id)
+                            LEFT JOIN account_account_tag_account_move_line_rel acc ON (acc.account_move_line_id=l.id)
+                            LEFT JOIN account_analytic_tag_account_move_line_rel anltag ON (anltag.account_move_line_id=l.id)
+                            JOIN account_journal j ON (l.journal_id=j.id)\
+                            JOIN account_account a ON (l.account_id = a.id) '''
+               + WHERE + new_final_filter + ''' GROUP BY l.account_id, a.code, a.name, a.id''')
         if data.get('accounts'):
             params = tuple(where_params)
         else:
             params = (tuple(accounts.ids),) + tuple(where_params)
         cr.execute(sql, params)
-
-        for row in cr.dictfetchall():
-            balance = 0
-            for line in move_lines.get(row['account_id']):
-                balance += round(line['debit'],2) - round(line['credit'],2)
-            row['balance'] += round(balance,2)
-            row['m_id'] = row['account_id']
-            move_lines[row.pop('account_id')].append(row)
-
-        # Calculate the debit, credit and balance for Accounts
-        account_res = []
-        for account in accounts:
-            currency = account.currency_id and account.currency_id or account.company_id.currency_id
-            res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
-            res['code'] = account.code
-            res['name'] = account.name
-            res['id'] = account.id
-            res['move_lines'] = move_lines[account.id]
-            for line in res.get('move_lines'):
-                res['debit'] += round(line['debit'],2)
-                res['credit'] += round(line['credit'],2)
-                res['balance'] = round(line['balance'],2)
-            if display_account == 'all':
-                account_res.append(res)
-            if display_account == 'movement' and res.get('move_lines'):
-                account_res.append(res)
-            if display_account == 'not_zero' and not currency.is_zero(
-                    res['balance']):
-                account_res.append(res)
+        account_res = cr.dictfetchall()
 
         return account_res
+
+        # for row in cr.dictfetchall():
+        #     balance = 0
+        #     for line in move_lines.get(row['account_id']):
+        #         balance += round(line['debit'],2) - round(line['credit'],2)
+        #     row['balance'] += round(balance,2)
+        #     row['m_id'] = row['account_id']
+        #     move_lines[row.pop('account_id')].append(row)
+        #
+        # # Calculate the debit, credit and balance for Accounts
+        # account_res = []
+        # for account in accounts:
+        #     currency = account.currency_id and account.currency_id or account.company_id.currency_id
+        #     res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
+        #     res['code'] = account.code
+        #     res['name'] = account.name
+        #     res['id'] = account.id
+        #     res['move_lines'] = move_lines[account.id]
+        #     for line in res.get('move_lines'):
+        #         res['debit'] += round(line['debit'],2)
+        #         res['credit'] += round(line['credit'],2)
+        #         res['balance'] = round(line['balance'],2)
+        #     if display_account == 'all':
+        #         account_res.append(res)
+        #     if display_account == 'movement' and res.get('move_lines'):
+        #         account_res.append(res)
+        #     if display_account == 'not_zero' and not currency.is_zero(
+        #             res['balance']):
+        #         account_res.append(res)
+        #
+        # return account_res
 
     @api.model
     def _get_currency(self):
@@ -414,6 +421,175 @@ class GeneralView(models.TransientModel):
         currency_array = [self.env.company.currency_id.symbol,
                           self.env.company.currency_id.position,lang]
         return currency_array
+
+    def get_accounts_line(self, account_id, title):
+
+        trans_title = self.env['ir.translation'].search([('value', '=', title), ('module', '=', 'dynamic_accounts_report')], limit=1).src
+        company_id = self.env.companies.ids
+        if self.journal_ids:
+            journals = self.journal_ids
+        else:
+            journals = self.env['account.journal'].search([('company_id', 'in', company_id)])
+        if title == 'General Ledger' or trans_title == 'General Ledger':
+            if self.journal_ids:
+                journals = self.journal_ids
+            else:
+                journals = self.env['account.journal'].search([('company_id', 'in', company_id)])
+        if title == 'Bank Book' or trans_title == 'Bank Book':
+            journals = self.env['account.journal'].search([('type', '=', 'bank'), ('company_id', 'in', company_id)])
+        if title == 'Cash Book' or trans_title == 'Cash Book':
+            journals = self.env['account.journal'].search([('type', '=', 'cash'), ('company_id', 'in', company_id)])
+
+        if account_id:
+            accounts = self.env['account.account'].search([('id', '=', account_id)])
+        else:
+            company_id = self.env.companies
+            company_domain = [('company_id', 'in', company_id.ids)]
+            accounts = self.env['account.account'].search(company_domain)
+
+        cr = self.env.cr
+        MoveLine = self.env['account.move.line']
+        move_lines = {x: [] for x in accounts.ids}
+
+        # self.j
+
+        # Prepare initial sql query and Get the initial move lines
+        if self.date_from:
+            init_tables, init_where_clause, init_where_params = MoveLine.with_context(
+                date_from=self.env.context.get('date_from'), date_to=False,
+                initial_bal=True)._query_get()
+            init_wheres = [""]
+            if init_where_clause.strip():
+                init_wheres.append(init_where_clause.strip())
+            init_filters = " AND ".join(init_wheres)
+            filters = init_filters.replace('account_move_line__move_id',
+                                           'm').replace('account_move_line',
+                                                        'l')
+            new_filter = filters
+            if self.target_move == 'posted':
+                new_filter += " AND m.state = 'posted'"
+            else:
+                new_filter += " AND m.state in ('draft','posted')"
+            if self.date_from:
+                new_filter += " AND l.date < '%s'" % self.date_from
+            if journals:
+                new_filter += ' AND j.id IN %s' % str(tuple(journals.ids) + tuple([0]))
+            if accounts:
+                WHERE = "WHERE l.account_id IN %s" % str(tuple(accounts.ids) + tuple([0]))
+            else:
+                WHERE = "WHERE l.account_id IN %s"
+            if self.analytic_ids:
+                WHERE += ' AND anl.id IN %s' % str(tuple(self.analytic_ids.ids) + tuple([0]))
+            if self.analytic_tag_ids:
+                WHERE += ' AND anltag.account_analytic_tag_id IN %s' % str(
+                    tuple(self.analytic_tags.ids) + tuple([0]))
+
+            sql = ("""SELECT 0 AS lid, l.account_id AS account_id, '' AS ldate, '' AS lcode, 0.0 AS amount_currency, '' AS lref, 'Initial Balance' AS lname, COALESCE(SUM(l.debit),0.0) AS debit, COALESCE(SUM(l.credit),0.0) AS credit, COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit), 0) as balance, '' AS lpartner_id,\
+                        '' AS move_name, '' AS mmove_id, '' AS currency_code,\
+                        NULL AS currency_id,\
+                        '' AS invoice_id, '' AS invoice_type, '' AS invoice_number,\
+                        '' AS partner_name\
+                        FROM account_move_line l\
+                        LEFT JOIN account_move m ON (l.move_id=m.id)\
+                        LEFT JOIN res_currency c ON (l.currency_id=c.id)\
+                        LEFT JOIN res_partner p ON (l.partner_id=p.id)\
+                        LEFT JOIN account_move i ON (m.id =i.id)\
+                        LEFT JOIN account_account_tag_account_move_line_rel acc ON (acc.account_move_line_id=l.id)
+                        LEFT JOIN account_analytic_account anl ON (l.analytic_account_id=anl.id)
+                        LEFT JOIN account_analytic_tag_account_move_line_rel anltag ON (anltag.account_move_line_id=l.id)
+                        JOIN account_journal j ON (l.journal_id=j.id)"""
+                   + WHERE + new_filter + ' GROUP BY l.account_id')
+            if self.account_ids:
+                params = tuple(init_where_params)
+            else:
+                params = (tuple(accounts.ids),) + tuple(init_where_params)
+            cr.execute(sql, params)
+            for row in cr.dictfetchall():
+                row['m_id'] = row['account_id']
+                move_lines[row.pop('account_id')].append(row)
+
+        tables, where_clause, where_params = MoveLine._query_get()
+        wheres = [""]
+        if where_clause.strip():
+            wheres.append(where_clause.strip())
+        final_filters = " AND ".join(wheres)
+        final_filters = final_filters.replace('account_move_line__move_id', 'm').replace(
+            'account_move_line', 'l')
+        new_final_filter = final_filters
+        if self.target_move == 'posted':
+            new_final_filter += " AND m.state = 'posted'"
+        else:
+            new_final_filter += " AND m.state in ('draft','posted')"
+        if self.date_from:
+            new_final_filter += " AND l.date >= '%s'" % self.date_from
+        if self.date_to:
+            new_final_filter += " AND l.date <= '%s'" % self.date_to
+
+        if journals:
+            new_final_filter += ' AND j.id IN %s' % str(tuple(journals.ids) + tuple([0]))
+        if accounts:
+            WHERE = "WHERE l.account_id IN %s" % str(tuple(accounts.ids) + tuple([0]))
+        else:
+            WHERE = "WHERE l.account_id IN %s"
+        if self.analytic_ids:
+            WHERE += ' AND anl.id IN %s' % str(tuple(self.analytics.ids) + tuple([0]))
+
+        if self.analytic_tag_ids:
+            WHERE += ' AND anltag.account_analytic_tag_id IN %s' % str(
+                tuple(self.analytic_tags.ids) + tuple([0]))
+
+        # Get move lines base on sql query and Calculate the total balance of move lines
+        sql = ('''SELECT l.id AS lid,m.id AS move_id, l.account_id AS account_id, l.date AS ldate, j.code AS lcode, l.currency_id, l.amount_currency, l.ref AS lref, l.name AS lname, COALESCE(SUM(l.debit),0) AS debit, COALESCE(SUM(l.credit),0) AS credit, COALESCE(SUM(l.balance),0) AS balance,\
+                    m.name AS move_name, c.symbol AS currency_code, p.name AS partner_name\
+                    FROM account_move_line l\
+                    JOIN account_move m ON (l.move_id=m.id)\
+                    LEFT JOIN res_currency c ON (l.currency_id=c.id)\
+                    LEFT JOIN res_partner p ON (l.partner_id=p.id)\
+                    LEFT JOIN account_analytic_account anl ON (l.analytic_account_id=anl.id)
+                    LEFT JOIN account_account_tag_account_move_line_rel acc ON (acc.account_move_line_id=l.id)
+                    LEFT JOIN account_analytic_tag_account_move_line_rel anltag ON (anltag.account_move_line_id=l.id)
+                    JOIN account_journal j ON (l.journal_id=j.id)\
+                    JOIN account_account a ON (l.account_id = a.id) '''
+                    + WHERE + new_final_filter + ''' GROUP BY l.id, m.id,  l.account_id, l.date, j.code, l.currency_id, l.amount_currency, l.ref, l.name, m.name, c.symbol, c.position, p.name ORDER BY l.date''' )
+
+        # sql = ('''SELECT l.account_id AS account_id, a.code AS code, a.name AS name, COALESCE(SUM(l.debit),0) AS debit, COALESCE(SUM(l.credit),0) AS credit, COALESCE(SUM(l.balance),0) AS balance
+        #
+        #                     FROM account_move_line l\
+        #                     JOIN account_move m ON (l.move_id=m.id)\
+        #                     LEFT JOIN res_currency c ON (l.currency_id=c.id)\
+        #                     LEFT JOIN res_partner p ON (l.partner_id=p.id)\
+        #                     LEFT JOIN account_analytic_account anl ON (l.analytic_account_id=anl.id)
+        #                     LEFT JOIN account_account_tag_account_move_line_rel acc ON (acc.account_move_line_id=l.id)
+        #                     LEFT JOIN account_analytic_tag_account_move_line_rel anltag ON (anltag.account_move_line_id=l.id)
+        #                     JOIN account_journal j ON (l.journal_id=j.id)\
+        #                     JOIN account_account a ON (l.account_id = a.id) '''
+        #        + WHERE + new_final_filter + ''' GROUP BY l.account_id, a.code, a.name''')
+
+        # if self.account_ids:
+        #     params = tuple(where_params)
+        # else:
+        #     params = (tuple(accounts.ids),) + tuple(where_params)
+        params = tuple(where_params)
+        cr.execute(sql, params)
+        account_ress = cr.dictfetchall()
+        i=0
+        # Calculate the debit, credit and balance for Accounts
+        account_res = []
+        for account in accounts:
+            currency = account.currency_id and account.currency_id or account.company_id.currency_id
+            res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
+            res['code'] = account.code
+            res['name'] = account.name
+            res['id'] = account.id
+            res['move_lines'] = account_ress
+
+            account_res.append(res)
+        currency = self._get_currency()
+        return {
+
+            'report_lines': account_res,
+            'currency': currency,
+        }
 
     def get_dynamic_xlsx_report(self, data, response ,report_data, dfr_data):
         report_data_main = json.loads(report_data)

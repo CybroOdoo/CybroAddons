@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="project_task_type_inherited" model="ir.ui.view">
+        <field name="name">project.task.type.inherit</field>
+        <field name="model">project.task.type</field>
+        <field name="inherit_id" ref="project.task_type_edit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='project_ids']" position="before">
+                <field name="is_checklist"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="project_task_progress_notebook" model="ir.ui.view">
+        <field name="name">project.task.notebook</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="checklist_id"/>
+            </xpath>
+
+            <xpath expr="//form/sheet/notebook/page[last()]" position="after">
+                <page string="Checklist" attrs="{'invisible':[('checklist_id','=',False)]}">
+                    <field name="checklists">
+                        <tree decoration-danger="state=='cancel'" decoration-success="state=='done'"
+	                              decoration-info="state=='in_progress'" create="1" edit="1" delete="0">
+                            <field name="name"/>
+                            <field name="description"/>
+                            <button type="object" name="approve_and_next" class="text-success" icon="fa-check"/>
+                            <button type="object" name="mark_completed" icon="fa-check-circle" class="text-success"/>
+                            <button type="object" name="mark_canceled" icon="fa-times" class="text-danger"/>
+                            <field name="state"/>
+                        </tree>
+                    </field>
+                </page>
+
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="project_task_progress_inherited_tree" model="ir.ui.view">
+        <field name="name">project.task.inherit</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_tree2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='activity_ids']" position="after">
+                <field name="progress" widget="progress_bar_new"/>
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="project_task_progress_inherited" model="ir.ui.view">
+        <field name="name">project.task.inherit.form</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="progress" widget="progress_bar_new" class="oe_inline"/>
+                <!--                <span class="oe_inline">%</span>-->
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

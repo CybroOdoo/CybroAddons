@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<odoo>
+
+    <data noupdate="1">
+        <!-- Schedule action for generating automatic database backup-->
+        <record id="ir_cron_auto_db_backup" model="ir.cron">
+            <field name="name">Backup : Automatic Database Backup</field>
+            <field name="model_id" ref="model_db_backup_configure"/>
+            <field name="state">code</field>
+            <field name="code">model._schedule_auto_backup()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="active">False</field>
+        </record>
+
+    </data>
+
+    <data>
+        <!--        Database backup operation Successful email template-->
+        <record id="mail_template_data_db_backup_successful" model="mail.template">
+            <field name="name">Database Backup: Notification Successful</field>
+            <field name="model_id" ref="auto_database_backup.model_db_backup_configure"/>
+            <field name="subject">Database Backup Successful: ${object.db_name}</field>
+            <field name="email_to">${object.user_id.email_formatted | safe}</field>
+            <field name="body_html" type="xml">
+                <p style="margin: 0px;">
+                    <span>Dear ${object.user_id.sudo().name},
+                    </span>
+                    <br/>
+                    <br/>
+                    <span style="margin-top: 8px;">Backup of the database <i>${object.db_name}</i> has been successfully
+                        generated and stored to
+                        % if object.backup_destination in ('local'):
+                        <i>Local</i>
+                        % elif object.backup_destination in ('google_drive'):
+                        <i>Google Drive</i>
+                        % elif object.backup_destination in ('ftp'):
+                        <i>FTP Server</i>
+                        % elif object.backup_destination in ('sftp'):
+                        <i>SFTP Server</i>
+                        % endif
+                        .
+                        <br/>
+                        <br/>
+                        Database Name: ${object.db_name}
+                        <br/>
+                        Destination:
+                        % if object.backup_destination in ('local'):
+                        <i>Local</i>
+                        % elif object.backup_destination in ('google_drive'):
+                        <i>Google Drive</i>
+                        % elif object.backup_destination in ('ftp'):
+                        <i>FTP Server</i>
+                        % elif object.backup_destination in ('sftp'):
+                        <i>SFTP Server</i>
+                        % endif
+                        % if object.backup_destination in ('local', 'ftp', 'sftp')
+                        <br/>
+                        Backup Path:
+                        % if object.backup_destination in ('local'):
+                        ${object.backup_path}
+                        % elif object.backup_destination in ('ftp'):
+                        ${object.ftp_path}
+                        % elif object.backup_destination in ('sftp'):
+                        ${object.sftp_path}
+                        % endif
+                        % endif
+                        <br/>
+                        Backup Type: ${object.backup_format}
+                        <br/>
+                        Backup FileName: ${object.backup_filename}
+                    </span>
+                </p>
+            </field>
+        </record>
+
+        <!--            Database backup operation failed email templated-->
+        <record id="mail_template_data_db_backup_failed" model="mail.template">
+            <field name="name">Database Backup: Notification Failed</field>
+            <field name="model_id" ref="auto_database_backup.model_db_backup_configure"/>
+            <field name="subject">Database Backup Failed: ${object.db_name}</field>
+            <field name="email_to">${object.user_id.email_formatted | safe}</field>
+            <field name="body_html" type="xml">
+                <p style="margin: 0px;">
+                    <span>Dear ${object.user_id.sudo().name},
+                    </span>
+                    <br/>
+                    <br/>
+                    <span style="margin-top: 8px;">Backup generation of the database <i>${object.db_name}</i> has been
+                        Failed.
+                        <br/>
+                        <br/>
+                        Database Name: ${object.db_name}
+                        <br/>
+                        Destination:
+                        % if object.backup_destination in ('local'):
+                        <i>Local</i>
+                        % elif object.backup_destination in ('google_drive'):
+                        <i>Google Drive</i>
+                        % elif object.backup_destination in ('ftp'):
+                        <i>FTP Server</i>
+                        % elif object.backup_destination in ('sftp'):
+                        <i>SFTP Server</i>
+                        % endif
+                        % if object.backup_destination in ('local', 'ftp', 'sftp')
+                        <br/>
+                        Backup Path:
+                        % if object.backup_destination in ('local'):
+                        ${object.backup_path}
+                        % elif object.backup_destination in ('ftp'):
+                        ${object.ftp_path}
+                        % elif object.backup_destination in ('sftp'):
+                        ${object.sftp_path}
+                        % endif
+                        % endif
+                        <br/>
+                        Backup Type: ${object.backup_format}
+                        <br/>
+                        <br/>
+                        <b>Error Message:</b>
+                        <br/>
+                        <i>${object.generated_exception}</i>
+                    </span>
+                </p>
+            </field>
+        </record>
+    </data>
+
+</odoo>

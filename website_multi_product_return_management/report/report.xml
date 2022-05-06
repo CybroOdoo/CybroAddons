@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="report_sale_returns" model="ir.actions.report">
+            <field name="name">Sale Return</field>
+            <field name="model">sale.return</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">website_multi_product_return_management.report_salereturn</field>
+            <field name="report_file">website_multi_product_return_management.report_salereturn</field>
+            <field name="print_report_name">'Sale Retun - %s' % object.name</field>
+            <field name="binding_model_id" ref="model_sale_return"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <template id="report_salereturn">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="website_multi_product_return_management.report_sale_return" t-lang="doc.partner_id.lang"/>
+                </t>
+            </t>
+        </template>
+
+        <template id="report_sale_return">
+            <t t-call="web.external_layout">
+                <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
+                <div class="page">
+                    <div class="oe_structure"/>
+                    <h2 class="mt16">
+                        <span>Return Order # </span>
+                        <span t-field="doc.name"/>
+                    </h2>
+
+                    <div class="row mt32 mb32" id="informations">
+                        <div t-if="doc.partner_id" class="col-auto col-3 mw-100 mb-2">
+                            <strong>Customer:</strong>
+                            <p class="m-0" t-field="doc.partner_id"/>
+                        </div>
+                        <div t-if="doc.sale_order" class="col-auto col-3 mw-100 mb-2">
+                            <strong>Sale Order:</strong>
+                            <p class="m-0" t-field="doc.sale_order"/>
+                        </div>
+                        <div t-if="doc.create_date" class="col-auto col-3 mw-100 mb-2">
+                            <strong>Creation Date:</strong>
+                            <p class="m-0" t-field="doc.create_date" t-options='{"widget": "date"}'/>
+                        </div>
+                        <div t-if="doc.user_id"
+                             class="col-auto col-3 mw-100 mb-2" name="expiration_date">
+                            <strong>Responsible:</strong>
+                            <p class="m-0" t-field="doc.user_id"/>
+                        </div>
+                    </div>
+                    <table class="table table-sm o_main_table">
+                        <!-- In case we want to repeat the header, remove "display: table-row-group" -->
+                        <thead style="display: table-row-group">
+                            <tr>
+                                <th name="th_description" class="text-left">Product</th>
+                                <th name="th_quantity" class="text-left">Quantity</th>
+                                <th name="th_quantity" class="text-left">Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody class="sale_tbody">
+                            <tr t-foreach="doc.return_line_ids" t-as="line" t-att-class="'bg-200 font-weight-bold'">
+                                <td name="td_product"><span t-field="line.product_id"/></td>
+                                <td name="td_quantity" class="text-left">
+                                    <span t-esc="line.received_qty"/>
+                                    <span t-field="line.product_id.uom_id"/>
+                                </td>
+                                <td name="td_quantity" class="text-left">
+                                    <span t-field="line.reason"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </template>
+    </data>
+</odoo>

@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="assets_frontend" inherit_id="website.assets_frontend">
+        <xpath expr="link[last()]" position="after">
+            <script src="/website_multi_product_return_management/static/src/js/sale_return.js" type="text/javascript"/>
+        </xpath>
+    </template>
+
+    <template id="sale_order_portal_content_return" name="Sales Order Portal Content"
+              inherit_id="sale.sale_order_portal_content">
+        <xpath expr="//div[@id='introduction']/h2" position="replace">
+            <form id="sale_return_form" >
+
+                <div id="hidden_box" class="modal fade">
+                    <div class="modal-dialog modal-content"
+                         style="border:solid 1px #604e5b; min-height:500px;max-width: 800px;">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <b>Sale Return</b>
+                            </h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">X</span>
+                            </button>
+                        </div>
+                        <div class="modal-body" id="pop_html">
+                            <form>
+                                <table t-att-data-order-id="sale_order.id" t-att-data-token="sale_order.access_token"
+                                       class="table table-sm" id="sales_return_order_table">
+                                    <thead class="bg-100">
+                                        <tr>
+                                            <th class="text-left">Products</th>
+                                            <th class="text-right">Quantity</th>
+                                            <th class="text-right">Return Quantity</th>
+                                            <th class="text-right" style="width:25px;"> Reason</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="sale_tbody">
+                                        <tr t-foreach="sale_order.order_line.filtered(lambda x:x.product_id.type!='service' and not x.display_type)"
+                                            t-as="line" class="order_line">
+                                            <t t-att-class="'bg-200 font-weight-bold o_line_section' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''">
+                                                <td id="product_name">
+                                                    <span t-field="line.name"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <div id="quote_qty">
+                                                        <span t-field="line.product_uom_qty"/>
+                                                        <span t-field="line.product_uom"/>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="css_quantity input-group">
+                                                        <div class="input-group-prepend">
+                                                            <a t-attf-href="#"
+                                                               class="btn btn-link js_add_json d-none d-md-inline-block"
+                                                               aria-label="Remove one" title="Remove one">
+                                                                <i class="fa fa-minus"></i>
+                                                            </a>
+                                                        </div>
+                                                        <input type="text" class="form-control quantity"
+                                                               style="width: 50px;height: 50px;text-align: center;"
+                                                               t-att-data-min="0"
+                                                               t-att-data-max="int(line.product_uom_qty) == line.product_uom_qty and int(line.product_uom_qty) or line.product_uom_qty"
+                                                               t-att-data-line-id="line.id"
+                                                               t-att-data-order-id="sale_order.id"
+                                                               t-att-data-product-id="line.product_id.id"
+                                                               t-att-data-delivered_qty="int(line.product_uom_qty) == line.product_uom_qty and int(line.product_uom_qty) or line.product_uom_qty"
+                                                                readonly="1"/>
+                                                        <div class="input-group-append">
+                                                            <a t-attf-href="#"
+                                                               class="btn btn-link float_left  d-none d-md-inline-block js_add_json"
+                                                               aria-label="Add one" title="Add one">
+                                                                <i class="fa fa-plus"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td style="width:20px;">
+                                                    <textarea  id="return_reason" name="reason" placeholder="Reason"/>
+                                                </td>
+                                            </t>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button id='submit'
+                                    class="btn btn-secondary flex-grow-1 mb-1">
+                                Submit
+                            </button>
+                            <button type="button" class="btn btn-secondary "
+                                    data-dismiss="modal">Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <h2 class="my-0">
+                            <t t-esc="sale_order.type_name"/>
+                            <em t-esc="sale_order.name"/>
+                        </h2>
+                    </div>
+                    <div class="col-6">
+                        <span class="btn-group flex-grow-1 mb-1 float-right">
+                            <t t-if="sale_order.state in ['sale','done'] and sum(sale_order.order_line.mapped('qty_delivered')) > 0">
+                                <a class="btn btn-secondary btn-block" style="color: #FFFFFF;"
+                                   id="hidden_box_btn">
+                                    <i class="fa fa-truck"></i>
+                                    Return
+                                </a>
+                            </t>
+                        </span>
+                    </div>
+
+                </div>
+
+            </form>
+
+        </xpath>
+    </template>
+
+    <template id="portal_my_home_menu_sale_return" name="Portal layout : Return Order menu entry"
+              inherit_id="portal.portal_breadcrumbs" priority="10">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'Sale_Return' or sale_return"
+                t-attf-class="breadcrumb-item #{'active ' if not orders else ''}">
+                <a t-if="orders" t-attf-href="/my/return_orders?{{ keep_query() }}">Return orders</a>
+                <t t-else="">Return Order</t>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_home_sale_return" name="Show Return Order" customize_show="True"
+              inherit_id="portal.portal_my_home" priority="25">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Return Orders</t>
+                <t t-set="url" t-value="'/my/return_orders'"/>
+                <t t-set="placeholder_count" t-value="'return_count'"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_my_returns" name="Portal: My Sale Return">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Sales Return</t>
+            </t>
+            <t t-if="not orders">
+                <p>There are currently no return order for your account.</p>
+            </t>
+            <t t-if="orders" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Sale Return #</th>
+                        <th class="text-right">Create Date</th>
+                        <th class="text-right">Order</th>
+                        <th class="text-right">State</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="orders" t-as="order">
+                        <tr>
+                            <td>
+                                <a t-att-href="order.get_portal_url()">
+                                    <t t-esc="order.name"/>
+                                </a>
+                            </td>
+                            <td class="text-right">
+                                <span t-field="order.create_date"/>
+                            </td>
+                            <td class="text-right">
+                                <span t-field="order.sale_order"/>
+                            </td>
+                            <td class="text-right">
+                                <t t-if="order.state == 'draft'">
+                                    <span class="badge  badge-warning"><i class="fa fa-fw fa-file-text"/>Draft
+                                    </span>
+                                </t>
+                                <t t-if="order.state == 'done'">
+                                    <span class="badge badge-success "><i class="fa fa-fw fa-file-text"/>Done
+                                    </span>
+                                </t>
+                                <t t-if="order.state == 'confirm'">
+                                    <span class="badge badge-info"><i class="fa fa-fw fa-file-text"/>Confirmed
+                                    </span>
+                                </t>
+                                <t t-if="order.state == 'cancel'">
+                                    <span class="badge badge-dark">
+                                        <i class="fa fa-fw fa-remove"/>
+                                        Cancelled
+                                    </span>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+    <template id="portal_sale_return_page" name="Portal: My Sale Return">
+        <t t-call="portal.portal_layout">
+            <t t-set="sale_return" t-value="orders"/>
+            <div id="optional_placeholder"></div>
+            <div class="container">
+                <div class="row mt16 o_portal_purchase_sidebar">
+                    <!-- Sidebar -->
+                    <t t-call="portal.portal_record_sidebar">
+                        <t t-set="classes" t-value="'col-lg-auto d-print-none'"/>
+                        <t t-set="title">
+                            <h2 class="mb-0">
+                                <b t-field="sale_return.name" data-id="return_name"/>
+                            </h2>
+                        </t>
+                        <t t-set="entries">
+                            <ul class="list-group list-group-flush flex-wrap flex-row flex-lg-column">
+                                <li class="list-group-item flex-grow-1">
+                                    <div class="o_download_pdf btn-toolbar flex-sm-nowrap">
+                                        <div class="btn-group flex-grow-1 mr-1 mb-1">
+                                            <a class="btn btn-secondary btn-block o_download_btn"
+                                               t-att-href="sale_return.get_portal_url(report_type='pdf', download=True)"
+                                               title="Download">
+                                                <i class="fa fa-download"/>
+                                                Download
+                                            </a>
+
+                                        </div>
+                                        <div class="btn-group flex-grow-1 mb-1">
+                                            <a class="btn btn-secondary btn-block o_print_btn o_portal_invoice_print"
+                                               t-att-href="sale_return.get_portal_url(report_type='pdf')"
+                                               id="print_invoice_report" title="Print" target="_blank">
+                                                <i
+                                                        class="fa fa-print"/>
+                                                Print
+                                            </a>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li t-if="sale_return.user_id" class="list-group-item flex-grow-1">
+                                    <div class="small mb-1">
+                                        <strong class="text-muted">Representative</strong>
+                                    </div>
+                                    <div class="row flex-nowrap">
+                                        <div class="col flex-grow-0 pr-2">
+                                            <img class="rounded-circle mr4 float-left o_portal_contact_img"
+                                                 t-if="sale_return.user_id.image_1024"
+                                                 t-att-src="image_data_uri(sale_return.user_id.image_1024)"
+                                                 alt="Contact"/>
+                                            <img class="rounded-circle mr4 float-left o_portal_contact_img"
+                                                 t-if="not sale_return.user_id.image_1024"
+                                                 src="/web/static/src/img/placeholder.png" alt="Contact"/>
+                                        </div>
+                                        <div class="col pl-0" style="min-width: 150px">
+                                            <span t-field="sale_return.user_id"
+                                                  t-options='{"widget": "contact", "fields": ["name", "phone"], "no_marker": True}'/>
+                                            <a href="#discussion" class="small">
+                                                <i class="fa fa-comment"></i>
+                                                Send
+                                                message
+                                            </a>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </t>
+                    </t>
+                    <div class=" col-lg col-12 justify-content-end w-100">
+                        <div class="card pb-5">
+                            <div class="card-header bg-white pb-1">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <h2 class="font-weight-normal">
+                                            <t t-if="orders.state in ['draft']">Draft Return</t>
+                                            <t t-else="1">
+                                                Sale Return
+                                            </t>
+                                            <span class="font-italic" t-esc="orders.name"/>
+                                        </h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-4">
+                                    <strong>Creation Date:</strong>
+                                    <span t-field="orders.create_date"
+                                          t-options='{"widget": "date"}'/>
+                                    <br/>
+                                    <div t-att-class="'d-inline' if orders.sale_order else 'd-none'">
+                                        <strong>Sale Order:</strong>
+                                        <span class="ml-1" t-field="orders.sale_order"/>
+                                    </div>
+                                </div>
+                                <h3 class="font-weight-normal">Returns</h3>
+                                <table class="table table-sm">
+                                    <thead class="bg-100">
+                                        <tr>
+                                            <th>Products</th>
+                                            <th class="text-right">Quantity</th>
+                                            <th class="text-right">Reason</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="orders.return_line_ids" t-as="line">
+                                            <td>
+                                                <img t-att-src="image_data_uri(resize_to_48(line.product_id.image_1024))"
+                                                     alt="Product" class="d-none d-lg-inline"/>
+                                                <span t-esc="line.product_id.name"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-esc="line.received_qty"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-esc="line.reason"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="row"/>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="oe_structure mb32"/>
+        </t>
+    </template>
+
+
+    <record id="view_order_form_inherit_sales_return" model="ir.ui.view">
+        <field name="name">view.order.form.inherit.sales.return</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_returns" type="object"
+                        class="oe_stat_button" icon="fa-truck"
+                        attrs="{'invisible': [('return_order_count','=', 0)]}">
+                    <field name="return_order_count" widget="statinfo"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

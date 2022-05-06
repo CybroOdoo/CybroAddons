@@ -41,3 +41,8 @@
 #### Version 14.0.1.2.6
 #### UPDT AND BUGFIX
 - Multi-company and Translation Update and Bugfix
+
+#### 16.04.2022
+#### Version 14.0.1.2.7
+#### UPDT AND BUGFIX
+- Loading Issue and orderby date
