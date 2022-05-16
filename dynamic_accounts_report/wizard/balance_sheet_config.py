@@ -6,7 +6,6 @@ class BalanceSheet(models.TransientModel):
     _inherit = "dynamic.balance.sheet.report"
 
     def view_report_pdf(self, acc, form):
-
         data = dict()
         report_lines = acc
         data['form'] = form
@@ -40,7 +39,6 @@ class BalanceSheet(models.TransientModel):
                 item['level'] = set_report_level(item)
         data['journal_items'] = journal_items
         data['report_lines'] = report_lines
-
         return data
 
     def _compute_account_balance(self, accounts):
@@ -136,7 +134,6 @@ class BalanceSheet(models.TransientModel):
         return res
 
     def get_account_lines(self, data):
-
 
         lines = []
         account_report = data['account_report_id']

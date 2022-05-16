@@ -34,7 +34,7 @@ class AccountMove(models.Model):
         """methode to set default journal"""
         if len(self.env.user.branch_ids) == 1:
             branch_id = self.env.user.branch_id.id
-            domain = [('branch_id', '=', self.branch_id),
+            domain = [('branch_id', '=', branch_id),
                       ('type', 'in', journal_types)]
             journal = None
             if self._context.get('default_currency_id'):

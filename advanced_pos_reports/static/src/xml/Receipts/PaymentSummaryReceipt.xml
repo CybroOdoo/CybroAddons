@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="PaymentSummaryReceipt" owl="1">
+        <div class="pos-receipt">
+            <t t-if="company.logo">
+                <img class="pos-receipt-logo" t-att-src="company.logo" alt="Logo"/>
+                <br/>
+            </t>
+            <t t-if="!company.logo">
+                <h2 class="pos-receipt-center-align">
+                    <t t-esc="company.name" />
+                </h2>
+                <br/>
+            </t>
+            <div class="pos-receipt-contact">
+                <t t-if="company.contact_address">
+                    <div><t t-esc="company.contact_address" /></div>
+                </t>
+                <t t-if="company.phone">
+                    <div>Tel:<t t-esc="company.phone" /></div>
+                </t>
+                <t t-if="company.vat">
+                    <div><t t-esc="company.vat_label"/>:<t t-esc="company.vat" /></div>
+                </t>
+                <t t-if="company.email">
+                    <div><t t-esc="company.email" /></div>
+                </t>
+                <t t-if="company.website">
+                    <div><t t-esc="company.website" /></div>
+                </t>
+
+                <t t-if="cashier">
+                    <div class="cashier">
+                        <div>--------------------------------</div>
+                        <div>Served by <t t-esc="cashier.name" /></div>
+                    </div>
+                </t>
+            </div>
+            <br />
+
+            <h4 class="pos-receipt-center-align">
+                Payment Summary
+            </h4>
+
+            <t t-if="props.is_user">
+                <h5 class="pos-receipt-center-align" >
+                    <div>Salesperson: <t t-esc="env.pos.user.name" /></div>
+                </h5>
+            </t>
+
+            <table style="font-size:14px !important;margin-left: auto; margin-right: auto;" t-if="props.start_date and props.end_date">
+                <tr>
+                    <td><strong>Start Date:</strong></td>
+                    <td><t t-esc="props.start_date"/></td>
+
+                </tr>
+                <tr>
+                    <td><strong>End Date:</strong></td>
+                    <td><t t-esc="props.end_date"/></td>
+                </tr>
+            </table>
+
+            <table style="margin-top:10px; font-size:14px !important; margin-left: auto; margin-right: auto;" class="receipt-orderlines">
+                <colgroup>
+                   <col style="width: 50%;"/>
+                   <col style="width: 50%;"/>
+                </colgroup>
+                <thead style="border-bottom: 1px solid black;">
+					<tr>
+						<th>Payment Method</th>
+						<th style="text-align: right;">Amount</th>
+					</tr>
+				</thead>
+				<tbody>
+                    <t t-set="sub_total" t-value="0"/>
+					<tr t-foreach="payment_summary" t-as="payment">
+						<td>
+							<t t-esc="payment.name"/>
+						</td>
+						<td style="text-align: right;">
+							<t t-esc="env.pos.format_currency_no_symbol(payment.total)"/>
+						</td>
+                        <t t-set="sub_total" t-value="sub_total + payment.total"/>
+					</tr>
+					<br />
+					<tr style="border-top: 2px solid black;">
+						<td>Total:</td>
+						<td style="text-align: right;">
+							<t t-esc="env.pos.format_currency_no_symbol(sub_total)"/>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+        </div>
+
+    </t>
+
+</templates>

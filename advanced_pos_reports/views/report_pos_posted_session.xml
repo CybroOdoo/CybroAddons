@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template id="report_pos_posted_session">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <div class="text-center">
+                        <h2>Posted Sessions Report</h2>
+                    </div>
+
+                    <table  class="table table-lg">
+                        <tbody>
+                            <tr>
+                                <td>Report Date:</td>
+                                <td style="text-align: right;">
+                                    <t t-esc="today" t-options='{"widget": "date"}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Report Time:</td>
+                                <td style="text-align: right;">
+                                    <t t-esc="today" t-options='{"widget": "datetime",  "time_only": True}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Session(s):</td>
+                                <td style="text-align: right;">
+                                    <t t-foreach="sessions" t-as="session">
+                                        <t t-esc="session.name"/>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Status:</td>
+                                <td style="text-align: right;">
+                                    Closed
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Opening Balance:</td>
+                                <td style="text-align: right;">
+                                    <t t-esc="sum(sessions.mapped('cash_register_balance_start'))" t-options="{'widget': 'float', 'precision': currency_precision}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Closing Balance:</td>
+                                <td style="text-align: right;">
+                                    <t t-esc="sum(sessions.mapped('cash_register_balance_end_real'))" t-options="{'widget': 'float', 'precision': currency_precision}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Difference:</td>
+                                <td style="text-align: right;">
+                                    <t t-esc="sum(sessions.mapped('cash_real_difference'))" t-options="{'widget': 'float', 'precision': currency_precision}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Sales Without Tax:</td>
+                                <td style="text-align: right;">
+                                    <t t-esc="amount_total_without_tax" t-options="{'widget': 'float', 'precision': currency_precision}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Tax:</td>
+                                <td style="text-align: right;">
+                                    <t t-esc="amount_total_tax" t-options="{'widget': 'float', 'precision': currency_precision}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Returns:</td>
+                                <td style="text-align: right;">
+                                    <t t-esc="amount_return" t-options="{'widget': 'float', 'precision': currency_precision}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Total:</td>
+                                <td style="text-align: right;">
+                                    <t t-esc="amount_total"  t-options="{'widget': 'float', 'precision': currency_precision}"/>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                    <br/>
+
+                    <center>
+                        <h3>Department Sales</h3>
+                    </center>
+                    <table  class="table table-lg">
+                        <tbody>
+                            <t t-set="total" t-value="0"/>
+                            <tr t-foreach='categories' t-as='category'>
+                                <td><t t-esc="category['name']" /></td>
+                                <td style="text-align: right;"><t t-esc="category['amount']"  t-options="{'widget': 'float', 'precision': currency_precision}"/></td>
+                                <t t-set="total" t-value="total + category['amount']"/>
+                            </tr>
+                            <tr>
+                                <td>Total</td>
+                                <td style="text-align: right;"><t t-esc="total"  t-options="{'widget': 'float', 'precision': currency_precision}"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <br/>
+
+                    <center>
+                        <h3>Payments</h3>
+                    </center>
+
+                    <table  class="table table-sm">
+                        <tbody>
+                            <t t-set="total" t-value="0"/>
+                            <tr t-foreach='payments' t-as='payment'>
+                                <td><t t-esc="payment['name']" /></td>
+                                <td style="text-align: right;"><t t-esc="payment['total']"  t-options="{'widget': 'float', 'precision': currency_precision}"/></td>
+                                <t t-set="total" t-value="total + payment['total']"/>
+                            </tr>
+                            <tr>
+                                <td>Total</td>
+                                <td style="text-align: right;"><t t-esc="total"  t-options="{'widget': 'float', 'precision': currency_precision}"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+<!--                    <p style="page-break-after:always;"/>-->
+
+
+                </div>
+
+            </t>
+        </t>
+
+    </template>
+</odoo>

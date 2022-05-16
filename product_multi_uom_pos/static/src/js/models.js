@@ -21,7 +21,6 @@ models.Orderline = models.Orderline.extend({
     },
     export_as_JSON: function() {
         var result = OrderlineSuper.prototype.export_as_JSON.call(this);
-        console.log("result",result);
         result.uom_id = this.uom_id;
         return result;
     },
@@ -47,10 +46,14 @@ models.Orderline = models.Orderline.extend({
          OrderlineSuper.prototype.set_quantity.call(this, quantity, keep_price);
                 this.order.assert_editable();
         if(quantity === 'remove'){
+            if (this.refunded_orderline_id in this.pos.toRefundLines) {
+                delete this.pos.toRefundLines[this.refunded_orderline_id];
+            }
             this.order.remove_orderline(this);
-            return;
+            return true;
         }else{
-            var quant = parseFloat(quantity) || 0;
+            var quant = typeof(quantity) === 'number' ? quantity : (field_utils.parse.float('' + quantity) || 0);
+//            var quant = parseFloat(quantity) || 0;
             var unit = this.get_unit();
             if(unit){
                 if (unit.rounding) {
@@ -97,6 +100,7 @@ models.Orderline = models.Orderline.extend({
         }
         }
         this.trigger('change', this);
+        return true;
          },
 });
 

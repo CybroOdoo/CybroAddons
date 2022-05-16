@@ -74,20 +74,12 @@ var QWeb = core.qweb;
         }
         if(ref_unit){
             if(uom.uom_type == 'bigger'){
-                          console.log("bigggg");
-                          console.log("ref_price * uom.factor_inv",ref_price * uom.factor_inv);
-
                 return (ref_price * uom.factor_inv);
             }
             else if(uom.uom_type == 'smaller'){
-                          console.log("smalll");
-                          console.log("small",(ref_price / uom.factor_inv));
-
                 return (ref_price / uom.factor);
             }
             else if(uom.uom_type == 'reference'){
-                          console.log("refernce");
-                            console.log("ref_price",ref_price);
                 return ref_price;
             }
         }
