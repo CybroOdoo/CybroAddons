@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+        <record id="sequence_reference_code" model="ir.sequence">
+            <field name="name">Reference Code</field>
+            <field name="code">sequence.reference.code</field>
+            <field name="prefix">SUB</field>
+            <field name="padding">4</field>
+        </record>
+    </data>
+
+    <record id="subscription_action_subscriptions" model="ir.actions.act_window">
+        <field name="name">Subscriptions</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">subscription.package</field>
+        <field name="view_mode">kanban,tree,form,pivot</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new subscription package !
+            </p>
+        </field>
+    </record>
+
+    <record id="subscription_action_subscriptions_customers" model="ir.actions.act_window">
+        <field name="name">Subscriptions Customers</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('active_subscription', '=', True)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new subscription package !
+            </p>
+        </field>
+    </record>
+
+    <record id="subscription_action_subscriptions_to_renew" model="ir.actions.act_window">
+        <field name="name">Subscriptions to Renew</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">subscription.package</field>
+        <field name="domain">[('to_renew', '=', True)]</field>
+        <field name="view_mode">kanban,tree,form,pivot</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new subscription package !
+            </p>
+        </field>
+    </record>
+
+    <record id="subscription_package_tree" model="ir.ui.view">
+        <field name="name">subscription.package.tree</field>
+        <field name="model">subscription.package</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="stage_id"/>
+                <field name="partner_id"/>
+                <field name="reference_code"/>
+                <field name="start_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="subscription_package_form" model="ir.ui.view">
+        <field name="name">subscription.package.form</field>
+        <field name="model">subscription.package</field>
+        <field name="groups_id" eval="[(4, ref('subscription_package.group_subscription_user'))]"/>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="current_stage" invisible="1"/>
+                    <field name="is_closed" invisible="1"/>
+                    <button name="button_start_date" string="START"
+                            type="object" class="btn-primary oe_read_only" attrs="{'invisible': [('stage_category','!=', 'draft')]}"/>
+                    <button name="button_sale_order" string="Create Sale Order"
+                            type="object" class="btn-primary oe_read_only" attrs="{'invisible': [('so_count','>',0)]}"/>
+                    <button name="button_payment" string="Invoice"
+                            type="object" class="btn-primary oe_read_only"
+                            attrs="{'invisible': [('so_count', '=', 0)]}"
+                            invisible="1"/>
+                    <button name="button_close" string="Close Subscription"
+                            type="object" class="btn-primary oe_read_only"
+                            attrs="{'invisible': [('stage_category', 'in', ['draft', 'closed'])]}"/>
+                    <button name="action_renew" string="Renew" type="object" class="btn-primary oe_read_only" attrs="{'invisible': [('so_count', '=', 0)]}"/>
+                    <field name="stage_id" widget="statusbar" options="{'clickable' :0}"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="button_sale_count" type="object" class="oe_stat_button"
+                                icon="fa-credit-card" attrs="{'invisible': [('sale_order', '=', False)]}">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="so_count"/>
+                                </span>
+                                <span class="o_stat_text">
+                                    Sale Order
+                                </span>
+                            </div>
+                        </button>
+                        <button name="button_invoice_count" type="object" class="oe_stat_button"
+                                icon="fa-book" attrs="{'invisible': [('invoice_count','&lt;=',0)]}">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="invoice_count"/>
+                                </span>
+                                <span class="o_stat_text">
+                                    Invoices
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="text-truncate w-100">
+                        <h1>
+                            <field name="name"
+                                   placeholder="e.g. Monthly Subscriptions"
+                                   attrs="{'readonly': 1}"/>
+                        </h1>
+                        <div class="badge-pill badge-danger float-right"
+                             attrs="{'invisible': [('to_renew', '=', False)]}">
+                            For Renewal
+                        </div>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id" attrs="{'required': True}"/>
+                            <field name="partner_invoice_id"/>
+                            <field name="partner_shipping_id"/>
+                            <field name="start_date"/>
+                            <field name="next_invoice_date"/>
+                        </group>
+                        <group>
+                            <field name="plan_id" attrs="{'required': True}"/>
+                            <field name="to_renew"/>
+                            <field name="reference_code"/>
+                            <field name="analytic_account_id"/>
+                            <field name="tag_ids" widget="many2many_tags"
+                                   options="{'limit': 2, 'create': false, 'create_edit': false}"/>
+                            <field name="user_id"/>
+                            <field name="company_id"/>
+                            <field name="stage_category" invisible="1"/>
+                            <field name="invoice_mode" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Subscriptions" name="subscription_products_line">
+                            <field name="product_line_ids">
+                                <tree string="Product lines" editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id" required="1"/>
+                                    <field name="uom_catg_id" invisible="1"/>
+                                    <field name="product_qty" required="1"/>
+                                    <field name="product_uom_id" required="1"/>
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="unit_price" required="1"/>
+                                    <field name="total_amount" readonly="1"/>
+                                </tree>
+                            </field>
+                            <group name="note_group" col="6" class="mt-2 mt-md-0">
+                                <group class="oe_subtotal_footer oe_right" colspan="2" name="recurring_total">
+                                    <field name="total_recurring_price"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Terms and Conditions" name="terms_and_conditions">
+                            <field name="description" placeholder="Terms and Conditions."/>
+                        </page>
+                        <page string="Other Info" name="other_info">
+                            <group>
+                                <group>
+                                    <field name="user_id"/>
+                                    <field name="sale_order"/>
+                                </group>
+                                <group>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="subscription_package_kanban" model="ir.ui.view">
+        <field name="name">subscription.package.kanban</field>
+        <field name="model">subscription.package</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage_id" quick_create="false" class="o_kanban_mobile" sample="1">
+                <field name="stage_id"/>
+                <field name="user_id"/>
+                <field name="to_renew"/>
+                <field name="partner_id"/>
+                <field name="reference_code"/>
+                <progressbar field='stage_id'
+                             colors='{"progress_stage": "success", "draft_stage": "warning", "closed_stage": "muted"}'/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_title">
+                                    <field name="partner_id"/>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <field name="reference_code"/>
+                                    <br/>
+                                    <div class="badge badge-pill badge-info badge-danger mt4 mr16"
+                                         attrs="{'invisible': [('to_renew', '=', False)]}">
+                                        To Renew
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <field name="activity_ids" widget="kanban_activity"/>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <field name="user_id" widget="many2one_avatar_user"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="oe_clear"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+        <record id="subscription_package_pivot" model="ir.ui.view">
+            <field name="name">subscription.package.pivot</field>
+            <field name="model">subscription.package</field>
+            <field name="arch" type="xml">
+                <pivot string="Pivot View">
+                    <field name="name" type="row"/>
+                </pivot>
+            </field>
+        </record>
+
+    <menuitem id="subscription_menu_root"
+              name="Subscription"
+              action="subscription_package.subscription_action_subscriptions"
+              sequence="1" groups="group_subscription_user"/>
+
+    <menuitem id="subscription_menu_subscriptions"
+              name="Subscriptions"
+              parent="subscription_package.subscription_menu_root"
+              sequence="3"/>
+
+    <menuitem id="subscriptions_menu_subscriptions"
+              name="Subscriptions"
+              parent="subscription_package.subscription_menu_subscriptions"
+              action="subscription_package.subscription_action_subscriptions"
+              sequence="5"/>
+    <menuitem id="subscriptions_menu_subscriptions_to_renew"
+              name="Subscriptions to Renew"
+              parent="subscription_package.subscription_menu_subscriptions"
+              action="subscription_package.subscription_action_subscriptions_to_renew"
+              sequence="6"/>
+
+    <menuitem id="subscriptions_menu_subscriptions_customers"
+              name="Customers"
+              parent="subscription_package.subscription_menu_subscriptions"
+              action="subscription_package.subscription_action_subscriptions_customers"
+              sequence="7"/>
+
+</odoo>
+

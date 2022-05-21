@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_conf_subscription_plan" model="ir.actions.act_window">
+        <field name="name">Subscription Plan</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">subscription.package.plan</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new subscription plan !
+            </p>
+        </field>
+    </record>
+
+    <record id="subscription_plan_tree" model="ir.ui.view">
+        <field name="name">subscription.package.plan.tree</field>
+        <field name="model">subscription.package.plan</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="renewal_period"/>
+                <field name="company_id"/>
+                <field name="short_code"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="subscription_plan_form" model="ir.ui.view">
+        <field name="name">subscription.package.plan.form</field>
+        <field name="model">subscription.package.plan</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="button_product_count" type="object"
+                                class="oe_stat_button" icon="fa-shopping-cart">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="product_count"/>
+                                </span>
+                                <span class="o_stat_text">
+                                    Products
+                                </span>
+                            </div>
+                        </button>
+                        <button name="button_sub_count" class="oe_stat_button"
+                                icon="fa-book" type="object">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="subscription_count"/>
+                                </span>
+                                <span class="o_stat_text">
+                                    Subscriptions
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Yearly Subscription"/>
+                        </h1>
+                    </div>
+                    <group id="conditions">
+                        <group id="invoicing_left">
+                            <label string="Invoice on" for="renewal_value"/>
+                            <div class="o_row">
+                                Every
+                                <field name="renewal_value" attrs="{'required': True}"/>
+                                <field name="renewal_period" attrs="{'required': True}"/>
+                            </div>
+                            <field name="limit_choice" string="Number of Occurrence"
+                                   widget="radio"/>
+                            <label string="Renewal Limit" for="limit_count" attrs="{'invisible': [('limit_choice', '!=', 'custom')]}"/>
+                                <div class="o_row" attrs="{'invisible': [('limit_choice', '!=', 'custom')]}">
+                                    <field name="limit_count" attrs="{'required': [('limit_choice', '=', 'custom')]}" readonly="0"/>
+                                    term(s)
+                                </div>
+                        </group>
+                        <group id="invoicing_right">
+                            <field name="renewal_time" invisible="1"/>
+                            <field name="days_to_end" invisible="1"/>
+                            <field name="invoice_mode" string="Create Invoice"
+                                   widget="radio" attrs="{'required': True}"/>
+                            <field name="short_code"/>
+                            <field name="journal_id"/>
+                            <field name="company_id"/>
+                        </group>
+                    </group>
+                    <separator string="Terms and conditions"/>
+                    <field name="terms_and_conditions"
+                               placeholder="Terms and conditions."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <menuitem id="subscription_menu_config"
+              name="Configuration"
+              parent="subscription_package.subscription_menu_root"
+              sequence="21" groups="group_subscription_manager"/>
+
+    <menuitem id="subscription_config_menu_subscription_template"
+              name="Subscription Plan"
+              parent="subscription_package.subscription_menu_config"
+              action="subscription_package.action_conf_subscription_plan"
+              sequence="23" groups="group_subscription_manager"/>
+
+</odoo>
