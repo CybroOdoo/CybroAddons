@@ -1,0 +1,490 @@
+<templates>
+    <t t-name="PosReport">
+        <div class="">
+            <div>
+                <center>
+                    <h1 style="margin: 20px;">Point of Sale Report</h1>
+                </center>
+            </div>
+            <div>
+                <div class="filter_view_pr"/>
+            </div>
+            <div>
+                <div class="table_view_pr" style="width: 95%; margin: auto;"/>
+            </div>
+
+        </div>
+    </t>
+
+    <t t-name="posFilterView">
+        <div class="row" style="margin-right: 10px; margin-left: 10px;">
+            <div class="sub_container_left" style="width: 285px; margin-left: 36px;">
+                <div class="report_print">
+                    <button type="button" class="btn btn-primary" id="pdf"
+                            style="top: 0px; height: 42px; color: white; background-color: #7c7bad; border-color: #7c7bad; width: 127px;">
+                        Print (PDF)
+                    </button>
+                    <button type="button" class="btn btn-primary" id="xlsx"
+                            style="top: 0px; height: 42px; color: white; background-color: #7c7bad; border-color: #7c7bad; width: 127px;">
+                        Export (XLSX)
+                    </button>
+                </div>
+            </div>
+            <br></br>
+
+            <div class="sub_container_right row"
+                 style="width: 30%; height: 3%; top: 0px; position: relative; display: flex; justify-content: end; margin-bottom: 20px;">
+                <div class="time_range_pos" style="">
+                    <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+                        <span class="fa fa-calendar" title="Dates" role="img" aria-label="Dates"/>
+                        Date Range
+                    </a>
+                    <div class="dropdown-menu" role="menu">
+                        <div class="form-group">
+                            <label class="" for="date_from">Start Date :</label>
+                            <div class="input-group date" id="date_from" data-target-input="nearest">
+                                <input type="text" name="date_from" class="form-control datetimepicker-input"
+                                       data-target="#date_from" t-att-name="prefix"/>
+                                <div class="input-group-append" data-target="#date_from" data-toggle="datetimepicker">
+                                    <span class="input-group-text">
+                                        <span class="fa fa-calendar" role="img" aria-label="Calendar"/>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <label class="" for="date_to">End Date :</label>
+                            <div class="input-group date" id="date_to" data-target-input="nearest">
+
+                                <input type="text" name="date_to" class="form-control datetimepicker-input"
+                                       data-target="#date_to" t-att-name="prefix"/>
+                                <div class="input-group-append" data-target="#date_to" data-toggle="datetimepicker">
+                                    <span class="input-group-text">
+                                        <span class="fa fa-calendar" role="img" aria-label="Calendar"/>
+                                    </span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="search-Result-Selection" style="">
+                    <a type="button" class="dropdown-toggle report-type" data-toggle="dropdown">
+                        <span class="fa fa-book"/>
+                        Report Type:
+                    </a>
+                    <select id="selection" class="dropdown-menu report_type" name="states[]">
+                        <div role="separator" class="dropdown-divider"/>
+                        <option value="report_by_order" selected="">Report By Order</option>
+                        <option value="report_by_order_detail">Report By Order Detail</option>
+                        <option value="report_by_product">Report By Product</option>
+                        <option value="report_by_categories">Report By Categories</option>
+                        <option value="report_by_salesman">Report By Salesman</option>
+                        <option value="report_by_payment">Report By Payment</option>
+                    </select>
+                    <span id="report_res"/>
+                </div>
+                <div style="">
+                    <button type="button" id="apply_filter" class="btn btn-primary"
+                            style="top: 0px; height: 42px; color: white; background-color: #7c7bad; border-color: #7c7bad; width: 100px;">
+                        Apply
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="PosOrderTable">
+        <!--        <t t-esc="order.report_type"/>-->
+        <div t-if="order.report_type == 'report_by_order'">
+            <div class="table_main_view">
+                <table cellspacing="0" width="100%">
+
+                    <thead>
+                        <tr class="table_pos_head">
+                            <th>PoS</th>
+                            <th class="mon_fld">Order</th>
+                            <th class="mon_fld">Date Order</th>
+                            <th class="mon_fld">Customer</th>
+                            <th class="mon_fld">Salesman</th>
+                            <th class="mon_fld">Total Qty</th>
+                            <th class="mon_fld">Amount Total</th>
+
+                            <th class="mon_fld">Note</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!--                        <t t-if="order['report_type']='report_by_order'">-->
+                        <t t-foreach="report_lines" t-as="pos_report">
+                            <tr style="border: 1.5px solid black;" class="ps-line"
+
+                                t-att-data-account-id="pos_report['id']"
+                                t-attf-data-target=".a{{pos_report['id']}}">
+                                <td>
+                                    <t t-if="pos_report['id']">
+                                        <div class="dropdown dropdown-toggle">
+                                            <a data-toggle="dropdown" href="#">
+                                                <span class="caret"/>
+                                                <span>
+                                                    <t t-esc="pos_report['shop']"/>
+                                                </span>
+                                            </a>
+                                            <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+                                                <li>
+                                                    <a class="view_pos_order" tabindex="-1" href="#"
+                                                       t-att-id="pos_report['id']">
+                                                        View PoS Order
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </t>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['session']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['date_order']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['name']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['salesman']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['sum']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['amount_total']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['note']"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+                        <!--                        </t>-->
+                        <!--                        Report for order detail-->
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div t-if="order.report_type == 'report_by_order_detail'">
+            <div class="table_main_view">
+                <table cellspacing="0" width="100%">
+
+                    <thead>
+                        <tr class="table_pos_head">
+                            <th>PoS</th>
+                            <th class="mon_fld">Order</th>
+                            <th class="mon_fld">Date Order</th>
+                            <th class="mon_fld">Customer</th>
+                            <th class="mon_fld">Salesman</th>
+                            <th class="mon_fld">Product Code</th>
+                            <th class="mon_fld">Product Name</th>
+                            <th class="mon_fld">Price unit</th>
+                            <th class="mon_fld">Qty</th>
+                            <th class="mon_fld">Price Subtotal</th>
+                            <th class="mon_fld">Price Subtotal Incl</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!--                        <t t-if="order['report_type']='report_by_order'">-->
+                        <t t-foreach="report_lines" t-as="pos_report">
+                            <tr style="border: 1.5px solid black;" class="ps-line"
+                                data-toggle="collapse"
+                                t-att-data-account-id="pos_report['id']"
+                                t-attf-data-target=".a{{pos_report['id']}}">
+                                <td style="border: 0px solid black;">
+                                    <i class="fa fa-caret-down" role="img" aria-label="Unfolded" title="Unfolded"/>
+
+                                    <span>
+                                        <t t-esc="pos_report['shop']"/>
+                                    </span>
+
+
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['session']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['date_order']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['name']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['salesman']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['default_code']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['full_product_name']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['price_unit']"/>
+                                    </span>
+                                </td>
+
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['sum']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['price_subtotal']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['price_subtotal_incl']"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!--Report for product-->
+        <div t-if="order.report_type == 'report_by_product'">
+            <div class="table_main_view">
+                <table cellspacing="0" width="100%">
+
+                    <thead>
+                        <tr class="table_pos_head">
+                            <th>Category</th>
+                            <th class="mon_fld">Product Code</th>
+                            <th class="mon_fld">Product Name</th>
+                            <th class="mon_fld">Qty</th>
+                            <th class="mon_fld">Amount Total</th>
+                            <th class="mon_fld">Amount Total Incl</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!--                        <t t-if="order['report_type']='report_by_order'">-->
+                        <t t-foreach="report_lines" t-as="pos_report">
+                            <tr style="border: 1.5px solid black;" class="ps-line"
+                                data-toggle="collapse"
+                                t-att-data-account-id="pos_report['id']"
+                                t-attf-data-target=".a{{pos_report['id']}}">
+                                <td style="border: 0px solid black;">
+                                    <i class="fa fa-caret-down" role="img" aria-label="Unfolded" title="Unfolded"/>
+
+                                    <span>
+                                        <t t-esc="pos_report['name']"/>
+                                    </span>
+
+
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['default_code']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['full_product_name']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['qty']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['amount_total']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['amount_paid']"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!--Report for Categories-->
+
+        <div t-if="order.report_type == 'report_by_categories'">
+            <div class="table_main_view">
+                <table cellspacing="0" width="100%">
+
+                    <thead>
+                        <tr class="table_pos_head">
+                            <th>Category</th>
+                            <th class="mon_fld">Qty</th>
+                            <th class="mon_fld">Amount Total</th>
+                            <th class="mon_fld">Amount Total Incl</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!--                        <t t-if="order['report_type']='report_by_order'">-->
+                        <t t-foreach="report_lines" t-as="pos_report">
+                            <tr style="border: 1.5px solid black;" class="ps-line"
+                                data-toggle="collapse"
+                                t-att-data-account-id="pos_report['id']"
+                                t-attf-data-target=".a{{pos_report['id']}}">
+                                <td style="border: 0px solid black;">
+                                    <i class="fa fa-caret-down" role="img" aria-label="Unfolded" title="Unfolded"/>
+                                    <span>
+                                        <t t-esc="pos_report['name']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['qty']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['amount_total']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['total_incl']"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!--Report for Salesman-->
+
+        <div t-if="order.report_type == 'report_by_salesman'">
+            <div class="table_main_view">
+                <table cellspacing="0" width="100%">
+
+                    <thead>
+                        <tr class="table_pos_head">
+                            <th>Salesman</th>
+                            <th class="mon_fld">Total Order</th>
+                            <th class="mon_fld">Total Qty</th>
+                            <th class="mon_fld">Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!--                        <t t-if="order['report_type']='report_by_order'">-->
+                        <t t-foreach="report_lines" t-as="pos_report">
+                            <tr style="border: 1.5px solid black;" class="ps-line"
+                                data-toggle="collapse"
+                                t-att-data-account-id="pos_report['id']"
+                                t-attf-data-target=".a{{pos_report['id']}}">
+                                <td style="border: 0px solid black;">
+                                    <i class="fa fa-caret-down" role="img" aria-label="Unfolded" title="Unfolded"/>
+                                    <span>
+                                        <t t-esc="pos_report['name']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['order']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['qty']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['amount']"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!--Report for Payment-->
+
+        <div t-if="order.report_type == 'report_by_payment'">
+            <div class="table_main_view">
+                <table cellspacing="0" width="100%">
+
+                    <thead>
+                        <tr class="table_pos_head">
+                            <th>Point of Sale</th>
+                            <th class="mon_fld">PoS Session</th>
+                            <th class="mon_fld">Payment</th>
+                            <th class="mon_fld">Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!--                        <t t-if="order['report_type']='report_by_order'">-->
+                        <t t-foreach="report_lines" t-as="pos_report">
+                            <tr style="border: 1.5px solid black;" class="ps-line"
+                                data-toggle="collapse"
+                                t-att-data-account-id="pos_report['id']"
+                                t-attf-data-target=".a{{pos_report['id']}}">
+                                <td style="border: 0px solid black;">
+                                    <i class="fa fa-caret-down" role="img" aria-label="Unfolded" title="Unfolded"/>
+                                    <span>
+                                        <t t-esc="pos_report['config']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['session']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['name']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="pos_report['sum']"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+</templates>
