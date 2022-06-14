@@ -58,6 +58,9 @@ class ChecklistItem(models.Model):
     def mark_canceled(self):
         self.state = 'cancel'
 
+    def reset_stage(self):
+        self.state = 'todo'
+
 
 class ChecklistProgress(models.Model):
     _inherit = 'project.task'
