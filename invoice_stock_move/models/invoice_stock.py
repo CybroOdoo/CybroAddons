@@ -56,19 +56,26 @@ class InvoiceStockMove(models.Model):
     ], string='Status', index=True, readonly=True, default='draft',
         track_visibility='onchange', copy=False)
 
-    def action_stock_move(self):
+        def action_stock_move(self):
         if not self.picking_type_id:
             raise UserError(_(
                 " Please select a picking type"))
         for order in self:
             if not self.invoice_picking_id:
                 pick = {}
+                partner_location = False
+                if order.move_type in ('out_invoice', 'out_receipt', 'out_refund'):
+                    partner_location = self.partner_id.property_stock_customer.id
+                elif order.move_type in ('in_invoice', 'in_refund', 'in_receipt'):
+                    partner_location = self.partner_id.property_stock_supplier.id
+
+                   
                 if self.picking_type_id.code == 'outgoing':
                     pick = {
                         'picking_type_id': self.picking_type_id.id,
                         'partner_id': self.partner_id.id,
                         'origin': self.name,
-                        'location_dest_id': self.partner_id.property_stock_customer.id,
+                        'location_dest_id': partner_location,
                         'location_id': self.picking_type_id.default_location_src_id.id,
                         'move_type': 'direct'
                     }
@@ -78,7 +85,7 @@ class InvoiceStockMove(models.Model):
                         'partner_id': self.partner_id.id,
                         'origin': self.name,
                         'location_dest_id': self.picking_type_id.default_location_dest_id.id,
-                        'location_id': self.partner_id.property_stock_supplier.id,
+                        'location_id': partner_location,
                         'move_type': 'direct'
                     }
 
