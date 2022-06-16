@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -21,9 +21,9 @@
 #############################################################################
 
 {
-    'name': "Automatic Database Backup",
-    'version': '15.0.1.0.0',
-    'summary': """Generate automatic backup of databases and store to local, google drive or remote server""",
+    'name': "Automatic Database Backup To Local Server, Remote Server, Google Drive And Dropbox",
+    'version': '15.0.2.0.1',
+    'summary': """Generate automatic backup of databases and store to local, google drive, dropbox or remote server""",
     'description': """This module has been developed for creating database backups automatically 
                     and store it to the different locations.""",
     'author': "Cybrosys Techno Solutions",
@@ -35,7 +35,8 @@
     'data': [
         'security/ir.model.access.csv',
         'data/data.xml',
-        'views/db_backup_configure_views.xml'
+        'views/db_backup_configure_views.xml',
+        'wizard/dropbox_authcode_wizard_views.xml'
     ],
     'license': 'LGPL-3',
     'images': ['static/description/banner.gif'],

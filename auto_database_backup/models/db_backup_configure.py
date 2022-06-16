@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -24,6 +24,8 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 import odoo
 from odoo.service import db
+
+import dropbox
 
 import datetime
 import os
@@ -53,21 +55,26 @@ class AutoDatabaseBackup(models.Model):
         ('local', 'Local Storage'),
         ('google_drive', 'Google Drive'),
         ('ftp', 'FTP'),
-        ('sftp', 'SFTP')
+        ('sftp', 'SFTP'),
+        ('dropbox', 'Dropbox')
     ], string='Backup Destination')
     backup_path = fields.Char(string='Backup Path', help='Local storage directory path')
     sftp_host = fields.Char(string='SFTP Host')
     sftp_port = fields.Char(string='SFTP Port', default=22)
-    sftp_user = fields.Char(string='SFTP User')
-    sftp_password = fields.Char(string='SFTP Password')
+    sftp_user = fields.Char(string='SFTP User', copy=False)
+    sftp_password = fields.Char(string='SFTP Password', copy=False)
     sftp_path = fields.Char(string='SFTP Path')
     ftp_host = fields.Char(string='FTP Host')
     ftp_port = fields.Char(string='FTP Port', default=21)
-    ftp_user = fields.Char(string='FTP User')
-    ftp_password = fields.Char(string='FTP Password')
+    ftp_user = fields.Char(string='FTP User', copy=False)
+    ftp_password = fields.Char(string='FTP Password', copy=False)
     ftp_path = fields.Char(string='FTP Path')
+    dropbox_client_id = fields.Char(string='Dropbox Client ID', copy=False)
+    dropbox_client_secret = fields.Char(string='Dropbox Client Secret', copy=False)
+    dropbox_refresh_token = fields.Char(string='Dropbox Refresh Token', copy=False)
+    is_dropbox_token_generated = fields.Boolean(string='Dropbox Token Generated', compute='_compute_is_dropbox_token_generated', copy=False)
+    dropbox_folder = fields.Char('Dropbox Folder')
     active = fields.Boolean(default=True)
-    save_to_drive = fields.Boolean()
     auto_remove = fields.Boolean(string='Remove Old Backups')
     days_to_remove = fields.Integer(string='Remove After',
                                     help='Automatically delete stored backups after this specified number of days')
@@ -78,10 +85,48 @@ class AutoDatabaseBackup(models.Model):
     backup_filename = fields.Char(string='Backup Filename', help='For Storing generated backup filename')
     generated_exception = fields.Char(string='Exception', help='Exception Encountered while Backup generation')
 
-    @api.constrains('db_name', 'master_pwd')
+    @api.depends('dropbox_refresh_token')
+    def _compute_is_dropbox_token_generated(self):
+        """
+        Set True if the dropbox refresh token is generated
+        """
+        for rec in self:
+            rec.is_dropbox_token_generated = bool(rec.dropbox_refresh_token)
+
+    def action_get_dropbox_auth_code(self):
+        """
+        Open a wizard to setup dropbox Authorization code
+        """
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Dropbox Authorization Wizard',
+            'res_model': 'dropbox.auth.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+        }
+
+    def get_dropbox_auth_url(self):
+        """
+        Return dropbox authorization url
+        """
+        dbx_auth = dropbox.oauth.DropboxOAuth2FlowNoRedirect(self.dropbox_client_id, self.dropbox_client_secret,
+                                                             token_access_type='offline')
+        auth_url = dbx_auth.start()
+        return auth_url
+
+    def set_dropbox_refresh_token(self, auth_code):
+        """
+        Generate and set the dropbox refresh token from authorization code
+        """
+        dbx_auth = dropbox.oauth.DropboxOAuth2FlowNoRedirect(self.dropbox_client_id, self.dropbox_client_secret,
+                                                             token_access_type='offline')
+        outh_result = dbx_auth.finish(auth_code)
+        self.dropbox_refresh_token = outh_result.refresh_token
+
+    @api.constrains('db_name')
     def _check_db_credentials(self):
         """
-        Validate enetered database name and master password
+        Validate entered database name and master password
         """
         database_list = db.list_dbs()
         if self.db_name not in database_list:
@@ -133,7 +178,6 @@ class AutoDatabaseBackup(models.Model):
         """
         records = self.search([])
         mail_template_success = self.env.ref('auto_database_backup.mail_template_data_db_backup_successful')
-        print('mail template success', mail_template_success)
         mail_template_failed = self.env.ref('auto_database_backup.mail_template_data_db_backup_failed')
         for rec in records:
             backup_time = datetime.datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
@@ -157,7 +201,6 @@ class AutoDatabaseBackup(models.Model):
                             if backup_duration.days >= rec.days_to_remove:
                                 os.remove(file)
                     if rec.notify_user:
-                        print('success notify')
                         mail_template_success.send_mail(rec.id, force_send=True)
                 except Exception as e:
                     rec.generated_exception = e
@@ -263,5 +306,27 @@ class AutoDatabaseBackup(models.Model):
                 except Exception as e:
                     rec.generated_exception = e
                     _logger.info('Google Drive Exception: %s', e)
+                    if rec.notify_user:
+                        mail_template_failed.send_mail(rec.id, force_send=True)
+            # Dropbox backup
+            elif rec.backup_destination == 'dropbox':
+                temp = tempfile.NamedTemporaryFile(suffix='.%s' % rec.backup_format)
+                with open(temp.name, "wb+") as tmp:
+                    odoo.service.db.dump_db(rec.db_name, tmp, rec.backup_format)
+                try:
+                    dbx = dropbox.Dropbox(app_key=rec.dropbox_client_id, app_secret=rec.dropbox_client_secret, oauth2_refresh_token=rec.dropbox_refresh_token)
+                    dropbox_destination = rec.dropbox_folder + '/' + backup_filename
+                    dbx.files_upload(temp.read(), dropbox_destination)
+                    if rec.auto_remove:
+                        files = dbx.files_list_folder(rec.dropbox_folder)
+                        file_entries = files.entries
+                        expired_files = list(filter(lambda fl: (datetime.datetime.now() - fl.client_modified).days >= rec.days_to_remove, file_entries))
+                        for file in expired_files:
+                            dbx.files_delete_v2(file.path_display)
+                    if rec.notify_user:
+                        mail_template_success.send_mail(rec.id, force_send=True)
+                except Exception as error:
+                    rec.generated_exception = error
+                    _logger.info('Dropbox Exception: %s', error)
                     if rec.notify_user:
                         mail_template_failed.send_mail(rec.id, force_send=True)
