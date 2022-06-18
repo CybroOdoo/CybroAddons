@@ -2,8 +2,8 @@
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
-View Any Model
-==============
+View Records Of Any Model
+=========================
 This module allow to view records of all modules.
 
 Configuration

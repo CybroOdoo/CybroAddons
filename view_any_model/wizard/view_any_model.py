@@ -39,7 +39,7 @@ class ViewAnyModel(models.TransientModel):
 
     def action_view_model(self):
         """
-
+        View the records of selected model in tree or form view
         :return: tree/ form view of selected model
         """
         if self.view_type == 'form':
