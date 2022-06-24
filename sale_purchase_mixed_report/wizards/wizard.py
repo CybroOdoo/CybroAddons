@@ -19,6 +19,7 @@
 #   If not, see <http://www.gnu.org/license/>.
 #
 ################################################################################
+"""Sale Purchase Report Wizard for PDF and XLSX Report"""
 import io
 import json
 
@@ -70,9 +71,11 @@ class SalePurchasePrintReport(models.TransientModel):
         """Button function to print Xlsx Report"""
         if self.date_from and self.date_to and self.date_from > self.date_to:
             raise ValidationError('From Date must be less than of To Date!!!')
+        company_id = self.env.company
         data = {
             'model': self._name,
             'form': self.read()[0],
+            'company_id': company_id.id,
         }
         return {
             'type': 'ir.actions.report',
@@ -87,7 +90,7 @@ class SalePurchasePrintReport(models.TransientModel):
 
     def get_xlsx_report(self, data, response):
         """Create and add data to the excel sheet"""
-        company_id = self.env.company
+        company_id = self.env['res.company'].browse(data['company_id'])
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         sheet = workbook.add_worksheet()
@@ -114,10 +117,8 @@ class SalePurchasePrintReport(models.TransientModel):
         sheet.write(0, 12, 'Total Price', head_format)
         sheet.write(0, 13, 'Currency', head_format)
         sheet.write(0, 14, 'Order State', head_format)
-        where_sale = """so.company_id = %s""" % (
-            company_id.id)
-        where_purchase = """po.company_id = %s""" % (
-            company_id.id)
+        where_sale = """so.company_id = %s""" % company_id.id
+        where_purchase = """po.company_id = %s""" % company_id.id
         if data['form']['date_from']:
             where_sale += """AND so.date_order >= '%s'""" % (
                 data['form']['date_from'])
@@ -153,6 +154,8 @@ class SalePurchasePrintReport(models.TransientModel):
             else:
                 where_purchase += """AND po.id in %s""" % (
                     str(tuple(data['form']['purchase_order_ids'])))
+        print('where', where_sale)
+        print('whre pur', where_purchase)
         self.env.cr.execute("""
             select macro.id as id,
                 macro.order_type as order_type,

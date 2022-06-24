@@ -21,9 +21,9 @@
 ################################################################################
 {
     'name': "Sale Purchase mixed Report",
-    'summary': """Mixed reports of Sale and Purchase data""",
-    'description': """Mixed reports of Sale and Purchase data""",
-    'category': 'Technical',
+    'summary': """Mixed Reports of Sale and Purchase Data""",
+    'description': """Mixed Reports of Sale and Purchase Data""",
+    'category': 'Sale',
     'version': '15.0.1.0.0',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
@@ -33,6 +33,7 @@
     'depends': ['base', 'sale', 'purchase', 'stock'],
     'data': [
         'security/ir.model.access.csv',
+        'security/security.xml',
         'reports/sale_purchase_report_views.xml',
         'reports/sale_purchase_pdf_template.xml',
         'wizards/wizard_views.xml',

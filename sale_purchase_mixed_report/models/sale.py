@@ -19,7 +19,7 @@
 #   If not, see <http://www.gnu.org/license/>.
 #
 ################################################################################
-
+"""Purchase Order"""
 from odoo import fields, models
 
 

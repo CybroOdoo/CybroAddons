@@ -19,7 +19,7 @@
 #   If not, see <http://www.gnu.org/license/>.
 #
 ################################################################################
-
+"""Controller for Xlsx report"""
 import json
 from odoo import http
 from odoo.http import content_disposition, request

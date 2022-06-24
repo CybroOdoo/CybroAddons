@@ -19,7 +19,7 @@
 #   If not, see <http://www.gnu.org/license/>.
 #
 ################################################################################
-
+"""Sale Purchase Report"""
 from odoo import fields, models, tools
 
 

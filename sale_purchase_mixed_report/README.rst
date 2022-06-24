@@ -1,7 +1,6 @@
 .. image:: https://img.shields.io/badge/license-AGPL--3-blue.svg
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
-
 Sale Purchase mixed Report V15
 ==============================
 Provides mixed reports related to Sales and Purchase in both Sales and Purchase.
