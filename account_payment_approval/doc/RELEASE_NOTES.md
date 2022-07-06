@@ -5,3 +5,7 @@
 ##### ADD
 - Initial commit for Payment Approval
 
+#### 29.06.2022
+#### Version 14.0.1.0.1
+##### ADD
+- Solved Payment Issue

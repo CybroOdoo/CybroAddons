@@ -105,24 +105,24 @@
                                   t-field="o.partner_id"/>
                             <br/>
                             <span t-if="o.theme_id.address">
-                            <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
-                                  t-field="o.partner_id.street"/>
-                            <br/>
-                            <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
-                                  t-field="o.partner_id.street2"/>
-                            <br/>
+                                <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
+                                      t-field="o.partner_id.street"/>
+                                <br/>
+                                <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
+                                      t-field="o.partner_id.street2"/>
+                                <br/>
                             </span>
 
                             <span t-if="o.theme_id.city">
-                            <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
-                                  t-field="o.partner_id.city"/>
-                            <br/>
+                                <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
+                                      t-field="o.partner_id.city"/>
+                                <br/>
                             </span>
 
                             <span t-if="o.theme_id.country">
-                            <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
-                                  t-field="o.partner_id.country_id"/>
-                            <br/>
+                                <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
+                                      t-field="o.partner_id.country_id"/>
+                                <br/>
                             </span>
                             <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
                                   t-field="o.partner_id.vat"/>
@@ -405,55 +405,59 @@
                 </div>
             </t>
         </template>
-        <template id="account.report_invoice_with_payments">
-            <t t-call="web.html_container">
-                <t t-foreach="docs" t-as="o">
-                    <t t-set="lang"
-                       t-value="o.invoice_user_id.sudo().lang if o.move_type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
-                    <t t-set="print_with_payments" t-value="True"/>
-                    <t t-if="o.company_id.base_layout == 'normal'">
-                        <t t-call="invoice_format_editor.custom_template_report_invoice_normal"
-                           t-lang="o.partner_id.lang"/>
-                    </t>
-                    <t t-if="o.company_id.base_layout == 'old'">
-                        <t t-call="invoice_format_editor.old_std_report_invoice_document"
-                           t-lang="o.partner_id.lang"/>
-                    </t>
-                    <t t-if="o.company_id.base_layout == 'modern'">
-                        <t t-call="invoice_format_editor.custom_template_report_invoice_modern"
-                           t-lang="o.partner_id.lang"/>
-                    </t>
-                    <t t-if="o.company_id.base_layout == 'default'">
-                        <t t-call="invoice_format_editor.report_invoice_document"
-                           t-lang="o.partner_id.lang"/>
+        <template id="report_invoice_with_payments_inherit" inherit_id="account.report_invoice_with_payments">
+            <xpath expr="//t[@t-call='web.html_container']" position="replace">
+                <t t-call="web.html_container">
+                    <t t-foreach="docs" t-as="o">
+                        <t t-set="lang"
+                           t-value="o.invoice_user_id.sudo().lang if o.move_type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
+                        <t t-set="print_with_payments" t-value="True"/>
+                        <t t-if="o.company_id.base_layout == 'normal'">
+                            <t t-call="invoice_format_editor.custom_template_report_invoice_normal"
+                               t-lang="o.partner_id.lang"/>
+                        </t>
+                        <t t-if="o.company_id.base_layout == 'old'">
+                            <t t-call="invoice_format_editor.old_std_report_invoice_document"
+                               t-lang="o.partner_id.lang"/>
+                        </t>
+                        <t t-if="o.company_id.base_layout == 'modern'">
+                            <t t-call="invoice_format_editor.custom_template_report_invoice_modern"
+                               t-lang="o.partner_id.lang"/>
+                        </t>
+                        <t t-if="o.company_id.base_layout == 'default'">
+                            <t t-call="invoice_format_editor.report_invoice_document"
+                               t-lang="o.partner_id.lang"/>
+                        </t>
                     </t>
                 </t>
-            </t>
+            </xpath>
         </template>
-        <template id="account.report_invoice">
-            <t t-call="web.html_container">
-                <t t-foreach="docs" t-as="o">
-                    <t t-set="lang"
-                       t-value="o.invoice_user_id.sudo().lang if o.move_type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
-                    <t t-set="print_with_payments" t-value="True"/>
-                    <t t-if="o.company_id.base_layout == 'normal'">
-                        <t t-call="invoice_format_editor.custom_template_report_invoice_normal"
-                           t-lang="o.partner_id.lang"/>
-                    </t>
-                    <t t-if="o.company_id.base_layout == 'old'">
-                        <t t-call="invoice_format_editor.old_std_report_invoice_document"
-                           t-lang="o.partner_id.lang"/>
-                    </t>
-                    <t t-if="o.company_id.base_layout == 'modern'">
-                        <t t-call="invoice_format_editor.custom_template_report_invoice_modern"
-                           t-lang="o.partner_id.lang"/>
-                    </t>
-                    <t t-if="o.company_id.base_layout == 'default'">
-                        <t t-call="invoice_format_editor.report_invoice_document"
-                           t-lang="o.partner_id.lang"/>
+        <template id="report_invoice_inherit" inherit_id="account.report_invoice">
+            <xpath expr="//t[@t-call='web.html_container']" position="replace">
+                <t t-call="web.html_container">
+                    <t t-foreach="docs" t-as="o">
+                        <t t-set="lang"
+                           t-value="o.invoice_user_id.sudo().lang if o.move_type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
+                        <t t-set="print_with_payments" t-value="True"/>
+                        <t t-if="o.company_id.base_layout == 'normal'">
+                            <t t-call="invoice_format_editor.custom_template_report_invoice_normal"
+                               t-lang="o.partner_id.lang"/>
+                        </t>
+                        <t t-if="o.company_id.base_layout == 'old'">
+                            <t t-call="invoice_format_editor.old_std_report_invoice_document"
+                               t-lang="o.partner_id.lang"/>
+                        </t>
+                        <t t-if="o.company_id.base_layout == 'modern'">
+                            <t t-call="invoice_format_editor.custom_template_report_invoice_modern"
+                               t-lang="o.partner_id.lang"/>
+                        </t>
+                        <t t-if="o.company_id.base_layout == 'default'">
+                            <t t-call="invoice_format_editor.report_invoice_document"
+                               t-lang="o.partner_id.lang"/>
+                        </t>
                     </t>
                 </t>
-            </t>
+            </xpath>
         </template>
     </data>
 </odoo>

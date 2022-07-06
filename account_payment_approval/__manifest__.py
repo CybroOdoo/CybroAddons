@@ -22,7 +22,7 @@
 
 {
     'name': 'Payment Approvals',
-    'version': '14.0.1.0.0',
+    'version': '14.0.1.0.1',
     'category': 'Accounting',
     'summary': """ This modules enables approval feature in the payment.""",
     'description': """This modules enables approval feature in the payment. """,
