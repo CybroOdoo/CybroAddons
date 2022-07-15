@@ -22,7 +22,7 @@
 
 {
     'name': 'Subscription Management For Community',
-    'Version': '15.0.1.0.0',
+    'version': '15.0.1.0.0',
     'summary': 'Subscription Package Management Module For Odoo15 Community',
     'description': 'Subscription Package Management Module For Odoo15 Community',
     'category': 'Sales',
