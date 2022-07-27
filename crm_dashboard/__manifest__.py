@@ -24,7 +24,7 @@
     'description': """CRM Dashboard, Detailed Dashboard View for CRM, CRM, Dashboard, odoo14""",
     'summary': """Detailed Dashboard View for CRM""",
     'category': 'Sales',
-    'version': '14.0.1.0.1',
+    'version': '14.0.1.0.2',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
