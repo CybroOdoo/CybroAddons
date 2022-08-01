@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="create_project_templates" model="ir.actions.act_window">
+        <field name="name">Project Templates</field>
+        <field name="res_model">project.task.template</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="project_menu_templates"
+              action="create_project_templates"
+              parent="project.menu_project_config"/>
+
+    <record model="ir.ui.view" id="project_tasks_from_templates">
+        <field name="name">project.template.tasks.manager</field>
+        <field name="model">project.task.template</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                    <notebook>
+                        <page name="tasks_page" string="Tasks">
+                            <field name="task_ids">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                    <field name="description" widget="html"/>
+                                    <field name="user_ids" widget="many2many_avatar_user" optional="show"
+                                           domain="[('share', '=', False), ('active', '=', True)]"/>
+                                    <button name="action_open_task" type="object" title="View Task"
+                                            string="View Task" class="btn btn-link pull-right"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="project_tasks_custom_form">
+        <field name="name">project.custom.tasks.manager</field>
+        <field name="model">project.task.custom</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="description" widget="html" options="{'collaborative': true}"/>
+                    </group>
+                    <notebook>
+                        <page name="tasks_page" string="Tasks">
+                            <tree editable="bottom">
+                                <field name="child_ids"/>
+                            </tree>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+
+        </field>
+    </record>
+
+    <record id="project.project_project_view_form_simplified_footer" model="ir.ui.view">
+        <field name="name">project.project.view.form.simplified</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.project_project_view_form_simplified"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="project_template_id" string="Template"/>
+            </xpath>
+            <xpath expr="//group" position="after">
+                <footer>
+                    <button string="Create Project from Template" name="action_create_project_from_template"
+                            type="object" class="btn-primary o_open_tasks" data-hotkey="l"/>
+                    <button string="Create" name="action_view_tasks" type="object" class="btn-primary o_open_tasks"
+                            data-hotkey="q"/>
+                    <button string="Discard" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="project_tasks_from_templates_tree">
+        <field name="name">project.template.tasks.manager.tree</field>
+        <field name="model">project.task.template</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+</odoo>
