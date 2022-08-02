@@ -22,7 +22,7 @@
 
 {
     'name': 'Odoo Whatsapp Connector',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'category': 'Extra Tools',
     'summary': """Odoo Whatsapp Connector For Sales, Invoice, and Floating button in Website""",
     'description': """Added options for sending Whatsapp messages and Mails in systray bar,sale order, invoices, 
@@ -32,7 +32,7 @@
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'depends': ['sale', 'account', 'website'],
+    'depends': ['sale_management', 'account', 'website'],
     'data': [
         'views/portal_whatsapp_view.xml',
         'views/sale_order_inherited.xml',
