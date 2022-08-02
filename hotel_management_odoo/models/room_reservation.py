@@ -43,7 +43,7 @@ class Reservation(models.Model):
 
     name = fields.Char(string='Booking Reference', required=True, copy=False, readonly=True,
                        default=lambda self: _('New'))
-    num_person = fields.Integer(string='Number of Persons', default=1)
+    num_person = fields.Integer(string='Number of Persons', default=1,required=True)
     reservation_line_ids = fields.One2many('room.reservation.line', "reservation_id", string='Booking Info')
     state = fields.Selection([('draft', 'Draft'), ('confirm',
                                                    'Confirm'), ('occupied', 'Occupied'), ('done', 'Done'),
@@ -69,7 +69,12 @@ class Reservation(models.Model):
         if vals.get('name', _('New')) == _('New'):
             vals['name'] = self.env['ir.sequence'].next_by_code(
                 'room.reservation') or _('New')
-
+        persons = 0
+        for rec in vals['reservation_line_ids']:
+            room_type = self.env['room.types'].sudo().search([('categ_id','=',rec[2]['type_id'])])
+            persons += room_type.num_person
+        if vals.get('num_person') > persons:
+            raise ValidationError(_("Number of persons out of limit!"))
         return super(Reservation, self).create(vals)
 
 

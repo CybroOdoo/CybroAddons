@@ -50,7 +50,6 @@ class Rooms(models.Model):
     status = fields.Selection([("available", "Available"), ("occupied", "Occupied"), ('book', 'Booked')],
                               default="available")
     manager_id = fields.Many2one('res.users', string='Manager')
-    num_person = fields.Integer(string='Number of Persons')
 
     @api.model
     def create(self, vals):
@@ -77,6 +76,7 @@ class RoomTypes(models.Model):
 
     room_type_id = fields.Many2one("room.types", "Types")
     categ_id = fields.Many2one('product.category', "Product Category", delegate=True, copy=False, ondelete="cascade")
+    num_person = fields.Integer(string='Number of persons',required=True)
 
     @api.model
     def create(self, vals):
