@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="freight_order_tree_view" model="ir.ui.view">
+            <field name="name">Freight Order</field>
+            <field name="model">freight.order</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="type"/>
+                    <field name="transport_type"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="freight_order_form_view" model="ir.ui.view">
+        <field name="name">Freight Order</field>
+        <field name="model">freight.order</field>
+        <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="create_custom_clearance" string="Custom Clearance" type="object" class="oe_highlight"
+                                data-hotkey="w" attrs="{'invisible': [('clearance', '=', True)]}"/>
+                        <button name="action_submit" string="Submit" type="object" class="oe_highlight"
+                                data-hotkey="w" states="draft"/>
+                        <button name="action_confirm" string="Confirm" type="object" class="oe_highlight"
+                                data-hotkey="w" states="submit"/>
+                        <button name="create_invoice" string="Invoice" type="object" class="oe_highlight" states="confirm"
+                                data-hotkey="w"/>
+                        <button name="track_order" string="Tracking" type="object" class="oe_highlight" states="confirm,invoice"
+                                data-hotkey="w"/>
+                        <button name="action_done" string="Done" type="object" class="oe_highlight" states="confirm,invoice"
+                                data-hotkey="w"/>
+                        <button name="action_cancel" string="Cancel" type="object" states="draft,submit,confirm,invoice"
+                                data-hotkey="w"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,submit,confirm" readonly="1"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button class="oe_stat_button" type="object" name="get_custom_clearance"
+                                icon="fa-id-card-o">
+                                <field string="Clearance" name="clearance_count" widget="statinfo"/>
+                            </button>
+                            <button class="oe_stat_button" type="object" name="get_invoice"
+                                icon="fa-pencil-square-o">
+                                <field string="Invoice" name="invoice_count" widget="statinfo"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1 class="mt0" >
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="shipper_id"/>
+                                <field name="consignee_id"/>
+                                <field name="order_date"/>
+                            </group>
+                            <group>
+                                <field name="clearance" invisible="True"/>
+                                <field name="type"/>
+                                <field name="transport_type"/>
+                                <field name="land_type" attrs="{'invisible': [('transport_type', '!=', 'land')]}"/>
+                                <field name="water_type" attrs="{'invisible': [('transport_type', '!=', 'water')]}"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group>
+                                <field name="loading_port_id"/>
+                            </group>
+                            <group>
+                                <field name="discharging_port_id"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group>
+                                <field name="agent_id"/>
+                            </group>
+                            <group>
+                                <field name="expected_date"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Order">
+                                <field name="order_ids">
+                                    <tree string="Order Lines" editable="bottom">
+                                        <field name="container_id"/>
+                                        <field name="product_id"/>
+                                        <field name="billing_type"/>
+                                        <field name="pricing_id"/>
+                                        <field name="volume" attrs="{'invisible': [('billing_type', '!=', 'volume')]}"/>
+                                        <field name="weight" attrs="{'invisible': [('billing_type', '!=', 'weight')]}"/>
+                                        <field name="price"/>
+                                        <field name="total_price"/>
+                                    </tree>
+                                </field>
+                                <group class="oe_subtotal_footer oe_right" colspan="2">
+                                    <div class="oe_inline o_td_label">
+                                        <label for="total_volume"/>
+                                    </div>
+                                    <field name="total_volume" nolabel="1"/>
+                                    <div class="oe_inline o_td_label">
+                                        <label for="total_weight"/>
+                                    </div>
+                                    <field name="total_weight" nolabel="1"/>
+                                    <div class="oe_inline o_td_label">
+                                        <label for="total_order_price"/>
+                                    </div>
+                                    <field name="total_order_price" nolabel="1"/>
+                                </group>
+                            </page>
+                            <page string="Routes">
+                                <field name="route_ids">
+                                    <tree string="Routes" editable="bottom">
+                                        <field name="operation_id"/>
+                                        <field name="source_loc"/>
+                                        <field name="destination_loc"/>
+                                        <field name="transport_type"/>
+                                        <field name="sale"/>
+                                    </tree>
+                                </field>
+                                <group class="oe_subtotal_footer oe_right" colspan="2">
+                                    <div class="oe_inline o_td_label">
+                                        <label for="total_route_sale"/>
+                                    </div>
+                                    <field name="total_route_sale" nolabel="1"/>
+                                </group>
+                            </page>
+                            <page string="Services">
+                                <field name="service_ids">
+                                    <tree string="Services" editable="bottom">
+                                        <field name="partner_id"/>
+                                        <field name="service_id"/>
+                                        <field name="qty"/>
+                                        <field name="sale"/>
+                                        <field name="total_sale"/>
+                                    </tree>
+                                </field>
+                                <group class="oe_subtotal_footer oe_right" colspan="2">
+                                    <div class="oe_inline o_td_label">
+                                        <label for="total_service_sale"/>
+                                    </div>
+                                    <field name="total_service_sale" nolabel="1"/>
+                                </group>
+                            </page>
+                            <page string="Track">
+                                <field name="track_ids">
+                                    <tree string="Services" editable="bottom" create="0">
+                                        <field name="source_loc"/>
+                                        <field name="destination_loc"/>
+                                        <field name="transport_type"/>
+                                        <field name="date"/>
+                                        <field name="type"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+        </field>
+    </record>
+
+        <record id="action_freight_order" model="ir.actions.act_window">
+            <field name="name">Freight Order</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">freight.order</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                Define a new freight order
+              </p>
+            </field>
+
+        </record>
+
+        <menuitem id="menu_freight_root" name="Freight Management" sequence="4" />
+        <menuitem id="menu_freight_order" name="Shipping" parent="menu_freight_root" sequence="2" action="action_freight_order"/>
+
+    </data>
+</odoo>
