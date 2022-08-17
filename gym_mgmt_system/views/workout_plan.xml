@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="view_workout_plan_tree" model="ir.ui.view">
+        <field name="name">workout.plan.tree</field>
+        <field name="model">workout.plan</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="workout_days_ids"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_workout_plan_form" model="ir.ui.view">
+        <field name="name">workout.plan.form</field>
+        <field name="model">workout.plan</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="e.g. workout plan 1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="workout_days_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    <button name="action_workout_plan" type="object" class="btn btn-primary"
+                            groups="gym_mgmt_system.group_gym_trainer,gym_mgmt_system.group_gym_operator"
+                            string="Assign Workout Plan"/>
+                    <notebook>
+                        <page string="Exercise List" name="exercise_list">
+                            <field name="workout_plan_option_ids">
+                                <tree editable="bottom">
+                                    <field name="exercise_id"/>
+                                    <field name="name"/>
+                                    <field name="equipment_ids"/>
+                                    <field name="sets"/>
+                                    <field name="repeat"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_my_workout_plan_form" model="ir.ui.view">
+        <field name="name">my.workout.plan.form</field>
+        <field name="model">my.workout.plan</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="payment_term_id" placeholder="e.g. workout plan 1"/>
+                        </h1>
+                    </div>
+                    <group col="4" colspan="6">
+                        <field name="from_date"/>
+                        <field name="to_date"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="action_workout_plan" model="ir.actions.act_window">
+        <field name="name">Workout Plan</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">workout.plan</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Workout Plan!
+            </p>
+        </field>
+    </record>
+
+    <record id="action_my_workout_plans" model="ir.actions.act_window">
+        <field name="name">My Workout Plan</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">my.workout.plan</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="domain">[('assign_to.user_id', '=', uid)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                My Workout Plan!
+            </p>
+        </field>
+    </record>
+
+
+    <menuitem id="gym_workout_root"
+              name="Workout"
+              parent="gym_management_root"
+              sequence="25"/>
+
+    <menuitem id="gym_workout_menu"
+              name="Workout Plan"
+              parent="gym_workout_root"
+              action="action_workout_plan"
+              sequence="10"/>
+
+    <menuitem id="gym_my_workout_menu"
+              name="My Workout Plan"
+              parent="gym_workout_root"
+              action="action_my_workout_plans"
+              sequence="20"/>
+
+    <record id="action_workout_days" model="ir.actions.act_window">
+        <field name="name">Workout Days (Tags)</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">workout.days</field>
+        <field name="view_mode">tree</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Workout Days!
+            </p>
+        </field>
+    </record>
+
+    <record id="view_workout_days_tree" model="ir.ui.view">
+        <field name="name">workout.days.tree</field>
+        <field name="model">workout.days</field>
+        <field name="arch" type="xml">
+            <tree string="Workout Days Tags" editable="bottom">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <menuitem id="gym_workout_days_menu"
+              name="Workout Days"
+              parent="gym_workout_root"
+              action="action_workout_days"
+              sequence="30"/>
+
+</odoo>
