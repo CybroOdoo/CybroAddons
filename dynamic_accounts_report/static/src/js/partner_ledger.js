@@ -130,7 +130,6 @@ odoo.define('dynamic_accounts_report.partner_ledger', function (require) {
                                     });
                         }
                         var child=[];
-
                         self.$('.table_view_tb').html(QWeb.render('PLTable', {
                             report_lines : datas['report_lines'],
                             filter : datas['filters'],
@@ -436,8 +435,8 @@ odoo.define('dynamic_accounts_report.partner_ledger', function (require) {
 
             if ($(".reconciled").length){
             var reconciled_res = document.getElementById("reconciled_res")
-            filter_data_selected.reconciled = $(".reconciled")[0].value
-            reconciled_res.value = $(".reconciled")[0].value
+            filter_data_selected.reconciled = $(".reconciled")[1].value
+            reconciled_res.value = $(".reconciled")[1].value
             reconciled_res.innerHTML=reconciled_res.value;
             if ($(".reconciled").value==""){
                 reconciled_res.innerHTML="unreconciled";

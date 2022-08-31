@@ -26,3 +26,8 @@
 #### Version 15.0.1.0.4
 #### UPDT AND BUGFIX
 - Loading issue and orderby date
+
+#### 31.08.2022
+#### Version 15.0.1.1.5
+#### UPDT AND BUGFIX
+- Report Bug Fix

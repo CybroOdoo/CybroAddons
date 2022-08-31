@@ -91,6 +91,7 @@ class GeneralView(models.TransientModel):
         filters = self.get_filter(option)
         records = self._get_report_values(data)
         currency = self._get_currency()
+        print(records, "records....")
         return {
             'name': new_title,
             'type': 'ir.actions.client',
@@ -222,6 +223,7 @@ class GeneralView(models.TransientModel):
         debit_total = sum(x['debit'] for x in account_res)
         credit_total = sum(x['credit'] for x in account_res)
         debit_balance = round(debit_total,2) - round(credit_total,2)
+        print(account_res, ".................")
         return {
             'doc_ids': self.ids,
             'debit_total': debit_total,
