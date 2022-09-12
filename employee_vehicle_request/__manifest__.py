@@ -22,7 +22,7 @@
 #############################################################################
 {
     'name': 'Employee Vehicle Request',
-    'version': '13.0.1.0.1',
+    'version': '13.0.1.1.0',
     'summary': """Manage Vehicle Requests From Employee""",
     'description': """This module is used for manage vehicle requests from employee.
                    This module also checking the vehicle availability at the requested time slot.""",
