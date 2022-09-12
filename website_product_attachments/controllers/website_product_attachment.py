@@ -44,8 +44,8 @@ class WebsiteSale(WebsiteSale):
             category = ProductCategory.browse(int(category)).exists()
 
         attrib_list = request.httprequest.args.getlist('attrib')
-        attrib_values = [map(int, v.split("-")) for v in attrib_list if v]
-        attrib_set = set([v[1] for v in attrib_values])
+        attrib_values = [[int(x) for x in v.split("-")] for v in attrib_list if v]
+        attrib_set = {v[1] for v in attrib_values}
         keep = QueryURL('/shop', category=category and category.id, search=search, attrib=attrib_list)
         categs = ProductCategory.search([('parent_id', '=', False)])
         pricelist = request.website.get_current_pricelist()
@@ -112,6 +112,5 @@ class WebsiteSale(WebsiteSale):
             return http.send_file(data, filename=attachment['name'], as_attachment=True)
         else:
             return request.not_found()
-
 
 
