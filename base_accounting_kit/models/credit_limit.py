@@ -92,7 +92,7 @@ class SaleOrder(models.Model):
     @api.onchange('partner_id')
     def check_due(self):
         """To show the due amount and warning stage"""
-        if self.partner_id and self.partner_id.due_amount > 0 \
+        if self.partner_id and self.partner_id.sudo().due_amount > 0 \
                 and self.partner_id.active_limit \
                 and self.partner_id.enable_credit_limit:
             self.has_due = True

@@ -114,3 +114,9 @@
 #### Version 13.0.4.11.14
 #### UPDT
 - Report sequence issue fixed
+
+
+#### 14.09.2022
+#### Version 13.0.4.11.15
+#### UPDT
+- Sale/User: Own Documents Only issue fixed
