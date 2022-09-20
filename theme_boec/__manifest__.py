@@ -25,7 +25,7 @@
     'summary': 'Theme Boec is a new kind of Theme. '
                'The theme is a very user-friendly and is suitable for your eCommerce website with blog.',
     'category': 'Theme/eCommerce',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
