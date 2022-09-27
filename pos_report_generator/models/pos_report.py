@@ -70,7 +70,7 @@ class PosReportGenerator(models.Model):
         return {
             'name': "PoS Orders",
             'type': 'ir.actions.client',
-            'tag': 'p_r',
+            'tag': 'pos_r',
             'orders': data,
             'filters': filters,
             'report_lines': lines,

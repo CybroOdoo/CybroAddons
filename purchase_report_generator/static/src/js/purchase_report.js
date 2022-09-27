@@ -230,6 +230,6 @@ odoo.define('purchase_report_generator.purchase_report', function(require) {
 		},
 
 	});
-	core.action_registry.add("p_r", PurchaseReport);
+	core.action_registry.add("pu_r", PurchaseReport);
 	return PurchaseReport;
 });

@@ -21,7 +21,7 @@
 
 {
     'name': 'POS All in One Report Generator',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.1.1',
     'summary': "Dynamic Point Of Sale Report Maker",
     'description': "Dynamic Point Of Sale Report Maker",
     'category': 'Point of Sale',

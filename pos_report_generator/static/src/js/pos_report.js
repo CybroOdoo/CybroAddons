@@ -233,6 +233,6 @@ odoo.define('pos_report_generator.pos_report', function(require) {
 		},
 
 	});
-	core.action_registry.add("p_r", PosReport);
+	core.action_registry.add("pos_r", PosReport);
 	return PosReport;
 });
