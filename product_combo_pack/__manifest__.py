@@ -23,7 +23,7 @@
 
 {
     'name': 'Product Pack',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.1.1',
     'summary': 'Manage Products as Pack',
     'description': 'Manage Products as Pack',
     'category': 'Sales',
