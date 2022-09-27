@@ -25,7 +25,7 @@
     "summary": "Minimalist and elegant backend theme for Odoo 14 Enterprise",
     "description": """Minimalist and elegant backend theme for Odoo 14 Backend Theme Enterprise, Enterprise Theme, Backend Theme, Enterprise Backend Theme, V14 Theme""",
     "category": "Themes/Backend",
-    "version": "14.0.1.0.0",
+    "version": "14.0.1.0.1",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
