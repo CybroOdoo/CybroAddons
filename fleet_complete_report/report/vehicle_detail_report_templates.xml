@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--  Report template  -->
+    <template id="report_vehicle_detail">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <t t-foreach="docs" t-as="o">
+                    <div class="page">
+                        <div style="padding-bottom:20px !important;" class="oe_structure" />
+                        <h1 align="center">Fleet - Complete Report</h1><br />
+                        <table class="table table-condensed">
+                            <tbody>
+                               <tr t-if="period">
+                                   <th>Period</th>
+                                   <td colspan="2"><span t-esc="period" /></td>
+                               </tr>
+                               <tr t-if="state_names">
+                                   <th>Vehicle states</th>
+                                   <td colspan="2"><span t-esc="state_names" /></td>
+                               </tr>
+                               <tr t-if="vehicle_names">
+                                   <th>Vehicles</th>
+                                   <td colspan="2"><span t-esc="vehicle_names" /></td>
+                               </tr>
+                            </tbody>
+                        </table>
+
+                        <t  t-if="not o.exclude_vehicle_data and vehicles">
+                            <h2>Vehicles</h2>
+                            <t t-foreach="vehicles" t-as="vehicle">
+                                <h5 t-esc="vehicle.name" />
+                                <table name="vehicle" class="table table-condensed">
+                                    <tbody>
+                                        <tr>
+                                            <th>Model</th>
+                                            <th>License Plate</th>
+                                            <th>Immatriculation Date</th>
+                                            <th>Chassis Number</th>
+                                            <th>Last Odometer</th>
+                                        </tr>
+                                        <tr>
+                                            <td><span t-esc="vehicle.model_id.name" /></td>
+                                            <td><span t-esc="vehicle.license_plate" /></td>
+                                            <td><span t-esc="vehicle.acquisition_date" t-options="{'widget': 'date'}" /></td>
+                                            <td><span t-esc="vehicle.vin_sn" /></td>
+                                            <td><span t-esc="vehicle.odometer" /> <span t-if="vehicle.odometer_unit">
+                                                    <t t-esc="dict(vehicle.fields_get(allfields=['odometer_unit'])['odometer_unit']['selection'])[vehicle.odometer_unit]" />
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Fleet Manager</th>
+                                            <th>Location</th>
+                                            <th>Driver</th>
+                                            <th>Future Driver</th>
+                                            <th>Assignment Date</th>
+                                        </tr>
+                                        <tr>
+                                            <td><span t-esc="vehicle.manager_id.name" /></td>
+                                            <td><span t-esc="vehicle.location" /></td>
+                                            <td><span t-esc="vehicle.driver_id.name" /></td>
+                                            <td><span t-esc="vehicle.future_driver_id.name" /></td>
+                                            <td><span t-esc="vehicle.next_assignation_date" t-options="{'widget': 'date'}" /></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Horsepower Taxation</th>
+                                            <th>First Contract Date</th>
+                                            <th>Catalog Value (VAT Incl.)</th>
+                                            <th>Purchase Value</th>
+                                            <th>Residual Value</th>
+                                        </tr>
+                                        <tr>
+                                            <td><span t-esc="vehicle.horsepower_tax" t-options="{'widget': 'monetary', 'display_currency': vehicle.currency_id}" /></td>
+                                            <td><span t-esc="vehicle.first_contract_date" t-options="{'widget': 'date'}" /></td>
+                                            <td><span t-esc="vehicle.car_value" t-options="{'widget': 'monetary', 'display_currency': vehicle.currency_id}" /></td>
+                                            <td><span t-esc="vehicle.net_car_value" t-options="{'widget': 'monetary', 'display_currency': vehicle.currency_id}" /></td>
+                                            <td><span t-esc="vehicle.residual_value" t-options="{'widget': 'monetary', 'display_currency': vehicle.currency_id}" /></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Model Year</th>
+                                            <th>Transmission</th>
+                                            <th>Color</th>
+                                            <th>Seats Number</th>
+                                            <th>Doors Number</th>
+                                        </tr>
+                                        <tr>
+                                            <td><span t-esc="vehicle.model_year" /></td>
+                                            <td><span t-if="vehicle.transmission">
+                                                    <t t-esc="dict(vehicle.fields_get(allfields=['transmission'])['transmission']['selection'])[vehicle.transmission]" />
+                                                </span>
+                                            </td>
+                                            <td><span t-esc="vehicle.color" /></td>
+                                            <td><span t-esc="vehicle.seats" /></td>
+                                            <td><span t-esc="vehicle.doors" /></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Horsepower</th>
+                                            <th>Power</th>
+                                            <th>Fuel Type</th>
+                                            <th>CO2 Emissions</th>
+                                            <th>Plan To Change Car</th>
+                                        </tr>
+                                        <tr>
+                                            <td><span t-esc="vehicle.horsepower" /></td>
+                                            <td><span t-esc="vehicle.power" /> kW</td>
+                                            <td><span t-if="vehicle.fuel_type">
+                                                    <t t-esc="dict(vehicle.fields_get(allfields=['fuel_type'])['fuel_type']['selection'])[vehicle.fuel_type]" />
+                                                </span>
+                                            </td>
+                                            <td><span t-esc="vehicle.co2" /> g/km</td>
+                                            <td><span><input type="checkbox" t-att-checked="vehicle.plan_to_change_car" /></span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </t>
+                            <p style="page-break-after:always;" />
+                        </t>
+
+                        <t  t-if="contracts">
+                            <h2>Contracts</h2>
+                            <table name="contracts" class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th />
+                                        <th>Contract Name</th>
+                                        <th>Contract Type</th>
+                                        <th>Responsible</th>
+                                        <th>Vendor</th>
+                                        <th>Driver</th>
+                                        <th>Activation Cost</th>
+                                        <th>Recurring Cost</th>
+                                        <th>Invoice Date</th>
+                                        <th>Contract Start Date</th>
+                                        <th>Contract Expiration Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="report_vehicle" t-value="false" />
+                                    <t t-foreach="contracts" t-as="contract">
+                                        <t t-if="not report_vehicle or report_vehicle != contract.vehicle_id">
+                                            <t t-set="report_vehicle" t-value="contract.vehicle_id" />
+                                            <tr>
+                                                <th><span t-esc="contract.vehicle_id.name" /></th>
+                                                <td colspan="10" />
+                                            </tr>
+                                        </t>
+                                        <tr>
+                                            <td />
+                                            <td><span t-esc="contract.name" /></td>
+                                            <td><span t-esc="contract.cost_subtype_id.name" /></td>
+                                            <td><span t-esc="contract.user_id.name" /></td>
+                                            <td><span t-esc="contract.insurer_id.name" /></td>
+                                            <td><span t-esc="contract.purchaser_id.name" /></td>
+                                            <td><span t-esc="contract.amount" t-options="{'widget': 'monetary', 'display_currency': contract.currency_id}" /></td>
+                                            <td><span t-esc="contract.cost_generated" t-options="{'widget': 'monetary', 'display_currency': contract.currency_id}" /></td>
+                                            <td><span t-esc="contract.date" t-options="{'widget': 'date'}" /></td>
+                                            <td><span t-esc="contract.start_date" t-options="{'widget': 'date'}" /></td>
+                                            <td><span t-esc="contract.expiration_date" t-options="{'widget': 'date'}" /></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <t  t-if="services">
+                            <p style="page-break-after:always;" />
+                            <h2>Services</h2>
+                            <table name="services" class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th />
+                                        <th>Service Type</th>
+                                        <th>Driver</th>
+                                        <th>Date</th>
+                                        <th>Cost</th>
+                                        <th>Odometer Value</th>
+                                        <th>Vendor</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="report_vehicle" t-value="false" />
+                                    <t t-set="total_cost" t-value="0" />
+                                    <t t-set="service_cost" t-value="0" />
+                                    <t t-foreach="services" t-as="service">
+                                        <t t-if="not report_vehicle or report_vehicle != service.vehicle_id">
+                                            <tr t-if="report_vehicle">
+                                                <td colspan="3" />
+                                                <th align="right">Service Cost</th>
+                                                <th><span t-esc="service_cost" t-options="{'widget': 'monetary', 'display_currency': service.currency_id}" /></th>
+                                                <td colspan="3" />
+                                            </tr>
+                                            <t t-set="service_cost" t-value="0" />
+                                            <t t-set="report_vehicle" t-value="service.vehicle_id" />
+                                            <tr>
+                                                <th><span t-esc="service.vehicle_id.name" /></th>
+                                                <td colspan="7" />
+                                            </tr>
+                                        </t>
+                                        <tr>
+                                            <td />
+                                            <td><span t-esc="service.cost_subtype_id.name" /></td>
+                                            <td><span t-esc="service.purchaser_id.name" /></td>
+                                            <td><span t-esc="service.date" t-options="{'widget': 'date'}" /></td>
+                                            <td><span t-esc="service.amount" t-options="{'widget': 'monetary', 'display_currency': service.currency_id}" /></td>
+                                            <td><span t-esc="service.odometer" /> <span t-if="service.odometer_unit">
+                                                    <t t-esc="dict(service.fields_get(allfields=['odometer_unit'])['odometer_unit']['selection'])[service.odometer_unit]" />
+                                                </span>
+                                            </td>
+                                            <td><span t-esc="service.vendor_id.name" /></td>
+                                            <td><span t-esc="service.notes" /></td>
+                                        </tr>
+                                        <t t-set="service_cost" t-value="service_cost + service.amount" />
+                                        <t t-set="total_cost" t-value="total_cost + service.amount" />
+                                    </t>
+                                    <t t-if="report_vehicle">
+                                        <tr>
+                                            <td colspan="3" />
+                                            <th align="right">Service Cost</th>
+                                            <th><span t-esc="service_cost" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}" /></th>
+                                            <td colspan="3" />
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" />
+                                            <th align="right">Total Cost</th>
+                                            <th><span t-esc="total_cost" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}" /></th>
+                                            <td colspan="3" />
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <t  t-if="odometers">
+                            <p style="page-break-after:always;" />
+                            <h2>Odometers</h2>
+                            <table name="odometers" class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th />
+                                        <th>Date</th>
+                                        <th>Driver</th>
+                                        <th>Odometer Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="report_vehicle" t-value="false" />
+                                    <t t-foreach="odometers" t-as="odometer">
+                                        <t t-if="not report_vehicle or report_vehicle != odometer.vehicle_id">
+                                            <t t-set="report_vehicle" t-value="odometer.vehicle_id" />
+                                            <tr>
+                                                <th><span t-esc="odometer.vehicle_id.name" /></th>
+                                                <td colspan="3" />
+                                            </tr>
+                                        </t>
+                                        <tr>
+                                            <td />
+                                            <td><span t-esc="odometer.date" t-options="{'widget': 'date'}" /></td>
+                                            <td><span t-esc="odometer.driver_id.name" /></td>
+                                            <td><span t-esc="odometer.value" /> <span t-if="odometer.unit">
+                                                    <t t-esc="dict(odometer.fields_get(allfields=['unit'])['unit']['selection'])[odometer.unit]" />
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <t  t-if="drivers_history">
+                            <p style="page-break-after:always;" />
+                            <h2>Drivers History</h2>
+                            <table name="drivers_history" class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th />
+                                        <th>Driver</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="report_vehicle" t-value="false" />
+                                    <t t-foreach="drivers_history" t-as="history">
+                                        <t t-if="not report_vehicle or report_vehicle != history.vehicle_id">
+                                            <t t-set="report_vehicle" t-value="history.vehicle_id" />
+                                            <tr>
+                                                <th><span t-esc="history.vehicle_id.name" /></th>
+                                                <td colspan="3" />
+                                            </tr>
+                                        </t>
+                                        <tr>
+                                            <td />
+                                            <td><span t-esc="history.driver_id.name" /></td>
+                                            <td><span t-esc="history.date_start" t-options="{'widget': 'date'}" /></td>
+                                            <td><span t-esc="history.date_end" t-options="{'widget': 'date'}" /></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
