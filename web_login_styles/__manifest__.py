@@ -42,6 +42,7 @@
         'views/webclient_templates_left.xml',
         'views/webclient_templates_middle.xml',
     ],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,
     'application': False,
