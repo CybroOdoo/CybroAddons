@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-inherit="point_of_sale.ProductItem" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('product-img')]" position="inside">
+            <t t-if="props.product.pos_variants">
+                <span class="custom-pos-label">Multi-variant</span>
+                <link rel="stylesheet" type="text/scss" href="pos_multi_variant/static/src/css/label.css"/>
+            </t>
+        </xpath>
+    </t>
+
+    <t t-inherit="point_of_sale.Orderline" t-inherit-mode="extension" owl="1">
+        <xpath expr="//ul[hasclass('info-list')]" position="inside">
+            <t>
+                <t t-foreach="props.line.product_variants" t-as="variant" t-key="variant_index">
+                    <t t-esc="variant.type"/>: $
+                    <t t-esc="variant.extra_price"/>
+                    <br/>
+                </t>
+            </t>
+        </xpath>
+    </t>
+
+
+    <t t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension" owl="1">
+        <xpath expr="//WrappedProductNameLines" position="after">
+            <t t-foreach="line.product_variants" t-as="variant">
+                <br/>
+                <t t-esc="variant['type']"/>:
+                <span class="pos-receipt-right-align">
+                    <t t-esc="variant['extra_price']"/>
+                </span>
+            </t>
+        </xpath>
+    </t>
+
+
+</templates>
