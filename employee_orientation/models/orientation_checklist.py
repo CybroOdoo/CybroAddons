@@ -30,10 +30,10 @@ class OrientationChecklist(models.Model):
     _inherit = 'mail.thread'
 
     checklist_name = fields.Char(string='Name', required=True)
-    checklist_department = fields.Many2one('hr.department', string='Department', required=True)
+    checklist_department_id = fields.Many2one('hr.department', string='Department', required=True)
     active = fields.Boolean(string='Active', default=True,
                             help="Set active to false to hide the Orientation Checklist without removing it.")
-    checklist_line_id = fields.Many2many('checklist.line', 'checklist_line_rel', String="Checklist")
+    checklist_line_ids = fields.Many2many('checklist.line', 'checklist_line_rel', String="Checklist")
 
 
 

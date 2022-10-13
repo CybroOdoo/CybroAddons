@@ -34,7 +34,7 @@ class OrientationForceComplete(models.TransientModel):
     def pending_lines(self):
         pending = []
 
-        for data in self.orientation_id.orientation_request:
+        for data in self.orientation_id.orientation_request_ids:
             if data.state == 'new':
                 pending.append(data.id)
         self.update({'orientation_lines': pending})
