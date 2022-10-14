@@ -1,0 +1,45 @@
+<odoo>
+    <data>
+        <record id="view_account_payment_form_inherit" model="ir.ui.view">
+            <field name="name">account.payment.form</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header//button[@name='action_post']" position="after">
+                    <button name="approve_transfer" string="Approve" type="object"
+                            class="oe_highlight"
+                            attrs="{'invisible': ['|',('is_approver', '=', False),('state', '!=', 'waiting_approval')]}"/>
+                    <button name="reject_transfer" string="Reject" type="object"
+                            class="oe_highlight"
+                            attrs="{'invisible': ['|',('is_approver', '=', False),('state', '!=', 'waiting_approval')]}"/>
+                </xpath>
+                <xpath expr="//header//button[@name='action_post']" position="attributes">
+                    <attribute name="states">draft,approved</attribute>
+                </xpath>
+                <xpath expr="//header//button[@name='action_cancel']" position="attributes">
+                    <attribute name="attrs">{'invisible': [('state', 'in', ('cancelled', 'posted', 'rejected'))]}
+                    </attribute>
+                </xpath>
+                <field name="partner_id" position="after">
+                    <field name="is_approver" invisible="1"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="view_account_payment_search_inherit" model="ir.ui.view">
+            <field name="name">account.payment.search.inherit</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//search/filter[@name='state_draft']" position="after">
+                    <filter string="Waiting For Approval" name="state_waiting_approval"
+                            domain="[('state', '=', 'waiting_approval')]"/>
+                    <filter string="Approved" name="state_approved"
+                            domain="[('state', '=', 'approved')]"/>
+                    <filter string="Rejected" name="state_rejected"
+                            domain="[('state', '=', 'rejected')]"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

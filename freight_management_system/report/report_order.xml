@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="report_freight" model="ir.actions.report">
+            <field name="name">Freight Order</field>
+            <field name="model">freight.order</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">freight_management_system.report_freight_order</field>
+            <field name="report_file">freight_management_system.report_freight_order</field>
+            <field name="print_report_name">'Freight Order - %s' % object.name</field>
+            <field name="binding_model_id" ref="model_freight_order"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <template id="report_freight_order">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="web.external_layout">
+                        <center><b><h3>Order Details</h3></b></center>
+                        <b><h3><t t-esc="doc.name"/></h3></b><br/>
+                        <div name="customer">
+                            <strong>Customer:</strong>
+                        </div>
+                        <div name="customer_details">
+                            <div t-esc="doc.shipper_id.name"/>
+                            <div t-esc="doc.shipper_id.street"/>
+                            <div t-esc="doc.shipper_id.city"/>
+                            <t t-esc="doc.shipper_id.state_id.name"/>
+                            <t t-esc="doc.shipper_id.zip"/>
+                            <div t-esc="doc.shipper_id.country_id.name"/>
+                        </div><br/>
+                        <table class="table o_main_table">
+                            <tbody class="order_body">
+                                <tr>
+                                    <td name="loading_port"><strong>Loading Port</strong></td>
+                                    <td name="loading"><span t-field="doc.loading_port_id.name"/></td>
+                                    <td name="destination_port"><strong>Destination Port</strong></td>
+                                    <td name="destination"><span t-field="doc.discharging_port_id.name"/></td>
+                                </tr>
+                                <tr>
+                                    <td name="direction"><strong>Direction</strong></td>
+                                    <td name="direction_name"><span t-field="doc.type"/></td>
+                                    <td name="transport"><strong>Transport</strong></td>
+                                    <td name="transport_name"><span t-field="doc.transport_type"/></td>
+                                </tr>
+                                <tr>
+                                    <td name="date"><strong>Date</strong></td>
+                                    <td name="date"><span t-field="doc.order_date"/></td>
+                                    <td name="expected"><strong>Expected Date</strong></td>
+                                    <td name="expected_name"><span t-field="doc.expected_date"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div name="orders">
+                            <strong>Orders:</strong>
+                        </div>
+                        <table class="table o_main_table">
+                            <thead style="display: table-row-group">
+                                <tr>
+                                    <th name="th_container" class="text-left">Container</th>
+                                    <th name="th_goods" class="text-left">Goods</th>
+                                    <th name="th_billing_on" class="text-left">Billing On</th>
+                                    <th name="th_pricing" class="text-left">Pricing</th>
+                                    <th name="th_volume" class="text-left">Volume</th>
+                                    <th name="th_weight" class="text-left">Weight</th>
+                                    <th name="th_unit_price" class="text-left">Unit Price</th>
+                                    <th name="th_total_price" class="text-left">Total Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-att-class="'bg-200 font-weight-bold'" t-foreach="doc.order_ids" t-as="order">
+                                    <td t-esc="order.container_id.name"/>
+                                    <td t-esc="order.product_id.name"/>
+                                    <td><span t-field="order.billing_type"/></td>
+                                    <td t-esc="order.pricing_id.name"/>
+                                    <td t-esc="order.volume"/>
+                                    <td t-esc="order.weight"/>
+                                    <td t-esc="order.price"/>
+                                    <td t-esc="order.total_price"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <t name="th_operation" class="text-left" colspan="8">Total</t>
+                        <div name="route">
+                            <strong>Route:</strong>
+                        </div>
+                        <table class="table o_main_table">
+                            <thead style="display: table-row-group">
+                                <tr>
+                                    <th name="th_operation" class="text-left">Operation</th>
+                                    <th name="th_source" class="text-left">Source location</th>
+                                    <th name="th_destination" class="text-left">Destination Location</th>
+                                    <th name="th_transport" class="text-left">Transport</th>
+                                    <th name="th_price" class="text-left">Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-att-class="'bg-200 font-weight-bold'" t-foreach="doc.route_ids" t-as="route">
+                                    <td t-esc="route.operation_id.name"/>
+                                    <td t-esc="route.source_loc.name"/>
+                                    <td t-esc="route.destination_loc.name"/>
+                                    <td><span t-field="route.transport_type"/></td>
+                                    <td t-esc="route.sale"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <br/>
+                        <div name="route">
+                            <strong>Service:</strong>
+                        </div>
+                        <table class="table o_main_table">
+                            <thead style="display: table-row-group">
+                                <tr>
+                                    <th name="th_vendor" class="text-left">Vendor</th>
+                                    <th name="th_service" class="text-left">Service</th>
+                                    <th name="th_quantity" class="text-left">Quantity</th>
+                                    <th name="th_sale" class="text-left">Sale</th>
+                                    <th name="th_sale_total" class="text-left">Total sale</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-att-class="'bg-200 font-weight-bold'" t-foreach="doc.service_ids" t-as="service">
+                                    <td t-esc="service.partner_id.name"/>
+                                    <td t-esc="service.service_id.name"/>
+                                    <td t-esc="service.qty"/>
+                                    <td t-esc="service.sale"/>
+                                    <td t-esc="service.total_sale"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+    </data>
+</odoo>
