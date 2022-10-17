@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record model="ir.ui.view" id="account_move_approval_inherited">
+        <field name="name">account.move.approval.inherited</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_user_id']" position="after">
+                <field name="document_fully_approved" invisible="1"/>
+                <field name="check_approve_ability" invisible="1"/>
+                <field name="is_approved" invisible="1"/>
+                <field name="page_visibility" invisible="1"/>
+            </xpath>
+            <xpath expr="//button[@name='action_post']" position="before">
+                <button name="invoice_approve" class="oe_highlight"
+                        string="Approve" type="object" groups="invoice_multi_approval.group_approver,invoice_multi_approval.group_approve_manager"
+                        attrs="{'invisible': ['|','|','|',('check_approve_ability', '!=', True),('document_fully_approved', '=', True),('is_approved','=',True),('move_type','not in',('in_invoice','out_invoice','in_refund','out_refund'))]}"/>
+            </xpath>
+            <xpath expr="//button[@name='action_post'][1]" position="attributes">
+                <attribute name="attrs">{'invisible': ['|',('document_fully_approved', '!=',
+                    True),('state','=','posted')]}
+                </attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_post'][2]" position="attributes">
+                <attribute name="attrs">{'invisible': ['|',('document_fully_approved', '!=',
+                    True),('state','=','posted')]}
+                </attribute>
+            </xpath>
+            <xpath expr="//page[@id='other_tab']" position="after">
+                <page string="Approvals" name="approval_tab"
+                      attrs="{'invisible': ['|',('move_type','not in',('in_invoice','out_invoice','in_refund','out_refund')),('page_visibility','=',False)]}">
+                    <group>
+                        <field name="approval_ids" mode="tree" nolabel="1" style="pointer-events:none;">
+                            <tree string="Approval lines" create="0" edit="0" delete="0">
+                                <field name="approver_id"/>
+                                <field name="approval_status"/>
+                            </tree>
+                        </field>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <menuitem id="approval_main_menu" name="Approvals" parent="account.menu_finance_configuration" sequence="10"
+              groups="group_approve_manager"/>
+    <menuitem id="approval_sub_menu" name="Invoice Approval" parent="approval_main_menu"
+              action="approval_sub_menu_action" sequence="1" groups="group_approve_manager"/>
+</odoo>
