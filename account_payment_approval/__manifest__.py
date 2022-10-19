@@ -36,7 +36,7 @@
         'views/account_payment_view.xml',
     ],
     'license': 'LGPL-3',
-    'images': ['static15/description/banner.png'],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,
     'application': True,

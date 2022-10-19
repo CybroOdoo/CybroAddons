@@ -40,7 +40,7 @@
         'views/laundry_report.xml',
         'views/laundry_label.xml',
     ],
-    'images': ['static15/description/banner.png'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,

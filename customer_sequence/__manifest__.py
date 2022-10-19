@@ -37,7 +37,7 @@
         'views/res_company.xml',
         'security/ir.model.access.csv',
     ],
-    'images': ['static15/description/banner.png'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'application': False

@@ -34,7 +34,7 @@
                 'pos_order_line_image/static/src/css/order_line_image.css',
                 'pos_order_line_image/static/src/xml/pos_order_line.xml']
             },
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
