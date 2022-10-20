@@ -35,5 +35,4 @@ class ReportInvoiceMultiple(models.AbstractModel):
         rslt['layout'] = new_layout
 
         rslt['report_type'] = data.get('report_type') if data else ''
-        print(rslt, "rslt")
         return rslt

@@ -1606,7 +1606,6 @@ class DashBoard(models.Model):
         record = self._cr.dictfetchall()
         banks = [item['name'] for item in record]
         # bank_name = [rec['en_US'] for rec in banks]
-        # print('bank_name', bank_name)
         banking = [item['balance'] for item in record]
 
         bank_ids = [item['id'] for item in record]
