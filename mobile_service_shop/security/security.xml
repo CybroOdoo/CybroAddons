@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="mobile_service_execute" model="ir.module.category">
+        <field name="name">Mobile Service</field>
+        <field name="sequence">5</field>
+    </record>
+
+    <record id="mobile_service_group_executer" model="res.groups">
+        <field name="name">Mobile Technician</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="category_id" ref="mobile_service_execute"/>
+    </record>
+
+     <record id="mobile_service_group_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="implied_ids" eval="[(4, ref('mobile_service_group_executer'))]"/>
+        <field name="category_id" ref="mobile_service_execute"/>
+        <field name="users" eval="[(4, ref('base.user_admin')), (4, ref('base.user_root'))]"/>
+    </record>
+
+    <record id="mobile_service_tech_rules" model="ir.rule">
+        <field name="name">Mobile Service rule</field>
+        <field name="model_id" ref="model_mobile_service" />
+        <field name="domain_force">[('technician_name','=',user.id),('service_state','!=','draft'), ('company_id','=',user.company_id.id)]</field>
+        <field name="groups" eval="[(4,ref('mobile_service_group_executer'))]"/>
+    </record>
+
+    <record id="mobile_service_rule_manager" model="ir.rule">
+        <field name="name">Mobile Service Manager rule</field>
+        <field name="model_id" ref="model_mobile_service" />
+        <field name="domain_force">[('company_id','=',user.company_id.id)]</field>
+        <field name="groups" eval="[(4,ref('mobile_service_group_manager'))]"/>
+    </record>
+
+</odoo>
