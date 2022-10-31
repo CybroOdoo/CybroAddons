@@ -68,7 +68,7 @@ class BalanceSheetView(models.TransientModel):
             company_domain.append(('id', 'in', r.account_ids.ids))
 
         new_account_ids = self.env['account.account'].search(company_domain)
-        data.update({'accounts': new_account_ids,})
+        data.update({'accounts': new_account_ids, })
         filters = self.get_filter(option)
         records = self._get_report_values(data)
 
@@ -83,14 +83,16 @@ class BalanceSheetView(models.TransientModel):
 
             new_records = list(filter(filter_code, records['Accounts']))
             records['Accounts'] = new_records
-        trans_tag = self.env['ir.translation'].search([('value', '=', tag), ('module', '=', 'dynamic_accounts_report')],
-                                                      limit=1).src
+        trans_tag = self.env['ir.translation'].search(
+            [('value', '=', tag), ('module', '=', 'dynamic_accounts_report')],
+            limit=1).src
         if trans_tag:
             tag_upd = trans_tag
         else:
             tag_upd = tag
 
-        account_report_id = self.env['account.financial.report'].with_context(lang='en_US').search([
+        account_report_id = self.env['account.financial.report'].with_context(
+            lang='en_US').search([
             ('name', 'ilike', tag_upd)])
 
         new_data = {'id': self.id, 'date_from': False,
@@ -109,8 +111,10 @@ class BalanceSheetView(models.TransientModel):
                                      'lang': 'en_US'}}
 
         account_lines = self.get_account_lines(new_data)
+        print("account_lines",account_lines)
         report_lines = self.view_report_pdf(account_lines, new_data)[
             'report_lines']
+        print("report_lines",report_lines)
         move_line_accounts = []
         move_lines_dict = {}
 
@@ -166,14 +170,12 @@ class BalanceSheetView(models.TransientModel):
 
         parent_list = list(set(parent_list))
         final_report_lines = []
-
         for rec in report_lines_move:
             if rec['report_type'] != 'accounts':
                 if rec['r_id'] in parent_list:
                     final_report_lines.append(rec)
             else:
                 final_report_lines.append(rec)
-
         def filter_sum(obj):
             sum_list = {}
             for pl in parent_list:
@@ -217,15 +219,16 @@ class BalanceSheetView(models.TransientModel):
 
             if position == "before":
                 rec['m_debit'] = symbol + " " + "{:,.2f}".format(rec['debit'])
-                rec['m_credit'] = symbol + " " + "{:,.2f}".format(rec['credit'])
+                rec['m_credit'] = symbol + " " + "{:,.2f}".format(
+                    rec['credit'])
                 rec['m_balance'] = symbol + " " + "{:,.2f}".format(
                     rec['balance'])
             else:
                 rec['m_debit'] = "{:,.2f}".format(rec['debit']) + " " + symbol
-                rec['m_credit'] = "{:,.2f}".format(rec['credit']) + " " + symbol
+                rec['m_credit'] = "{:,.2f}".format(
+                    rec['credit']) + " " + symbol
                 rec['m_balance'] = "{:,.2f}".format(
                     rec['balance']) + " " + symbol
-
         return {
             'name': tag,
             'type': 'ir.actions.client',
@@ -336,9 +339,6 @@ class BalanceSheetView(models.TransientModel):
                 accounts.append(('divider', j.company_id.name))
                 o_company = j.company_id
             accounts.append((j.id, j.name))
-
-
-
 
         filter_dict = {
             'journal_ids': r.journal_ids.ids,
@@ -484,7 +484,6 @@ class BalanceSheetView(models.TransientModel):
                                     JOIN account_account a ON (l.account_id = a.id) '''
                + WHERE + new_final_filter + ''' GROUP BY l.account_id, a.code, a.name, a.id''')
 
-
         if data.get('accounts'):
             params = tuple(where_params)
         else:
@@ -534,7 +533,8 @@ class BalanceSheetView(models.TransientModel):
                           self.env.company.currency_id.position]
         return currency_array
 
-    def get_dynamic_xlsx_report(self, options, response, report_data, dfr_data):
+    def get_dynamic_xlsx_report(self, options, response, report_data,
+                                dfr_data):
         i_data = str(report_data)
         filters = json.loads(options)
         j_data = dfr_data

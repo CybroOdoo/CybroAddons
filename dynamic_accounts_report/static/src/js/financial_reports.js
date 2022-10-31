@@ -87,7 +87,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                     }).then(function(datas) {
 
 
-
+                            console.log('Balance sheet values..........',datas)
                             if (initial_render) {
                                     self.$('.filter_view_dfr').html(QWeb.render('DfrFilterView', {
                                         filter_data: datas['filters'],
@@ -242,6 +242,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
             var account_ids = [];
             var account_text = [];
             var account_res = document.getElementById("acc_res")
+            console.log('account.value....',account_res.value)
             var account_list = $(".account").select2('data')
             for (var i = 0; i < account_list.length; i++) {
                 if(account_list[i].element[0].selected === true){

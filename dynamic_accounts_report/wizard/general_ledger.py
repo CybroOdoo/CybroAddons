@@ -4,6 +4,7 @@ from odoo import fields, models, api, _
 import io
 import json
 from odoo.exceptions import AccessError, UserError, AccessDenied
+
 try:
     from odoo.tools.misc import xlsxwriter
 except ImportError:
@@ -22,12 +23,14 @@ class GeneralView(models.TransientModel):
         "account.account",
         string="Accounts",
     )
-    account_tag_ids = fields.Many2many("account.account.tag", string="Account Tags")
+    account_tag_ids = fields.Many2many("account.account.tag",
+                                       string="Account Tags")
 
     analytic_ids = fields.Many2many(
         "account.analytic.account", string="Analytic Accounts"
     )
-    analytic_tag_ids = fields.Many2many("account.analytic.tag", string="Analytic Tags")
+    analytic_tag_ids = fields.Many2many("account.analytic.tag",
+                                        string="Analytic Tags")
 
     display_account = fields.Selection(
         [('all', 'All'), ('movement', 'With movements'),
@@ -43,34 +46,42 @@ class GeneralView(models.TransientModel):
 
     @api.model
     def view_report(self, option, title):
+        print("view_report")
         r = self.env['account.general.ledger'].search([('id', '=', option[0])])
         self = r
         new_title = ''
-        trans_title = self.env['ir.translation'].search([('value', '=', title), ('module', '=', 'dynamic_accounts_report')], limit=1).src
+        trans_title = self.env['ir.translation'].search([('value', '=', title),
+                                                         ('module', '=',
+                                                          'dynamic_accounts_report')],
+                                                        limit=1).src
         company_id = self.env.companies.ids
         if r.journal_ids:
             journals = r.journal_ids
         else:
-            journals = self.env['account.journal'].search([('company_id', 'in', company_id)])
+            journals = self.env['account.journal'].search(
+                [('company_id', 'in', company_id)])
         if title == 'General Ledger' or trans_title == 'General Ledger':
             if r.journal_ids:
                 journals = r.journal_ids
             else:
-                journals = self.env['account.journal'].search([('company_id', 'in', company_id)])
+                journals = self.env['account.journal'].search(
+                    [('company_id', 'in', company_id)])
             new_title = title
         if title == 'Bank Book' or trans_title == 'Bank Book':
-            journals = self.env['account.journal'].search([('type', '=', 'bank'), ('company_id', 'in', company_id)])
+            journals = self.env['account.journal'].search(
+                [('type', '=', 'bank'), ('company_id', 'in', company_id)])
 
             new_title = title
         if title == 'Cash Book' or trans_title == 'Cash Book':
-            journals = self.env['account.journal'].search([('type', '=', 'cash'), ('company_id', 'in', company_id)])
+            journals = self.env['account.journal'].search(
+                [('type', '=', 'cash'), ('company_id', 'in', company_id)])
             new_title = title
         r.write({
             'titles': new_title,
         })
         data = {
             'display_account': r.display_account,
-            'model':self,
+            'model': self,
             'journals': journals,
             'target_move': r.target_move,
             'accounts': r.account_ids,
@@ -91,7 +102,7 @@ class GeneralView(models.TransientModel):
         filters = self.get_filter(option)
         records = self._get_report_values(data)
         currency = self._get_currency()
-        print(records, "records....")
+        print('last return')
         return {
             'name': new_title,
             'type': 'ir.actions.client',
@@ -108,11 +119,13 @@ class GeneralView(models.TransientModel):
         data = self.get_filter_data(option)
         filters = {}
         if data.get('journal_ids'):
-            filters['journals'] = self.env['account.journal'].browse(data.get('journal_ids')).mapped('code')
+            filters['journals'] = self.env['account.journal'].browse(
+                data.get('journal_ids')).mapped('code')
         else:
             filters['journals'] = ['All']
         if data.get('account_ids', []):
-            filters['accounts'] = self.env['account.account'].browse(data.get('account_ids', [])).mapped('code')
+            filters['accounts'] = self.env['account.account'].browse(
+                data.get('account_ids', [])).mapped('code')
         else:
             filters['accounts'] = ['All']
         if data.get('account_tag_ids', []):
@@ -155,14 +168,16 @@ class GeneralView(models.TransientModel):
 
         account_tags = r.account_tag_ids if r.account_tag_ids else self.env[
             'account.account.tag'].search([])
-        analytics = r.analytic_ids if r.analytic_ids else self.env['account.analytic.account'].search(
+        analytics = r.analytic_ids if r.analytic_ids else self.env[
+            'account.analytic.account'].search(
             company_domain)
         analytic_tags = r.analytic_tag_ids if r.analytic_tag_ids else self.env[
             'account.analytic.tag'].search([])
 
-
-        journal_ids = r.journal_ids if r.journal_ids else self.env['account.journal'].search(company_domain, order="company_id, name")
-        accounts_ids = self.account_ids if self.account_ids else self.env['account.account'].search(company_domain, order="company_id, name")
+        journal_ids = r.journal_ids if r.journal_ids else self.env[
+            'account.journal'].search(company_domain, order="company_id, name")
+        accounts_ids = self.account_ids if self.account_ids else self.env[
+            'account.account'].search(company_domain, order="company_id, name")
         journals = []
         o_company = False
         for j in journal_ids:
@@ -180,8 +195,6 @@ class GeneralView(models.TransientModel):
                 o_company = j.company_id
             accounts.append((j.id, j.name))
 
-
-
         filter_dict = {
             'journal_ids': r.journal_ids.ids,
             'analytic_ids': r.analytic_ids.ids,
@@ -198,7 +211,8 @@ class GeneralView(models.TransientModel):
             'accounts_list': accounts,
             'account_tag_list': [(a.id, a.name) for a in account_tags],
             'analytic_list': [(anl.id, anl.name) for anl in analytics],
-            'analytic_tag_list': [(anltag.id, anltag.name) for anltag in analytic_tags],
+            'analytic_tag_list': [(anltag.id, anltag.name) for anltag in
+                                  analytic_tags],
             'company_name': ', '.join(self.env.companies.mapped('name')),
         }
         filter_dict.update(default_filters)
@@ -207,6 +221,7 @@ class GeneralView(models.TransientModel):
     def _get_report_values(self, data):
 
         docs = data['model']
+
         display_account = data['display_account']
         init_balance = True
         journals = data['journals']
@@ -218,17 +233,17 @@ class GeneralView(models.TransientModel):
         accounts = self.env['account.account'].search(company_domain)
         if not accounts:
             raise UserError(_("No Accounts Found! Please Add One"))
-        account_res = self._get_accounts(accounts, init_balance, display_account, data)
+        account_res = self._get_accounts(accounts, init_balance,
+                                         display_account, data)
         debit_total = 0
         debit_total = sum(x['debit'] for x in account_res)
         credit_total = sum(x['credit'] for x in account_res)
-        debit_balance = round(debit_total,2) - round(credit_total,2)
-        print(account_res, ".................")
+        debit_balance = round(debit_total, 2) - round(credit_total, 2)
         return {
             'doc_ids': self.ids,
             'debit_total': debit_total,
             'credit_total': credit_total,
-            'debit_balance':debit_balance,
+            'debit_balance': debit_balance,
             'docs': docs,
             'time': time,
             'Accounts': account_res,
@@ -248,32 +263,37 @@ class GeneralView(models.TransientModel):
         if vals.get('journal_ids') == []:
             vals.update({'journal_ids': [(5,)]})
         if vals.get('account_ids'):
-            vals.update({'account_ids': [(4, j) for j in vals.get('account_ids')]})
+            vals.update(
+                {'account_ids': [(4, j) for j in vals.get('account_ids')]})
         if vals.get('account_ids') == []:
             vals.update({'account_ids': [(5,)]})
         if vals.get('account_tag_ids'):
-            vals.update({'account_tag_ids': [(4, j) for j in vals.get('account_tag_ids')]})
+            vals.update({'account_tag_ids': [(4, j) for j in
+                                             vals.get('account_tag_ids')]})
         if vals.get('account_tag_ids') == []:
             vals.update({'account_tag_ids': [(5,)]})
         if vals.get('analytic_ids'):
-            vals.update({'analytic_ids': [(4, j) for j in vals.get('analytic_ids')]})
+            vals.update(
+                {'analytic_ids': [(4, j) for j in vals.get('analytic_ids')]})
         if vals.get('analytic_ids') == []:
             vals.update({'analytic_ids': [(5,)]})
         if vals.get('analytic_tag_ids') == []:
-            vals.update({'analytic_tag_ids': [(4, j) for j in vals.get('analytic_tag_ids')]})
+            vals.update({'analytic_tag_ids': [(4, j) for j in
+                                              vals.get('analytic_tag_ids')]})
         if vals.get('analytic_tag_ids') == []:
             vals.update({'analytic_tag_ids': [(5,)]})
         res = super(GeneralView, self).write(vals)
         return res
 
     def _get_accounts(self, accounts, init_balance, display_account, data):
-
+        print("function called..........")
         cr = self.env.cr
         MoveLine = self.env['account.move.line']
         move_lines = {x: [] for x in accounts.ids}
 
         # Prepare initial sql query and Get the initial move lines
         if init_balance and data.get('date_from'):
+            print("function called..2")
             init_tables, init_where_clause, init_where_params = MoveLine.with_context(
                 date_from=self.env.context.get('date_from'), date_to=False,
                 initial_bal=True)._query_get()
@@ -292,17 +312,19 @@ class GeneralView(models.TransientModel):
             if data.get('date_from'):
                 new_filter += " AND l.date < '%s'" % data.get('date_from')
             if data['journals']:
-                new_filter += ' AND j.id IN %s' % str(tuple(data['journals'].ids) + tuple([0]))
+                new_filter += ' AND j.id IN %s' % str(
+                    tuple(data['journals'].ids) + tuple([0]))
             if data.get('accounts'):
-                WHERE = "WHERE l.account_id IN %s" % str(tuple(data.get('accounts').ids) + tuple([0]))
+                WHERE = "WHERE l.account_id IN %s" % str(
+                    tuple(data.get('accounts').ids) + tuple([0]))
             else:
                 WHERE = "WHERE l.account_id IN %s"
             if data.get('analytics'):
-                WHERE += ' AND anl.id IN %s' % str(tuple(data.get('analytics').ids) + tuple([0]))
+                WHERE += ' AND anl.id IN %s' % str(
+                    tuple(data.get('analytics').ids) + tuple([0]))
             if data.get('analytic_tags'):
                 WHERE += ' AND anltag.account_analytic_tag_id IN %s' % str(
                     tuple(data.get('analytic_tags').ids) + tuple([0]))
-
 
             sql = ("""SELECT 0 AS lid, l.account_id AS account_id, '' AS ldate, '' AS lcode, 0.0 AS amount_currency, '' AS lref, 'Initial Balance' AS lname, COALESCE(SUM(l.debit),0.0) AS debit, COALESCE(SUM(l.credit),0.0) AS credit, COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit), 0) as balance, '' AS lpartner_id,\
                         '' AS move_name, '' AS mmove_id, '' AS currency_code,\
@@ -318,11 +340,12 @@ class GeneralView(models.TransientModel):
                         LEFT JOIN account_analytic_account anl ON (l.analytic_account_id=anl.id)
                         LEFT JOIN account_analytic_tag_account_move_line_rel anltag ON (anltag.account_move_line_id=l.id)
                         JOIN account_journal j ON (l.journal_id=j.id)"""
-                        + WHERE + new_filter + ' GROUP BY l.account_id')
+                   + WHERE + new_filter + ' GROUP BY l.account_id')
             if data.get('accounts'):
                 params = tuple(init_where_params)
             else:
                 params = (tuple(accounts.ids),) + tuple(init_where_params)
+            # print("aaaaaaaaaaaaaaaaaaaaaaa", params)
             cr.execute(sql, params)
             for row in cr.dictfetchall():
                 row['m_id'] = row['account_id']
@@ -333,7 +356,8 @@ class GeneralView(models.TransientModel):
         if where_clause.strip():
             wheres.append(where_clause.strip())
         final_filters = " AND ".join(wheres)
-        final_filters = final_filters.replace('account_move_line__move_id', 'm').replace(
+        final_filters = final_filters.replace('account_move_line__move_id',
+                                              'm').replace(
             'account_move_line', 'l')
         new_final_filter = final_filters
         if data['target_move'] == 'posted':
@@ -346,13 +370,16 @@ class GeneralView(models.TransientModel):
             new_final_filter += " AND l.date <= '%s'" % data.get('date_to')
 
         if data['journals']:
-            new_final_filter += ' AND j.id IN %s' % str(tuple(data['journals'].ids) + tuple([0]))
+            new_final_filter += ' AND j.id IN %s' % str(
+                tuple(data['journals'].ids) + tuple([0]))
         if data.get('accounts'):
-            WHERE = "WHERE l.account_id IN %s" % str(tuple(data.get('accounts').ids) + tuple([0]))
+            WHERE = "WHERE l.account_id IN %s" % str(
+                tuple(data.get('accounts').ids) + tuple([0]))
         else:
             WHERE = "WHERE l.account_id IN %s"
         if data.get('analytics'):
-            WHERE += ' AND anl.id IN %s' % str(tuple(data.get('analytics').ids) + tuple([0]))
+            WHERE += ' AND anl.id IN %s' % str(
+                tuple(data.get('analytics').ids) + tuple([0]))
 
         if data.get('analytic_tags'):
             WHERE += ' AND anltag.account_analytic_tag_id IN %s' % str(
@@ -375,6 +402,8 @@ class GeneralView(models.TransientModel):
             params = tuple(where_params)
         else:
             params = (tuple(accounts.ids),) + tuple(where_params)
+        # print("sql", sql)
+        # print("params", params)
         cr.execute(sql, params)
         account_res = cr.dictfetchall()
 
@@ -422,29 +451,37 @@ class GeneralView(models.TransientModel):
             lang = 'en_US'
         lang = lang.replace("_", '-')
         currency_array = [self.env.company.currency_id.symbol,
-                          self.env.company.currency_id.position,lang]
+                          self.env.company.currency_id.position, lang]
         return currency_array
 
     def get_accounts_line(self, account_id, title):
 
-        trans_title = self.env['ir.translation'].search([('value', '=', title), ('module', '=', 'dynamic_accounts_report')], limit=1).src
+        trans_title = self.env['ir.translation'].search([('value', '=', title),
+                                                         ('module', '=',
+                                                          'dynamic_accounts_report')],
+                                                        limit=1).src
         company_id = self.env.companies.ids
         if self.journal_ids:
             journals = self.journal_ids
         else:
-            journals = self.env['account.journal'].search([('company_id', 'in', company_id)])
+            journals = self.env['account.journal'].search(
+                [('company_id', 'in', company_id)])
         if title == 'General Ledger' or trans_title == 'General Ledger':
             if self.journal_ids:
                 journals = self.journal_ids
             else:
-                journals = self.env['account.journal'].search([('company_id', 'in', company_id)])
+                journals = self.env['account.journal'].search(
+                    [('company_id', 'in', company_id)])
         if title == 'Bank Book' or trans_title == 'Bank Book':
-            journals = self.env['account.journal'].search([('type', '=', 'bank'), ('company_id', 'in', company_id)])
+            journals = self.env['account.journal'].search(
+                [('type', '=', 'bank'), ('company_id', 'in', company_id)])
         if title == 'Cash Book' or trans_title == 'Cash Book':
-            journals = self.env['account.journal'].search([('type', '=', 'cash'), ('company_id', 'in', company_id)])
+            journals = self.env['account.journal'].search(
+                [('type', '=', 'cash'), ('company_id', 'in', company_id)])
 
         if account_id:
-            accounts = self.env['account.account'].search([('id', '=', account_id)])
+            accounts = self.env['account.account'].search(
+                [('id', '=', account_id)])
         else:
             company_id = self.env.companies
             company_domain = [('company_id', 'in', company_id.ids)]
@@ -476,13 +513,16 @@ class GeneralView(models.TransientModel):
             if self.date_from:
                 new_filter += " AND l.date < '%s'" % self.date_from
             if journals:
-                new_filter += ' AND j.id IN %s' % str(tuple(journals.ids) + tuple([0]))
+                new_filter += ' AND j.id IN %s' % str(
+                    tuple(journals.ids) + tuple([0]))
             if accounts:
-                WHERE = "WHERE l.account_id IN %s" % str(tuple(accounts.ids) + tuple([0]))
+                WHERE = "WHERE l.account_id IN %s" % str(
+                    tuple(accounts.ids) + tuple([0]))
             else:
                 WHERE = "WHERE l.account_id IN %s"
             if self.analytic_ids:
-                WHERE += ' AND anl.id IN %s' % str(tuple(self.analytic_ids.ids) + tuple([0]))
+                WHERE += ' AND anl.id IN %s' % str(
+                    tuple(self.analytic_ids.ids) + tuple([0]))
             if self.analytic_tag_ids:
                 WHERE += ' AND anltag.account_analytic_tag_id IN %s' % str(
                     tuple(self.analytic_tags.ids) + tuple([0]))
@@ -516,7 +556,8 @@ class GeneralView(models.TransientModel):
         if where_clause.strip():
             wheres.append(where_clause.strip())
         final_filters = " AND ".join(wheres)
-        final_filters = final_filters.replace('account_move_line__move_id', 'm').replace(
+        final_filters = final_filters.replace('account_move_line__move_id',
+                                              'm').replace(
             'account_move_line', 'l')
         new_final_filter = final_filters
         if self.target_move == 'posted':
@@ -529,13 +570,16 @@ class GeneralView(models.TransientModel):
             new_final_filter += " AND l.date <= '%s'" % self.date_to
 
         if journals:
-            new_final_filter += ' AND j.id IN %s' % str(tuple(journals.ids) + tuple([0]))
+            new_final_filter += ' AND j.id IN %s' % str(
+                tuple(journals.ids) + tuple([0]))
         if accounts:
-            WHERE = "WHERE l.account_id IN %s" % str(tuple(accounts.ids) + tuple([0]))
+            WHERE = "WHERE l.account_id IN %s" % str(
+                tuple(accounts.ids) + tuple([0]))
         else:
             WHERE = "WHERE l.account_id IN %s"
         if self.analytic_ids:
-            WHERE += ' AND anl.id IN %s' % str(tuple(self.analytics.ids) + tuple([0]))
+            WHERE += ' AND anl.id IN %s' % str(
+                tuple(self.analytics.ids) + tuple([0]))
 
         if self.analytic_tag_ids:
             WHERE += ' AND anltag.account_analytic_tag_id IN %s' % str(
@@ -553,14 +597,13 @@ class GeneralView(models.TransientModel):
                     LEFT JOIN account_analytic_tag_account_move_line_rel anltag ON (anltag.account_move_line_id=l.id)
                     JOIN account_journal j ON (l.journal_id=j.id)\
                     JOIN account_account a ON (l.account_id = a.id) '''
-                    + WHERE + new_final_filter + ''' GROUP BY l.id, m.id,  l.account_id, l.date, j.code, l.currency_id, l.amount_currency, l.ref, l.name, m.name, c.symbol, c.position, p.name ORDER BY l.date''' )
-
+               + WHERE + new_final_filter + ''' GROUP BY l.id, m.id,  l.account_id, l.date, j.code, l.currency_id, l.amount_currency, l.ref, l.name, m.name, c.symbol, c.position, p.name ORDER BY l.date''')
 
         params = tuple(where_params)
 
         cr.execute(sql, params)
         account_ress = cr.dictfetchall()
-        i=0
+        i = 0
         # Calculate the debit, credit and balance for Accounts
         account_res = []
         for account in accounts:
@@ -573,7 +616,6 @@ class GeneralView(models.TransientModel):
 
             account_res.append(res)
 
-
         currency = self._get_currency()
         return {
 
@@ -582,8 +624,9 @@ class GeneralView(models.TransientModel):
             'currency': currency,
         }
 
-    def get_dynamic_xlsx_report(self, data, response ,report_data, dfr_data):
+    def get_dynamic_xlsx_report(self, data, response, report_data, dfr_data):
         report_data_main = json.loads(report_data)
+        print('report data: ', report_data_main)
         output = io.BytesIO()
         name_data = json.loads(dfr_data)
         filters = json.loads(data)
@@ -596,16 +639,21 @@ class GeneralView(models.TransientModel):
              'border': 1,
              'border_color': 'black'})
         txt = workbook.add_format({'font_size': '10px', 'border': 1})
-        txt_l = workbook.add_format({'font_size': '10px', 'border': 1, 'bold': True})
-        sheet.merge_range('A2:J3', filters.get('company_name') + ':' + name_data.get('name'), head)
+        txt_l = workbook.add_format(
+            {'font_size': '10px', 'border': 1, 'bold': True})
+        sheet.merge_range('A2:J3',
+                          filters.get('company_name') + ':' + name_data.get(
+                              'name'), head)
         date_head = workbook.add_format({'align': 'center', 'bold': True,
                                          'font_size': '10px'})
         date_style = workbook.add_format({'align': 'center',
                                           'font_size': '10px'})
         if filters.get('date_from'):
-            sheet.merge_range('B4:C4', 'From: ' + filters.get('date_from'), date_head)
+            sheet.merge_range('B4:C4', 'From: ' + filters.get('date_from'),
+                              date_head)
         if filters.get('date_to'):
-            sheet.merge_range('H4:I4', 'To: ' + filters.get('date_to'), date_head)
+            sheet.merge_range('H4:I4', 'To: ' + filters.get('date_to'),
+                              date_head)
         # sheet.merge_range('A5:J6', 'Journals: ' + ', '.join(
         #     [lt or '' for lt in filters['journals']]) + '  Target Moves: ' + filters.get('target_move'), date_head)
 
@@ -617,9 +665,9 @@ class GeneralView(models.TransientModel):
             [lt or '' for lt in
              filters['analytic_tags']]) + '  Analytic: ' + ', '.join(
             [at or '' for at in
-             filters['analytics']]) + '  Target Moves : ' + filters.get('target_move'),
+             filters['analytics']]) + '  Target Moves : ' + filters.get(
+            'target_move'),
                           date_head)
-
 
         sheet.write('A8', 'Code', sub_heading)
         sheet.write('B8', 'Amount', sub_heading)
@@ -659,20 +707,22 @@ class GeneralView(models.TransientModel):
             sheet.write(row + 1, col + 7, rec_data['debit'], txt)
             sheet.write(row + 1, col + 8, rec_data['credit'], txt)
             sheet.write(row + 1, col + 9, rec_data['balance'], txt)
-            for line_data in rec_data['move_lines']:
-                row += 1
-                sheet.write(row + 1, col, '', txt)
-                sheet.write(row + 1, col + 1, '', txt)
-                sheet.write(row + 1, col + 2, line_data.get('ldate'), txt)
-                sheet.write(row + 1, col + 3, line_data.get('lcode'), txt)
-                sheet.write(row + 1, col + 4, line_data.get('partner_name'), txt)
-                sheet.write(row + 1, col + 5, line_data.get('move_name'), txt)
-                sheet.write(row + 1, col + 6, line_data.get('lname'), txt)
-                sheet.write(row + 1, col + 7, line_data.get('debit'), txt)
-                sheet.write(row + 1, col + 8, line_data.get('credit'), txt)
-                sheet.write(row + 1, col + 9, line_data.get('balance'), txt)
-
-
+            if rec_data.get('move_lines'):
+                for line_data in rec_data['move_lines']:
+                    row += 1
+                    sheet.write(row + 1, col, '', txt)
+                    sheet.write(row + 1, col + 1, '', txt)
+                    sheet.write(row + 1, col + 2, line_data.get('ldate'), txt)
+                    sheet.write(row + 1, col + 3, line_data.get('lcode'), txt)
+                    sheet.write(row + 1, col + 4, line_data.get('partner_name'),
+                                txt)
+                    sheet.write(row + 1, col + 5, line_data.get('move_name'), txt)
+                    sheet.write(row + 1, col + 6, line_data.get('lname'), txt)
+                    sheet.write(row + 1, col + 7, line_data.get('debit'), txt)
+                    sheet.write(row + 1, col + 8, line_data.get('credit'), txt)
+                    sheet.write(row + 1, col + 9, line_data.get('balance'), txt)
+            else:
+                print('///////////',rec_data)
 
         workbook.close()
         output.seek(0)
