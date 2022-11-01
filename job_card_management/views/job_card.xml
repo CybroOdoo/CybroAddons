@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+        <record id="job_card_tree_view" model="ir.ui.view">
+            <field name="name">Job Card</field>
+            <field name="model">job.card</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="start_date"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="job_card_form_view" model="ir.ui.view">
+            <field name="name">Job Card</field>
+            <field name="model">job.card</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button string="Submit" name="action_submit" type="object" class="btn-primary" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                        <button string="Approve" name="action_approve" type="object" class="btn-primary" attrs="{'invisible': [('state', '!=', 'submit')]}"/>
+                        <button string="Create Purchase Material Request" name="create_pmr" type="object" class="btn-primary" attrs="{'invisible': [('state', '!=', 'approve')]}"/>
+                        <button string="Create Invoice" name="create_invoice" type="object" class="btn-primary" attrs="{'invisible': [('state', '!=', 'complete')]}"/>
+                        <button string="Share" name="share" type="object" class="btn-primary"/>
+                        <button string="Complete" name="action_completed" type="object" class="btn-primary" attrs="{'invisible': [('state', '!=', 'approve')]}"/>
+                        <field name="state" widget="statusbar" />
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button class="oe_stat_button" type="object" name="get_pmr"
+                                icon="fa-id-card-o">
+                                <field string="Material Request" name="mpr_count" widget="statinfo"/>
+                            </button>
+                            <button class="oe_stat_button" type="object" name="get_invoice"
+                                icon="fa-pencil-square-o">
+                                <field string="Invoice" name="invoice_name" widget="statinfo"/>
+                            </button>
+
+                        </div>
+                        <div class="oe_title">
+                            <h1 class="d-flex">
+                                <field name="name" attrs="{'readonly': [('state', 'not in', ['draft'])]}"/>
+                                <field name="sequence" invisible="1"/>
+                            </h1>
+                            <h2>
+                                <field name="card_name" placeholder="Job Card Name"/>
+                            </h2>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="start_date" options="{'format': 'DD/MM/YYYY'}"/>
+                                <field name="end_date"/>
+                                <field name="project_id"/>
+                                <field name="user_id"/>
+                            </group>
+                            <group>
+                                <field name="quality_checklist_id" widget="many2many_tags"/>
+                                <field name="deadline"/>
+                                <field name="team_id"/>
+                                <field name="currency_id"/>
+                                <field name="instruction_count" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Description">
+                                <field name="description" widget="html"/>
+                            </page>
+
+                            <page string="Instructions">
+                                <field name="instruction_ids">
+                                    <tree editable="bottom">
+                                        <field name="name"/>
+                                        <field name="start_date"/>
+                                        <field name="end_date"/>
+                                        <field name="user_id"/>
+                                        <field name="instruction"/>
+                                        <field name="notes"/>
+                                        <field name="state"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Cost Sheet">
+                                <field name="job_cost_sheet_ids" attrs="{'readonly': [('state', 'not in', ['draft', 'submit'])]}">
+                                    <tree editable="bottom">
+                                        <field name="type"/>
+                                        <field name="product_id"/>
+                                        <field name="quantity"/>
+                                        <field name="unit_price"/>
+                                        <field name="discount"/>
+                                        <field name="tax"/>
+                                        <field name="untaxed_amount"/>
+                                        <field name="amount"/>
+                                    </tree>
+                                </field>
+                                <group class="oe_subtotal_footer oe_right" colspan="2">
+                                    <div class="oe_inline o_td_label">
+                                        <label for="cost_sheet_amount"/>
+                                    </div>
+                                    <field name="cost_sheet_amount" nolabel="1"/>
+                                    <div class="oe_inline o_td_label">
+                                        <label for="job_cost_sheet_untaxed_amount"/>
+                                    </div>
+                                    <field name="job_cost_sheet_untaxed_amount" nolabel="1"/>
+                                </group>
+                            </page>
+
+                            <page string="Timesheet">
+                                <group>
+                                    <group>
+                                        <field name="planned_hours"/>
+                                    </group>
+                                    <group>
+                                        <field name="progress" widget="progressbar"/>
+                                    </group>
+                                </group>
+                                <field name="job_card_timesheet_ids" attrs="{'invisible': [('state', 'in', ['draft', 'submit'])]}">
+                                    <tree editable="bottom">
+                                        <field name="name"/>
+                                        <field name="instruction_id"/>
+                                        <field name="description"/>
+                                        <field name="leader_id"/>
+                                        <field name="worker_id"/>
+                                        <field name="date"/>
+                                        <field name="time"/>
+                                    </tree>
+                                </field>
+                                <group class="oe_subtotal_footer oe_right" colspan="2" attrs="{'invisible': [('state', 'in', ['draft', 'submit'])]}">
+                                    <div class="oe_inline o_td_label">
+                                        <label for="total_hours"/>
+                                    </div>
+                                    <field name="total_hours" nolabel="1"/>
+                                </group>
+
+                            </page>
+
+                            <page string="Extra Information">
+                                <group>
+                                    <field name="partner_id"/>
+                                    <field name="email"/>
+                                </group>
+                                <group string="Working Time to Close">
+                                    <group>
+                                        <field name="hours"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_job_card" model="ir.actions.act_window">
+            <field name="name">Job Card</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">job.card</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                Define a new Job Card
+              </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>
