@@ -20,6 +20,7 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###################################################################################
+import json
 
 import pytz
 from datetime import datetime, time
@@ -95,7 +96,8 @@ class SalonBooking(models.Model):
             self.env['salon.order.line'].create(service_data)
         template = self.env.ref(
             'salon_management.mail_template_salon_approved')
-        self.env['mail.template'].browse(template.id).send_mail(self.id, force_send=True)
+        self.env['mail.template'].browse(template.id).send_mail(self.id,
+                                                                force_send=True)
         self.state = "approved"
 
     def action_reject_booking(self):
@@ -104,5 +106,27 @@ class SalonBooking(models.Model):
         """
         template = self.env.ref(
             'salon_management.mail_template_salon_rejected')
-        self.env['mail.template'].browse(template.id).send_mail(self.id, force_send=True)
+        self.env['mail.template'].browse(template.id).send_mail(self.id,
+                                                                force_send=True)
         self.state = "rejected"
+
+    @api.model
+    def get_booking_count(self):
+        salon_bookings = self.env['salon.booking'].search_count(
+            [('state', '=', 'approved')])
+        recent_works = self.env['salon.order'].search_count(
+            [('stage_id', 'in', [3, 4])])
+        salon_orders = self.env['salon.order'].search_count([])
+        salon_clients = self.env['res.partner'].search_count(
+            [('partner_salon', '=', True)])
+
+        salon_chairs = self.env['salon.chair'].search([])
+        values = {
+            'bookings': salon_bookings,
+            'sales': recent_works,
+            'orders': salon_orders,
+            'clients': salon_clients,
+            'chairs': salon_chairs
+        }
+        # print(values)
+        return values

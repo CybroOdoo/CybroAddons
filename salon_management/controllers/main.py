@@ -43,12 +43,12 @@ class SalonBookingWeb(http.Controller):
         j = 0
         service_list = []
         while j < (int(kwargs['number'])):
-            item = "list_service["+str(j)+"][i]"
+            item = "list_service[" + str(j) + "][i]"
             service_list.append(int(kwargs[item]))
             j += 1
         salon_service_obj = request.env['salon.service'].search([
             ('id', 'in', service_list)])
-        dates_time = date+" "+time+":00"
+        dates_time = date + " " + time + ":00"
         date_and_time = pytz.timezone(request.env.user.tz).localize(
             datetime.strptime(dates_time, '%m/%d/%Y %H:%M:%S')).astimezone(
             pytz.UTC).replace(tzinfo=None)
@@ -86,10 +86,10 @@ class SalonBookingWeb(http.Controller):
                 'number': order.id,
                 'start_time_only': fields.Datetime.to_string(pytz.UTC.localize(
                     order.start_time).astimezone(pytz.timezone(
-                        request.env.user.tz)).replace(tzinfo=None))[11:16],
+                    request.env.user.tz)).replace(tzinfo=None))[11:16],
                 'end_time_only': fields.Datetime.to_string(pytz.UTC.localize(
                     order.end_time).astimezone(pytz.timezone(
-                        request.env.user.tz)).replace(tzinfo=None))[11:16],
+                    request.env.user.tz)).replace(tzinfo=None))[11:16],
             }
             if order.chair_id.id not in order_details:
                 order_details[order.chair_id.id] = {
@@ -112,7 +112,6 @@ class SalonBookingWeb(http.Controller):
         salon_working_hours_obj = request.env['salon.working.hours'].search([])
         salon_holiday_obj = request.env['salon.holiday'].search(
             [('holiday', '=', True)])
-        # date_check = fields.Date.context_today(request)
         date_check = datetime.today().date()
         date_start = pytz.timezone(request.env.user.tz).localize(
             datetime.combine(date_check, time(0, 0, 0))).astimezone(
@@ -135,3 +134,30 @@ class SalonBookingWeb(http.Controller):
                 'holiday': salon_holiday_obj,
                 'working_time': salon_working_hours_obj,
             })
+
+
+class SalonOrders(http.Controller):
+    @http.route(['/salon/chairs'], type="json", auth="public")
+    def elearning_snippet(self, products_per_slide=3):
+        print('controller')
+        chairs = []
+        salon_chairs = request.env['salon.chair'].sudo().search([])
+        number_of_orders = {}
+
+        for i in salon_chairs:
+            number_of_orders.update({i.id: len(request.env['salon.order'].search(
+                [("chair_id", "=", i.id),
+                 ("stage_id", "in", [2, 3])]))})
+            # print(i.id)
+            chairs.append(
+                {'name': i.name, 'id': i.id, 'orders': number_of_orders[i.id]})
+        print(number_of_orders, 'main')
+        values = {
+            's_chairs': chairs
+        }
+        print(values)
+
+        response = http.Response(
+            template='salon_management.dashboard_salon_chairs', qcontext=values)
+        print(response.render())
+        return response.render()

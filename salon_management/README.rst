@@ -18,7 +18,8 @@ Credits
                 version 13: Vaishnavi B @cybrosys,Contact: odoo@cybrosys.com
                 version 14: Jibin James @cybrosys,Contact: odoo@cybrosys.com
                 version 15: Abhishek E T @cybrosys,Contact: odoo@cybrosys.com
-                version 16: Sabeel B @cybrosys,Contact: odoo@cybrosys.com
+                version 16: Sabeel B @cybrosys, Contact: odoo@cybrosys.com
+                version 16: Robin K @cybrosys, Contact: odoo@cybrosys.com
 Contacts
 --------
 * Mail Contact : odoo@cybrosys.com
