@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension" owl="1">
+            <xpath expr="//Dropdown" position="replace">
+            <ul class="o_menu_apps">
+            <li class="dropdown show">
+                    <a class="full" data-bs-toggle="collapse" data-bs-target="#Appmenu" aria-expanded="true"
+                   href="#">
+                    <i class="fa fa-bars"/>
+                </a>
+                <div class="dropdown-menu cybro-main-menu collapse" id="Appmenu" role="menu" x-placement="top-start"
+                     style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(5px, -1px, 0px);">
+                    <div class="sidebar-user">
+                        <div class="sidebar-overlay-image">
+
+                        </div>
+                        <t t-set="user_img" t-value="'/web/image?model=res.users&amp;field=image_128&amp;id='+user_id"/>
+                        <img t-att-src="user_img"/>
+                        <div>
+                            <span t-esc="session.name"/>
+                            <br/>
+                            <span class="sidebar-username" t-esc="session.username"/>
+                        </div>
+                    </div>
+                <div class="search-container form-row align-items-center m-auto mb-5 col-12">
+                            <div class="search-input col-md-10 ml-auto mr-auto mb-5" t-on-input="_searchMenusSchedule">
+                                     <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <div class="input-group-text">
+                                                 <i class="fa fa-search"/>
+                                            </div>
+                                        </div>
+                                         <input type="search"
+                                               autocomplete="off"
+                                               placeholder="Search menus..."
+                                               class="form-control"/>
+                                     </div>
+                            </div>
+                    <div class="search-results col-md-10 ml-auto mr-auto"/>
+                </div>
+                <div class="nav-container">
+                   <div class="app-menu">
+                       <t t-foreach="menuService.getApps()" t-as="app" t-key="app_index">
+                           <a role="menuitem"
+                                       t-attf-href="#menu_id={{app.id}}"
+                                       class="dropdown-item o_app mt0"
+                           t-att-data-menu-id="app.menuID"
+                           t-att-data-menu-xmlid="app.xmlID"
+                           t-att-data-action-id="app.actionID">
+                            <img t-if="app.webIcon.includes('.png')" t-att-title="app.name"
+                                 style="width: 25px !important;height: 25px !important;border-radius: 5px !important;padding:0 !important;"
+                                 t-attf-src="data:image/png;base64,{{app.webIconData}}"/>
+                            <img t-if="app.webIcon.includes('.svg')" t-att-title="app.name"
+                                 style="width: 25px !important;height: 25px !important;border-radius: 5px !important;padding:0 !important;"
+                                 t-attf-src="data:image/svg+xml;base64,{{app.webIconData}}"/>
+                               <span class="a_app_menu_title">
+								            <t t-esc="app.name"/>
+							            </span>
+                        </a>
+                       </t>
+                   </div>
+                </div>
+                </div>
+            </li>
+            </ul>
+    </xpath>
+  </t>
+    <t t-name="dodger_blue.SearchResults">
+        <t t-foreach="results" t-as="result">
+            <div class="search_icons">
+            <a t-attf-class="o-menu-search-result dropdown-item col-12 ml-auto mr-auto #{result_first ? 'active' : ''}"
+               t-attf-style="background-image:url('data:image/svg+xml;base64,#{result.webIconData}')"
+               t-attf-href="#menu_id=#{result.id}&amp;action_id=#{result.actionID}"
+               t-att-data-menu-id="result.id"
+               t-att-data-action-id="result.actionID"
+               t-raw="result.name"
+               onclick="$('.dropdown-menu').removeClass('show'); $('.search-results').addClass('o_hidden'); $('.app-menu').removeClass('o_hidden'); $('.search-input input').val('');"/>
+            </div>
+        </t>
+    </t>
+    <t t-name="dodger_blue.AppsMenuSidebar">
+            <div class="cybro-sidebar-qweb">
+            <div class="sidebar-menus" role="menu">
+                <t t-foreach="menuService.getApps()" t-as="app" t-key="app_index">
+		            <li>
+		            	<a role="menuitem"
+                           t-attf-href="#menu_id={{app.id}}"
+                          class="dropdown-item o_app mt0"
+                           t-att-data-menu-id="app.menuID"
+                           t-att-data-menu-xmlid="app.xmlID"
+                           t-att-data-action-id="app.actionID">
+                            <img t-if="app.webIcon.includes('.png')" t-att-title="app.name"
+                                 style="width: 25px !important;height: 25px !important;border-radius: 5px !important;padding:0 !important;"
+                                 t-attf-src="data:image/png;base64,{{app.webIconData}}"/>
+                            <img t-if="app.webIcon.includes('.svg')" t-att-title="app.name"
+                                 style="width: 25px !important;height: 25px !important;border-radius: 5px !important;padding:0 !important;"
+                                 t-attf-src="data:image/svg+xml;base64,{{app.webIconData}}"/>
+                        </a>
+		            </li>
+		    	</t>
+            </div>
+        </div>
+    </t>
+
+
+<!--//////////////////////////////////////////////////////////////////////////////////////////////////////////////-->
+    <t t-name="dodger_blue.AppIcon">
+        <a t-attf-href="#menu_id=#{app.menuID}&amp;action_id=#{app.actionID}">
+    <img
+            class="o-app-icon"
+            draggable="false"
+            t-attf-src="/web/image?model=ir.ui.menu&amp;field=web_icon_data&amp;id=#{app.menuID}"
+    />
+    </a>
+    </t>
+    <t t-inherit="web.NavBar" t-inherit-mode="extension" owl="1">
+        <xpath expr="//nav[hasclass('o_main_navbar')]" position="after">
+            <div class="cybro-sidebar-qweb">
+                <div class="sidebar-menus" role="menu">
+                    <t t-foreach="menuService.getApps()" t-as="app" t-key="app_index">
+                        <li>
+                            <a role="menuitem"
+                               t-attf-href="#menu_id={{app.id}}"
+                                class="dropdown-item o_app mt0"
+                           t-att-data-menu-id="app.menuID"
+                           t-att-data-menu-xmlid="app.xmlID"
+                           t-att-data-action-id="app.actionID">
+                            <img t-if="app.webIcon.includes('.png')" t-att-title="app.name"
+                                 style="width: 25px !important;height: 25px !important;border-radius: 5px !important;padding:0 !important;"
+                                 t-attf-src="data:image/png;base64,{{app.webIconData}}"/>
+                            <img t-if="app.webIcon.includes('.svg')" t-att-title="app.name"
+                                 style="width: 25px !important;height: 25px !important;border-radius: 5px !important;padding:0 !important;"
+                                 t-attf-src="data:image/svg+xml;base64,{{app.webIconData}}"/>
+                        </a>
+                        </li>
+                    </t>
+                </div>
+            </div>
+    </xpath>
+  </t>
+</templates>
