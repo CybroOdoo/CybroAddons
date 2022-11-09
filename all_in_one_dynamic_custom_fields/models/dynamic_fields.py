@@ -150,7 +150,7 @@ class DynamicFields(models.Model):
                     '<?xml version="1.0"?>'
                     '<data>'
                     '''<xpath expr="//field[@name='state']" position="before">'''
-                    '''<field name="%s"/>'''
+                    '''<field name="%s" optional="show"/>'''
                     '''</xpath>'''
                     '''</data>''') % (self.name)
                 self.tree_view_id = self.env['ir.ui.view'].sudo().create({
