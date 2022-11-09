@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<odoo>
+
+    <!--Multiple References Tree View-->
+    <record id="multiple_references_tree_view" model="ir.ui.view">
+        <field name="name">multiple.reference.tree.view</field>
+        <field name="model">multiple.reference.per.product</field>
+        <field name="arch" type="xml">
+            <tree string="Multiple References">
+                <field name="multiple_references_name"/>
+                <field name="product_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <!--Multiple References Form View-->
+    <record id="multiple_references_form_view" model="ir.ui.view">
+        <field name="name">multiple.reference.form.view</field>
+        <field name="model">multiple.reference.per.product</field>
+        <field name="arch" type="xml">
+            <form string="Multiple References">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="multiple_references_name"/>
+                        </group>
+                        <group>
+                            <field name="product_id"/>
+                        </group>
+                        <field name="is_default_reference" invisible="1"/>
+                        <button name="set_as_default" style="width:10%;" type="object" string="Set as default" class="oe_highlight" attrs="{'invisible':[('is_default_reference','=',True)]}"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!--Multiple References In Product Template-->
+    <record id="multiple_reference_per_product_template" model="ir.ui.view">
+        <field name="name">multiple_reference_per_product_template.view</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view" />
+        <field name="arch" type="xml">
+            <field name="default_code" position="replace">
+                <label for="default_code" attrs="{'invisible': [('product_variant_count', '&gt;', 1)]}"/>
+                <div attrs="{'invisible': [('product_variant_count', '&gt;', 1)]}" class="o_row" >
+                    <span style="display:contents!important"><field name="default_code"/></span>
+                    <button type="object" title="Multiple References" name="multiple_references_list" string="Add More" class="oe_highlight"/>
+                </div>
+                <field name="multiple_references_count" invisible="1"/>
+                <field name="multiple_references_id" widget="many2many_tags" attrs="{'invisible': ['|', ('product_variant_count', '&gt;', 1), ('multiple_references_count', '&lt;', 1)]}"/>
+            </field>
+        </field>
+    </record>
+
+    <!--Search with multiple reference inside product view-->
+    <record id="multiple_reference_product_template_search" model="ir.ui.view">
+        <field name="name">multiple.reference.product.template.search</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <field name="name" position="replace">
+                <field name="name" string="Product" filter_domain="['|','|','|',('default_code','ilike',self),('name','ilike',self),('barcode','ilike',self),('multiple_references_code','ilike',self)]"/>
+                <field name="multiple_references_code"/>
+            </field>
+        </field>
+    </record>
+
+    <!--Multiple References In Product Variant-->
+    <record id="multiple_reference_per_product_product" model="ir.ui.view">
+        <field name="name">multiple_reference_per_product_template.view</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view" />
+        <field name="arch" type="xml">
+            <field name="default_code" position="replace">
+                <label for="default_code"/>
+                <div class="o_row" >
+                    <span style="display:contents!important"><field name="default_code"/></span>
+                    <button type="object" title="Multiple References" name="multiple_references_list" string="Add More" class="oe_highlight"/>
+                </div>
+                <field name="multiple_references_count" invisible="1"/>
+                <field name="multiple_references_id" widget="many2many_tags" attrs="{'invisible': [('multiple_references_count', '&lt;', 1)]}"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
