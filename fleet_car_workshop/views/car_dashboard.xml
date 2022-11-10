@@ -1,0 +1,215 @@
+<odoo>
+    <record id="car_car_form" model="ir.ui.view">
+        <field name="name">car.car.form</field>
+        <field name="model">car.car</field>
+        <field name="arch" type="xml">
+            <form string="Vehicle">
+                <header>
+                    <field name="state" widget="statusbar" clickable="True"/>
+                </header>
+                <sheet string="Vehicle">
+                    <div class="oe_button_box" name="button_box" groups="base.group_user">
+
+                        <button class="oe_stat_button"
+                                icon="fa-tasks"
+                                name="%(fleet_car_workshop.worksheet_action_super_button)d"
+                                type="action">
+                            <field string="Tasks" name="task_count" widget="statinfo"/>
+                        </button>
+                        <button class="oe_stat_button" name="attachment_tree_views" type="object" icon="fa-files-o">
+                            <field string="Documents" name="doc_count" widget="statinfo"/>
+                        </button>
+                        <button name="toggle_active" type="object"
+                                confirm="(Un)archiving a project automatically (un)archives its tasks and issues. Do you want to proceed?"
+                                class="oe_stat_button" icon="fa-archive">
+                            <field name="active" widget="boolean_button"
+                                   options='{"terminology": "archive"}'/>
+                        </button>
+
+                    </div>
+                    <field name="image_128" widget='image' class="oe_avatar"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="vehicle_id" placeholder="Vehicle Name"/>
+                        </h1>
+                        <div name="options_active" class="oe_edit_only">
+                            <div>
+                                <field name="use_tasks" class="oe_inline" string="Use Tasks"/>
+                                <label for="use_tasks" class="oe_inline"/>
+                                <span attrs="{'invisible':[('use_tasks', '=', False)]}">as</span>
+                                <field name="label_tasks" class="oe_inline oe_input_align"
+                                       attrs="{'invisible': [('use_tasks', '=', False)]}"/>
+                            </div>
+                        </div>
+                    </div>
+                    <notebook>
+                        <page string="Settings">
+                            <group>
+                                <field name="partner_id" string="Customer"/>
+                            </group>
+                        </page>
+
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_car_car_filter" model="ir.ui.view">
+        <field name="name">car.car.select</field>
+        <field name="model">car.car</field>
+        <field name="arch" type="xml">
+            <search string="Search Vehicle">
+                <field name="vehicle_id" string="Vehicle Name"/>
+                <filter string="Open" name="Current" domain="[('state', '=','open')]"/>
+                <filter string="Pending" name="Pending" domain="[('state', '=','pending')]"/>
+                <separator/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active','=',False)]"/>
+                <field name="partner_id" string="Contact" filter_domain="[('partner_id', 'child_of', self)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Contact" name="Partner" context="{'group_by':'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_car_car_kanban">
+        <field name="name">car.car.kanban</field>
+        <field name="model">car.car</field>
+        <field name="arch" type="xml">
+            <kanban class="oe_background_grey o_kanban_dashboard o_project_kanban">
+                <field name="vehicle_id"/>
+                <field name="use_tasks"/>
+                <field name="color"/>
+                <field name="task_count"/>
+                <field name="label_tasks"/>
+                <field name="task_ids"/>
+                <field name="doc_count"/>
+                <field name="image_128"/>
+                <field name="id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="#{!selection_mode ? kanban_color(record.color.raw_value) : ''} oe_kanban_global_click">
+                            <div class="o_project_kanban_main">
+                                <div class="o_kanban_card_content">
+                                    <div class="o_kanban_image">
+                                        <img t-att-src="kanban_image('car.car', 'image_128', record.id.raw_value)"
+                                             alt="Vehicle" class="o_image_64_contain"/>
+                                    </div>
+                                    <div class="o_kanban_primary_left">
+                                        <div class="oe_kanban_details">
+                                            <div class="o_primary">
+                                                <span>
+                                                    <t t-esc="record.vehicle_id.value"/>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div class="o_kanban_card_manage_pane o_invisible">
+                                    <div class="o_kanban_card_manage_pane dropdown-menu" role="menu">
+                                        <div class="o_kanban_card_manage_section o_kanban_manage_reports">
+                                            <div role="menuitem">
+                                                <a type="edit">Settings</a>
+                                            </div>
+                                        </div>
+                                        <div role="menuitem" aria-haspopup="true"
+                                             class="o_no_padding_kanban_colorpicker">
+                                            <ul class="oe_kanban_colorpicker" data-field="color" role="popup"/>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="o_project_kanban_manage">
+                                    <a class="o_kanban_manage_toggle_button" href="#">
+                                        <i class="fa fa-ellipsis-v" role="img" aria-label="Manage" title="Manage"/>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="o_project_kanban_boxes">
+                                <div t-if="record.use_tasks.raw_value" class="o_project_kanban_box">
+                                    <a name="%(fleet_car_workshop.worksheet_action_super_button)d" type="action">
+                                        <span class="o_value">
+                                            <t t-esc="record.task_count.value"/>
+                                        </span>
+                                        <span class="o_label">
+                                            <t t-esc="record.label_tasks.value"/>
+                                        </span>
+                                    </a>
+
+                                </div>
+                                <a t-if="record.doc_count.raw_value" class="o_project_kanban_box"
+                                   name="attachment_tree_views" type="object">
+                                    <span class="o_value">
+                                        <t t-esc="record.doc_count.value"/>
+                                    </span>
+                                    <span class="o_label">Documents</span>
+                                </a>
+                            </div>
+
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_car_car_tree" model="ir.ui.view">
+        <field name="name">car.car.tree</field>
+        <field name="model">car.car</field>
+        <field name="field_parent">child_ids</field>
+        <field name="arch" type="xml">
+            <tree decoration-info="state in ('draft','pending')" decoration-muted="state in ('close','cancelled')"
+                  string="Vehicles">
+                <field name="vehicle_id" string="Vehicle Name"/>
+                <field name="partner_id" string="Contact"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="open_view_vehicle_all" model="ir.actions.act_window">
+        <field name="name">Vehicles</field>
+        <field name="res_model">car.car</field>
+        <!--        <field name="view_type">form</field>-->
+        <field name="domain">[]</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="search_view_id" ref="view_car_car_filter"/>
+        <field name="context">{'search_default_Current': 1}</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Create a new project.
+            </p>
+            <p>
+                Organize your activities (plan tasks, track issues, invoice timesheets) for internal, personal or
+                customer projects.
+            </p>
+        </field>
+    </record>
+
+    <record id="config_view_vehicle_all" model="ir.actions.act_window">
+        <field name="name">Vehicles</field>
+        <field name="res_model">car.car</field>
+        <!--        <field name="view_type">form</field>-->
+        <field name="domain">[]</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_car_car_filter"/>
+        <field name="context">{'search_default_Current': 1}</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Create a new vehicle.
+            </p>
+        </field>
+    </record>
+
+    <menuitem name="Dashboard" parent="main_workshop_menu" id="workshop_vehicles" sequence="1"
+              action="open_view_vehicle_all"/>
+    <menuitem name="Vehicles" action="config_view_vehicle_all" id="config_vehicle_view_action"
+              parent="menu_worksheet_config"/>
+</odoo>
