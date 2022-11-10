@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="stock_picking_add_fields" model="ir.ui.view">
+            <field name="name">Add.stock.picking.form</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/header" position="inside">
+
+                    <button
+                            name="action_shipped_order"
+                            string="Mark as Shipped"
+                            class="oe_light"
+                            sequance="50"
+                            type="object"
+                            attrs="{'invisible': ['|',('shipstation_order_id', '=', 0),('shipstation_shipping_status','in',['cancelled','shipped','on_hold'])]}"
+                    />
+                    <button
+                            name="action_restore_hold_order"
+                            string="Restore Order"
+                            class="oe_light"
+                            sequance="50"
+                            type="object"
+                            attrs="{'invisible': [('shipstation_shipping_status','!=','on_hold')]}"
+                    />
+
+                </xpath>
+                <xpath expr="//form/sheet/notebook/page[@name='extra']/group"
+                       position="inside">
+                    <group name="shipstation_info">
+                        <group>
+                            <field name="shipstation_order_id" invisible="True"/>
+                            <field name="shipstation_shipping_status"/>
+                            <field name="shipstation_shipping_orderKey"
+                                   invisible="1"/>
+                            <field name="shipstation_shipping_cancel"
+                                   redonly="True"
+                                   invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="shipstation_shipping_hold_date"
+                                   attrs="{'invisible': ['|',('shipstation_order_id', '=', 0),('shipstation_shipping_status','in',['cancelled','shipped','on_hold'])]}"/>
+
+                            <button
+                                    name="action_onhold_order"
+                                    string="Hold Order"
+                                    class="oe_highlight"
+                                    sequance="50"
+                                    type="object"
+                                    attrs="{'invisible': ['|',('shipstation_order_id', '=', 0),('shipstation_shipping_status','in',['cancelled','shipped','on_hold'])]}"
+                            />
+                        </group>
+                    </group>
+
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
