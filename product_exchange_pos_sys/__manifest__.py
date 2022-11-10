@@ -21,7 +21,7 @@
 #
 ###############################################################################
 {
-    'name': 'POS Product Exchange',
+    'name': 'POS Product Exchange V16',
     'version': '16.0.1.0.0',
     'category': 'Point of Sale',
     'summary': 'POS Product Exchange',
@@ -31,7 +31,7 @@
     'website': 'https://www.cybrosys.com',
     'description': "POS Product Exchange",
     'depends': ['base', 'point_of_sale'],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'data': [
         'views/pos_order.xml'
     ],
