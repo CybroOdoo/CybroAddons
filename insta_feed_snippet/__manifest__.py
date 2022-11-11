@@ -38,6 +38,7 @@
              'views/website.xml'
              ],
     'installable': True,
+    'images': ['static/description/banner.png'],
     'application': True,
     'auto_install': False,
     'assets': {
