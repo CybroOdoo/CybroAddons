@@ -40,8 +40,8 @@ class ProductProduct(models.Model):
 
     def write(self, vals):
         res = super(ProductProduct, self).write(vals)
-        self.product_multi_barcodes.update({
-            'template_multi': self.product_tmpl_id.id
+        res.product_multi_barcodes.update({
+            'template_multi': res.product_tmpl_id.id
         })
         return res
 
@@ -53,7 +53,7 @@ class ProductProduct(models.Model):
             domain = ['|', '|', ('name', operator, name), ('default_code', operator, name),
                       '|', ('barcode', operator, name), ('product_multi_barcodes', operator, name)]
         product_id = self._search(expression.AND([domain, args]), limit=limit, access_rights_uid=name_get_uid)
-        return self.browse(product_id).name_get()
+        return product_id
 
 
 class ProductTemplate(models.Model):
@@ -71,9 +71,9 @@ class ProductTemplate(models.Model):
 
     def write(self, vals):
         res = super(ProductTemplate, self).write(vals)
-        if self.template_multi_barcodes:
-            self.template_multi_barcodes.update({
-                'product_multi': self.product_variant_id.id
+        if res.template_multi_barcodes:
+            res.template_multi_barcodes.update({
+                'product_multi': res.product_variant_id.id
             })
         return res
 
