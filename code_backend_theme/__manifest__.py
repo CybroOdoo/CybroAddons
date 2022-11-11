@@ -32,31 +32,29 @@
     'website': "https://www.cybrosys.com",
     "depends": ['base', 'web', 'mail'],
     "data": [
-        'views/icons.xml',
         'views/layout.xml',
+        'views/icons.xml',
     ],
     'assets': {
-        'web.assets_frontend': [
-            'code_backend_theme/static/src/scss/login.scss',
-        ],
         'web.assets_backend': [
             'code_backend_theme/static/src/xml/styles.xml',
             'code_backend_theme/static/src/xml/top_bar.xml',
-
             'code_backend_theme/static/src/scss/theme_accent.scss',
             'code_backend_theme/static/src/scss/navigation_bar.scss',
             'code_backend_theme/static/src/scss/datetimepicker.scss',
             'code_backend_theme/static/src/scss/theme.scss',
             'code_backend_theme/static/src/scss/sidebar.scss',
-
-            'code_backend_theme/static/src/js/fields/colors.js',
             'code_backend_theme/static/src/js/chrome/sidebar_menu.js',
-        ],
+            'code_backend_theme/static/src/js/fields/colors.js',
 
+        ],
+        'web.assets_frontend': [
+            'code_backend_theme/static/src/scss/login.scss',
+        ],
     },
     'images': [
         'static/description/banner.png',
-        'static/description/theme_screenshot.png',
+        'static/description/icon.png',
     ],
     'license': 'LGPL-3',
     'pre_init_hook': 'test_pre_init_hook',
