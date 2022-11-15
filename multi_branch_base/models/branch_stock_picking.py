@@ -49,15 +49,6 @@ class StockPicking(models.Model):
                 if order.purchase_id.branch_id:
                     order.branch_id = order.purchase_id.branch_id
 
-
-
-    # @api.onchange('branch_id')
-    # def onchange_branch_id(self):
-    #     """onchange methode"""
-    #     self.picking_type_id = False
-    #     self.location_id = False
-    #     self.location_dest_id = False
-
     @api.depends('sale_id', 'purchase_id')
     def _compute_branch_id(self):
         """methode to compute branch"""
