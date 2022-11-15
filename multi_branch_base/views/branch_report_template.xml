@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="branch_external_layout" inherit_id="web.external_layout">
+
+        <xpath expr="//t[@t-if='company.external_report_layout_id']" position="before">
+            <t t-if="branch_id">
+                <t t-set="branch" t-value="branch_id"/>
+            </t>
+            <t t-elif="o and 'branch_id' in o and o.branch_id.sudo()">
+                <t t-set="branch" t-value="o.branch_id.sudo()"/>
+            </t>
+            <t t-else="else">
+                <t t-set="branch" t-value="res_branch"/>
+            </t>
+        </xpath>
+
+    </template>
+
+    <template id="branch_external_layout_bold" inherit_id="web.external_layout_bold">
+        <xpath expr="//div[@name='company_address']" position="replace">
+            <t t-if="branch">
+                <t t-if="branch.street or branch.street2 or branch.city or branch.state_id or branch.zip or branch.country_id">
+                <div class="col-5 offset-1" name="company_address">
+                    <ul class="list-unstyled">
+                        <strong><li t-if="company.name"><span t-field="company.name"/></li></strong>
+                        <li t-if="forced_vat or company.vat">
+                            <t t-esc="company.country_id.vat_label or 'Tax ID'"/>:
+                            <span t-if="forced_vat" t-esc="forced_vat"/>
+                            <span t-else="" t-field="company.vat"/>
+                        </li>
+                        <li t-if="branch.name"><span t-field="branch.name"/></li>
+                        <li t-if="branch.phone">Tel: <span class="o_force_ltr" t-field="branch.phone"/></li>
+                        <li t-if="branch.email"><span t-field="branch.email"/></li>
+                        <li t-if="branch.website"><span t-field="branch.website"/></li>
+                    </ul>
+                </div>
+                </t>
+                <t t-else="else">
+                    <div class="col-5 offset-1" name="company_address">
+                        <ul class="list-unstyled">
+                            <strong><li t-if="company.name"><span t-field="company.name"/></li></strong>
+                            <li t-if="forced_vat or company.vat">
+                                <t t-esc="company.country_id.vat_label or 'Tax ID'"/>:
+                                <span t-if="forced_vat" t-esc="forced_vat"/>
+                                <span t-else="" t-field="company.vat"/>
+                            </li>
+                            <li t-if="company.phone">Tel: <span class="o_force_ltr" t-field="company.phone"/></li>
+                            <li t-if="company.email"><span t-field="company.email"/></li>
+                            <li t-if="company.website"><span t-field="company.website"/></li>
+                        </ul>
+                    </div>
+                </t>
+            </t>
+            <t t-else="else">
+                <div class="col-5 offset-1" name="company_address">
+                    <ul class="list-unstyled">
+                        <strong><li t-if="company.name"><span t-field="company.name"/></li></strong>
+                        <li t-if="forced_vat or company.vat">
+                            <t t-esc="company.country_id.vat_label or 'Tax ID'"/>:
+                            <span t-if="forced_vat" t-esc="forced_vat"/>
+                            <span t-else="" t-field="company.vat"/>
+                        </li>
+                        <li t-if="company.phone">Tel: <span class="o_force_ltr" t-field="company.phone"/></li>
+                        <li t-if="company.email"><span t-field="company.email"/></li>
+                        <li t-if="company.website"><span t-field="company.website"/></li>
+                    </ul>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//span[@t-field='company.report_footer']" position="replace">
+            <t t-if="branch">
+                <t class="list-inline mb4" t-if="branch.phone or branch.email or branch.website">
+                    <span t-if="branch.phone" t-field="branch.phone"/><br/>
+                    <span t-if="branch.email" t-field="branch.email"/><br/>
+                    <span t-if="branch.website" t-field="branch.website"/>
+                </t>
+                <t t-else="else">
+                    <div t-field="company.report_footer"/>
+                </t>
+            </t>
+            <t t-else="else">
+                    <div t-field="company.report_footer"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="branch_external_layout_boxed" inherit_id="web.external_layout_boxed">
+        <xpath expr="//div[@name='company_address']" position="replace">
+            <t t-if="branch">
+                <t t-if="branch.street or branch.street2 or branch.city or branch.state_id or branch.zip or branch.country_id">
+                <span class="company_address" t-field="company.partner_id"/>,
+                <span class="company_address" t-field="branch.name"/><br/>
+                <span t-if="branch.street" t-field="branch.street"/><br/>
+                <span t-if="branch.street2" t-field="branch.street2"/><br/>
+                <span t-if="branch.city" t-field="branch.city"/>,
+                <span t-if="branch.zip" t-field="branch.zip"/><br/>
+                <span t-if="branch.state_id" t-field="branch.state_id"/><br/>
+                <span t-if="branch.country_id" t-field="branch.country_id"/>
+                </t>
+                <t t-else="else">
+                <div name="company_address" class="float-right mb4">
+                    <span t-if="company.company_details" t-field="company.company_details"></span>
+                </div>
+            </t>
+            </t>
+            <t t-else="else">
+                <div name="company_address" class="float-right mb4">
+                    <span t-if="company.company_details" t-field="company.company_details"></span>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//div[hasclass('text-center')]" position="replace">
+            <t t-if="branch">
+                <t class="list-inline mb4" t-if="branch.phone or branch.email or branch.website">
+                    <span t-if="branch.phone" t-field="branch.phone"/>
+                    <span t-if="branch.email" t-field="branch.email"/>
+                    <span t-if="branch.website" t-field="branch.website"/>
+                </t>
+                <t t-else="else">
+                    <ul class="list-inline mb4">
+                        <div t-field="company.report_footer"/>
+                    </ul>
+                </t>
+            </t>
+            <t t-else="else">
+                <ul class="list-inline mb4">
+                    <div t-field="company.report_footer"/>
+                </ul>
+            </t>
+            <div t-if="report_type == 'pdf'">
+                Page: <span class="page"/> / <span class="topage"/>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="branch_external_layout_striped" inherit_id="web.external_layout_striped">
+        <xpath expr="//div[hasclass('company_address')]" position="replace">
+                <t t-if="branch">
+                    <t t-if="branch.street or branch.street2 or branch.city or branch.state_id or branch.zip or branch.country_id">
+                        <div class="float-left company_address"><br/><br/>
+                            <span style="padding-left:0px" t-if="branch.street" t-field="branch.street"/>
+                            <span t-if="branch.street2" t-field="branch.street2"/>
+                            <span t-if="branch.city" t-field="branch.city"/>,
+                            <span t-if="branch.zip" t-field="branch.zip"/>
+                            <span t-if="branch.state_id" t-field="branch.state_id"/>
+                            <span t-if="branch.country_id" t-field="branch.country_id"/>
+                        </div>
+                    </t>
+                    <t t-else="else">
+                        <div class="float-left company_address">
+                            <span t-if="company.company_details" t-field="company.company_details"></span>
+                        </div>
+                    </t>
+                </t>
+            <t t-else="else">
+                <div class="float-left company_address">
+                    <span t-if="company.company_details" t-field="company.company_details"></span>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//ul[hasclass('list-inline')]" position="replace">
+            <t t-if="branch">
+                <t class="list-inline mb4" t-if="branch.phone or branch.email or branch.website">
+                    <span t-if="branch.phone" t-field="branch.phone"/>
+                    <span t-if="branch.email" t-field="branch.email"/>
+                    <span t-if="branch.website" t-field="branch.website"/>
+                </t>
+                <t t-else="else">
+                    <ul class="list-inline mb4">
+                        <div t-field="company.report_footer"/>
+                    </ul>
+                </t>
+            </t>
+            <t t-else="else">
+                <ul class="list-inline mb4">
+                    <div t-field="company.report_footer"/>
+                </ul>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="branch_external_layout_standard" inherit_id="web.external_layout_standard">
+        <xpath expr="//div[@name='company_address']" position="replace">
+            <t t-if="branch">
+                <t t-if="branch.street or branch.street2 or branch.city or branch.state_id or branch.zip or branch.country_id">
+                <div class="col-6" name="company_address">
+                <span class="company_address" t-field="company.partner_id"/>,
+                <span class="company_address" t-field="branch.name"/><br/>
+                <span t-if="branch.street" t-field="branch.street"/><br/>
+                <span t-if="branch.street2" t-field="branch.street2"/><br/>
+                <span t-if="branch.city" t-field="branch.city"/>,
+                <span t-if="branch.zip" t-field="branch.zip"/><br/>
+                <span t-if="branch.state_id" t-field="branch.state_id"/><br/>
+                <span t-if="branch.country_id" t-field="branch.country_id"/>
+                </div>
+                </t>
+                <t t-else="else">
+                <div class="col-6" name="company_address">
+                    <span t-if="company.company_details" t-field="company.company_details"></span>
+                </div>
+                </t>
+
+            </t>
+            <t t-else="else">
+                <div class="col-6" name="company_address">
+                    <span t-if="company.company_details" t-field="company.company_details"></span>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//ul[hasclass('list-inline')]" position="replace">
+            <t t-if="branch">
+                <t class="list-inline mb4" t-if="branch.phone or branch.email or branch.website">
+                    <span t-if="branch.phone" t-field="branch.phone"/>
+                    <span t-if="branch.email" t-field="branch.email"/>
+                    <span t-if="branch.website" t-field="branch.website"/>
+                </t>
+                <t t-else="else">
+                    <ul class="list-inline mb4">
+                        <div t-field="company.report_footer"/>
+                    </ul>
+                </t>
+            </t>
+            <t t-else="else">
+                <ul class="list-inline mb4">
+                    <div t-field="company.report_footer"/>
+                </ul>
+            </t>
+        </xpath>
+    </template>
+</odoo>
