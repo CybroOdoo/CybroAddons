@@ -38,7 +38,7 @@
         'views/branch_pos_session_views.xml',
         'report/pos_order_report.xml'
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'assets': {
         'point_of_sale.assets': [
             'multi_branch_pos/static/src/js/branch.js',
