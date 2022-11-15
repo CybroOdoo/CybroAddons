@@ -4,7 +4,7 @@ POS Dashboard
 
 Installation
 ============
-	- www.odoo.com/documentation/16.0/setup/install.html
+	- www.odoo.com/documentation/14.0/setup/install.html
 	- Install our custom addon
 
 Configuration

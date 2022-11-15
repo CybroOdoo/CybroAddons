@@ -2,11 +2,15 @@ odoo.define('dashboard_pos.Dashboard', function (require) {
 "use strict";
 
 var AbstractAction = require('web.AbstractAction');
-var ajax = require('web.ajax');
 var core = require('web.core');
-var rpc = require('web.rpc');
+const { loadBundle } = require("@web/core/assets");
+var ajax = require('web.ajax');
+//var field_utils = require('web.field_utils');
+//var pyUtils = require('web.py_utils');
 var session = require('web.session');
+//var time = require('web.time');
 var web_client = require('web.web_client');
+var rpc = require('web.rpc');
 var _t = core._t;
 var QWeb = core.qweb;
 
@@ -36,12 +40,25 @@ var PosDashboard = AbstractAction.extend({
         this.today_sale = [];
     },
 
+
+// willStart: function() {
+//        var self = this;
+//        return $.when(ajax.loadLibs(this), this._super()).then(function() {
+//            return self.fetch_data();
+//        });
+//    },
+
+
     willStart: function() {
         var self = this;
-        return $.when(ajax.loadLibs(this), this._super()).then(function() {
+        return $.when(loadBundle(this), this._super()).then(function() {
             return self.fetch_data();
         });
     },
+//    willStart: function() {
+//        var self = this;
+//        return Promise.all([loadBundle(this), this._super()]).then(function() {
+//            return self.fetch_data();
 
     start: function() {
         var self = this;
