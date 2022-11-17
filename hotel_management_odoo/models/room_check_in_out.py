@@ -28,16 +28,37 @@ class RoomCheckin(models.Model):
 
     name = fields.Char(string='Check-In Reference', required=True, copy=False, readonly=True,
                        default=lambda self: _('New'))
-    rm_id = fields.Many2one('room.reservation.line', domain="[('reservation_id','=',reservation_id)]", string="Room No",required=True)
-    reservation_id = fields.Many2one('room.reservation', string='Reservation ',required=True,
+    rm_ids = fields.Many2many('room.reservation.line',
+                              domain="[('reservation_id','=',reservation_id)]",
+                              string="Room No",
+                              required=True)
+    reservation_id = fields.Many2one('room.reservation', string='Reservation ', required=True,
                                      domain="[('state','=','confirm')]")
-    state = fields.Selection([('draft', 'Draft'),('done', 'Done')],
+    state = fields.Selection([('draft', 'Draft'), ('done', 'Done')],
                              default='draft')
 
+    @api.onchange('reservation_id')
+    def _rm_ids(self):
+        res_line = []
+        if self.reservation_id.reservation_line_ids:
+            for line in self.reservation_id.reservation_line_ids:
+                if line.room_id.status == 'book':
+                    res_line.append(line.id)
+        return {'domain': {'rm_ids': [('id', 'in', res_line)]}}
+
     def action_checkin(self):
-        self.rm_id.room_id.write({'status': 'occupied'})
-        self.reservation_id.write({'state': 'occupied'})
-        self.state='done'
+        for rec in self.rm_ids: rec.room_id.write({'status': 'occupied'})
+        state = self.reservation_id.reservation_line_ids.mapped('room_id')
+        rs_flag = True
+        for rec in state:
+            if rec.status == 'occupied':
+                rs_flag = True
+            else:
+                rs_flag = False
+                break
+        if rs_flag:
+            self.reservation_id.write({'state': 'occupied'})
+        self.state = 'done'
 
     @api.model
     def create(self, vals):
@@ -51,25 +72,39 @@ class RoomCheckout(models.Model):
     _name = "room.checkout"
     _description = 'Room Checkout'
 
-    name = fields.Char(string='Check-Out Reference',required=True, copy=False, readonly=True,
+    name = fields.Char(string='Check-Out Reference', required=True, copy=False, readonly=True,
                        default=lambda self: _('New'))
-    rm_id = fields.Many2one('room.reservation.line', domain="[('reservation_id','=',reservation_id)]", string="Room No",required=True)
-    reservation_id = fields.Many2one('room.reservation', string='Reservation', domain="[('state','=','occupied')]",required=True)
+    rm_ids = fields.Many2many('room.reservation.line', domain="[('reservation_id','=',reservation_id)]",
+                              string="Room No",
+                              required=True)
+    reservation_id = fields.Many2one('room.reservation', string='Reservation', domain="[('state','=','occupied')]",
+                                     required=True)
     state = fields.Selection([('draft', 'Draft'), ('done', 'Done')],
                              default='draft')
 
+    @api.onchange('reservation_id')
+    def _rm_ids(self):
+        res_line = []
+        if self.reservation_id.reservation_line_ids:
+            for line in self.reservation_id.reservation_line_ids:
+                if line.room_id.status == 'occupied':
+                    res_line.append(line.id)
+        return {'domain': {'rm_ids': [('id', 'in', res_line)]}}
+
     def action_checkout(self):
-        self.rm_id.room_id.write({'status': 'available'})
-        reserv_line = self.env['room.reservation.line'].sudo().search([('reservation_id', '=', self.reservation_id.id)])
-        status = 'available'
-        for rec in reserv_line:
-            if rec.room_id.status == 'available':
-                break
+        for rec in self.rm_ids: rec.room_id.write({'status': 'available'})
+        state = self.reservation_id.reservation_line_ids.mapped('room_id')
+        rs_flag = True
+        for rec in state:
+            if rec.status == 'available':
+                rs_flag = True
             else:
-                status = 'occupied'
-        if status == 'available':
+                rs_flag = False
+                break
+        if rs_flag:
             self.reservation_id.write({'state': 'done'})
         self.state = 'done'
+
 
     @api.model
     def create(self, vals):

@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models, api
+from odoo import fields, models, api, _
 
 
 class ProductProduct(models.Model):
@@ -69,6 +69,17 @@ class Rooms(models.Model):
         rec.unlink()
         return super(Rooms, self).unlink()
 
+    @api.returns('self', lambda value: value.id)
+    def copy(self, default=None):
+        """For adding '(copy)' string into name while duplicating a record"""
+
+        self.ensure_one()
+        if default is None:
+            default = {}
+        if 'name' not in default:
+            default['name'] = _("%s (copy)", self.name)
+        return super(Rooms, self).copy(default=default)
+
 
 class RoomTypes(models.Model):
     _name = "room.types"
@@ -94,9 +105,33 @@ class RoomTypes(models.Model):
         rec.unlink()
         return super(RoomTypes, self).unlink()
 
+    @api.returns('self', lambda value: value.id)
+    def copy(self, default=None):
+        """For adding '(copy)' string into name while duplicating a record"""
+
+        self.ensure_one()
+        if default is None:
+            default = {}
+        if 'name' not in default:
+            default['name'] = _("%s (copy)", self.name)
+        return super(RoomTypes, self).copy(default=default)
+
 
 class Floor(models.Model):
     _name = "hotel.floor"
     _description = "Floor"
 
     name = fields.Char(string="Name", required=True)
+
+    @api.returns('self', lambda value: value.id)
+    def copy(self, default=None):
+        """For adding '(copy)' string into name while duplicating a record"""
+
+        self.ensure_one()
+        if default is None:
+            default = {}
+        if 'name' not in default:
+            default['name'] = _("%s (copy)", self.name)
+        return super(Floor, self).copy(default=default)
+
+

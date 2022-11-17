@@ -47,4 +47,13 @@ class MealsTypes(models.Model):
         rec.unlink()
         return super(MealsTypes, self).unlink()
 
+    @api.returns('self', lambda value: value.id)
+    def copy(self, default=None):
+        """For adding '(copy)' string into name while duplicating a record"""
 
+        self.ensure_one()
+        if default is None:
+            default = {}
+        if 'name' not in default:
+            default['name'] = _("%s (copy)", self.name)
+        return super(MealsTypes, self).copy(default=default)

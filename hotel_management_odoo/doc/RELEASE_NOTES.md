@@ -9,3 +9,8 @@
 #### Version 15.0.1.0.1
 #### UPDT
 - room reservation-number of persons validation issue
+
+#### 31.10.2022
+#### Version 15.0.1.0.2
+#### UPDT
+- multiple room checkin & checkout

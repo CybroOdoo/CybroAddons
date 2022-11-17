@@ -41,6 +41,17 @@ class ServiceCategories(models.Model):
         rec.unlink()
         return super(ServiceCategories, self).unlink()
 
+    @api.returns('self', lambda value: value.id)
+    def copy(self, default=None):
+        """For adding '(copy)' string into name while duplicating a record"""
+
+        self.ensure_one()
+        if default is None:
+            default = {}
+        if 'name' not in default:
+            default['name'] = _("%s (copy)", self.name)
+        return super(ServiceCategories, self).copy(default=default)
+
 
 class HotelService(models.Model):
     _name = "hotel.service"
@@ -67,3 +78,14 @@ class HotelService(models.Model):
         rec = self.env["product.product"].sudo().browse(self.product_id.id)
         rec.unlink()
         return super(HotelService, self).unlink()
+
+    @api.returns('self', lambda value: value.id)
+    def copy(self, default=None):
+        """For adding '(copy)' string into name while duplicating a record"""
+
+        self.ensure_one()
+        if default is None:
+            default = {}
+        if 'name' not in default:
+            default['name'] = _("%s (copy)", self.name)
+        return super(HotelService, self).copy(default=default)

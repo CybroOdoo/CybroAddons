@@ -22,7 +22,7 @@
 
 {
     'name': 'Hotel Management',
-    'version': '15.0.1.0.1',
+    'version': '15.0.1.0.2',
     'summary': 'Hotel Management Application for odoo 15',
     'description': """The module helps you to manage rooms,amenities,services,restaurants.
                       End Users can book rooms and reserve foods from hotel restaurant.""",
