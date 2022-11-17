@@ -279,6 +279,7 @@ odoo.define('dynamic_accounts_report.general_ledger', function (require) {
             event.preventDefault();
             var self = this;
             var account_id = $(event.currentTarget).data('account-id');
+            console.log(account_id,'account_id')
             var offset = 0;
             var td = $(event.currentTarget).next('tr').find('td');
             if (td.length == 1) {
