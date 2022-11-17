@@ -10,9 +10,7 @@ DB.include({
         this._super.apply(this, arguments);
 
     },
-
     add_products: function(products){
-
         var stored_categories = this.product_by_category_id;
         if(!products instanceof Array){
             products = [products];
@@ -45,9 +43,7 @@ DB.include({
             this.product_by_id[product.id] = product;
             if(product.barcode){
                 this.product_by_barcode[product.barcode] = product;
-
             }
-            console.log('12345', this.product_by_barcode[product.barcode])
             for(var t=0;t < product.product_multi_barcodes.length;t++){
                 var self = this;
                 rpc.query({

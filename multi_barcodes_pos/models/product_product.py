@@ -40,8 +40,8 @@ class ProductProduct(models.Model):
 
     def write(self, vals):
         res = super(ProductProduct, self).write(vals)
-        res.product_multi_barcodes.update({
-            'template_multi': res.product_tmpl_id.id
+        self.product_multi_barcodes.update({
+            'template_multi': self.product_tmpl_id.id
         })
         return res
 
@@ -71,9 +71,9 @@ class ProductTemplate(models.Model):
 
     def write(self, vals):
         res = super(ProductTemplate, self).write(vals)
-        if res.template_multi_barcodes:
-            res.template_multi_barcodes.update({
-                'product_multi': res.product_variant_id.id
+        if self.template_multi_barcodes:
+            self.template_multi_barcodes.update({
+                'product_multi': self.product_variant_id.id
             })
         return res
 
