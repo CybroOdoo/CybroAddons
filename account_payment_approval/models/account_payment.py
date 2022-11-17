@@ -36,32 +36,73 @@ class AccountMove(models.Model):
 
 class AccountPayment(models.Model):
     _inherit = "account.payment"
-    _inherits = {'account.move': 'move_id'}
+
+    # _inherits = {'account.move': 'move_id'}
 
     def _check_is_approver(self):
-        approval = self.env['ir.config_parameter'].sudo().get_param(
-            'account_payment_approval.payment_approval')
-        approver_id = int(self.env['ir.config_parameter'].sudo().get_param(
-            'account_payment_approval.approval_user_id'))
-        self.is_approver = True if self.env.user.id == approver_id and approval else False
+        if self.env['ir.config_parameter'].sudo().get_param(
+                'account_payment_approval.multi_approval'):
+            approval = self.env['ir.config_parameter'].sudo().get_param(
+                'account_payment_approval.multi_approval')
+            print(approval, 'nn')
+            approver_id = self.env['payment.approves'].search([],order='amount')
+            print(approver_id, 'vvvvv')
+            for rec in approver_id:
+                print(rec.approve_user_id,'approve_user_id')
+                if rec.approve_user_id.id == self.env.user.id:
+                        self.is_approver_check = True
+                else:
+                    self.is_approver_check = False
+        if self.env['ir.config_parameter'].sudo().get_param(
+                'account_payment_approval.payment_approval'):
+            approval = self.env['ir.config_parameter'].sudo().get_param(
+                'account_payment_approval.payment_approval')
+            approver_id = int(self.env['ir.config_parameter'].sudo().get_param(
+                'account_payment_approval.approval_user_id'))
+            self.is_approver_check = True if self.env.user.id == approver_id and approval else False
 
-    is_approver = fields.Boolean(compute=_check_is_approver, readonly=True)
+    is_approver_check = fields.Boolean(compute=_check_is_approver, readonly=True)
+
+    is_approver = fields.Boolean()
 
     def action_post(self):
-        """Overwrites the _post() to validate the payment in the 'approved' stage too.
-        Currently Odoo allows payment posting only in draft stage.
-        """
+        # Post the payments "normally" if no transactions are needed.
+        # If not, let the acquirer update the state.
+
         validation = self._check_payment_approval()
-        if validation:
+        if validation and self.state:
             if self.state not in ('draft', 'approved'):
                 raise UserError(_("Only a draft or approved payment can be posted."))
 
-            if any(inv.state != 'posted' for inv in self.reconciled_invoice_ids):
-                raise ValidationError(_("The payment cannot be processed because the invoice is not open!"))
-            self.move_id._post(soft=False)
+            payments_need_tx = self.filtered(
+                lambda p: p.payment_token_id and not p.payment_transaction_id
+            )
+            # creating the transaction require to access data on payment acquirers, not always accessible to users
+            # able to create payments
+            transactions = payments_need_tx.sudo()._create_payment_transaction()
+
+            res = super(AccountPayment, self - payments_need_tx).action_post()
+
+            for tx in transactions:  # Process the transactions with a payment by token
+                tx._send_payment_request()
+
+            # Post payments for issued transactions
+            transactions._finalize_post_processing()
+            payments_tx_done = payments_need_tx.filtered(
+                lambda p: p.payment_transaction_id.state == 'done'
+            )
+            super(AccountPayment, payments_tx_done).action_post()
+            payments_tx_not_done = payments_need_tx.filtered(
+                lambda p: p.payment_transaction_id.state != 'done'
+            )
+            payments_tx_not_done.action_cancel()
+
+            return res
 
     def _check_payment_approval(self):
         if self.state == "draft":
+            second_approval = self.env['ir.config_parameter'].sudo().get_param(
+                'account_payment_approval.multi_approval')
             first_approval = self.env['ir.config_parameter'].sudo().get_param(
                 'account_payment_approval.payment_approval')
             if first_approval:
@@ -80,7 +121,48 @@ class AccountPayment(models.Model):
                     self.write({
                         'state': 'waiting_approval'
                     })
+                    self.is_approver = True
                     return False
+            if second_approval:
+                val = self.env['payment.approves'].search([], order='amount').mapped('amount')
+                approve_payment = self.env['payment.approves'].search([], order='amount')
+                for x in val:
+                    for rec in approve_payment:
+                        index = val.index(x) + 1
+                        if index ==len(val):
+                            index = index - 1
+                        if  self.amount > rec.amount and rec.approve_user_id.id == self.env.user.id:
+                            self.is_approver = True
+                            if self.amount > rec.amount and self.amount <= val[index] :
+                                if rec.approve_user_id.id == self.env.user.id:
+                                    self.is_approver = True
+                                    payment_amount = self.amount
+                                    if rec.approval_currency_id:
+                                        if self.currency_id.id != rec.approval_currency_id.id:
+                                            currency_id = self.env['res.currency'].browse(rec.approval_currency_id.id)
+                                            payment_amount = self.currency_id._convert(
+                                                self.amount, currency_id, self.company_id,
+                                                self.date or fields.Date.today(), round=True)
+                                    if payment_amount > rec.amount:
+                                        self.write({
+                                            'state': 'waiting_approval'
+                                        })
+                                        return False
+                                else:
+                                    self.is_approver = False
+                                    self.write({
+                                        'state': 'waiting_approval'
+                                    })
+                                return False
+                        elif self.amount < val[0]:
+                            self.is_approver = False
+                            return True
+                        else:
+                            self.write({
+                                'state': 'waiting_approval'
+                            })
+                            self.is_approver = False
+                            return False
         return True
 
     def approve_transfer(self):
@@ -90,6 +172,7 @@ class AccountPayment(models.Model):
             })
 
     def reject_transfer(self):
-        self.write({
-            'state': 'rejected'
-        })
+        if self.is_approver:
+            self.write({
+                'state': 'rejected'
+            })

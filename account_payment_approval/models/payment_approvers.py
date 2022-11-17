@@ -20,7 +20,17 @@
 #
 #############################################################################
 
-from . import account_payment
-from . import res_config_settings
-from . import payment_approvers
+from odoo import fields, models
+
+
+class PaymentApprover(models.Model):
+    _name = 'payment.approves'
+
+    approve_user_id = fields.Many2one('res.users','Approver')
+    amount = fields.Float('Amount',help="If amount is 0.00, All the payments go through approval")
+    approval_currency_id = fields.Many2one('res.currency', string='Approval Currency',
+                                           help="Converts the payment amount to this currency if chosen.")
+
+
+
 

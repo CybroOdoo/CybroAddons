@@ -32,7 +32,10 @@
     'website': "https://www.cybrosys.com",
     'depends': ['account'],
     'data': [
+        'security/ir.model.access.csv',
+        'views/payment_approvers.xml',
         'views/res_config_settings_views.xml',
+
         'views/account_payment_view.xml',
     ],
     'license': 'LGPL-3',
