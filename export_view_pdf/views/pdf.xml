@@ -1,0 +1,49 @@
+<odoo>
+    <record id="paperformat_export" model="report.paperformat">
+            <field name="name">Export PDF</field>
+            <field name="default" eval="True"/>
+            <field name="format">custom</field>
+            <field name="orientation">Landscape</field>
+            <field name="margin_top">40.00</field>
+            <field name="margin_bottom">32.00</field>
+            <field name="margin_left">7.00</field>
+            <field name="margin_right">7.00</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">35</field>
+            <field name="disable_shrinking" eval="True"/>
+            <field name="dpi">90</field>
+        </record>
+    <record id="export_pdf" model="ir.actions.report">
+        <field name="name">Export</field>
+        <field name="model">ir.exports</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">export_view_pdf.export_in_pdf</field>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_export"/>
+    </record>
+    <template id="export_in_pdf">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <div class="page">
+                    <table class="table table-bordered"
+                           style="table-layout: fixed">
+                        <t t-foreach="length" t-as="length">
+                            <th>
+                                <span t-out="record['header'][length]"/>
+                            </th>
+                        </t>
+                        <t t-foreach="record['data']" t-as="rec">
+                            <tr>
+                                <t t-foreach="length+1" t-as="ln">
+                                    <td>
+                                        <span t-out="rec[ln]"/>
+                                    </td>
+                                </t>
+                            </tr>
+                        </t>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
