@@ -281,7 +281,7 @@ class DynamicInventoryReport(models.Model):
             sheet.write('F7', 'State', heading)
 
             lst = []
-            for rec in report_data_main[0]:
+            for rec in report_data_main:
                 lst.append(rec)
             row = 6
             col = 0
@@ -319,7 +319,7 @@ class DynamicInventoryReport(models.Model):
             # sheet.write('I7', 'Price Total', heading)
 
             lst = []
-            for rec in report_data_main[0]:
+            for rec in report_data_main:
                 lst.append(rec)
             row = 6
             col = 0
@@ -359,7 +359,7 @@ class DynamicInventoryReport(models.Model):
             sheet.write('E7', 'Route', heading)
 
             lst = []
-            for rec in report_data_main[0]:
+            for rec in report_data_main:
                 lst.append(rec)
             row = 6
             col = 0
@@ -390,7 +390,7 @@ class DynamicInventoryReport(models.Model):
             sheet.write('E7', 'Company', heading)
 
             lst = []
-            for rec in report_data_main[0]:
+            for rec in report_data_main:
                 lst.append(rec)
             row = 6
             col = 1
