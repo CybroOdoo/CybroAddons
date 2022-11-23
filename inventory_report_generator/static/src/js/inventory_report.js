@@ -226,6 +226,6 @@ odoo.define('inventory_report_generator.inventory_report', function(require) {
 		},
 
 	});
-	core.action_registry.add("inv_r", InventoryReport);
+	core.action_registry.add("p_r", InventoryReport);
 	return InventoryReport;
 });

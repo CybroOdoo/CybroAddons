@@ -21,7 +21,7 @@
 
 {
     'name': 'Inventory All In One Report Generator',
-    'version': '15.0.1.1.1',
+    'version': '15.0.1.0.1',
     'summary': "Dynamic Inventory Report Generator",
     'description': "Dynamic Inventory Report Generator",
     'category': 'Inventory',
