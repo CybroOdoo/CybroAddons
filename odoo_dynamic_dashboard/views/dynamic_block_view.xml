@@ -1,0 +1,69 @@
+<odoo>
+    <record id="dashboard_block_form_view" model="ir.ui.view">
+        <field name="name">dashboard.block.form.view</field>
+        <field name="model">dashboard.block</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <div>
+                                <field name="name" style="font-size: 30px;" placeholder="Block Name" required="1"/>
+                            </div>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="model_id" attrs="{'required':[('edit_mode','=', True)]}"/>
+                            <field name="client_action" invisible="1"/>
+                            <field name="model_name" invisible="1"/>
+                            <field name="edit_mode" invisible="1"/>
+                            <field name="operation" attrs="{'required':[('edit_mode','=', True)]}"/>
+                            <field name="measured_field" domain="[('model_id','=',model_id), ('ttype','in',['float','integer','monetary']), ('store', '=', True)]" attrs="{'required':[('edit_mode','=', True)]}"/>
+                            <field name="filter" widget="domain" options="{'model': 'model_name'}"/>
+                        </group>
+                    </group>
+                    <group string="Block Information">
+                        <group>
+                            <field name="sequence" invisible="1"/>
+                            <field name="type" required="1"/>
+                            <field name="graph_type" attrs="{'invisible': [('type','not in', 'graph')]}"/>
+                            <field name="graph_size" attrs="{'invisible': [('type','not in', 'graph')]}"/>
+                            <field name="fa_icon" attrs="{'invisible': [('type','not in', 'tile')]}"/>
+                            <field name="group_by" attrs="{'invisible': [('type','not in', 'graph')], 'required':[('edit_mode','=', True),('type','=','graph')]}"
+                                   domain="[('model_id','=',model_id), ('ttype','!=','one2many'), ('store', '=', True)]"/>
+                            <field name="tile_color" attrs="{'invisible': [('type','not in', 'tile')]}"
+                                   widget="color"/>
+                            <field name="text_color" attrs="{'invisible': [('type','not in', 'tile')]}"
+                                   widget="color"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dashboard_block_tree" model="ir.ui.view">
+        <field name="name">dashboard.block.tree.view</field>
+        <field name="model">dashboard.block</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="type"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_dashboard_block" model="ir.actions.act_window">
+        <field name="name">Dashboard Block</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">dashboard.block</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'default_edit_mode' : True}</field>
+    </record>
+    <menuitem name="Blocks" id="menu_dynamic_dashboard_blocks" parent="odoo_dynamic_dashboard.menu_dashboard"
+              sequence="1" action="action_dashboard_block"/>
+
+
+</odoo>
