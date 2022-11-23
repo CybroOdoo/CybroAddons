@@ -68,7 +68,8 @@ class HelpDeskTicket(models.Model):
     start_date = fields.Date('Start Date')
     end_date = fields.Date('End Date')
     public_ticket = fields.Boolean(string="Public Ticket")
-    invoice_ids = fields.Many2many('account.move', string='Invoices')
+    invoice_ids = fields.Many2many('account.move', string='Invoices',
+                                   store=True)
     task_ids = fields.Many2many('project.task', string='Tasks')
     color = fields.Integer(string="Color", default=6)
 
@@ -115,6 +116,7 @@ class HelpDeskTicket(models.Model):
             [('project_id', '=', self.project_id.id),
              ('ticket_id', '=', self.id)]).filtered(
             lambda line: line.ticket_billed == False)
+
         if not tasks:
             raise UserError('No Tasks to Bill')
 
@@ -135,24 +137,20 @@ class HelpDeskTicket(models.Model):
                                        'name': self.service_product_id.name,
                                        'quantity': total,
                                        'product_uom_id': self.service_product_id.uom_id.id,
-                                       'price_unit': self.cost,
+                                       'price_unit': self.cost if self.cost else self.service_product_id.lst_price,
                                        'account_id': self.service_product_id.categ_id.property_account_income_categ_id.id,
                                        })],
             }, ])
         for task in tasks:
             task.ticket_billed = True
         return {
-            'effect': {
-                'fadeout': 'medium',
-                'message': 'Billed Successfully!',
-                'type': 'rainbow_man',
-            }
-            # 'view_type': 'form',
-            # 'res_model': 'account.move',
-            # 'res_id': move.id,
-            # 'view_id': False,
-            # 'view_mode': 'form',
-            # 'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'res_model': 'account.move',
+            'res_id': move.id,
+            'view_id': False,
+            'view_mode': 'form',
+            'type': 'ir.actions.act_window'
+
         }
 
     def create_tasks(self):
