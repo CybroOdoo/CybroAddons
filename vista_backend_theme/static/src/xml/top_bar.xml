@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-inherit="web.NavBar" t-inherit-mode="extension" owl="1">
+        <xpath expr="//nav[hasclass('o_main_navbar')]" position="replace">
+             <nav class="o_main_navbar d-flex justify-content-between"
+                  t-on-dropdown-item-selected="onNavBarDropdownItemSelection"
+                  data-command-category="navbar">
+          <div class="d-flex">
+              <div class="top_heading">
+                <!-- Apps Menu -->
+                  <t t-call="web.NavBar.AppsMenu">
+                 <t t-set="apps" t-value="menuService.getApps()"/>
+                </t>
+                  <!-- App Brand -->
+                  <DropdownItem
+                          t-if="currentApp"
+                          href="getMenuItemHref(currentApp)"
+                          t-esc="currentApp.name"
+                          class="'o_menu_brand d-none d-md-block'"
+                          dataset="{ menuXmlid: currentApp.xmlid, section: currentApp.id }"
+                          onSelected="() => this.onNavBarDropdownItemSelection(currentApp)"
+                  />
+              </div>
+
+              <!-- Current App Sections -->
+              <div class="d-none d-md-block">
+                  <t t-if="currentAppSections.length"
+                     t-call="web.NavBar.SectionsMenu">
+                    <t t-set="sections" t-value="currentAppSections"/>
+                  </t>
+              </div>
+              <div class="d-xs-block d-sm-block  d-md-none">
+                  <t t-call="web.NavBar.SectionsMenu.MoreDropdown">
+                      <t t-set="sections" t-value="currentAppSections"/>
+                  </t>
+              </div>
+        </div>
+                 <!-- Systray -->
+                 <div class="o_menu_systray d-flex flex-shrink-0 ms-auto" role="menu">
+          <t t-foreach="systrayItems" t-as="item" t-key="item.key">
+            <!-- This ensures the correct order of the systray items -->
+              <div t-att-data-index="item.index"/>
+              <ErrorHandler onError="error => this.handleItemError(error, item)">
+                <t t-component="item.Component" t-props="item.props"/>
+            </ErrorHandler>
+          </t>
+        </div>
+      </nav>
+            <div class="sidebar_panel" id="sidebar_panel">
+                <div class="sidebar">
+                    <div class="sidebar_close">
+                        <a id="closeSidebar" style="cursor: pointer;">
+                            <img src="/code_backend_theme/static/src/img/icons/close.png"/>
+                        </a>
+                    </div>
+                    <h6 class="sidebar_head">MENU</h6>
+                    <ul class="sidebar_menu">
+                        <t t-foreach="menuService.getApps()" t-as="app" t-key="app.id">
+                            <li data-toggle="tooltip" data-placement="right" t-att-title="app.name">
+                                <a role="menuitem"
+                                   t-attf-href="#menu_id={{app.id}}"
+                                   class="nav-link">
+                                    <img class="sidebar_img"
+                                         t-attf-src="data:image/png;base64,{{app.webIconData}}"/>
+                                    <span class="sidebar_app_name">
+                                        <t t-esc="app.name"/>
+                                    </span>
+                                 </a>
+                            </li>
+                        </t>
+                    </ul>
+                </div>
+    </div>
+    </xpath>
+  </t>
+    <t t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension" owl="1">
+                    <xpath expr="//Dropdown[1]"
+                           position="replace">
+                        <li class="dropdown">
+                            <a id="openSidebar"
+                               style="display: block; cursor: pointer;">
+                                <div class="c_sidebar_active">
+                                    <div class="c_dots_menu"/>
+                                </div>
+                            </a>
+                            <a id="closeSidebar"
+                               style="display: none; cursor: pointer;">
+                                <div class="c_sidebar_passive">
+                                     <div class="c_dots_menu_toggled "/>
+                                </div>
+                            </a>
+                        </li>
+                    </xpath>
+                </t>
+
+    <t t-inherit="mail.MessagingMenu" t-inherit-mode="extension" owl="1">
+        <xpath expr="//i[hasclass('o_MessagingMenu_icon')]" position="replace">
+             <img src="/vista_backend_theme/static/src/img/icons/speech-bubble.png" width="22" height="22"
+                  aria-label="Messages"/>
+        </xpath>
+    </t>
+
+    <t t-inherit="mail.ActivityMenuView" t-inherit-mode="extension" owl="1">
+            <xpath expr="//i[hasclass('fa-clock-o')]" position="replace">
+                <img src="/vista_backend_theme/static/src/img/icons/bell.png" width="22" height="22"
+                     aria-label="Activities"/>
+            </xpath>
+    </t>
+
+</templates>
