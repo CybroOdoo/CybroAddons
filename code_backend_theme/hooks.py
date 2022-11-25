@@ -69,7 +69,7 @@ def test_pre_init_hook(cr):
             img_path = get_module_resource(
                 'code_backend_theme', 'static', 'src', 'img', 'icons', 'CRM.png')
             menu.write({'web_icon_data': base64.b64encode(open(img_path, "rb").read())})
-        if menu.name == 'Note':
+        if menu.name == 'Note' or menu.name == 'Notes':
             img_path = get_module_resource(
                 'code_backend_theme', 'static', 'src', 'img', 'icons', 'Note.png')
             menu.write({'web_icon_data': base64.b64encode(open(img_path, "rb").read())})
@@ -182,7 +182,7 @@ def test_post_init_hook(cr, registry):
             img_path = get_module_resource(
                 'code_backend_theme', 'static', 'src', 'img', 'icons', 'Sales.png')
             menu.write({'web_icon_data': base64.b64encode(open(img_path, "rb").read())})
-        if menu.name == 'Invoicing':
+        if menu.name == 'Invoicing' or menu.name == 'Accounting':
             img_path = get_module_resource(
                 'code_backend_theme', 'static', 'src', 'img', 'icons', 'Invoicing.png')
             menu.write({'web_icon_data': base64.b64encode(open(img_path, "rb").read())})
