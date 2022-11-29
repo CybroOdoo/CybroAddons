@@ -29,6 +29,7 @@ class PosDashboard(models.Model):
 
     @api.model
     def get_department(self, option):
+
         company_id = self.env.company.id
         if option == 'pos_hourly_sales':
 
@@ -50,7 +51,6 @@ class PosDashboard(models.Model):
              EXTRACT(year FROM date_order::date) = EXTRACT(year FROM CURRENT_DATE) AND pos_order.company_id = ''' + str(
                 company_id) + ''' group by date_month'''
             label = 'MONTHS'
-
         self._cr.execute(query)
         docs = self._cr.dictfetchall()
         order = []
@@ -75,8 +75,9 @@ class PosDashboard(models.Model):
             '''select hr_employee.name,sum(pos_order.amount_paid) as total,count(pos_order.amount_paid) as orders 
             from pos_order inner join hr_employee on pos_order.user_id = hr_employee.user_id 
             where pos_order.company_id =''' + str(
-                company_id) + '''GROUP BY hr_employee.name order by total DESC;''')
+                company_id) +" "+ '''GROUP BY hr_employee.name order by total DESC;''')
         salesperson = cr.fetchall()
+
         total_sales = []
         for rec in salesperson:
             rec = list(rec)
