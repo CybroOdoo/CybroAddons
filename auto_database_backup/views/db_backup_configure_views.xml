@@ -37,7 +37,7 @@
                         </group>
                         <group>
                             <field name="backup_destination" required="1"/>
-                            <div class="text-muted" attrs="{'invisible': [('backup_destination', '!=', 'google_drive')]}">Enable and configure Google Drive option from General Settings</div>
+<!--                            <div class="text-muted" attrs="{'invisible': [('backup_destination', '!=', 'google_drive')]}">Enable and configure Google Drive option from General Settings</div>-->
                             <field name="backup_path" attrs="{'invisible': [('backup_destination', '!=', 'local')], 'required': [('backup_destination', '=', 'local')]}"/>
                             <field name="ftp_host" attrs="{'invisible': [('backup_destination', '!=', 'ftp')], 'required': [('backup_destination', '=', 'ftp')]}"/>
                             <field name="ftp_port" attrs="{'invisible': [('backup_destination', '!=', 'ftp')], 'required': [('backup_destination', '=', 'ftp')]}"/>
@@ -49,6 +49,12 @@
                             <field name="sftp_user" attrs="{'invisible': [('backup_destination', '!=', 'sftp')], 'required': [('backup_destination', '=', 'sftp')]}"/>
                             <field name="sftp_password" attrs="{'invisible': [('backup_destination', '!=', 'sftp')], 'required': [('backup_destination', '=', 'sftp')]}" password="True"/>
                             <field name="sftp_path" attrs="{'invisible': [('backup_destination', '!=', 'sftp')], 'required': [('backup_destination', '=', 'sftp')]}"/>
+                            <field name="gdrive_client_id" string="Client ID" attrs="{'invisible': [('backup_destination', '!=', 'google_drive')], 'required': [('backup_destination', '=', 'google_drive')]}"/>
+                            <field name="gdrive_client_secret" string="Client Secret" attrs="{'invisible': [('backup_destination', '!=', 'google_drive')], 'required': [('backup_destination', '=', 'google_drive')]}" password="True"/>
+                            <field name="gdrive_redirect_uri" string="Redirect URI" attrs="{'invisible': [('backup_destination', '!=', 'google_drive')]}"/>
+                            <field name="gdrive_access_token" password="True" invisible="1"/>
+                            <field name="gdrive_refresh_token" password="True" invisible="1"/>
+                            <field name="gdrive_token_validity" invisible="1"/>
                             <field name="google_drive_folderid" attrs="{'invisible': [('backup_destination', '!=', 'google_drive')], 'required': [('backup_destination', '=', 'google_drive')]}"/>
                             <field name="dropbox_client_id" string="App Key" attrs="{'invisible': [('backup_destination', '!=', 'dropbox')], 'required': [('backup_destination', '=', 'dropbox')]}" password="True"/>
                             <field name="dropbox_client_secret" string="App Secret" attrs="{'invisible': [('backup_destination', '!=', 'dropbox')], 'required': [('backup_destination', '=', 'dropbox')]}" password="True"/>
@@ -59,6 +65,7 @@
                             <field name="onedrive_refresh_token" string="Refresh Token" invisible="1" password="True"/>
                             <field name="onedrive_token_validity" string="Token Validity" invisible="1"/>
                             <field name="is_onedrive_token_generated" invisible="1"/>
+                            <field name="is_google_drive_token_generated" invisible="1"/>
                             <div>
                                 <div attrs="{'invisible': ['|', ('backup_destination', '!=', 'dropbox'), ('is_dropbox_token_generated', '=', False)]}">
                                     <i class="text-success fa fa-check"></i>
@@ -81,6 +88,34 @@
                                 <div attrs="{'invisible': ['|', ('backup_destination', '!=', 'dropbox'), ('is_dropbox_token_generated', '=', False)]}">
                                     <button class="btn btn-link"
                                             name="action_get_dropbox_auth_code"
+                                            type="object">
+                                        <i class="fa fa-arrow-right"></i>
+                                        Reset Token
+                                    </button>
+                                </div>
+                            </div>
+                            <div attrs="{'invisible': [('backup_destination', '!=', 'google_drive')]}">
+                                <div attrs="{'invisible': ['|', ('backup_destination', '!=', 'google_drive'), ('is_google_drive_token_generated', '=', False)]}">
+                                    <i class="text-success fa fa-check"></i>
+                                    Refresh token set
+                                </div>
+                                <div attrs="{'invisible': ['|', ('backup_destination', '!=', 'google_drive'), ('is_google_drive_token_generated', '=', True)]}">
+                                    <i class="fa fa-exclamation-triangle text-warning"></i>
+                                    No refresh token set
+                                </div>
+                            </div>
+                            <div attrs="{'invisible': [('backup_destination', '!=', 'google_drive')]}">
+                                <div attrs="{'invisible': ['|', ('backup_destination', '!=', 'google_drive'), ('is_google_drive_token_generated', '=', True)]}">
+                                    <button class="btn btn-link"
+                                            name="action_get_gdrive_auth_code"
+                                            type="object">
+                                        <i class="fa fa-arrow-right"></i>
+                                        Setup Token
+                                    </button>
+                                </div>
+                                <div attrs="{'invisible': ['|', ('backup_destination', '!=', 'google_drive'), ('is_google_drive_token_generated', '=', False)]}">
+                                    <button class="btn btn-link"
+                                            name="action_get_gdrive_auth_code"
                                             type="object">
                                         <i class="fa fa-arrow-right"></i>
                                         Reset Token

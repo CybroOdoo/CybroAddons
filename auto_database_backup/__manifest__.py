@@ -22,7 +22,7 @@
 
 {
     'name': "Automatic Database Backup To Local Server, Remote Server, Google Drive And Dropbox",
-    'version': '15.0.3.0.1',
+    'version': '15.0.3.1.1',
     'summary': """Generate automatic backup of databases and store to local, google drive, dropbox, onedrive or remote server""",
     'description': """This module has been developed for creating database backups automatically 
                     and store it to the different locations.""",
@@ -31,7 +31,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'category': 'Tools',
-    'depends': ['base', 'mail', 'google_drive'],
+    'depends': ['base', 'mail'],
     'data': [
         'security/ir.model.access.csv',
         'data/data.xml',

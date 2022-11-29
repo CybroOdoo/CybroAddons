@@ -15,3 +15,8 @@
 #### ADD
 - Onedrive integration added. Backup can be stored in to onedrive.
 
+#### 15.11.2022
+#### Version 15.0.3.1.1
+#### ADD
+- Google Drive authentication updated.
+
