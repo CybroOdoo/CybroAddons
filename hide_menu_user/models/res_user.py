@@ -32,7 +32,6 @@ class HideMenuUser(models.Model):
         Else the menu will be still hidden even after removing from the list
         """
         self.clear_caches()
-        print('hi', vals)
         return super(HideMenuUser, self).create(vals)
 
     def write(self, vals):
@@ -40,7 +39,6 @@ class HideMenuUser(models.Model):
         Else the menu will be still hidden even after removing from the list
         """
         res = super(HideMenuUser, self).write(vals)
-        print('res', res)
         for menu in self.hide_menu_ids:
             menu.write({
                 'restrict_user_ids': [(4, self.id)]
