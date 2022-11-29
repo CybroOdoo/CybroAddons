@@ -28,12 +28,10 @@ var DynamicDashboard = AbstractAction.extend({
     start: function() {
         var self = this;
         this.set("title", 'Dashboard');
-
         return this._super().then(function() {
             self.render_dashboards();
         });
     },
-
 
     willStart: function() {
         var self = this;
@@ -135,8 +133,6 @@ var DynamicDashboard = AbstractAction.extend({
         var options = { },
         doughnut_data = [data,options]
         return doughnut_data;
-
-
     },
 
     get_values_radar : function(block){
@@ -169,11 +165,14 @@ var DynamicDashboard = AbstractAction.extend({
         var self = this;
         _.each(this.block_ids, function(block) {
                 if (block['type'] == 'tile') {
+                    console.log('INSIDE IF');
                     self.$('.o_dynamic_dashboard').append(QWeb.render('DynamicDashboardTile', {widget: block}));
                 }
                 else{
+                    console.log('INSIDE ELSE');
                     self.$('.o_dynamic_chart').append(QWeb.render('DynamicDashboardChart', {widget: block}));
                     var element = $('[data-id=' + block['id'] + ']')
+                    console.log('INSIDE ELSE 2');
                     if (!('x_axis' in block)){
                         return false
                     }
@@ -181,6 +180,7 @@ var DynamicDashboard = AbstractAction.extend({
                     var type = block['graph_type']
                     var chart_type = 'self.get_values_' + `${type}(block)`
                     var data = eval(chart_type)
+                    console.log('chart_type: ', chart_type);
                   //create Chart class object
                   var chart = new Chart(ctx, {
                     type: type,

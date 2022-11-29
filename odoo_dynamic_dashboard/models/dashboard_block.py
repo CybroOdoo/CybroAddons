@@ -99,8 +99,6 @@ class DashboardBlock(models.Model):
                                                                group_by=rec.group_by)
                     self._cr.execute(query)
                     records = self._cr.dictfetchall()
-                    print(query,"query")
-                    print(records,"records")
                     x_axis = []
                     for record in records:
                         x_axis.append(record.get(rec.group_by.name))
@@ -127,7 +125,6 @@ class DashboardBlock(models.Model):
                     records[0]['value'] = val
                     vals.update(records[0])
             block_id.append(vals)
-        print(block_id,"dhressssssssssss")
         return block_id
 
 
