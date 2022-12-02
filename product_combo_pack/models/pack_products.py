@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2020-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
+#    Copyright (C) 2022-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
 #    Author: Afras Habis (odoo@cybrosys.com)
 #
 #    This program is free software: you can modify
@@ -30,12 +30,13 @@ class PackProducts(models.Model):
     _rec_name = 'product_tmpl_id'
     _description = 'Select Pack Products'
 
-    product_id = fields.Many2one('product.product', string = 'Product', required = True,
-                                 domain = [('is_pack', '=', False)])
-    product_tmpl_id = fields.Many2one('product.template', string = 'Product')
-    price = fields.Float('Price', compute = 'compute_price', store = True)
-    quantity = fields.Integer('Quantity', default = 1)
-    qty_available = fields.Float('Quantity Available', compute = 'compute_quantity_of_product', store = True, readonly = False)
+    product_id = fields.Many2one('product.product', string='Product', required=True,
+                                 domain=[('is_pack', '=', False)])
+    product_tmpl_id = fields.Many2one('product.template', string='Product')
+    price = fields.Float('Price', compute='compute_price', store=True)
+    quantity = fields.Integer('Quantity', default=1)
+    qty_available = fields.Float('Quantity Available', compute='compute_quantity_of_product', store=True,
+                                 readonly=False)
     total_available_quantity = fields.Float('Total Quantity')
 
     @api.depends('product_id', 'total_available_quantity', 'product_id.qty_available')
@@ -43,7 +44,8 @@ class PackProducts(models.Model):
         for record in self:
             location_id = record.product_tmpl_id.pack_location_id
             if location_id:
-                stock_quant = self.env['stock.quant'].search([('product_id','=',record.product_id.id),('location_id','=',location_id.id)])
+                stock_quant = self.env['stock.quant'].search(
+                    [('product_id', '=', record.product_id.id), ('location_id', '=', location_id.id)])
                 if stock_quant:
                     record.qty_available = stock_quant.quantity
                 else:

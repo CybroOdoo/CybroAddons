@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2020-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
+#    Copyright (C) 2022-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
 #    Author: Afras Habis (odoo@cybrosys.com)
 #
 #    This program is free software: you can modify
@@ -23,7 +23,7 @@
 
 {
     'name': 'Product Pack',
-    'version': '15.0.1.1.1',
+    'version': '15.0.1.0.1',
     'summary': 'Manage Products as Pack',
     'description': 'Manage Products as Pack',
     'category': 'Sales',

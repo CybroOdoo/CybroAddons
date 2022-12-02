@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2020-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
+#    Copyright (C) 2022-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
 #    Author: Afras Habis (odoo@cybrosys.com)
 #
 #    This program is free software: you can modify
@@ -36,12 +36,12 @@ class ProductPack(models.Model):
             return warehouse.lot_stock_id.id
 
     is_pack = fields.Boolean('Is a Pack')
-    pack_price = fields.Integer(string = "Pack Price", compute = 'set_pack_price', store = True)
-    pack_products_ids = fields.One2many('pack.products', 'product_tmpl_id', string = 'Pack Products')
+    pack_price = fields.Integer(string="Pack Price", compute='set_pack_price', store=True)
+    pack_products_ids = fields.One2many('pack.products', 'product_tmpl_id', string='Pack Products', copy=True)
     pack_quantity = fields.Integer('Pack Quantity')
     pack_location_id = fields.Many2one('stock.location',
-                                       domain = [('usage', 'in', ['internal', 'transit'])],
-                                       default = default_pack_location)
+                                       domain=[('usage', 'in', ['internal', 'transit'])],
+                                       default=default_pack_location)
 
     @api.depends('pack_products_ids', 'pack_products_ids.price')
     def set_pack_price(self):
@@ -96,12 +96,12 @@ class ProductPack(models.Model):
         location_id = self.pack_location_id.id
         if not location_id:
             warehouse = self.env['stock.warehouse'].search([(
-                'company_id', '=', company_user.id)], limit = 1)
+                'company_id', '=', company_user.id)], limit=1)
             location_id = warehouse.lot_stock_id.id
             if not location_id:
                 raise UserError(_(
                     'You need to select the location to update the pack quantity...!'))
-        self.env['stock.quant'].with_context(inventory_mode = True).sudo().create({
+        self.env['stock.quant'].with_context(inventory_mode=True).sudo().create({
             'product_id': product_id,
             'location_id': location_id,
             'inventory_quantity': self.pack_quantity,
