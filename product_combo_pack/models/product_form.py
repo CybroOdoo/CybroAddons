@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2020-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
+#    Copyright (C) 2022-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
 #    Author: Afras Habis (odoo@cybrosys.com)
 #
 #    This program is free software: you can modify
@@ -36,7 +36,7 @@ class ProductPack(models.Model):
 
     is_pack = fields.Boolean('Is a Pack')
     pack_price = fields.Integer(string="Pack Price", compute='set_pack_price', store=True)
-    pack_products_ids = fields.One2many('pack.products', 'product_tmpl_id', string='Pack Products')
+    pack_products_ids = fields.One2many('pack.products', 'product_tmpl_id', string='Pack Products', copy=True)
     pack_quantity = fields.Integer('Pack Quantity')
     pack_location_id = fields.Many2one('stock.location',
                                        domain=[('usage', 'in', ['internal', 'transit'])],
@@ -52,7 +52,6 @@ class ProductPack(models.Model):
 
     @api.model
     def create(self, values):
-        print('1:', values)
         if values.get('is_pack', False):
             if not values.get('pack_products_ids', []):
                 raise UserError(_(
