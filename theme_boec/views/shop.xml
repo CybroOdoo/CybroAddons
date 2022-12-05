@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <template id="boec_shop" name="Boec Shop" inherit_id="website_sale.products">
+
+            <xpath expr="//div[@id='wrap']" position="before">
+                <Section class="banner_sub">
+                    <div class="wrapper">
+                        <div class="container">
+                            <div class="row">
+                                <div class="sub_page">
+                                    <div class="name">
+                                        Shop
+                                    </div>
+                                    <nav aria-label="breadcrumb">
+                                        <ol class="breadcrumb">
+                                            <li class="breadcrumb-item">
+                                                <a href="/">Home</a>
+                                            </li>
+                                            <i class="material-icons">&#xe315;</i>
+                                            <li class="breadcrumb-item active" aria-current="page">Shop</li>
+                                        </ol>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </Section>
+
+            </xpath>
+
+            <xpath expr="//div[@id='wrap']/div[hasclass('container','oe_website_sale','pt-2')]/div[hasclass('row','o_wsale_products_main_row')]/div[@id='products_grid']"
+                   position="replace">
+                <div id="products_grid"
+                     t-attf-class="#{'o_wsale_layout_list' if layout_mode == 'list' else ''} {{'col-lg-9' if hasLeftColumn else 'col-12'}}">
+
+
+                    <t t-if="category">
+                        <t t-set='editor_msg'>Drag building blocks here to customize the header for "<t
+                                t-esc='category.name'/>" category.
+                        </t>
+                        <div class="mb16" id="category_header" t-att-data-editor-message="editor_msg"
+                             t-field="category.website_description"/>
+                    </t>
+
+                    <div t-cache="pricelist,products" t-if="products"
+                         class="o_wsale_products_grid_table_wrapper pt-2 pt-lg-0">
+                        <table class="table table-borderless h-100 m-2" t-att-data-ppg="ppg" t-att-data-ppr="ppr"
+                               t-att-data-default-sort="website.shop_default_sort" t-att-data-name="grid_block_name">
+                            <colgroup t-ignore="true">
+                                <!-- Force the number of columns (useful when only one row of (x < ppr) products) -->
+                                <col t-foreach="ppr" t-as="p"/>
+                            </colgroup>
+                            <tbody>
+                                <tr t-foreach="bins" t-as="tr_product">
+                                    <t t-foreach="tr_product" t-as="td_product">
+                                        <t t-if="td_product">
+                                            <!-- We use t-attf-class here to allow easier customization -->
+                                            <td t-att-colspan="td_product['x'] != 1 and td_product['x']"
+                                                t-att-rowspan="td_product['y'] != 1 and td_product['y']"
+                                                t-attf-class="oe_product"
+                                                t-att-data-ribbon-id="td_product['ribbon'].id"
+                                                t-att-data-name="product_block_name">
+                                                <div t-attf-class="o_wsale_product_grid_wrapper position-relative h-100 o_wsale_product_grid_wrapper_#{td_product['x']}_#{td_product['y']}">
+                                                    <t t-call="website_sale.products_item">
+                                                        <t t-set="product" t-value="td_product['product']"/>
+                                                    </t>
+                                                </div>
+                                            </td>
+                                        </t>
+                                        <td t-else=""/>
+                                    </t>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div t-else="" class="text-center text-muted mt128 mb256">
+                        <t t-if="not search">
+                            <h3 class="mt8">No product defined</h3>
+                            <p t-if="category">No product defined in category "<strong t-esc="category.display_name"/>".
+                            </p>
+                        </t>
+                        <t t-else="">
+                            <h3 class="mt8">No results</h3>
+                            <p>No results for "<strong t-esc='search'/>"
+                                <t t-if="category">in category "<strong t-esc="category.display_name"/>"
+                                </t>
+                                .
+                            </p>
+                        </t>
+                        <p t-ignore="true" groups="sales_team.group_sale_manager">Click <i>'New'</i> in the top-right
+                            corner to create your first product.
+                        </p>
+                    </div>
+                    <div class="products_pager d-flex justify-content-center pt-5 pb-3">
+                        <t t-call="website.pager"/>
+                    </div>
+                </div>
+            </xpath>
+
+        </template>
+
+        <template id="boec_shop_add_to_cart" name="Boec Shop Cart Button" inherit_id="website_sale.products_item"
+                  customize_show="True" priority="2" active="True">
+            <xpath expr="//div[hasclass('o_wsale_product_btn')]" position="after">
+                <div class="o_wsale_product_btn add_to_c">
+                    <t t-set="product_variant_id" t-value="product._get_first_possible_variant_id()"/>
+                    <input name="product_id" t-att-value="product_variant_id" type="hidden"/>
+                    <t t-if="product_variant_id">
+                        <a href="#" aria-label="Shopping cart" title="Shopping cart" class="a-submit">
+                            + Add to cart
+                        </a>
+                    </t>
+                </div>
+            </xpath>
+        </template>
+
+    </data>
+</odoo>
