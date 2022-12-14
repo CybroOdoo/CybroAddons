@@ -20,7 +20,7 @@
 #
 #############################################################################
 {
-    'name': "Account Invoice Line",
+    'name': "Account Invoice Line Views",
     "description": """ccount Invoice/Bill
                     Lines Tree,Form,Kanban,Pivot,Graph,Calendar Views""",
     "summary": "Account Invoice/Bill Lines Tree,Form,Kanban,Pivot,Graph,Calendar Views",
