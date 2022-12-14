@@ -21,17 +21,16 @@
 
 
 {
-    'name': 'Mass duplicate Records',
-    'version': '16.0.1.0.1',
-    'summary': 'Allows to duplicate multiple records from list/tree view at a time in any models.',
-    'description': 'Allows to duplicate multiple records from list/tree view at a time in any models.',
-    'author': 'Cybrosys Techno solutions',
+    'name': 'Mass Duplicate Records For All Models',
+    'version': '16.0.1.0.0',
+    'summary': 'Allows to Duplicate Multiple Records from List/Tree View for all Models',
+    'description': 'Allows to Duplicate Multiple Records from List/Tree View for all Models.',
+    'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'license': 'LGPL-3',
     'depends': ['base'],
-    'data': [],
     'assets': {
         'web.assets_backend': [
             'mass_duplicate_records/static/src/js/mass_list_controller.js',
@@ -40,5 +39,5 @@
     'installable': True,
     'application': False,
     'auto_install': False,
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
 }
