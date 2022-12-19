@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="sales_analysis_view">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <style>
+                </style>
+                <t class="page">
+                    <div class="oe_structure"/>
+                    <center>
+                        <b>
+                            <h3>Sales Analysis Report</h3>
+                        </b>
+                    </center>
+                    <t t-if="start_date and end_date">
+                        <center>
+                            <span t-esc="start_date"/>
+                            To
+                            <span t-esc="end_date"/>
+                        </center>
+                    </t>
+                    <t t-foreach="partner_id" t-as="partner">
+                        <center>
+                            <b>
+                                <span t-esc="partner['name']" style="font-size:22px;"/>
+                            </b>
+                        </center>
+                        <t t-if="type =='sale'">
+                            <t t-set="t_amt" t-value="0"/>
+                            <t t-set="t_paid" t-value="0"/>
+                            <t t-set="t_balance" t-value="0"/>
+                            <table class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>Order Number</th>
+                                        <th>Order Date</th>
+                                        <th>Sales Person</th>
+                                        <th>Sales Amount</th>
+                                        <th>Amount Paid</th>
+                                        <th>Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="form" t-as="order">
+                                        <t t-if="order['partner_id'] == partner['id']">
+                                            <td>
+                                                <span t-esc="order['so']"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="order['date']"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="order['sales_person']"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="order['s_amt']"/>
+                                                <t t-set="t_amt" t-value="t_amt + order['s_amt']"></t>
+
+                                            </td>
+                                            <td>
+                                                <span t-esc="order['p_amt']"/>
+                                                <t t-set="t_paid" t-value="t_paid + order['p_amt']"></t>
+                                            </td>
+                                            <td>
+                                                <span t-esc="order['balance']"/>
+                                                <t t-set="t_balance" t-value="t_balance + order['balance']"></t>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                    <tr>
+                                        <td colsapn="3">
+                                            <span>Total Amount</span>
+                                            <t t-esc="t_amt"/>
+                                        </td>
+                                        <td>
+                                            <span>Total Paid:</span>
+                                            <t t-esc="t_paid"/>
+                                        </td>
+                                        <td>
+                                            <span>Total Balance:</span>
+                                            <t t-esc="t_balance"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                        <t t-else="">
+                            <t t-set="t_total" t-value="0"/>
+                            <t t-set="t_price" t-value="0"/>
+                            <t t-set="t_disc" t-value="0"/>
+                            <t t-set="t_qty" t-value="0"/>
+                            <table class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>Order</th>
+                                        <th>Date</th>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>price</th>
+                                        <th>Discount(%)</th>
+                                        <th>Tax(%)</th>
+                                        <th>Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="form" t-as="order">
+                                        <t t-if="order['partner_id'] == partner['id']">
+                                            <td>
+                                                <span t-esc="order['so']"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="order['date']"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="order['product_id']"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="order['quantity']"/>
+                                                <t t-set="t_qty" t-value="t_qty + order['quantity']"></t>
+                                            </td>
+                                            <td>
+                                                <span t-esc="order['price']"/>
+                                                <t t-set="t_price" t-value="t_price + order['price']"></t>
+
+                                            </td>
+                                            <td>
+                                                <span t-esc="order['discount']"/>
+                                                <t t-set="t_disc" t-value="t_disc + order['discount']"></t>
+
+                                            </td>
+                                            <td>
+                                                <span t-esc="order['tax']"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="order['total']"/>
+                                                <t t-set="t_total" t-value="t_total + order['total']"></t>
+
+                                            </td>
+                                        </t>
+                                    </tr>
+                                    <tr>
+                                        <td colsapn="3">
+                                            <span>Total Quantity</span>
+                                            <t t-esc="t_qty"/>
+                                        </td>
+                                        <td>
+                                            <span>Total Price:</span>
+                                            <t t-esc="t_price"/>
+                                        </td>
+                                        <td>
+                                            <span>Total Discount:</span>
+                                            <t t-esc="t_disc"/>
+                                        </td>
+                                        <td>
+                                            <span>Subtotal</span>
+                                            <t t-esc="t_total"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                    </t>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
