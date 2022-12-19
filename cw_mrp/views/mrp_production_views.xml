@@ -1,0 +1,46 @@
+<odoo>
+    <data>
+
+        <!-- MO-->
+        <record model="ir.ui.view" id="mrp_production_stock_mov_view_inherit">
+            <field name="name">mrp.production.cw.stock.mov.inherit</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_id']"
+                       position="after">
+
+                    <field name="toggle_cw" invisible="1"/>
+                    <field name="category_id" invisible="1"/>
+                    <label for="cw_qty" string="CW-Quantity"
+                           attrs="{'invisible':[('toggle_cw', '=', False)],'required':[('toggle_cw', '=', True)]}"/>
+                    <div class="o_row"
+                         attrs="{'invisible':[('toggle_cw', '=', False)],'required':[('toggle_cw', '=', True)]}">
+                        <field name="cw_qty"/>
+                        <field name="cw_uom_id"
+                               options="{'no_open':True,'no_create':True}"/>
+                    </div>
+                </xpath>
+
+                <xpath expr="//field[@name='move_raw_ids']/tree/field[@name='forecast_availability']"
+                       position="after">
+
+                    <field name="cw_hide" invisible="1"/>
+                    <field name="category_id" invisible="1"/>
+                    <field name="cw_demand" string="CW Qty To Consume"
+                           attrs="{'invisible':[('cw_hide', '=', False)],'readonly': ['&amp;', ('parent.state', '!=', 'draft'), '|', '&amp;', ('parent.state', 'not in', ('confirmed', 'progress', 'to_close')), ('parent.is_planned', '!=', True), ('parent.is_locked', '=', True)]}"/>
+                    <field name="cw_uom_id"
+                           attrs="{'invisible':[('cw_hide', '=', False)],'readonly': ['&amp;', ('parent.state', '!=', 'draft'), '|', '&amp;', ('parent.state', 'not in', ('confirmed', 'progress', 'to_close')), ('parent.is_planned', '!=', True), ('parent.is_locked', '=', True)]}"/>
+                    <field name="cw_reserved" string="CW Qty Reserved"
+                           attrs="{'column_invisible': [('parent.state', 'in', ('draft', 'done'))],'invisible':[('cw_hide', '=', False)]}"/>
+                    <field name="cw_done" string="CW Qty Consumed"
+                           attrs="{'column_invisible': [('parent.state', '=', 'draft')], 'invisible':[('cw_hide', '=', False)], 'readonly': [('has_tracking', '!=','none')]}"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
+
+
+
