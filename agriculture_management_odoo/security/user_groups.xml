@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.module.category" id="module_agriculture_management_odoo">
+        <field name="name">Agriculture Management</field>
+        <field name="description">Category for Agriculture</field>
+    </record>
+
+    <record id="group_agriculture_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_agriculture_management_odoo"/>
+    </record>
+
+    <record id="group_agriculture_admin" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_agriculture_management_odoo"/>
+        <field name="implied_ids" eval="[(4, ref('group_agriculture_user'))]"/>
+    </record>
+
+    <record id="rule_own_doc" model="ir.rule">
+        <field name="name">View Own Docs</field>
+        <field ref="model_crop_requests" name="model_id"/>
+        <field name="domain_force">['|',('user_id', '=', user.id),('create_uid',
+            '=', user.id)]
+        </field>
+        <field name="groups"
+               eval="[(4, ref('agriculture_management_odoo.group_agriculture_user'))]"/>
+    </record>
+
+    <record id="rule_all_doc" model="ir.rule">
+        <field name="name">View All Docs</field>
+        <field ref="model_crop_requests" name="model_id"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups"
+               eval="[(4, ref('agriculture_management_odoo.group_agriculture_admin'))]"/>
+    </record>
+</odoo>
