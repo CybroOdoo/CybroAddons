@@ -40,9 +40,14 @@ class StockPicking(models.Model):
         for move in confirmed_moves:
             if order_lines[0].product_id.is_bom:
                 products = self.env['pos.product.bom'].search(
-                    [('product_id.id', '=', order_lines[0].product_id.product_tmpl_id.id)])
+                    [('product_id.id', '=',
+                      order_lines[0].product_id.product_tmpl_id.id)])
                 bom_components = products.bom_line_ids
+
+                bom_qty = products.quantity
+
                 for rec in bom_components:
+                    rec_required_quantity = rec.quantity / bom_qty
                     bom = rec.product_id.id
                     pos_bom_move = self.env['stock.move'].create(
                         {
@@ -52,7 +57,9 @@ class StockPicking(models.Model):
                             'picking_id': self.id,
                             'picking_type_id': self.picking_type_id.id,
                             'product_id': bom,
-                            'product_uom_qty': abs(sum(order_lines.mapped('qty'))) * rec.quantity,
+                            # 'product_uom_qty': abs(sum(order_lines.mapped('qty'))) * rec.quantity,
+                            'product_uom_qty': abs(sum(order_lines.mapped(
+                                'qty'))) * rec_required_quantity,
                             'state': 'done',
                             'warehouse_id': self.location_dest_id.warehouse_id.id,
                             'location_id': self.location_id.id,
@@ -60,6 +67,7 @@ class StockPicking(models.Model):
                             'company_id': self.company_id.id,
                         }
                     )
-                    print('kkkkk',pos_bom_move)
+                    print('kkkkk', pos_bom_move)
                     pos_bom_move.quantity_done = pos_bom_move.product_uom_qty
-            confirmed_moves._add_mls_related_to_order(lines, are_qties_done=True)
+            confirmed_moves._add_mls_related_to_order(lines,
+                                                      are_qties_done=True)

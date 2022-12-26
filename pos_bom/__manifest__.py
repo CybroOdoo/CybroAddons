@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'POS Product Components',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'summary': """Helps to handle Product Components in POS""",
     'description': """Helps us to configure BOM products in point of sale and manage inventory for such products""",
     'category': 'Point of Sale',
