@@ -43,10 +43,10 @@ class SaleReportAdvance(models.TransientModel):
     to_date = fields.Date(string="End Date")
     status = fields.Selection(
         [('all', 'All'), ('draft', 'Draft'), ('sent', 'Quotation Sent'), ('sale', 'Sale Order'), ('done', 'Locked')],
-        string='Status', default='all', reqired=True)
+        string='Status', default='all', required=True)
     print_type = fields.Selection(
         [('sale', 'Sale Order'), ('product', 'Products')],
-        string='Print By', default='sale', reqired=True)
+        string='Print By', default='sale', required=True)
     today_date = fields.Date(default=fields.Date.today())
 
     def get_analysis_report(self):

@@ -43,7 +43,7 @@ class SaleReportAdvance(models.TransientModel):
     from_date = fields.Date(string="Start Date")
     to_date = fields.Date(string="End Date")
     type = fields.Selection([('customer', 'Customers'), ('product', 'Products'), ('both', 'Both')],
-                            string='Report Print By', default='customer', reqired=True)
+                            string='Report Print By', default='customer', required=True)
     company_ids = fields.Many2many('res.company', string='Companies')
     today_date = fields.Date(default=fields.Date.today())
 

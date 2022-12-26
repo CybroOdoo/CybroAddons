@@ -43,7 +43,7 @@ class SaleReportAdvance(models.TransientModel):
     to_date = fields.Date(string="End Date")
     status = fields.Selection(
         [('all', 'All'), ('draft', 'Draft'), ('sent', 'Quotation Sent'), ('sale', 'Sale Order'), ('done', 'Locked')],
-        string='Status', default='all', reqired=True)
+        string='Status', default='all', required=True)
     company_ids = fields.Many2many('res.company', string='Companies')
     today_date = fields.Date(default=fields.Date.today())
 
