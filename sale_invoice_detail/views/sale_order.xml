@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+    <record id="view_order_tree_invoice" model="ir.ui.view">
+        <field name="name">sale.order.tree.inherit.sale.invoice</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_status']" position="before">
+                <field name="invoiced_amount"/>
+                <field name="paid_amount"/>
+                <field name="due_amount"/>
+            </xpath>
+        </field>
+    </record>
+        <record id="view_invoiced_percentage" model="ir.ui.view">
+            <field name="name">sale.order.form.invoice.sale</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_view_invoice']" position="before">
+                    <button type="object"
+                        name="action_view_invoice"
+                        class="oe_stat_button"
+                        icon="fa-money"
+                        attrs="{'invisible': [('invoice_count', '=', 0)]}">
+<!--                        <field name="invoice_count" invisible="1"/>-->
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_value">
+                                <field name="paid_amount_percent" widget="statinfo" nolabel="1" class="mr4" />% <br/>Paid
+                            </span>
+                        </div>
+                    </button>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
