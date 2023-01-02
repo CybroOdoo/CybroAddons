@@ -1,5 +1,5 @@
 /** @odoo-module **/
-
+console.log('wht')
 import SystrayMenu from 'web.SystrayMenu';
 import Widget from 'web.Widget';
 

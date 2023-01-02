@@ -45,14 +45,12 @@
     'assets': {
         'web.assets_backend': [
             "whatsapp_mail_messaging/static/src/js/whatsapp_button.js",
-            "whatsapp_mail_messaging/static/src/js/mail_button.js"
+            "whatsapp_mail_messaging/static/src/js/mail_button.js",
+            'whatsapp_mail_messaging/static/src/xml/whatsapp_button.xml',
+            'whatsapp_mail_messaging/static/src/xml/mail_button.xml',
         ],
         'web.assets_frontend': [
             "whatsapp_mail_messaging/static/src/css/whatsapp.css"
-        ],
-        'web.assets_qweb': [
-            'whatsapp_mail_messaging/static/src/xml/whatsapp_button.xml',
-            'whatsapp_mail_messaging/static/src/xml/mail_button.xml',
         ],
     },
     'images': ['static/description/banner.png'],
