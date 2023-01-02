@@ -21,7 +21,7 @@
 from odoo import fields, models, api
 
 
-class PlannedWork (models.Model):
+class PlannedWork(models.Model):
     _name = 'planned.work'
 
     planned_work = fields.Many2one('product.product', string='Planned work', domain=[('type', '=', 'service')])
@@ -39,7 +39,7 @@ class PlannedWork (models.Model):
         self.work_cost = self.planned_work.lst_price
 
 
-class MaterialUsed (models.Model):
+class MaterialUsed(models.Model):
     _name = 'material.used'
 
     material = fields.Many2one('product.product', string='Products')
@@ -47,7 +47,7 @@ class MaterialUsed (models.Model):
     price = fields.Float(string='Unit Price')
     material_id = fields.Many2one('car.workshop')
     _defaults = {
-                    'amount': 1, }
+        'amount': 1, }
 
     @api.onchange('material')
     def get_price(self):

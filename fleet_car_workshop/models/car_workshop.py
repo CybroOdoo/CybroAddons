@@ -17,7 +17,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from datetime import date, datetime
+from datetime import date
 from dateutil.relativedelta import relativedelta
 from psutil import long
 
@@ -43,7 +43,6 @@ class CarWorkshop(models.Model):
                                  tracking=True,
                                  change_default=True)
 
-
     @api.model
     def _default_company_id(self):
         car_id = self._context.get('active_id')
@@ -64,7 +63,6 @@ class CarWorkshop(models.Model):
         if not vehicle_id:
             return False
         return self.stage_find(vehicle_id, [('fold', '=', False)])
-
 
     @api.model
     def _read_group_stage_ids(self, stages, domain, order):
@@ -135,7 +133,6 @@ class CarWorkshop(models.Model):
 
     invoice_count = fields.Integer(string="Invoice_count", compute='compute_invoice_count')
 
-
     @api.depends('planned_works.work_cost', 'materials_used.price')
     def amount_total1(self):
         for records in self:
@@ -159,7 +156,6 @@ class CarWorkshop(models.Model):
             raise UserError(
                 _(
                     'Please select a Customer.'))
-
 
         invoice_line_ids = []
         company_id = self.env['res.users'].browse(1).company_id
@@ -382,7 +378,6 @@ class CarWorkshop(models.Model):
             # if self.vehicle_id.exists():`
             self.partner_id = self.vehicle_id.partner_id
             self.stage_id = self.stage_find(self.vehicle_id, [('fold', '=', False)])
-
 
     def stage_find(self, section_id, domain=[], order='sequence'):
         """ Override of the base.stage method

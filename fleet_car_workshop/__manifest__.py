@@ -27,10 +27,11 @@
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
     'depends': [
-                'base',
-                'fleet',
-                'stock'
-                ],
+        'base',
+        'fleet',
+        'account',
+        'stock'
+    ],
     'data': [
         'data/workshop_data.xml',
         'views/worksheet_views.xml',
@@ -50,5 +51,5 @@
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
-    'application': False,
+    'application': True,
 }

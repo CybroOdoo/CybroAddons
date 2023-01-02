@@ -30,8 +30,7 @@ class CarVehicle(osv.osv):
     _inherit = ['mail.thread']
     _rec_name = 'vehicle_id'
 
-
-    active = fields.Boolean('Active',default=True)
+    active = fields.Boolean('Active', default=True)
     vehicle_id = fields.Many2one('fleet.vehicle', string='Vehicle Name', tracking=True, required=True)
     sequence = fields.Integer('Sequence', help="Gives the sequence order when displaying a list of Projects.")
 
@@ -39,20 +38,21 @@ class CarVehicle(osv.osv):
     worksheet = fields.One2many('car.workshop', 'vehicle_id', string="Task Activities")
 
     type_ids = fields.Many2many('worksheet.stages', 'car_workshop_type_rel',
-                                 'vehicle_id', 'type_id', string='Worksheet Stages',
-                                 states={'close': [('readonly', True)], 'cancelled': [('readonly', True)]})
+                                'vehicle_id', 'type_id', string='Worksheet Stages',
+                                states={'close': [('readonly', True)], 'cancelled': [('readonly', True)]})
 
-    task_count = fields.Integer(compute='_compute_task_count', type='integer', string="Tasks" )
-    task_ids = fields.One2many('car.workshop', 'vehicle_id', domain=['|', ('stage_id.fold', '=', False), ('stage_id', '=', False)])
+    task_count = fields.Integer(compute='_compute_task_count', type='integer', string="Tasks")
+    task_ids = fields.One2many('car.workshop', 'vehicle_id',
+                               domain=['|', ('stage_id.fold', '=', False), ('stage_id', '=', False)])
     doc_count = fields.Integer(compute='_compute_attached_docs_count', string="Number of documents attached")
     color = fields.Integer(string='Color Index')
     partner_id = fields.Many2one('res.partner', string='Customer')
     state = fields.Selection([('draft', 'New'),
-                               ('open', 'In Progress'),
-                               ('cancelled', 'Cancelled'),
-                               ('pending', 'Pending'),
-                               ('close', 'Closed')], string='Status', required=True,
-                              track_visibility='onchange',default='open', copy=False)
+                              ('open', 'In Progress'),
+                              ('cancelled', 'Cancelled'),
+                              ('pending', 'Pending'),
+                              ('close', 'Closed')], string='Status', required=True,
+                             track_visibility='onchange', default='open', copy=False)
 
     date_start = fields.Date(string='Start Date')
     date = fields.Date(string='Expiration Date', select=True, track_visibility='onchange')
@@ -104,6 +104,3 @@ class CarVehicle(osv.osv):
             'limit': 80,
             'context': "{'default_res_model': '%s','default_res_id': %d}" % (self._name, self.id)
         }
-
-
-
