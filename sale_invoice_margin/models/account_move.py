@@ -56,8 +56,9 @@ class AccountMove(models.Model):
                     lines_margin_amount += line_margin_amount
                 if line_cost:
                     move.margin_amount = lines_margin_amount
-                    move.margin_percentage = \
-                        lines_margin_amount / lines_sale_price
+                    if lines_sale_price != 0:
+                        move.margin_percentage = \
+                            lines_margin_amount / lines_sale_price
                 else:
                     move.margin_amount = lines_margin_amount
                     move.margin_percentage = 1
@@ -87,7 +88,8 @@ class AccountMoveLine(models.Model):
                 margin_amount = (sale_price - discount) - cost
                 if cost:
                     line.margin_amount = margin_amount
-                    line.margin_percentage = margin_amount / sale_price
+                    if sale_price !=0:
+                        line.margin_percentage = margin_amount / sale_price
                 else:
                     line.margin_amount = margin_amount
                     line.margin_percentage = 1

@@ -22,7 +22,7 @@
 
 {
     'name': "Sale Invoice Margin",
-    'version': "15.0.1.0.0",
+    'version': "15.0.1.0.1",
     'summary': """ Sale Invoice Margin Analysis""",
     'description': """Sale Invoice Margin Analysis""",
     'author': "Cybrosys Techno Solutions",
