@@ -21,9 +21,9 @@
 #############################################################################
 
 import time
-from datetime import datetime
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+from datetime import datetime, timedelta
 
 
 class LaundryManagement(models.Model):
@@ -198,9 +198,10 @@ class LaundryManagement(models.Model):
                                               'draft': [('readonly', False)],
                                               'order': [('readonly', False)]},
                                           help="Delivery address for current sales order.")
-    order_date = fields.Datetime(string="Date",
-                                 default=datetime.now().strftime(
-                                     '%Y-%m-%d %H:%M:%S'))
+    order_date = fields.Datetime(string='Date', readonly=True, index=True,
+                                 states={'draft': [('readonly', False)],
+                                         'order': [('readonly', False)]},
+                                 copy=False, default=fields.Datetime.now,)
     laundry_person = fields.Many2one('res.users', string='Laundry Person',
                                      required=1)
     order_lines = fields.One2many('laundry.order.line', 'laundry_obj',

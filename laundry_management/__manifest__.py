@@ -22,7 +22,7 @@
 
 {
     'name': 'Laundry Management',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'summary': """Complete Laundry Service Management""",
     'description': 'This module is very useful to manage all process of laundry service',
     "category": "Industries",
