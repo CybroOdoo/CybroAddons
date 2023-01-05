@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Agriculture Management Odoo',
-    'version': '16.0.1.0.0',
+    'version': '16.0.2.0.0',
     'summary': 'Agriculture Management Odoo',
     'sequence': 4,
     'description': """Agriculture Management Odoo, Agriculture, Farmers, Farming, Crops, Farm, Seeds, Farm Management""",

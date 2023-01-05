@@ -19,7 +19,9 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+
+from odoo import fields, models, _
+from odoo.exceptions import UserError
 
 
 class CropReport(models.TransientModel):
@@ -41,9 +43,25 @@ class CropReport(models.TransientModel):
                     crop_requests.seed_id = seed_details.id
                     inner join location_details ON
                     crop_requests.location_id = location_details.id"""
+
+        today = fields.Date.today()
+
+        if self.date_from:
+            if self.date_from > today:
+                raise UserError(
+                    _('You could not set the start date or the end date in the future.'))
+        if self.date_to:
+            if self.date_to > today:
+                raise UserError(
+                    _('You could not set the start date or the end date in the future.'))
+        if self.date_from >= self.date_to:
+            raise UserError(
+                _('The start date must be inferior to the end date.'))
+
         if self.date_from and self.date_to:
-            ret = ret + """ where crop_requests.request_date > '""" + str(
-                self.date_from) + """' AND crop_requests.request_date < '""" + str(
+            ret = ret + """ where crop_requests.request_date >= '""" + str(
+                self.date_from) + """' AND crop_requests.request_date <= '""" \
+                  + str(
                 self.date_to) + """'"""
         self.env.cr.execute(ret)
         record = self.env.cr.fetchall()

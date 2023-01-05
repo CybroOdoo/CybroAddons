@@ -27,6 +27,7 @@ class AnimalRental(models.Model):
     _name = 'animal.rental'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Animal Rental'
+    _rec_name = 'animal_id'
 
     animal_id = fields.Many2one('animal.details', string='Animal',
                                 required=True, tracking=True)
