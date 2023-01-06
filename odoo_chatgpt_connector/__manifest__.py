@@ -43,6 +43,7 @@
             'odoo_chatgpt_connector/static/src/css/container.css'
         ],
     },
+    'images': ['static/description/banner.png'],
     'installable': True,
     'application': False,
     'auto_install': False,
