@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_risk_incident_kanban" model="ir.ui.view">
+        <field name="name">risk.incident.kanban</field>
+        <field name="model">risk.incident</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state"
+                    class="o_kanban_small_column o_kanban_project_tasks"
+                    records_draggable="true" default_order="state"
+                    examples="project"
+                    js_class="project_task_kanban" sample="1">
+                <field name="risk_incident"/>
+                <field name="project_id"/>
+                <progressbar field="state"
+                             colors='{"new": "warning","to_do": "info", "cancel": "danger", "progress": "muted",  "done": "success", "advanced": "primary"}'/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click">
+                            <div class="oe_kanban_details">
+                                <strong>
+                                    <field name="risk_incident"
+                                           style="font-size:20px;"/>
+                                    <br/>
+                                    <field name="project_id"/>
+                                    <br/>
+                                    <field name="activity_ids"
+                                           widget="kanban_activity"/>
+                                    <field name="user_id"
+                                           widget="many2one_avatar_user"/>
+                                </strong>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_risks_incident_tree" model="ir.ui.view">
+        <field name="name">risk.incident.tree</field>
+        <field name="model">risk.incident</field>
+        <field name="arch" type="xml">
+            <tree string="Risk Incidents">
+                <field name="risk_incident"/>
+                <field name="project_id"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="activity_ids" widget="list_activity"/>
+                <field name="tag_ids" widget="many2many_tags"
+                       options="{'color_field': 'color'}"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_risk_incident_pivot" model="ir.ui.view">
+        <field name="name">risk.incident.pivot</field>
+        <field name="model">risk.incident</field>
+        <field name="arch" type="xml">
+            <pivot string="Project Risks Incidents" display_quantity="1"
+                   sample="1">
+                <field name="risk_incident" type="row"/>
+                <field name="project_id" type="row"/>
+                <field name="user_id" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_risk_incident_graph" model="ir.ui.view">
+        <field name="name">risk.incident.graph</field>
+        <field name="model">risk.incident</field>
+        <field name="arch" type="xml">
+            <graph string="Project Risks Incidents" sample="1">
+                <field name="risk_incident"/>
+                <field name="project_id"/>
+                <field name="user_id"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_risks_incident_form" model="ir.ui.view">
+        <field name="name">risk.incident.form</field>
+        <field name="model">risk.incident</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"
+                           options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <field name="risk_incident" style="font-size:30px;"/>
+                    <group>
+
+                        <group>
+                            <field name="project_id"/>
+                            <field name="user_id"/>
+                            <field name="deadline"/>
+                            <field name="tag_ids" widget="many2many_tags"
+                                   options="{'color_field': 'color'}"/>
+                        </group>
+                        <group>
+                            <field name="partner_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="note"/>
+                        </page>
+                        <page string="Risk Management" name="risk_management">
+                            <group>
+                                <field name="incident_image" widget='image'
+                                       class="oe_avatar"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+</odoo>
