@@ -47,37 +47,38 @@ class Employee(models.Model):
     def get_user_employee_info(self):
         """To get the employee information"""
         uid = request.session.uid
-        employee_id = self.env['hr.employee'].sudo().search([
-            ('user_id', '=', uid)], limit=1)
+        employee_user_id = self.env['hr.employee'].sudo().search([
+            ('user_id', '=', uid)
+        ], limit=1)
         employee = self.env['hr.employee'].sudo().search_read([
             ('user_id', '=', uid)], limit=1)
         attendance_count = self.env['hr.attendance'].sudo().search(
-            [('employee_id', '=', employee_id.id),
+            [('employee_id', '=', employee_user_id.id),
              ('attendance_date', '=', date.today())])
         manager_attendance_count = self.env['hr.attendance'].sudo().search(
             [('attendance_date', '=', date.today())])
         leave_request_count = self.env['hr.leave'].sudo().search(
-            [('employee_id', '=', employee_id.id),
+            [('employee_id', '=', employee_user_id.id),
              ('request_date_from', '=', date.today())])
         manager_leave_request = self.env['hr.leave'].sudo().search(
             [('request_date_from', '=', date.today())])
         employee_contracts = self.env['hr.contract'].sudo().search([
-            ('employee_id', '=', employee_id.id)])
+            ('employee_id', '=', employee_user_id.id)])
         payslips = self.env['hr.payslip'].sudo().search([
-            ('employee_id', '=', employee_id.id)])
+            ('employee_id', '=', employee_user_id.id)])
         salary_rules = self.env['hr.salary.rule'].sudo().search([])
         salary_structures = self.env['hr.payroll.structure'].sudo().search([])
         salary_rule_count = len(salary_rules)
         salary_structure_count = len(salary_structures)
-        emp_leave = len(manager_leave_request) if employee_id.is_manager \
+        emp_leave = len(manager_leave_request) if employee_user_id.is_manager \
             else len(leave_request_count)
-        payslip_count = len(payslips) if not employee_id.is_manager \
+        payslip_count = len(payslips) if not employee_user_id.is_manager \
             else len(self.env['hr.payslip'].sudo().search([]))
         emp_contracts_count = len(employee_contracts) \
-            if not employee_id.is_manager else len(
+            if not employee_user_id.is_manager else len(
                 self.env['hr.contract'].sudo().search([]))
         attendance_today = len(manager_attendance_count) \
-            if employee_id.is_manager else len(attendance_count)
+            if employee_user_id.is_manager else len(attendance_count)
         if employee:
             data = {
                 'emp_timesheets': attendance_today,
@@ -128,20 +129,34 @@ class Employee(models.Model):
     @api.model
     def get_department_leave(self):
         """return department wise leave details"""
+        employee = False
         month_list = []
         graph_result = []
         uid = request.session.uid
-        employee = self.env['hr.employee'].sudo().search_read([
-            ('user_id', '=', uid)], limit=1)
+        employee_user = self.env['hr.employee'].sudo().search_read([
+            ('user_id', '=', uid)
+        ], limit=1)
+        employees = self.env['hr.employee'].sudo().search_read([], limit=1)
+        if employee_user:
+            employee = self.env['hr.employee'].sudo().search_read([
+                ('user_id', '=', uid)], limit=1)
+            employee_id = self.env['hr.employee'].browse(
+                employee[0]['id'])
+        elif employees:
+            employee = self.env['hr.employee'].sudo().search_read([], limit=1)
+            employee_id = self.env['hr.employee'].browse(
+                employee[0]['id'])
 
         for i in range(5, -1, -1):
             last_month = datetime.now() - relativedelta(months=i)
             text = format(last_month, '%B %Y')
             month_list.append(text)
+
         self.env.cr.execute("""select id, name from hr_department 
             where active=True""")
         departments = self.env.cr.dictfetchall()
         department_list = [x['name'] for x in departments]
+
         for month in month_list:
             leave = {}
             for dept in departments:
@@ -151,65 +166,81 @@ class Employee(models.Model):
                 'leave': leave
             }
             graph_result.append(vals)
-        employee_id = self.env['hr.employee'].browse(employee[0]['id'])
 
-        sql = """
-            SELECT h.id, h.employee_id,h.department_id
-                 , extract('month' FROM y)::int AS leave_month
-                 , to_char(y, 'Month YYYY') as month_year
-                 , GREATEST(y                    , h.date_from) AS date_from
-                 , LEAST   (y + interval '1 month', h.date_to)   AS date_to
-            FROM  (select * from hr_leave where state = 'validate') h
-                 , generate_series(date_trunc('month', date_from::timestamp)
-                                 , date_trunc('month', date_to::timestamp)
-                                 , interval '1 month') y
-            where date_trunc('month', GREATEST(y , h.date_from)) >= 
-            date_trunc('month', now()) - interval '6 month' and
-            date_trunc('month', GREATEST(y , h.date_from)) <= 
-            date_trunc('month', now())
-            and h.department_id is not null
-            """
-        self.env.cr.execute(sql)
-        results = self.env.cr.dictfetchall()
-        leave_lines = []
-        for line in results:
-            employee = self.browse(line['employee_id'])
-            from_dt = fields.Datetime.from_string(line['date_from'])
-            to_dt = fields.Datetime.from_string(line['date_to'])
-            days = employee.get_work_days_dashboard(from_dt, to_dt)
-            line['days'] = days
-            vals = {
-                'department': line['department_id'],
-                'l_month': line['month_year'],
-                'days': days
-            }
-            leave_lines.append(vals)
-        if leave_lines:
-            df = pd.DataFrame(leave_lines)
-            rf = df.groupby(['l_month', 'department']).sum()
-            result_lines = rf.to_dict('index')
-            for month in month_list:
-                for line in result_lines:
-                    if month.replace(' ', '') == line[0].replace(' ', ''):
-                        match = list(filter(lambda d: d['l_month'] in [month],
-                                            graph_result))[0]['leave']
-                        dept_name = self.env['hr.department'].browse(
-                            line[1]).name
-                        if match:
-                            match[dept_name] = result_lines[line]['days']
-        for result in graph_result:
-            result['l_month'] = result['l_month'].split(' ')[:1][0].strip()[:3] \
-                                + " " + result['l_month'].split(' ')[1:2][0]
-        return graph_result, department_list
+        if employee:
+            sql = """
+                SELECT h.id, h.employee_id,h.department_id
+                     , extract('month' FROM y)::int AS leave_month
+                     , to_char(y, 'Month YYYY') as month_year
+                     , GREATEST(y                    , h.date_from) AS date_from
+                     , LEAST   (y + interval '1 month', h.date_to)   AS date_to
+                FROM  (select * from hr_leave where state = 'validate') h
+                     , generate_series(date_trunc('month', date_from::timestamp)
+                                     , date_trunc('month', date_to::timestamp)
+                                     , interval '1 month') y
+                where date_trunc('month', GREATEST(y , h.date_from)) >= 
+                date_trunc('month', now()) - interval '6 month' and
+                date_trunc('month', GREATEST(y , h.date_from)) <= 
+                date_trunc('month', now())
+                and h.department_id is not null
+                """
+            self.env.cr.execute(sql)
+            results = self.env.cr.dictfetchall()
+            leave_lines = []
 
+            for line in results:
+                employee = self.browse(line['employee_id'])
+                from_dt = fields.Datetime.from_string(line['date_from'])
+                to_dt = fields.Datetime.from_string(line['date_to'])
+                days = employee.get_work_days_dashboard(from_dt, to_dt)
+                line['days'] = days
+                vals = {
+                    'department': line['department_id'],
+                    'l_month': line['month_year'],
+                    'days': days
+                }
+                leave_lines.append(vals)
+
+            if leave_lines:
+                df = pd.DataFrame(leave_lines)
+                rf = df.groupby(['l_month', 'department']).sum()
+                result_lines = rf.to_dict('index')
+                for month in month_list:
+                    for line in result_lines:
+                        if month.replace(' ', '') == line[0].replace(' ', ''):
+                            match = list(filter(
+                                lambda d: d['l_month'] in [month],
+                                graph_result))[0]['leave']
+                            dept_name = self.env['hr.department'].browse(
+                                line[1]).name
+                            if match:
+                                match[dept_name] = result_lines[line]['days']
+
+            for result in graph_result:
+                result['l_month'] = result[
+                                        'l_month'
+                                    ].split(' ')[:1][0].strip()[:3] + " " +\
+                                    result['l_month'].split(' ')[1:2][0]
+            return graph_result, department_list
+        else:
+            return False
     @api.model
     def get_employee_expense(self):
         """return employee expense details"""
         month_list = []
         graph_result = []
         uid = request.session.uid
-        employee = self.env['hr.employee'].sudo().search_read([
-            ('user_id', '=', uid)], limit=1)
+        employee = False
+        employee_user = self.env['hr.employee'].sudo().search_read([
+            ('user_id', '=', uid)
+        ], limit=1)
+        employees = self.env['hr.employee'].sudo().search_read([], limit=1)
+        if employee_user:
+            employee = self.env['hr.employee'].sudo().search_read([
+                ('user_id', '=', uid)
+            ], limit=1)
+        elif employees:
+            employees = self.env['hr.employee'].sudo().search_read([], limit=1)
 
         for i in range(5, -1, -1):
             last_month = datetime.now() - relativedelta(months=i)
@@ -228,47 +259,50 @@ class Employee(models.Model):
                 'leave': leave
             }
             graph_result.append(vals)
-        employee_id = self.env['hr.employee'].browse(employee[0]['id'])
+        if employee:
+            employee_id = self.env['hr.employee'].browse(employee[0]['id'])
 
-        sql = """
-                SELECT h.id, h.employee_id,h.date,
-                extract('month' FROM h.date)::int AS leave_month,
-                to_char(h.date, 'Month YYYY') as month_year 
-                FROM  (select * from hr_expense where state = 'approved') h 
-                """
-        self.env.cr.execute(sql, (employee[0]['id'],))
+            sql = """
+                    SELECT h.id, h.employee_id,h.date,
+                    extract('month' FROM h.date)::int AS leave_month,
+                    to_char(h.date, 'Month YYYY') as month_year 
+                    FROM  (select * from hr_expense where state = 'approved') h 
+                    """
+            self.env.cr.execute(sql, (employee[0]['id'],))
 
-        results = self.env.cr.dictfetchall()
-        leave_lines = []
-        for line in results:
-            employee = self.browse(line['employee_id'])
-            from_dt = fields.Datetime.from_string(line['date'])
-            to_dt = fields.Datetime.from_string(line['date'])
-            days = employee.get_work_days_dashboard(from_dt, to_dt)
-            line['days'] = days
-            vals = {
-                'department': line['employee_id'],
-                'l_month': line['month_year'],
-                'days': days
-            }
-            leave_lines.append(vals)
-        if leave_lines:
-            df = pd.DataFrame(leave_lines)
-            rf = df.groupby(['l_month', 'department']).sum()
-            result_lines = rf.to_dict('index')
-            for month in month_list:
-                for line in result_lines:
-                    if month.replace(' ', '') == line[0].replace(' ', ''):
-                        match = list(filter(lambda d: d['l_month'] in [month],
-                                            graph_result))[0]['leave']
-                        dept_name = self.env['hr.department'].browse(
-                            line[1]).name
-                        if match:
-                            match[dept_name] = result_lines[line]['days']
-        for result in graph_result:
-            result['l_month'] = result['l_month'].split(' ')[:1][0].strip()[:3] \
-                                + " " + result['l_month'].split(' ')[1:2][0]
-        return graph_result, department_list
+            results = self.env.cr.dictfetchall()
+            leave_lines = []
+            for line in results:
+                employee = self.browse(line['employee_id'])
+                from_dt = fields.Datetime.from_string(line['date'])
+                to_dt = fields.Datetime.from_string(line['date'])
+                days = employee.get_work_days_dashboard(from_dt, to_dt)
+                line['days'] = days
+                vals = {
+                    'department': line['employee_id'],
+                    'l_month': line['month_year'],
+                    'days': days
+                }
+                leave_lines.append(vals)
+            if leave_lines:
+                df = pd.DataFrame(leave_lines)
+                rf = df.groupby(['l_month', 'department']).sum()
+                result_lines = rf.to_dict('index')
+                for month in month_list:
+                    for line in result_lines:
+                        if month.replace(' ', '') == line[0].replace(' ', ''):
+                            match = list(filter(lambda d: d['l_month'] in [month],
+                                                graph_result))[0]['leave']
+                            dept_name = self.env['hr.department'].browse(
+                                line[1]).name
+                            if match:
+                                match[dept_name] = result_lines[line]['days']
+            for result in graph_result:
+                result['l_month'] = result['l_month'].split(' ')[:1][0].strip()[:3] \
+                                    + " " + result['l_month'].split(' ')[1:2][0]
+            return graph_result, department_list
+        else:
+            return False
 
     @api.model
     def employee_leave_trend(self):
@@ -281,8 +315,19 @@ class Employee(models.Model):
             text = format(last_month, '%B %Y')
             month_list.append(text)
         uid = request.session.uid
-        employee = self.env['hr.employee'].sudo().search_read([
-            ('user_id', '=', uid)], limit=1)
+        employee = False
+        employee_user = self.env['hr.employee'].sudo().search_read([
+            ('user_id', '=', uid)
+        ], limit=1)
+        employees = self.env['hr.employee'].sudo().search_read([], limit=1)
+
+        if employee_user:
+            employee = self.env['hr.employee'].sudo().search_read([
+                ('user_id', '=', uid)
+            ], limit=1)
+        elif employees:
+            employee = self.env['hr.employee'].sudo().search_read([], limit=1)
+
         for month in month_list:
             vals = {
                 'l_month': month,
@@ -305,32 +350,35 @@ class Employee(models.Model):
             date_trunc('month', now())
             and h.employee_id = %s
             """
-        self.env.cr.execute(sql, (employee[0]['id'],))
-        results = self.env.cr.dictfetchall()
-        for line in results:
-            employee = self.browse(line['employee_id'])
-            from_dt = fields.Datetime.from_string(line['date_from'])
-            to_dt = fields.Datetime.from_string(line['date_to'])
-            days = employee.get_work_days_dashboard(from_dt, to_dt)
-            line['days'] = days
-            vals = {
-                'l_month': line['month_year'],
-                'days': days
-            }
-            leave_lines.append(vals)
-        if leave_lines:
-            df = pd.DataFrame(leave_lines)
-            rf = df.groupby(['l_month']).sum()
-            result_lines = rf.to_dict('index')
-            for line in result_lines:
-                match = list(filter(lambda d: d['l_month'].replace(
-                    ' ', '') == line.replace(' ', ''), graph_result))
-                if match:
-                    match[0]['leave'] = result_lines[line]['days']
-        for result in graph_result:
-            result['l_month'] = result['l_month'].split(' ')[:1][0].strip()[:3] \
-                                + " " + result['l_month'].split(' ')[1:2][0]
-        return graph_result
+        if employee:
+            self.env.cr.execute(sql, (employee[0]['id'],))
+            results = self.env.cr.dictfetchall()
+            for line in results:
+                employee = self.browse(line['employee_id'])
+                from_dt = fields.Datetime.from_string(line['date_from'])
+                to_dt = fields.Datetime.from_string(line['date_to'])
+                days = employee.get_work_days_dashboard(from_dt, to_dt)
+                line['days'] = days
+                vals = {
+                    'l_month': line['month_year'],
+                    'days': days
+                }
+                leave_lines.append(vals)
+            if leave_lines:
+                df = pd.DataFrame(leave_lines)
+                rf = df.groupby(['l_month']).sum()
+                result_lines = rf.to_dict('index')
+                for line in result_lines:
+                    match = list(filter(lambda d: d['l_month'].replace(
+                        ' ', '') == line.replace(' ', ''), graph_result))
+                    if match:
+                        match[0]['leave'] = result_lines[line]['days']
+            for result in graph_result:
+                result['l_month'] = result['l_month'].split(' ')[:1][0].strip()[:3] \
+                                    + " " + result['l_month'].split(' ')[1:2][0]
+            return graph_result
+        else:
+            return False
 
 
 class Contract(models.Model):
@@ -383,47 +431,63 @@ class HrExpense(models.Model):
             last_month = datetime.now() - relativedelta(months=i)
             text = format(last_month, '%B %Y')
             month_list.append(text)
+
         for month in month_list:
             vals = {
                 'l_month': month,
                 'count': 0
             }
             approved_trend.append(vals)
+
         uid = request.session.uid
-        employee = self.env['hr.employee'].sudo().search_read([
-            ('user_id', '=', uid)], limit=1)
-        employee_id = self.env['hr.employee'].browse(employee[0]['id'])
-        if not employee_id.is_manager:
-            sql = ('''select to_char(date, 'Month YYYY') as l_month, 
-                    count(id) from hr_expense
-                    WHERE date BETWEEN CURRENT_DATE - INTERVAL '12 months'
-                    AND CURRENT_DATE + interval '1 month - 1 day' 
-                    AND hr_expense.employee_id = %s
-                    group by l_month''')
-            self.env.cr.execute(sql, (employee[0]['id'],))
+        employee = False
+        employee_user = self.env['hr.employee'].sudo().search_read([
+            ('user_id', '=', uid)
+        ], limit=1)
+        employees = self.env['hr.employee'].sudo().search_read([], limit=1)
+
+        if employee_user:
+            employee = self.env['hr.employee'].sudo().search_read([
+                ('user_id', '=', uid)
+            ], limit=1)
+        elif employees:
+            employee = self.env['hr.employee'].sudo().search_read([], limit=1)
+
+        if employee:
+            employee_id = self.env['hr.employee'].browse(employee[0]['id'])
+            if not employee_id.is_manager:
+                sql = ('''select to_char(date, 'Month YYYY') as l_month, 
+                        count(id) from hr_expense
+                        WHERE date BETWEEN CURRENT_DATE - INTERVAL '12 months'
+                        AND CURRENT_DATE + interval '1 month - 1 day' 
+                        AND hr_expense.employee_id = %s
+                        group by l_month''')
+                self.env.cr.execute(sql, (employee[0]['id'],))
+            else:
+                sql = ('''select to_char(date, 'Month YYYY') as l_month, 
+                count(id) from hr_expense WHERE date 
+                BETWEEN CURRENT_DATE - INTERVAL 
+                '12 months' AND CURRENT_DATE + interval '1 month - 1 day' 
+                group by l_month''')
+                self.env.cr.execute(sql)
+            approved_data = cr.fetchall()
+            for line in approved_data:
+                match = list(filter(lambda d: d['l_month'].replace(
+                    ' ', '') == line[0].replace(' ', ''), approved_trend))
+                if match:
+                    match[0]['count'] = line[1]
+
+            for expense in approved_trend:
+                expense['l_month'] = expense[
+                                         'l_month'].split(' ')[:1][0].strip()[:3]
+
+            graph_result = [{
+
+                'values': approved_trend
+            }]
+            return graph_result
         else:
-            sql = ('''select to_char(date, 'Month YYYY') as l_month, 
-            count(id) from hr_expense WHERE date 
-            BETWEEN CURRENT_DATE - INTERVAL 
-            '12 months' AND CURRENT_DATE + interval '1 month - 1 day' 
-            group by l_month''')
-            self.env.cr.execute(sql)
-        approved_data = cr.fetchall()
-        for line in approved_data:
-            match = list(filter(lambda d: d['l_month'].replace(
-                ' ', '') == line[0].replace(' ', ''), approved_trend))
-            if match:
-                match[0]['count'] = line[1]
-
-        for expense in approved_trend:
-            expense['l_month'] = expense[
-                                     'l_month'].split(' ')[:1][0].strip()[:3]
-
-        graph_result = [{
-
-            'values': approved_trend
-        }]
-        return graph_result
+            return False
 
 
 class HrAttendance(models.Model):
