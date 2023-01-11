@@ -118,5 +118,6 @@ class CropAnimals(models.Model):
 
     dec = fields.Many2one('crop.requests')
     animal_id = fields.Many2one('animal.details', string='Animal',
+                                domain=[('state', '=', 'available')],
                                 tracking=True)
     qty = fields.Integer(string='Quantity')

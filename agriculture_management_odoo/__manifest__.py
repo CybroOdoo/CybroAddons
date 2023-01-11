@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Agriculture Management In Odoo',
-    'version': '15.0.1.0.0',
+    'version': '15.0.2.0.0',
     'summary': 'Agriculture Management In Odoo',
     'description': """Agriculture Management In Odoo""",
     'category': 'Productivity',

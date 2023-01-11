@@ -47,7 +47,8 @@ class PestRequests(models.Model):
                                       self: self.env.user.company_id.currency_id)
     pest_quantity = fields.Integer(string='Pest Quantity', required=True,
                                    tracking=True)
-    pest_cost = fields.Float(string='Pest Cost', required=True, tracking=True)
+    pest_cost = fields.Float(string='Pest Cost', required=True,
+                             tracking=True, related='pest_id.pest_cost')
     total_cost = fields.Float(string='Total Cost',
                               compute='_compute_total_cost', store=True,
                               tracking=True)

@@ -26,6 +26,7 @@ class VehicleRental(models.Model):
     _name = 'vehicle.rental'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Vehicle Rental'
+    _rec_name = 'vehicle_id'
 
     vehicle_id = fields.Many2one('vehicle.details', string='Vehicle',
                                  required=True, tracking=True)
