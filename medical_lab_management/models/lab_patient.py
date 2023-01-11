@@ -44,7 +44,7 @@ class LabPatient(models.Model):
         [('m', 'Male'), ('f', 'Female'),
          ('ot', 'Other')], 'Gender', required=True)
     dob = fields.Date(string='Date Of Birth', required=True)
-    age = fields.Char(string='Age', compute='compute_age')
+    age = fields.Char(string='Age', compute='compute_age', store=True)
     blood_group = fields.Selection(
         [('A+', 'A+ve'), ('B+', 'B+ve'), ('O+', 'O+ve'), ('AB+', 'AB+ve'),
          ('A-', 'A-ve'), ('B-', 'B-ve'), ('O-', 'O-ve'), ('AB-', 'AB-ve')],
@@ -56,13 +56,14 @@ class LabPatient(models.Model):
     phone = fields.Char(string="Phone", required=True)
     email = fields.Char(string="Email", required=True)
 
+    @api.depends('dob')
     def compute_age(self):
         for data in self:
             if data.dob:
                 dob = fields.Datetime.from_string(data.dob)
                 date = fields.Datetime.from_string(data.date)
                 delta = relativedelta(date, dob)
-                data.age = str(delta.years) + 'years'
+                data.age = str(delta.years) + ' ' + 'years'
             else:
                 data.age = ''
 

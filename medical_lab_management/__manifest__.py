@@ -21,7 +21,7 @@
 
 {
     'name': "Medical Lab Management",
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'summary': """Manage Medical Lab Operations.""",
     'description': """Manage Medical Lab General Operations, Odoo15, Odoo 15""",
     'author': "Cybrosys Techno Solutions",
