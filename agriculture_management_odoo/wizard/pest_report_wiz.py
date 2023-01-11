@@ -32,30 +32,42 @@ class CropReport(models.TransientModel):
 
     def action_pdf_pest_report(self):
         ret = """select pest_request.reference, res_partner.name, crop_requests.ref,
-                pest_request.disease, pest_details.pest_name,pest_request.pest_quantity,
-                pest_request.pest_cost, pest_request.total_cost,pest_request.state from pest_request
+                pest_request.disease, pest_details.pest_name as pest_name,pest_details.pest_cost as cost,pest_request.pest_quantity,
+                pest_request.total_cost,pest_request.state from pest_request
                 inner join res_partner on pest_request.farmer_id = res_partner.id
                 inner join crop_requests on crop_requests.id = pest_request.crop_id
                 inner join pest_details on pest_details.id = pest_request.pest_id"""
 
         today = fields.Date.today()
-        if self.date_from:
+        if self.date_from and not self.date_to:
             if self.date_from > today:
                 raise UserError(
                     _('You could not set the start date or the end date in the future.'))
-        if self.date_to:
+            else:
+                ret = ret + ret + """ where pest_request.request_date >= '""" \
+                      + str(
+                    self.date_from) + """' AND pest_request.request_date <= 
+                    '""" \
+                      + str(
+                    today) + """'"""
+        if self.date_to and not self.date_from:
             if self.date_to > today:
                 raise UserError(
                     _('You could not set the start date or the end date in the future.'))
-        if self.date_from >= self.date_to:
-            raise UserError(
-                _('The start date must be inferior to the end date.'))
+            else:
+                ret = ret + """ where pest_request.request_date <= '""" + str(
+                    self.date_to) + """'"""
 
         if self.date_from and self.date_to:
-            ret = ret + """ where crop_requests.request_date >= '""" + str(
-                self.date_from) + """' AND crop_requests.request_date <= '"""\
-                  + str(
-                self.date_to) + """'"""
+            if self.date_from <= self.date_to:
+                ret = ret + """ where pest_request.request_date >= '""" + \
+                      str(self.date_from) + """' AND pest_request.request_date 
+                      <= '""" \
+                      + str(self.date_to) + """'"""
+            else:
+                raise UserError(
+                    _('The start date must be inferior to the end date.'))
+
         self.env.cr.execute(ret)
         record = self.env.cr.fetchall()
         data = {
