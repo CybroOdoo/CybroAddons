@@ -42,7 +42,7 @@ class MailActivity(models.Model):
     res_id = fields.Many2oneReference(string='Related Document ID', index=True,
                                       required=True, model_field='res_model',
                                       default=lambda self: self.env.ref(
-                                          'todo_list.general_activities'))
+                                          'todo_list.general_activities',False))
     priority = fields.Selection([
         ('0', 'Normal'),
         ('1', 'Important'),

@@ -32,8 +32,8 @@
     'website': "https://www.cybrosys.com",
     'live_test_url': 'https://youtu.be/LGiDWPFdkbks',
     'category': 'Tools',
-    'version': '16.0.1.0.0',
-    'depends': ['base', 'mail'],
+    'version': '16.0.2.0.0',
+    'depends': ['base','sale','mail'],
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
