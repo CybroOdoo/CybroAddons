@@ -4,7 +4,7 @@
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Ammu Raj (odoo@cybrosys.com)
+#    Author: Ammu(odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
@@ -23,7 +23,7 @@
 
 {
     'name': 'Odoo ChatGPT Connector',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': 'Odoo ChatGPT Language Connector',
     'description': 'Allows the application to leverage the capabilities of the GPT language model to generate human-like responses, providing a more natural and intuitive user experience',
     'author': 'Cybrosys Techno Solutions',
@@ -35,11 +35,11 @@
     'data': [
         'views/chatgpt_menu.xml',
         'views/chatgpt_setting_views.xml',
-        'views/res_config_settings_views.xml',
+        'views/chatgpt_template.xml',
     ],
     'assets': {
         'web.assets_frontend': [
-            'odoo_chatgpt_connector/static/src/js/service_charge_button.js',
+            'odoo_chatgpt_connector/static/src/js/submit_request.js',
             'odoo_chatgpt_connector/static/src/css/container.css'
         ],
     },
