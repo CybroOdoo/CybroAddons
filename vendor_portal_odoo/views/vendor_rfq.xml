@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_vendor_rfq_form" model="ir.ui.view">
+        <field name="name">vendor.rfq.form</field>
+        <field name="model">rfq.vendor</field>
+        <field name="arch" type="xml">
+            <form string="Vendor RFQ">
+                <header>
+                    <button name="send_by_mail" type="object" data-hotkey="shift+g"
+                            string="Send Invitation Mail" class="oe_highlight"
+                            attrs="{'invisible': [('state', 'in', ['in_progress', 'pending', 'done', 'cancel', 'order'])]}"/>
+                    <button name="action_pending" type="object"
+                            string="Set to Pending" data-hotkey="shift+v"
+                            attrs="{'invisible': [('state', 'in', ['pending', 'in_progress', 'done', 'cancel', 'order'])]}"/>
+                    <button name="mark_as_done" type="object" class="oe_highlight"
+                            string="Mark as Done" data-hotkey="shift+j"
+                            attrs="{'invisible': [('state', 'in', ['draft', 'done', 'cancel', 'order'])]}"/>
+                    <button name="action_cancel" type="object"
+                            string="Cancel" data-hotkey="shift+j"
+                            attrs="{'invisible': [('state', 'in', ['done', 'cancel', 'order'])]}"/>
+                    <button name="action_create_quotation" type="object" class="oe_highlight"
+                            string="Create RFQ" data-hotkey="shift+j"
+                            attrs="{'invisible': [('state', 'not in', ['done'])]}"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="get_purchase_order"
+                                string="Purchase Order"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-credit-card"
+                                attrs="{'invisible': [('order_id','=', False)]}">
+                        </button>
+                        <field name="order_id" invisible="1"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group name="rfq_header">
+                        <group name="order_details">
+                            <field name="product_id"/>
+                            <field name="quantity"/>
+                            <field name="estimated_quote"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="vendor_ids" widget="many2many_tags"/>
+                        </group>
+                        <group>
+                            <field name="quote_date"/>
+                            <field name="closing_date"/>
+                            <field name="estimated_delivery_date"/>
+                            <field name="approved_vendor_id" attrs="{'invisible': [('state', 'not in', ('done', 'order'))]}" readonly="1"/>
+
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Vendor Quote Details">
+                            <field name="vendor_quote_history_ids">
+                                <tree editable="bottom">
+                                    <field name="vendor_id"/>
+                                    <field name="quoted_price"/>
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="estimate_date"/>
+                                    <field name="note"/>
+                                </tree>
+                            </field>
+
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+              </form>
+        </field>
+    </record>
+
+    <record id="view_vendor_rfq_tree" model="ir.ui.view">
+        <field name="name">vendor.rfq.tree</field>
+        <field name="model">rfq.vendor</field>
+        <field name="priority">4</field>
+        <field name="arch" type="xml">
+            <tree string="Vendor RFQ" sample="1" decoration-success="state == 'done'"
+             decoration-info="state == 'in_progress'" decoration-muted="state == 'cancel'"
+             decoration-warning="state == 'pending'">
+                <field name="name" string="RFQ Reference"/>
+                <field name="product_id"/>
+                <field name="quantity"/>
+                <field name="estimated_quote" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="estimated_delivery_date"/>
+                <field name="closing_date"/>
+                <field name="vendor_ids" widget="many2many_tags"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_vendor_rfq" model="ir.actions.act_window">
+        <field name="name">Vendor Quotations</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">rfq.vendor</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Create new vendor quotations
+          </p>
+        </field>
+    </record>
+    <record id="action_vendor_rfq_progress" model="ir.actions.act_window">
+        <field name="name">In Progress</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">rfq.vendor</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('state','=','in_progress')]</field>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Create new vendor quotations
+          </p>
+        </field>
+    </record>
+    <record id="action_vendor_rfq_done" model="ir.actions.act_window">
+        <field name="name">Done</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">rfq.vendor</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('state','=','done')]</field>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Create new vendor quotations
+          </p>
+        </field>
+    </record>
+    <record id="action_vendor_request_for_quotation" model="ir.actions.act_window">
+        <field name="name">Request for Quotation</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('state','in', ['draft', 'sent'])]</field>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Create a new request for quotation
+          </p>
+        </field>
+    </record>
+    <record id="action_vendor_purchase_orders" model="ir.actions.act_window">
+        <field name="name">Purchase Order</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('state','in', ['purchase', 'done'])]</field>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Create a new purchase order
+          </p>
+        </field>
+    </record>
+
+
+</odoo>
