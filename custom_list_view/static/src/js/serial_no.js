@@ -23,7 +23,7 @@ ListRenderer.include({
     _renderHeader: function () {
         var $thead = this._super.apply(this, arguments);
         if (this.hasSelectors) {
-            $thead.find('th.o_list_record_selector').before($('<th>', {class: 'o_list_serial_number_header'}).html('SI.NO'));
+            $thead.find('th.o_list_record_selector').after($('<th>', {class: 'o_list_serial_number_header'}).html('SI.NO'));
         }
         return $thead;
     },
@@ -31,7 +31,7 @@ ListRenderer.include({
          var $rows = this._super(record);
     	 var index = this.state.data.indexOf(record)
 	    	if (this.hasSelectors) {
-	    		$rows.prepend($("<th class='o_list_serial_number'>").html(index+1));
+	    		$rows.find('td.o_list_record_selector').after($('<td>', {class: 'o_list_serial_number_header'}).html(index+1));
     	}
     	return $rows;
     },
