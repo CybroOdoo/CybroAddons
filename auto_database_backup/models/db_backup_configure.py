@@ -96,7 +96,7 @@ class AutoDatabaseBackup(models.Model):
     backup_filename = fields.Char(string='Backup Filename', help='For Storing generated backup filename')
     generated_exception = fields.Char(string='Exception', help='Exception Encountered while Backup generation')
     onedrive_client_id = fields.Char(string='Onedrive Client ID', copy=False)
-    onedrive_client_secret = fields.Char(string='Onedrive Client Secret', compy=False)
+    onedrive_client_secret = fields.Char(string='Onedrive Client Secret', copy=False)
     onedrive_access_token = fields.Char(string='Onedrive Access Token', copy=False)
     onedrive_refresh_token = fields.Char(string='Onedrive Refresh Token', copy=False)
     onedrive_token_validity = fields.Datetime(string='Onedrive Token Validity', copy=False)
