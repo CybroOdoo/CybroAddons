@@ -32,7 +32,7 @@
     'website': "https://www.cybrosys.com",
     'depends': ['account'],
     'data': [
-        'views/account_line_view.xml',
+        'views/invoice_line_view.xml',
         'views/bill_line_view.xml',
         'views/credit_note_line_view.xml',
         'views/refund_line_view.xml',
