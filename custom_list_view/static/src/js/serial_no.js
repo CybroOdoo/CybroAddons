@@ -13,10 +13,11 @@ ListRenderer.include({
 		return columns;
     },
 
-
     _renderFooter: function () {
         const $footer = this._super.apply(this, arguments);
+        if(this.hasSelectors){
         $footer.find('tr').prepend($('<td>'));
+        }
         return $footer;
     },
 
@@ -35,5 +36,6 @@ ListRenderer.include({
     	}
     	return $rows;
     },
+
 });
 });
