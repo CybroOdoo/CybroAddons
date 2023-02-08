@@ -1,15 +1,14 @@
 odoo.define('pos_category_wise_receipt.receipt', function(require) {
     'use strict';
 
-//    var models =  require('point_of_sale.models');
     const OrderReceipt =require('point_of_sale.OrderReceipt');
     const Registries = require('point_of_sale.Registries');
+
 
    const CategoryOrderReceipt = OrderReceipt =>
         class extends OrderReceipt {
 
         get orderlines() {
-
             var order_lines = this.receiptEnv.orderlines;
 
             var categ = {
@@ -22,7 +21,6 @@ odoo.define('pos_category_wise_receipt.receipt', function(require) {
                     categ.category.push(order_lines[i].product.pos_categ_id[1]);
                 }
             }
-            console.log('hloo', categ)
             return categ;
         }
      }

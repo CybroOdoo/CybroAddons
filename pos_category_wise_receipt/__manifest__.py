@@ -19,7 +19,7 @@
 ##############################################################################
 {
     'name': 'POS Category wise receipt',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': 'Category wise receipt for the Point of Sale ',
     'author': 'Cybrosys Techno Solutions',
     'website': "http://www.cybrosys.com",
