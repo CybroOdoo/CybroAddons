@@ -36,7 +36,7 @@
         'security/view_cost_price.xml',
         'views/hide_product_cost.xml'
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,
 
