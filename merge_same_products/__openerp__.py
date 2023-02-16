@@ -29,7 +29,7 @@
     'depends': ['account', 'base', 'sale', 'purchase'],
     'license': 'AGPL-3',
     'data': [],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.gif'],
     'demo': [],
     'installable': True,
     'auto_install': False,
