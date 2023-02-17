@@ -127,7 +127,6 @@ class PartnerView(models.TransientModel):
         filters['category_list'] = data.get('category_list')
         filters['account_type_list'] = data.get('account_type_list')
         filters['target_move'] = data.get('target_move').capitalize()
-        print(filters, "filters")
         return filters
 
     def get_filter_data(self, option):
@@ -163,8 +162,6 @@ class PartnerView(models.TransientModel):
                 o_company = j.company_id
             accounts.append((j.id, j.name))
 
-
-        print(r.reconciled, "rec")
         filter_dict = {
             'journal_ids': r.journal_ids.ids,
             'account_ids': r.account_ids.ids,
@@ -294,7 +291,6 @@ class PartnerView(models.TransientModel):
         if data.get('partners'):
             WHERE += ' AND p.id IN %s' % str(
                 tuple(data.get('partners').ids) + tuple([0]))
-        print(data, "data")
         if data.get('reconciled') == 'unreconciled':
             WHERE += ' AND l.full_reconcile_id is null AND' \
                      ' l.balance != 0 AND a.reconcile is true'

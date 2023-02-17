@@ -111,10 +111,8 @@ class BalanceSheetView(models.TransientModel):
                                      'lang': 'en_US'}}
 
         account_lines = self.get_account_lines(new_data)
-        print("account_lines",account_lines)
         report_lines = self.view_report_pdf(account_lines, new_data)[
             'report_lines']
-        print("report_lines",report_lines)
         move_line_accounts = []
         move_lines_dict = {}
 

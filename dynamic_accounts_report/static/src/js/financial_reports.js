@@ -85,35 +85,32 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                         method: 'view_report',
                         args: [[this.wizard_id], action_title, self.searchModel.config.context.lang],
                     }).then(function(datas) {
+                        if (initial_render) {
+                            self.$('.filter_view_dfr').html(QWeb.render('DfrFilterView', {
+                                filter_data: datas['filters'],
+                                title : datas['name'],
+                            }));
+                            self.$el.find('.journals').select2({
+                                placeholder: ' Journals...',
+                            });
+                            self.$el.find('.account').select2({
+                                placeholder: ' Accounts...',
+                            });
+                            self.$el.find('.account-tag').select2({
+                                placeholder: 'Account Tag...',
+                            });
+                            self.$el.find('.analytics').select2({
+                                placeholder: 'Analytic Accounts...',
+                            });
+                            self.$el.find('.analytic-tag').select2({
+                                placeholder: 'Analytic Tag...',
+                            });
+                            self.$el.find('.target_move').select2({
+                                placeholder: 'Target Move...',
+                            });
 
-
-                            console.log('Balance sheet values..........',datas)
-                            if (initial_render) {
-                                    self.$('.filter_view_dfr').html(QWeb.render('DfrFilterView', {
-                                        filter_data: datas['filters'],
-                                        title : datas['name'],
-                                    }));
-                                    self.$el.find('.journals').select2({
-                                        placeholder: ' Journals...',
-                                    });
-                                    self.$el.find('.account').select2({
-                                        placeholder: ' Accounts...',
-                                    });
-                                    self.$el.find('.account-tag').select2({
-                                        placeholder: 'Account Tag...',
-                                    });
-                                    self.$el.find('.analytics').select2({
-                                        placeholder: 'Analytic Accounts...',
-                                    });
-                                    self.$el.find('.analytic-tag').select2({
-                                        placeholder: 'Analytic Tag...',
-                                    });
-                                    self.$el.find('.target_move').select2({
-                                        placeholder: 'Target Move...',
-                                    });
-
-                            }
-                            var child=[];
+                        }
+                        var child=[];
                         self.$('.table_view_dfr').html(QWeb.render('dfr_table', {
 
                                             report_lines : datas['report_lines'],
@@ -242,7 +239,6 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
             var account_ids = [];
             var account_text = [];
             var account_res = document.getElementById("acc_res")
-            console.log('account.value....',account_res.value)
             var account_list = $(".account").select2('data')
             for (var i = 0; i < account_list.length; i++) {
                 if(account_list[i].element[0].selected === true){

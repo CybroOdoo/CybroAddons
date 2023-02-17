@@ -24,7 +24,6 @@ class TBXLSXReportController(http.Controller):
                         ('Content-Disposition', content_disposition(report_name + '.xlsx'))
                     ]
                 )
-                print('report data in controller: ', report_data)
                 report_obj.get_dynamic_xlsx_report(options, response, report_data, dfr_data)
 
             response.set_cookie('fileToken', token)

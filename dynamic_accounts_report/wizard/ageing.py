@@ -59,7 +59,6 @@ class AgeingView(models.TransientModel):
         records = self._get_report_values(data)
 
         currency = self._get_currency()
-        print(records['Partners'])
         return {
             'name': "Partner Ageing",
             'type': 'ir.actions.client',

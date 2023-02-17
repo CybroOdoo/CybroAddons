@@ -94,7 +94,6 @@ class BalanceSheet(models.TransientModel):
 
         res = {}
         fields = ['credit', 'debit', 'balance']
-        print("reportssssssss",reports)
         for report in reports:
             if report.id in res:
                 continue
@@ -128,7 +127,6 @@ class BalanceSheet(models.TransientModel):
             elif report.type == 'sum':
                 # it's the sum of the children of this account.report
                 res2 = self._compute_report_balance(report.children_ids)
-                print(fields,"ffff")
                 for key, value in res2.items():
                     for field in fields:
                         res[report.id][field] += value[field]
@@ -196,7 +194,6 @@ class BalanceSheet(models.TransientModel):
                 # used to display the details of the
                 #  financial report, so it's not needed here.
                 continue
-            print("get_account:",res[report.id])
             if res[report.id].get('account'):
                 sub_lines = []
                 for account_id, value \
@@ -247,7 +244,6 @@ class BalanceSheet(models.TransientModel):
                             flag = True
                     if flag:
                         sub_lines.append(vals)
-                    print("sub_lines",sub_lines)
                 lines += sorted(sub_lines,
                                 key=lambda sub_line: sub_line['name'])
         return lines

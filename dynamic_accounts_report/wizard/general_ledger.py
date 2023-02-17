@@ -46,7 +46,6 @@ class GeneralView(models.TransientModel):
 
     @api.model
     def view_report(self, option, title):
-        print("view_report")
         r = self.env['account.general.ledger'].search([('id', '=', option[0])])
         self = r
         new_title = ''
@@ -102,7 +101,6 @@ class GeneralView(models.TransientModel):
         filters = self.get_filter(option)
         records = self._get_report_values(data)
         currency = self._get_currency()
-        print('last return')
         return {
             'name': new_title,
             'type': 'ir.actions.client',
@@ -286,14 +284,12 @@ class GeneralView(models.TransientModel):
         return res
 
     def _get_accounts(self, accounts, init_balance, display_account, data):
-        print("function called..........")
         cr = self.env.cr
         MoveLine = self.env['account.move.line']
         move_lines = {x: [] for x in accounts.ids}
 
         # Prepare initial sql query and Get the initial move lines
         if init_balance and data.get('date_from'):
-            print("function called..2")
             init_tables, init_where_clause, init_where_params = MoveLine.with_context(
                 date_from=self.env.context.get('date_from'), date_to=False,
                 initial_bal=True)._query_get()
@@ -345,7 +341,6 @@ class GeneralView(models.TransientModel):
                 params = tuple(init_where_params)
             else:
                 params = (tuple(accounts.ids),) + tuple(init_where_params)
-            # print("aaaaaaaaaaaaaaaaaaaaaaa", params)
             cr.execute(sql, params)
             for row in cr.dictfetchall():
                 row['m_id'] = row['account_id']
@@ -402,8 +397,6 @@ class GeneralView(models.TransientModel):
             params = tuple(where_params)
         else:
             params = (tuple(accounts.ids),) + tuple(where_params)
-        # print("sql", sql)
-        # print("params", params)
         cr.execute(sql, params)
         account_res = cr.dictfetchall()
 
@@ -626,7 +619,6 @@ class GeneralView(models.TransientModel):
 
     def get_dynamic_xlsx_report(self, data, response, report_data, dfr_data):
         report_data_main = json.loads(report_data)
-        print('report data: ', report_data_main)
         output = io.BytesIO()
         name_data = json.loads(dfr_data)
         filters = json.loads(data)
@@ -721,8 +713,6 @@ class GeneralView(models.TransientModel):
                     sheet.write(row + 1, col + 7, line_data.get('debit'), txt)
                     sheet.write(row + 1, col + 8, line_data.get('credit'), txt)
                     sheet.write(row + 1, col + 9, line_data.get('balance'), txt)
-            else:
-                print('///////////',rec_data)
 
         workbook.close()
         output.seek(0)

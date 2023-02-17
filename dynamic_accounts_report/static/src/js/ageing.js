@@ -125,7 +125,6 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
 
                             }
                             var child=[];
-                            console.log(datas['report_lines'][0])
                         self.$('.table_view_tb').html(QWeb.render('Ageingtable', {
 
                                             report_lines : datas['report_lines'],
