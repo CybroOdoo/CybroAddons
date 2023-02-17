@@ -26,8 +26,10 @@ from odoo.tools import html_escape
 
 
 class TBXLSXReportController(http.Controller):
-    @http.route('/inventory_dynamic_xlsx_reports', type='http', auth='user', methods=['POST'], csrf=False)
-    def get_report_xlsx(self, model, options, output_format, report_data, report_name, dfr_data, **kw):
+    @http.route('/inventory_dynamic_xlsx_reports', type='http', auth='user',
+                methods=['POST'], csrf=False)
+    def get_report_xlsx(self, model, options, output_format, report_data,
+                        report_name, dfr_data, **kw):
         uid = request.session.uid
         report_obj = request.env[model].with_user(uid)
         dfr_data = dfr_data
@@ -39,10 +41,12 @@ class TBXLSXReportController(http.Controller):
                     None,
                     headers=[
                         ('Content-Type', 'application/vnd.ms-excel'),
-                        ('Content-Disposition', content_disposition(report_name + '.xlsx'))
+                        ('Content-Disposition',
+                         content_disposition(report_name + '.xlsx'))
                     ]
                 )
-                report_obj.get_inventory_xlsx_report(options, response, report_data, dfr_data)
+                report_obj.get_inventory_xlsx_report(options, response,
+                                                     report_data, dfr_data)
             response.set_cookie('fileToken', token)
             return response
         except Exception as e:

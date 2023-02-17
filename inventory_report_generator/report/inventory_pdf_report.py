@@ -30,7 +30,8 @@ class PurchaseOrder(models.AbstractModel):
         if self.env.context.get('inventory_pdf_report'):
 
             if data.get('report_data'):
-                data.update({'report_main_line_data': data.get('report_data')['report_lines'],
+                data.update({'report_main_line_data': data.get('report_data')[
+                    'report_lines'],
                              'Filters': data.get('report_data')['filters'],
                              'company': self.env.company,
                              })

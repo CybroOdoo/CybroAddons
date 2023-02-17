@@ -18,7 +18,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from . import models
 from . import report
 from . import controllers

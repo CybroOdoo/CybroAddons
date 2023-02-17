@@ -381,7 +381,6 @@ odoo.define('dynamic_accounts_report.partner_ledger', function (require) {
             var account_type_ids_text = [];
             var span_res = document.getElementById("type_res")
             var type_list = $(".type").select2('data')
-            console.log(type_list)
             for (var i = 0; i < type_list.length; i++) {
             if(type_list[i].element[0].selected === true)
             {account_type_id.push(parseInt(type_list[i].id))

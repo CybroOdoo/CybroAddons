@@ -1,6 +1,6 @@
 Inventory All In One Report Generator
 =====================================
-* Inventory All In One Dynamic Report For Odoo 15 community And Enterprise editions
+* Inventory All In One Dynamic Report For Odoo 16 community And Enterprise editions
 
 Installation
 ============

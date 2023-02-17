@@ -52,7 +52,6 @@ class AccountAccountCustom(models.Model):
                 [('type', '=', 'account_type')]):
             for rec in record.account_ids:
                 if rec.id == self._origin.id:
-                    print("function called")
                     record.write({"account_ids": [(3, rec.id)]})
                     if self.account_type.startswith("asset"):
                         for record1 in self.env[
@@ -64,7 +63,6 @@ class AccountAccountCustom(models.Model):
                                     {"account_ids": [(4, self._origin.id)]})
                     elif self.account_type.startswith(
                             "liability") or self.account_type == "equity":
-                        print('function_called...........')
                         for record1 in self.env[
                             'account.financial.report'].search(
                             [('type', '=', 'account_type')]):

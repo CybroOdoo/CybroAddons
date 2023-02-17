@@ -90,7 +90,6 @@ odoo.define('dynamic_partner_daybook.daybook', function (require) {
                         method: 'view_report',
                         args: [[this.wizard_id]],
                     }).then(function(datas) {
-                        console.log("data",datas)
                      _.each(datas['report_lines'], function(rep_lines) {
                             rep_lines.debit = self.format_currency(datas['currency'],rep_lines.debit);
                             rep_lines.credit = self.format_currency(datas['currency'],rep_lines.credit);

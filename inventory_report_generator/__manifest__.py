@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+# Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #
 #    You can modify it under the terms of the GNU AFFERO
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
@@ -12,7 +12,6 @@
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
-#
 #    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
 #    (AGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
@@ -21,7 +20,7 @@
 
 {
     'name': 'Inventory All In One Report Generator',
-    'version': '15.0.1.1.1',
+    'version': '16.0.1.1.2',
     'summary': "Dynamic Inventory Report Generator",
     'description': "Dynamic Inventory Report Generator",
     'category': 'Inventory',

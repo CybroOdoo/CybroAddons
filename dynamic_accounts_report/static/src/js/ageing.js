@@ -260,11 +260,9 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
             var account_id = $(event.currentTarget).data('account-id');
 
             var partner_id = $(event.currentTarget)[0].cells[0].innerText;
-            console.log("partner_id",partner_id)
 
             var offset = 0;
             var td = $(event.currentTarget).next('tr').find('td');
-            console.log("td",td.length)
             if (td.length == 1) {
 
                     self._rpc({
@@ -274,8 +272,6 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
                             [self.wizard_id]
                         ],
                     }).then(function(data) {
-                    console.log(data)
-
 
                     _.each(data['report_lines'][0], function(rep_lines) {
                     _.each(rep_lines['child_lines'], function(child_line) {
@@ -305,7 +301,6 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
         },
 
         view_acc_move: function(event) {
-            console.log("view_acc_move")
             event.preventDefault();
             var self = this;
             var context = {};
@@ -344,7 +339,6 @@ odoo.define('dynamic_accounts_report.ageing', function (require) {
 
 
         apply_filter: function(event) {
-            console.log("filter")
             event.preventDefault();
             var self = this;
             self.initial_render = false;

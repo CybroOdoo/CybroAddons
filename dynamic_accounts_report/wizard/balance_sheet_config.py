@@ -123,7 +123,6 @@ class BalanceSheet(models.TransientModel):
                 #     states = [report.account_type_ids]
 
                 """end"""
-                print(report)
                 accounts = self.env['account.account'].search([
                     ('account_type', 'in',
                      report.account_ids.mapped('account_type'))

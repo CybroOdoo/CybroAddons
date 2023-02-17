@@ -1,7 +1,7 @@
-## Module <sale_report_generator>
+## Module <inventory_report_generator>
 
-#### 14.10.2022
-#### Version 16.0.1.0.0
+#### 16.02.2023
+#### Version 16.0.1.1.2
 #### ADD
 Initial Commit
 
