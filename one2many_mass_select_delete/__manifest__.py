@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'One2many Mass Select Delete Widget',
-    'version': "16.0.1.0.0",
+    'version': "16.0.1.0.1",
     'summary': """One2many Mass Select/Deselect Widget""",
     'description': """One2many Mass Select/ Deselect Widget""",
     'category': 'Tools',
@@ -29,13 +29,11 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['web'],
+    'depends': ['web','base'],
     'assets': {
         'web.assets_backend': [
-            'one2many_mass_select_delete/static/src/js/widget.js',
-        ],
-        'web.assets_qweb': [
             'one2many_mass_select_delete/static/src/xml/widget_view.xml',
+            'one2many_mass_select_delete/static/src/js/widget.js',
         ],
     },
     'images': ['static/description/banner.png'],

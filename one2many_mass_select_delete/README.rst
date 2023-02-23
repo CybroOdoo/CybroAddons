@@ -22,6 +22,6 @@ Features
 Credits
 =======
 Developer: Nilmar Shereef @ cybrosys, shereef@cybrosys.in
-           version 16: Midilaj VK@cybrosys
+           version 16: Gayathri@cybrosys
 
 

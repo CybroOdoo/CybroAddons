@@ -1,146 +1,55 @@
-odoo.define('one2many_mass_select_delete.form_widgets', function (require) {
-	"use strict";
+/** @odoo-module */
 
-	var core = require('web.core');
-	var utils = require('web.utils');
-	var fieldRegistry = require('web.field_registry');
-	var ListRenderer = require('web.ListRenderer');
-	var rpc = require('web.rpc');
-	var FieldOne2Many = require('web.relational_fields').FieldOne2Many;
-	var _t = core._t;
+import { X2ManyField } from "@web/views/fields/x2many/x2many_field";
+import { registry } from "@web/core/registry";
+import { standardFieldProps } from "@web/views/fields/standard_field_props";
+import { ListRenderer } from "@web/views/list/list_renderer";
+import {listView} from '@web/views/list/list_view';
+import { patch } from "@web/core/utils/patch";
 
-	ListRenderer.include({
-		_updateSelection: function () {
-	        this.selection = [];
-	        var self = this;
-	        var $inputs = this.$('tbody .o_list_record_selector input:visible:not(:disabled)');
-	        var allChecked = $inputs.length > 0;
-	        $inputs.each(function (index, input) {
-	            if (input.checked) {
-	                self.selection.push($(input).closest('tr').data('id'));
-	            } else {
-	                allChecked = false;
-	            }
-	        });
-	        if(this.selection.length > 0){
-	        	$('.button_delete_order_lines').show()
-	            $('.button_select_order_lines').show()
+export class TestListRenderer extends ListRenderer {
+  get hasSelectors() {
+        this.props.allowSelectors = true
+        this.props.list.selection = true
+        return this.props.allowSelectors && !this.env.isSmall;
+    }
+    toggleRecordSelection(record) {
+        record.toggleSelection();
+    }
 
-	        }else{
-	        	$('.button_delete_order_lines').hide()
-	        	$('.button_select_order_lines').hide()
-             }
-	        this.$('thead .o_list_record_selector input').prop('checked', allChecked);
-	        this.trigger_up('selection_changed', { selection: this.selection });
-	        this._updateFooter();
-	    },
-	})
-
-    var One2manyDelete = FieldOne2Many.extend({
-		template: 'One2manyDelete',
-		events: {
-			"click .button_delete_order_lines": "delete_selected_lines",
-			"click .button_select_order_lines": "selected_lines",
-		},
-		init: function() {
-	        this._super.apply(this, arguments);
-	    },
-		delete_selected_lines: function()
-		{
-			var self=this;
-			var current_model = this.recordData[this.name].model;
-			var selected_lines = self.find_deleted_lines();
-			if (selected_lines.length === 0)
-			{
-				return this.displayNotification({ message: _t('Please Select at least One Record.'), type: 'danger' });
-			}
-
-			var w_response = confirm("Dou You Want to Delete ?");
-			if (w_response) {
-                rpc.query({
-                    'model': current_model,
-                    'method': 'unlink',
-                    'args': [selected_lines],
-                }).then(function(result){
-                    self.trigger_up('reload');
-                });
-             }
-		},
-		selected_lines: function()
-		{
-			var self=this;
-			var current_model = this.recordData[this.name].model;
-			var selected_lines = self.find_selected_lines();
-			if (selected_lines.length === 0)
-			{
-				return this.displayNotification({ message: _t('Please Select at least One Record.'), type: 'danger' });
-			}
-			var w_response = confirm("Dou You Want to Select ?");
-			if (w_response) {
-
-			rpc.query({
-                'model': current_model,
-                'method': 'unlink',
-                'args': [selected_lines],
-            }).then(function(result){
-                self.trigger_up('reload');
-            });
+}
+export class TestX2ManyField extends X2ManyField {
+    get hasSelected(){
+        return this.list.records.filter((rec) => rec.selected).length
+    }
+    deleteSelected(){
+        var w_response = confirm("Dou You Want to Delete ?");
+        if (w_response){
+            console.log(this.list.records)
+            let selected = this.list.records.filter((rec) => rec.selected)
+            if (this.activeActions.onDelete) {
+                selected.forEach((rec) => {
+                        this.activeActions.onDelete(rec);
+                })
             }
-		},
-		_getRenderer: function () {
-            if (this.view.arch.tag === 'kanban') {
-                return One2ManyKanbanRenderer;
+        }
+    }
+    deleteUnselected(){
+         var w_response = confirm("Dou You Want to Select?");
+         if (w_response){
+             let unselected = this.list.records.filter((rec) => !rec.selected)
+            if (this.activeActions.onDelete) {
+                unselected.forEach((rec) => {
+                        this.activeActions.onDelete(rec);
+                })
             }
-            if (this.view.arch.tag === 'tree') {
-                return ListRenderer.extend({
-                    init: function (parent, state, params) {
-                        this._super.apply(this, arguments);
-                        this.hasSelectors = true;
-                    },
-                });
-            }
-            return this._super.apply(this, arguments);
-        },
-		find_deleted_lines: function () {
-            var self=this;
-            var selected_list =[];
-            this.$el.find('td.o_list_record_selector input:checked')
-                    .closest('tr').each(function () {
-                        selected_list.push(parseInt(self._getResId($(this).data('id'))));
-            });
-            return selected_list;
-        },
+        }
+    }
+}
+TestX2ManyField.components = {
+    ...X2ManyField.components, ListRenderer: TestListRenderer
+};
+TestX2ManyField.template = "one2many_mass_select_delete.One2manyDelete";
 
-		find_selected_lines: function ()
-	   {   var self = this;
-           var selected_list =[];
-		   var selected_list1 =[];
-		   var selected_list2 =[];
-	       this.$el.find('td.o_list_record_selector input:checked')
-	               .closest('tr').each(function () {
-	               	selected_list.push(parseInt(self._getResId($(this).data('id'))));
-	       			});
-		   if (selected_list.length != 0) {
-			   this.$el.find('td.o_list_record_selector')
-				   .closest('tr').each(function () {
-				   selected_list1.push(parseInt(self._getResId($(this).data('id'))));
-			   });
-			   selected_list2 = selected_list1.filter(function (x) {
-				   return selected_list.indexOf(x) < 0
-			   });
-		   }
-		   return selected_list2;
-	   },
-    _getResId: function (recordId) {
-       var record;
-       utils.traverse_records(this.recordData[this.name], function (r) {
-       if (r.id === recordId) {
-            record = r;
-       }
-        });
-            return record.res_id;
-        },
 
-	});
-	fieldRegistry.add('one2many_delete', One2manyDelete);
-});
+registry.category("fields").add("one2many_delete", TestX2ManyField);
