@@ -19,8 +19,7 @@ Contacts
 Credits
 --------
 * Developer: Amal Prasad @ Cybrosys,
-             Alakananda @ Cybrosys
-             V16 Archana V @ Cybrosys
+             Archana V   @ Cybrosys
 
 Bug Tracker
 -----------

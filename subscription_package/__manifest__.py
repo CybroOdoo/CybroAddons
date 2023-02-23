@@ -48,6 +48,7 @@
         'views/mail_activity_views.xml',
         'views/res_partner.xml',
         'views/recurrence_views.xml',
+        'views/sale_order_inherit.xml',
         'report/subscription_report_view.xml',
     ],
     'images': ['static/description/banner.png'],

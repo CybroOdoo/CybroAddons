@@ -24,6 +24,7 @@ from odoo import models, fields
 
 
 class RecurrencePeriod(models.Model):
+    """This class is used to create new model recurrence period"""
     _name = "recurrence.period"
     _description = "Recurrence Period "
 
@@ -36,6 +37,7 @@ class RecurrencePeriod(models.Model):
 
 
 class SubPackages(models.Model):
+    """ This function is used to inherit subscription packages"""
     _inherit = 'subscription.package'
 
     recurrence_period_id = fields.Many2one("recurrence.period" , string= "Recurrence Period")

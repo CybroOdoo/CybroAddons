@@ -103,11 +103,14 @@ class SubscriptionPlan(models.Model):
         """ It displays products based on subscription plan """
         return {
             'name': 'Products',
+            'res_model': 'product.product',
             'domain': [('subscription_plan_id', '=', self.id)],
             'view_type': 'form',
-            'res_model': 'product.product',
             'view_mode': 'tree,form',
             'type': 'ir.actions.act_window',
+            'context': {
+                'default_is_subscription': True,
+            },
         }
 
     def button_sub_count(self):

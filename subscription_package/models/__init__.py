@@ -28,3 +28,4 @@ from . import subscription_close
 from . import subscription_renew
 from . import res_partner
 from.import recurrence_period
+from . import sale_order

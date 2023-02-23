@@ -23,7 +23,8 @@
 from odoo import api, models, fields
 
 
-class SubscriptionInvoice(models.Model):
+class AccountMove(models.Model):
+    """Inherited sale order model"""
     _inherit = "account.move"
 
     is_subscription = fields.Boolean(string='Is Subscription', default=False)
@@ -40,10 +41,11 @@ class SubscriptionInvoice(models.Model):
                 new_vals_list = [{'is_subscription': True,
                                   'subscription_id': so_id.subscription_id}]
                 vals_list[0].update(new_vals_list[0])
-        return super(SubscriptionInvoice, self).create(vals_list)
+        return super().create(vals_list)
 
 
-class SubscriptionProduct(models.Model):
+class Product(models.Model):
+    """Inherited product template model"""
     _inherit = "product.template"
 
     is_subscription = fields.Boolean(string='Is Subscription', default=False)

@@ -20,11 +20,12 @@
 #
 #############################################################################
 
-from odoo import api, models, fields
 import datetime
+from odoo import api, models, fields
 
 
-class SubscriptionSaleOrder(models.Model):
+class SaleOrder(models.Model):
+    """Inherited sale order model"""
     _inherit = "sale.order"
 
     is_subscription = fields.Boolean(string='Is Subscription', default=False)
@@ -36,15 +37,12 @@ class SubscriptionSaleOrder(models.Model):
     @api.model
     def create(self, vals):
         """ It displays subscription in sale order """
-        if vals.get('is_subscription') is True:
-            new_vals = [{
+        if vals.get('is_subscription'):
+            vals.update({
                 'is_subscription': True,
                 'subscription_id': vals.get('subscription_id'),
-            }]
-            vals.update(new_vals[0])
-            return super(SubscriptionSaleOrder, self).create(vals)
-        else:
-            return super(SubscriptionSaleOrder, self).create(vals)
+            })
+        return super().create(vals)
 
     @api.depends('subscription_id')
     def _compute_reference_code(self):
@@ -56,7 +54,7 @@ class SubscriptionSaleOrder(models.Model):
         """ It Changed the stage, to renew, start date for subscription
         package based on sale order confirm """
 
-        res = super(SubscriptionSaleOrder, self).action_confirm()
+        res = super().action_confirm()
         sale_order = self.subscription_id.sale_order
         so_state = self.search([('id', '=', sale_order.id)]).state
         if so_state in ['sale', 'done']:

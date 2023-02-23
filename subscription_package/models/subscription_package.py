@@ -20,13 +20,14 @@
 #
 #############################################################################
 
-from odoo import _, api, models, fields, SUPERUSER_ID
 import datetime
-from odoo.exceptions import UserError
 from dateutil.relativedelta import relativedelta
+from odoo import _, api, models, fields, SUPERUSER_ID
+from odoo.exceptions import UserError
 
 
 class SubscriptionPackageProductLine(models.Model):
+    """Subscription Package Product Line Model"""
     _name = 'subscription.package.product.line'
     _description = 'Subscription Product Lines'
 
@@ -69,12 +70,11 @@ class SubscriptionPackageProductLine(models.Model):
 
 
 class SubscriptionPackage(models.Model):
+    """Subscription Package Model"""
     _name = 'subscription.package'
     _description = 'Subscription Package'
     _rec_name = 'name'
     _inherit = ['mail.thread', 'mail.activity.mixin']
-
-
 
     @api.model
     def _read_group_stage_ids(self, categories, domain, order):
@@ -111,7 +111,7 @@ class SubscriptionPackage(models.Model):
                                  default=lambda self: self.env.company,
                                  required=True)
     user_id = fields.Many2one('res.users', string='Sales Person',
-                              default=lambda self: self.env.uid)
+                              default=lambda self: self.env.user)
     sale_order = fields.Many2one('sale.order', string="Sale Order")
     to_renew = fields.Boolean(string='To Renew', default=False)
     tag_ids = fields.Many2many('account.account.tag', string='Tags')
@@ -129,9 +129,8 @@ class SubscriptionPackage(models.Model):
                                        'subscription_id', ondelete='restrict',
                                        string='Products Line')
     currency_id = fields.Many2one('res.currency', string='Currency',
-                                  readonly=True,
-                                  default=lambda
-                                      self: self.env.company.currency_id)
+                                  readonly=True, default=lambda
+            self: self.env.company.currency_id)
     current_stage = fields.Char(string='Current Stage', default='Draft',
                                 store=True, compute='_compute_current_stage')
     reference_code = fields.Char(string='Reference', store=True)
@@ -146,9 +145,15 @@ class SubscriptionPackage(models.Model):
                                          compute='_compute_total_recurring_price',
                                          store=True)
 
+    """ Calculate Invoice count based on subscription package """
+
     @api.depends('invoice_count')
     def _compute_invoice_count(self):
-        """ Calculate Invoice count based on subscription package """
+        sale_id = self.env['sale.order'].search(
+            [('id', '=', self.sale_order.id)])
+        invoices = sale_id.order_line.invoice_lines.move_id.filtered(
+            lambda r: r.move_type in ('out_invoice', 'out_refund'))
+        invoices.write({'subscription_id': self.id})
         invoice_count = self.env['account.move'].search_count(
             [('subscription_id', '=', self.id)])
         if invoice_count > 0:
@@ -160,7 +165,7 @@ class SubscriptionPackage(models.Model):
     def _compute_sale_count(self):
         """ Calculate sale order count based on subscription package """
         self.so_count = self.env['sale.order'].search_count(
-            [('subscription_id', '=', self.id)])
+            [('id', '=', self.sale_order.id)])
 
     @api.depends('stage_id')
     def _compute_current_stage(self):
@@ -196,7 +201,7 @@ class SubscriptionPackage(models.Model):
         """ It displays sale order based on subscription package """
         return {
             'name': 'Products',
-            'domain': [('subscription_id', '=', self.id)],
+            'domain': [('id', '=', self.sale_order.id)],
             'view_type': 'form',
             'res_model': 'sale.order',
             'view_mode': 'tree,form',
@@ -224,8 +229,10 @@ class SubscriptionPackage(models.Model):
             rec_list = [0, 0, {'product_id': rec.product_id.id,
                                'quantity': rec.product_qty}]
             this_products_line.append(rec_list)
-        invoices = self.env['account.move'].search([('subscription_id', '=', self.id), ('state', '=', 'draft')])
-        orders = self.env['sale.order'].search([('subscription_id', '=', self.id), ('invoice_status', '=', 'no')])
+        invoices = self.env['account.move'].search(
+            [('subscription_id', '=', self.id), ('state', '=', 'draft')])
+        orders = self.env['sale.order'].search(
+            [('subscription_id', '=', self.id), ('invoice_status', '=', 'no')])
         if invoices:
             for invoice in invoices:
                 invoice.action_post()
@@ -257,39 +264,38 @@ class SubscriptionPackage(models.Model):
 
     def button_start_date(self):
         """Button to start subscription package"""
-        print("kkkkkkkkkkkkkkkkkkkkkkkkkkkk")
-
         if not self.start_date:
-            
             self.start_date = datetime.date.today()
             for rec in self:
-                print((rec.env['subscription.package.stage'].search([
-                    ('category', '=', 'draft')]).id))
-                if len(rec.env['subscription.package.stage'].search([('category', '=', 'draft')])) > 1:
+                if len(rec.env['subscription.package.stage'].search(
+                        [('category', '=', 'draft')])) > 1:
                     raise UserError(
                         _('More than one stage is having category "Draft". '
                           'Please change category of stage to "In Progress", '
                           'only one stage is allowed to have category "Draft"'))
                 else:
-                    print( (rec.env['subscription.package.stage'].search([
-                            ('category', '=', 'draft')]).id) )
                     rec.write(
-                        {'stage_id': (rec.env['subscription.package.stage'].search([
-                            ('category', '=', 'draft')]).id) + 1})
+                        {'stage_id': (rec.env[
+                                          'subscription.package.stage'].search(
+                            [
+                                ('category', '=', 'draft')]).id) + 1})
 
     def button_sale_order(self):
+
         """Button to create sale order"""
         this_products_line = []
         for rec in self.product_line_ids:
             rec_list = [0, 0, {'product_id': rec.product_id.id,
                                'product_uom_qty': rec.product_qty}]
             this_products_line.append(rec_list)
-        # for order in self.sale_order:
-        orders = self.env['sale.order'].search([('subscription_id', '=', self.id), ('invoice_status', '=', 'no')])
+        orders = self.env['sale.order'].search(
+            [('id', '=', self.sale_order_count),
+             ('invoice_status', '=', 'no')])
         if orders:
             for order in orders:
                 order.action_confirm()
         so_id = self.env['sale.order'].create({
+            'id': self.sale_order_count,
             'partner_id': self.partner_id.id,
             'partner_invoice_id': self.partner_id.id,
             'partner_shipping_id': self.partner_id.id,
@@ -315,17 +321,18 @@ class SubscriptionPackage(models.Model):
         if vals.get('reference_code', 'New') is False:
             vals['reference_code'] = self.env['ir.sequence'].next_by_code(
                 'sequence.reference.code') or 'New'
-        create_id = super(SubscriptionPackage, self).create(vals)
+        create_id = super().create(vals)
         return create_id
 
     @api.depends('reference_code')
     def _compute_name(self):
         """It displays record name as combination of short code, reference
         code and partner name """
-        plan_id = self.env['subscription.package.plan'].search(
-            [('id', '=', self.plan_id.id)])
-        if plan_id.short_code and self.reference_code:
-            self.name = plan_id.short_code + '/' + self.reference_code + '-' + self.partner_id.name
+        for rec in self:
+            plan_id = self.env['subscription.package.plan'].search(
+                [('id', '=', rec.plan_id.id)])
+            if plan_id.short_code and rec.reference_code:
+                rec.name = plan_id.short_code + '/' + rec.reference_code + '-' + rec.partner_id.name
 
     def set_close(self):
         """ Button to close subscription package """
@@ -344,35 +351,37 @@ class SubscriptionPackage(models.Model):
         pending_subscription = False
         close_subscription = False
         for pending_subscription in pending_subscriptions:
-            pending_subscription.close_date = pending_subscription.start_date + relativedelta(
-                days=pending_subscription.plan_id.days_to_end)
-            difference = (
-                                 pending_subscription.close_date - pending_subscription.start_date).days / 10
-            renew_date = pending_subscription.close_date - relativedelta(
-                days=difference)
+            if pending_subscription.start_date:
+                pending_subscription.close_date = pending_subscription.start_date + relativedelta(
+                    days=pending_subscription.plan_id.days_to_end)
+            difference = (pending_subscription.close_date -
+                          pending_subscription.start_date).days / 10
+            renew_date = pending_subscription.close_date - relativedelta(days=difference)
             if today_date == renew_date:
+                pending_subscription.to_renew = True
                 self.env.ref(
                     'subscription_package.mail_template_subscription_renew').send_mail(
                     pending_subscription.id, force_send=True)
-                pending_subscription.write({'to_renew': True})
+
                 if pending_subscription.plan_id.invoice_mode == 'draft_invoice':
                     this_products_line = []
                     for rec in pending_subscription.product_line_ids:
                         rec_list = [0, 0, {'product_id': rec.product_id.id,
                                            'quantity': rec.product_qty}]
                         this_products_line.append(rec_list)
-                        self.env['account.move'].create(
-                            {
-                                'move_type': 'out_invoice',
-                                'date': fields.Date.today(),
-                                'invoice_date': fields.Date.today(),
-                                'state': 'draft',
-                                'partner_id': pending_subscription.partner_invoice_id.id,
-                                'currency_id': pending_subscription.partner_invoice_id.currency_id.id,
-                                'invoice_line_ids': this_products_line
-                            })
-                    pending_subscription.write({'to_renew': False,
-                                                'start_date': datetime.datetime.today()})
+                    b = self.env['account.move'].create(
+                        {
+                            'move_type': 'out_invoice',
+                            'subscription_id': pending_subscription.id,
+                            'date': fields.Date.today(),
+                            'invoice_date': fields.Date.today(),
+                            'state': 'draft',
+                            'partner_id': pending_subscription.partner_invoice_id.id,
+                            'currency_id': pending_subscription.partner_invoice_id.currency_id.id,
+                            'invoice_line_ids': this_products_line
+                        })
+                pending_subscription.write({'to_renew': False,
+                                            'start_date': datetime.datetime.today()})
         close_subscriptions = self.env['subscription.package'].search(
             [('stage_category', '=', 'progress'), ('to_renew', '=', True)])
         for close_subscription in close_subscriptions:

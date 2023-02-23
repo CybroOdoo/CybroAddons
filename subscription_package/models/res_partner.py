@@ -24,11 +24,11 @@ from odoo import fields, models
 
 
 class Partner(models.Model):
+    """Inherited res partner model"""
     _inherit = 'res.partner'
 
     active_subscription = fields.Boolean(string="Active Subscription",
                                          default=False)
-    subscription_product_line_ids = fields.One2many('subscription.package.product.line',
-                                                    'res_partner_id',
-                                                    ondelete='restrict',
-                                                    string='Products Line')
+    subscription_product_line_ids = fields.One2many(
+        'subscription.package.product.line', 'res_partner_id',
+        ondelete='restrict', string='Products Line')
