@@ -25,7 +25,6 @@ odoo.define('pos_multi_variant.model', function(require) {
         export_for_printing: function() {
             var line = _super_orderline.export_for_printing.apply(this,arguments);
             line.product_variants = this.product_variants;
-            console.log(line, "line")
             return line;
         },
     });

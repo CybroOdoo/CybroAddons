@@ -1,6 +1,5 @@
 odoo.define('pos_multi_variant.ProductScreen', function(require) {
     'use strict';
-
     var ProductScreen = require('point_of_sale.ProductScreen');
     const Registries = require('point_of_sale.Registries');
     const NumberBuffer = require('point_of_sale.NumberBuffer');
@@ -34,9 +33,11 @@ odoo.define('pos_multi_variant.ProductScreen', function(require) {
             }
 
             async _clickProduct(event) {
+            await super._clickProduct(...arguments)
                 if (!this.currentOrder) {
                     this.env.pos.add_new_order();
                 }
+
             const product = event.detail;
             var variant_product = ''
                 await rpc.query({
@@ -70,8 +71,6 @@ odoo.define('pos_multi_variant.ProductScreen', function(require) {
 
                 // Do not add product if options is undefined.
                 if (!options) return;
-                // Add the product after having the extra information.
-                this.currentOrder.add_product(product, options);
                 NumberBuffer.reset();
                 if(product.pos_variants)
                     this.showPopup('ProductsPopup',{

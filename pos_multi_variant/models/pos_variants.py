@@ -37,7 +37,7 @@ class VariantsSelection(models.Model):
     variants_id = fields.Many2one('product.template')
     attribute = fields.Many2one('product.attribute', string='Attribute', ondelete='restrict', required=True, index=True)
     value = fields.Many2many('product.attribute.value', string='Values')
-    extra_price = fields.Char(string="Price Extra")
+    extra_price = fields.Float(string="Price Extra")
     pos_active = fields.Boolean(string="Active")
 
 
