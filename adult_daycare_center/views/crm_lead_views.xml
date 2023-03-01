@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--    Daycare Request Action  -->
+    <record model="ir.actions.act_window" id="action_daycare_requests">
+            <field name="name">Day Care Requests</field>
+            <field name="res_model">crm.lead</field>
+            <field name="view_mode">tree,kanban,graph,pivot,calendar,form,activity</field>
+            <field name="domain">['|', ('type','=','lead'), ('type','=',False)]</field>
+            <field name="search_view_id" ref="crm.view_crm_case_leads_filter"/>
+            <field name="context">{
+                    'default_type':'lead',
+                    'search_default_type': 'lead',
+                    'search_default_to_process':1,
+                }
+            </field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a Lead
+                </p><p>
+                    Leads are the qualification step before the creation of an opportunity.
+                </p>
+            </field>
+    </record>
+
+<!--    Daycare Approved Request Action   -->
+    <record model="ir.actions.act_window" id="action_daycare_approved_requests">
+            <field name="name">Day Care Approved Request</field>
+            <field name="res_model">crm.lead</field>
+            <field name="view_mode">tree,kanban,graph,pivot,form,calendar,activity</field>
+            <field name="domain">[('type','=','opportunity')]</field>
+            <field name="context">{
+                    'default_type': 'opportunity',
+                    'search_default_assigned_to_me': 1
+            }</field>
+            <field name="search_view_id" ref="crm.view_crm_case_opportunities_filter"/>
+    </record>
+
+<!--    Inherited crm.lead form view    -->
+    <record id="daycare_crm_lead_form_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.form</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_updt_adult_info" string="Update Adult Information" type="object"
+                        class="oe_highlight" attrs="{'invisible': [('type', '=', 'lead')]}"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Day Care Information" name="daycare_info">
+                    <group>
+                        <group string="Personal Information">
+                            <field name="birth_date"/>
+                            <field name="gender"/>
+                            <label for="street" string="Address"/>
+                            <div class="o_address_format">
+                                <field name="street" placeholder="Street..." class="o_address_street"/>
+                                <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+                                <field name="city" placeholder="City" class="o_address_city"/>
+                                <field name="state_id" class="o_address_state" placeholder="State" options='{"no_open": True}'/>
+                                <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                                <field name="country_id" placeholder="Country" class="o_address_country" options='{"no_open": True, "no_create": True}'/>
+                            </div>
+                            <field name="medicaid"/>
+                            <field name="medicare"/>
+                        </group>
+                        <group>
+                            <field name="supplemental_income"/>
+                            <field name="interest_program"/>
+                            <field name="previous_experience"/>
+                            <field name="where_when"/>
+                            <field name="marital_status"/>
+                        </group>
+                        <group string="Relative Detail">
+                            <field name="present_living"/>
+                            <field name="living_with_whom"/>
+                            <field name="living_with"/>
+                            <field name="relationship_responsible_relative"/>
+                            <field name="nearest_relative"/>
+                            <field name="nearest_relative_relation"/>
+                            <field name="business_phone"/>
+                        </group>
+                        <group string="Emergency Detail">
+                            <field name="emergency_name"/>
+                            <field name="applicant_relationship"/>
+                            <field name="emergency_address"/>
+                            <field name="emergency_phone"/>
+                            <field name="emergency_name_1"/>
+                            <field name="applicant_relationship_2"/>
+                            <field name="emergency_address_1"/>
+                            <field name="emergency_phone_1"/>
+                        </group>
+                        <group string="Medical Information">
+                            <field name="physician_name"/>
+                            <field name="physician_address"/>
+                            <field name="physician_phone"/>
+                            <field name="physician_last_visit"/>
+                            <field name="dentist_name"/>
+                            <field name="dentist_address"/>
+                            <field name="dentist_phone"/>
+                            <field name="dentist_last_visit"/>
+                        </group>
+                        <group string="Transportation Information">
+                            <field name="transportation"/>
+                            <field name="arrival_time" widget="timesheet_uom"/>
+                            <field name="departure_time" widget="timesheet_uom"/>
+                            <field name="special_diet"/>
+                            <field name="responsible"/>
+                            <field name="paid_by"/>
+                            <field name="paid_by_name"/>
+                            <field name="paid_by_phone"/>
+                            <field name="your_email"/>
+                            <field name="hospital_name"/>
+                            <field name="today_date"/>
+                        </group>
+                        <group string="Other Information">
+                            <field name="diet_detail" attrs="{'invisible':[('special_diet','!=','yes')]}"/>
+                            <field name="allergies"/>
+                            <field name="time_request"/>
+                            <field name="employed_at"/>
+                            <field name="request_assurance"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
