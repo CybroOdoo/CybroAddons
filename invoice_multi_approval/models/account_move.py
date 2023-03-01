@@ -125,6 +125,17 @@ class AccountMove(models.Model):
         else:
             self.document_fully_approved = False
 
+    @api.model
+    def create(self, vals_list):
+        """
+            Super the create function adding approvers while create account move through sale /purchase
+        :param vals_list: dictionary with the detaisl of current record set
+        :return: record
+        """
+        res = super(AccountMove, self).create(vals_list)
+        res._onchange_partner_id()
+        return res
+
 
 class ApprovalLine(models.Model):
     _name = 'approval.line'

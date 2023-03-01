@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Invoice Multi level Approval",
-    'version': '16.0.1.0.0',
+    'version': '16.0.2.0.0',
     'summary': """This module add the multiple approval option for invoice,
     			  bill,refund and credit notes.""",
     'description': """This module add the multiple approval option for invoice,
