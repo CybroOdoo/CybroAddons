@@ -53,7 +53,7 @@
     ],
     'images': [
         'static/description/banner.png',
-        'static/description/fugestore.png',
+        'static/description/theme_screenshot.png',
     ],
     'license': 'LGPL-3',
     'installable': True,
