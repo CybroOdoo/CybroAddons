@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+<!--    SIGN IN FIELDS-->
+    <template id="coffee_auth_fields" inherit_id="auth_signup.fields" name="Auth Signup/ResetPassword form fields">
+        <xpath expr="//t" position="replace">
+
+            <div class="form-group">
+                <input type="text" name="login" t-att-value="login"
+                       id="login" class="login-input form-control form-control-sm"
+                       placeholder="Email" autofocus="autofocus"
+                       autocapitalize="off" required="required"
+                       t-att-readonly="'readonly' if only_passwords else None"
+                       style="margin-bottom: 15px;"/>
+            </div>
+            <div class="form-group">
+                <input type="text" name="name" t-att-value="name"
+                       id="name" class="login-input" placeholder="Your Name"
+                       style="margin-bottom: 15px;"
+                       required="required" t-att-readonly="'readonly' if only_passwords else None"
+                       t-att-autofocus="'autofocus' if login and not only_passwords else None" />
+            </div>
+            <div class="form-group">
+                <input type="password" name="password" id="password"
+                       class="login-input" placeholder="Password"
+                       style="margin-bottom: 15px;"
+                       required="required" t-att-autofocus="'autofocus' if only_passwords else None"/>
+            </div>
+            <div class="form-group">
+                <input type="password" name="confirm_password" id="confirm_password"
+                       class="login-input" placeholder="Confirm Password"
+                       style="margin-bottom: 15px;" required="required"/>
+            </div>
+
+        </xpath>
+    </template>
+
+
+<!--        SIGN UP-->
+    <template id="coffee_signup" name="Sign up login" inherit_id="auth_signup.signup">
+        <xpath expr="//t[@t-call='web.login_layout']" position="replace">
+             <t t-call="web.login_layout">
+                <section class="login-form-container show">
+                    <form style="width: 505px;height: auto;" role="form" method="post" t-if="not message">
+                        <input type="hidden" name="csrf_token"
+                               t-att-value="request.csrf_token()"/>
+                        <i class="fa-solid fa-xmark login-close">X</i>
+                        <div class="form-content">
+                            <h3 class="login-form-head">Create New Account
+                            </h3>
+                            <div class="form-group">
+                                <div class="o_login_auth">
+                                    <t t-call="auth_oauth.providers"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <input type="text" name="login" t-att-value="login"
+                                       id="login" class="login-input form-control form-control-sm"
+                                       placeholder="Email" autofocus="autofocus"
+                                       autocapitalize="off" required="required"
+                                       t-att-readonly="'readonly' if only_passwords else None"
+                                       style="margin-bottom: 15px;"/>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" name="name" t-att-value="name"
+                                       id="name" class="login-input" placeholder="Your Name"
+                                       style="margin-bottom: 15px;"
+                                       required="required" t-att-readonly="'readonly' if only_passwords else None"
+                                       t-att-autofocus="'autofocus' if login and not only_passwords else None" />
+                            </div>
+                            <div class="form-group">
+                                <input type="password" name="password" id="password"
+                                       class="login-input" placeholder="Password"
+                                       style="margin-bottom: 15px;"
+                                       required="required" t-att-autofocus="'autofocus' if only_passwords else None"/>
+                            </div>
+                            <div class="form-group">
+                                <input type="password" name="confirm_password" id="confirm_password"
+                                       class="login-input" placeholder="Confirm Password"
+                                       style="margin-bottom: 15px;" required="required"/>
+                            </div>
+
+                            <t t-set="only_passwords" t-value="bool(token and not invalid_token)"/>
+
+                            <input type="hidden" name="redirect" t-att-value="redirect"/>
+                            <input type="hidden" name="token" t-att-value="token"/>
+
+                            <button type="submit" class="login-google"> Sign up</button>
+                            <p class="register">
+                                <a t-attf-href="/web/login?{{ keep_query() }}" class="frgt-text" role="button">Already have an account?</a>
+                            </p>
+
+                        </div>
+                    </form>
+                </section>
+             </t>
+        </xpath>
+    </template>
+
+<!-- RESET PASSWORD-->
+
+    <template id="coffee_reset" inherit_id="auth_signup.reset_password" name="Reset password">
+        <xpath expr="//t[@t-call='web.login_layout']" position="replace">
+            <t t-call="web.login_layout">
+                <section class="login-form-container show">
+                    <form style="width: 445px;height: auto;"
+                         role="form" method="post" t-if="not message" >
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <i class="fa-solid fa-xmark login-close">X</i>
+                        <div class="form-content">
+                            <h3 class="login-form-head">Reset Password
+                            </h3>
+
+                            <t t-if="token and not invalid_token">
+                                <t t-call="auth_signup.fields">
+                                    <t t-set="only_passwords" t-value="1"/>
+                                </t>
+                            </t>
+                            <t t-if="not token">
+                                <div class="form-group">
+                                    <input type="text" name="login" t-att-value="login"
+                                           id="login" class="login-input" placeholder="Your Email"
+                                           style="margin-bottom: 15px;" autofocus="autofocus"
+                                           required="required" autocapitalize="off"/>
+                                </div>
+                            </t>
+                            <input type="hidden" name="redirect" t-att-value="redirect"/>
+                            <input type="hidden" name="token" t-att-value="token"/>
+                            <button type="submit" class="login-google" style="margin-bottom: 15px;">Reset Password</button>
+                            <p class="register">
+                                <a t-if="not token" t-attf-href="/web/login?{{ keep_query() }}" class="frgt-text">Back to Login</a>
+                                <a t-if="invalid_token" href="/web/login" class="frgt-text">Back to Login</a>
+                            </p>
+
+                        </div>
+
+                    </form>
+                </section>
+            </t>
+        </xpath>
+    </template>
+
+
+    <!--    TEMPLATE FOR LOGIN-->
+    <template id="coffee_user_sign_in" name="User Sign In" inherit_id="portal.user_sign_in">
+        <xpath expr="." position="replace">
+            <li t-nocache="Profile session and user group can change unrelated to parent caches."
+                t-nocache-_item_class="_item_class"
+                t-nocache-_link_class="_link_class"
+                groups="base.group_public" t-attf-class="#{_item_class} o_no_autohide_item">
+                <a t-attf-href="/web/login" t-attf-class="#{_link_class}">
+                    <span> Log in</span>
+                    <span t-if="request.session.profile_session" class="text-danger fa fa-circle"/>
+                </a>
+            </li>
+        </xpath>
+    </template>
+
+
+<!--    PROFILE-->
+    <template id="user_dropdown" name="Portal User Dropdown" inherit_id="portal.user_dropdown">
+        <xpath expr="//t" position="replace">
+        <t t-nocache="Each user is different regardless of the page visited."
+           t-nocache-_avatar="_avatar"
+           t-nocache-_icon="_icon"
+           t-nocache-_icon_class="_icon_class"
+           t-nocache-_user_name="_user_name"
+           t-nocache-_user_name_class="_user_name_class"
+           t-nocache-_item_class="_item_class"
+           t-nocache-_link_class="_link_class"
+           t-nocache-_dropdown_menu_class="_dropdown_menu_class">
+            <t t-set="is_connected" t-value="not user_id._is_public()"/>
+            <li t-if="is_connected" t-attf-class="#{_item_class} o_no_autohide_item">
+                <a href="#" role="button" data-bs-toggle="dropdown" t-attf-class="dropdown-toggle #{_link_class}">
+                    <t t-if="_avatar">
+                        <t t-set="avatar_source" t-value="image_data_uri(user_id.avatar_256)"/>
+                        <img t-att-src="avatar_source" t-attf-class="rounded-circle o_object_fit_cover #{_avatar_class}" width="24" height="24" alt="" loading="eager"/>
+                    </t>
+                    <i t-if="_icon" t-attf-class="fa fa-1x fa-fw fa-user-circle-o #{_icon_class}"/>
+                    <span t-if="_user_name" t-attf-class="#{_user_name_class}" t-esc="user_id.name[:23] + '...' if user_id.name and len(user_id.name) &gt; 25 else user_id.name"/>
+                </a>
+                <div t-attf-class=" dropdown-menu js_usermenu #{_dropdown_menu_class}" role="menu">
+                    <a groups="base.group_user" href="/web" role="menuitem" class="dropdown-item ps-3 my_coffee" id="o_backend_user_dropdown_link">
+                        Apps
+                    </a>
+                    <a href="/my/home" role="menuitem" class="dropdown-item ps-3 my_coffee ">
+                        My Account
+                    </a>
+                    <a t-attf-href="/web/session/logout?redirect=/" role="menuitem" id="o_logout" class="dropdown-item ps-3 my_coffee">
+                        Logout
+                    </a>
+                </div>
+            </li>
+        </t>
+        </xpath>
+    </template>
+
+
+<!--    LOGIN-->
+    <template id="coffee_login" inherit_id="web.login" name="Coffee login">
+        <xpath expr="//t[@t-call='web.login_layout']" position="replace">
+
+             <t t-call="web.login_layout">
+                 <section class="login-form-container show">
+
+                     <form action="" style="width: 505px;height: auto;"
+                  role="form" t-attf-action="/web/login" method="post"
+                  onsubmit="this.action = '/web/login' + location.hash">
+                <input type="hidden" name="csrf_token"
+                       t-att-value="request.csrf_token()"/>
+                <i class="fa-solid fa-xmark login-close">X</i>
+                <div class="form-content">
+                    <h3 class="login-form-head">Welcome to expresoo</h3>
+                    <div class="form-group">
+                        <div class="o_login_auth">
+                                <t t-call="auth_oauth.providers"></t>
+                        </div>
+                        <input type="text"
+                               class="login-input"
+                               placeholder="Email"
+                               name="login"
+                               t-att-value="login"
+                               id="login"
+                               required="required"
+                               autofocus="autofocus"
+                               autocapitalize="off"
+                               style="margin-bottom: 15px;"/>
+                    </div>
+                    <div class="form-group">
+                        <input type="password"
+                               class="login-input"
+                               placeholder="Password"
+                               name="password"
+                               id="password"
+                               required="required"
+                               autocomplete="current-password"
+                               t-att-autofocus="'autofocus' if login else None"
+                               maxlength="4096"/>
+                    </div>
+
+                    <div class="password-settings">
+                        <a t-if="signup_enabled" t-attf-href="/web/signup?{{ keep_query() }}" class="frgt-text">Create an account</a>
+                        <a t-if="reset_password_enabled" t-attf-href="/web/reset_password?{{ keep_query() }}" class="frgt-text">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="login-google">Login</button>
+                    <br></br>
+                    <t t-if="debug">
+                        <button type="submit" name="redirect" style="padding-top: 10px;" value="/web/become" class="btn btn-link btn-sm frgt-text">Log in as superuser</button>
+                    </t>
+                </div>
+                <input type="hidden" name="redirect" t-att-value="redirect"/>
+            </form>
+
+                 </section>
+            </t>
+        </xpath>
+
+    </template>
+
+
+<!--REMOVE 'OR' FROM LOGIN PAGE-->
+    <template id="remove_or" inherit_id="auth_oauth.providers">
+        <xpath expr="//t" position="replace">
+            <t t-if="len(providers) &gt; 0">
+                <em t-attf-class="d-block d-none text-center text-muted small my-#{len(providers) if len(providers) &lt; 3 else 3}">- or -</em>
+                <div class="o_auth_oauth_providers list-group mt-1 mb-1 text-start">
+                    <a t-foreach="providers" t-as="p" class="list-group-item list-group-item-action py-2 my_superlogin" t-att-href="p['auth_link']">
+                        <i t-att-class="p['css_class']"/>
+                        <t t-esc="p['body']"/>
+                    </a>
+                </div>
+                <p class="login-or">Or sign in with Email</p>
+            </t>
+        </xpath>
+    </template>
+
+
+</odoo>
