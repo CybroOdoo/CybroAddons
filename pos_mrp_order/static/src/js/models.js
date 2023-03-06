@@ -9,6 +9,7 @@ var rpc = require('web.rpc');
     var product_index = _.findIndex(existing_models, function (model) {
         return model.model === "product.product";
     });
+    console.log("product_model", product_model)
     var product_model = existing_models[product_index];
 
     product_model.fields.push('to_make_mrp');
@@ -40,7 +41,6 @@ var rpc = require('web.rpc');
                  }
 
               }
-
               if (list_product.length)
               {
                 rpc.query({
