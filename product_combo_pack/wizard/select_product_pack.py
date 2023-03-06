@@ -43,7 +43,8 @@ class SelectPack(models.TransientModel):
                 name += '\n' + self.product_id.description_sale
             self.env['sale.order.line'].create({
                 'product_id': self.product_id.id,
-                'price_unit': self.product_id.lst_price,
+                # 'price_unit': self.product_id.lst_price,
+                # 'pricelist_item_id': self.product_id.lst_price,
                 'product_uom': self.product_id.uom_id.id,
                 'product_uom_qty': self.quantity,
                 'order_id': sale_id.id,
