@@ -6,43 +6,70 @@ import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { ListRenderer } from "@web/views/list/list_renderer";
 import {listView} from '@web/views/list/list_view';
 import { patch } from "@web/core/utils/patch";
+import ajax from 'web.ajax';
+import rpc from 'web.rpc';
 
 export class TestListRenderer extends ListRenderer {
+
   get hasSelectors() {
         this.props.allowSelectors = true
-        this.props.list.selection = true
+        let list = this.props.list
+        list.selection = list.records.filter((rec) => rec.selected)
+        list.selectDomain = (value) => {
+            list.isDomainSelected = value;
+            list.model.notify();
+        }
         return this.props.allowSelectors && !this.env.isSmall;
     }
-    toggleRecordSelection(record) {
-        record.toggleSelection();
-    }
-
 }
 export class TestX2ManyField extends X2ManyField {
     get hasSelected(){
         return this.list.records.filter((rec) => rec.selected).length
     }
-    deleteSelected(){
-        var w_response = confirm("Dou You Want to Delete ?");
+    async deleteSelected(){
+
+        var current_model = this.field.relation;
+        var w_response = confirm("Do You Want to Delete ?");
         if (w_response){
-            console.log(this.list.records)
             let selected = this.list.records.filter((rec) => rec.selected)
-            if (this.activeActions.onDelete) {
-                selected.forEach((rec) => {
-                        this.activeActions.onDelete(rec);
-                })
-            }
+
+                this.list.records
+                var selected_list =[]
+                if (this.activeActions.onDelete) {
+                    selected.forEach((rec) => {
+                               selected_list.push(parseInt(rec.data.id))
+                    })
+                }
+            var self = this;
+            var response =  rpc.query({
+                                model: current_model,
+                                method: 'unlink',
+                                args: [selected_list],
+                                }).then(function(response){
+                                self.rendererProps.list.model.load()
+            });
         }
+
     }
     deleteUnselected(){
-         var w_response = confirm("Dou You Want to Select?");
+        var current_model = this.field.relation;
+         var w_response = confirm("Do You Want to Select?");
          if (w_response){
              let unselected = this.list.records.filter((rec) => !rec.selected)
-            if (this.activeActions.onDelete) {
-                unselected.forEach((rec) => {
-                        this.activeActions.onDelete(rec);
-                })
-            }
+            var unselected_list =[]
+                if (this.activeActions.onDelete) {
+                    unselected.forEach((rec) => {
+                               unselected_list.push(parseInt(rec.data.id))
+                    })
+                }
+            var self = this;
+            var response =  rpc.query({
+                                model: current_model,
+                                method: 'unlink',
+                                args: [unselected_list],
+                                }).then(function(response){
+                                self.rendererProps.list.model.load()
+            });
         }
     }
 }
