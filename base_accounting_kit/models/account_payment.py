@@ -53,6 +53,7 @@ class AccountRegisterPayments(models.TransientModel):
         return res
 
 
+
 class AccountPayment(models.Model):
     _inherit = "account.payment"
 
@@ -90,26 +91,26 @@ class AccountPayment(models.Model):
         sent and call print_checks() """
         # Since this method can be called via a client_action_multi, we
         # need to make sure the received records are what we expect
-        self = self.filtered(lambda r:
+        selfs = self.filtered(lambda r:
                              r.payment_method_id.code
                              in ['check_printing', 'pdc']
                              and r.state != 'reconciled')
-        if len(self) == 0:
+        if len(selfs) == 0:
             raise UserError(_(
                 "Payments to print as a checks must have 'Check' "
                 "or 'PDC' selected as payment method and "
                 "not have already been reconciled"))
-        if any(payment.journal_id != self[0].journal_id for payment in self):
+        if any(payment.journal_id != selfs[0].journal_id for payment in selfs):
             raise UserError(_(
                 "In order to print multiple checks at once, they "
                 "must belong to the same bank journal."))
 
-        if not self[0].journal_id.check_manual_sequencing:
+        if not selfs[0].journal_id.check_manual_sequencing:
             # The wizard asks for the number printed on the first
             # pre-printed check so payments are attributed the
             # number of the check the'll be printed on.
-            last_printed_check = self.search([
-                ('journal_id', '=', self[0].journal_id.id),
+            last_printed_check = selfs.search([
+                ('journal_id', '=', selfs[0].journal_id.id),
                 ('check_number', '!=', "0")], order="check_number desc",
                 limit=1)
             next_check_number = last_printed_check and int(
@@ -145,6 +146,11 @@ class AccountPayment(models.Model):
                 line[2]['date_maturity'] = self.effective_date
         return res
 
+    def mark_as_sent(self):
+        self.write({'is_move_sent': True})
+
+    def unmark_as_sent(self):
+        self.write({'is_move_sent': False})
 
 class AccountPaymentMethod(models.Model):
     _inherit = "account.payment.method"

@@ -26,6 +26,7 @@ from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models, _
+from odoo.addons.base.models.decimal_precision import dp
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
 from odoo.tools import float_compare, float_is_zero
@@ -39,6 +40,12 @@ class AccountAssetCategory(models.Model):
     name = fields.Char(required=True, index=True, string="Asset Type")
     company_id = fields.Many2one('res.company', string='Company',
                                  required=True, default=lambda self: self.env.company)
+    price=fields.Monetary(string='Price',required=True)
+    currency_id=fields.Many2one("res.currency",
+                                  default=lambda self: self.env
+                                  ['res.currency'].search([
+                                      ('name', '=', 'USD')]).id,
+                                  readonly=True, hide=True)
     account_analytic_id = fields.Many2one('account.analytic.account',
                                           string='Analytic Account',domain="[('company_id', '=', company_id)]")
     account_asset_id = fields.Many2one('account.account',
@@ -240,7 +247,9 @@ class AccountAssetAsset(models.Model):
     # @api.model
     # def _cron_generate_entries(self):
     #     self.compute_generated_entries(datetime.today())
-
+    @api.onchange('category_id')
+    def gross_value(self):
+        self.value=self.category_id.price
     @api.model
     def compute_generated_entries(self, date, asset_type=None):
         # Entries generated : one by grouped category and one by asset from ungrouped category
@@ -408,7 +417,7 @@ class AccountAssetAsset(models.Model):
                     'asset_id': self.id,
                     'sequence': sequence,
                     'name': (self.code or '') + '/' + str(sequence),
-                    'remaining_value': residual_amount,
+                    'remaining_value': residual_amount if residual_amount>=0 else 0.0,
                     'depreciated_value': self.value - (
                                 self.salvage_value + residual_amount),
                     'depreciation_date': depreciation_date.strftime(DF),
@@ -451,6 +460,8 @@ class AccountAssetAsset(models.Model):
                                                                  fields))
             asset.message_post(subject=_('Asset created'),
                                tracking_value_ids=tracking_value_ids)
+        self.set_to_close()
+
 
     def _get_disposal_moves(self):
         move_ids = []

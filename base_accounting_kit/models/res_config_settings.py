@@ -28,6 +28,9 @@ class ResConfigSettings(models.TransientModel):
 
     customer_credit_limit = fields.Boolean(string="Customer Credit Limit")
 
+    use_anglo_saxon_accounting = fields.Boolean(string="Use Anglo-Saxon accounting", readonly=False,
+                                                related='company_id.anglo_saxon_accounting')
+
     @api.model
     def get_values(self):
         res = super(ResConfigSettings, self).get_values()
