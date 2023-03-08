@@ -448,7 +448,6 @@ class GeneralView(models.TransientModel):
         return currency_array
 
     def get_accounts_line(self, account_id, title):
-
         trans_title = self.env['ir.translation'].search([('value', '=', title),
                                                          ('module', '=',
                                                           'dynamic_accounts_report')],
@@ -465,6 +464,7 @@ class GeneralView(models.TransientModel):
             else:
                 journals = self.env['account.journal'].search(
                     [('company_id', 'in', company_id)])
+
         if title == 'Bank Book' or trans_title == 'Bank Book':
             journals = self.env['account.journal'].search(
                 [('type', '=', 'bank'), ('company_id', 'in', company_id)])
@@ -479,17 +479,13 @@ class GeneralView(models.TransientModel):
             company_id = self.env.companies
             company_domain = [('company_id', 'in', company_id.ids)]
             accounts = self.env['account.account'].search(company_domain)
-
         cr = self.env.cr
         MoveLine = self.env['account.move.line']
         move_lines = {x: [] for x in accounts.ids}
-
-        # self.j
-
         # Prepare initial sql query and Get the initial move lines
         if self.date_from:
             init_tables, init_where_clause, init_where_params = MoveLine.with_context(
-                date_from=self.env.context.get('date_from'), date_to=False,
+                date_from=self.date_from, date_to=False,
                 initial_bal=True)._query_get()
             init_wheres = [""]
             if init_where_clause.strip():
@@ -509,7 +505,7 @@ class GeneralView(models.TransientModel):
                 new_filter += ' AND j.id IN %s' % str(
                     tuple(journals.ids) + tuple([0]))
             if accounts:
-                WHERE = "WHERE l.account_id IN %s" % str(
+                WHERE = " WHERE l.account_id IN %s" % str(
                     tuple(accounts.ids) + tuple([0]))
             else:
                 WHERE = "WHERE l.account_id IN %s"
@@ -518,7 +514,7 @@ class GeneralView(models.TransientModel):
                     tuple(self.analytic_ids.ids) + tuple([0]))
             if self.analytic_tag_ids:
                 WHERE += ' AND anltag.account_analytic_tag_id IN %s' % str(
-                    tuple(self.analytic_tags.ids) + tuple([0]))
+                    tuple(self.analytic_tag_ids.ids) + tuple([0]))
 
             sql = ("""SELECT 0 AS lid, l.account_id AS account_id, '' AS ldate, '' AS lcode, 0.0 AS amount_currency, '' AS lref, 'Initial Balance' AS lname, COALESCE(SUM(l.debit),0.0) AS debit, COALESCE(SUM(l.credit),0.0) AS credit, COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit), 0) as balance, '' AS lpartner_id,\
                         '' AS move_name, '' AS mmove_id, '' AS currency_code,\
@@ -538,7 +534,8 @@ class GeneralView(models.TransientModel):
             if self.account_ids:
                 params = tuple(init_where_params)
             else:
-                params = (tuple(accounts.ids),) + tuple(init_where_params)
+                # params = (tuple(accounts.ids)) + tuple(init_where_params)
+                params = init_where_params
             cr.execute(sql, params)
             for row in cr.dictfetchall():
                 row['m_id'] = row['account_id']
@@ -572,11 +569,11 @@ class GeneralView(models.TransientModel):
             WHERE = "WHERE l.account_id IN %s"
         if self.analytic_ids:
             WHERE += ' AND anl.id IN %s' % str(
-                tuple(self.analytics.ids) + tuple([0]))
+                tuple(self.analytic_ids.ids) + tuple([0]))
 
         if self.analytic_tag_ids:
             WHERE += ' AND anltag.account_analytic_tag_id IN %s' % str(
-                tuple(self.analytic_tags.ids) + tuple([0]))
+                tuple(self.analytic_tag_ids.ids) + tuple([0]))
 
         # Get move lines base on sql query and Calculate the total balance of move lines
         sql = ('''SELECT l.id AS lid,m.id AS move_id, l.account_id AS account_id, l.date AS ldate, j.code AS lcode, l.currency_id, l.amount_currency, l.ref AS lref, l.name AS lname, COALESCE(SUM(l.debit),0) AS debit, COALESCE(SUM(l.credit),0) AS credit, COALESCE(SUM(l.balance),0) AS balance,\
@@ -593,7 +590,6 @@ class GeneralView(models.TransientModel):
                + WHERE + new_final_filter + ''' GROUP BY l.id, m.id,  l.account_id, l.date, j.code, l.currency_id, l.amount_currency, l.ref, l.name, m.name, c.symbol, c.position, p.name ORDER BY l.date''')
 
         params = tuple(where_params)
-
         cr.execute(sql, params)
         account_ress = cr.dictfetchall()
         i = 0

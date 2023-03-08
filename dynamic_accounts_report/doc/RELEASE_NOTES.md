@@ -36,3 +36,8 @@
 #### Version 15.0.1.1.6
 #### UPDT AND BUGFIX
 - Report Bug Fix: Correct the currency used in the General Ledger
+
+#### 07.03.2023
+#### Version 15.0.1.1.7
+#### UPDT AND BUGFIX
+- Report Bug Fix: Fix the error occurs while opening the general ledger entries after filter.
