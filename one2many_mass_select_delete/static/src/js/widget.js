@@ -35,19 +35,28 @@ export class TestX2ManyField extends X2ManyField {
 
                 this.list.records
                 var selected_list =[]
-                if (this.activeActions.onDelete) {
                     selected.forEach((rec) => {
-                               selected_list.push(parseInt(rec.data.id))
+                               if (rec.data.id){
+                                    selected_list.push(parseInt(rec.data.id))}
+                                else{
+                                    if (this.activeActions.onDelete) {
+                                            selected.forEach((rec) => {
+                                                    this.activeActions.onDelete(rec);
+                                            })
+                                    }
+
+                                }
                     })
-                }
             var self = this;
-            var response =  rpc.query({
-                                model: current_model,
-                                method: 'unlink',
-                                args: [selected_list],
-                                }).then(function(response){
-                                self.rendererProps.list.model.load()
-            });
+            if (selected_list.length != 0){
+                var response =  await rpc.query({
+                                    model: current_model,
+                                    method: 'unlink',
+                                    args: [selected_list],
+                                    }).then(function(response){
+                                    self.rendererProps.list.model.load()
+                });
+                }
         }
 
     }
@@ -57,19 +66,29 @@ export class TestX2ManyField extends X2ManyField {
          if (w_response){
              let unselected = this.list.records.filter((rec) => !rec.selected)
             var unselected_list =[]
-                if (this.activeActions.onDelete) {
                     unselected.forEach((rec) => {
-                               unselected_list.push(parseInt(rec.data.id))
+                        if (rec.data.id){
+                                        unselected_list.push(parseInt(rec.data.id))
+                                        }
+                        else{
+                            if (this.activeActions.onDelete) {
+                                    unselected.forEach((rec) => {
+                                            this.activeActions.onDelete(rec);
+                                    })
+                            }
+
+                        }
                     })
-                }
             var self = this;
-            var response =  rpc.query({
-                                model: current_model,
-                                method: 'unlink',
-                                args: [unselected_list],
-                                }).then(function(response){
-                                self.rendererProps.list.model.load()
-            });
+            if (unselected_list.length != 0){
+                var response =  rpc.query({
+                                    model: current_model,
+                                    method: 'unlink',
+                                    args: [unselected_list],
+                                    }).then(function(response){
+                                    self.rendererProps.list.model.load()
+                });
+            }
         }
     }
 }

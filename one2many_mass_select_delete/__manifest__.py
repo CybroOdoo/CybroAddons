@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'One2many Mass Select Delete Widget',
-    'version': "16.0.1.0.1",
+    'version': "16.0.1.0.2",
     'summary': """One2many Mass Select/Deselect Widget""",
     'description': """One2many Mass Select/ Deselect Widget""",
     'category': 'Tools',
