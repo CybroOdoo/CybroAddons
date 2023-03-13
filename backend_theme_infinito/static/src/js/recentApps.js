@@ -26,7 +26,8 @@ InfinitoRecentApps.template = xml`
          <t t-foreach="recentApps" t-as="app" t-key="app">
             <a class="icon" t-attf-href="#menu_id={{app.app_id}}">
               <div class="img_wrapper">
-                <img class="sidebar_img" t-attf-src="data:image/svg+xml;base64,{{app.icon}}" width="40px" height="40px"/>
+                <img t-if="app.type=='svg'" class="sidebar_img" t-attf-src="data:image/svg+xml;base64,{{app.icon}}" width="40px" height="40px"/>
+                <img  t-if="app.type=='png'" class="sidebar_img" t-attf-src="data:image/png;base64,{{app.icon}}" width="40px" height="40px"/>
               </div>
               <span class="zoomIn" t-esc="app.name"/>
             </a>

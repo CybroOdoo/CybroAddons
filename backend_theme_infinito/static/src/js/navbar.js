@@ -309,7 +309,6 @@ patch(ControlPanel.prototype, 'backend_theme_infinito/static/src/js/navbar.Contr
             ev.target.classList.add("active");
             this.state.infinitoBookmarks.push(action_id)
             this.state.infinitoMenuBookmarks.push(book);
-            console.log(this.state)
         } else {
             let index = this.state.infinitoBookmarks.indexOf(action_id);
             this.state.infinitoBookmarks.splice(index, 1);

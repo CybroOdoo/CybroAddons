@@ -29,8 +29,19 @@ class RecentApps(models.Model):
     name = fields.Char(compute='_compute_icon', store=True)
     app_id = fields.Integer()
     icon = fields.Binary(compute='_compute_icon', store=True)
+    type = fields.Char(compute='_compute_type', store=True)
     user_id = fields.Many2one('res.users')
 
+    @api.depends('app_id')
+    def _compute_type(self):
+        menu_ui = self.env['ir.ui.menu']
+        for rec in self:
+            app = menu_ui.browse(rec.app_id)
+            la = str(app.web_icon)
+            spl_word = '.'
+            res = la.split(spl_word, 1)
+            splitString = res[1]
+            rec.type = splitString
     @api.depends('app_id')
     def _compute_icon(self):
         menu_ui = self.env['ir.ui.menu']
