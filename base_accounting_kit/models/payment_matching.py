@@ -1129,9 +1129,8 @@ class AccountBankStatementLine(models.Model):
 
         elif self.move_name:
             raise UserError(_('Operation not allowed. Since your statement line already received a number (%s), you cannot reconcile it entirely with existing journal entries otherwise it would make a gap in the numbering. You should book an entry and make a regular revert of it in case you want to cancel it.')% (self.move_name))
-
         # create the res.partner.bank if needed
-        if self.account_number and self.partner_id and not self.bank_account_id:
+        if self.account_number and self.partner_id and not self.statement_id:
             # Search bank account without partner to handle the case the res.partner.bank already exists but is set
             # on a different partner.
             self.partner_bank_id = self._find_or_create_bank_account()
