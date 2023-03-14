@@ -22,7 +22,7 @@
 
 {
     'name': 'Advanced Cash Flow Statements',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'summary': """Generate four levels of cash flow statement reports in PDF and Excel""",
     'description': """Generate four levels of cash flow statement reports in PDF and Excel, pdf report, excel report, cashflow, odoo15""",
     'author': "Cybrosys Techno Solutions",

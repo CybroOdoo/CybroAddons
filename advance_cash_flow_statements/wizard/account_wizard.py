@@ -250,7 +250,7 @@ class AccountWizard(models.TransientModel):
                 sheet.write(row_num + 1, col_num + 3, str(i['total_debit'] - i['total_credit']) + str(currency_symbol),
                             amount)
                 row_num = row_num + 1
-            elif data['levels'] == 'consolidated':
+            elif data['levels'] == 'consolidated' and i['name']:
                 sheet.write(row_num + 1, col_num, i['name'], txt_left)
                 sheet.write(row_num + 1, col_num + 1, str(i['total_debit']) + str(currency_symbol), amount)
                 sheet.write(row_num + 1, col_num + 2, str(i['total_credit']) + str(currency_symbol), amount)
