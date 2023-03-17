@@ -27,7 +27,7 @@ class CustomerFollowupCommunity(models.AbstractModel):
     _name = 'report.product_stock_details.report_followup_template'
 
     @api.model
-    def _get_report_values(self, docids, _):
+    def _get_report_values(self, docids, data):
         """Method for getting report values."""
         docs = self.env.context.get('active_ids')
         if docs is None:
