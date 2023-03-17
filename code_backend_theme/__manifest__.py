@@ -54,7 +54,7 @@
     },
     'images': [
         'static/description/banner.png',
-        'static/description/icon.png',
+        'static/description/theme_screenshot.png',
     ],
     'license': 'LGPL-3',
     'pre_init_hook': 'test_pre_init_hook',
