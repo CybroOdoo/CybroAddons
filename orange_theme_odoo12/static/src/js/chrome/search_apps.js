@@ -1,20 +1,17 @@
 /** @odoo-module */
-
 import { NavBar } from "@web/webclient/navbar/navbar";
-import { registry } from "@web/core/registry";
 const { fuzzyLookup } = require('@web/core/utils/search');
 import { computeAppsAndMenuItems } from "@web/webclient/menus/menu_helpers";
 import core from 'web.core';
-
-const commandProviderRegistry = registry.category("command_provider");
 const { onMounted } = owl;
-
 import { patch } from 'web.utils';
-var rpc = require('web.rpc');
+
+// patch NavaBar for searching apps and contents by extending navbar
 patch(NavBar.prototype, 'orange_theme_odoo12/static/src/js/chrome/search_apps.js', {
 
     //--------------------------------------------------------------------------
-    // Public
+    // For advance search bar feature, and this will enable a global search for apps and related content
+    //
     //--------------------------------------------------------------------------
 
     /**
@@ -28,25 +25,22 @@ patch(NavBar.prototype, 'orange_theme_odoo12/static/src/js/chrome/search_apps.js
         this._searchableMenus = menuItems;
         onMounted(this.onMounted);
     },
-
-
     onMounted() {
         this.$search_container = $(".search-container");
         this.$search_input = $(".search-input input");
         this.$search_results = $(".search-results");
         this.$app_menu = $(".app-menu");
-        this.$dropdown_menu = $(".dropdown-menu");
     },
+    // to show the search results
      _searchMenusSchedule: function () {
         this.$search_results.removeClass("o_hidden")
         this.$app_menu.addClass("o_hidden");
         this._search_def.reject();
         this._search_def = $.Deferred();
         setTimeout(this._search_def.resolve.bind(this._search_def), 50);
-
         this._search_def.done(this._searchMenus.bind(this));
     },
-
+    // function for searching all apps and content
     _searchMenus: function () {
         var query = this.$search_input.val();
         if (query === "") {
@@ -55,7 +49,7 @@ patch(NavBar.prototype, 'orange_theme_odoo12/static/src/js/chrome/search_apps.js
             this.$search_results.empty();
             return;
         }
-
+        // search for all apps
         var results = [];
         fuzzyLookup(query, this._apps, (menu) => menu.label)
         .forEach((menu) => {
@@ -67,7 +61,7 @@ patch(NavBar.prototype, 'orange_theme_odoo12/static/src/js/chrome/search_apps.js
                 webIconData: menu.webIconData,
             });
         });
-
+        // search for all content
         fuzzyLookup(query, this._searchableMenus, (menu) =>
             (menu.parents + " / " + menu.label).split("/").reverse().join("/")
         ).forEach((menu) => {
@@ -79,18 +73,11 @@ patch(NavBar.prototype, 'orange_theme_odoo12/static/src/js/chrome/search_apps.js
             });
         });
 
-        this.$search_container.toggleClass(
-            "has-results",
-            Boolean(results.length)
-        );
-        this.$search_results.html(
-            core.qweb.render(
-                "orange_theme_odoo12.SearchResults",
-                {
+        this.$search_container.toggleClass("has-results",Boolean(results.length));
+        this.$search_results.html( core.qweb.render("orange_theme_odoo12.SearchResults", {
                     results: results,
                     widget: this,
-                }
-            )
-        );
+                })
+                );
     },
 });

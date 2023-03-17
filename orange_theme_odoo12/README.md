@@ -24,8 +24,9 @@ Company
 
 Credits
 -------
-* 'Cybrosys Techno Solutions <https://cybrosys.com/>'__
-
+* Developer:
+    V16 Sigha Ck  @ Cybrosys
+* 
 Contacts
 --------
 * Mail Contact : odoo@cybrosys.com
