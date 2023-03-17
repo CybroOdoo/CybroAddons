@@ -460,7 +460,6 @@ class AccountAssetAsset(models.Model):
                                                                  fields))
             asset.message_post(subject=_('Asset created'),
                                tracking_value_ids=tracking_value_ids)
-        self.set_to_close()
 
 
     def _get_disposal_moves(self):
