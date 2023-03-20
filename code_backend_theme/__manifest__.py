@@ -25,7 +25,7 @@
     "description": """Minimalist and elegant backend theme for Odoo 16, Backend Theme, Theme""",
     "summary": "Code Backend Theme V16 is an attractive theme for backend",
     "category": "Themes/Backend",
-    "version": "16.0.1.0.0",
+    "version": "16.0.1.0.1",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
