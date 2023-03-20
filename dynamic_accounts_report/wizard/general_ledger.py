@@ -366,55 +366,54 @@ class GeneralView(models.TransientModel):
             WHERE = "WHERE l.account_id IN %s"
 
         # Get move lines base on sql query and Calculate the total balance of move lines
-        sql = ('''SELECT l.account_id AS account_id, a.code AS code,a.id AS id, a.name AS name, ROUND(COALESCE(SUM(l.debit),0),2) AS debit, ROUND(COALESCE(SUM(l.credit),0),2) AS credit, ROUND(COALESCE(SUM(l.balance),0),2) AS balance
-
-                            FROM account_move_line l\
-                            JOIN account_move m ON (l.move_id=m.id)\
-                            LEFT JOIN res_currency c ON (l.currency_id=c.id)\
-                            LEFT JOIN res_partner p ON (l.partner_id=p.id)\
-                            LEFT JOIN account_account_tag_account_move_line_rel acc ON (acc.account_move_line_id=l.id)
-                            JOIN account_journal j ON (l.journal_id=j.id)\
-                            JOIN account_account a ON (l.account_id = a.id) '''
-               + WHERE + new_final_filter + ''' GROUP BY l.account_id, a.code, a.name, a.id''')
+        sql = ('''SELECT l.id AS lid,m.id AS move_id, l.account_id AS account_id,
+                l.date AS ldate, j.code AS lcode, l.currency_id, l.amount_currency,
+                l.ref AS lref, l.name AS lname, COALESCE(l.debit,0) AS debit, 
+                COALESCE(l.credit,0) AS credit, COALESCE(SUM(l.balance),0) AS balance,
+                m.name AS move_name, c.symbol AS currency_code, p.name AS partner_name
+                    FROM account_move_line l
+                    JOIN account_move m ON (l.move_id=m.id)
+                    LEFT JOIN res_currency c ON (l.currency_id=c.id)
+                    LEFT JOIN res_partner p ON (l.partner_id=p.id)
+                    JOIN account_journal j ON (l.journal_id=j.id)
+                    JOIN account_account a ON (l.account_id = a.id) '''
+                    + WHERE + new_final_filter + ''' GROUP BY l.id, m.id,  l.account_id, l.date, j.code, l.currency_id, l.amount_currency, l.ref, l.name, m.name, c.symbol, c.position, p.name''' )
         if data.get('accounts'):
             params = tuple(where_params)
         else:
             params = (tuple(accounts.ids),) + tuple(where_params)
         cr.execute(sql, params)
-        account_res = cr.dictfetchall()
+
+        for row in cr.dictfetchall():
+            balance = 0
+            for line in move_lines.get(row['account_id']):
+                balance += round(line['debit'],2) - round(line['credit'],2)
+            row['balance'] += round(balance,2)
+            row['m_id'] = row['account_id']
+            move_lines[row.pop('account_id')].append(row)
+
+        # Calculate the debit, credit and balance for Accounts
+        account_res = []
+        for account in accounts:
+            currency = account.currency_id and account.currency_id or account.company_id.currency_id
+            res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
+            res['code'] = account.code
+            res['name'] = account.name
+            res['id'] = account.id
+            res['move_lines'] = move_lines[account.id]
+            for line in res.get('move_lines'):
+                res['debit'] += round(line['debit'],2)
+                res['credit'] += round(line['credit'],2)
+                res['balance'] = round(line['balance'],2)
+            if display_account == 'all':
+                account_res.append(res)
+            if display_account == 'movement' and res.get('move_lines'):
+                account_res.append(res)
+            if display_account == 'not_zero' and not currency.is_zero(
+                    res['balance']):
+                account_res.append(res)
 
         return account_res
-
-        # for row in cr.dictfetchall():
-        #     balance = 0
-        #     for line in move_lines.get(row['account_id']):
-        #         balance += round(line['debit'],2) - round(line['credit'],2)
-        #     row['balance'] += round(balance,2)
-        #     row['m_id'] = row['account_id']
-        #     move_lines[row.pop('account_id')].append(row)
-        #
-        # # Calculate the debit, credit and balance for Accounts
-        # account_res = []
-        # for account in accounts:
-        #     currency = account.currency_id and account.currency_id or account.company_id.currency_id
-        #     res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
-        #     res['code'] = account.code
-        #     res['name'] = account.name
-        #     res['id'] = account.id
-        #     res['move_lines'] = move_lines[account.id]
-        #     for line in res.get('move_lines'):
-        #         res['debit'] += round(line['debit'],2)
-        #         res['credit'] += round(line['credit'],2)
-        #         res['balance'] = round(line['balance'],2)
-        #     if display_account == 'all':
-        #         account_res.append(res)
-        #     if display_account == 'movement' and res.get('move_lines'):
-        #         account_res.append(res)
-        #     if display_account == 'not_zero' and not currency.is_zero(
-        #             res['balance']):
-        #         account_res.append(res)
-        #
-        # return account_res
 
     @api.model
     def _get_currency(self):
@@ -501,16 +500,16 @@ class GeneralView(models.TransientModel):
             # WHERE += ' AND anltag.account_analytic_tag_id IN %s' % str(
             #     tuple(self.analytic_tags.ids) + tuple([0]))
 
-            sql = ("""SELECT 0 AS lid, l.account_id AS account_id, '' AS ldate, '' AS lcode, 0.0 AS amount_currency, '' AS lref, 'Initial Balance' AS lname, COALESCE(SUM(l.debit),0.0) AS debit, COALESCE(SUM(l.credit),0.0) AS credit, COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit), 0) as balance, '' AS lpartner_id,\
-                        '' AS move_name, '' AS mmove_id, '' AS currency_code,\
-                        NULL AS currency_id,\
-                        '' AS invoice_id, '' AS invoice_type, '' AS invoice_number,\
-                        '' AS partner_name\
-                        FROM account_move_line l\
-                        LEFT JOIN account_move m ON (l.move_id=m.id)\
-                        LEFT JOIN res_currency c ON (l.currency_id=c.id)\
-                        LEFT JOIN res_partner p ON (l.partner_id=p.id)\
-                        LEFT JOIN account_move i ON (m.id =i.id)\
+            sql = ("""SELECT 0 AS lid, l.account_id AS account_id, '' AS ldate, '' AS lcode, 0.0 AS amount_currency, '' AS lref, 'Initial Balance' AS lname, COALESCE(SUM(l.debit),0.0) AS debit, COALESCE(SUM(l.credit),0.0) AS credit, COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit), 0) as balance, '' AS lpartner_id,
+                        '' AS move_name, '' AS mmove_id, '' AS currency_code,
+                        NULL AS currency_id,
+                        '' AS invoice_id, '' AS invoice_type, '' AS invoice_number,
+                        '' AS partner_name
+                        FROM account_move_line l
+                        LEFT JOIN account_move m ON (l.move_id=m.id)
+                        LEFT JOIN res_currency c ON (l.currency_id=c.id)
+                        LEFT JOIN res_partner p ON (l.partner_id=p.id)
+                        LEFT JOIN account_move i ON (m.id =i.id)
                         LEFT JOIN account_account_tag_account_move_line_rel acc ON (acc.account_move_line_id=l.id)
                         JOIN account_journal j ON (l.journal_id=j.id)"""
                    + WHERE + new_filter + ' GROUP BY l.account_id')
@@ -558,16 +557,18 @@ class GeneralView(models.TransientModel):
         #         tuple(self.analytic_tags.ids) + tuple([0]))
 
         # Get move lines base on sql query and Calculate the total balance of move lines
-        sql = ('''SELECT l.id AS lid,m.id AS move_id, l.account_id AS account_id, l.date AS ldate, j.code AS lcode, l.currency_id, l.amount_currency, l.ref AS lref, l.name AS lname, COALESCE(SUM(l.debit),0) AS debit, COALESCE(SUM(l.credit),0) AS credit, COALESCE(SUM(l.balance),0) AS balance,\
-                    m.name AS move_name, c.symbol AS currency_code, p.name AS partner_name\
-                    FROM account_move_line l\
-                    JOIN account_move m ON (l.move_id=m.id)\
-                    LEFT JOIN res_currency c ON (l.currency_id=c.id)\
-                    LEFT JOIN res_partner p ON (l.partner_id=p.id)\
-                    LEFT JOIN account_account_tag_account_move_line_rel acc ON (acc.account_move_line_id=l.id)
-                    JOIN account_journal j ON (l.journal_id=j.id)\
-                    JOIN account_account a ON (l.account_id = a.id) '''
-               + WHERE + new_final_filter + ''' GROUP BY l.id, m.id,  l.account_id, l.date, j.code, l.currency_id, l.amount_currency, l.ref, l.name, m.name, c.symbol, c.position, p.name ORDER BY l.date''')
+        sql = ('''SELECT l.id AS lid,m.id AS move_id, l.account_id AS account_id,
+                        l.date AS ldate, j.code AS lcode, l.currency_id, l.amount_currency,
+                        l.ref AS lref, l.name AS lname, COALESCE(l.debit,0) AS debit, 
+                        COALESCE(l.credit,0) AS credit, COALESCE(SUM(l.balance),0) AS balance,
+                        m.name AS move_name, c.symbol AS currency_code, p.name AS partner_name
+                            FROM account_move_line l
+                            JOIN account_move m ON (l.move_id=m.id)
+                            LEFT JOIN res_currency c ON (l.currency_id=c.id)
+                            LEFT JOIN res_partner p ON (l.partner_id=p.id)
+                            JOIN account_journal j ON (l.journal_id=j.id)
+                            JOIN account_account a ON (l.account_id = a.id) '''
+               + WHERE + new_final_filter + ''' GROUP BY l.id, m.id,  l.account_id, l.date, j.code, l.currency_id, l.amount_currency, l.ref, l.name, m.name, c.symbol, c.position, p.name''')
 
         params = tuple(where_params)
 
@@ -674,19 +675,19 @@ class GeneralView(models.TransientModel):
             sheet.write(row + 1, col + 7, rec_data['debit'], txt)
             sheet.write(row + 1, col + 8, rec_data['credit'], txt)
             sheet.write(row + 1, col + 9, rec_data['balance'], txt)
-            # for line_data in rec_data['move_lines']:
-            #     row += 1
-            #     sheet.write(row + 1, col, '', txt)
-            #     sheet.write(row + 1, col + 1, '', txt)
-            #     sheet.write(row + 1, col + 2, line_data.get('ldate'), txt)
-            #     sheet.write(row + 1, col + 3, line_data.get('lcode'), txt)
-            #     sheet.write(row + 1, col + 4, line_data.get('partner_name'),
-            #                 txt)
-            #     sheet.write(row + 1, col + 5, line_data.get('move_name'), txt)
-            #     sheet.write(row + 1, col + 6, line_data.get('lname'), txt)
-            #     sheet.write(row + 1, col + 7, line_data.get('debit'), txt)
-            #     sheet.write(row + 1, col + 8, line_data.get('credit'), txt)
-            #     sheet.write(row + 1, col + 9, line_data.get('balance'), txt)
+            for line_data in rec_data['move_lines']:
+                row += 1
+                sheet.write(row + 1, col, '', txt)
+                sheet.write(row + 1, col + 1, '', txt)
+                sheet.write(row + 1, col + 2, line_data.get('ldate'), txt)
+                sheet.write(row + 1, col + 3, line_data.get('lcode'), txt)
+                sheet.write(row + 1, col + 4, line_data.get('partner_name'),
+                            txt)
+                sheet.write(row + 1, col + 5, line_data.get('move_name'), txt)
+                sheet.write(row + 1, col + 6, line_data.get('lname'), txt)
+                sheet.write(row + 1, col + 7, line_data.get('debit'), txt)
+                sheet.write(row + 1, col + 8, line_data.get('credit'), txt)
+                sheet.write(row + 1, col + 9, line_data.get('balance'), txt)
 
         workbook.close()
         output.seek(0)
