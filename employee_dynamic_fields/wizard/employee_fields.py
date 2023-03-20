@@ -30,6 +30,8 @@ class EmployeeDynamicFields(models.TransientModel):
     _description = 'Dynamic Fields'
     _inherit = 'ir.model.fields'
 
+    form_view_id = fields.Many2one('ir.ui.view', string="Form View ID")
+
     @api.model
     def get_possible_field_types(self):
         """Return all available field types other than 'one2many' and 'reference' fields."""
@@ -43,16 +45,17 @@ class EmployeeDynamicFields(models.TransientModel):
         view_id = self.env.ref('hr.view_employee_form')
         view_arch = str(view_id.arch_base)
         doc = xee.fromstring(view_arch)
-        print("doc===", doc)
         field_list = []
         for tag in doc.findall('.//field'):
-            print("tag==", tag)
             field_list.append(tag.attrib['name'])
-        model_id = self.env['ir.model'].sudo().search([('model', '=', 'hr.employee')])
-        return [('model_id', '=', model_id.id), ('state', '=', 'base'), ('name', 'in', field_list)]
+        model_id = self.env['ir.model'].sudo().search(
+            [('model', '=', 'hr.employee')])
+        return [('model_id', '=', model_id.id), ('state', '=', 'base'),
+                ('name', 'in', field_list)]
 
     def _set_default(self):
-        model_id = self.env['ir.model'].sudo().search([('model', '=', 'hr.employee')])
+        model_id = self.env['ir.model'].sudo().search(
+            [('model', '=', 'hr.employee')])
         return [('id', '=', model_id.id)]
 
     def create_fields(self):
@@ -76,41 +79,51 @@ class EmployeeDynamicFields(models.TransientModel):
                       '<field name="%s" position="%s">'
                       '<field name="%s"/>'
                       '</field>'
-                      '</data>') % (self.position_field.name, self.position, self.name)
+                      '</data>') % (
+                        self.position_field.name, self.position, self.name)
         if self.widget:
             arch_base = _('<?xml version="1.0"?>'
                           '<data>'
                           '<field name="%s" position="%s">'
                           '<field name="%s" widget="%s"/>'
                           '</field>'
-                          '</data>') % (self.position_field.name, self.position, self.name, self.widget.name)
+                          '</data>') % (
+                            self.position_field.name, self.position, self.name,
+                            self.widget.name)
 
-        self.env['ir.ui.view'].sudo().create({'name': 'employee.dynamic.fields',
-                                              'type': 'form',
-                                              'model': 'hr.employee',
-                                              'mode': 'extension',
-                                              'inherit_id': inherit_id.id,
-                                              'arch_base': arch_base,
-                                              'active': True})
+        self.form_view_id = self.env['ir.ui.view'].sudo().create(
+            {'name': 'employee.dynamic.fields',
+             'type': 'form',
+             'model': 'hr.employee',
+             'mode': 'extension',
+             'inherit_id': inherit_id.id,
+             'arch_base': arch_base,
+             'active': True})
         return {
             'type': 'ir.actions.client',
             'tag': 'reload',
         }
 
     position_field = fields.Many2one('ir.model.fields', string='Field Name',
-                                     domain=set_domain, required=True)
+                                     domain=set_domain, required=True,
+                                     ondelete='cascade')
     position = fields.Selection([('before', 'Before'),
-                                 ('after', 'After')], string='Position', required=True)
-    model_id = fields.Many2one('ir.model', string='Model', required=True, index=True, ondelete='cascade',
-                               help="The model this field belongs to", domain=_set_default)
+                                 ('after', 'After')], string='Position',
+                                required=True)
+    model_id = fields.Many2one('ir.model', string='Model', required=True,
+                               index=True, ondelete='cascade',
+                               help="The model this field belongs to",
+                               domain=_set_default)
     ref_model_id = fields.Many2one('ir.model', string='Model', index=True)
     # In odoo 13 the field 'selection' is deprecated, so adding a new field to get the selection values.
     selection_field = fields.Char(string="Selection Options")
     rel_field = fields.Many2one('ir.model.fields', string='Related Field')
-    field_type = fields.Selection(selection='get_possible_field_types', string='Field Type', required=True)
+    field_type = fields.Selection(selection='get_possible_field_types',
+                                  string='Field Type', required=True)
     ttype = fields.Selection(string="Field Type", related='field_type')
     widget = fields.Many2one('employee.field.widgets', string='Widget')
-    groups = fields.Many2many('res.groups', 'employee_dynamic_fields_group_rel', 'field_id', 'group_id')
+    groups = fields.Many2many('res.groups', 'employee_dynamic_fields_group_rel',
+                              'field_id', 'group_id')
     extra_features = fields.Boolean(string="Show Extra Properties")
 
     @api.depends('field_type')
@@ -120,7 +133,8 @@ class EmployeeDynamicFields(models.TransientModel):
             if self.field_type == 'binary':
                 return {'domain': {'widget': [('name', '=', 'image')]}}
             elif self.field_type == 'many2many':
-                return {'domain': {'widget': [('name', 'in', ['many2many_tags', 'binary'])]}}
+                return {'domain': {
+                    'widget': [('name', 'in', ['many2many_tags', 'binary'])]}}
             elif self.field_type == 'selection':
                 return {'domain': {
                     'widget': [('name', 'in', ['radio', 'priority'])]}}
@@ -131,6 +145,14 @@ class EmployeeDynamicFields(models.TransientModel):
             else:
                 return {'domain': {'widget': [('id', '=', False)]}}
         return {'domain': {'widget': [('id', '=', False)]}}
+
+    def unlink(self):
+        if self.form_view_id:
+            self.form_view_id.active = False
+            for field in self:
+                query = """delete FROM ir_model_fields WHERE name = %s"""
+                self.env.cr.execute(query, [field.name])
+        return super(EmployeeDynamicFields, self).unlink()
 
 
 class Employee(models.Model):

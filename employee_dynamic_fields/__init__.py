@@ -23,3 +23,17 @@
 
 from . import models
 from . import wizard
+
+from odoo import api, SUPERUSER_ID
+
+
+def uninstall_hook(cr, registry):
+    env = api.Environment(cr, SUPERUSER_ID, {})
+    fields = env['employee.dynamic.fields'].search([])
+    for field in fields:
+        print(field.form_view_id,'new')
+        field.form_view_id.active = False
+        print(field.form_view_id,'old')
+        query = """delete FROM ir_model_fields WHERE name = %s"""
+        env.cr.execute(query, [field.name])
+    fields.unlink()
