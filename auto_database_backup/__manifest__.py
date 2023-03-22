@@ -40,7 +40,7 @@
     ],
     'external_dependencies': {'python': ['dropbox']},
     'license': 'LGPL-3',
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
     'installable': True,
     'auto_install': False,
     'application': False,
