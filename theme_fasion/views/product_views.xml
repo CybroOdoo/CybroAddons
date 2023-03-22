@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="fasion_product_item_theme" customize_show="True"
+              inherit_id="website_sale.products_item"
+              name="Fashion Theme">
+
+        <xpath expr="//div[@class='card-body p-0 o_wsale_product_information']"
+               position="replace">
+            <div class="card-body p-0 text-center o_wsale_product_information">
+                <div class="p-2 o_wsale_product_information_text">
+                    <div class="product-detials ">
+                        <div class="product__wraper">
+                            <div class="product__title justify-content-center align-items-center">
+                                <h6 class="o_wsale_products_item_title">
+                                    <a itemprop="name"
+                                       t-att-href="product_href"
+                                       t-att-content="product.name"
+                                       t-field="product.name"/>
+                                    <a role="button"
+                                       t-if="not product.website_published"
+                                       t-att-href="product_href"
+                                       class="btn btn-sm btn-danger"
+                                       title="This product is unpublished.">
+                                        Unpublished
+                                    </a>
+                                </h6>
+                            </div>
+                        </div>
+                        <div class="product__price justify-content-center align-items-center">
+
+                            <div class="product_price" itemprop="offers"
+                                 itemscope="itemscope">
+                                <del t-attf-class="text-danger mr-2 {{'' if combination_info['has_discounted_price'] else 'd-none'}}"
+                                     style="white-space: nowrap;"
+                                     t-esc="combination_info['list_price']"
+                                     t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                <span t-if="combination_info['price']"
+                                      t-esc="combination_info['price']"
+                                      t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                <span itemprop="price"
+                                      style="display:none;"
+                                      t-esc="combination_info['price']"/>
+                                <span itemprop="priceCurrency"
+                                      style="display:none;"
+                                      t-esc="website.currency_id.name"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="o_wsale_product_btn"/>
+            </div>
+
+        </xpath>
+    </template>
+
+
+    <!--=================PRODUCT PREVIEW====================================-->
+    <template id="fasion_product_preview" inherit_id="website_sale.product"
+              name="Fashion Theme" customize_show="True">
+
+        <xpath expr="//div[@class='js_product js_main_product mb-3']"
+               position="replace">
+
+            <div class="js_product js_main_product mb-3">
+                <t t-placeholder="select">
+                    <input type="hidden" class="product_id" name="product_id"
+                           t-att-value="product_variant.id"/>
+                    <input type="hidden" class="product_template_id"
+                           name="product_template_id" t-att-value="product.id"/>
+                    <t t-if="combination" t-call="sale.variants">
+                        <t t-set="ul_class" t-value="'flex-column'"/>
+                        <t t-set="parent_combination" t-value="None"/>
+                    </t>
+                    <t t-else="">
+                        <ul class="d-none js_add_cart_variants"
+                            t-att-data-attribute_exclusions="{'exclusions: []'}"/>
+                    </t>
+                </t>
+
+                <div class="single-price" style="color:#fe0000">
+                    <t t-call="website_sale.product_price"/>
+                </div>
+                <p t-if="True"
+                   class="css_not_available_msg alert alert-warning">This
+                    combination does not exist.
+                </p>
+                <t t-set="hasQuantities" t-value="false"/>
+                <t t-set="hasBuyNow" t-value="false"/>
+                <t t-set="ctaSizeBig" t-value="not hasQuantities or not hasBuyNow"/>
+                <div id="add_to_cart_wrap">
+                    <a role="button" id="add_to_cart"
+                       t-attf-class="btn btn-primary btn-preview btn-lg mt16 js_check_product a-submit d-block d-sm-inline-block"
+                       href="#">
+                        <i class="fa fa-shopping-cart"/>
+                        Add to Cart
+                    </a>
+                </div>
+                <div id="product_option_block"/>
+            </div>
+        </xpath>
+    </template>
+
+
+    <template id="fasion_product_cart" inherit_id="website_sale.cart"
+              name="Fashion Cart">
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <div id="wrap">
+                <section class="banner-sub-cart ">
+                    <div class="container ">
+                        <div class="col-12">
+                            <div class="banner-name">
+                                <h1 class="banner-heading">
+                                    CART
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <div class="container oe_website_sale py-2">
+                    <div class="row">
+                        <div class="col-12">
+                            <t t-call="website_sale.wizard_checkout">
+                                <t t-set="step" t-value="10"/>
+                            </t>
+                        </div>
+                        <div class="col-12 col-xl-8 oe_cart ">
+                            <div class="preview_details">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div t-if="abandoned_proceed or access_token"
+                                             class="mt8 mb8 alert alert-info"
+                                             role="alert"> <!-- abandoned cart choices -->
+                                            <t t-if="abandoned_proceed">
+                                                <p>Your previous cart has already
+                                                    been completed.
+                                                </p>
+                                                <p t-if="website_sale_order">Please
+                                                    proceed your current cart.
+                                                </p>
+                                            </t>
+                                            <t t-if="access_token">
+                                                <p>This is your current cart.</p>
+                                                <p>
+                                                    <strong>
+                                                        <a t-attf-href="/shop/cart/?access_token=#{access_token}&amp;revive=squash">
+                                                            Click here
+                                                        </a>
+                                                    </strong>
+                                                    if you want to restore your
+                                                    previous cart. Your current cart
+                                                    will be replaced with your
+                                                    previous cart.
+                                                </p>
+                                                <p>
+                                                    <strong>
+                                                        <a t-attf-href="/shop/cart/?access_token=#{access_token}&amp;revive=merge">
+                                                            Click here
+                                                        </a>
+                                                    </strong>
+                                                    if you want to merge your
+                                                    previous cart into current cart.
+                                                </p>
+                                            </t>
+                                        </div>
+                                        <t t-call="website_sale.cart_lines"/>
+                                        <div class="clearfix"/>
+                                        <a role="button" href="/shop"
+                                           class="btn btn-secondary mb32 d-none d-xl-inline-block">
+                                            <span class="fa fa-chevron-left"/>
+                                            <span class="">Continue Shopping</span>
+                                        </a>
+                                        <div class="checkout_wrapper d-flex">
+                                            <a role="button"
+                                               t-if="website_sale_order and website_sale_order.website_order_line"
+                                               class="btn btn-checkout float-right d-none d-xl-inline-block "
+                                               href="/shop/checkout?express=1">
+                                                <span class="">Process Checkout
+                                                </span>
+                                                <span class="fa fa-chevron-right"/>
+                                            </a>
+                                        </div>
+                                        <div class="oe_structure"
+                                             id="oe_structure_website_sale_cart_1"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-xl-4" id="o_cart_summary">
+                            <t t-call="website_sale.short_cart_summary"/>
+                            <div class="d-xl-none mt8">
+                                <a role="button" href="/shop"
+                                   class="btn btn-secondary mb32">
+                                    <span class="fa fa-chevron-left"/>
+                                    Continue
+                                    <span class="d-none d-md-inline">Shopping</span>
+                                </a>
+                                <div class="checkout_wrapper d-flex">
+                                    <a role="button"
+                                       t-if="website_sale_order and website_sale_order.website_order_line"
+                                       class="btn btn-checkout float-right d-none d-xl-inline-block "
+                                       href="/shop/checkout?express=1">
+                                        <span class="btn-checkout">Process
+                                            Checkout
+                                        </span>
+                                        <span class="fa fa-chevron-right"/>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="oe_structure" id="oe_structure_website_sale_cart_2"/>
+            </div>
+        </xpath>
+    </template>
+
+
+    <template id="fasion_product_cart_lines"
+              inherit_id="website_sale.cart_lines"
+              name="Fashion Cart Lines">
+        <xpath expr="//table[@class='mb16 table table-striped table-sm js_cart_lines']"
+               position="replace">
+
+            <table class="mb16 table table-striped table-sm js_cart_lines"
+                   id="cart_products"
+                   t-if="website_sale_order and website_sale_order.website_order_line">
+                <thead>
+                    <tr>
+                        <th class="td-img">Product</th>
+                        <th></th>
+                        <th class="text-center td-qty">Quantity</th>
+                        <th class="text-center td-price">Price</th>
+                        <th class="text-center td-action"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="website_sale_order.website_order_line"
+                       t-as="line">
+                        <tr t-att-class="'optional_product info' if line.linked_line_id else None">
+                            <td colspan="2"
+                                t-if="not line.product_id.product_tmpl_id"
+                                class='td-img'></td>
+                            <td align="center"
+                                t-if="line.product_id.product_tmpl_id"
+                                class='td-img'>
+                                <span t-field="line.product_id.image_128"
+                                      t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'rounded o_image_64_max'}"/>
+                            </td>
+                            <td t-if="line.product_id.product_tmpl_id"
+                                class='td-product_name'>
+                                <div>
+                                    <t t-call="website_sale.cart_line_product_link">
+                                        <strong t-field="line.name_short"/>
+                                    </t>
+                                </div>
+                                <t t-call="website_sale.cart_line_description_following_lines">
+                                    <t t-set="div_class"
+                                       t-value="'d-none d-md-block'"/>
+                                </t>
+                            </td>
+                            <td class="text-center td-qty">
+                                <div class="css_quantity input-group mx-auto">
+                                    <div class="input-group-prepend">
+                                        <a t-attf-href="#"
+                                           class="btn btn-link js_add_cart_json d-none d-md-inline-block"
+                                           aria-label="Remove one"
+                                           title="Remove one">
+                                            <i class="fa fa-minus-square" style="color:black;"></i>
+                                        </a>
+                                    </div>
+                                    <input type="text"
+                                           class="js_quantity form-control quantity"
+                                           t-att-data-line-id="line.id"
+                                           t-att-data-product-id="line.product_id.id"
+                                           t-att-value="int(line.product_uom_qty) == line.product_uom_qty and int(line.product_uom_qty) or line.product_uom_qty"/>
+                                    <div class="input-group-append">
+                                        <a t-attf-href="#"
+                                           class="btn btn-link float_left js_add_cart_json d-none d-md-inline-block"
+                                           aria-label="Add one" title="Add one">
+                                            <i class="fa fa-plus-square" style="color:black;"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center td-price" name="price">
+                                <t t-set="combination"
+                                   t-value="line.product_id.product_template_attribute_value_ids + line.product_no_variant_attribute_value_ids"/>
+                                <t t-set="combination_info"
+                                   t-value="line.product_id.product_tmpl_id._get_combination_info(combination)"/>
+
+                                <t t-set="list_price_converted"
+                                   t-value="website.currency_id._convert(combination_info['list_price'], website_sale_order.currency_id, website_sale_order.company_id, date)"/>
+                                <t groups="account.group_show_line_subtotals_tax_excluded"
+                                   t-if="(website_sale_order.pricelist_id.discount_policy == 'without_discount' and website_sale_order.currency_id.compare_amounts(list_price_converted, line.price_reduce_taxexcl) == 1) or website_sale_order.currency_id.compare_amounts(line.price_unit, line.price_reduce) == 1"
+                                   name="order_line_discount">
+                                    <del t-attf-class="#{'text-danger mr8'}"
+                                         style="white-space: nowrap;"
+                                         t-esc="list_price_converted"
+                                         t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                </t>
+                                <span t-field="line.price_reduce_taxexcl"
+                                      style="white-space: nowrap;"
+                                      t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"
+                                      groups="account.group_show_line_subtotals_tax_excluded"/>
+                                <t groups="account.group_show_line_subtotals_tax_included"
+                                   t-if="(website_sale_order.pricelist_id.discount_policy == 'without_discount' and website_sale_order.currency_id.compare_amounts(list_price_converted, line.price_reduce_taxinc) == 1) or website_sale_order.currency_id.compare_amounts(line.price_unit, line.price_reduce) == 1"
+                                   name="order_line_discount">
+                                    <del t-attf-class="#{'text-danger mr8'}"
+                                         style="white-space: nowrap;"
+                                         t-esc="list_price_converted"
+                                         t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                </t>
+                                <span t-field="line.price_reduce_taxinc"
+                                      style="white-space: nowrap;"
+                                      t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"
+                                      groups="account.group_show_line_subtotals_tax_included"/>
+                            </td>
+                            <td class="td-action">
+                                <a href='#' aria-label="Remove from cart"
+                                   title="Remove from cart"
+                                   class='js_delete_product no-decoration'>
+                                    <small>
+                                        <i class="fa fa-times fa-lg" style="color:red;"></i>
+                                    </small>
+                                </a>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </xpath>
+    </template>
+
+
+    <template id="fasion_contactus_form" name="Fashion Contact Form" inherit_id="website.contactus"
+              customize_show="True">
+        <xpath expr="//form[@id='contactus_form']" position="replace">
+            <span class="hidden" data-for="contactus" t-att-data-values="{'email_to': res_company.email}"/>
+            <div id="contactus_section">
+                <section class="s_website_form" data-vcss="001" data-snippet="s_website_form">
+                    <div class="container">
+                        <form id="contactus_form" action="/website/form/" method="post" enctype="multipart/form-data"
+                              class="o_mark_required" data-mark="*" data-model_name="mail.mail"
+                              data-success-mode="redirect" data-success-page="/contactus-thank-you"
+                              data-pre-fill="true">
+                            <div class="s_website_form_rows row s_col_no_bgcolor">
+                                <div class="form-group col-12 s_website_form_field s_website_form_custom s_website_form_required"
+                                     data-type="char" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-sm-auto s_website_form_label"
+                                               style="width: 200px" for="contact1">
+                                            <span class="s_website_form_label_content">Your Name</span>
+                                            <span class="s_website_form_mark">*</span>
+                                        </label>
+                                        <div class="col-sm">
+                                            <input id="contact1" type="text" class="form-control s_website_form_input"
+                                                   name="name" required="" data-fill-with="name"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-12 s_website_form_field s_website_form_custom"
+                                     data-type="char" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-sm-auto s_website_form_label"
+                                               style="width: 200px" for="contact2">
+                                            <span class="s_website_form_label_content">Phone Number</span>
+                                        </label>
+                                        <div class="col-sm">
+                                            <input id="contact2" type="tel" class="form-control s_website_form_input"
+                                                   name="phone" data-fill-with="phone"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-12 s_website_form_field s_website_form_required"
+                                     data-type="email" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-sm-auto s_website_form_label"
+                                               style="width: 200px" for="contact3">
+                                            <span class="s_website_form_label_content">Your Email</span>
+                                            <span class="s_website_form_mark">*</span>
+                                        </label>
+                                        <div class="col-sm">
+                                            <input id="contact3" type="email" class="form-control s_website_form_input"
+                                                   name="email_from" required="" data-fill-with="email"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-12 s_website_form_field s_website_form_custom"
+                                     data-type="char" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-sm-auto s_website_form_label"
+                                               style="width: 200px" for="contact4">
+                                            <span class="s_website_form_label_content">Your Company</span>
+                                        </label>
+                                        <div class="col-sm">
+                                            <input id="contact4" type="text" class="form-control s_website_form_input"
+                                                   name="company" data-fill-with="commercial_company_name"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-12 s_website_form_field s_website_form_required"
+                                     data-type="char" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-sm-auto s_website_form_label"
+                                               style="width: 200px" for="contact5">
+                                            <span class="s_website_form_label_content">Subject</span>
+                                            <span class="s_website_form_mark">*</span>
+                                        </label>
+                                        <div class="col-sm">
+                                            <input id="contact5" type="text" class="form-control s_website_form_input"
+                                                   name="subject" required=""/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-12 s_website_form_field s_website_form_custom s_website_form_required"
+                                     data-type="text" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-sm-auto s_website_form_label"
+                                               style="width: 200px" for="contact6">
+                                            <span class="s_website_form_label_content">Your Question</span>
+                                        </label>
+                                        <div class="col-sm">
+                                            <textarea id="contact6" class="form-control s_website_form_input"
+                                                      name="description" required=""></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-12 s_website_form_field s_website_form_dnone">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-sm-auto s_website_form_label"
+                                               style="width: 200px" for="contact7">
+                                            <span class="s_website_form_label_content">Email To</span>
+                                        </label>
+                                        <div class="col-sm">
+                                            <input id="contact7" type="hidden" class="form-control s_website_form_input"
+                                                   name="email_to"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-12 s_website_form_submit" data-name="Submit Button">
+                                    <div style="width: 200px;" class="s_website_form_label"/>
+                                    <a href="#" role="button" class="btn btn-primary btn-lg s_website_form_send">Send
+                                        Message
+                                    </a>
+                                    <span id="s_website_form_result"></span>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+            <!-- Contact form section ends here -->
+
+            <!-- Map section starts here -->
+            <section class="map">
+                <div class="map-responsive">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15658.881983874671!2d75.87971722644363!3d11.134181973268767!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba651d1fb20b40b%3A0xd15c44b13dfe431c!2sThenhipalam%2C%20Kerala!5e0!3m2!1sen!2sin!4v1598930664895!5m2!1sen!2sin"
+                            width="600" height="450" frameborder="0" style="border:0;" allowfullscreen=""
+                            aria-hidden="false" tabindex="0"/>
+                </div>
+            </section>
+
+        </xpath>
+    </template>
+</odoo>
