@@ -234,7 +234,6 @@ class AccountReconciliation(models.AbstractModel):
         results = self.get_bank_statement_line_data(bank_statement_lines.ids)
         bank_statement_lines_left = self.env['account.bank.statement.line'].browse([line['st_line']['id'] for line in results['lines']])
         bank_statements_left = bank_statement_lines_left.mapped('statement_id')
-
         results.update({
             'statement_name': len(bank_statements_left) == 1 and bank_statements_left.name or False,
             'journal_id': bank_statements and bank_statements[0].journal_id.id or False,
@@ -253,7 +252,6 @@ class AccountReconciliation(models.AbstractModel):
                     'ids': results['reconciled_aml_ids'],
                 }
             })
-
         return results
 
     @api.model
@@ -731,10 +729,9 @@ class AccountReconciliation(models.AbstractModel):
             amount_currency = amount
             amount_currency_str = ""
         amount_str = formatLang(self.env, abs(amount), currency_obj=st_line.currency_id or statement_currency)
-
         data = {
             'id': st_line.id,
-            'ref': st_line.ref,
+            'payment_ref': st_line.payment_ref,
             'note': st_line.narration or "",
             'name': st_line.name,
             'date': format_date(self.env, st_line.date),
@@ -756,7 +753,6 @@ class AccountReconciliation(models.AbstractModel):
         }
         if st_line.partner_id:
             data['open_balance_account_id'] = amount > 0 and st_line.partner_id.property_account_receivable_id.id or st_line.partner_id.property_account_payable_id.id
-
         return data
 
     @api.model
