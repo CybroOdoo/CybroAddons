@@ -32,3 +32,9 @@ class Partner(models.Model):
     subscription_product_line_ids = fields.One2many(
         'subscription.package.product.line', 'res_partner_id',
         ondelete='restrict', string='Products Line')
+
+    def _valid_field_parameter(self, field, name):
+        if name == 'ondelete':
+            return True
+        return super(Partner,
+                     self)._valid_field_parameter(field, name)

@@ -46,7 +46,7 @@ class SubscriptionPackageProductLine(models.Model):
     product_uom_id = fields.Many2one('uom.uom', string='UoM', store=True,
                                      related='product_id.uom_id',
                                      ondelete='restrict')
-    uom_catg_id = fields.Many2one('uom.category', string='UoM', store=True,
+    uom_catg_id = fields.Many2one('uom.category', string='UoM Category', store=True,
                                   related='product_id.uom_id.category_id')
     unit_price = fields.Float(string='Unit Price', store=True, readonly=False,
                               related='product_id.list_price')
@@ -57,7 +57,7 @@ class SubscriptionPackageProductLine(models.Model):
                                    compute='_compute_total_amount')
     sequence = fields.Integer('Sequence', help="Determine the display order",
                               index=True)
-    res_partner_id = fields.Many2one('res.partner', string='Currency',
+    res_partner_id = fields.Many2one('res.partner', string='Partner',
                                      store=True,
                                      related='subscription_id.partner_id')
 
@@ -67,6 +67,12 @@ class SubscriptionPackageProductLine(models.Model):
         for rec in self:
             if rec.product_id:
                 rec.total_amount = rec.unit_price * rec.product_qty
+
+    def _valid_field_parameter(self, field, name):
+        if name == 'ondelete':
+            return True
+        return super(SubscriptionPackageProductLine,
+                     self)._valid_field_parameter(field, name)
 
 
 class SubscriptionPackage(models.Model):
@@ -144,6 +150,12 @@ class SubscriptionPackage(models.Model):
     total_recurring_price = fields.Float(string='Recurring Price',
                                          compute='_compute_total_recurring_price',
                                          store=True)
+
+    def _valid_field_parameter(self, field, name):
+        if name == 'ondelete':
+            return True
+        return super(SubscriptionPackage,
+                     self)._valid_field_parameter(field, name)
 
     """ Calculate Invoice count based on subscription package """
 
@@ -264,24 +276,23 @@ class SubscriptionPackage(models.Model):
 
     def button_start_date(self):
         """Button to start subscription package"""
+
         if not self.start_date:
             self.start_date = datetime.date.today()
-            for rec in self:
-                if len(rec.env['subscription.package.stage'].search(
-                        [('category', '=', 'draft')])) > 1:
-                    raise UserError(
-                        _('More than one stage is having category "Draft". '
-                          'Please change category of stage to "In Progress", '
-                          'only one stage is allowed to have category "Draft"'))
-                else:
-                    rec.write(
-                        {'stage_id': (rec.env[
-                                          'subscription.package.stage'].search(
-                            [
-                                ('category', '=', 'draft')]).id) + 1})
+        for rec in self:
+            if len(rec.env['subscription.package.stage'].search(
+                    [('category', '=', 'draft')])) > 1:
+                raise UserError(
+                    _('More than one stage is having category "Draft". '
+                      'Please change category of stage to "In Progress", '
+                      'only one stage is allowed to have category "Draft"'))
+            else:
+                rec.write(
+                    {'stage_id': (rec.env[
+                                      'subscription.package.stage'].search([
+                        ('category', '=', 'draft')]).id) + 1})
 
     def button_sale_order(self):
-
         """Button to create sale order"""
         this_products_line = []
         for rec in self.product_line_ids:
@@ -312,17 +323,18 @@ class SubscriptionPackage(models.Model):
             'view_mode': 'tree,form'
         }
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """It displays subscription product in partner and generate sequence"""
-        partner = self.env['res.partner'].search(
-            [('id', '=', vals.get('partner_id'))])
-        partner.active_subscription = True
-        if vals.get('reference_code', 'New') is False:
-            vals['reference_code'] = self.env['ir.sequence'].next_by_code(
-                'sequence.reference.code') or 'New'
-        create_id = super().create(vals)
-        return create_id
+        for vals in vals_list:
+            partner = self.env['res.partner'].search(
+                [('id', '=', vals.get('partner_id'))])
+            partner.active_subscription = True
+            if vals.get('reference_code', 'New') is False:
+                vals['reference_code'] = self.env['ir.sequence'].next_by_code(
+                    'sequence.reference.code') or 'New'
+            create_id = super().create(vals)
+            return create_id
 
     @api.depends('reference_code')
     def _compute_name(self):
@@ -356,7 +368,8 @@ class SubscriptionPackage(models.Model):
                     days=pending_subscription.plan_id.days_to_end)
             difference = (pending_subscription.close_date -
                           pending_subscription.start_date).days / 10
-            renew_date = pending_subscription.close_date - relativedelta(days=difference)
+            renew_date = pending_subscription.close_date - relativedelta(
+                days=difference)
             if today_date == renew_date:
                 pending_subscription.to_renew = True
                 self.env.ref(

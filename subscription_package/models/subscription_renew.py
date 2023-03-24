@@ -34,15 +34,16 @@ class SaleOrder(models.Model):
     sub_reference = fields.Char(string="Sub Reference Code", store=True,
                                 compute="_compute_reference_code")
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """ It displays subscription in sale order """
-        if vals.get('is_subscription'):
-            vals.update({
-                'is_subscription': True,
-                'subscription_id': vals.get('subscription_id'),
-            })
-        return super().create(vals)
+        for vals in vals_list:
+            if vals.get('is_subscription'):
+                vals.update({
+                    'is_subscription': True,
+                    'subscription_id': vals.get('subscription_id'),
+                })
+            return super().create(vals)
 
     @api.depends('subscription_id')
     def _compute_reference_code(self):

@@ -31,7 +31,7 @@ class RecurrencePeriod(models.Model):
     name = fields.Char(string="Name")
     duration = fields.Float(string="Duration")
     unit = fields.Selection([('hours', 'hours'),
-                                     ('days', 'Report'),('weeks', 'Report'),('months', 'Report'),('years', 'Report')],
+                                     ('days', 'Days'),('weeks', 'Weeks'),('months', 'Months'),('years', 'Years')],
                                    string= 'Unit' )
 
 
