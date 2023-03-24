@@ -1,4 +1,4 @@
-Gender Contacts v15
+Gender In Contacts v15
 ===========================
 This module will helps you to give the gender details for your contact
 
@@ -11,6 +11,11 @@ Tech
 ====
 * [Python] - Models
 * [XML] - Odoo views
+
+License
+-------
+General Public License, Version 3 (LGPL v3).
+(https://www.odoo.com/documentation/user/15.0/legal/licenses/licenses.html)
 
 Installation
 ============

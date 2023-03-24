@@ -22,7 +22,7 @@
 ###################################################################################
 
 {
-    'name': 'Gender Contact',
+    'name': 'Gender In Contacts',
     'version': '15.0.1.0.0',
     'summary': """This module will helps you to give gender details for your contact.""",
     'description': "Module helps you to manage the gender information of your partner as well as in the contacts.",
@@ -31,13 +31,12 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['base','contacts'],
-    'data': ['views/gender_view.xml'
-             ],
+    'depends': ['base', 'contacts'],
+    'data': ['views/gender_view.xml'],
     'demo': [],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
-    'auto_install': True,
-    'application': True,
+    'auto_install': False,
+    'application': False,
 }
