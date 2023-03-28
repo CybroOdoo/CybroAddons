@@ -21,7 +21,7 @@
 #############################################################################
 
 {
-    'name': 'List View Sticky Header',
+    'name': 'Sticky Header in List and Form view',
     'version': '16.0.1.0.1',
     'summary': 'Helps to Stick The Header of List View',
     'description': 'Helps to Stick The Header of List View',
