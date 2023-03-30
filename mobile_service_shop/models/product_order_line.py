@@ -80,7 +80,6 @@ class ProductOrderLine(models.Model):
 
             }
             qty = self.product_uom_qty - self.qty_stock_move
-            print(qty)
             diff_quantity = qty
             tmp = template.copy()
             tmp.update({

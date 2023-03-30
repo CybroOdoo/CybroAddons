@@ -34,6 +34,7 @@ class MobileServiceInvoice(models.Model):
     number = fields.Char(string='Service Id')
 
     def action_invoice_create(self):
+        """Creating invoice"""
         active_id = self._context.get('active_id')
         service_id = self.env['mobile.service'].search([('id', '=', active_id)])
         if not service_id.env['product.product'].search([("name", "=", "Mobile Service Advance")]):
@@ -46,8 +47,6 @@ class MobileServiceInvoice(models.Model):
 
         service_id.first_invoice_created = True
         inv_obj = self.env['account.move']
-
-        inv_line_obj = self.env['account.move.line']
         supplier = service_id.person_name
         inv_data = {
             'move_type': 'out_invoice',
@@ -112,11 +111,9 @@ class MobileServiceInvoice(models.Model):
                 })]
                 inv_id.write({
                     'invoice_line_ids': inv_line_data})
-                print(line_data.product_id.id,'pr')
                 line_data.qty_invoiced = line_data.qty_invoiced + qty
                 inv_id._compute_journal_id()
 
-        # inv_id.post()
         if flag != 1:
             raise UserError(_('Nothing to create invoice'))
         imd = service_id.env['ir.model.data']
