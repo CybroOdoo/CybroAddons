@@ -28,7 +28,7 @@
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'images': ['static/description/banner.png,static/description/icon.png'],
+    'images': ['static/description/banner.png'],
     'website': 'https://www.cybrosys.com',
     'depends': ['base', 'product', 'openai_odoo_base', 'stock'],
     'data': [
