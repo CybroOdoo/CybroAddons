@@ -29,4 +29,5 @@ class ResConfigSettings(models.TransientModel):
     api_key = fields.Char(string="API Key", help="Provide the API key here",
                           config_parameter="odoo_chatgpt_connector.api_key")
 
-
+    def get_chat_gpt_key(self):
+        return self.env['ir.config_parameter'].sudo().get_param('odoo_chatgpt_connector.api_key')

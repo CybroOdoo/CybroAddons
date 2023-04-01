@@ -24,11 +24,12 @@ odoo.define('odoo_chatgpt_connector.chatgpt_search', function(require) {
             $('#result_area').val('');
             $('#result_area')[0].placeholder = "Loading.....";
             if (!this.api_key) {
-                var data = await rpc.query({
-                    model: 'ir.config_parameter',
-                    method: 'get_param',
-                    args: ['odoo_chatgpt_connector.api_key'],
+                await rpc.query({
+                    model: 'res.config.settings',
+                    method: 'get_chat_gpt_key',
+                    args: [,],
                 }).then(result => {
+                console.log(result);
                     this.api_key = result;
                 });
             }
