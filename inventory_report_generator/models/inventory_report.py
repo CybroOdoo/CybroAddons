@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #
 #    You can modify it under the terms of the GNU AFFERO
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
@@ -32,7 +32,7 @@ except ImportError:
 class DynamicInventoryReport(models.Model):
     _name = "dynamic.inventory.report"
 
-    purchase_report = fields.Char(string="Purchase Report")
+    purchase_report = fields.Char(string="Inventory Report")
     date_from = fields.Datetime(string="Date From")
     date_to = fields.Datetime(string="Date to")
     report_type = fields.Selection([
@@ -260,7 +260,7 @@ class DynamicInventoryReport(models.Model):
         txt_v = workbook.add_format(
             {'align': 'right', 'font_size': '10px', 'border': 1})
         sheet.merge_range('A2:H3',
-                          'Purchase Report',
+                          'Inventory Report',
                           head)
         date_head = workbook.add_format({'align': 'center', 'bold': True,
                                          'font_size': '10px'})
