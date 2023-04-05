@@ -24,7 +24,8 @@ Company
 Credits
 -------
 * Developers: odoo@cybrosys.com
-  V15 - Archana V, archana@cybrosys.info
+  V15 - Archana V, archana @ cybrosys
+  V16 - YadhuKrishnan K Yadhu @ cybrosys
 
 Contacts
 --------

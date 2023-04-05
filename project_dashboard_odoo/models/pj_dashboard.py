@@ -20,18 +20,56 @@
 #
 #############################################################################
 
-from odoo import models, api
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
-import pandas as pd
 import calendar
+import random
+from datetime import datetime
+
+from dateutil.relativedelta import relativedelta
+
+from odoo import models, api
 
 
 class PosDashboard(models.Model):
+    """
+
+    The ProjectDashboard class provides the data to the js when the dashboard is loaded.
+        Methods:
+            get_tiles_data(self):
+                when the page is loaded get the data from different models and transfer to the js file.
+                return a dictionary variable.
+            get_top_timesheet_employees(model_ids):
+               getting data for the timesheet graph.
+            get_hours_data(self):
+                getting data for the hours table.
+            get_task_data(self):
+                getting data to project task table
+            get_project_task_count(self):
+                getting data to project task table
+            get_color_code(self):
+                getting dynamic color code for the graph
+            get_income_this_month(self):
+                getting data to profitable graph after month filter apply
+            get_income_last_year(self):
+                getting data to profitable graph after last year filter apply
+            get_income_this_year(self):
+                getting data to profitable graph after current year filter apply
+            get_details(self):
+                getting data for the profatable table
+
+    """
     _inherit = 'project.project'
 
     @api.model
     def get_tiles_data(self):
+        """
+
+        Summery:
+            when the page is loaded get the data from different models and transfer to the js file.
+            return a dictionary variable.
+        return:
+            type:It is a dictionary variable. This dictionary contain data that affecting the dashboard view.
+
+        """
         all_project = self.env['project.project'].search([])
         all_task = self.env['project.task'].search([])
         analytic_project = self.env['account.analytic.line'].search([])
@@ -48,18 +86,39 @@ class PosDashboard(models.Model):
             ('sale_order_id', '!=', False)
         ], ['sale_order_id'])
         task_so_ids = [o['sale_order_id'][0] for o in task]
-        sale_orders = self.mapped('sale_line_id.order_id') | self.env['sale.order'].browse(task_so_ids)
+        sale_orders = self.mapped('sale_line_id.order_id') | self.env[
+            'sale.order'].browse(task_so_ids)
+        sale_list = [rec.id for rec in sale_orders]
+        project_stage_ids = self.env['project.project.stage'].search([])
+        project_stage_list = []
+        for project_stage_id in project_stage_ids:
+            total_projects = self.env['project.project'].search_count(
+                [('stage_id', '=', project_stage_id.id)])
+            project_stage_list.append({
+                'name': project_stage_id.name,
+                'projects': total_projects,
+            })
         return {
             'total_projects': len(all_project),
             'total_tasks': len(all_task),
             'total_hours': total_time,
             'total_profitability': profitability,
             'total_employees': len(employees),
-            'total_sale_orders': len(sale_orders)
+            'total_sale_orders': len(sale_orders),
+            'project_stage_list': project_stage_list,
+            'sale_list': sale_list
         }
 
     @api.model
     def get_top_timesheet_employees(self):
+        """
+
+        Summery:
+            when the page is loaded get the data for the timesheet graph.
+        return:
+            type:It is a list. This list contain data that affecting the graph of employees.
+
+        """
 
         query = '''select hr_employee.name as employee,sum(unit_amount) as unit
                     from account_analytic_line
@@ -80,80 +139,19 @@ class PosDashboard(models.Model):
         return final
 
     @api.model
-    def get_project_task(self):
-        cr = self._cr
-        cr.execute("""select project_id, project_project.name,count(*)
-        from project_task join project_project on project_project.id=project_task.project_id
-        group by project_task.project_id,project_project.name""")
-        dat = cr.fetchall()
-        data = []
-        for i in range(0, len(dat)):
-            data.append({'label': dat[i][1], 'value': dat[i][2]})
-        return data
-
-    @api.model
-    def project_profitability_trend(self):
-        leave_lines = []
-        month_list = []
-        graph_result = []
-        for i in range(6, -2, -1):
-            last_month = datetime.now() - relativedelta(months=i)
-            text = format(last_month, '%B %Y')
-            month_list.append(text)
-        for month in month_list:
-            vals = {
-                'l_month': month,
-                'leave': 0
-            }
-
-            graph_result.append(vals)
-
-        sql = """SELECT h.id,h.margin,
-                      to_char(y, 'YYYY') as month_year
-                FROM  (select * from project_profitability_report) h
-                     ,date_trunc('year', line_date)y"""
-
-        self.env.cr.execute(sql)
-        results = self.env.cr.dictfetchall()
-        for line in results:
-            days = line['margin']
-            vals = {
-                'l_month': line['month_year'],
-                'days': days
-            }
-            leave_lines.append(vals)
-        if leave_lines:
-            df = pd.DataFrame(leave_lines)
-            rf = df.groupby(['l_month']).sum()
-            result_lines = rf.to_dict('index')
-
-            for line in result_lines:
-                match = list(graph_result)
-                if match:
-                    match[0]['leave'] = result_lines[line]['days']
-        for result in graph_result:
-            result['l_month'] = result['l_month'].split(' ')[:1][0].strip()[:3] + " " + \
-                                result['l_month'].split(' ')[1:2][0]
-
-        return graph_result
-
-    @api.model
-    def get_profitability_details(self):
-        query = '''select sum(margin) as payment_details from project_profitability_report'''
-        self._cr.execute(query)
-        data = self._cr.dictfetchall()
-        payment_details = []
-        for record in data:
-            payment_details.append(record.get('payment_details'))
-
-        return {
-            'payment_details': payment_details,
-        }
-
-    @api.model
     def get_details(self):
+        """
+
+            Summery:
+                when the page is loaded get the data for the profitable table.
+            return:
+                type:It is a dictionary variable. This dictionary contain data
+                that  profitable table.
+
+            """
         query = '''select sum(amount_untaxed_invoiced) as invoiced,
-            sum(amount_untaxed_to_invoice) as to_invoice,sum(timesheet_cost) as time_cost,
+            sum(amount_untaxed_to_invoice) as to_invoice,sum(timesheet_cost) as 
+            time_cost,
             sum(expense_cost) as expen_cost,
             sum(margin) as payment_details from project_profitability_report'''
         self._cr.execute(query)
@@ -165,7 +163,7 @@ class PosDashboard(models.Model):
         to_invoice = []
         for record in data:
             to_invoice.append(record.get('to_invoice'))
-
+            record.get('to_invoice')
         time_cost = []
         for record in data:
             time_cost.append(record.get('time_cost'))
@@ -177,7 +175,6 @@ class PosDashboard(models.Model):
         payment_details = []
         for record in data:
             payment_details.append(record.get('payment_details'))
-
         return {
             'invoiced': invoiced,
             'to_invoice': to_invoice,
@@ -188,6 +185,14 @@ class PosDashboard(models.Model):
 
     @api.model
     def get_hours_data(self):
+        """
+
+        Summery:
+            when the page is loaded get the data for the hours table.
+        return:
+            type:It is a dictionary variable. This dictionary contain data that  hours table.
+
+        """
         query = '''SELECT sum(unit_amount) as hour_recorded FROM account_analytic_line
         WHERE timesheet_invoice_type='non_billable_project' '''
         self._cr.execute(query)
@@ -239,6 +244,14 @@ class PosDashboard(models.Model):
 
     @api.model
     def get_income_this_year(self):
+        """
+
+        Summery:
+            when the filter is applied get the data for the profitable graph.
+        return:
+            type:It is a dictionary variable. This dictionary contain data for  profitable graph.
+
+        """
 
         month_list = []
         for i in range(11, -1, -1):
@@ -256,7 +269,8 @@ class PosDashboard(models.Model):
 
         records = []
         for month in month_list:
-            last_month_inc = list(filter(lambda m: m['month'].strip() == month, record))
+            last_month_inc = list(
+                filter(lambda m: m['month'].strip() == month, record))
 
             if not last_month_inc:
                 records.append({
@@ -283,6 +297,14 @@ class PosDashboard(models.Model):
 
     @api.model
     def get_income_last_year(self):
+        """
+
+        Summery:
+            when the filter is applied get the data for the profitable graph.
+        return:
+            type:It is a dictionary variable. This dictionary contain data for  profitable graph.
+
+        """
         month_list = []
         for i in range(11, -1, -1):
             l_month = datetime.now() - relativedelta(months=i)
@@ -290,7 +312,6 @@ class PosDashboard(models.Model):
             month_list.append(text)
 
         states_arg = ""
-
         self._cr.execute(('''select sum(margin) as income ,to_char(project_profitability_report.line_date, 'Month')  
                         as month from project_profitability_report where
                         Extract(year FROM project_profitability_report.line_date) = Extract(year FROM DATE(NOW())) -1
@@ -299,7 +320,8 @@ class PosDashboard(models.Model):
 
         records = []
         for month in month_list:
-            last_month_inc = list(filter(lambda m: m['month'].strip() == month, record))
+            last_month_inc = list(
+                filter(lambda m: m['month'].strip() == month, record))
             if not last_month_inc:
                 records.append({
                     'month': month,
@@ -327,6 +349,14 @@ class PosDashboard(models.Model):
 
     @api.model
     def get_income_this_month(self):
+        """
+
+        Summery:
+            when the filter is applied get the data for the profitable graph.
+        return:
+            type:It is a dictionary variable. This dictionary contain data for  profitable graph.
+
+        """
         states_arg = ""
         day_list = []
         now = datetime.now()
@@ -370,6 +400,15 @@ class PosDashboard(models.Model):
 
     @api.model
     def get_task_data(self):
+        """
+
+        Summery:
+            when the page is loaded get the data from different models and transfer to the js file.
+            return a dictionary variable.
+        return:
+            type:It is a dictionary variable. This dictionary contain data that affecting project task table.
+
+        """
         self._cr.execute('''select project_task.name as task_name,pro.name as project_name from project_task
           Inner join project_project as pro on project_task.project_id = pro.id ORDER BY project_name ASC''')
         data = self._cr.fetchall()
@@ -380,3 +419,43 @@ class PosDashboard(models.Model):
         return {
             'project': project_name
         }
+
+    @api.model
+    def get_project_task_count(self):
+        """
+
+        Summery:
+            when the page is loaded get the data from different models and transfer to the js file.
+            return a dictionary variable.
+        return:
+            type:It is a dictionary variable. This dictionary contain data for the project task graph.
+
+        """
+        project_name = []
+        total_task = []
+        colors = []
+        project_ids = self.env['project.project'].search([])
+        for project_id in project_ids:
+            project_name.append(project_id.name)
+            task = self.env['project.task'].search_count(
+                [('project_id', '=', project_id.id)])
+            total_task.append(task)
+            color_code = self.get_color_code()
+            colors.append(color_code)
+        return {
+            'project': project_name,
+            'task': total_task,
+            'color': colors
+        }
+
+    def get_color_code(self):
+        """
+
+        Summery:
+            the function is for creating the dynamic color code.
+        return:
+            type:variable containing color code.
+
+        """
+        color = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+        return color
