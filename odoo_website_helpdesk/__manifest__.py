@@ -22,7 +22,7 @@
 
 {
     'name': "Website Helpdesk Support Ticket Management V16",
-    'version': '16.0.2.0.1',
+    'version': '16.0.2.0.2',
     'summary': """Website Helpdesk Support Ticket Management for V16 Community""",
     'description': """Website Helpdesk Support Ticket Management for V16 Community, Helpdesk, helpdesk, support, ticket""",
     'author': "Cybrosys Techno Solutions",
