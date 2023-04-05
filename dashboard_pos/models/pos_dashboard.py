@@ -22,6 +22,7 @@
 import pytz
 from odoo import models, fields, api
 from datetime import timedelta, datetime, date
+import json
 
 
 class PosDashboard(models.Model):
@@ -67,7 +68,7 @@ class PosDashboard(models.Model):
         company_id = self.env.company.id
         cr = self._cr
         cr.execute(
-            """select pos_payment_method.name,sum(amount) from pos_payment inner join pos_payment_method on 
+            """select pos_payment_method.name ->>'en_US',sum(amount) from pos_payment inner join pos_payment_method on 
             pos_payment_method.id=pos_payment.payment_method_id group by pos_payment_method.name ORDER 
             BY sum(amount) DESC; """)
         payment_details = cr.fetchall()
@@ -194,7 +195,7 @@ class PosDashboard(models.Model):
     def get_the_top_products(self):
         company_id = self.env.company.id
 
-        query = '''select DISTINCT(product_template.name) as product_name,sum(qty) as total_quantity from 
+        query = '''select DISTINCT(product_template.name)->>'en_US' as product_name,sum(qty) as total_quantity from 
        pos_order_line inner join product_product on product_product.id=pos_order_line.product_id inner join 
        product_template on product_product.product_tmpl_id = product_template.id where pos_order_line.company_id = ''' + str(
             company_id) + ''' group by product_template.id ORDER 
@@ -202,7 +203,6 @@ class PosDashboard(models.Model):
 
         self._cr.execute(query)
         top_product = self._cr.dictfetchall()
-
         total_quantity = []
         for record in top_product:
             total_quantity.append(record.get('total_quantity'))

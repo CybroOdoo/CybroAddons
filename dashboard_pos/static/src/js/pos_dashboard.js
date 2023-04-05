@@ -5,10 +5,7 @@ var AbstractAction = require('web.AbstractAction');
 var core = require('web.core');
 const { loadBundle } = require("@web/core/assets");
 var ajax = require('web.ajax');
-//var field_utils = require('web.field_utils');
-//var pyUtils = require('web.py_utils');
 var session = require('web.session');
-//var time = require('web.time');
 var web_client = require('web.web_client');
 var rpc = require('web.rpc');
 var _t = core._t;
@@ -397,9 +394,8 @@ var PosDashboard = AbstractAction.extend({
                 model: "pos.order",
                 method: "get_the_top_products",
             }).then(function (arrays) {
-
-
           var data = {
+
             labels: arrays[1],
             datasets: [
               {

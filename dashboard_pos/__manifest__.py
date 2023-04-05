@@ -21,7 +21,7 @@
 ###################################################################################
 {
     'name': "POS Dashboard",
-    'version': '16.0.1.0.1',
+    'version': '16.0.1.0.2',
     'summary': """POS Dashboard""",
     'description': """POS Dashboard""",
     'category': 'Point of Sale',
