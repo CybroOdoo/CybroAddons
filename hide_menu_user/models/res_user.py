@@ -22,16 +22,16 @@
 
 from odoo import models, fields, api
 
-
 class HideMenuUser(models.Model):
     _inherit = 'res.users'
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """
         Else the menu will be still hidden even after removing from the list
         """
-        self.clear_caches()
+        for vals in vals_list:
+            self.clear_caches()
         return super(HideMenuUser, self).create(vals)
 
     def write(self, vals):
@@ -43,6 +43,7 @@ class HideMenuUser(models.Model):
             menu.write({
                 'restrict_user_ids': [(4, self.id)]
             })
+            print(res,'resssssssssss')
         self.clear_caches()
         return res
 
@@ -60,7 +61,6 @@ class HideMenuUser(models.Model):
                                      help='Select menu items that needs to be '
                                           'hidden to this user ')
     is_admin = fields.Boolean(compute=_get_is_admin)
-
 
 class RestrictMenu(models.Model):
     _inherit = 'ir.ui.menu'

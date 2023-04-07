@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "HR Payroll Dashboard",
-    'version': '14.0.1.0.0',
+    'version': '14.0.1.1.1',
     'summary': """HR Payroll Dashboard""",
     'description': """HR Payroll Dashboard""",
     'category': 'Human Resource',

@@ -20,7 +20,7 @@
 
 {
     'name': 'Advanced Sales Reports',
-    'version': '14.0.1.0.0',
+    'version': '14.0.1.0.1',
     'summary': 'Advanced sales reports for odoo 14',
     'description': """module helps you to print reports like Sales Analysis, Sales By Category,
                         Sales Indent, Sales Invoice ,Product Profit ,Hourly Sales in PDF and XLSX format.""",
