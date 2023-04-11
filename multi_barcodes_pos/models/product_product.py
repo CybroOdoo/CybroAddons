@@ -23,7 +23,6 @@
 
 from odoo import models, fields, api
 from odoo.osv import expression
-from odoo.osv.expression import OR
 
 
 class ProductProduct(models.Model):
@@ -88,14 +87,17 @@ class ProductTemplate(models.Model):
 
 class ProductMultiBarcode(models.Model):
     _name = 'multi.barcode.products'
+    _description = 'For creating multiple Barcodes for products'
 
     multi_barcode = fields.Char(string="Barcode",
                                 help="Provide alternate barcodes for this product")
     product_multi = fields.Many2one('product.product')
     template_multi = fields.Many2one('product.template')
 
+    _sql_constraints = [('field_unique', 'unique(multi_barcode)', 'Existing barcode is not allowed !'), ]
+
     def get_barcode_val(self, product):
-        # returns barcode of record in self and product id
+        """returns barcode of record in self and product id"""
         return self.multi_barcode, product
 
 
