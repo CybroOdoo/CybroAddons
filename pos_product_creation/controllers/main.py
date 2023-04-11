@@ -27,7 +27,7 @@ from odoo.http import request
 class PosProductCreation(http.Controller):
 
     @http.route('/create_product', type="json", auth="none")
-    def create_product(self, category, name, price, product_reference, unit_measure, product_categories, **kwargs):
+    def create_product(self, category, name, price, product_reference, unit_measure, product_categories, barcode, **kwargs):
         product_category = ''
         if category == 'Consumable':
             product_category = 'consu'
@@ -46,5 +46,6 @@ class PosProductCreation(http.Controller):
             'uom_po_id': int(unit_measure),
             'categ_id': int(product_categories),
             'available_in_pos': True,
+            'barcode': barcode,
         })
 

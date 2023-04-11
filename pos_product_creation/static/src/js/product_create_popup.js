@@ -10,7 +10,6 @@ odoo.define('pos_product_creation.product_create_popup', function(require) {
     class ProductCreatePopup extends AbstractAwaitablePopup {
         constructor() {
             super(...arguments);
-            console.log(this.env.pos, '<<<<<<<<<<<<<<<')
             this.state = useState({
                 typeValue: this.props.startingValue,
                 productValue: this.props.startingValue,
@@ -26,12 +25,14 @@ odoo.define('pos_product_creation.product_create_popup', function(require) {
             var price = this.state.priceValue;
             var unit = this.state.unitValue;
             var product_category = this.state.categoryValue;
+            var barcode = this.state.barcodeValue;
             selected_vals.push(category);
             selected_vals.push(product);
             selected_vals.push(product_reference);
             selected_vals.push(price);
             selected_vals.push(unit);
             selected_vals.push(product_category);
+            selected_vals.push(barcode);
             return selected_vals
         }
     }

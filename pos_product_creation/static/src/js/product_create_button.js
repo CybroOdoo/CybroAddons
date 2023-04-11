@@ -30,11 +30,7 @@ odoo.define('owl_tutorials.product_create_button', function(require) {
                 var product_price = payload[3];
                 var unit_measure = payload[4];
                 var product_categories = payload[5];
-                console.log(product_category, 'product_category')
-                console.log(product_name, 'product_name')
-                console.log(product_reference, 'product_reference')
-                console.log(product_price, 'product_price')
-                console.log(unit_measure, 'unit_measure')
+                var barcode = payload[6];
                 if (!product_name){
                     return this.showPopup('ErrorPopup', {
                       title: _('A Unit Of Measure Is Required'),
@@ -52,6 +48,7 @@ odoo.define('owl_tutorials.product_create_button', function(require) {
                     'product_reference': product_reference,
                     'unit_measure': unit_measure,
                     'product_categories': product_categories,
+                    'barcode': barcode,
                 }).then(function(response) {});
            }
         }
