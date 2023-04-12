@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="eco_food_cart" inherit_id="website_sale.cart_lines"
+              name="Cart">
+        <xpath expr="//table[hasclass('js_cart_lines')]"
+               position="replace">
+            <section class="cart mt-5">
+                <div class="wrapper">
+                    <div class="container-fluid">
+                        <h4 class="heading_c">
+                            Shopping Cart
+                        </h4>
+                        <div class="cart_items">
+                            <div class="row">
+                                <div class="col-lg-12 col-12">
+                                    <t t-foreach="website.sale_get_order().website_order_line"
+                                       t-as="line">
+                                        <div class="c_wrapper">
+                                            <div class="row">
+                                                <div class="col-2">
+                                                    <div class="cart_img">
+                                                        <img t-att-src="image_data_uri(line.product_id.image_128)"
+                                                             class="img o_image_64_max rounded"
+                                                             t-att-alt="line.name_short"/>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="p_info">
+                                                        <div class="p_one">
+                                                            <t t-call="website_sale.cart_line_product_link">
+                                                                <strong t-field="line.name_short"/>
+                                                            </t>
+                                                            <t groups="account.group_show_line_subtotals_tax_excluded">
+                                                                <span t-field="line.price_reduce_taxexcl"
+                                                                      style="white-space: nowrap;"
+                                                                      t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                                            </t>
+                                                            <t groups="account.group_show_line_subtotals_tax_included">
+                                                                <span t-field="line.price_reduce_taxinc"
+                                                                      style="white-space: nowrap;"
+                                                                      t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                                            </t>
+                                                            <t t-if="line.discount">
+                                                                <span class="c_price">
+                                                                    <small t-if="not line._is_not_sellable_line() and line.product_id.base_unit_price"
+                                                                           class="cart_product_base_unit_price d-block text-muted"
+                                                                           groups="website_sale.group_show_uom_price">
+                                                                        <t t-call='website_sale.base_unit_price'>
+                                                                            <t t-set='product'
+                                                                               t-value='line.product_id'/>
+                                                                        </t>
+                                                                    </small>
+                                                                </span>
+
+                                                                <span class="o_price">
+                                                                    <del t-attf-class="#{'text-danger mr8'}"
+                                                                         style="white-space: nowrap;"
+                                                                         t-esc="line.price_unit"
+                                                                         t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                                                </span>
+                                                            </t>
+                                                            <span class="offer">
+
+                                                                <t t-esc="'{0:,.0f}'.format(int(line.discount))"/>
+                                                                %
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-3">
+                                                    <div class="cart_q">
+                                                        <div class="quantity">
+                                                            <input t-att-id="line.id"
+                                                                   class="quantity__input"
+                                                                   type="number"
+                                                                   t-att-value="line.product_uom_qty"
+                                                                   step="1" value="1"/>
+                                                            <div class="quantity-nav">
+                                                                <div t-att-id="line.id"
+                                                                     class="quantity-button quantity-up">
+                                                                    +
+                                                                </div>
+                                                                <div t-att-id="line.id"
+                                                                     class="quantity-button quantity-down">
+                                                                    -
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-2">
+                                                    <div class="total">
+                                                        <span t-field="line.price_subtotal"
+                                                              class="monetary_field"
+                                                              style="white-space: nowrap;"
+                                                              t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="col-1">
+                                                    <div class="delete">
+                                                        <div class="td-action">
+                                                            <a href='#'
+                                                               aria-label="Remove from cart"
+                                                               title="Remove from cart"
+                                                               class='js_delete_product no-decoration'>
+                                                                <small>
+                                                                    <input class="cart_line_id"
+                                                                           type="hidden"
+                                                                           t-att-value="line.id"/>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                                         width="16"
+                                                                         height="16"
+                                                                         fill="black"
+                                                                         class="bi bi-trash del-cart-eco-food"
+                                                                         viewBox="0 0 16 16">
+                                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                                                        <path fill-rule="evenodd"
+                                                                              d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                                                    </svg>
+                                                                </small>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                    <a role="button" href="/shop"
+                                       class="btn btn-cart mt-5">Continue Shopping
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+    </template>
+    <template id="eco_food_review_order" inherit_id="website_sale.wizard_checkout"
+              name="Review">
+        <xpath expr="//div[hasclass('wizard')]"
+               position="replace">
+        </xpath>
+    </template>
+    <template id="eco_food_continue_shopping" inherit_id="website_sale.cart"
+              name="Shopping">
+        <xpath expr="//div[hasclass('d-flex')]"
+               position="replace">
+        </xpath>
+    </template>
+</odoo>
