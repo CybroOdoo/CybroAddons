@@ -2,7 +2,7 @@
 ###################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2017-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
@@ -21,7 +21,7 @@
 
 {
     'name': 'Transliterate Widget',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': 'Widget for translation',
     'description': 'Widget for translation',
     'category': 'Tools',
@@ -31,16 +31,14 @@
     'website': 'https://www.cybrosys.com',
     'depends': ['base_setup'],
     'data': [
-             'view/res_config_settings_view.xml',
-             ],
+        'view/res_config_settings_view.xml',
+    ],
     'assets': {
-        'web.assets_qweb': [
-            'transliterate_widget/static/src/xml/transliterate_widget.xml' ,
-        ],
-
         'web.assets_backend': [
             'transliterate_widget/static/src/js/jsapi.js',
-            'transliterate_widget/static/src/js/transliterate_widget.js'
+            'transliterate_widget/static/src/js/transliterate_widget.js',
+            '/transliterate_widget/static/src/xml/transliterate_widget.xml',
+
         ],
     },
     'images': ['static/description/banner.png'],
