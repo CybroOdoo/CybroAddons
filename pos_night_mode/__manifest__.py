@@ -28,7 +28,10 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'images': ['static/description/banner.png'],
+    'images': [
+        'static/description/banner.png',
+        'static/description/theme_screenshot.png',
+    ],
     "category": "Themes/Backend",
     'depends': ['base', 'point_of_sale'],
     'assets': {
