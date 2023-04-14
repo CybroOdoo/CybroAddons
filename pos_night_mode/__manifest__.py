@@ -28,10 +28,6 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'images': [
-        'static/description/banner.png',
-        'static/description/theme_screenshot.png',
-    ],
     "category": "Themes/Backend",
     'depends': ['base', 'point_of_sale'],
     'assets': {
@@ -41,6 +37,10 @@
             'pos_night_mode/static/src/scss/theme_style.scss'
         ],
     },
+    'images': [
+        'static/description/banner.png',
+        'static/description/theme_screenshot.png',
+    ],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
