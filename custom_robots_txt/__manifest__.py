@@ -33,7 +33,7 @@
     'data': [
             'wizards/website_robots_view.xml',
     ],
-    'image': ['static/description/banner.png'],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,
     'application': False,
