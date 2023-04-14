@@ -1,6 +1,6 @@
 
 Product Discount Limit
-======================
+=====================================
 Product Discount Limit
 
 Configuration

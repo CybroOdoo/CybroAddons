@@ -21,13 +21,15 @@
 ################################################################################
 from odoo import exceptions, api, models, _
 
+"""Inherited sale.order.line for checking the limit of discount allowed for product and category"""
+
 
 class SalesOrderDiscountLimit(models.Model):
     _inherit = 'sale.order.line'
 
-    """Checking the limit of discount allowed for products and category"""
     @api.onchange('discount')
     def _onchange_discount(self):
+        """Checking the limit of discount allowed for products and category"""
         if not self.env.user.allow_discount:
             if self.product_id.product_tmpl_id.desc_limit > 0:
                 if self.discount > self.product_id.product_tmpl_id.desc_limit:
