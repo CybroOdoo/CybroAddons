@@ -16,12 +16,14 @@
 #
 #    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
 #    (AGPL v3) along with this program.
+#
+##################################################################################
 {
     'name': 'Voice Chat In Odoo',
     'version': '16.0.1.0.0',
     'category': 'Discuss',
-    'summary': 'Record voice Chat in odoo.',
-    'description': 'Record voice note in odoo',
+    'summary': 'Voice Message in Odoo Discuss',
+    'description': 'Record voice note in odoo,Voice Chat In Odoo,Voice Chat,Voice Odoo,Voice Message Odoo,Voice Message in Odoo,Audio Message In Odoo,Audio in Odoo,Voice note',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
