@@ -22,7 +22,7 @@
 
 {
     'name': 'Create Products From POS',
-    'version': '14.0.1.0.0',
+    'version': '14.0.1.0.1',
     'category': 'Point of Sale',
     'summary': 'Create Products From POS Interface',
     'author': 'Cybrosys Techno Solutions',
