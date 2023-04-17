@@ -2,6 +2,7 @@
 import ajax from 'web.ajax';
 const { useRef, onWillStart, xml ,onMounted} = owl;
 import session from 'web.session';
+
 export default class InfinitoRecentApps extends owl.Component {
     setup(){
         super.setup();
@@ -20,6 +21,7 @@ export default class InfinitoRecentApps extends owl.Component {
         this.dragElement(this.__owl__.refs.recentApps, 'x');
     }
 }
+
 InfinitoRecentApps.template = xml`
 <div class="recent-apps d-none" id="recentApps" t-ref="recentApps">
         <div class="icon-tray">

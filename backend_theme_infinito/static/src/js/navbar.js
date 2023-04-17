@@ -345,6 +345,10 @@ patch(ControlPanel.prototype, 'backend_theme_infinito/static/src/js/navbar.Contr
 
     get bookmarkOn() {
         return session.infinitoBookmark;
+    },
+    set bookmarkOn(value) {
+        session.bookmarkOn=value;
+        console.log("setting bookmark",value);
     }
 });
 
