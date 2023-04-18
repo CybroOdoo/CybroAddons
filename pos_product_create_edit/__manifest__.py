@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': 'Product Create Or Edit From Point of Sale ',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': 'This Module will help to create and edit products directly from point of sale.',
     'category': 'Point of Sale',
     'author': 'Cybrosys Techno Solutions',

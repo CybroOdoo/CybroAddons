@@ -58,6 +58,12 @@ class EditProductPopup extends AbstractAwaitablePopup {
     if ($("#product_category").val()) {
       values["pos_categ_id"] = parseInt($("#product_category").val());
     }
+    if ($("#barcode").val()) {
+      values["barcode"] = parseInt($("#barcode").val());
+    }
+    if ($("#default_code").val()) {
+      values["default_code"] = parseInt($("#default_code").val());
+    }
     this.rpc({
       model: "product.product",
       method: "write",
@@ -66,6 +72,8 @@ class EditProductPopup extends AbstractAwaitablePopup {
       if (result) {
         this.props.product.display_name = $("#display_name").val();
         this.props.product.lst_price = $("#list_price").val();
+        this.props.product.barcode = $("#barcode").val();
+        this.props.product.default_code = $("#default_code").val();
         this.props.product.pos_categ_id = [
           parseInt($("#product_category").val()),
           $("#product_category")[0].selectedOptions[0].title,

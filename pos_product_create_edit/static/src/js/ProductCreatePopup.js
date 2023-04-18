@@ -50,6 +50,8 @@ class CreateProductPopup extends AbstractAwaitablePopup {
     let price = $("#list_price").val();
     let cost = $("#cost_price").val();
     let category = $("#product_category").val();
+    let barcode = $("#barcode").val();
+    let default_code = $("#default_code").val();
     let values = {};
     if (base64_img) {
       values["image_1920"] = base64_img;
@@ -65,6 +67,12 @@ class CreateProductPopup extends AbstractAwaitablePopup {
     }
     if (category) {
       values["pos_categ_id"] = category;
+    }
+    if (barcode) {
+      values["barcode"] = barcode;
+    }
+    if (default_code) {
+      values["default_code"] = default_code;
     }
     values["available_in_pos"] = true;
     await this.rpc({
