@@ -3,7 +3,7 @@
     :alt: License: AGPL-3
 
 Mass Duplicate Records
-======================
+===================================================
 
 Mass  Duplicate Records
 

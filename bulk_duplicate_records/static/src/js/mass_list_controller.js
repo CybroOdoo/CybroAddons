@@ -21,6 +21,7 @@ import { ExportDataDialog } from "@web/views/view_dialogs/export_data_dialog";
 
 const { Component, onWillStart, useSubEnv, useEffect, useRef } = owl;
 
+//Created new button mass duplicate and function for duplicate multiple records
 patch(ListController.prototype, "getActionMenuItems", {
     async _onDuplicateSelectedRecords() {
         for (var record in this.model.root.records) {
