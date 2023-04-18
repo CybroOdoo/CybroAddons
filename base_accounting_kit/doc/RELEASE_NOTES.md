@@ -15,3 +15,8 @@
 #### Version 15.0.2.0.2
 #### FIX
 - Dashboard cash and bank balance issue fix
+
+#### 11.04.2023
+#### Version 15.0.2.2.3
+#### FIX
+- Profit and Loss report issue fix

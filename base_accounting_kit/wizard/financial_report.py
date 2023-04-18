@@ -189,8 +189,7 @@ class FinancialReport(models.TransientModel):
                 # it's the sum the leaf accounts
                 #  with such an account type
                 accounts = self.env['account.account'].search([
-                    ('user_type_id', 'in', report.account_type_ids.ids)
-                ])
+                ('user_type_id', 'in', report.account_type_ids.ids)])
                 res[report.id]['account'] = self._compute_account_balance(
                     accounts)
                 for value in res[report.id]['account'].values():
@@ -268,11 +267,11 @@ class FinancialReport(models.TransientModel):
                 # used to display the details of the
                 #  financial report, so it's not needed here.
                 continue
-
             if res[report.id].get('account'):
                 sub_lines = []
                 for account_id, value \
                         in res[report.id]['account'].items():
+
                     # if there are accounts to display,
                     #  we add them to the lines with a level equals
                     #  to their level in

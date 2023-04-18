@@ -22,7 +22,7 @@
 
 {
     'name': 'Odoo 15 Full Accounting Kit',
-    'version': '15.0.2.2.2',
+    'version': '15.0.2.2.3',
     'category': 'Accounting',
     'live_test_url': 'https://www.youtube.com/watch?v=peAp2Tx_XIs',
     'summary': """ Asset and Budget Management,
