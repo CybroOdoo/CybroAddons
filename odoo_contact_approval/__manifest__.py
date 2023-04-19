@@ -22,7 +22,7 @@
 {
     'name': "Odoo Contact Approval",
     'version': '15.0.1.0.0',
-    'summary': """This module helps you manage contacts through the Approval manager's validation process.""",
+    'summary': """This module helps you manage contacts through the Approval manager's validation process""",
     "category": "Sales/Sales",
     'description': """The Odoo Contact Approval Module allows you to approve or cancel contacts through the Contacts
      Approval Manager. Only Approved contacts can be used in sales, purchasing, inventory, and invoice models.""",
