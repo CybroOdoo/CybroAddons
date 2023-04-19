@@ -20,5 +20,4 @@
 #
 #############################################################################
 
-from . import models
-from . import wizard
+from . import import_menu_list

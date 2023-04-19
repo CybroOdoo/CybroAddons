@@ -21,7 +21,6 @@ Credits
 * Developer:
 (v14) Sreerag @ Cybrosys
 
-
 Contacts
 --------
 * Mail Contact : odoo@cybrosys.com
