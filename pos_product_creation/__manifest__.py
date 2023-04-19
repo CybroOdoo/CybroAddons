@@ -22,7 +22,7 @@
 
 {
     'name': 'Create Products From POS',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Point of Sale',
     'summary': 'Create Products From POS Interface',
     'author': 'Cybrosys Techno Solutions',
@@ -30,8 +30,7 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'depends': ['point_of_sale'],
-    'data': [
-    ],
+    'data': [],
     'assets': {
         'point_of_sale.assets': [
             'pos_product_creation/static/src/js/product_create_popup.js',
