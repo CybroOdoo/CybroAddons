@@ -32,7 +32,7 @@ class ProductAutoBarcode(models.Model):
     def create(self, vals):
         res = super(ProductAutoBarcode, self).create(vals)
         ean = generate_ean(str(res.id))
-        res.barcode = ean
+        res.barcode = '21' + ean[2:]
         return res
 
 
@@ -68,19 +68,17 @@ def check_ean(eancode):
         int(eancode)
     except:
         return False
-    return ean_checksum(eancode) == int(eancode[-1])
+    return ean_checksum(eancode)
 
 
 def generate_ean(ean):
     """Creates and returns a valid ean13 from an invalid one"""
     if not ean:
         return "0000000000000"
-    ean = re.sub("[A-Za-z]", "0", ean)
-    ean = re.sub("[^0-9]", "", ean)
-    ean = ean[:13]
-    if len(ean) < 13:
-        ean = ean + '0' * (13 - len(ean))
-    return ean[:-1] + str(ean_checksum(ean))
+    product_identifier = '00000000000' + ean
+    ean = product_identifier[-11:]
+    check_number = check_ean(ean + '00')
+    return f'{ean}0{check_number}'
 
 
 class ProductTemplateAutoBarcode(models.Model):
@@ -90,7 +88,7 @@ class ProductTemplateAutoBarcode(models.Model):
     def create(self, vals_list):
         templates = super(ProductTemplateAutoBarcode, self).create(vals_list)
         ean = generate_ean(str(templates.id))
-        templates.barcode = ean
+        templates.barcode = '22' + ean[2:]
         return templates
 
 
