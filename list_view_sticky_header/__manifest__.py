@@ -22,7 +22,7 @@
 
 {
     'name': 'List View Sticky Header',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'summary': 'Helps to Stick The Header of List View',
     'description': 'Helps to Stick The Header of List View',
     'category': 'Tools',
