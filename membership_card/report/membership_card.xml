@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Used to change the format of pdf. -->
+    <record id="paperformat_card" model="report.paperformat">
+        <field name="name">Custom Paper</field>
+        <field name="default" eval="True"/>
+        <field name="format">custom</field>
+        <field name="page_height">95</field>
+        <field name="page_width">60</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">5.00</field>
+        <field name="margin_bottom">5.00</field>
+        <field name="margin_left">5.0</field>
+        <field name="margin_right">5.0</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">35</field>
+        <field name="dpi">125</field>
+    </record>
+    <record id="action_membership_card" model="ir.actions.report">
+        <field name="name">Membership Card</field>
+        <field name="model">res.partner</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">membership_card.print_member_ship_card</field>
+        <field name="report_file">membership_card.print_member_ship_card</field>
+        <field name="paperformat_id" ref="membership_card.paperformat_card"/>
+    </record>
+    <!-- To print Pdf. -->
+    <template id="print_member_ship_card">
+        <t t-call="web.html_container">
+            <div style="border: 2px solid black; padding: 15px; margin-bottom: 40px; height: 90%;">
+                <tr t-if="free_member==True">
+                    <div style="border-bottom: 2px solid black;   margin-bottom: 15px;">
+                        <h2 style=" text-align: center;">Free Member</h2>
+                    </div>
+                </tr>
+                <tr t-else="free_member==False">
+                    <tr>
+                        <div style="border-bottom: 2px solid black;   margin-bottom: 15px;">
+                            <h2 style="text-align:center;">
+                                <t t-esc="membership_product[0]"/>
+                            </h2>
+                        </div>
+                    </tr>
+                </tr>
+                <div style="display: -webkit-box;  display: flex; -webkit-box-pack: space-between;   justify-content: space-between; -webkit-align-self: center align-self: center; align-items: center;  ">
+                    <div>
+                        <img style="width: 120px;  border-radius: 5px;"
+                             t-attf-src="data:image/*;base64,{{image}}"/>
+                    </div>
+                    <div class="session_1" style="margin-left: 15px; margin-top: 0px; padding-top: 0px;">
+                        <tr t-if="free_member==True">
+                            <tr>
+                                <h2 style="text-align:center;line-height: .1;">
+                                </h2>
+                            </tr>
+                            <tr>
+                                <h2 t-if="name" style="text-align:left; margin-top: 0px; ">Name:
+                                    <span t-esc="name"/>
+                                </h2>
+                            </tr>
+                            <tr>
+                                <h2 t-if="phone" style="text-align:left;">Phone No:
+                                    <span t-esc="phone"/>
+                                </h2>
+                            </tr>
+                             <tr>
+                                <h2 t-if="function" style="text-align:left;">Job:
+                                    <span t-esc="function"/>
+                                </h2>
+                            </tr>
+                            <br/>
+                            <br/>
+                        </tr>
+                        <tr t-else="free_member==False">
+                            <tr>
+                                <h2 style="text-align:center;line-height: .1;">
+                                </h2>
+                            </tr>
+                            <tr>
+                                <h2 t-if="name" style="text-align:left; margin-top: 0px; ">Name:
+                                    <span t-esc="name"/>
+                                </h2>
+                            </tr>
+                            <tr>
+                                <h2 t-if="phone" style="text-align:left;">Phone No:
+                                    <span t-esc="phone"/>
+                                </h2>
+                            </tr>
+                            <tr>
+                                <h2 style="text-align:left;">Start Date:
+                                    <span t-esc="start_date"/>
+                                </h2>
+                            </tr>
+                            <tr>
+                                <h2 style="text-align:left;">End Date:
+                                    <span t-esc="end_date"/>
+                                </h2>
+                            </tr>
+                        </tr>
+                    </div>
+                </div>
+            </div>
+            <div style="border: 2px solid black; padding: 15px;  height: 90%;">
+                <div class="session_2" style="width: 500px; ">
+                    <tr>
+                        <h2 style="text-align:left;">
+                            <span t-esc="company_name"/>
+                        </h2>
+                        <h2 style="text-align:left;">
+                            <span t-esc="company_address"/>,
+                            <br/>
+                            <span t-esc="city"/>,
+                            <span t-esc="state"/>,
+                            <span t-esc="country"/>
+                        </h2>
+                        <h2 style="text-align:left;">
+                            Email:
+                            <span t-esc="company_email"/>
+                        </h2>
+                        <h2 style="text-align:left;">
+                            Contact:
+                            <span t-esc="company_phone"/>
+                        </h2>
+                        <h2 style="text-align:left;">
+                            <span t-esc="website"/>
+                        </h2>
+                    </tr>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
