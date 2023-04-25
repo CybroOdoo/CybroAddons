@@ -120,6 +120,7 @@ odoo.define('dynamic_accounts_report.general_ledger', function (require) {
                                     self.$('.filter_view_tb').html(QWeb.render('GLFilterView', {
                                         filter_data: datas['filters'],
                                         title : datas['name'],
+                                        eng_title : datas['eng_title'],
                                     }));
                                     self.$el.find('.journals').select2({
                                         placeholder: ' Journals...',

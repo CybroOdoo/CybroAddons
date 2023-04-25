@@ -50,32 +50,36 @@ class GeneralView(models.TransientModel):
         new_title = ''
         # todo:
 
-        # trans_title = self.env['ir.translation'].search([('value', '=', title),
-        #                                                  ('module', '=',
-        #                                                   'dynamic_accounts_report')],
-        #                                                 limit=1).src
+        # to get the english translation of the title
+        record_id = self.env['ir.actions.client'].with_context(lang=self.env.user.lang). \
+            search([('name', '=', title)]).id
+        trans_title = self.env['ir.actions.client'].with_context(lang='en_US').search([('id', '=', record_id)]).name
         company_id = self.env.companies.ids
         if r.journal_ids:
             journals = r.journal_ids
         else:
             journals = self.env['account.journal'].search(
                 [('company_id', 'in', company_id)])
-        if title == 'General Ledger':
+        if title == 'General Ledger' or trans_title == 'General Ledger':
             if r.journal_ids:
                 journals = r.journal_ids
             else:
                 journals = self.env['account.journal'].search(
                     [('company_id', 'in', company_id)])
             new_title = title
-        if title == 'Bank Book':
+            eng_title = 'General Ledger'
+
+        if title == 'Bank Book' or trans_title == 'Bank Book':
             journals = self.env['account.journal'].search(
                 [('type', '=', 'bank'), ('company_id', 'in', company_id)])
-
             new_title = title
-        if title == 'Cash Book':
+            eng_title = 'Bank Book'
+
+        if title == 'Cash Book' or trans_title == 'Cash Book':
             journals = self.env['account.journal'].search(
                 [('type', '=', 'cash'), ('company_id', 'in', company_id)])
             new_title = title
+            eng_title = 'Cash Book'
         r.write({
             'titles': new_title,
         })
@@ -104,6 +108,7 @@ class GeneralView(models.TransientModel):
         currency = self._get_currency()
         return {
             'name': new_title,
+            'eng_title': eng_title,
             'type': 'ir.actions.client',
             'tag': 'g_l',
             'filters': filters,
@@ -431,10 +436,10 @@ class GeneralView(models.TransientModel):
 
     def get_accounts_line(self, account_id, title):
 
-        # trans_title = self.env['ir.translation'].search([('value', '=', title),
-        #                                                  ('module', '=',
-        #                                                   'dynamic_accounts_report')],
-        #
+        # to get the english translation of the title
+        record_id = self.env['ir.actions.client'].with_context(lang=self.env.user.lang). \
+            search([('name', '=', title)]).id
+        trans_title = self.env['ir.actions.client'].with_context(lang='en_US').search([('id', '=', record_id)]).name
 
         company_id = self.env.companies.ids
         if self.journal_ids:
@@ -442,16 +447,16 @@ class GeneralView(models.TransientModel):
         else:
             journals = self.env['account.journal'].search(
                 [('company_id', 'in', company_id)])
-        if title == 'General Ledger':
+        if title == 'General Ledger' or trans_title == 'General Ledger':
             if self.journal_ids:
                 journals = self.journal_ids
             else:
                 journals = self.env['account.journal'].search(
                     [('company_id', 'in', company_id)])
-        if title == 'Bank Book':
+        if title == 'Bank Book' or trans_title == 'Bank Book':
             journals = self.env['account.journal'].search(
                 [('type', '=', 'bank'), ('company_id', 'in', company_id)])
-        if title == 'Cash Book':
+        if title == 'Cash Book' or trans_title == 'Cash Book':
             journals = self.env['account.journal'].search(
                 [('type', '=', 'cash'), ('company_id', 'in', company_id)])
 
