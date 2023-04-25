@@ -31,16 +31,8 @@ class ProductAutoBarcode(models.Model):
     @api.model
     def create(self, vals):
         res = super(ProductAutoBarcode, self).create(vals)
-        barcode_id = res.id
-        barcode_search = False
-        while not barcode_search:
-            ean = generate_ean(str(barcode_id))
-            if self.env['product.product'].search([('barcode', '=', ean)]):
-                barcode_search = False
-                barcode_id += 1
-            else:
-                barcode_search = True
-        res.barcode = ean
+        ean = generate_ean(str(res.id))
+        res.barcode = '21' + ean[2:]
         return res
 
 
@@ -65,7 +57,6 @@ def ean_checksum(eancode):
     check = int(10 - math.ceil(total % 10.0)) % 10
     return check
 
-
 def check_ean(eancode):
     """returns True if eancode is a valid ean13 string, or null"""
     if not eancode:
@@ -76,20 +67,17 @@ def check_ean(eancode):
         int(eancode)
     except:
         return False
-    return ean_checksum(eancode) == int(eancode[-1])
+    return ean_checksum(eancode)
 
 
 def generate_ean(ean):
     """Creates and returns a valid ean13 from an invalid one"""
     if not ean:
         return "0000000000000"
-    ean = re.sub("[A-Za-z]", "0", ean)
-    ean = re.sub("[^0-9]", "", ean)
-    ean = ean[:13]
-    if len(ean) < 13:
-        ean = ean + '0' * (13 - len(ean))
-    print("barcode : ", ean[:-1] + str(ean_checksum(ean)))
-    return ean[:-1] + str(ean_checksum(ean))
+    product_identifier = '00000000000' + ean
+    ean = product_identifier[-11:]
+    check_number = check_ean(ean + '00')
+    return f'{ean}0{check_number}'
 
 
 class ProductTemplateAutoBarcode(models.Model):
@@ -98,17 +86,8 @@ class ProductTemplateAutoBarcode(models.Model):
     @api.model
     def create(self, vals_list):
         templates = super(ProductTemplateAutoBarcode, self).create(vals_list)
-        barcode_id = templates.id
-        barcode_search = False
-        while not barcode_search:
-            ean = generate_ean(str(barcode_id))
-            if self.env['product.product'].search([('barcode', '=', ean)]):
-                barcode_search = False
-                barcode_id += 1
-            else:
-                barcode_search = True
-        templates.barcode = ean
+        ean = generate_ean(str(templates.id))
+        templates.barcode = '22' + ean[2:]
         return templates
-
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
