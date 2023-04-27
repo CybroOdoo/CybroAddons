@@ -29,16 +29,39 @@ class BranchPartner(models.Model):
 
     branch_id = fields.Many2one("res.branch", string='Branch', store=True,
                                 help='Leave this field empty if the partner is'
-                                     ' shared between all branches'
+                                     ' shared between all branches',
+                                domain="[('id', 'in', allowed_branch_ids)]",
                                 )
     allowed_branch_ids = fields.Many2many('res.branch', store=True,
                                           string="Branches",
-                                          compute='_compute_allowed_branch_ids')
+                                          compute="_compute_allowed_branch_ids")
+    is_multiple_company = fields.Boolean(string="Multi Company",
+                                         compute='_compute_is_multiple_company')
 
     @api.depends('company_id')
     def _compute_allowed_branch_ids(self):
         for po in self:
-            po.allowed_branch_ids = self.env.user.branch_ids.ids
+            if po.is_multiple_company:
+                if po.company_id:
+                    branch_ids = []
+                    for rec in po.env.user.branch_ids:
+                        if rec.company_id == po.company_id:
+                            branch_ids.append(rec.id)
+                    po.allowed_branch_ids = branch_ids
+                else:
+                    po.allowed_branch_ids = po.env.user.branch_ids.ids
+            else:
+                po.allowed_branch_ids = po.env.user.branch_ids.ids
+
+    @api.depends('company_id')
+    def _compute_is_multiple_company(self):
+        """checking is this multi company or not"""
+        for rec in self:
+            rec.is_multiple_company = False
+            company_count = self.env['res.company'].search_count([])
+            if company_count > 1:
+                rec.is_multiple_company = True
+
 
     @api.model
     def default_get(self, default_fields):
