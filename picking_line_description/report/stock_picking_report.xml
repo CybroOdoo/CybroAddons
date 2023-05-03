@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--For adding the description field on the delivery report-->
+<odoo>
+    <template id="report_delivery_document_description"
+              inherit_id="stock.report_delivery_document">
+        <xpath expr="//div[hasclass('page')]/table/thead/tr/th[@name='th_sm_product']" position="after">
+            <th name="th_sm_description">
+                <strong>Description</strong>
+            </th>
+        </xpath>
+        <xpath expr="//div[hasclass('page')]/table/tbody/tr/td[1]" position="after">
+            <td>
+                <t t-esc="move.name"/>
+            </td>
+        </xpath>
+        <xpath expr="//div[hasclass('page')]/table[2]/thead/tr/th[@name='th_sml_product']" position="after">
+            <th name="th_sml_description">
+                <strong>Description</strong>
+            </th>
+        </xpath>
+    </template>
+    <!-- If printing lots/serial numbers => keep products in original lines -->
+    <template id="report_delivery_has_serial_move_line_description"
+              inherit_id="stock.stock_report_delivery_has_serial_move_line">
+        <xpath expr="//td[1]" position="after">
+            <td>
+                <span t-field="move_line.name"/>
+            </td>
+        </xpath>
+    </template>
+    <!-- If not printing lots/serial numbers => merge lines with same product+description+uom -->
+    <template id="report_delivery_aggregated_move_lines_description"
+              inherit_id="stock.stock_report_delivery_aggregated_move_lines">
+        <xpath expr="//td[1]" position="after">
+            <td>
+                <span t-esc="aggregated_lines[line]['name']"/>
+            </td>
+        </xpath>
+    </template>
+</odoo>
