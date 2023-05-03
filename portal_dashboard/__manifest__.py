@@ -33,7 +33,7 @@
     'website': "https://www.cybrosys.com",
     'depends': ['base', 'sale', 'project', 'crm', 'purchase', 'website'],
     'images': [
-        '/static/description/banner.png',
+        'static/description/banner.png',
     ],
     'data': [
         'views/res_config_settings_views.xml',
