@@ -694,7 +694,7 @@ class AccountAssetDepreciationLine(models.Model):
         if post_move and created_moves:
             created_moves.filtered(lambda m: any(
                 m.asset_depreciation_ids.mapped(
-                    'asset_id.category_id.open_asset'))).post()
+                    'asset_id.category_id.open_asset'))).action_post()
         return [x.id for x in created_moves]
 
     def create_grouped_move(self, post_move=True):
@@ -742,7 +742,7 @@ class AccountAssetDepreciationLine(models.Model):
 
         if post_move and created_moves:
             self.post_lines_and_close_asset()
-            created_moves.post()
+            created_moves.action_post()
         return [x.id for x in created_moves]
 
     def post_lines_and_close_asset(self):

@@ -65,6 +65,7 @@ class AccountMove(models.Model):
         return res
 
     def action_post(self):
+        self.mapped('asset_depreciation_ids').post_lines_and_close_asset()
         result = super(AccountMove, self).action_post()
 
         for inv in self:

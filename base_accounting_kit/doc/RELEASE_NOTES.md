@@ -20,3 +20,8 @@
 #### Version 15.0.2.2.3
 #### FIX
 - Profit and Loss report issue fix
+
+#### 28.04.2023
+#### Version 15.0.2.2.4
+#### FIX
+- asset closing issue is fixed
