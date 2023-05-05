@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Overwrite the templates "mail.Chatter" to rearrange the view and added features-->
+<templates id="template" xml:space="preserve">
+<t name="mail.ChatterAdvanced"
+   t-inherit="mail.Chatter"
+   t-inherit-mode="extension"
+   owl="1">
+        <xpath expr="//t[@t-if='chatter']" position="replace">
+            <t t-if="chatter">
+                <div class="o_Chatter_fixedPanel">
+                    <ChatterTopbar
+                            class="o_Chatter_topbar"
+                            chatterLocalId="chatter.localId"
+                    />
+                    <t t-if="chatter.threadView and chatter.isComposerVisible">
+                        <div class="chat">
+                        <Composer
+                                class="o_Chatter_composer"
+                                t-att-class="{ 'o-bordered': chatter.hasExternalBorder }"
+                                composerLocalId="chatter.thread.composer.localId"
+                                hasFollowers="true"
+                                hasMentionSuggestionsBelowPosition="true"
+                                isCompact="false"
+                                isExpandable="true"
+                                textInputSendShortcuts="['ctrl-enter', 'meta-enter']"
+                                t-on-o-message-posted="_onComposerMessagePosted"
+                                t-ref="composer"
+                        />
+                        </div>
+                    </t>
+                </div>
+                <div class="o_Chatter_scrollPanel" t-on-scroll="_onScrollPanelScroll" t-ref="scrollPanel">
+                    <div class="view d-none">
+                    <t t-if="chatter.isAttachmentBoxVisible">
+                        <AttachmentBox
+                                class="o_Chatter_attachmentBox"
+                                threadLocalId="chatter.thread.localId"
+                        />
+                    </t>
+                        <t t-if="chatter.thread and chatter.hasActivities and chatter.thread.activities.length > 0">
+                        <ActivityBox
+                                class="o_Chatter_activityBox"
+                                chatterLocalId="chatter.localId"
+                        />
+                    </t>
+                        <t t-if="chatter.threadView">
+                        <ThreadView
+                                class="o_Chatter_thread"
+                                getScrollableElement="getScrollableElement"
+                                hasComposer="false"
+                                hasScrollAdjust="chatter.hasMessageListScrollAdjust"
+                                order="'desc'"
+                                threadViewLocalId="chatter.threadView.localId"
+                                t-ref="thread"
+                        />
+                    </t>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+</t>
+</templates>

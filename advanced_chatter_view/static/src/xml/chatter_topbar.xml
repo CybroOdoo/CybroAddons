@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!--Overwrite the templates "mail.ChatterTopbar" to rearrange the view and added classes-->
+    <t name="mail.ChatterTopbarAdvanced"
+       t-inherit="mail.ChatterTopbar"
+       t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//div[hasclass('o_ChatterTopbar_actions')]" position="replace">
+            <div class="o_ChatterTopbar_actions" t-att-class="{'o-has-active-button': chatter.isComposerVisible }">
+                <t t-if="chatter.threadView">
+                    <button class="btn btn-link o_ChatterTopbar_button o_ChatterTopbar_buttonSendMessage bi bi-chat-left-text d-none"
+                        type="button" id="chatter_message"
+                        t-att-class="{
+                            'o-active': chatter.isComposerVisible and chatter.composer and !chatter.composer.isLog,
+                            'o-bordered': chatter.hasExternalBorder,
+                        }"
+                        t-att-disabled="chatter.isDisabled"
+                        t-on-click="_onClickSendMessage"
+                        style="color: white; background-color: #FA035A; border-radius: 20px; margin-left: 10px;"
+                    >
+                        Send message
+                    </button>
+                    <button class="btn btn-link o_ChatterTopbar_button o_ChatterTopbar_buttonLogNote bi bi-journal-text d-none"
+                        type="button" id="chatter_note"
+                        t-att-class="{
+                            'o-active': chatter.isComposerVisible and chatter.composer and chatter.composer.isLog,
+                            'o-bordered': chatter.hasExternalBorder,
+                        }"
+                        t-att-disabled="chatter.isDisabled"
+                        t-on-click="_onClickLogNote"
+                        style="color: white; background-color: #24A72F; border-radius: 20px; margin-left: 10px;"
+                    >
+                        Log note
+                    </button>
+                </t>
+                <t t-if="chatter.hasActivities">
+                    <button class="btn btn-link o_ChatterTopbar_button o_ChatterTopbar_buttonScheduleActivity bi bi-clock-history d-none"
+                            type="button" t-att-disabled="chatter.isDisabled" id="chatter_activity"
+                            t-on-click="_onClickScheduleActivity"
+                            style="color: white; background-color: #0349F6; border-radius: 20px; margin-left: 10px;"
+                    >
+                        Schedule activity
+                    </button>
+                </t>
+                <div class="o-autogrow"/>
+                    <div class="o_ChatterTopbar_rightSection d-none">
+                        <button class="btn btn-link o_ChatterTopbar_button o_ChatterTopbar_buttonAttachments" type="button" t-att-disabled="chatter.isDisabled" t-att-aria-expanded="chatter.isAttachmentBoxVisible ? 'true' : 'false'" t-on-click="_onClickAttachments">
+                            <i class="fa fa-paperclip" role="img" aria-label="Attachments"/>
+                            <t t-if="chatter.isDisabled or !chatter.isShowingAttachmentsLoading">
+                                <span class="o_ChatterTopbar_buttonCount o_ChatterTopbar_buttonAttachmentsCount" t-esc="chatter.thread ? chatter.thread.allAttachments.length : 0"/>
+                            </t>
+                            <t t-else="">
+                                <i class="o_ChatterTopbar_buttonAttachmentsCountLoader fa fa-spinner fa-spin" aria-label="Attachment counter loading..."/>
+                            </t>
+                        </button>
+                        <t t-if="chatter.hasFollowers and chatter.thread">
+                            <t t-if="chatter.thread.channel_type !== 'chat'">
+                                <FollowButton
+                                    class="o_ChatterTopbar_button o_ChatterTopbar_followButton"
+                                    isDisabled="chatter.isDisabled"
+                                    threadLocalId="chatter.thread.localId"
+                                />
+                            </t>
+                            <FollowerListMenu
+                                class="o_ChatterTopbar_button o_ChatterTopbar_followerListMenu"
+                                isDisabled="chatter.isDisabled"
+                                threadLocalId="chatter.thread.localId"
+                            />
+                        </t>
+
+                    </div>
+            </div>
+        </xpath>
+    </t>
+</templates>
