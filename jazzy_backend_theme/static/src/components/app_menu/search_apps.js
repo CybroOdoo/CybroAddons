@@ -33,7 +33,6 @@ patch(NavBar.prototype, 'jazzy_backend_theme/static/src/js/appMenu.js', {
         var self = this;
         rpc.query({model: 'res.config.settings',method: 'config_color_settings',args: [0],}).then(function(result){
             self.colors = result;
-            console.log("$$$",result);
             if (result.primary_accent !== false){
                 document.documentElement.style.setProperty("--primary-accent",result.primary_accent);
             }
