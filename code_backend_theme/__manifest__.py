@@ -46,7 +46,6 @@
             'code_backend_theme/static/src/scss/sidebar.scss',
             'code_backend_theme/static/src/js/chrome/sidebar_menu.js',
             'code_backend_theme/static/src/js/fields/colors.js',
-
         ],
         'web.assets_frontend': [
             'code_backend_theme/static/src/scss/login.scss',
