@@ -136,6 +136,10 @@ class DynamicFields(models.Model):
             'arch_base': arch_base,
             'active': True
         })
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
 
     def add_field_to_tree_view(self):
         if self.env['ir.model.fields'].sudo().search(
@@ -161,6 +165,10 @@ class DynamicFields(models.Model):
                     'inherit_id': self.tree_view_id.id,
                     'arch_base': tree_view_arch_base,
                     'active': True})
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'reload',
+                }
 
         else:
             raise ValidationError(
