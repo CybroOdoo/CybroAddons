@@ -36,6 +36,7 @@
             'mass_duplicate_records/static/src/js/mass_basic_model.js',
         ],
     },
+    'images': ['/static/description/banner.png'],
     'installable': True,
     'application': False,
     'auto_install': False,
