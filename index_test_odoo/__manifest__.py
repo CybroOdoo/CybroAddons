@@ -24,6 +24,7 @@
     'version': '16.0.1.0.0',
     'summary': 'Index Test',
     'description': """Index Test""",
+    'category': 'Accounting,Sales,Purchase',
     'author': "JK Group",
     'website': "https://www.jkgroup.com",
     'company': 'JK Group',
