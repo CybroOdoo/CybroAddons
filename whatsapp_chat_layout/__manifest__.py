@@ -48,7 +48,6 @@
         ],
     },
     'images': [
-        'static/description/icon.png',
         'static/description/banner.png'
     ],
     'installable': True,
