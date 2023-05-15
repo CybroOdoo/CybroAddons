@@ -77,6 +77,21 @@ class HrPayslip(models.Model):
                                      copy=False, states={'draft': [('readonly', False)]})
     payslip_count = fields.Integer(compute='_compute_payslip_count', string="Payslip Computation Details")
 
+
+    def action_send_email(self):
+        res=self.env.user.has_group(
+            'hr_payroll_community.group_hr_payroll_community_manager')
+        if res :
+            email_values = {
+                'email_from':self.env.user.work_email,
+                'email_to': self.employee_id.work_email,
+                'subject': self.name
+            }
+            mail_template = self.env.ref(
+                'hr_payroll_community.payslip_email_template').sudo()
+
+            mail_template.send_mail(self.id, force_send=True,email_values=email_values)
+
     def _compute_details_by_salary_rule_category(self):
         for payslip in self:
             payslip.details_by_salary_rule_category = payslip.mapped('line_ids').filtered(lambda line: line.category_id)
@@ -101,9 +116,6 @@ class HrPayslip(models.Model):
         return self.write({'state': 'done'})
 
     def action_payslip_cancel(self):
-
-        if self.filtered(lambda slip: slip.state == 'done'):
-            raise UserError(_("Cannot cancel a payslip that is done."))
         return self.write({'state': 'cancel'})
 
     def refund_sheet(self):
@@ -299,6 +311,8 @@ class HrPayslip(models.Model):
             def sum_hours(self, code, from_date, to_date=None):
                 res = self._sum(code, from_date, to_date)
                 return res and res[1] or 0.0
+
+
 
         class Payslips(BrowsableObject):
             """a class that will be used into the python code, mainly for usability purposes"""
@@ -519,6 +533,8 @@ class HrPayslip(models.Model):
             return line[0].total
         else:
             return 0.0
+
+
 
 
 class HrPayslipLine(models.Model):

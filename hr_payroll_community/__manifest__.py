@@ -11,7 +11,7 @@
     'summary': 'Manage your employee payroll records',
     'images': ['static/description/banner.png'],
     'description': "Odoo 16 Payroll, Payroll, Odoo 15,Odoo Payroll, Odoo Community Payroll",
-    'depends': [
+    'depends': ['base',
         'hr_contract',
         'hr_holidays',
         'hr_contract_types',
@@ -32,6 +32,7 @@
         'views/res_config_settings_views.xml',
         'views/report_contributionregister_templates.xml',
         'views/report_payslip_templates.xml',
+        'views/email_template.xml',
         'views/report_payslipdetails_templates.xml',
     ],
     'demo': ['data/hr_payroll_demo.xml'],
