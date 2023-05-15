@@ -40,8 +40,8 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
 
         willStart: function() {
             var self = this;
-            return $.when(ajax.loadLibs(this), this._super()).then(function() {
-                return ;
+            return $.when(this._super()).then(function() {
+                return;
             });
         },
 
@@ -192,7 +192,7 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 var count = result.count;
                 var j = 0;
                 Object.entries(result.count).forEach(([key, value]) => {
-                    $('#pro_info').append('<tr><td>'+products[j]+'</td><td>'+value+'</td></tr>')
+                    $('#pro_info').append('<tr><td>'+products[j]['en_US']+'</td><td>'+value+'</td></tr>')
                     j++;
                     });
                 $('#pro_info').hide();
@@ -351,7 +351,7 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                     var count = result.count;
                     var j = 0;
                     Object.entries(result.count).forEach(([key, value]) => {
-                        $('#product_move_table').append('<tr><td>'+name[j]+'</td><td>'+value+'</td></tr>')
+                        $('#product_move_table').append('<tr><td>'+name[j]['en_US']+'</td><td>'+value+'</td></tr>')
                     j++;
                     });
                     $('#product_move_table').hide();
