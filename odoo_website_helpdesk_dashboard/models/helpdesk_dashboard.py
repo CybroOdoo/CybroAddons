@@ -208,15 +208,12 @@ class HelpDeskTicket(models.Model):
         """polarArea chart"""
         ticket_count = []
         team_list = []
-        # print(tickets,'tickets')
         tasks=[]
         project_task = self.env['project.task'].search([('ticket_billed', '=', True)])
         for rec in project_task:
             tasks.append(rec.ticket_id.id)
-        print(tasks,'tsk')
         tickets = self.env['help.ticket'].search([('id', 'in', tasks)])
-        # ticket_ids = tickets.ids
-        print(tickets.ids,'tkts')
+
 
         for rec in tickets:
             # if rec.id in teams.ids:
@@ -239,7 +236,6 @@ class HelpDeskTicket(models.Model):
             count.append(record.get('value'))
         #
         team = [count, name]
-        print(team)
         return team
 
     @api.model
