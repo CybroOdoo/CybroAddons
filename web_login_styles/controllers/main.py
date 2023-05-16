@@ -94,12 +94,13 @@ class Home(WebHome):
 
         if background_type == 'color':
             values['bg'] = ''
-            values['color'] = conf_param.get_param('web_login_styles.color')
+            values['color'] = conf_param.sudo().get_param('web_login_styles.color')
+
         elif background_type == 'image':
-            exist_rec = request.env['ir.attachment'].search([('is_background', '=', True)])
+            exist_rec = request.env['ir.attachment'].sudo().search([('is_background', '=', True)])
             if exist_rec:
                 exist_rec.unlink()
-            attachments = request.env['ir.attachment'].create({
+            attachments = request.env['ir.attachment'].sudo().create({
                 'name': 'Background Image',
                 'datas': image,
                 'type': 'binary',
@@ -107,13 +108,13 @@ class Home(WebHome):
                 'public': True,
                 'is_background': True
             })
-            base_url = conf_param.get_param('web.base.url')
+            base_url = conf_param.sudo().get_param('web.base.url')
             url = base_url + '/web/image?' + 'model=ir.attachment&id=' + str(attachments.id) + '&field=datas'
             values['bg_img'] = url or ''
         elif background_type == 'url':
-            pre_exist = request.env['ir.attachment'].search([('url', '=', url)])
+            pre_exist = request.env['ir.attachment'].sudo().search([('url', '=', url)])
             if not pre_exist:
-                attachments = request.env['ir.attachment'].create({
+                attachments = request.env['ir.attachment'].sudo().create({
                     'name': 'Background Image URL',
                     'url': url,
                     'type': 'url',
