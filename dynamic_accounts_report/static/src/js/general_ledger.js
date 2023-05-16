@@ -167,6 +167,7 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
                     [self.wizard_id], action_title
                 ],
             }).then(function(data) {
+               console.log(data,"de")
                 var action = {
                     'type': 'ir.actions.report',
                     'report_type': 'qweb-pdf',
@@ -196,6 +197,7 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
                     [self.wizard_id], action_title
                 ],
             }).then(function(data) {
+            console.log(data['report_lines'])
                 var action = {
                     'type': 'ir_actions_dynamic_xlsx_download',
                     'data': {
@@ -265,6 +267,7 @@ odoo.define('dynamic_cash_flow_statements.general_ledger', function (require) {
             event.preventDefault();
             var self = this;
             var account_id = $(event.currentTarget).data('account-id');
+            console.log(account_id,"acc")
             var offset = 0;
             var td = $(event.currentTarget).next('tr').find('td');
             if (td.length == 1) {

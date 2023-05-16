@@ -1,3 +1,24 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
 import time
 from odoo import fields, models, api, _
 
@@ -35,8 +56,10 @@ class PartnerView(models.TransientModel):
         ('unreconciled', 'Unreconciled Only')],
         string='Reconcile Type', default='unreconciled')
 
-    account_type_ids = fields.Many2many('account.account.type',string='Account Type',
-                                        domain=[('type', 'in', ('receivable', 'payable'))])
+    account_type_ids = fields.Many2many('account.account.type',
+                                        string='Account Type',
+                                        domain=[('type', 'in',
+                                                 ('receivable', 'payable'))])
 
     @api.model
     def view_report(self, option):
@@ -55,11 +78,11 @@ class PartnerView(models.TransientModel):
 
         if r.date_from:
             data.update({
-                'date_from':r.date_from,
+                'date_from': r.date_from,
             })
         if r.date_to:
             data.update({
-                'date_to':r.date_to,
+                'date_to': r.date_to,
             })
 
         filters = self.get_filter(option)
@@ -83,11 +106,13 @@ class PartnerView(models.TransientModel):
 
         filters = {}
         if data.get('journal_ids'):
-            filters['journals'] = self.env['account.journal'].browse(data.get('journal_ids')).mapped('code')
+            filters['journals'] = self.env['account.journal'].browse(
+                data.get('journal_ids')).mapped('code')
         else:
             filters['journals'] = ['All']
         if data.get('account_ids', []):
-            filters['accounts'] = self.env['account.account'].browse(data.get('account_ids', [])).mapped('code')
+            filters['accounts'] = self.env['account.account'].browse(
+                data.get('account_ids', [])).mapped('code')
         else:
             filters['accounts'] = ['All Payable and Receivable']
         if data.get('target_move'):
@@ -113,7 +138,8 @@ class PartnerView(models.TransientModel):
             filters['reconciled'] = 'Unreconciled'
 
         if data.get('account_type', []):
-            filters['account_type'] = self.env['account.account.type'].browse(data.get('account_type', [])).mapped('name')
+            filters['account_type'] = self.env['account.account.type'].browse(
+                data.get('account_type', [])).mapped('name')
         else:
             filters['account_type'] = ['Receivable and Payable']
 
@@ -134,16 +160,18 @@ class PartnerView(models.TransientModel):
         default_filters = {}
         company_id = self.env.companies.ids
         company_domain = [('company_id', 'in', company_id)]
-        journal_ids = r.journal_ids if r.journal_ids else self.env['account.journal'].search(company_domain, order="company_id, name")
-        accounts_ids = self.account_ids if self.account_ids else self.env['account.account'].search(company_domain, order="company_id, name")
-
+        journal_ids = r.journal_ids if r.journal_ids else self.env[
+            'account.journal'].search(company_domain, order="company_id, name")
+        accounts_ids = self.account_ids if self.account_ids else self.env[
+            'account.account'].search(company_domain, order="company_id, name")
 
         partner = r.partner_ids if r.partner_ids else self.env[
             'res.partner'].search([])
         categories = self.partner_category_ids if self.partner_category_ids \
             else self.env['res.partner.category'].search([])
         account_types = r.account_type_ids if r.account_type_ids \
-            else self.env['account.account.type'].search([('type', 'in', ('receivable', 'payable'))])
+            else self.env['account.account.type'].search(
+            [('type', 'in', ('receivable', 'payable'))])
 
         journals = []
         o_company = False
@@ -161,8 +189,6 @@ class PartnerView(models.TransientModel):
                 accounts.append(('divider', j.company_id.name))
                 o_company = j.company_id
             accounts.append((j.id, j.name))
-
-
 
         filter_dict = {
             'journal_ids': r.journal_ids.ids,
@@ -192,11 +218,13 @@ class PartnerView(models.TransientModel):
         display_account = data['display_account']
         init_balance = True
         company_id = self.env.companies.ids
-        accounts = self.env['account.account'].search([('user_type_id.type', 'in', ('receivable', 'payable')),
-                                                       ('company_id', 'in', company_id)])
+        accounts = self.env['account.account'].search(
+            [('user_type_id.type', 'in', ('receivable', 'payable')),
+             ('company_id', 'in', company_id)])
         if data['account_type']:
             accounts = self.env['account.account'].search(
-                [('user_type_id.id', 'in', data['account_type'].ids),('company_id', 'in', company_id)])
+                [('user_type_id.id', 'in', data['account_type'].ids),
+                 ('company_id', 'in', company_id)])
 
         partners = self.env['res.partner'].search([])
 
@@ -205,17 +233,18 @@ class PartnerView(models.TransientModel):
                 [('category_id', 'in', data['partner_tags'].ids)])
         if not accounts:
             raise UserError(_("No Accounts Found! Please Add One"))
-        partner_res = self._get_partners(partners,accounts, init_balance, display_account, data)
+        partner_res = self._get_partners(partners, accounts, init_balance,
+                                         display_account, data)
 
         debit_total = 0
         debit_total = sum(x['debit'] for x in partner_res)
         credit_total = sum(x['credit'] for x in partner_res)
-        debit_balance = round(debit_total,2) - round(credit_total,2)
+        debit_balance = round(debit_total, 2) - round(credit_total, 2)
         return {
             'doc_ids': self.ids,
             'debit_total': debit_total,
             'credit_total': credit_total,
-            'debit_balance':debit_balance,
+            'debit_balance': debit_balance,
             'docs': docs,
             'time': time,
             'Partners': partner_res,
@@ -235,7 +264,8 @@ class PartnerView(models.TransientModel):
         if not vals.get('journal_ids'):
             vals.update({'journal_ids': [(5,)]})
         if vals.get('account_ids'):
-            vals.update({'account_ids': [(4, j) for j in vals.get('account_ids')]})
+            vals.update(
+                {'account_ids': [(4, j) for j in vals.get('account_ids')]})
         if not vals.get('account_ids'):
             vals.update({'account_ids': [(5,)]})
         if vals.get('partner_ids'):
@@ -251,14 +281,16 @@ class PartnerView(models.TransientModel):
 
         if vals.get('account_type-ids'):
             vals.update(
-                {'account_type_ids': [(4, j) for j in vals.get('account_type_ids')]})
+                {'account_type_ids': [(4, j) for j in
+                                      vals.get('account_type_ids')]})
         if not vals.get('account_type_ids'):
             vals.update({'account_type_ids': [(5,)]})
 
         res = super(PartnerView, self).write(vals)
         return res
 
-    def _get_partners(self, partners, accounts, init_balance, display_account, data):
+    def _get_partners(self, partners, accounts, init_balance, display_account,
+                      data):
 
         cr = self.env.cr
         move_line = self.env['account.move.line']
@@ -270,7 +302,8 @@ class PartnerView(models.TransientModel):
         if where_clause.strip():
             wheres.append(where_clause.strip())
         final_filters = " AND ".join(wheres)
-        final_filters = final_filters.replace('account_move_line__move_id', 'm').replace(
+        final_filters = final_filters.replace('account_move_line__move_id',
+                                              'm').replace(
             'account_move_line', 'l')
         new_final_filter = final_filters
         if data['target_move'] == 'posted':
@@ -283,10 +316,12 @@ class PartnerView(models.TransientModel):
             new_final_filter += " AND l.date <= '%s'" % data.get('date_to')
 
         if data['journals']:
-            new_final_filter += ' AND j.id IN %s' % str(tuple(data['journals'].ids) + tuple([0]))
+            new_final_filter += ' AND j.id IN %s' % str(
+                tuple(data['journals'].ids) + tuple([0]))
 
         if data.get('accounts'):
-            WHERE = "WHERE l.account_id IN %s" % str(tuple(data.get('accounts').ids) + tuple([0]))
+            WHERE = "WHERE l.account_id IN %s" % str(
+                tuple(data.get('accounts').ids) + tuple([0]))
         else:
             WHERE = "WHERE l.account_id IN %s"
 
@@ -311,23 +346,28 @@ class PartnerView(models.TransientModel):
                     LEFT JOIN res_partner p ON (l.partner_id=p.id)\
                     JOIN account_journal j ON (l.journal_id=j.id)\
                     JOIN account_account acc ON (l.account_id = acc.id) '''
-                    + WHERE + new_final_filter + ''' GROUP BY l.id, m.id,  l.account_id, l.date, j.code, l.currency_id, l.amount_currency, l.ref, l.name, m.name, c.symbol, c.position, p.name ORDER BY l.date''' )
+               + WHERE + new_final_filter + ''' GROUP BY l.id, m.id,  l.account_id, l.date, j.code, l.currency_id, l.amount_currency, l.ref, l.name, m.name, c.symbol, c.position, p.name ORDER BY l.date''')
         if data.get('accounts'):
             params = tuple(where_params)
         else:
             params = (tuple(accounts.ids),) + tuple(where_params)
         cr.execute(sql, params)
 
-        account_list = {x.id: {'name': x.name, 'code': x.code} for x in accounts}
+        account_list = {x.id: {'name': x.name, 'code': x.code} for x in
+                        accounts}
 
         for row in cr.dictfetchall():
             balance = 0
             if row['partner_id'] in move_lines:
                 for line in move_lines.get(row['partner_id']):
-                    balance += round(line['debit'],2) - round(line['credit'],2)
+                    balance += round(line['debit'], 2) - round(line['credit'],
+                                                               2)
                 row['balance'] += (round(balance, 2))
                 row['m_id'] = row['account_id']
-                row['account_name'] = account_list[row['account_id']]['name'] + "(" +account_list[row['account_id']]['code'] + ")"
+                row['account_name'] = account_list[row['account_id']][
+                                          'name'] + "(" + \
+                                      account_list[row['account_id']][
+                                          'code'] + ")"
                 move_lines[row.pop('partner_id')].append(row)
 
         partner_res = []
@@ -394,7 +434,7 @@ class PartnerView(models.TransientModel):
                           'Target Moves: ' + filters.get('target_move'),
                           date_head)
 
-        sheet.merge_range('C4:D4', 'Account Type: ' + ', ' .join(
+        sheet.merge_range('C4:D4', 'Account Type: ' + ', '.join(
             [lt or '' for lt in
              filters['account_type']]),
                           date_head)

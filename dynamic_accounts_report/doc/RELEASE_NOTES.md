@@ -46,3 +46,8 @@
 #### Version 14.0.1.2.7
 #### UPDT AND BUGFIX
 - Loading Issue and orderby date
+
+#### 27.04.2023
+#### Version 14.0.1.2.7
+#### UPDT AND BUGFIX
+- Update and Bugfix in General Ledger

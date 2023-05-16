@@ -200,6 +200,7 @@ odoo.define('dynamic_accounts_report.partner_ledger', function (require) {
                     [self.wizard_id]
                 ],
             }).then(function(data) {
+            console.log(data['report_lines'])
                 var action = {
                     'type': 'ir_actions_dynamic_xlsx_download',
                     'data': {
