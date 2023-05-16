@@ -19,12 +19,68 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import models, fields
+from odoo import models, fields, api
+
+
+class Menu(models.Model):
+    _inherit = "website.menu"
+
+    def _compute_visible(self):
+        super()._compute_visible()
+        show_menu_header = self.env['ir.config_parameter'].sudo().get_param(
+            'odoo_website_helpdesk.helpdesk_menu_show')
+        for menu in self:
+            if menu.name == 'Helpdesk' and show_menu_header == False:
+                menu.is_visible = False
+            if menu.name == 'Helpdesk' and show_menu_header == True:
+                menu.is_visible = True
 
 
 class Helpdesk(models.TransientModel):
     _inherit = 'res.config.settings'
 
-    show_create_task = fields.Boolean(
-        string="Create Tasks",
-        config_parameter='odoo_website_helpdesk.show_create_task')
+    show_create_task = fields.Boolean(string="Create Tasks",
+                                      config_parameter='odoo_website_helpdesk.show_create_task')
+    show_category = fields.Boolean(string="Category",
+                                   config_parameter='odoo_website_helpdesk.show_category',
+                                   implied_group='odoo_website_helpdesk.group_show_category')
+    product_website = fields.Boolean(string="Product On Website",
+                                     config_parameter='odoo_website_helpdesk.product_website')
+    auto_close_ticket = fields.Boolean(string="Auto Close Ticket",
+                                       config_parameter='odoo_website_helpdesk.auto_close_ticket')
+    no_of_days = fields.Integer(string="No Of Days",
+                                config_parameter='odoo_website_helpdesk.no_of_days')
+    closed_stage = fields.Many2one(
+        'ticket.stage', string='Closing stage',
+        config_parameter='odoo_website_helpdesk.closed_stage')
+
+    reply_template_id = fields.Many2one('mail.template',
+                                        domain="[('model', '=', 'help.ticket')]",
+                                        config_parameter='odoo_website_helpdesk.reply_template_id')
+    helpdesk_menu_show = fields.Boolean('Helpdesk Menu',
+                                        config_parameter=
+                                        'odoo_website_helpdesk.helpdesk_menu_show')
+
+    @api.onchange('closed_stage')
+    def closed_stage_a(self):
+        stage = self.closed_stage.id
+        in_stage = self.env['ticket.stage'].search([('id', '=', stage)])
+        not_in_stage = self.env['ticket.stage'].search([('id', '!=', stage)])
+        in_stage.closing_stage = True
+        for each in not_in_stage:
+            each.closing_stage = False
+
+    @api.constrains('show_category')
+    def show_category_subcategory(self):
+        if self.show_category:
+            group_cat = self.env.ref(
+                'odoo_website_helpdesk.group_show_category')
+            group_cat.write({
+                'users': [(4, self.env.user.id)]
+            })
+        else:
+            group_cat = self.env.ref(
+                'odoo_website_helpdesk.group_show_category')
+            group_cat.write({
+                'users': [(5, False)]
+            })

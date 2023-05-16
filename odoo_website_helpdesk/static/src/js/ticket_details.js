@@ -2,7 +2,6 @@ odoo.define("odoo_website_helpdesk.ticket_details", function (require) {
   "use strict";
 
   $(document).on("mouseover", "#popover", function (event) {
-    console.log("start");
     var self = this;
     var item_text = "";
     if (self.parentElement.parentElement.children[3]) {

@@ -1,0 +1,114 @@
+<odoo>
+
+    <record model="ir.module.category" id="module_category_helpdesk">
+        <field name="name">Helpdesk</field>
+        <field name="description">Helpdesk Access Groups</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="helpdesk_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="odoo_website_helpdesk.module_category_helpdesk"/>
+    </record>
+
+    <record id="helpdesk_team_leader" model="res.groups">
+        <field name="name">Team Leader</field>
+        <field name="category_id" ref="odoo_website_helpdesk.module_category_helpdesk"/>
+        <field name="implied_ids" eval="[(4, ref('odoo_website_helpdesk.helpdesk_user'))]"/>
+    </record>
+
+    <record id="helpdesk_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="odoo_website_helpdesk.module_category_helpdesk"/>
+        <field name="implied_ids" eval="[(4, ref('odoo_website_helpdesk.helpdesk_team_leader'))]"/>
+    </record>
+
+    <record id="group_show_category" model="res.groups">
+        <field name="name">group_show_category</field>
+    </record>
+
+    <record id="group_show_subcategory" model="res.groups">
+        <field name="name">group_show_subcategory</field>
+    </record>
+
+    <record id="help_desk_dashboard_team_leader"
+            model="ir.rule">
+        <field name="name">Record Rule for team leader</field>
+        <field ref="model_help_ticket" name="model_id"/>
+        <field name="groups"
+               eval="[(4, ref('odoo_website_helpdesk.helpdesk_team_leader'))]"/>
+        <field name="domain_force">['&amp;', ('team_head.id', '=', user.id), ('stage_id.group_ids.users', 'in', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="help_desk_dashboard_manager"
+            model="ir.rule">
+        <field name="name">Record Rule for manager</field>
+        <field ref="model_help_ticket" name="model_id"/>
+        <field name="groups"
+               eval="[(4, ref('odoo_website_helpdesk.helpdesk_manager'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="help_desk_dashboard_user"
+            model="ir.rule">
+        <field name="name">Record Rule for user</field>
+        <field ref="model_help_ticket" name="model_id"/>
+        <field name="groups"
+               eval="[(4, ref('odoo_website_helpdesk.helpdesk_user'))]"/>
+        <field name="domain_force">['&amp;', ('assigned_user', '=', user.id), ('stage_id.group_ids.users', 'in', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+     <record id="help_desk_stage_rule_leader"
+            model="ir.rule">
+        <field name="name">Record Rule stages leader</field>
+        <field ref="model_ticket_stage" name="model_id"/>
+        <field name="groups"
+               eval="[(4, ref('odoo_website_helpdesk.helpdesk_team_leader'))]"/>
+        <field name="domain_force">[('group_ids.users', 'in', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+     <record id="help_desk_stage_rule_manager"
+            model="ir.rule">
+        <field name="name">Record Rule stages manager</field>
+        <field ref="model_ticket_stage" name="model_id"/>
+        <field name="groups"
+               eval="[(4, ref('odoo_website_helpdesk.helpdesk_manager'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+     <record id="help_desk_stage_rule_user"
+            model="ir.rule">
+        <field name="name">Record Rule stages user</field>
+        <field ref="model_ticket_stage" name="model_id"/>
+        <field name="groups"
+               eval="[(4, ref('odoo_website_helpdesk.helpdesk_user'))]"/>
+        <field name="domain_force">[('group_ids.users', 'in', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+    <record id="base.default_user" model="res.users">
+        <field name="groups_id" eval="[(4,ref('odoo_website_helpdesk.helpdesk_manager'))]"/>
+    </record>
+</odoo>

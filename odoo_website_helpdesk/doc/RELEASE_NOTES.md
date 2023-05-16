@@ -6,10 +6,4 @@
 - Initial commit for Website Helpdesk Support Ticket
 
 
-#### 04.04.2023
-#### Version 16.0.2.0.1
-#### FIX
-- Updation in Translation file (Language)
-
-
 

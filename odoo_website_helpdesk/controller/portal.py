@@ -53,10 +53,68 @@ class TicketPortal(portal.CustomerPortal):
         return request.render("odoo_website_helpdesk.portal_my_tickets",
                               values)
 
+    @http.route(['/my/tickets/<int:id>'], type='http', auth="public",
+                website=True)
+    def portal_tickets_details(self, id):
+        details = request.env['help.ticket'].sudo().search([('id', '=', id)])
+        data = {
+            'page_name': 'ticket',
+            'ticket': True,
+            'details': details,
+        }
+        return request.render("odoo_website_helpdesk.portal_ticket_details",
+                              data)
+
+    @http.route('/my/tickets/download/<id>', auth='public',
+                type='http',
+                website=True)
+    def ticket_download_portal(self, id):
+        data = {
+            'help': request.env['help.ticket'].sudo().browse(int(id))}
+        report = request.env.ref(
+            'odoo_website_helpdesk.action_report_helpdesk_ticket')
+        pdf, _ = request.env.ref(
+            'odoo_website_helpdesk.action_report_helpdesk_ticket').sudo()._render_qweb_pdf(
+            report, data=data)
+        pdf_http_headers = [('Content-Type', 'application/pdf'),
+                            ('Content-Length', len(pdf)),
+                            ('Content-Disposition',
+                             'attachment; filename="Helpdesk Ticket.pdf"')]
+        return request.make_response(pdf, headers=pdf_http_headers)
+
 
 class WebsiteDesk(http.Controller):
-
     @http.route(['/helpdesk_ticket'], type='http', auth="public", website=True,
                 sitemap=True)
     def helpdesk_ticket(self, **kwargs):
-        return request.render('odoo_website_helpdesk.ticket_form')
+        types = request.env['helpdesk.types'].sudo().search([])
+        categories = request.env['helpdesk.categories'].sudo().search([])
+        product = request.env['product.template'].sudo().search([])
+        values = {}
+        values.update({
+            'types': types,
+            'categories': categories,
+            'product_website': product
+        })
+        return request.render('odoo_website_helpdesk.ticket_form', values)
+
+    @http.route(['/rating/<int:ticket_id>'], type='http', auth="public",
+                website=True,
+                sitemap=True)
+    def rating(self, ticket_id):
+        ticket = request.env['help.ticket'].browse(ticket_id)
+        data = {
+            'ticket': ticket.id,
+        }
+        return request.render('odoo_website_helpdesk.rating_form', data)
+
+    @http.route(['/rating/<int:ticket_id>/submit'], type='http', auth="user",
+                website=True, csrf=False,
+                sitemap=True)
+    def rating_backend(self, ticket_id, **post):
+        ticket = request.env['help.ticket'].browse(ticket_id)
+        ticket.write({
+            'customer_rating': post['rating'],
+            'review': post['message'],
+        })
+        return request.render('odoo_website_helpdesk.rating_thanks')

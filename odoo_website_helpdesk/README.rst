@@ -1,5 +1,5 @@
-Website Helpdesk Support Ticket Management
-=========================================
+HelpDesk Support
+=========================
 * HelpDesk Support for Odoo 16 community editions
 
 Installation

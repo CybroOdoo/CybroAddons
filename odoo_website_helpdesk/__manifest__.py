@@ -21,33 +21,53 @@
 #############################################################################
 
 {
-    'name': "Website Helpdesk Support Ticket Management V16",
-    'version': '16.0.2.0.2',
-    'summary': """Website Helpdesk Support Ticket Management for V16 Community""",
-    'description': """Website Helpdesk Support Ticket Management for V16 Community, Helpdesk, helpdesk, support, ticket""",
+    'name': "Website Helpdesk Support Ticket Management",
+    'version': '16.0.1.0.0',
+    'summary': """Helpdesk Module for community""",
+    'description': """Can create ticket from website also and can manage it from backend.
+    Bill can be created for ticket with service cost""",
     'author': "Cybrosys Techno Solutions",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'category': 'Website',
-    'depends': ['website', 'project', 'sale_project', 'hr_timesheet'],
+    'depends': ['base', 'website', 'project', 'sale_project', 'hr_timesheet','mail','contacts'],
     'data': [
+        'security/security_groups.xml',
         'security/ir.model.access.csv',
         'views/helpdesk.xml',
         'views/team.xml',
+        'views/portal_search.xml',
         'views/res_config_settings.xml',
         'views/website_form.xml',
         'views/report.xml',
         'views/helpdesk.xml',
         'views/helpdesk_views.xml',
         'views/portal.xml',
-
+        'views/categories.xml',
+        'views/rating_form.xml',
+        'templates/helpdesk_replay_template.xml',
         'data/ticket_sequence.xml',
         'data/ticket_stage_data.xml',
+        'data/ticket_type.xml',
+        'data/ticket_auto_close.xml',
+        'data/rating_template.xml',
+        'report/helpdesk_ticket_report_template.xml',
     ],
     'assets': {
         'web.assets_frontend': [
             'odoo_website_helpdesk/static/src/js/ticket_details.js',
         ],
+        'web.assets_backend': [
+            'odoo_website_helpdesk/static/src/xml/helpdesk_dashboard.xml',
+            'odoo_website_helpdesk/static/src/js/helpdesk_dashboard_action.js',
+        ],
+        'web.assets_frontend': [
+            '/odoo_website_helpdesk/static/src/js/portal_search.js',
+            '/odoo_website_helpdesk/static/src/js/portal_groupby.js',
+            '/odoo_website_helpdesk/static/src/js/multiple_product_choose.js',
+            '/odoo_website_helpdesk/static/src/cdn/jquery.sumoselect.min.js',
+            '/odoo_website_helpdesk/static/src/cdn/sumoselect.min.css',
+        ]
     },
     'images': ['static/description/banner.png'],
     'license': 'LGPL-3',
