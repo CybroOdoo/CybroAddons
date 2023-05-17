@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="splash_blog_details" name="Splash Blog Details" inherit_id="website_blog.blog_post_complete">
+<!-- It features a two-column layout with a custom search widget on the right and the blog post content on the left.-->
+        <xpath expr="//div[@id='o_wblog_post_content']" position="replace">
+            <section class="Blog_detail py-5 pb-5">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 col-md-12 col-12">
+                            <div class="blog_left">
+                                <div class="b_left_single">
+                                    <div class="blog_img">
+                                        <t t-call="website_blog.post_cover_image">
+                                            <t t-set="use_size" t-value="True"/>
+                                        </t>
+                                        <div class="blog_date">
+                                            <t t-esc="blog_post.published_date"
+                                               t-options="{'widget': 'date', 'format': 'dd MMM'}">
+                                                <t t-set="_record"
+                                                   t-value="blog_post"/>
+                                            </t>
+                                        </div>
+                                    </div>
+                                    <div class="blog_details para">
+                                        <t t-call="website_blog.blog_post_content"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="blog_right col-md-4">
+                            <div class="sidebar">
+                                <div class="sidebar_content">
+                                    <h4>
+                                        Search
+                                    </h4>
+                                    <form id="o_wblog_post_search"
+                                          class="m-auto w-100"
+                                          role="search"
+                                          t-att-action="blog_url(tag=tag,search=search)"
+                                          method="get">
+                                        <t t-call="website.website_search_box">
+                                            <t t-set="_classes" t-valuef="w-100"/>
+                                        </t>
+                                    </form>
+                                </div>
+                                <div class="sidebar_content">
+                                    <h4>
+                                        <a>
+                                            Categories
+                                        </a>
+                                    </h4>
+                                    <h6 class="all_categories">
+                                        <a href="/blog"
+                                           t-attf-class="nav-link font-weight-bold #{(not blog) and 'active'}">
+                                            All
+                                        </a>
+                                    </h6>
+
+                                    <ul class="all_categories" t-foreach="blogs"
+                                        t-as="nav_blog">
+                                        <a t-attf-href="/blog/#{slug(nav_blog)}">
+                                            <li t-attf-class="nav-link #{(blog and nav_blog.id == blog.id) and 'active' or ''}">
+                                                <b t-field="nav_blog.name"/>
+                                            </li>
+                                        </a>
+                                    </ul>
+                                </div>
+                                <div class="sidebar_content">
+                                    <h4>
+                                        Recent Posts
+                                    </h4>
+                                    <t t-foreach="posts_recent" t-as="p">
+                                        <div class="recent_wrapper">
+                                            <a t-attf-href="/blog/#{p.blog_id.id}/#{p.id}">
+                                                <div class="img_wrapper">
+                                                    <t t-call="website.record_cover">
+                                                        <t t-set="_record" t-value="p"/>
+                                                        <t t-set="use_size"
+                                                           t-value="img_wrap"/>
+                                                        <t t-set="additionnal_classes"
+                                                           t-value="'img_wrap'"/>
+                                                    </t>
+                                                </div>
+
+                                                <div class="rec_post_info">
+                                                    <a t-attf-href="/blog/#{p.blog_id.id}/#{p.id}">
+                                                        <h4>
+                                                            <t t-esc="p.name"/>
+                                                        </h4>
+                                                    </a>
+                                                    <p>
+                                                        <t t-esc="p.published_date"
+                                                           t-options="{'widget': 'date', 'format': 'MMM dd yyyy'}"/>
+                                                    </p>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </t>
+                                </div>
+                                <div t-if="other_tags or tag_category" class="sidebar_content">
+                                    <h4>
+                                        Popular Tags
+                                    </h4>
+                                    <div class="pop_wrapper">
+                                        <t t-call="website_blog.tags_list">
+                                            <t t-set='tags' t-value='other_tags'/>
+                                            <t t-set="showInactive" t-value="True"/>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+        <xpath expr="//div[@id='o_wblog_post_sidebar_col']" position="replace">
+
+        </xpath>
+    </template>
+</odoo>
