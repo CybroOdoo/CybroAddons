@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="verify_checkout" inherit_id="website_sale.cart">
+        <!--        replacing the button checkout-->
+        <xpath expr="//a[@t-attf-href='{{redirect_url}}']"
+               position="replace">
+            <!--            checking if it is a public user.if it is a public user then
+            open a modal to verify  -->
+            <t t-if="website.is_public_user()">
+                <a role="button" class="btn btn-primary float-end"
+                   data-bs-toggle="modal"
+                   data-bs-target="#portal_deactivate_account_modal">
+                    <span>Process Checkout</span>
+                    <span class="fa fa-chevron-right"/>
+                </a>
+                <div t-attf-class="modal #{'show d-block' if open_deactivate_modal else ''}"
+                     id="portal_deactivate_account_modal" tabindex="-1"
+                     role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="btn-close"
+                                        data-bs-dismiss="modal"/>
+                            </div>
+                            <form class="oe_login_form modal-body"
+                                  role="form" t-attf-action="/web/login"
+                                  method="post"
+                                  onsubmit="this.action = '/web/login' + location.hash">
+                                <input type="hidden" name="csrf_token"
+                                       t-att-value="request.csrf_token()"/>
+                                <div class="mb-3 field-login">
+                                    <label for="login" class="form-label">
+                                        Email
+                                    </label>
+                                    <input type="text" placeholder="Email"
+                                           name="login" t-att-value="login"
+                                           id="login"
+                                           t-attf-class="form-control #{'form-control-sm' if form_small else ''}"
+                                           required="required"
+                                           autofocus="autofocus"
+                                           autocapitalize="off"/>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password"
+                                           class="form-label">Password
+                                    </label>
+                                    <input type="password"
+                                           placeholder="Password"
+                                           name="password" id="password"
+                                           t-attf-class="form-control #{'form-control-sm' if form_small else ''}"
+                                           required="required"
+                                           autocomplete="current-password"
+                                           t-att-autofocus="'autofocus' if login else None"
+                                           maxlength="4096"/>
+                                </div>
+                                <p class="alert alert-danger" t-if="error"
+                                   role="alert">
+                                    <t t-esc="error"/>
+                                </p>
+                                <p class="alert alert-success"
+                                   t-if="message" role="status">
+                                    <t t-esc="message"/>
+                                </p>
+                                <div t-attf-class="clearfix oe_login_buttons text-center gap-1 d-grid mb-1 {{'pt-2' if form_small else 'pt-3'}}">
+                                    <button type="submit"
+                                            class="btn btn-primary">Log in
+                                    </button>
+                                    <div class="o_login_auth"/>
+                                </div>
+                                <div class="justify-content-between mt-2 d-flex small">
+                                    <a href="/web/signup?">Don't have an
+                                        account?
+                                    </a>
+                                    <a href="/web/reset_password?">Reset
+                                        Password
+                                    </a>
+                                </div>
+                                <t t-set="redirect_url"
+                                   t-value="'/web/login?redirect=/shop/checkout' if redirect_to_sign_in else '/shop/checkout?express=1'"/>
+                                <input type="hidden" name="redirect"
+                                       t-att-value="redirect_url"/>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </t>
+            <!--            if not then move to checkout page-->
+            <t t-else="">
+                <a role="button" class="btn btn-primary float-end"
+                   href="/shop/checkout?express=1">
+                    <span>Process Checkout</span>
+                    <span class="fa fa-chevron-right"/>
+                </a>
+            </t>
+        </xpath>
+    </template>
+    <template id="verify_checkout_cart_summary"
+              inherit_id="website_sale.short_cart_summary">
+        <!--        replacing the second checkout button-->
+        <xpath expr="//a[@t-attf-href='{{redirect_url}}']"
+               position="replace">
+            <t t-if="website.is_public_user()">
+                <a role="button"
+                   class="btn btn-secondary float-end d-none d-xl-inline-block"
+                   data-bs-toggle="modal"
+                   data-bs-target="#portal_deactivate_account_modal">
+                    <span>Process Checkout</span>
+                </a>
+            </t>
+            <t t-else="">
+                <a role="button" class="btn btn-primary float-end"
+                   href="/shop/checkout?express=1">
+                    <span>Process Checkout</span>
+                    <span class="fa fa-chevron-right"/>
+                </a>
+            </t>
+        </xpath>
+    </template>
+</odoo>
+
