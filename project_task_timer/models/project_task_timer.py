@@ -69,15 +69,23 @@ class ProjectTaskTimer(models.Model):
             time_line_obj = self.env['account.analytic.line']
             domain = [('task_id', 'in', self.ids), ('date_end', '=', False)]
             for time_line in time_line_obj.search(domain):
-                time_line.write({'date_end': fields.Datetime.now()})
-                if time_line.date_end:
-                    diff = fields.Datetime.from_string(time_line.date_end) - fields.Datetime.from_string(time_line.date_start).replace(microsecond=0)
+                if time_line.date_start:
+                    time_line.write({'date_end': fields.Datetime.now()})
+                    diff = fields.Datetime.from_string(time_line.date_end) - fields.Datetime.from_string(time_line.date_start)
                     time_line.timer_duration = round(diff.total_seconds() / 60.0, 2)
                     time_line.unit_amount = round(diff.total_seconds() / (60.0 * 60.0), 2)
-                else:
-                    time_line.unit_amount = 0.0
-                    time_line.timer_duration = 0.0
 
-
-
-
+    def get_working_duration(self):
+        """Get the additional duration for 'open times'
+        i.e. productivity lines with no date_end."""
+        self.ensure_one()
+        duration = 0
+        for time in \
+                self.timesheet_ids.filtered(lambda time: not time.date_end):
+            if type(time.date_start) != datetime:
+                time.date_start = datetime.now()
+                duration = 0
+            else:
+                duration += \
+                    (datetime.now() - time.date_start).total_seconds() / 60
+        return duration

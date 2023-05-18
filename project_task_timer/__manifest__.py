@@ -33,6 +33,7 @@
     'assets': {
         'web.assets_backend': [
             'project_task_timer/static/src/js/timer.js',
+            'project_task_timer/static/src/xml/timer.xml',
         ]},
     'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
