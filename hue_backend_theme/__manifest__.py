@@ -25,7 +25,7 @@
     "description": """Minimalist and elegant backend theme for Odoo 15, Backend Theme, Theme""",
     "summary": "Hue backed Theme V15 is an attractive theme for backend",
     "category": "Themes/Backend",
-    "version": "15.0.1.1.0",
+    "version": "15.0.1.2.0",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
