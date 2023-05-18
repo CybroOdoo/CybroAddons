@@ -42,6 +42,7 @@
             'views/ir_model_fields_views.xml',
             'wizard/project_dynamic_fields_views.xml',
         ],
+    'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
     'application': False,
