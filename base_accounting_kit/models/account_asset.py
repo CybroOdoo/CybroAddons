@@ -706,17 +706,27 @@ class AccountAssetDepreciationLine(models.Model):
                 'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
                 'amount_currency': company_currency != current_currency and line.amount or 0.0,
             }
-            move_vals = {
+            line_ids = [(0, 0, {
+                'account_id': category_id.account_depreciation_id.id,
+                'partner_id': partner.id,
+                'credit': amount if float_compare(amount, 0.0,
+                                                  precision_digits=prec) > 0 else 0.0,
+            }), (0, 0, {
+                'account_id': category_id.account_depreciation_expense_id.id,
+                'partner_id': partner.id,
+                'debit': amount if float_compare(amount, 0.0,
+                                                 precision_digits=prec) > 0 else 0.0,
+            })]
+            move = self.env['account.move'].create({
                 'ref': line.asset_id.code,
                 'date': depreciation_date or False,
                 'journal_id': category_id.journal_id.id,
-                'line_ids': [(0, 0, move_line_1), (0, 0, move_line_2)],
-            }
-            move = self.env['account.move'].create(move_vals)
+                'line_ids': line_ids,
+            })
             for move_line in move.line_ids:
                 if move_line.account_id.id == move_line_1['account_id']:
-                    move_line.debit = move_line_1['debit']
-                    move_line.credit = move_line_1['credit']
+                    move_line.write({'credit': move_line_1['credit'],
+                                     'debit': move_line_1['debit']})
                 elif move_line.account_id.id == move_line_2['account_id']:
                     move_line.write({'debit': move_line_2['debit'], 'credit': move_line_2['credit']})
             if move.line_ids.filtered(lambda x:x.name == 'Automatic Balancing Line'):
