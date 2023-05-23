@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    product_batch_report template-->
+    <template id="product_batch_report_template">
+        <t t-call="web.external_layout">
+            <t t-call="web.html_container">
+                <div class="page">
+                    <h3 align="center">Lot/Serial Number Expiry Report</h3>
+                    <div class="row mt32">
+                        <!--printing from and to date of expiry based on expiry type-->
+                        <t t-if="expiry_type =='expire'">
+                            <div class="col-3">
+                                <span>From :</span>
+                                <strong t-esc="today"/>
+                            </div>
+                            <div class="col-12">
+                                <span>To :</span>
+                                <strong t-esc="date_within"/>
+                            </div>
+                        </t>
+                        <t t-if="expiry_type =='expired'">
+                            <div class="col-3">
+                                <span>From :</span>
+                                <strong t-esc="date_within"/>
+                            </div>
+                            <div class="col-12">
+                                <span>To :</span>
+                                <strong t-esc="today"/>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+                <!--printing report data inside a table-->
+                <table class="table table-condensed">
+                    <thead>
+                        <t t-if="view_type =='product_wise'">
+                            <th>Product</th>
+                        </t>
+                        <th>Lot/Serial Number</th>
+                        <th>Expiry Date</th>
+                        <t t-if="expiry_type =='expire'">
+                            <th>Expire Within</th>
+                        </t>
+                        <t t-if="expiry_type =='expired'">
+                            <th>Expired Before</th>
+                        </t>
+                    </thead>
+                    <tbody>
+                        <!--displaying product expiry dates if the report type is product wise-->
+                        <t t-if="view_type =='product_wise'">
+                            <tr t-foreach="heading" t-as="doc">
+                                <td align="left" colspan="4">
+                                    <strong>
+                                        <span t-esc="doc['name']" style="color:#515151"/>
+                                    </strong>
+                                </td>
+                                <tr t-foreach="values" t-as="doc2">
+                                    <t t-if="doc['name']==doc2['product']">
+                                        <td></td>
+                                        <td align="center">
+                                            <span t-esc="doc2['lot_name']"/>
+                                        </td>
+                                        <td align="center">
+                                            <span t-esc="doc2['expiry_date']"/>
+                                        </td>
+                                        <td align="center">
+                                            <span t-esc="doc2['expiry_days']"/>
+                                        </td>
+                                    </t>
+                                </tr>
+                            </tr>
+                        </t>
+                        <!--displaying lot/serial expiry dates if the report type is tracking_wise-->
+                        <t t-if="view_type =='tracking_wise'">
+                            <tr t-foreach="values" t-as="doc2">
+                                <td align="center">
+                                    <span t-esc="doc2['lot_name']"/>
+                                </td>
+                                <td align="center">
+                                    <span t-esc="doc2['expiry_date']"/>
+                                </td>
+                                <td align="center">
+                                    <span t-esc="doc2['expiry_days']"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </t>
+        </t>
+    </template>
+</odoo>
