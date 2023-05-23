@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 import re
 
 from odoo import models, fields, api
@@ -40,10 +39,9 @@ class PosSessionLoadFields(models.Model):
     def _loader_params_res_config_settings(self):
         return {
             'search_params': {
-                'fields': ['barcode', 'invoice_number',
+                'fields': ['qr_code', 'invoice_number', 'customer_name',
                            'customer_address', 'customer_mobile',
-                           'customer_phone', 'customer_email', 'customer_vat',
-                           'barcode_type'],
+                           'customer_phone', 'customer_email', 'customer_vat'],
 
             },
         }
@@ -68,7 +66,7 @@ class PosOrder(models.Model):
             'invoice_id': invoice_id.id,
             'invoice_name': invoice_id.name,
             'base_url': base_url,
-            'barcode': invoice_id.account_barcode,
+            'qr_code': invoice_id.account_barcode,
         }
 
 

@@ -26,7 +26,7 @@ from odoo import fields, models, api
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
 
-    barcode = fields.Boolean(string='Order Barcode')
+    qr_code = fields.Boolean(string='Order QRCode')
     invoice_number = fields.Boolean()
     customer_details = fields.Boolean()
     customer_name = fields.Boolean()
@@ -35,7 +35,6 @@ class ResConfigSettings(models.TransientModel):
     customer_phone = fields.Boolean()
     customer_email = fields.Boolean()
     customer_vat = fields.Boolean()
-    barcode_type = fields.Selection(selection=[('barcode', 'Barcode'), ('qr_code', 'QRCode')])
 
     def set_values(self):
         super(ResConfigSettings, self).set_values()
@@ -54,13 +53,10 @@ class ResConfigSettings(models.TransientModel):
                   int(self.customer_email))
         set_param('res.config.settings.customer_vat',
                   int(self.customer_vat))
-        set_param('res.config.settings.barcode',
-                  int(self.barcode))
+        set_param('res.config.settings.qr_code',
+                  int(self.qr_code))
         set_param('res.config.settings.invoice_number',
                   int(self.invoice_number))
-        set_param('res.config.settings.barcode_type',
-                  (self.barcode_type))
-
     @api.model
     def get_values(self):
         res = super(ResConfigSettings, self).get_values()
@@ -79,10 +75,8 @@ class ResConfigSettings(models.TransientModel):
             get_param('res.config.settings.customer_email'))
         res['customer_vat'] = int(
             get_param('res.config.settings.customer_vat'))
-        res['barcode'] = int(
-            get_param('res.config.settings.barcode'))
+        res['qr_code'] = int(
+            get_param('res.config.settings.qr_code'))
         res['invoice_number'] = int(
             get_param('res.config.settings.invoice_number'))
-        res['barcode_type'] = (
-            get_param('res.config.settings.barcode_type'))
         return res

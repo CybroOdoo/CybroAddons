@@ -19,8 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
-
 {
     'name': "Advanced POS Receipt",
     "description": """Advanced POS Receipt with Customer Details and Invoice Details""",
@@ -42,8 +40,7 @@
             'pos_receipt_extend/static/src/js/payment.js',
         ]
     },
-    'images': [
-        'static/description/banner.png', ],
+    'images': ['static/description/banner.png', ],
     'license': 'LGPL-3',
     'installable': True,
     'application': False,
