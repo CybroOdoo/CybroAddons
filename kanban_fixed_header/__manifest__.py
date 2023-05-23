@@ -35,7 +35,7 @@
             'kanban_fixed_header/static/src/css/kanban_fixed_header.scss',
         ],
     },
-    'images': ['/static/description/banner.jpg'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
