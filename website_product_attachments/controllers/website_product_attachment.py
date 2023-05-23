@@ -26,12 +26,10 @@ from werkzeug.utils import redirect
 import io
 from odoo import http
 from odoo.http import request
-from odoo.addons.website.controllers.main import QueryURL
 from odoo.addons.website_sale.controllers.main import WebsiteSale
 
 
 class WebsiteSale(WebsiteSale):
-
     @http.route(['/shop/<model("product.template"):product>'], type='http',
                 auth="public", website=True)
     def product(self, product, category='', search='', **kwargs):
@@ -39,7 +37,7 @@ class WebsiteSale(WebsiteSale):
                                                **kwargs)
         attachments = request.env['ir.attachment'].sudo().search(
             [('res_model', '=', 'product.template'),
-             ('res_id', '=', product.id)], order='id')
+             ('res_id', '=', product.id)], order='id').filtered(lambda att: not att.access_token)
         res.qcontext['attachments'] = attachments
         return res
 
