@@ -23,7 +23,7 @@
 
 {
     'name': 'Employee Purchase Requisition',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Purchases',
     'summary': 'Employee Purchase Requisition',
     'description': 'Employee Purchase Requisition',
