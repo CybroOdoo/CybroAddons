@@ -49,7 +49,7 @@
     ],
     "assets": {
         'web.assets_backend': [
-            '/multicolor_backend_theme/static/src/xml/sidebar_menu_icon.xml',
+            '/multicolor_backend_theme/static/src/xml/sidebar_menu_templates.xml',
             '/multicolor_backend_theme/static/src/xml/systray_ext.xml',
             '/multicolor_backend_theme/static/src/scss/theme_style_backend.scss',
             '/multicolor_backend_theme/static/src/css/backend.css',

@@ -3,7 +3,7 @@
     :alt: License: LGPL-3
 
 Chameleon Multi color Backend Theme
-===================================
+==================
 * Configurable multi color backend theme for Odoo 16,Only Admin can have the role to create, update, and removing the themes
 
 Installation
