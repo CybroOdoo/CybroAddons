@@ -22,7 +22,7 @@
 
 {
     'name': 'Subscription Management For Community Odoo 16',
-    'Version': '16.0.1.0.0',
+    'Version': '16.0.1.1.1',
     'summary': 'Subscription Package Management Module For Odoo16 Community',
     'description': 'Subscription Package Management Module For Odoo16 Community',
     'category': 'Sales',

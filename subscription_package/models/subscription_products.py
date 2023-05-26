@@ -39,7 +39,7 @@ class AccountMove(models.Model):
                 [('name', '=', rec.get('invoice_origin'))])
             if so_id.is_subscription is True:
                 new_vals_list = [{'is_subscription': True,
-                                  'subscription_id': so_id.subscription_id}]
+                                  'subscription_id': so_id.subscription_id.id}]
                 vals_list[0].update(new_vals_list[0])
         return super().create(vals_list)
 

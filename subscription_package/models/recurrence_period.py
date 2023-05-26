@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import models, fields
 
 
@@ -31,13 +30,14 @@ class RecurrencePeriod(models.Model):
     name = fields.Char(string="Name")
     duration = fields.Float(string="Duration")
     unit = fields.Selection([('hours', 'hours'),
-                                     ('days', 'Days'),('weeks', 'Weeks'),('months', 'Months'),('years', 'Years')],
-                                   string= 'Unit' )
-
+                             ('days', 'Days'), ('weeks', 'Weeks'),
+                             ('months', 'Months'), ('years', 'Years')],
+                            string='Unit')
 
 
 class SubPackages(models.Model):
     """ This function is used to inherit subscription packages"""
     _inherit = 'subscription.package'
 
-    recurrence_period_id = fields.Many2one("recurrence.period" , string= "Recurrence Period")
+    recurrence_period_id = fields.Many2one("recurrence.period",
+                                           string="Recurrence Period")

@@ -46,10 +46,12 @@ class SubscriptionPackageProductLine(models.Model):
     product_uom_id = fields.Many2one('uom.uom', string='UoM', store=True,
                                      related='product_id.uom_id',
                                      ondelete='restrict')
-    uom_catg_id = fields.Many2one('uom.category', string='UoM Category', store=True,
+    uom_catg_id = fields.Many2one('uom.category', string='UoM Category',
+                                  store=True,
                                   related='product_id.uom_id.category_id')
     unit_price = fields.Float(string='Unit Price', store=True, readonly=False,
                               related='product_id.list_price')
+    discount = fields.Float(string="Discount (%)")
     currency_id = fields.Many2one('res.currency', string='Currency',
                                   store=True,
                                   related='subscription_id.currency_id')
@@ -61,12 +63,14 @@ class SubscriptionPackageProductLine(models.Model):
                                      store=True,
                                      related='subscription_id.partner_id')
 
-    @api.depends('product_qty', 'unit_price')
+    @api.depends('product_qty', 'unit_price', 'discount')
     def _compute_total_amount(self):
         """ Calculate subtotal amount of product line """
         for rec in self:
             if rec.product_id:
                 rec.total_amount = rec.unit_price * rec.product_qty
+                if rec.discount != 0:
+                    rec.total_amount -= rec.total_amount * (rec.discount / 100)
 
     def _valid_field_parameter(self, field, name):
         if name == 'ondelete':
@@ -186,11 +190,9 @@ class SubscriptionPackage(models.Model):
             rec.current_stage = rec.env['subscription.package.stage'].search(
                 [('id', '=', rec.stage_id.id)]).category
 
-    @api.depends('start_date')
+    @api.constrains('start_date')
     def _compute_next_invoice_date(self):
-        pending_subscriptions = self.env['subscription.package'].search(
-            [('stage_category', '=', 'progress')])
-        for sub in pending_subscriptions:
+        for sub in self.env['subscription.package'].search([]):
             if sub.start_date:
                 sub.next_invoice_date = sub.start_date + relativedelta(
                     days=sub.plan_id.renewal_time)
@@ -234,46 +236,6 @@ class SubscriptionPackage(models.Model):
             'target': 'new'
         }
 
-    def button_payment(self):
-        """ Button to create invoice for subscription package"""
-        this_products_line = []
-        for rec in self.product_line_ids:
-            rec_list = [0, 0, {'product_id': rec.product_id.id,
-                               'quantity': rec.product_qty}]
-            this_products_line.append(rec_list)
-        invoices = self.env['account.move'].search(
-            [('subscription_id', '=', self.id), ('state', '=', 'draft')])
-        orders = self.env['sale.order'].search(
-            [('subscription_id', '=', self.id), ('invoice_status', '=', 'no')])
-        if invoices:
-            for invoice in invoices:
-                invoice.action_post()
-        if orders and invoices:
-            for order in orders:
-                order.action_confirm()
-            for invoice in invoices:
-                invoice.action_post()
-        out_invoice = self.env['account.move'].create(
-            {
-                'move_type': 'out_invoice',
-                'date': fields.Date.today(),
-                'invoice_date': fields.Date.today(),
-                'partner_id': self.partner_invoice_id.id,
-                'currency_id': self.partner_invoice_id.currency_id.id,
-                'invoice_line_ids': this_products_line
-            })
-        self.env['account.move'].payment_id = out_invoice.id
-        if self.stage_category == 'progress':
-            values = {'start_date': datetime.datetime.today()}
-            self.write(values)
-        return {
-            'name': 'Subscription Payment',
-            'type': 'ir.actions.act_window',
-            'res_model': 'account.move',
-            'view_mode': 'form',
-            'res_id': out_invoice.id
-        }
-
     def button_start_date(self):
         """Button to start subscription package"""
 
@@ -297,7 +259,8 @@ class SubscriptionPackage(models.Model):
         this_products_line = []
         for rec in self.product_line_ids:
             rec_list = [0, 0, {'product_id': rec.product_id.id,
-                               'product_uom_qty': rec.product_qty}]
+                               'product_uom_qty': rec.product_qty,
+                               'discount': rec.discount}]
             this_products_line.append(rec_list)
         orders = self.env['sale.order'].search(
             [('id', '=', self.sale_order_count),
@@ -320,7 +283,10 @@ class SubscriptionPackage(models.Model):
             'type': 'ir.actions.act_window',
             'res_model': 'sale.order',
             'domain': [('id', '=', so_id.id)],
-            'view_mode': 'tree,form'
+            'view_mode': 'tree,form',
+            'context': {
+                "create": False
+            }
         }
 
     @api.model_create_multi
