@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -19,12 +19,12 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 {
     'name': 'Customer and Product QR Code Generator',
     'version': '16.0.1.0.0',
     'summary': 'Generate Unique QR Codes for Customers and Products',
-    'description': 'QR Code, QR Code Generator, Odoo QR Code Generator, Customer QR Code, Product QR Code, QR, QR Code Odoo',
+    'description': 'QR Code, QR Code Generator, Odoo QR Code Generator,'
+                   ' Customer QR Code, Product QR Code, QR, QR Code Odoo',
     'category': 'Extra Tools',
     'author': 'Cybrosys Techno solutions',
     'maintainer': 'Cybrosys Techno Solutions',

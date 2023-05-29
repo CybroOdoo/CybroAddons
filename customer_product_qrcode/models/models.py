@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 try:
     import qrcode
 except ImportError:
@@ -30,26 +29,28 @@ except ImportError:
     base64 = None
 from io import BytesIO
 
-from odoo import models, fields, api, _, SUPERUSER_ID
+from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
 
 class Partners(models.Model):
+    """Extends the res.partner model to include QR code functionality."""
     _inherit = 'res.partner'
 
     sequence = fields.Char(string="QR Sequence", readonly=True)
     qr = fields.Binary(string="QR Code")
 
     def init(self):
+        """Initialize the QR sequence for customer partners with a combination
+        of 'DEF', partner's name (without spaces), and partner's ID."""
         for record in self.env['res.partner'].search(
                 [('customer_rank', '=', True)]):
-            print(record,"record")
             name = record.name.replace(" ", "")
-            print(name)
             record.sequence = 'DEF' + name.upper() + str(record.id)
 
     @api.model
     def create(self, vals):
+        """Create a new partner record and assign a unique QR sequence to it."""
         prefix = self.env['ir.config_parameter'].sudo().get_param(
             'customer_product_qr.config.customer_prefix')
         if not prefix:
@@ -62,6 +63,8 @@ class Partners(models.Model):
 
     @api.depends('sequence')
     def generate_qr(self):
+        """Generate a QR code based on the partner's sequence and store it in
+        the 'qr' field of the partner record."""
         if qrcode and base64:
             if not self.sequence:
                 prefix = self.env['ir.config_parameter'].sudo().get_param(
@@ -80,14 +83,11 @@ class Partners(models.Model):
             )
             qr.add_data(self.sequence)
             qr.make(fit=True)
-
             img = qr.make_image()
             temp = BytesIO()
             img.save(temp, format="PNG")
             qr_image = base64.b64encode(temp.getvalue())
-            # print(qr_image,"qr")
             self.write({'qr': qr_image})
-            print(qr,"qr")
             return self.env.ref(
                 'customer_product_qrcode.print_qr').report_action(self, data={
                 'data': self.id, 'type': 'cust'})
@@ -101,6 +101,7 @@ class Partners(models.Model):
 
 
 class Products(models.Model):
+    """Extends the product.product model to include QR code functionality."""
     _inherit = 'product.product'
 
     sequence = fields.Char(string="QR Sequence", readonly=True)
@@ -108,6 +109,8 @@ class Products(models.Model):
 
     @api.model
     def create(self, vals):
+        """Create a new product and assign a unique QR sequence and QR code
+        to it."""
         prefix = self.env['ir.config_parameter'].sudo().get_param(
             'customer_product_qr.config.product_prefix')
         if not prefix:
@@ -124,7 +127,6 @@ class Products(models.Model):
         )
         qr.add_data(vals['sequence'])
         qr.make(fit=True)
-
         img = qr.make_image()
         temp = BytesIO()
         img.save(temp, format="PNG")
@@ -134,6 +136,8 @@ class Products(models.Model):
 
     @api.depends('sequence')
     def generate_qr(self):
+        """Generate a QR code based on the product's sequence and store it in
+        the 'qr' field of the product."""
         if qrcode and base64:
             if not self.sequence:
                 prefix = self.env['ir.config_parameter'].sudo().get_param(
@@ -152,7 +156,6 @@ class Products(models.Model):
             )
             qr.add_data(self.sequence)
             qr.make(fit=True)
-
             img = qr.make_image()
             temp = BytesIO()
             img.save(temp, format="PNG")
@@ -166,17 +169,21 @@ class Products(models.Model):
                 _('Necessary Requirements To Run This Operation Is Not Satisfied'))
 
     def get_product_by_qr(self, **args):
+        """Retrieve a product based on the provided QR sequence."""
         return self.env['product.product'].search(
             [('sequence', '=', self.id), ], limit=1).id
 
 
 class ProductTemplate(models.Model):
+    """Extends the product.template model to generate QR codes for all
+    related product variants."""
     _inherit = 'product.template'
 
     def generate_qr(self):
+        """Generate QR codes for all product variants associated with the
+        product template."""
         product = self.env['product.product'].search(
-            [('product_tmpl_id', '=', self.id)])
-        print(product,"product")
+            [('product_tmpl_id', '=', self.id), ])
         for rec in product:
             rec.generate_qr()
         return self.env.ref('customer_product_qrcode.print_qr2').report_action(
@@ -184,12 +191,15 @@ class ProductTemplate(models.Model):
 
 
 class ResConfigSettings(models.TransientModel):
+    """Extends the res.config.settings model to include configuration
+    settings for QR code prefixes."""
     _inherit = 'res.config.settings'
 
     customer_prefix = fields.Char(string="Customer QR Prefix")
     product_prefix = fields.Char(string="Product QR Prefix")
 
     def get_values(self):
+        """fRetrieve the current configuration values for QR code prefixes."""
         res = super(ResConfigSettings, self).get_values()
         customer_prefix = self.env["ir.config_parameter"].get_param(
             "customer_product_qr.config.customer_prefix")
@@ -204,7 +214,9 @@ class ResConfigSettings(models.TransientModel):
         return res
 
     def set_values(self):
+        """Set the configuration values for QR code prefixes."""
         self.env['ir.config_parameter'].sudo().set_param(
             'customer_product_qr.config.customer_prefix', self.customer_prefix)
         self.env['ir.config_parameter'].sudo().set_param(
             'customer_product_qr.config.product_prefix', self.product_prefix)
+        super(ResConfigSettings, self).set_values()

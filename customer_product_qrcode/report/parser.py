@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -24,15 +24,17 @@ from odoo.http import request
 
 
 class CustomerBadge(models.AbstractModel):
+    """Abstract model for generating the customer QR template report."""
     _name = 'report.customer_product_qrcode.customer_qr_template'
 
     @api.model
     def _get_report_values(self, docids, data=None):
-        print(data,"data")
+        """Get the report values for generating the customer QR template."""
         if data['type'] == 'cust':
             dat = [request.env['res.partner'].browse(data['data'])]
         elif data['type'] == 'all':
-            dat = [request.env['product.product'].search([('product_tmpl_id', '=', data['data'])])]
+            dat = [request.env['product.product'].search(
+                [('product_tmpl_id', '=', data['data'])])]
         else:
             dat = request.env['product.product'].browse(data['data'])
         return {
