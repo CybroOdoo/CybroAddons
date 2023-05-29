@@ -37,7 +37,7 @@
     'assets': {
         'web.assets_backend': [
             '/sticky_pivot_view/static/src/css/main.css',
-            '/sticky_pivot_view/static/src/xml/pivot.xml'
+            '/sticky_pivot_view/static/src/xml/pivot.xml',
         ],
     },
     'installable': True,
