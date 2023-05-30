@@ -51,9 +51,11 @@ class WebsiteGuestVisibility(models.TransientModel):
 
     product_visibility_guest_user = fields.Boolean(string="Product visibility Guest User")
     filter_mode = fields.Selection([('product_only', 'Product Wise'),
-                                    ('categ_only', 'Category Wise')], string='Filter Mode', default='product_only')
+                                    ('categ_only', 'Category Wise')],
+                                   string='Filter Mode', default='product_only')
 
-    available_product_ids = fields.Many2many('product.template', string='Available Product',
+    available_product_ids = fields.Many2many('product.template',
+                                             string='Available Product',
                                              domain="[('is_published', '=', True)]",
                                              help='The website will only display products which are within one '
                                                   'of the selected category trees. If no category is specified,'
@@ -87,8 +89,10 @@ class WebsiteGuestVisibility(models.TransientModel):
     @api.model
     def get_values(self):
         res = super(WebsiteGuestVisibility, self).get_values()
-        product_ids = literal_eval(self.env['ir.config_parameter'].sudo().get_param('website_product_visibility.available_product_ids', 'False'))
-        cat_ids = literal_eval(self.env['ir.config_parameter'].sudo().get_param('website_product_visibility.available_cat_ids', 'False'))
+        product_ids = literal_eval(self.env['ir.config_parameter'].sudo()
+                                   .get_param('website_product_visibility.available_product_ids', 'False'))
+        cat_ids = literal_eval(self.env['ir.config_parameter'].sudo()
+                               .get_param('website_product_visibility.available_cat_ids', 'False'))
         mod = self.env['ir.config_parameter'].sudo().get_param('filter_mode')
         if self.env['ir.config_parameter'].sudo().get_param('filter_mode'):
 
