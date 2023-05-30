@@ -26,14 +26,13 @@
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': "http://www.cybrosys.com",
-    'depends': ['base', 'project', 'hr_timesheet'],
+    'depends': ['base', 'project', 'hr_timesheet','web'],
     'data': [
         'views/project_task_timer_view.xml',
     ],
     'assets': {
         'web.assets_backend': [
             'project_task_timer/static/src/js/timer.js',
-            'project_task_timer/static/src/xml/timer.xml',
         ]},
     'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
