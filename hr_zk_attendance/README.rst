@@ -14,7 +14,7 @@ Technical Notes
 ===============
 Used Libraries:
 
-*This integration is only applicable for the the device ZKteco model 'uFace 202' & 'iFace990'
+*This integration is only applicable for the device ZKteco model 'uFace 202' & 'iFace990'
 * zklib
 you can install zklib library using "sudo pip install zklib"
 
