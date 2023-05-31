@@ -22,7 +22,7 @@
 from odoo import api, fields, models, _
 
 
-class VendorRFQ(models.Model):
+class VendorRfq(models.Model):
     """Vendor RFQ model"""
     _name = 'vendor.rfq'
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -33,18 +33,22 @@ class VendorRFQ(models.Model):
     product_id = fields.Many2one('product.product', string='Product')
     quantity = fields.Float("Quantity")
     uom_id = fields.Many2one('uom.uom', string='UoM')
-    estimated_quote = fields.Monetary("Estimated Quote", currency_field='currency_id',
+    estimated_quote = fields.Monetary("Estimated Quote",
+                                      currency_field='currency_id',
                                       help="Estimated Quote Price")
     currency_id = fields.Many2one('res.currency', string='Currency',
                                   required=True,
                                   default=lambda
                                       self: self.env.user.company_id.currency_id)
     notes = fields.Html('Notes')
-    estimated_delivery_date = fields.Date(string="Delivery date", help="Vendor's delivery date")
+    estimated_delivery_date = fields.Date(string="Delivery date",
+                                          help="Vendor's delivery date")
     quote_date = fields.Datetime(default=fields.Datetime.now(), readonly=1)
-    closing_date = fields.Date(string="Closing date", help="Quotation closing date")
+    closing_date = fields.Date(string="Closing date",
+                               help="Quotation closing date")
     vendor_ids = fields.Many2many('res.partner',
-                                  domain="[('is_registered', '=', True)]", help="Vendors you want to send quotations")
+                                  domain="[('is_registered', '=', True)]",
+                                  help="Vendors you want to send quotations")
     vendor_quote_history_ids = fields.One2many('vendor.quote.history',
                                                'quote_id')
     user_id = fields.Many2one('res.users', default=lambda self: self.env.user,
@@ -63,14 +67,14 @@ class VendorRFQ(models.Model):
         default=lambda self: self.env.company,
     )
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """Create function"""
-        if vals.get('name', 'New') == 'New':
-            vals['name'] = self.env['ir.sequence'].next_by_code(
-                'vendor.rfq') or '/'
-        res = super(VendorRFQ, self).create(vals)
-        return res
+        for vals in vals_list:
+            if vals.get('name', 'New') == 'New':
+                vals['name'] = self.env['ir.sequence'].next_by_code(
+                    'vendor.rfq') or 'New'
+        return super(VendorRfq, self).create(vals_list)
 
     def action_send_by_mail(self):
         """For sending email to vendors"""
@@ -124,7 +128,8 @@ class VendorRFQ(models.Model):
                     'product_uom': self.product_id.uom_po_id.id,
                     'price_unit': price,
                     'date_planned': rfq_quote.estimate_date,
-                    'taxes_id': [(6, 0, self.product_id.supplier_taxes_id.ids)],
+                    'taxes_id': [
+                        (6, 0, self.product_id.supplier_taxes_id.ids)],
                 })],
         })
         self.write({
@@ -177,7 +182,8 @@ class VendorQuoteHistory(models.Model):
     _rec_name = 'vendor_id'
 
     vendor_id = fields.Many2one('res.partner',
-                                domain="[('is_registered', '=', True)]", string="Vendor")
+                                domain="[('is_registered', '=', True)]",
+                                string="Vendor")
     quoted_price = fields.Monetary(currency_field='currency_id')
     currency_id = fields.Many2one('res.currency', string='Currency',
                                   required=True,
