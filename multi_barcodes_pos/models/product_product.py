@@ -46,20 +46,6 @@ class ProductProduct(models.Model):
         })
         return res
 
-    @api.model
-    def _name_search(self, name, args=None, operator='ilike', limit=100,
-                     name_get_uid=None):
-        args = args or []
-        domain = []
-        if name:
-            domain = ['|', '|', ('name', operator, name),
-                      ('default_code', operator, name),
-                      '|', ('barcode', operator, name),
-                      ('product_multi_barcodes', operator, name)]
-        product_id = self._search(expression.AND([domain, args]), limit=limit,
-                                  access_rights_uid=name_get_uid)
-        return self.browse(product_id).name_get()
-
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
