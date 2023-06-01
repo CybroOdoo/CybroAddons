@@ -18,20 +18,12 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
+# Import required libraries (make sure it is installed!)
 import logging
-
-from werkzeug import urls
-
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
-
-from odoo.addons.payment import utils as payment_utils
-from odoo.http import request
-# Import required libraries (make sure it is installed!)
 import requests
 import json
-import sys
 
 _logger = logging.getLogger(__name__)
 
@@ -59,7 +51,6 @@ class PaymentTransaction(models.Model):
 
         order_line = self.env['payment.transaction'].search(
             [('id', '=', self.id)]).sale_order_ids.order_line
-
         invoice_items = [
             {
                 'ItemName': rec.product_id.name,
@@ -69,12 +60,16 @@ class PaymentTransaction(models.Model):
             for rec in order_line
         ]
         if len(self.partner_phone.replace('-', "").rsplit(' ', 1)[1]) > 11:
-            raise ValidationError(_("Phone number must not  be greater than 11 characters"))
+            raise ValidationError(
+                _("Phone number must not  be greater than 11 characters"))
         payment_details = {
-            "PaymentMethodId": 4,
+            "PaymentMethodId": 6,
             "CustomerName": self.partner_name,
             "DisplayCurrencyIso": self.currency_id.name,
-            "CustomerMobile": self.partner_phone.replace('-', "").rsplit(' ', 1)[1],
+            # "MobileCountryCode": "964",
+            # "CustomerMobile": "78589587458",
+            "CustomerMobile":
+                self.partner_phone.replace('-', "").rsplit(' ', 1)[1],
             "CustomerEmail": self.partner_email,
             "InvoiceValue": (self.amount - sale_order.amount_tax),
             "CallBackUrl": f"{odoo_base_url}/payment/myfatoorah/_return_url",
@@ -97,9 +92,11 @@ class PaymentTransaction(models.Model):
         response = requests.request("POST", api_url, headers=headers,
                                     data=payload)
         response_data = response.json()
-        payment_url = response_data.get('Data')['PaymentURL']
-        payment_details['PaymentURL'] = payment_url
-
+        if not response_data.get('IsSuccess'):
+            raise ValidationError(f"{response_data.get('Message')}")
+        if response_data.get('Data')['PaymentURL']:
+            payment_url = response_data.get('Data')['PaymentURL']
+            payment_details['PaymentURL'] = payment_url
         return {
             'api_url': f"{odoo_base_url}/payment/myfatoorah/response",
             'data': payment_details,
@@ -122,28 +119,27 @@ class PaymentTransaction(models.Model):
             'Accept': 'application/json',
             'Authorization': f'Bearer {api_key}',
         }
-
         response = requests.request("POST", url, headers=headers, data=payload)
         response_data = response.json()
         tx = super()._get_tx_from_notification_data(provider_code,
                                                     notification_data)
         if provider_code != 'myfatoorah' or len(tx) == 1:
             return tx
-        reference = response_data["Data"]["CustomerReference"]
-        tx = self.search(
-            [
-                ('reference', '=', reference),
-                ('provider_code', '=', 'myfatoorah')])
-        if not tx:
+        domain = [('provider_code', '=', 'myfatoorah')]
+        reference = ""
+        if response_data["Data"]["CustomerReference"]:
+            reference = response_data["Data"]["CustomerReference"]
+            domain.append(reference)
+        if tx := self.search(domain):
+            return tx
+        else:
             raise ValidationError(
                 "myfatoorah: " + _(
                     "No transaction found matching reference %s.",
                     reference)
             )
-        return tx
 
     def _handle_notification_data(self, provider_code, notification_data):
-
         tx = self._get_tx_from_notification_data(provider_code,
                                                  notification_data)
         tx._process_notification_data(notification_data)

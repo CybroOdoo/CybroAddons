@@ -1,6 +1,6 @@
-MyFatoorah Payment Gateway
-===========================
-* MyFatoorah Payment Gateway For Odoo 16
+MyFatroorah Payment Gateway
+=====================================
+*MyFatroorah Payment Gateway For Odoo 16
 
 Installation
 ============
