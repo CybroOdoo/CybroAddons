@@ -22,7 +22,7 @@
 
 {
     'name': "Website Helpdesk Support Ticket Management",
-    'version': '16.0.1.0.0',
+    'version': '16.0.3.0.0',
     'summary': """Helpdesk Module for community""",
     'description': """Can create ticket from website also and can manage it from backend.
     Bill can be created for ticket with service cost""",
