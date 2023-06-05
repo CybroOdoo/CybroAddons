@@ -44,6 +44,7 @@
         'report/pest_report_template.xml',
         'report/crop_vehicle_report.xml',
         'report/crop_animal_report.xml',
+        'report/crop_animal.xml',
         'wizard/crop_report_wiz.xml',
         'wizard/pest_report_wiz.xml',
         'views/menu_action.xml',
