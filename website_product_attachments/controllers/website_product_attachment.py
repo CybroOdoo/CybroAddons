@@ -58,7 +58,7 @@ class WebsiteSale(WebsiteSale):
 
         attachments = request.env['ir.attachment'].sudo().search(
             [('res_model', '=', 'product.template'),
-             ('res_id', '=', product.id)], order='id')
+             ('res_id', '=', product.id)], order='id').filtered(lambda att: not att.access_token)
 
         values = {
             'search': search,
