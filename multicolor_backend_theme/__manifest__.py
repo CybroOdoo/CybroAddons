@@ -22,7 +22,7 @@
 {
     "name": "Chameleon Multi Color Backend Theme",
     "summary": "Configurable multi color backend theme for Odoo 16",
-    "version": "16.0.1.0.0",
+    "version": "16.0.1.1.0",
     "category": "Themes/Backend",
     "website": "https://www.cybrosys.com",
     "description": """
@@ -49,7 +49,7 @@
     ],
     "assets": {
         'web.assets_backend': [
-            '/multicolor_backend_theme/static/src/xml/sidebar_menu_templates.xml',
+            '/multicolor_backend_theme/static/src/xml/sidebar_menu_icon.xml',
             '/multicolor_backend_theme/static/src/xml/systray_ext.xml',
             '/multicolor_backend_theme/static/src/scss/theme_style_backend.scss',
             '/multicolor_backend_theme/static/src/css/backend.css',
