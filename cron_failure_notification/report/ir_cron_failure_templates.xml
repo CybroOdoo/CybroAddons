@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <!--cron action failure pdf template-->
+        <template id="cron_fail_pdf">
+            <t t-call="web.html_container">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <center>
+                            <h2>Cron Failure Report</h2>
+                        </center>
+                        <br/>
+                        <br/>
+                        <div class="oe_structure" style="">
+                            <strong>
+                                <p>Cron Action Name:</p>
+                            </strong>
+                            <table class='table'>
+                                <tr>
+                                    <th>Cron Name</th>
+                                    <th>Date and Time of Run</th>
+                                    <th>Error Details</th>
+                                </tr>
+                                <t t-set="start_time"
+                                   t-value="datetime.datetime.combine(datetime.date.today(), datetime.time.min).strftime('%Y-%m-%d %H:%M:%S')"/>
+                                <t t-set="end_time"
+                                   t-value="datetime.datetime.combine(datetime.date.today(), datetime.time.max).strftime('%Y-%m-%d %H:%M:%S')"/>
+                                <t t-set="failure_record"
+                                   t-value="request.env['failure.history'].search([('create_date', '&gt;=', start_time), ('create_date', '&lt;=', end_time )])"/>
+                                <t t-foreach="failure_record" t-as="history">
+                                    <tr>
+                                        <td>
+                                            <span t-esc="history.name"/>
+                                        </td>
+                                        <td>
+                                            <span t-esc="history.create_date"/>
+                                        </td>
+                                        <td style="color:#ea5252;">
+                                            <h5>
+                                                <span t-esc="history.error"/>
+                                            </h5>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+        <template id="report_logs_details">
+            <t t-call="web.html_container">
+                <t t-call="web.external_layout">
+                    <t t-call="cron_failure_notification.cron_fail_pdf"/>
+                </t>
+            </t>
+        </template>
+</odoo>
