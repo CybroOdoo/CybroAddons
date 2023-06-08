@@ -22,7 +22,7 @@
 
 {
     'name': 'Subscription Management For Community',
-    'Version': '15.0.1.0.0',
+    'version': '15.0.1.1.1',
     'summary': 'Subscription Package Management Module For Odoo15 Community',
     'description': 'Subscription Package Management Module For Odoo15 Community',
     'category': 'Sales',
@@ -47,6 +47,7 @@
         'views/subscription_renew.xml',
         'views/mail_activity_views.xml',
         'views/res_partner.xml',
+        'views/recurrence_views.xml',
         'report/subscription_report_view.xml',
     ],
     'images': ['static/description/banner.png'],

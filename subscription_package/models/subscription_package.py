@@ -49,6 +49,7 @@ class SubscriptionPackageProductLine(models.Model):
                                   related='product_id.uom_id.category_id')
     unit_price = fields.Float(string='Unit Price', store=True, readonly=False,
                               related='product_id.list_price')
+    discount = fields.Float(string="Discount (%)")
     currency_id = fields.Many2one('res.currency', string='Currency',
                                   store=True,
                                   related='subscription_id.currency_id')
@@ -60,12 +61,14 @@ class SubscriptionPackageProductLine(models.Model):
                                      store=True,
                                      related='subscription_id.partner_id')
 
-    @api.depends('product_qty', 'unit_price')
+    @api.depends('product_qty', 'unit_price', 'discount')
     def _compute_total_amount(self):
         """ Calculate subtotal amount of product line """
         for rec in self:
             if rec.product_id:
                 rec.total_amount = rec.unit_price * rec.product_qty
+                if rec.discount != 0:
+                    rec.total_amount -= rec.total_amount * (rec.discount / 100)
 
 
 class SubscriptionPackage(models.Model):
@@ -257,25 +260,25 @@ class SubscriptionPackage(models.Model):
         """Button to start subscription package"""
         if not self.start_date:
             self.start_date = datetime.date.today()
-            for rec in self:
-                if len(rec.env['subscription.package.stage'].search([('category', '=', 'draft')])) > 1:
-                    raise UserError(
-                        _('More than one stage is having category "Draft". '
-                          'Please change category of stage to "In Progress", '
-                          'only one stage is allowed to have category "Draft"'))
-                else:
-                    rec.write(
-                        {'stage_id': (rec.env['subscription.package.stage'].search([
-                            ('category', '=', 'draft')]).id) + 1})
+        for rec in self:
+            if len(rec.env['subscription.package.stage'].search([('category', '=', 'draft')])) > 1:
+                raise UserError(
+                    _('More than one stage is having category "Draft". '
+                      'Please change category of stage to "In Progress", '
+                      'only one stage is allowed to have category "Draft"'))
+            else:
+                rec.write(
+                    {'stage_id': (rec.env['subscription.package.stage'].search([
+                        ('category', '=', 'draft')]).id) + 1})
 
     def button_sale_order(self):
         """Button to create sale order"""
         this_products_line = []
         for rec in self.product_line_ids:
             rec_list = [0, 0, {'product_id': rec.product_id.id,
-                               'product_uom_qty': rec.product_qty}]
+                               'product_uom_qty': rec.product_qty,
+                               'discount': rec.discount}]
             this_products_line.append(rec_list)
-        # for order in self.sale_order:
         orders = self.env['sale.order'].search([('subscription_id', '=', self.id), ('invoice_status', '=', 'no')])
         if orders:
             for order in orders:
@@ -294,7 +297,10 @@ class SubscriptionPackage(models.Model):
             'type': 'ir.actions.act_window',
             'res_model': 'sale.order',
             'domain': [('id', '=', so_id.id)],
-            'view_mode': 'tree,form'
+            'view_mode': 'tree,form',
+            'context': {
+                "create": False
+            }
         }
 
     @api.model
