@@ -112,6 +112,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
 
                             }
                             var child=[];
+                            console.log(datas, "datas")
                         self.$('.table_view_dfr').html(QWeb.render('dfr_table', {
 
                                             report_lines : datas['report_lines'],
@@ -121,6 +122,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                                             debit_total : datas['debit_total'],
                                             debit_balance : datas['debit_balance'],
                                             bs_lines : datas['bs_lines'],
+                                            lang: datas['lang'],
                                         }));
                 });
                     }

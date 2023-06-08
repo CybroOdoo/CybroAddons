@@ -237,6 +237,7 @@ class BalanceSheetView(models.TransientModel):
             'debit_balance': records['debit_balance'],
             'currency': currency,
             'bs_lines': final_report_lines,
+            'lang': self.env.context.get('lang') or 'en_US'
         }
 
     def get_filter(self, option):
