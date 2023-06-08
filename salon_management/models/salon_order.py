@@ -54,9 +54,9 @@ class SalonOrder(models.Model):
     time_taken_total = fields.Float(string="Total time")
     note = fields.Text('Terms and conditions')
     order_line_ids = fields.One2many(
-        'salon.order.line', 'salon_order_id', string="Order Lines")
-    stage_id = fields.Many2one('salon.stage', string="Stages", default=1,
-                               group_expand='_read_group_stage_ids')
+        'salon.order.line', 'salon_order_id', string="Order Lines",copy=True)
+    stage_id = fields.Many2one('salon.stage', string="Stages",
+                               group_expand='_read_group_stage_ids',default=1,copy=False)
     inv_stage_identifier = fields.Boolean(string="Stage Identifier")
     validation_controller = fields.Boolean(
         string="Validation controller", default=False)
