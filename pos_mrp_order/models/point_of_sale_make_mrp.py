@@ -71,14 +71,33 @@ class MrpProduction(models.Model):
                                     'name': mrp_order.name,
                                     'product_id': bom_line.product_id.id,
                                     'product_uom': bom_line.product_uom_id.id,
-                                    'product_uom_qty': bom_line.product_qty * mrp_order.product_qty,
+                                    'product_uom_qty': (bom_line.product_qty * mrp_order.product_qty)/self.env['mrp.bom'].search([("product_tmpl_id", "=", prod['product_tmpl_id'])]).product_qty,
                                     'picking_type_id': mrp_order.picking_type_id.id,
                                     'location_id': mrp_order.location_src_id.id,
                                     'location_dest_id': bom_line.product_id.with_company(self.company_id.id).property_stock_production.id,
                                     'company_id': mrp_order.company_id.id,
                                 }))
 
-                            mrp_order.update({'move_raw_ids':list_value})
+                            finished_vals = {
+                                'product_id': prod['id'],
+                                'product_uom_qty': prod['qty'],
+                                'product_uom': prod['uom_id'],
+                                'name': mrp_order.name,
+                                'date_deadline': mrp_order.date_deadline,
+                                'picking_type_id': mrp_order.picking_type_id.id,
+                                'location_id': mrp_order.location_src_id.id,
+                                'location_dest_id': mrp_order.location_dest_id.id,
+                                'company_id': mrp_order.company_id.id,
+                                'production_id': mrp_order.id,
+                                'warehouse_id': mrp_order.location_dest_id.warehouse_id.id,
+                                'origin': mrp_order.name,
+                                'group_id': mrp_order.procurement_group_id.id,
+                                'propagate_cancel': mrp_order.propagate_cancel,
+                            }
+                            mrp_order.update({'move_raw_ids': list_value,
+                                              'move_finished_ids': [
+                                                  (0, 0, finished_vals)]
+                                              })
         return True
 
 
