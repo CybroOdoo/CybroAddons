@@ -20,7 +20,7 @@
 ##############################################################################
 {
     'name': 'Make MRP orders from POS',
-    'version': '15.0.1.1.0',
+    'version': '15.0.1.1.1',
     'summary': """Launch Automatic MRP Orders After Selling Through POS.""",
     'description': """Launch automatic MRP orders after selling through POS""",
     'author': 'Cybrosys Techno Solutions',

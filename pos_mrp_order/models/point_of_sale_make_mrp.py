@@ -59,7 +59,7 @@ class MrpProduction(models.Model):
                         if bom:
                             vals = {
                                 'origin': 'POS-' + prod['pos_reference'],
-                                # 'state': 'confirmed',
+                                'state': 'confirmed',
                                 'product_id': prod['id'],
                                 'product_tmpl_id': prod['product_tmpl_id'],
                                 'product_uom_id': prod['uom_id'],
@@ -74,7 +74,7 @@ class MrpProduction(models.Model):
                                     'name': mrp_order.name,
                                     'product_id': bom_line.product_id.id,
                                     'product_uom': bom_line.product_uom_id.id,
-                                    'product_uom_qty': bom_line.product_qty * mrp_order.product_qty,
+                                    'product_uom_qty': (bom_line.product_qty * mrp_order.product_qty)/self.env['mrp.bom'].search([("product_tmpl_id", "=", prod['product_tmpl_id'])]).product_qty,
                                     'location_id': mrp_order.location_src_id.id,
                                     'location_dest_id': bom_line.product_id.with_company(
                                         self.company_id.id).property_stock_production.id,
