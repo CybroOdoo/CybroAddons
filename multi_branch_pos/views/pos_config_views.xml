@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--inheriting pos config form view to add required fields-->
+    <record id="pos_config_view_form" model="ir.ui.view">
+        <field name="name">pos.config.view.form.inherit.multi.branch.pos</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+        <xpath expr="//div[@id='other_devices']" position="after">
+            <div id="branch_id" class="col-12 col-lg-6 o_setting_box">
+                <div class="o_setting_right_pane">
+                    <label for="branch_id"/>
+                    <field name="branch_id" options="{'no_create': True}"
+                           domain="[('id', 'in', allowed_branch_ids)]"/>
+                    <div><field name="branch_name" invisible="1"
+                                readonly="1"/></div>
+                    <field name="allowed_branch_ids" invisible="1"/>
+                </div>
+            </div>
+            <div id="picking_type_id" class="col-12 col-lg-6 o_setting_box">
+                <div class="o_setting_right_pane">
+                    <label for="picking_type_id"/>
+                    <field name="picking_type_id" required="1"
+                        domain="[('code', '=', 'outgoing'), '|',
+                        ('branch_id', '=', branch_id),
+                         ('branch_id', '=', False)]"/>
+                </div>
+            </div>
+            <div id="journal_id" class="col-12 col-lg-6 o_setting_box">
+                <div class="o_setting_right_pane">
+                    <label for="journal_id"/>
+                    <field name="journal_id" required="1"
+                        domain="[('type', 'in', ('general', 'sale')), '|',
+                        ('branch_id', '=', branch_id),
+                        ('branch_id', '=', False)]"/>
+                </div>
+            </div>
+            <div id="invoice_journal_id"
+                 class="col-12 col-lg-6 o_setting_box">
+                <div class="o_setting_right_pane">
+                    <label for="invoice_journal_id"/>
+                    <field name="invoice_journal_id" required="1"
+                        domain="[('type', '=', 'sale'), '|',
+                        ('branch_id', '=', branch_id),
+                        ('branch_id', '=', False)]"/>
+                </div>
+            </div>
+            </xpath>
+        </field>
+    </record>
+    <!--inheriting pos config tree view to add required fields-->
+    <record id="pos_config_view_tree" model="ir.ui.view">
+        <field name="name">pos.config.view.tree.inherit.multi.branch.pos</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_config_tree"/>
+        <field name="arch" type="xml">
+            <field name="company_id" position="after">
+                <field name="branch_id" optional="show"/>
+            </field>
+        </field>
+    </record>
+    <!--inheriting pos config search view to add required fields-->
+    <record id="pos_config_view_search" model="ir.ui.view">
+        <field name="name">pos.config.view.search.inherit.multi.branch.pos</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id"
+               ref="point_of_sale.view_pos_config_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="Branch" name="Branch"
+                        context="{'group_by':'branch_id'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
