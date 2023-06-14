@@ -19,10 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from datetime import date, time
 from odoo import fields, models, api
 import requests, re, json
-from odoo.http import request
 from datetime import datetime
 from dateutil import tz
 
@@ -41,7 +39,7 @@ class MailMessage(models.Model):
 
     @api.model
     def create(self, vals):
-        """Over riding the create method to sent message to slack"""
+        """Over-riding the create method to sent message to slack"""
         res = super().create(vals)
         to_zone = tz.gettz('Asia/Kolkata')
         channel_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')

@@ -19,47 +19,58 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+import requests
+import logging
+
 from odoo import fields, models
-import requests, json
 
 
 class ResPartner(models.Model):
     _inherit = 'res.users'
     _description = 'Slack users'
 
-    slack_user_id = fields.Char(string="Slack User ID")
+    slack_user_id = fields.Char(string="Slack User ID", readonly=True)
     is_slack_internal_users = fields.Boolean("Slack User", default=False)
 
     def sync_users(self):
         """To load slack users"""
-        slack_internal_user_list = []
+        slack_internal_user_list = [user_id.slack_user_id for user_id in self]
 
-        url1 = "https://slack.com/api/users.list"
+        url = "https://slack.com/api/users.list"
         company_record = self.env.user.company_id
         payload = {}
         headers = {
             'Authorization': 'Bearer ' + company_record.token
         }
 
-        users_response = requests.request("GET", url1, headers=headers,
-                                          data=payload)
-        users_response = users_response.__dict__['_content']
-        dict_users = users_response.decode("UTF-8")
-        users = json.loads(dict_users)
-        for user_id in self:
-            slack_internal_user_list.append(user_id.slack_user_id)
+        logger = logging.getLogger(__name__)
 
-        for rec in users['members']:
-            if rec['is_email_confirmed'] is True:
-                if 'email' in rec['profile']:
+        try:
+            response = requests.get(url, headers=headers, data=payload)
+            response.raise_for_status()
+            users = response.json()
+        except requests.exceptions.RequestException as err:
+            # Handle request exceptions
+            logger.error(f"Error during Slack API request: {err}")
+            return
+        members = users.get('members', False)
+        if members is not False:
+            vals_list = []
+            for rec in members:
+                if 'is_email_confirmed' in rec and rec['is_email_confirmed'] is True and 'email' in rec['profile']:
                     email = rec['profile']['email']
-                else:
-                    email = ''
-                if rec['id'] not in slack_internal_user_list:
-                    vals = {
-                        'name': rec['real_name'],
-                        'slack_user_id': rec['id'],
-                        'is_slack_internal_users': True,
-                        'login': email,
-                    }
-                    self.create(vals)
+                    if rec['id'] not in slack_internal_user_list:
+                        vals = {
+                            'name': rec['real_name'],
+                            'slack_user_id': rec['id'],
+                            'is_slack_internal_users': True,
+                            'login': email,
+                        }
+                        vals_list.append(vals)
+            try:
+                if vals_list:
+                    self.create(vals_list)
+            except Exception as e:
+                # Handle creation exception
+                logger.error(f"Error creating Slack users: {e}")
+                return

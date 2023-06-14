@@ -19,8 +19,12 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-import requests, json
-from odoo import models, fields
+import logging
+
+import requests
+from requests import RequestException
+
+from odoo import fields, models
 
 
 class MailChannel(models.Model):
@@ -38,29 +42,38 @@ class MailChannel(models.Model):
         headers = {
             'Authorization': 'Bearer ' + company_record.token
         }
-        for channels in self:
-            slack_user_list = []
-            sample_list = []
-            slack_user_list.clear()
-            current_channel_user_list = []
-            current_channel_user_list.clear()
+        logger = logging.getLogger(__name__)
+        for channel in self:
+            if not channel.is_slack:
+                continue
+            try:
+                url = "https://slack.com/api/conversations.members?channel=" + channel.channel
+                with requests.Session() as session:
+                    response = session.get(url, headers=headers, data=payload)
+                    channel_members = response.json()
+                    slack_user_list = []
 
-            if channels.is_slack:
-                url = "https://slack.com/api/conversations.members?channel=" + channels.channel
-                channel_member_resonse = requests.request("GET", url,
-                                                          headers=headers,
-                                                          data=payload)
-                channel_members = channel_member_resonse.__dict__['_content']
-                dict_channel_members = channel_members.decode("UTF-8")
-                channel_member = json.loads(dict_channel_members)
-                for slack_user_id in channel_member['members']:
-                    contact = self.env['res.partner'].search(
-                        [('slack_user_id', '=', slack_user_id)])
-                    slack_user_list.append(contact.id)
-                for last_seen_partner_ids in channels.channel_member_ids:
-                    current_channel_user_list.append(
-                        last_seen_partner_ids.partner_id.id)
-                for contact_id in slack_user_list:
-                    if contact_id not in current_channel_user_list:
-                        sample_list.append((0, 0, {'partner_id': contact_id}))
-                channels.channel_member_ids = sample_list
+                    for slack_user_id in channel_members['members']:
+                        contact = self.env['res.partner'].search([('slack_user_id', '=', slack_user_id)])
+                        slack_user_list.append(contact.id)
+
+                    current_channel_user_list = channel.channel_member_ids.mapped('partner_id.id')
+                    sample_list = [
+                        (0, 0, {'partner_id': contact_id})
+                        for contact_id in slack_user_list
+                        if contact_id not in current_channel_user_list
+                    ]
+
+                    channel.channel_member_ids = sample_list
+
+            except RequestException as e:
+                # Handle request exception
+                logger.error(f"Error occurred during API request: {str(e)}")
+
+            except (KeyError, ValueError) as e:
+                # Handle JSON parsing or key error
+                logger.error(f"Error occurred while parsing API response: {str(e)}")
+
+            except Exception as e:
+                # Handle any other exceptions
+                logger.error(f"An error occurred: {str(e)}")

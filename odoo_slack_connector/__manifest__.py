@@ -45,5 +45,4 @@
     'installable': True,
     'auto_install': False,
     'uninstall_hook': 'slack_uninstall_hook'
-
 }

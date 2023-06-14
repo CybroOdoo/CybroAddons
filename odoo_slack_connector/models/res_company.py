@@ -19,11 +19,12 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+import json
+import requests
 from odoo import fields, models
-import requests, json
 
 
-class ResCompanyInherited(models.Model):
+class ResCompany(models.Model):
     _inherit = 'res.company'
     _description = 'Slack Api'
 
@@ -53,7 +54,7 @@ class ResCompanyInherited(models.Model):
         users_response = users_response.__dict__['_content']
         dict_users = users_response.decode("UTF-8")
         users = json.loads(dict_users)
-
+        members = users.get('members', False)
         channel_list = []
         channel_response = requests.request("GET", url2, headers=headers,
                                             data=payload)
@@ -62,8 +63,6 @@ class ResCompanyInherited(models.Model):
         channels = json.loads(dict_channels)
 
         search_channel = self.env['mail.channel'].search([])
-        search_channel.sync_members()
-        self.env['res.users'].search([]).sync_users()
         for i in search_channel:
             channel_list.append(i.channel)
         for channel in channels['channels']:
@@ -74,11 +73,10 @@ class ResCompanyInherited(models.Model):
                         'channel': channel['id'],
                         'is_slack': True,
                     }, ])
-
+        search_channel.sync_members()
+        self.env['res.users'].search([]).sync_users()
         users_list = []
         slack_id_list = []
-        slack_internal_user_list = []
-        members_list = []
         channels_list = []
         record_channel_list = []
         record = self.env.user.company_id
@@ -94,35 +92,36 @@ class ResCompanyInherited(models.Model):
         record_user_list = []
         for rec in record.slack_users_ids:
             record_user_list.append(rec.user)
-        for rec in users['members']:
-            if 'email' in rec['profile']:
-                email = rec['profile']['email']
-            else:
-                email = ''
-            if rec['id'] not in record_user_list:
-                users_list.append((0, 0,
-                                   {'name': rec['real_name'],
-                                    'user': rec['id'],
-                                    'email': email},
-                                   ))
+        if members is not False:
+            for rec in members:
+                if 'email' in rec['profile']:
+                    email = rec['profile']['email']
+                else:
+                    email = ''
+                if rec['id'] not in record_user_list:
+                    users_list.append((0, 0,
+                                       {'name': rec['real_name'],
+                                        'user': rec['id'],
+                                        'email': email},
+                                       ))
         self.slack_users_ids = users_list
 
         for partner_id in self.env['res.partner'].search([]):
             slack_id_list.append(partner_id.slack_user_id)
-        for rec in users['members']:
-            # if rec['is_email_confirmed'] is True:
-            if 'email' in rec['profile']:
-                email = rec['profile']['email']
-            else:
-                email = ''
-            if rec['id'] not in slack_id_list:
-                vals = {
-                    'name': rec['real_name'],
-                    'slack_user_id': rec['id'],
-                    'is_slack_user': True,
-                    'email': email
-                }
-                self.env['res.partner'].create(vals)
+        if members is not False:
+            for rec in members:
+                if 'email' in rec['profile']:
+                    email = rec['profile']['email']
+                else:
+                    email = ''
+                if rec['id'] not in slack_id_list:
+                    vals = {
+                        'name': rec['real_name'],
+                        'slack_user_id': rec['id'],
+                        'is_slack_user': True,
+                        'email': email
+                    }
+                    self.env['res.partner'].create(vals)
 
 
 class SlackUsersLines(models.Model):
