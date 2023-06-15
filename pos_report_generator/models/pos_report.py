@@ -20,6 +20,7 @@
 #############################################################################
 
 from odoo import models, fields, api
+from datetime import datetime
 
 import io
 import json
@@ -37,11 +38,16 @@ class PosReportGenerator(models.Model):
     date_from = fields.Datetime(string="Date From")
     date_to = fields.Datetime(string="Date to")
     report_type = fields.Selection([('report_by_order', 'Report By Order'),
-                                    ('report_by_order_detail', 'Report By Order Detail'),
+                                    ('report_by_order_detail',
+                                     'Report By Order Detail'),
                                     ('report_by_product', 'Report By Product'),
-                                    ('report_by_categories', 'Report By Categories'),
-                                    ('report_by_salesman', 'Report By Salesman'),
-                                    ('report_by_payment', 'Report By Payment')],
+                                    ('report_by_categories',
+                                     'Report By Categories'),
+                                    ('report_by_salesman',
+                                     'Report By Salesman'),
+                                    (
+                                        'report_by_payment',
+                                        'Report By Payment')],
                                    default='report_by_order')
 
     @api.model
@@ -61,7 +67,6 @@ class PosReportGenerator(models.Model):
             data.update({
                 'date_to': report_values.date_to,
             })
-        # print("reports",reports)
         filters = self.get_filter(option)
         report = self._get_report_values(data)
         lines = self._get_report_values(data).get('POS')
@@ -101,7 +106,6 @@ class PosReportGenerator(models.Model):
         r = self.env['pos.report'].search([('id', '=', option[0])])
         default_filters = {}
 
-
         filter_dict = {
             'report_type': r.report_type,
         }
@@ -110,13 +114,10 @@ class PosReportGenerator(models.Model):
 
     @api.model
     def create(self, vals):
-        print("vals", vals)
-
         res = super(PosReportGenerator, self).create(vals)
         return res
 
     def write(self, vals):
-
 
         res = super(PosReportGenerator, self).write(vals)
         return res
@@ -138,10 +139,12 @@ class PosReportGenerator(models.Model):
                              '''
             term = 'Where '
             if data.get('date_from'):
-                query += "Where l.date_order >= '%s' " % data.get('date_from')
+                query += "Where (l.date_order >= '%s') " % data.get(
+                    'date_from').strftime('%Y-%m-%d 00:00:00')
                 term = 'AND '
             if data.get('date_to'):
-                query += term + "l.date_order <= '%s' " % data.get('date_to')
+                query += term + "(l.date_order <= '%s') " % data.get(
+                    'date_to').strftime('%Y-%m-%d 11:59:59')
             query += "group by l.user_id,res_users.partner_id,res_partner.name,l.partner_id,l.date_order,pos_session.name,l.session_id,l.name,l.amount_total,l.note,l.id"
             self._cr.execute(query)
             report_by_order = self._cr.dictfetchall()
@@ -161,16 +164,19 @@ class PosReportGenerator(models.Model):
                     '''
             term = 'Where '
             if data.get('date_from'):
-                query += "Where l.date_order >= '%s' " % data.get('date_from')
+                query += "Where l.date_order >= '%s' " % data.get(
+                    'date_from').strftime('%Y-%m-%d')
                 term = 'AND '
             if data.get('date_to'):
-                query += term + "l.date_order <= '%s' " % data.get('date_to')
+                query += term + "l.date_order <= '%s' " % data.get(
+                    'date_to').strftime('%Y-%m-%d')
             query += "group by l.user_id,res_users.partner_id,res_partner.name,l.partner_id,l.date_order,pos_session.name,l.session_id,l.name,l.amount_total,l.note,pos_order_line.full_product_name,pos_order_line.price_unit,pos_order_line.price_subtotal,pos_order_line.price_subtotal_incl,pos_order_line.product_id,product_product.default_code"
+
             self._cr.execute(query)
             report_by_order_details = self._cr.dictfetchall()
             report_sub_lines.append(report_by_order_details)
         elif data.get('report_type') == 'report_by_product':
-            query ='''
+            query = '''
             select l.amount_total,l.amount_paid,sum(pos_order_line.qty) as qty, pos_order_line.full_product_name, pos_order_line.price_unit,product_product.default_code,product_category.name
             from pos_order as l 
             left join pos_order_line on l.id = pos_order_line.order_id
@@ -189,7 +195,7 @@ class PosReportGenerator(models.Model):
             report_by_product = self._cr.dictfetchall()
             report_sub_lines.append(report_by_product)
         elif data.get('report_type') == 'report_by_categories':
-            query ='''
+            query = '''
             select product_category.name,sum(l.qty) as qty,sum(l.price_subtotal) as amount_total,sum(price_subtotal_incl) as total_incl
             from pos_order_line as l
             left join product_template on l.product_id = product_template.id
@@ -198,34 +204,36 @@ class PosReportGenerator(models.Model):
             '''
             term = 'Where '
             if data.get('date_from'):
-                query += "Where pos_order.date_order >= '%s' " % data.get('date_from')
+                query += "Where pos_order.date_order >= '%s' " % data.get(
+                    'date_from')
                 term = 'AND '
             if data.get('date_to'):
-                query += term + "pos_order.date_order <= '%s' " % data.get('date_to')
+                query += term + "pos_order.date_order <= '%s' " % data.get(
+                    'date_to')
             query += "group by product_category.name"
             self._cr.execute(query)
             report_by_categories = self._cr.dictfetchall()
             report_sub_lines.append(report_by_categories)
         elif data.get('report_type') == 'report_by_salesman':
-           query ='''
+            query = '''
            select res_partner.name,sum(pos_order_line.qty) as qty,sum(pos_order_line.price_subtotal) as amount,count(l.id) as order
            from pos_order as l
            left join res_users on l.user_id = res_users.id
            left join res_partner on res_users.partner_id = res_partner.id
            left join pos_order_line on l.id = pos_order_line.order_id
            '''
-           term = 'Where '
-           if data.get('date_from'):
-               query += "Where l.date_order >= '%s' " % data.get('date_from')
-               term = 'AND '
-           if data.get('date_to'):
-               query += term + "l.date_order <= '%s' " % data.get('date_to')
-           query += "group by res_partner.name"
-           self._cr.execute(query)
-           report_by_salesman = self._cr.dictfetchall()
-           report_sub_lines.append(report_by_salesman)
+            term = 'Where '
+            if data.get('date_from'):
+                query += "Where l.date_order >= '%s' " % data.get('date_from')
+                term = 'AND '
+            if data.get('date_to'):
+                query += term + "l.date_order <= '%s' " % data.get('date_to')
+            query += "group by res_partner.name"
+            self._cr.execute(query)
+            report_by_salesman = self._cr.dictfetchall()
+            report_sub_lines.append(report_by_salesman)
         elif data.get('report_type') == 'report_by_payment':
-            query ='''
+            query = '''
            select pos_payment_method.name,sum(l.amount_total),pos_session.name as session,pos_config.name as config
            from pos_order as l 
            left join pos_payment on l.id = pos_payment.pos_order_id
@@ -294,9 +302,11 @@ class PosReportGenerator(models.Model):
 
         report_res_total = self._get_report_total_value(data, report)
         if data.get('report_type'):
-            report_res = self._get_report_sub_lines(data, report, date_from, date_to)[0]
+            report_res = \
+                self._get_report_sub_lines(data, report, date_from, date_to)[0]
         else:
-            report_res = self._get_report_sub_lines(data, report, date_from, date_to)
+            report_res = self._get_report_sub_lines(data, report, date_from,
+                                                    date_to)
 
         if data.get('report_type') == 'report_by_order':
             report_res_total = self._get_report_total_value(data, report)[0]
@@ -310,7 +320,6 @@ class PosReportGenerator(models.Model):
         }
 
     def get_pos_xlsx_report(self, data, response, report_data, dfr_data):
-        print("fhccccccgjk")
         report_data_main = json.loads(report_data)
         output = io.BytesIO()
         filters = json.loads(data)
@@ -370,7 +379,6 @@ class PosReportGenerator(models.Model):
             for rec_data in report_data_main:
                 one_lst = []
                 two_lst = []
-                print("iiii", rec_data)
                 row += 1
                 sheet.write(row, col, rec_data['shop'], txt_l)
                 sheet.write(row, col + 1, rec_data['session'], txt_l)
@@ -417,7 +425,6 @@ class PosReportGenerator(models.Model):
             for rec_data in report_data_main:
                 one_lst = []
                 two_lst = []
-                print("iiii", rec_data)
                 row += 1
                 sheet.write(row, col, rec_data['shop'], txt_l)
                 sheet.write(row, col + 1, rec_data['session'], txt_l)
@@ -429,7 +436,8 @@ class PosReportGenerator(models.Model):
                 sheet.write(row, col + 7, rec_data['price_unit'], txt_l)
                 sheet.write(row, col + 8, rec_data['sum'], txt_l)
                 sheet.write(row, col + 9, rec_data['price_subtotal'], txt_l)
-                sheet.write(row, col + 10, rec_data['price_subtotal_incl'], txt_l)
+                sheet.write(row, col + 10, rec_data['price_subtotal_incl'],
+                            txt_l)
 
         if filters.get('report_type') == 'report_by_product':
 
@@ -462,7 +470,6 @@ class PosReportGenerator(models.Model):
             for rec_data in report_data_main:
                 one_lst = []
                 two_lst = []
-                print("iiii", rec_data)
                 row += 1
                 sheet.write(row, col, rec_data['name'], txt_l)
                 sheet.write(row, col + 1, rec_data['default_code'], txt_l)
@@ -494,7 +501,6 @@ class PosReportGenerator(models.Model):
             for rec_data in report_data_main:
                 one_lst = []
                 two_lst = []
-                print("iiii", rec_data)
                 row += 1
                 sheet.write(row, col, rec_data['name'], txt_l)
                 sheet.write(row, col + 1, rec_data['qty'], txt_l)
@@ -524,7 +530,6 @@ class PosReportGenerator(models.Model):
             for rec_data in report_data_main:
                 one_lst = []
                 two_lst = []
-                print("iiii", rec_data)
                 row += 1
                 sheet.write(row, col, rec_data['name'], txt_l)
                 sheet.write(row, col + 1, rec_data['order'], txt_l)
@@ -555,7 +560,6 @@ class PosReportGenerator(models.Model):
                 name = list(rec_data['name'].values())[0]
                 one_lst = []
                 two_lst = []
-                print("iiii", rec_data)
                 row += 1
                 sheet.write(row, col, rec_data['config'], txt_l)
                 sheet.write(row, col + 1, rec_data['session'], txt_l)
