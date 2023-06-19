@@ -21,7 +21,7 @@
 ###################################################################################
 {
     'name': 'Biometric Device Integration',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'summary': """Integrating Biometric Device (Model: ZKteco uFace 202) With HR Attendance (Face + Thumb)""",
     'description': """This module integrates Odoo with the biometric device(Model: ZKteco uFace 202),odoo15,odoo,hr,attendance""",
     'category': 'Generic Modules/Human Resources',
@@ -35,7 +35,7 @@
         'views/zk_machine_attendance_view.xml',
         'data/download_data.xml'
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner_.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
