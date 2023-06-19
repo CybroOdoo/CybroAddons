@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 import base64
 
 from odoo import api, SUPERUSER_ID
