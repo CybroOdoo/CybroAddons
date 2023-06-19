@@ -53,16 +53,16 @@ class AccountAssetCategory(models.Model):
                                        string='Asset Account', required=True,
                                        domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=', 'liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=', 'liability_credit_card'),('deprecated', '=', False)]",
                                        help="Account used to record the purchase of the asset at its original price.")
-    account_depreciation_id = fields.Many2one('account.account',
-                                              string='Depreciation Entries: Asset Account',
-                                              required=True,
-                                              domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=', 'liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=', 'liability_credit_card'),('deprecated', '=', False), ('company_id', '=', company_id)]",
-                                              help="Account used in the depreciation entries, to decrease the asset value.")
-    account_depreciation_expense_id = fields.Many2one('account.account',
-                                                      string='Depreciation Entries: Expense Account',
-                                                      required=True,
-                                                      domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=','liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=','liability_credit_card'),('deprecated', '=', False), ('company_id', '=', company_id)]",
-                                                      help="Account used in the periodical entries, to record a part of the asset as expense.")
+    account_depreciation_id = fields.Many2one(
+        'account.account', string='Depreciation Entries: Asset Account',
+        required=True,
+        domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=', 'liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=', 'liability_credit_card'),('deprecated', '=', False),('company_id', '=', company_id)]",
+        help="Account used in the depreciation entries, to decrease the asset value.")
+    account_depreciation_expense_id = fields.Many2one(
+        'account.account', string='Depreciation Entries: Expense Account',
+        required=True,
+        domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=','liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=','liability_credit_card'),('deprecated', '=', False),('company_id', '=', company_id)]",
+        help="Account used in the periodical entries, to record a part of the asset as expense.")
     journal_id = fields.Many2one('account.journal', string='Journal',
                                  required=True)
     method = fields.Selection(
