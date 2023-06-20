@@ -26,8 +26,7 @@ class ProjectTaskTimeSheet(models.Model):
 
     date_start = fields.Datetime(string='Start Date')
     date_end = fields.Datetime(string='End Date', readonly=1)
-    timer_duration = fields.Float(invisible=1,
-                                  string='Time Duration (Minutes)=')
+    timer_duration = fields.Float(invisible=1, string='Time Duration (Minutes)=')
 
 
 class ProjectTaskTimer(models.Model):
@@ -41,15 +40,12 @@ class ProjectTaskTimer(models.Model):
         'Real Duration', compute='_compute_duration', store=True)
 
     def _compute_duration(self):
-        """Compute Duration"""
         self
 
     def _compute_is_user_working(self):
         """ Checks whether the current user is working """
         for order in self:
-            if order.timesheet_ids.filtered(
-                    lambda x: (x.user_id.id == self.env.user.id) and (
-                    not x.date_end)):
+            if order.timesheet_ids.filtered(lambda x: (x.user_id.id == self.env.user.id) and (not x.date_end)):
                 order.is_user_working = True
             else:
                 order.is_user_working = False
@@ -73,15 +69,23 @@ class ProjectTaskTimer(models.Model):
             time_line_obj = self.env['account.analytic.line']
             domain = [('task_id', 'in', self.ids), ('date_end', '=', False)]
             for time_line in time_line_obj.search(domain):
-                time_line.write({'date_end': fields.Datetime.now()})
-                if time_line.date_start and time_line.date_end:
-                    diff = fields.Datetime.from_string(
-                        time_line.date_end) - fields.Datetime.from_string(
-                        time_line.date_start).replace(microsecond=0)
-                    time_line.timer_duration = round(
-                        diff.total_seconds() / 60.0, 2)
-                    time_line.unit_amount = round(
-                        diff.total_seconds() / (60.0 * 60.0), 2)
-                else:
-                    time_line.unit_amount = 0.0
-                    time_line.timer_duration = 0.0
+                if time_line.date_start:
+                    time_line.write({'date_end': fields.Datetime.now()})
+                    diff = fields.Datetime.from_string(time_line.date_end) - fields.Datetime.from_string(time_line.date_start)
+                    time_line.timer_duration = round(diff.total_seconds() / 60.0, 2)
+                    time_line.unit_amount = round(diff.total_seconds() / (60.0 * 60.0), 2)
+
+    def get_working_duration(self):
+        """Get the additional duration for 'open times'
+        i.e. productivity lines with no date_end."""
+        self.ensure_one()
+        duration = 0
+        for time in \
+                self.timesheet_ids.filtered(lambda time: not time.date_end):
+            if type(time.date_start) != datetime:
+                time.date_start = datetime.now()
+                duration = 0
+            else:
+                duration += \
+                    (datetime.now() - time.date_start).total_seconds() / 60
+        return duration

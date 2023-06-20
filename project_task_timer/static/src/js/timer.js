@@ -1,82 +1,86 @@
-odoo.define('project_task_timer.timer', function (require) {
-"use strict";
-var AbstractField = require('web.AbstractField');
-var core = require('web.core');
-var field_registry = require('web.field_registry');
-var time = require('web.time');
-var FieldManagerMixin = require('web.FieldManagerMixin');
+/** @odoo-module **/
 
-var _t = core._t;
+import { registry } from "@web/core/registry";
+import { useService } from "@web/core/utils/hooks";
+import { parseFloatTime } from "@web/views/fields/parsers";
+import { useInputField } from "@web/views/fields/input_field_hook";
 
-//  $(document).on('click','#timer', function(){
-//  if ($(this).hasClass('btn-secondary'))
-//  { $(this).removeClass('btn-secondary');
-//    $(this).addClass('btn-primary');
-//  }
-//    });
+const { Component, useState, onWillUpdateProps, onWillStart, onWillDestroy } = owl;
 
-/**
- * Custom field type for displaying a time counter based on data from the account.analytic.line model.
- * Inherits from the AbstractField class.
- */
+function formatMinutes(value) {
+    if (value === false) {
+        return "";
+    }
+    const isNegative = value < 0;
+    if (isNegative) {
+        value = Math.abs(value);
+    }
+    let min = Math.floor(value);
+    let sec = Math.floor((value % 1) * 60);
+    sec = `${sec}`.padStart(2, "0");
+    min = `${min}`.padStart(2, "0");
+    return `${isNegative ? "-" : ""}${min}:${sec}`;
+}
 
-var TimeCounter  = AbstractField.extend({
+export class TaskTimer extends Component {
+    setup() {
+        this.orm = useService('orm');
+        this.state = useState({
+            // duration is expected to be given in minutes
+            duration:
+                this.props.value !== undefined ? this.props.value : this.props.record.data.duration,
+        });
+        useInputField({
+            getValue: () => this.durationFormatted,
+            refName: "numpadDecimal",
+            parse: (v) => parseFloatTime(v),
+        });
 
-        willStart: function () {
-        var self = this;
-        var def = this._rpc({
-            model: 'account.analytic.line',
-            method: 'search_read',
-            domain:  [['task_id', '=', this.res_id],
-             ['user_id', '=', self.record.context['uid']]],
-        }).then(function (result) {
-            if (self.mode === 'readonly') {
-                var currentDate = new Date();
-                self.duration = 0;
-                _.each(result, function (data) {
-                    self.duration += data.date_end ?
-                        self._getDateDifference(data.date_start, data.date_end):
-                        self._getDateDifference(time.auto_str_to_date(data.date_start), currentDate);
-                });
+        this.ongoing =
+            this.props.ongoing !== undefined
+                ? this.props.ongoing
+                : this.props.record.data.is_user_working;
+
+        onWillStart(async () => {
+            if(this.props.ongoing === undefined && !this.props.record.model.useSampleModel && this.props.record.data.task_timer) {
+                const additionalDuration = await this.orm.call('project.task', 'get_working_duration', [this.props.record.resId]);
+                this.state.duration += additionalDuration;
+            }
+            if (this.ongoing) {
+                this._runTimer();
             }
         });
-        return $.when(this._super.apply(this, arguments), def);
-    },
-    destroy: function () {
-        this._super.apply(this, arguments);
-        clearTimeout(this.timer);
-    },
-    isSet: function () {
-        return true;
-    },
-    _getDateDifference: function (dateStart, dateEnd) {
-        return moment(dateEnd).diff(moment(dateStart));
-    },
+        onWillUpdateProps((nextProps) => {
+            const newOngoing =
+                "ongoing" in nextProps
+                    ? nextProps.ongoing
+                    : "record" in nextProps && nextProps.record.data.is_user_working;
+            const rerun = !this.ongoing && newOngoing;
+            this.ongoing = newOngoing;
+            if (rerun) {
+                this.state.duration = nextProps.value;
+                this._runTimer();
+            }
+        });
+        onWillDestroy(() => clearTimeout(this.timer));
+    }
 
-    _render: function () {
-        this._startTimeCounter();
-    },
+    get durationFormatted() {
+        return formatMinutes(this.state.duration);
+    }
 
-    /**
-     * Starts a timer to update the field every second if the user is working.
-     * Increments the duration by one second each time the timer runs.
-     * Updates the field with the new duration in HH:mm:ss format.
-     */
-    _startTimeCounter: function () {
-        var self = this;
-        clearTimeout(this.timer);
-        if (this.record.data.is_user_working) {
-            this.timer = setTimeout(function () {
-                self.duration += 1000;
-                self._startTimeCounter();
-            }, 1000);
-        } else {
-            clearTimeout(this.timer);
-        }
-        this.$el.html($('<span>' + moment.utc(this.duration).format("HH:mm:ss") + '</span>'));
-    },
-});
-field_registry.add('timesheet_uoms', TimeCounter);
-});
+    _runTimer() {
+        this.timer = setTimeout(() => {
+            if (this.ongoing) {
+                this.state.duration += 1 / 60;
+                this._runTimer();
+            }
+        }, 1000);
+    }
+}
 
+TaskTimer.supportedTypes = ["float"];
+TaskTimer.template = "TaskTimerTemplate";
 
+registry.category("fields").add("task_timer", TaskTimer);
+registry.category("formatters").add("task_timer", formatMinutes);
