@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Odoo Product Tags",
-    'version': '16.0.1.0.0',
+    'version': '16.0.2.0.1',
     'summary': """Odoo Product Tags""",
     "category": 'Inventory',
     'description': """Module helps to manage products easily using tags.""",
@@ -32,8 +32,8 @@
     'depends': ['base', 'sale', 'sale_management'],
     'data': [
         'security/ir.model.access.csv',
-        'views/product_tags_views.xml',
         'views/product_template_views.xml',
+        'views/product_product_views.xml',
         'views/res_config_settings_views.xml',
         'wizard/wizard.xml',
     ],
@@ -41,5 +41,5 @@
     'license': "LGPL-3",
     'installable': True,
     'auto_install': False,
-    'application': True
+    'application': False
 }

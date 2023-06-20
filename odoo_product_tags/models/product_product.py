@@ -19,17 +19,17 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
 import ast
+from odoo import api, fields, models, _
 
 
-class ProductTemplate(models.Model):
-    _inherit = 'product.template'
+class ProductProduct(models.Model):
+    _inherit = 'product.product'
 
     @api.model
     def create(self, vals):
         """Inherited for passing the product Tags."""
-        res = super(ProductTemplate, self).create(vals)
+        res = super(ProductProduct, self).create(vals)
         if not res.product_tag_ids:
             pro_tag = self.env['ir.config_parameter'].sudo().get_param(
                 'odoo_product_tags.product_tag_ids')
@@ -38,12 +38,12 @@ class ProductTemplate(models.Model):
                 res.update({
                     "product_tag_ids": [(6, 0, tag_ids)],
                 })
-
             return res
         else:
             return res
 
-    def action_apply_template_tags(self):
+    def action_apply_product_tags(self):
+        """Applying product tags"""
         return {
             'name': 'Apply Product Tag',
             'type': 'ir.actions.act_window',
@@ -51,9 +51,8 @@ class ProductTemplate(models.Model):
             'view_mode': 'form',
             'res_model': 'product.tags.wizard',
             'context': {
-                'default_product_tmp_ids': self.ids,
-                'default_is_product_template': True
+                'default_product_ids': self.ids,
+                'default_is_product': True
             },
             'target': 'new',
         }
-

@@ -19,34 +19,36 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
 from ast import literal_eval
+from odoo import api, fields, models, _
 
 
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
-    product_tags_ids = fields.Many2many(
-        'product.tags', string='Default Product Tags')
+    product_tag_ids = fields.Many2many(
+        'product.tag', string='Default Product Tags')
 
     def set_values(self):
+        """ save values in the settings product tag fields"""
         res = super(ResConfigSettings, self).set_values()
         self.env['ir.config_parameter'].set_param(
-            'odoo_product_tags.product_tags_ids',
-            self.product_tags_ids.ids)
+            'odoo_product_tags.product_tag_ids',
+            self.product_tag_ids.ids)
         return res
 
     @api.model
     def get_values(self):
+        """ Get values for product tag fields in the settings
+         and assign the value to that fields"""
         res = super(ResConfigSettings, self).get_values()
         params = self.env['ir.config_parameter'].sudo()
         pro_tag_ids = params.get_param(
-            'odoo_product_tags.product_tags_ids')
+            'odoo_product_tags.product_tag_ids')
         if pro_tag_ids:
             res.update(
-                product_tags_ids=[(6, 0, literal_eval(
+                product_tag_ids=[(6, 0, literal_eval(
                     pro_tag_ids))] if pro_tag_ids else False)
             return res
         else:
             return res
-
