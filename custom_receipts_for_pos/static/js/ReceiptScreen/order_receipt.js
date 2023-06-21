@@ -23,6 +23,7 @@ odoo.define('custom_receipts_for_pos.receipt',function(require){
                 super.setup();
                 onMounted(()=>{
                     var self=this;
+
                     if(self.env.pos.config.is_custom_receipt){
                         var receipt_design=self.env.pos.config.design_receipt
                         var order=self._receiptEnv.order;
@@ -40,8 +41,10 @@ odoo.define('custom_receipts_for_pos.receipt',function(require){
                         var s=new XMLSerializer();
                         var newXmlStr=s.serializeToString(xmlDoc);
                         var qweb=new QWeb2.Engine();
+                        console.log('receipt', self._receiptEnv)
                         qweb.add_template('<templates><t t-name="receipt_design">'+newXmlStr+'</t></templates>');
                         var receipt=qweb.render('receipt_design',data);$('div.pos-receipt').replaceWith(receipt);
+                        console.log(receipt, 'ooooo')
                         }
                     })
                 }

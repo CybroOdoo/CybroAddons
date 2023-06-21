@@ -23,7 +23,7 @@
 
 {
     'name': 'POS Receipt Design',
-    'version': '16.0.1.0.1',
+    'version': '16.0.1.0.0',
     'summary': """Option to select the customised Receipts for each POS""",
     'description': "Option to select the customised Receipts for each POS",
     'category': 'Point of Sale',
@@ -38,6 +38,7 @@
         'views/pos_receipt_views.xml',
         'views/res_config_settings_views.xml',
     ],
+    'demo':['demo/pos_receipt_views_demo.xml'],
     'assets': {
         'point_of_sale.assets': [
             'custom_receipts_for_pos/static/js/ReceiptScreen/order_receipt.js',
