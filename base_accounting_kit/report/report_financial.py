@@ -61,7 +61,7 @@ class AccountFinancialReport(models.Model):
         'parent_id',
         'Account Report')
     sequence = fields.Integer('Sequence')
-    level = fields.Integer(compute='_get_level', string='Level', store=True)
+    level = fields.Integer(compute='_get_level', string='Level', store=True, recursive=True)
     type = fields.Selection(
         [('sum', 'View'),
          ('accounts', 'Accounts'),
