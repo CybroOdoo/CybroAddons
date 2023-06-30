@@ -19,8 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
-from _datetime import datetime
+from datetime import datetime
 
 from odoo import api, models, _
 from odoo.exceptions import UserError
@@ -98,10 +97,9 @@ class ReportTax(models.AbstractModel):
                               strict_range=True)._compute_from_amls(options,
                                                                     taxes)
         elif options['date_from'] and options['date_to']:
-            self.with_context(date_from=options['date_from'],
-                              date_to=options['date_to'],
-                              strict_range=True)._compute_from_amls(options,
-                                                                    taxes)
+            self.with_context(
+                date_from=options['date_from'], date_to=options['date_to'],
+                strict_range=True)._compute_from_amls(options, taxes)
         else:
             date_to = str(datetime.today().date())
             self.with_context(date_to=date_to,

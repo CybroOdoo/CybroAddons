@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 import time
 
 from odoo import api, models, _

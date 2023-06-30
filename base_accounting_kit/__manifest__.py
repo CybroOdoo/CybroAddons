@@ -19,10 +19,9 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 {
     'name': 'Odoo 15 Full Accounting Kit',
-    'version': '15.0.2.2.4',
+    'version': '15.0.2.2.5',
     'category': 'Accounting',
     'live_test_url': 'https://www.youtube.com/watch?v=peAp2Tx_XIs',
     'summary': """ Asset and Budget Management,
@@ -50,7 +49,8 @@
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'depends': ['base', 'account', 'sale', 'account_check_printing', 'base_account_budget'],
+    'depends': ['base', 'account', 'sale', 'account_check_printing',
+                'base_account_budget'],
     'data': [
         'security/ir.model.access.csv',
         'security/security.xml',
@@ -61,7 +61,6 @@
         'data/account_asset_data.xml',
         'data/recurring_entry_cron.xml',
         'data/multiple_invoice_data.xml',
-        'views/assets.xml',
         'views/dashboard_views.xml',
         'views/reports_config_view.xml',
         'views/accounting_menu.xml',
@@ -77,7 +76,6 @@
         'wizard/asset_modify_views.xml',
         'views/account_asset_views.xml',
         'views/account_move_views.xml',
-        'views/account_asset_templates.xml',
         'views/product_template_views.xml',
         'views/payment_matching.xml',
         'views/multiple_invoice_layout_view.xml',
@@ -125,7 +123,6 @@
             'base_accounting_kit/static/lib/Chart.min.js',
             'base_accounting_kit/static/lib/Chart.js',
             'base_accounting_kit/static/lib/bootstrap-toggle-master/js/bootstrap-toggle.min.js',
-
         ],
         'web.assets_qweb': [
             'base_accounting_kit/static/src/xml/template.xml',

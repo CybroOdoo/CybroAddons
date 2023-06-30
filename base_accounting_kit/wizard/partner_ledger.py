@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import fields, models
 
 
@@ -28,10 +27,11 @@ class AccountPartnerLedger(models.TransientModel):
     _inherit = "account.common.partner.report"
     _description = "Account Partner Ledger"
 
-    amount_currency = fields.Boolean("With Currency",
-                                     help="It adds the currency column on report if the "
-                                          "currency differs from the company currency.")
-    reconciled = fields.Boolean('Reconciled Entries')
+    amount_currency = fields.Boolean(
+        string="With Currency",
+        help="It adds the currency column on report if the currency differs "
+             "from the company currency.")
+    reconciled = fields.Boolean(string='Reconciled Entries')
 
     def _print_report(self, data):
         data = self.pre_print_report(data)

@@ -1,6 +1,26 @@
 # -*- coding: utf-8 -*-
-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2019-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
 import copy
+
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 from odoo.osv import expression
@@ -1175,6 +1195,9 @@ class AccountBankStatementLine(models.Model):
 class ResCompany(models.Model):
     _inherit = "res.company"
 
-    account_bank_reconciliation_start = fields.Date(string="Bank Reconciliation Threshold", help="""The bank reconciliation widget won't ask to reconcile payments older than this date.
-                                                                                                           This is useful if you install accounting after having used invoicing for some time and
-                                                                                                           don't want to reconcile all the past payments with bank statements.""")
+    account_bank_reconciliation_start = fields.Date(
+        string="Bank Reconciliation Threshold",
+        help="The bank reconciliation widget won't ask to reconcile payments "
+             "older than this date. This is useful if you install accounting "
+             "after having used invoicing for some time and don't want to "
+             "reconcile all the past payments with bank statements.")

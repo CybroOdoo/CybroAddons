@@ -21,7 +21,7 @@
 #############################################################################
 from datetime import date
 
-from odoo import models, fields, api, _
+from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
 
@@ -32,9 +32,9 @@ class CashBookWizard(models.TransientModel):
     company_id = fields.Many2one('res.company', string='Company',
                                  readonly=True,
                                  default=lambda self: self.env.company)
-    target_move = fields.Selection([('posted', 'All Posted Entries'),
-                                    ('all', 'All Entries')], string='Target Moves', required=True,
-                                   default='posted')
+    target_move = fields.Selection(
+        [('posted', 'All Posted Entries'), ('all', 'All Entries')],
+        string='Target Moves', required=True, default='posted')
     date_from = fields.Date(string='Start Date', default=date.today(),
                             required=True)
     date_to = fields.Date(string='End Date', default=date.today(),
@@ -57,17 +57,13 @@ class CashBookWizard(models.TransientModel):
             accounts.append(journal.company_id.account_journal_payment_credit_account_id.id)
         return accounts
 
-    account_ids = fields.Many2many('account.account',
-                                   'account_report_cashbook_account_rel',
-                                   'report_id', 'account_id',
-                                   'Accounts',
-                                   default=_get_default_account_ids)
-    journal_ids = fields.Many2many('account.journal',
-                                   'account_report_cashbook_journal_rel',
-                                   'account_id', 'journal_id',
-                                   string='Journals', required=True,
-                                   default=lambda self: self.env[
-                                       'account.journal'].search([]))
+    account_ids = fields.Many2many(
+        'account.account', 'account_report_cashbook_account_rel', 'report_id',
+        'account_id', string='Accounts', default=_get_default_account_ids)
+    journal_ids = fields.Many2many(
+        'account.journal', 'account_report_cashbook_journal_rel', 'account_id',
+        'journal_id', string='Journals', required=True,
+        default=lambda self: self.env['account.journal'].search([]))
 
     @api.onchange('account_ids')
     def onchange_account_ids(self):

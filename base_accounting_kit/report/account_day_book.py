@@ -22,7 +22,7 @@
 import time
 from datetime import timedelta, datetime
 
-from odoo import models, api, _
+from odoo import api, models, _
 from odoo.exceptions import UserError
 
 

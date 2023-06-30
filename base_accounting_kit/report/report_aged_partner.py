@@ -19,10 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 import time
 from datetime import datetime
-
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, models, _
@@ -287,17 +285,15 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         else:
             account_type = ['payable', 'receivable']
 
-        movelines, total, dummy = self._get_partner_move_lines(account_type,
-                                                               date_from,
-                                                               target_move,
-                                                               data['form'][
-                                                                   'period_length'])
+        move_lines, total, dummy = self._get_partner_move_lines(
+            account_type, date_from, target_move,
+            data['form']['period_length'])
         return {
             'doc_ids': self.ids,
             'doc_model': model,
             'data': data['form'],
             'docs': docs,
             'time': time,
-            'get_partner_lines': movelines,
+            'get_partner_lines': move_lines,
             'get_direction': total,
         }

@@ -19,13 +19,10 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from datetime import datetime
-
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models, _
-from odoo.addons.base.models import decimal_precision as dp
 from odoo.exceptions import UserError
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
 
@@ -33,9 +30,9 @@ from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    asset_depreciation_ids = fields.One2many('account.asset.depreciation.line',
-                                             'move_id',
-                                             string='Assets Depreciation Lines')
+    asset_depreciation_ids = fields.One2many(
+        'account.asset.depreciation.line', 'move_id',
+        string='Assets Depreciation Lines')
 
     def button_cancel(self):
         for move in self:
@@ -44,7 +41,6 @@ class AccountMove(models.Model):
         return super(AccountMove, self).button_cancel()
 
     def post(self):
-
         self.mapped('asset_depreciation_ids').post_lines_and_close_asset()
         return super(AccountMove, self).post()
 
@@ -67,7 +63,6 @@ class AccountMove(models.Model):
     def action_post(self):
         self.mapped('asset_depreciation_ids').post_lines_and_close_asset()
         result = super(AccountMove, self).action_post()
-
         for inv in self:
             context = dict(self.env.context)
             # Within the context of an invoice,

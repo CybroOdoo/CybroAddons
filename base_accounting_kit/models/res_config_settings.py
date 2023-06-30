@@ -19,8 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
-from odoo import models, fields, api
+from odoo import api, fields, models
 
 
 class ResConfigSettings(models.TransientModel):
@@ -40,5 +39,4 @@ class ResConfigSettings(models.TransientModel):
     def set_values(self):
         super(ResConfigSettings, self).set_values()
         self.env['ir.config_parameter'].sudo().set_param(
-            "customer_credit_limit",
-            self.customer_credit_limit)
+            "customer_credit_limit", self.customer_credit_limit)

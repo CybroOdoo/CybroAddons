@@ -19,10 +19,10 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from lxml import etree
 
 from odoo import api, fields, models, _
+
 from odoo.addons.base.models.ir_ui_view import (
 transfer_field_to_modifiers, transfer_node_to_modifiers, transfer_modifiers_to_node,
 )
@@ -42,29 +42,36 @@ class AssetModify(models.TransientModel):
     _description = 'Modify Asset'
 
     name = fields.Text(string='Reason', required=True)
-    method_number = fields.Integer(string='Number of Depreciations', required=True)
+    method_number = fields.Integer(
+        string='Number of Depreciations', required=True)
     method_period = fields.Integer(string='Period Length')
     method_end = fields.Date(string='Ending date')
-    asset_method_time = fields.Char(compute='_get_asset_method_time', string='Asset Method Time', readonly=True)
+    asset_method_time = fields.Char(
+        compute='_get_asset_method_time', string='Asset Method Time',
+        readonly=True)
 
     def _get_asset_method_time(self):
         if self.env.context.get('active_id'):
-            asset = self.env['account.asset.asset'].browse(self.env.context.get('active_id'))
+            asset = self.env['account.asset.asset'].browse(
+                self.env.context.get('active_id'))
             self.asset_method_time = asset.method_time
 
     @api.model
     def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
-        result = super(AssetModify, self).fields_view_get(view_id, view_type, toolbar=toolbar, submenu=submenu)
+        result = super(AssetModify, self).fields_view_get(
+            view_id, view_type, toolbar=toolbar, submenu=submenu)
         asset_id = self.env.context.get('active_id')
         active_model = self.env.context.get('active_model')
         if active_model == 'account.asset.asset' and asset_id:
             asset = self.env['account.asset.asset'].browse(asset_id)
             doc = etree.XML(result['arch'])
-            if asset.method_time == 'number' and doc.xpath("//field[@name='method_end']"):
+            if asset.method_time == 'number' and doc.xpath(
+                    "//field[@name='method_end']"):
                 node = doc.xpath("//field[@name='method_end']")[0]
                 node.set('invisible', '1')
                 setup_modifiers(node, result['fields']['method_end'])
-            elif asset.method_time == 'end' and doc.xpath("//field[@name='method_number']"):
+            elif asset.method_time == 'end' and doc.xpath(
+                    "//field[@name='method_number']"):
                 node = doc.xpath("//field[@name='method_number']")[0]
                 node.set('invisible', '1')
                 setup_modifiers(node, result['fields']['method_number'])
@@ -85,7 +92,8 @@ class AssetModify(models.TransientModel):
         if 'method_end' in fields and asset.method_time == 'end':
             res.update({'method_end': asset.method_end})
         if self.env.context.get('active_id'):
-            active_asset = self.env['account.asset.asset'].browse(self.env.context.get('active_id'))
+            active_asset = self.env['account.asset.asset'].browse(
+                self.env.context.get('active_id'))
             res['asset_method_time'] = active_asset.method_time
         return res
 
@@ -107,8 +115,12 @@ class AssetModify(models.TransientModel):
         }
         asset.write(asset_vals)
         asset.compute_depreciation_board()
-        tracked_fields = self.env['account.asset.asset'].fields_get(['method_number', 'method_period', 'method_end'])
-        changes, tracking_value_ids = asset._mail_track(tracked_fields, old_values)
+        tracked_fields = self.env['account.asset.asset'].fields_get(
+            ['method_number', 'method_period', 'method_end'])
+        changes, tracking_value_ids = asset._mail_track(
+            tracked_fields, old_values)
         if changes:
-            asset.message_post(subject=_('Depreciation board modified'), body=self.name, tracking_value_ids=tracking_value_ids)
+            asset.message_post(
+                subject=_('Depreciation board modified'), body=self.name,
+                tracking_value_ids=tracking_value_ids)
         return {'type': 'ir.actions.act_window_close'}

@@ -19,10 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 import calendar
 from datetime import date, datetime
-
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models, _

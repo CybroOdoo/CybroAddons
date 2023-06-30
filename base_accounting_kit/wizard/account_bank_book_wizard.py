@@ -21,7 +21,7 @@
 #############################################################################
 from datetime import date
 
-from odoo import models, fields, api, _
+from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
 
@@ -29,12 +29,12 @@ class BankBookWizard(models.TransientModel):
     _name = 'account.bank.book.report'
     _description = 'Account Bank Book Report'
 
-    company_id = fields.Many2one('res.company', string='Company',
-                                 readonly=True,
-                                 default=lambda self: self.env.company)
-    target_move = fields.Selection([('posted', 'All Posted Entries'),
-                                    ('all', 'All Entries')], string='Target Moves', required=True,
-                                   default='posted')
+    company_id = fields.Many2one(
+        'res.company', string='Company', readonly=True,
+        default=lambda self: self.env.company)
+    target_move = fields.Selection(
+        [('posted', 'All Posted Entries'), ('all', 'All Entries')],
+        string='Target Moves', required=True, default='posted')
     date_from = fields.Date(string='Start Date', default=date.today(),
                             required=True)
     date_to = fields.Date(string='End Date', default=date.today(),
@@ -47,27 +47,27 @@ class BankBookWizard(models.TransientModel):
         [('sort_date', 'Date'), ('sort_journal_partner', 'Journal & Partner')],
         string='Sort by',
         required=True, default='sort_date')
-    initial_balance = fields.Boolean(string='Include Initial Balances',
-                                     help='If you selected date, this field allow you to add a row to display the amount of debit/credit/balance that precedes the filter you\'ve set.')
+    initial_balance = fields.Boolean(
+        string='Include Initial Balances',
+        help='If you selected date, this field allow you to add a row to '
+             'display the amount of debit/credit/balance that precedes the '
+             'filter you\'ve set.')
 
     def _get_default_account_ids(self):
         journals = self.env['account.journal'].search([('type', '=', 'bank')])
         accounts = []
         for journal in journals:
-            accounts.append(journal.company_id.account_journal_payment_credit_account_id.id)
+            accounts.append(
+                journal.company_id.account_journal_payment_credit_account_id.id)
         return accounts
 
-    account_ids = fields.Many2many('account.account',
-                                   'account_report_bankbook_account_rel',
-                                   'report_id', 'account_id',
-                                   'Accounts',
-                                   default=_get_default_account_ids)
-    journal_ids = fields.Many2many('account.journal',
-                                   'account_report_bankbook_journal_rel',
-                                   'account_id', 'journal_id',
-                                   string='Journals', required=True,
-                                   default=lambda self: self.env[
-                                       'account.journal'].search([]))
+    account_ids = fields.Many2many(
+        'account.account', 'account_report_bankbook_account_rel', 'report_id',
+        'account_id', string='Accounts', default=_get_default_account_ids)
+    journal_ids = fields.Many2many(
+        'account.journal', 'account_report_bankbook_journal_rel', 'account_id',
+        'journal_id', string='Journals', required=True,
+        default=lambda self: self.env['account.journal'].search([]))
 
     @api.onchange('account_ids')
     def onchange_account_ids(self):
@@ -81,31 +81,31 @@ class BankBookWizard(models.TransientModel):
             return {'domain': domain}
 
     def _build_contexts(self, data):
-        result = {}
-        result['journal_ids'] = 'journal_ids' in data['form'] and data['form'][
-            'journal_ids'] or False
-        result['state'] = 'target_move' in data['form'] and data['form'][
-            'target_move'] or ''
-        result['date_from'] = data['form']['date_from'] or False
-        result['date_to'] = data['form']['date_to'] or False
-        result['strict_range'] = True if result['date_from'] else False
-        return result
+        return {
+            'journal_ids': data.get('form', {}).get(
+                'journal_ids', False) or False,
+            'state': data.get('form', {}).get('target_move', '') or '',
+            'date_from': data.get('form', {}).get('date_from', False) or False,
+            'date_to': data.get('form', {}).get('date_to', False) or False,
+            'strict_range': True if data.get('form', {}).get(
+                'date_from', False) else False
+        }
 
     def check_report(self):
         self.ensure_one()
         if self.initial_balance and not self.date_from:
             raise UserError(_("You must choose a Start Date"))
-        data = {}
-        data['ids'] = self.env.context.get('active_ids', [])
-        data['model'] = self.env.context.get('active_model', 'ir.ui.menu')
-        data['form'] = self.read(
-            ['date_from', 'date_to', 'journal_ids', 'target_move',
-             'display_account',
-             'account_ids', 'sortby', 'initial_balance'])[0]
+        data = {
+            'ids': self.env.context.get('active_ids', []),
+            'model': self.env.context.get('active_model', 'ir.ui.menu'),
+            'form': self.read(
+                ['date_from', 'date_to', 'journal_ids', 'target_move',
+                 'display_account', 'account_ids', 'sortby',
+                 'initial_balance'])[0]
+            }
         used_context = self._build_contexts(data)
-        data['form']['used_context'] = dict(used_context,
-                                            lang=self.env.context.get(
-                                                'lang') or 'en_US')
+        data['form']['used_context'] = dict(
+            used_context, lang=self.env.context.get('lang') or 'en_US')
         return self.env.ref(
-            'base_accounting_kit.action_report_bank_book').report_action(self,
-                                                                         data=data)
+            'base_accounting_kit.action_report_bank_book').report_action(
+            self, data=data)
