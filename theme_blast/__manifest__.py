@@ -30,7 +30,7 @@
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'website':F'https://www.cybrosys.com',
+    'website': 'https://www.cybrosys.com',
     'depends': ['base', 'website_sale', 'website_mass_mailing'],
     'data': [
         'data/blast_configuration_data.xml',
