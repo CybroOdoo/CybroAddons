@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- A template is created for the print popup -->
+    <t t-name="PrintPopup" owl="1">
+        <div class="popup popup-selection">
+            <header class="title drag-handle">
+                <t t-esc="props.title"/>
+            </header>
+            <div class="form-container">
+                <t t-if="this.env.pos.company_logo_base64">
+                    <img class="pos-receipt-logo"
+                         t-att-src="this.env.pos.company_logo_base64"
+                         alt="Logo"/>
+                    <br/>
+                </t>
+                <t t-if="!this.env.pos.company_logo_base64">
+                    <h2 class="pos-receipt-center-align">
+                        <t t-esc="this.env.pos.company.name"/>
+                    </h2>
+                    <br/>
+                </t>
+                <div class="pos-receipt-contact">
+                    <t t-if="this.env.pos.company.name">
+                        <div><t t-esc="this.env.pos.company.name" /></div>
+                    </t>
+                    <t t-if="this.env.pos.company.phone">
+                        <div>Tel:<t t-esc="this.env.pos.company.phone"/></div>
+                    </t>
+                    <t t-if="this.env.pos.company.vat">
+                        <div><t t-esc="this.env.pos.company.vat_label"/>:
+                            <t t-esc="this.env.pos.company.vat"/></div>
+                    </t>
+                    <t t-if="this.env.pos.company.email">
+                        <div><t t-esc="this.env.pos.company.email" /></div>
+                    </t>
+                    <t t-if="this.env.pos.company.website">
+                        <div><t t-esc="this.env.pos.company.website" /></div>
+                    </t>
+                    <t t-if="this.env.pos.header_html">
+                        <t t-out="this.env.pos.header_html"/>
+                    </t>
+                    <t t-if="!this.env.pos.header_html and this.env.pos.header">
+                        <div style="white-space:pre-line"><t t-esc="this.env.pos.header" /></div>
+                    </t>
+                    <t t-if="this.env.pos.selectedOrder.cashier">
+                        <div class="cashier">
+                            <div>--------------------------------</div>
+                            <div>Served by <t
+                                    t-esc="this.env.pos.selectedOrder.cashier.name"/></div>
+                        </div>
+                    </t>
+                </div>
+                <br/>
+                <br/>
+                <!-- Orderlines -->
+                <div class="orderlines-receipt">
+                    <t t-foreach="orderlines" t-as="line" t-key="line[0]">
+                        <t t-esc="line[0]"/>
+                        <span style="float: right;margin-right:20px;"><t t-esc="line[3]"/></span>
+                        <br/>
+                        <span>(</span>
+                        <t t-esc="line[1]"/>x
+                        <t t-esc="line[2]"/>
+                        <span>)</span>
+                        <br/>
+                    </t>
+                </div>
+                <!--Total -->
+                <div class="pos-receipt-right-align">----------</div>
+                <br/>
+                <div class="pos-receipt-amount" style="margin-left:40px;">
+                    TOTAL
+                    <span t-esc="total" class="pos-receipt-right-align"
+                          style="float: right;"/>
+                </div>
+                <br/>
+                <br/>
+            </div>
+            <footer class="footer">
+                 <div class="button confirm" t-on-click="cancel">
+                    <t t-esc="props.cancelText"/>
+                </div>
+                <div class="button confirm" t-on-click="printReceipt">
+                    <t t-esc="props.confirmText"/>
+                </div>
+            </footer>
+        </div>
+    </t>
+</templates>
