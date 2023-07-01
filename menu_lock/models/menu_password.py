@@ -1,0 +1,38 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Jumana J(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU AFFERO
+#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
+#
+#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
+#    (AGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
+"""Menu Password"""
+from odoo import fields, models
+
+
+class MenuPassword(models.Model):
+    """Inverse model for one to many field of the model res users"""
+    _name = 'menu.password'
+    _description = 'Menus and Corresponding Locks for multiple password lock ' \
+                   'conditions'
+
+    menus_id = fields.Many2one('ir.ui.menu', string="Menus",
+                               help='Select the menus to lock',
+                               domain="[('parent_id','=',False)]")
+    password = fields.Char(string='Login Password',
+                           help='Lock Password')
+    password_id = fields.Many2one('res.users', string='Password',
+                                  help='Inverse field to res user model')
