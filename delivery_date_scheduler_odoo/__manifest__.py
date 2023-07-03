@@ -45,6 +45,9 @@
             'delivery_date_scheduler_odoo/static/src/js/portal_content.js'
         ]
     },
+    'images': [
+        'static/description/banner.png'
+    ],
     'license': 'AGPL-3',
     'installable': True,
     'application': False,
