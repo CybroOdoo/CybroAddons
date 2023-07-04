@@ -58,7 +58,7 @@
             'refer_friend_and_earn/static/src/css/refer_and_earn.css',
         ],
     },
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
