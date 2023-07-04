@@ -61,7 +61,7 @@ class Home(home.Home):
                             return request.redirect(
                                 self._login_redirect(uid, redirect=redirect))
                         except odoo.exceptions.AccessDenied as e:
-                            request.uid = old_uid
+                            request.update_env = old_uid
                             if e.args == odoo.exceptions.AccessDenied().args:
                                 values['error'] = _("Wrong login/password")
                     else:
