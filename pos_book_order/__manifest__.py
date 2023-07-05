@@ -33,7 +33,7 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'depends': ['base', 'point_of_sale'],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'data': ['security/ir.model.access.csv',
              'data/ir_sequence_data.xml',
              'views/pos_config_views.xml',
