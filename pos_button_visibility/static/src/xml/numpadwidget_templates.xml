@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--This is used to disable the restricted buttons -->
+    <t t-name="Price" t-inherit="point_of_sale.NumpadWidget"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('numpad')]//button[hasclass('mode-button')][3]"
+               position="replace">
+            <t t-if="env.pos.user_session.includes(env.pos.pos_session.id) and env.pos.button.includes('Price')">
+                    <button class="disabled-mode mode-button">Price</button>
+            </t>
+            <t t-else="">
+                <button class="mode-button" t-att-class="{
+                    'selected-mode': props.activeMode === 'price',
+                    'disabled-mode': !hasPriceControlRights
+                }" t-att-disabled="!hasPriceControlRights"
+                        t-on-click="() => this.changeMode('price')">Price</button>
+            </t>
+        </xpath>
+    </t>
+    <!--This is used to disable the restricted Discount -->
+    <t t-name="Discount" t-inherit="point_of_sale.NumpadWidget"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('numpad')]//button[hasclass('mode-button')][2]"
+               position="replace">
+            <t t-if="env.pos.user_session.includes(env.pos.pos_session.id) and env.pos.button.includes('Discount')">
+                <button class="disabled-mode mode-button">% Disc</button>
+            </t>
+            <t t-else="">
+               <button class="mode-button" t-att-class="{
+                        'selected-mode': props.activeMode === 'discount',
+                        'disabled-mode': !hasManualDiscount
+                    }"
+                       t-att-disabled="!hasManualDiscount"
+                       t-on-click="() => this.changeMode('discount')">% Disc</button>
+            </t>
+        </xpath>
+    </t>
+</templates>
