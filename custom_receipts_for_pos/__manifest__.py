@@ -37,9 +37,10 @@
         'views/pos_receipt_views.xml',
         'views/pos_config_views.xml'
     ],
+    'demo': ['demo/pos_receipt_views_demo.xml'],
     'assets': {
         'point_of_sale.assets': [
-         'custom_receipts_for_pos/static/src/js/ReceiptScreen/order_receipt.js',
+            'custom_receipts_for_pos/static/src/js/ReceiptScreen/order_receipt.js',
         ],
     },
     'images': ['static/description/banner.jpg'],
