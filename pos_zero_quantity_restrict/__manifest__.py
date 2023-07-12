@@ -31,13 +31,13 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
+    'images': ['static/description/banner.jpg'],
     'depends': ['base', 'point_of_sale'],
     'assets': {
         'point_of_sale.assets': [
             'pos_zero_quantity_restrict/static/src/js/**/*.js',
         ]
     },
-    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
