@@ -39,6 +39,9 @@ odoo.define('advanced_pos_reports.OrderSummaryPopup', function(require) {
                 }
             }
             else{
+                if (start_date.trim() === '' || end_date.trim() === '') {
+                     return;
+                }
                 domain = [['date_order', '>=', start_date + ' 00:00:00'],
                           ['date_order', '<=', end_date +  ' 23:59:59']]
                 if(status){
