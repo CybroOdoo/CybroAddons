@@ -19,7 +19,22 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import product_product
-from . import product_template
-from . import res_config_settings
-from . import res_partner
+from odoo import fields, models
+
+
+class ProductTemplate(models.Model):
+    """
+    ProductTemplate class for add methods and field for generate qr code,
+    Methods:
+        generate_qr(self):
+            QRcode generating method
+    """
+    _inherit = 'product.template'
+
+    def generate_qr(self):
+        product = self.env['product.product'].search(
+            [('product_tmpl_id', '=', self.id)])
+        for rec in product:
+            rec.generate_qr()
+        return self.env.ref('customer_product_qrcode.print_qr2').report_action(
+            self, data={'data': self.id, 'type': 'all'})
