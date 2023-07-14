@@ -30,11 +30,11 @@ except ImportError:
 
 
 class SelectReportExcel(models.Model):
-    """Used to get the Excel report function"""
+    """Used to get the excel report function"""
     _name = 'report.excel'
 
     def get_xlsx_report(self, data, names, response):
-        """Used to print the Excel report"""
+        """Used to print the excel report"""
         sl = 0
         row_num = 7
         output = io.BytesIO()

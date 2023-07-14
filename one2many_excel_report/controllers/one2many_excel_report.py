@@ -31,7 +31,7 @@ except ImportError:
 
 
 class ExcelHttp(http.Controller):
-    """Used to print the Excel report"""
+    """Used to print the excel report"""
     @http.route('/get/excel', type='json', auth='user', methods=['POST'],
                 csrf=False)
     def get_excel_report(self):

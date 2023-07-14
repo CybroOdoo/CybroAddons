@@ -9,7 +9,7 @@ This module is used to print the excel report of the one2many fields using the
 
 Configuration
 =============
-* Add one2many_excel to the one2many fields as widget
+* Add the widget "one2many_excel" for one2many field.
 
 Company
 -------
