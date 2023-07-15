@@ -10,9 +10,14 @@ patch(ListRenderer.prototype, 'custom_list_view/static/src/js/record_highlight.j
       setup(){
          this._super(...arguments)
         onMounted(() => {
-        var list = $('.o_section_and_note_list_view thead').find('tr')
-        var elem ='<th style="min-width: 33px; width: 67px;">Sl No</th>'
-        list.prepend(elem)
+        var tdElement = document.createElement('td');
+        var thElement = document.createElement('th');
+        thElement.innerText = "Sl No"
+        thElement.style.width = "60px"
+        var firstRow = $(this.__owl__.bdom.parentEl.querySelectorAll('.o_list_table')).find('thead tr').first();
+        var secondRow = $(this.__owl__.bdom.parentEl.querySelectorAll('.o_list_footer')).find('tr').first();
+        firstRow.prepend(thElement);
+        secondRow.prepend(tdElement);
         });
       },
 
