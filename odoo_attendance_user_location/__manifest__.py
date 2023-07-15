@@ -38,7 +38,7 @@
             'odoo_attendance_user_location/static/src/js/my_attendances.js',
         ],
     },
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'external_dependencies': {'python': ['geopy']},
     'license': 'AGPL-3',
     'installable': True,
