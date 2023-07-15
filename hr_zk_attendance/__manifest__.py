@@ -35,7 +35,7 @@
         'views/zk_machine_attendance_view.xml',
         'data/download_data.xml'
     ],
-    'images': ['static/description/banner_.png'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
