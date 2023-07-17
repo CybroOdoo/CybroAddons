@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="s_classic_store_trending" name="Trending">
+        <!-- The template includes a header with a title and description, followed by a section for displaying
+        trending products. The trending products are displayed using an owl-carousel, which is a responsive
+        and customizable slider plugin for jQuery. -->
+        <!-- For each trending product, the template displays the product's name, category, price, and average
+        rating using Font Awesome icons. The rating is displayed as a row of stars with a half-star if the average
+        rating is not an integer. -->
+        <section class="trending">
+            <div class="container">
+                <div class="top_heading  text-center">
+                    <h3 class="">Trending Products</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+                        Quas, magnam.
+                    </p>
+                    <div class="bottom_line"/>
+                </div>
+                <t t-if="trending_products">
+                    <div class="trending_body">
+                        <div class="row">
+                            <div class="owl-carousel">
+                                <t t-foreach="trending_products" t-as="tp">
+                                    <div>
+                                        <div class="card h-100">
+                                            <img t-attf-src="/web/image?model=product.template&amp;field=image_1920&amp;id=#{tp['id']}"
+                                                 class="img img-responsive img-fluid"
+                                                 style="width:auto; height: 320px;"/>
+                                            <div class="card-body">
+                                                <a t-attf-href="/shop/product/#{slug(tp)}">
+                                                    <h5 class="card-title">
+                                                        <t t-esc="tp.name"/>
+                                                    </h5>
+                                                </a>
+                                                <ul class="list-group list-group-flush"
+                                                    style="display:block;">
+                                                    <li class="list-group-item">
+                                                        <a t-attf-href="/shop/category/#{slug(tp.public_categ_ids)}">
+                                                            <span class="fa fa-folder-open"/>
+                                                            <t t-esc="tp.public_categ_ids.name"/>
+                                                        </a>
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        <a href="#">
+                                                            <t t-esc="tp.list_price"
+                                                               t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                                        </a>
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        <t t-set="rating_avg"
+                                                           t-value="tp.rating_avg"/>
+                                                        <t t-set="rating_avg"
+                                                           t-value="round(rating_avg * 100) / 100"/>
+                                                        <t t-set="val_decimal"
+                                                           t-value="round(rating_avg % 1, 1)"/>
+                                                        <t t-set="val_integer"
+                                                           t-value="int(rating_avg)"/>
+                                                        <t t-set="empty_star"
+                                                           t-value="5 - (val_integer+1) if val_decimal else 5 - val_integer"/>
+                                                        <div class="o_website_rating_static"
+                                                             t-att-style="inline_mode and 'display:inline'"
+                                                             t-att-title="rating_avg">
+                                                            <t t-foreach="range(0, val_integer)"
+                                                               t-as="num">
+                                                                <i class="fa fa-star"
+                                                                   style="font-size:18px;"
+                                                                   role="img"/>
+                                                            </t>
+                                                            <t t-if="val_decimal">
+                                                                <i class="fa fa-star-half-o"
+                                                                   style="font-size:18px;"
+                                                                   role="img"/>
+                                                            </t>
+                                                            <t t-foreach="range(0, empty_star)"
+                                                               t-as="num">
+                                                                <i class="fa fa-star text-black-25"
+                                                                   style="font-size:18px;"
+                                                                   role="img"/>
+                                                            </t>
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="top_heading  text-center">
+                        <p>Please configure Trending Products in the Classic
+                            Store Configuration.
+                        </p>
+                    </div>
+                </t>
+            </div>
+        </section>
+    </template>
+</odoo>
