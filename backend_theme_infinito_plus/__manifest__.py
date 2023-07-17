@@ -53,8 +53,8 @@
         },
     },
     'images': [
-        'static/description/banner.png',
-        'static/description/theme_screenshot.png',
+        'static/description/banner.gif',
+        'static/description/theme_screenshot.gif',
     ],
     'license': 'LGPL-3',
     'installable': True,
