@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Shop inherit -->
+    <template id="zen_shop_banner" name="zen Shop" inherit_id="website_sale.products">
+        <xpath expr="//div[hasclass('container')]" position="before">
+            <Section class="banner_about">
+                <div class="container">
+                    <h4 class="b_head">
+                        Shop
+                    </h4>
+                </div>
+            </Section>
+        </xpath>
+    </template>
+   <!-- Grid view button removed -->
+    <template id="zen_dark_grid_button" name="Zen Grid Button"
+              inherit_id="website_sale.add_grid_or_list_option">
+        <xpath expr="."
+               position="replace"/>
+    </template>
+    <!-- Price list button inherit -->
+    <template id="zen_dark_pricelist_button" name="Zen Pricelist Button" inherit_id="website_sale.products">
+        <xpath expr="//div[hasclass('btn-toolbar')]" position="replace">
+            <div class="products_header btn-toolbar flex-nowrap align-items-center justify-content-between mb-3">
+                <t t-call="website_sale.search">
+                    <t t-set="search" t-value="original_search or search"/>
+                    <t t-set="_form_classes" t-valuef="d-lg-inline {{'d-inline' if not category else 'd-none'}}"/>
+                </t>
+                <t t-call="website_sale.pricelist_list" t-cache="pricelist">
+                    <t t-set="_classes" t-valuef="d-none d-lg-inline ms-3"/>
+                </t>
+                <t t-if="is_view_active('website_sale.sort')" t-call="website_sale.sort">
+                    <t t-set="_classes" t-valuef="d-none d-lg-inline-block ms-3"/>
+                </t>
+                <button t-if="is_view_active('website_sale.sort') or opt_wsale_categories or opt_wsale_attributes or opt_wsale_attributes_top"
+                        t-attf-class="btn btn-{{navClass}} position-relative ms-3 {{not opt_wsale_attributes_top and 'd-lg-none'}}"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#o_wsale_offcanvas">
+                    <i class="fa fa-sliders"/>
+                    <span t-if="isFilteringByPrice or attrib_set"
+                          t-attf-class="position-absolute top-0 start-100 translate-middle badge border border-{{navClass}} rounded-circle bg-danger p-1">
+                        <span class="visually-hidden">filters active</span>
+                    </span>
+                </button>
+            </div>
+        </xpath>
+    </template>
+   <!-- Custom pagination -->
+    <template id="zen_pager" name="Zen pager">
+        <div class="pagination1">
+            <a t-att-href=" pager['page_previous']['url'] if pager['page']['num'] != 1 else None">
+                <i class="fa fa-chevron-left"/>
+            </a>
+            <t t-foreach="pager['pages']" t-as="page">
+                <a t-att-href="page['url']" t-raw="page['num']"/>
+            </t>
+            <a t-att-href="pager['page_next']['url'] if pager['page']['num'] != pager['page_count'] else None">
+                <i class="fa fa-chevron-right"/>
+            </a>
+            <div class="bar1"/>
+        </div>
+    </template>
+    <template id="zen_pagination" name="Zen pagination" inherit_id="website_sale.products">
+        <xpath expr="//div[hasclass('justify-content-center')]" position="replace">
+            <div class="justify-content-center">
+                <t t-call="theme_zen_dark.zen_pager"/>
+            </div>
+        </xpath>
+    </template>
+    <!-- Wishlist Button replace -->
+    <template id="zen_wishlist" inherit_id="website_sale_wishlist.add_to_wishlist" customize_show="True" name="Wishlist"
+              priority="20">
+        <xpath expr="//button[hasclass('btn')]" position="replace">
+            <button t-if="product_variant_id" type="button" role="button"
+                    class="btn-change1 btn btn-secondary o_add_wishlist" t-att-disabled='in_wish or None'
+                    title="Add to Wishlist" t-att-data-product-template-id="product.id"
+                    t-att-data-product-product-id="product_variant_id" data-action="o_wishlist">
+                <span class="fa fa-heart" role="img" aria-label="Add to wishlist"/>
+            </button>
+        </xpath>
+    </template>
+</odoo>
