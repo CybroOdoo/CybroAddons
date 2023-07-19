@@ -19,10 +19,12 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models
+from odoo import fields, models
 
 
 class AccountMove(models.Model):
+    """Inheriting the model account.move"""
     _inherit = 'account.move'
 
     picking_id = fields.Many2one('stock.picking', string='Picking')
+    transfer_ids = fields.Many2many('stock.picking', string='Transfers')

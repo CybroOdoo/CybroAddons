@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-###################################################################################
+##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2019-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
+#    Copyright (C) 2020-TODAY Cybrosys Technologies (<https://www.cybrosys.com>)
 #    Author: SAYOOJ A O (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
@@ -19,8 +19,7 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-###################################################################################
-
+###############################################################################
 from . import picking_invoice_wizard
 
 

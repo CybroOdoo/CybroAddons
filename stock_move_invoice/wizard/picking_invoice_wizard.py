@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-###################################################################################
+##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2020-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
+#    Copyright (C) 2020-TODAY Cybrosys Technologies (<https://www.cybrosys.com>)
 #    Author: SAYOOJ A O (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
@@ -19,16 +19,18 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-###################################################################################
-
+###############################################################################
 from odoo import models
 
 
 class PickingInvoiceWizard(models.TransientModel):
+    """model for picking invoice wizard"""
     _name = 'picking.invoice.wizard'
-    _description = "Create Invoice from picking"
+    _description = "Picking Invoice Wizard"
 
     def picking_multi_invoice(self):
+        """Fucntion to create multiple invoice for multiple
+        picking from wizard"""
         active_ids = self._context.get('active_ids')
         picking_ids = self.env['stock.picking'].browse(active_ids)
         picking_id = picking_ids.filtered(lambda x: x.state == 'done' and x.invoice_count == 0)

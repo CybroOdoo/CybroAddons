@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
     <data>
+        <!--        inheriting stock.picking form view to add invoice/bill button-->
         <record id="stock_picking_form_view_inherited" model="ir.ui.view">
             <field name="name">stock.picking.form.view.inherited</field>
             <field name="model">stock.picking</field>
@@ -17,7 +18,8 @@
                         <field name="invoice_count" widget="statinfo"/>
                     </button>
                 </xpath>
-                <xpath expr="//button[@name='action_toggle_is_locked']" position="after">
+                <xpath expr="//button[@name='action_toggle_is_locked']"
+                       position="after">
                     <button name="create_invoice" class="oe_highlight"
                             string="Create Invoice" type="object"
                             attrs="{'invisible': ['|','|','|',('invoice_count','!=', 0),('state','!=','done'),('operation_code','=','incoming'),('is_return','=',True)]}"/>
@@ -34,4 +36,17 @@
             </field>
         </record>
     </data>
+
+<!--    add invoice/bill create menu in tree view action-->
+    <record id="action_create_invoice_for_multi_transfer"
+            model="ir.actions.server">
+        <field name="name">Create Invoice/Bill</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="state">code</field>
+        <field name="code">
+            if records:
+            action = records.action_create_multi_invoice_for_multi_transfer()
+        </field>
+    </record>
 </odoo>
