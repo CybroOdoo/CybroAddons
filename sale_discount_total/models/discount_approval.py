@@ -33,8 +33,8 @@ class sale_discount(models.Model):
         ('sale', 'Sales Order'),
         ('done', 'Locked'),
         ('cancel', 'Cancelled'),
-        ], string='Status', readonly=True, copy=False, index=True, track_visibility='onchange', default='draft')
-
+    ], string='Status', readonly=True, copy=False, index=True,
+        track_visibility='onchange', default='draft')
 
     def action_confirm(self):
         discnt = 0.0
@@ -48,7 +48,6 @@ class sale_discount(models.Model):
                 self.state = 'waiting'
                 return True
         super(sale_discount, self).action_confirm()
-
 
     def action_approve(self):
         super(sale_discount, self).action_confirm()
@@ -64,18 +63,24 @@ class Company(models.Model):
     ], string="Levels of Approvals", default='one_step',
         help="Provide a double validation mechanism for sales discount")
 
-    so_double_validation_limit = fields.Float(string="Percentage of Discount that requires double validation'",
-                                  help="Minimum discount percentage for which a double validation is required")
+    so_double_validation_limit = fields.Float(
+        string="Percentage of Discount that requires double validation'",
+        help="Minimum discount percentage for which a double validation is "
+             "required")
 
 
 class ResDiscountSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
-    so_order_approval = fields.Boolean("Sale Discount Approval", default=lambda self: self.env.user.company_id.so_double_validation == 'two_step')
+    so_order_approval = fields.Boolean("Sale Discount Approval", default=lambda
+        self: self.env.user.company_id.so_double_validation == 'two_step')
 
-    so_double_validation = fields.Selection(related='company_id.so_double_validation',string="Levels of Approvals *", readonly=False)
-    so_double_validation_limit = fields.Float(string="Discount limit requires approval in %",
-                                              related='company_id.so_double_validation_limit', readonly=False)
+    so_double_validation = fields.Selection(
+        related='company_id.so_double_validation',
+        string="Levels of Approvals *", readonly=False)
+    so_double_validation_limit = fields.Float(
+        string="Discount limit requires approval in %",
+        related='company_id.so_double_validation_limit', readonly=False)
 
     def set_values(self):
         super(ResDiscountSettings, self).set_values()

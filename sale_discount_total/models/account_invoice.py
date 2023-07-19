@@ -26,14 +26,24 @@ from odoo import api, fields, models
 class AccountInvoice(models.Model):
     _inherit = "account.move"
 
-    discount_type = fields.Selection([('percent', 'Percentage'), ('amount', 'Amount')], string='Discount type',
-                                     readonly=True,
-                                     states={'draft': [('readonly', False)], 'sent': [('readonly', False)]},
-                                     default='percent')
+    discount_type = fields.Selection(
+        [('percent', 'Percentage'), ('amount', 'Amount')],
+        string='Discount type',
+        readonly=True,
+        states={'draft': [('readonly', False)], 'sent': [('readonly', False)]},
+        default='percent')
     discount_rate = fields.Float('Discount Rate', digits=(16, 2),
-                                 readonly=True, states={'draft': [('readonly', False)], 'sent': [('readonly', False)]})
-    amount_discount = fields.Monetary(string='Discount', store=True, readonly=True, compute='_compute_amount',
+                                 readonly=True,
+                                 states={'draft': [('readonly', False)],
+                                         'sent': [('readonly', False)]})
+    amount_discount = fields.Monetary(string='Discount', store=True,
+                                      compute='_compute_amount', readonly=True,
                                       track_visibility='always')
+
+    # def action_post(self):
+    #     res = super(AccountInvoice, self).action_post()
+    #     self.payment_state = "not_paid"
+    #     return res
 
     @api.depends(
         'line_ids.matched_debit_ids.debit_move_id.move_id.payment_id.is_matched',
@@ -55,12 +65,15 @@ class AccountInvoice(models.Model):
             total_tax, total_tax_currency = 0.0, 0.0
             total_residual, total_residual_currency = 0.0, 0.0
             total, total_currency = 0.0, 0.0
-            total_to_pay = 0.0
+            total_to_pay = move.amount_total
+
             currencies = set()
             for line in move.line_ids:
                 if move.is_invoice(True):
                     # === Invoices ===
-                    if line.display_type == 'tax' or (line.display_type == 'rounding' and line.tax_repartition_line_id):
+
+                    if line.display_type == 'tax' or (
+                            line.display_type == 'rounding' and line.tax_repartition_line_id):
                         # Tax amount.
                         total_tax += line.balance
                         total_tax_currency += line.amount_currency
@@ -83,44 +96,61 @@ class AccountInvoice(models.Model):
                         total_currency += line.amount_currency
 
             sign = move.direction_sign
-            move.amount_untaxed = sign * (total_untaxed_currency if len(currencies) == 1 else total_untaxed)
-            move.amount_tax = sign * (total_tax_currency if len(currencies) == 1 else total_tax)
+            move.amount_untaxed = sign * (total_untaxed_currency if len(
+                currencies) == 1 else total_untaxed)
+            move.amount_tax = sign * (
+                total_tax_currency if len(currencies) == 1 else total_tax)
             move.amount_total = sign * total_currency
             move.amount_residual = -sign * total_residual_currency
             move.amount_untaxed_signed = -total_untaxed
             move.amount_tax_signed = -total_tax
-            move.amount_total_signed = abs(total) if move.move_type == 'entry' else -total
+            move.amount_total_signed = abs(
+                total) if move.move_type == 'entry' else -total
             move.amount_residual_signed = total_residual
-            move.amount_total_in_currency_signed = abs(move.amount_total) if move.move_type == 'entry' else -(
-                        sign * move.amount_total)
-            currency = len(currencies) == 1 and currencies.pop() or move.company_id.currency_id
+            move.amount_total_in_currency_signed = abs(
+                move.amount_total) if move.move_type == 'entry' else -(
+                    sign * move.amount_total)
+            currency = len(
+                currencies) == 1 and currencies.pop() or move.company_id.currency_id
 
             new_pmt_state = 'not_paid' if move.move_type != 'entry' else False
 
-            if move.is_invoice(include_receipts=True) and move.state == 'posted':
+            if move.is_invoice(
+                    include_receipts=True) and move.state == 'posted':
                 if currency.is_zero(move.amount_residual):
-                    if all(payment.is_matched for payment in move._get_reconciled_payments()):
+                    if all(payment.is_matched for payment in
+                           move._get_reconciled_payments()):
                         new_pmt_state = 'paid'
                     else:
                         new_pmt_state = move._get_invoice_in_payment_state()
-                elif currency.compare_amounts(total_to_pay, total_residual) != 0:
+                elif currency.compare_amounts(total_to_pay,
+                                              abs(total_residual)) != 0:
                     new_pmt_state = 'partial'
 
-            if new_pmt_state == 'paid' and move.move_type in ('in_invoice', 'out_invoice', 'entry'):
+            if new_pmt_state == 'paid' and move.move_type in (
+                    'in_invoice', 'out_invoice', 'entry'):
                 reverse_type = move.move_type == 'in_invoice' and 'in_refund' or move.move_type == 'out_invoice' and 'out_refund' or 'entry'
                 reverse_moves = self.env['account.move'].search(
-                    [('reversed_entry_id', '=', move.id), ('state', '=', 'posted'), ('move_type', '=', reverse_type)])
+                    [('reversed_entry_id', '=', move.id),
+                     ('state', '=', 'posted'),
+                     ('move_type', '=', reverse_type)])
 
-                # We only set 'reversed' state in cas of 1 to 1 full reconciliation with a reverse entry; otherwise, we use the regular 'paid' state
-                reverse_moves_full_recs = reverse_moves.mapped('line_ids.full_reconcile_id')
-                if reverse_moves_full_recs.mapped('reconciled_line_ids.move_id').filtered(lambda x: x not in (
-                        reverse_moves + reverse_moves_full_recs.mapped('exchange_move_id'))) == move:
+                # We only set 'reversed' state in case of 1 to 1 full
+                # reconciliation with a reverse entry; otherwise, we use the
+                # regular 'paid' state
+                reverse_moves_full_recs = reverse_moves.mapped(
+                    'line_ids.full_reconcile_id')
+                if reverse_moves_full_recs.mapped(
+                        'reconciled_line_ids.move_id').filtered(
+                    lambda x: x not in (
+                            reverse_moves + reverse_moves_full_recs.mapped(
+                        'exchange_move_id'))) == move:
                     new_pmt_state = 'reversed'
 
             move.payment_state = new_pmt_state
 
     @api.onchange('discount_type', 'discount_rate', 'invoice_line_ids')
-    def supply_rate(self):
+    def _supply_rate(self):
         for inv in self:
             if inv.discount_type == 'percent':
                 discount_totals = 0
@@ -155,4 +185,3 @@ class AccountInvoiceLine(models.Model):
     _inherit = "account.move.line"
 
     discount = fields.Float(string='Discount (%)', digits=(16, 20), default=0.0)
-
