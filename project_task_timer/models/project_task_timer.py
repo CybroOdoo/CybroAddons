@@ -53,6 +53,10 @@ class ProjectTaskTimer(models.Model):
     @api.model
     @api.constrains('task_timer')
     def toggle_start(self):
+        for record in self:
+            record._toggle_start_inner()
+
+    def _toggle_start_inner(self):
         if self.task_timer is True:
             self.write({'is_user_working': True})
             time_line = self.env['account.analytic.line']
