@@ -1441,7 +1441,7 @@ odoo.define('base_accounting_kit.AccountingDashboard', function(require) {
 
                         $('#current_bank_balance').append('<li><div val="' + bnk_ids[k] + '"id="b_' + bnk_ids[k] + '">' + banks[k] + '</div><div>' + amount + '</div></li>');
                         //                                $('#current_bank_balance').append('<li>' + banks[k] +'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+ balance[k] +  '</li>' );
-                        $('#drop_charts_balance').append('<li>' + balance[k].toFixed(2) + '</li>');
+                        $('#drop_charts_balance').append('<li>' + balance[k] + '</li>');
                         $('#b_' + bnk_ids[k]).on("click", function(ev) {
                             self.do_action({
                                 res_model: 'account.account',
@@ -1725,7 +1725,7 @@ odoo.define('base_accounting_kit.AccountingDashboard', function(require) {
             if (typeof(amount) != 'number') {
                 amount = parseFloat(amount);
             }
-            var formatted_value = (parseInt(amount)).toLocaleString(currency.language, {
+            var formatted_value = (amount).toLocaleString(currency.language, {
                 minimumFractionDigits: 2
             })
             if (currency.position === "after") {
