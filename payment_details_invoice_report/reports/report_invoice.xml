@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+<!--Inherits the invoice report template-->
+    <template id="report_invoice_inherits"
+              inherit_id="account.report_invoice_document">
+        <xpath expr="//div[@id='informations']//div[2]" position="after">
+            <div class="col-auto col-3 mw-100 mb-2" name="due_date">
+                <strong>Invoice Status:</strong>
+                <p class="m-0" t-field="o.payment_state" widget="badge"/>
+            </div>
+        </xpath>
+        <xpath expr="//div[@name='payment_term']" position="after">
+            <t t-if="print_with_payments">
+                <t t-if="o.payment_details">
+                   <center><strong style="font-size:20px;">Payment Details</strong></center>
+                    <br/>
+                    <table class="table table-sm o_main_table" name="payment_details_table" style="background-color: #F1F1F1; font-family:Verdana, Arial,sans-serif; color: #454748; width: 100%; border-collapse:separate;">
+                        <thead>
+                            <tr>
+                                <th name="th_sl_no" style="width:50px"><span>SL No</span></th>
+                                <th name="th_payment_reference" style="width:200px"><span>Payment Ref</span></th>
+                                <th name="th_payment_date" t-attf-class="text-center {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}" style="width:100px"><span>Date</span></th>
+                                <th name="th_payment_method" t-attf-class="text-center {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}" style="width:140px"><span>Payment Method</span></th>
+                                <th name="th_amount_paid" t-attf-class="text-center {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}" style="width:110px"><span>Amount Paid</span></th>
+                            </tr>
+                        </thead>
+                        <tbody class="payment_details_table">
+                            <t t-foreach="payments_vals" t-as="value">
+                                <tr>
+                                    <td align="center"><t t-esc="value_index+1"/></td>
+                                    <td align="center"><t t-esc="value.get('ref')"/></td>
+                                    <td align="center"><t t-esc="value.get('date')"/></td>
+                                    <td align="center"><t t-esc="value.get('journal_name')"/></td>
+                                    <td align="center"><t t-esc="value.get('amount_company_currency')"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
+            </t>
+        </xpath>
+    </template>
+</odoo>
