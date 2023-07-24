@@ -6,7 +6,7 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { url } from "@web/core/utils/urls";
 import { isBinarySize } from "@web/core/utils/binary";
-
+import rpc from 'web.rpc';
 import { FileUploader } from "@web/views/fields/file_handler";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 
@@ -100,17 +100,63 @@ export class ImageCapture extends Component {
         var field = this.props.name;
         var id = this.props.record.data.id;
         var model = this.props.record.resModel;
-        this.env.services['action'].doAction({
-            type: "ir.actions.act_window",
-            res_model: 'image.capture',
-            views: [[false, "form"]],
-            target: "new",
-            context: {
-                "default_record_id": id,
-                "default_model_name": model,
-                "default_field_name": field,
-            },
-        });
+    }
+    async OnClickOpenCamera() {
+        // opening the camera for capture the image
+        var player = document.getElementById('player');
+        var captureButton = document.getElementById('capture');
+        var camera = document.getElementById('camera');
+        player.classList.remove('d-none');
+        captureButton.classList.remove('d-none');
+        camera.classList.add('d-none');
+        let stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+	    player.srcObject = stream;
+    }
+    async OnClickCaptureImage() {
+        // Capture the image from webcam and close the webcam
+        var context = snapshot.getContext('2d');
+        var canvas = document.getElementById('snapshot')
+        var save_image = document.getElementById('save_image')
+        var image = document.getElementById('image');
+        var video = document.getElementById('video')
+        var camera = document.getElementById('camera');
+        save_image.classList.remove('d-none');
+        context.drawImage(player, 0, 0, 320, 240);
+        image.value = context.canvas.toDataURL();
+        canvas.classList.remove('d-none');
+        this.url = context.canvas.toDataURL();
+        console.log(context.canvas.toDataURL());
+        console.log(context);
+        console.log(context.getImageData);
+    }
+    async OnClickSaveImage(){
+        // Saving the image to that field
+        var self = this;
+        rpc.query({
+            model: 'image.capture',
+            method: 'action_save_image',
+            args: [[], this.url],
+        }).then(function(results){
+            self.props.value = results
+            var data = {
+                    data:  results,
+                    name : "ImageFile.png",
+                    objectUrl: null,
+                    size : 106252,
+                    type: "image/png"
+                }
+            self.onFileUploaded(data)
+        })
+        var player = document.getElementById('player')
+        player.classList.add('d-none');
+        var snapshot = document.getElementById('snapshot')
+        snapshot.classList.add('d-none');
+        var capture = document.getElementById('capture')
+        capture.classList.add('d-none');
+        var save_image = document.getElementById('save_image')
+        save_image.classList.add('d-none');
+        var camera = document.getElementById('camera')
+        camera.classList.remove('d-none');
     }
     onLoadFailed() {
         this.state.isValid = false;
@@ -160,5 +206,4 @@ ImageCapture.extractProps = ({ attrs }) => {
                 : attrs.height,
     };
 };
-
 registry.category("fields").add("capture_image", ImageCapture);

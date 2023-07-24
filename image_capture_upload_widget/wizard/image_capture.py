@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from odoo import fields, models
+from odoo import models
 
 
 class ImageCapture(models.TransientModel):
@@ -27,18 +27,10 @@ class ImageCapture(models.TransientModel):
     _name = 'image.capture'
     _description = 'Image Captures'
 
-    name = fields.Char(string='Name', help='Name of the image to capture')
-    model_name = fields.Char(string='Model Name', help="For getting the model name details")
-    record_id = fields.Char(string='Record ID', help="For getting the record ID details")
-    field_name = fields.Char(string='Field Name', help="Field name for uploading the image")
-
-    def action_save_image(self, data, url):
+    def action_save_image(self,  url):
         """
         Saving the images to corresponding models
-        :param dict data: dictionary representing the details of fields.
         :param url: Image details.
         """
         image = url.split(',')
-        self.env[data['model_name']].browse(int(data['record_id'])).sudo().write({
-            data['field_name']: image[1]
-        })
+        return image[1]

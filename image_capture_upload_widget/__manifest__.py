@@ -38,13 +38,13 @@
     'images': ['static/description/banner.jpg'],
     'data': [
         'security/ir.model.access.csv',
-        'wizard/image_capture_views.xml'
+        # 'wizard/image_capture_views.xml'
     ],
     'assets': {
         'web.assets_backend': [
             '/image_capture_upload_widget/static/src/scss/image_capture.scss',
             '/image_capture_upload_widget/static/src/js/image_capture.js',
-            '/image_capture_upload_widget/static/src/js/image_upload.js',
+            # '/image_capture_upload_widget/static/src/js/image_upload.js',
             '/image_capture_upload_widget/static/src/xml/image_capture_templates.xml',
         ],
     },
