@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-#############################################################################
+###############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Javid A(<https://www.cybrosys.com>)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Javid A (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
@@ -18,7 +18,7 @@
 #    (AGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+###############################################################################
 import io
 import xlsxwriter
 from odoo import fields, models
@@ -26,18 +26,30 @@ from odoo.tools import date_utils
 from odoo.tools.safe_eval import json
 
 
-class MrpReportWizard(models.Model):
+class MrpReport(models.TransientModel):
+    """Class for the transient model mrp report."""
     _name = 'mrp.report'
     _description = 'MRP Report'
 
-    filter = fields.Boolean(string='Enable filter by date')
-    date_from = fields.Date(string='Start Date')
-    filter_user = fields.Boolean(string='Filter On Responsible')
-    responsible_id = fields.Many2many('res.users', string='Responsible')
-    product_id = fields.Many2many('product.product', string='Product')
+    filter = fields.Boolean(string='Enable filter by date',
+                            help='The reports can be filtered by date if '
+                                 'enabled.')
+    date_from = fields.Date(string='Start Date',
+                            help='Start date for the report data.')
+    filter_user = fields.Boolean(string='Filter On Responsible',
+                                 help='The reports can be filtered by '
+                                      'responsible person, if enabled.')
+    responsible_id = fields.Many2many('res.users', string='Responsible',
+                                      help='Responsible person for the '
+                                           'records.')
+    product_id = fields.Many2many('product.product', string='Product',
+                                  help='Id of the product in the manufacturing'
+                                       ' order.')
     stage = fields.Selection(
-        [('confirmed', 'Confirmed'), ('planned', 'Planned'), ('progress', 'In Progress'),
-         ('done', 'Done'), ('cancel', 'Cancelled')], string="Filter State")
+        [('confirmed', 'Confirmed'), ('planned', 'Planned'),
+         ('progress', 'In Progress'),
+         ('done', 'Done'), ('cancel', 'Cancelled')], string="Filter State",
+        help='Stage of the manufacturing order.')
 
     def check_report(self):
         """
@@ -48,7 +60,8 @@ class MrpReportWizard(models.Model):
         if self.product_id and self.stage and self.date_from and self.responsible_id:
             mrp_orders = self.env['mrp.production'].search(
                 [('product_id', 'in', self.product_id.ids),
-                 ('state', '=', self.stage), ('date_planned_start', '>=', self.date_from),
+                 ('state', '=', self.stage),
+                 ('date_planned_start', '>=', self.date_from),
                  ('user_id', 'in', self.responsible_id.ids)])
         elif self.product_id and self.stage and self.date_from:
             mrp_orders = self.env['mrp.production'].search(
@@ -58,7 +71,8 @@ class MrpReportWizard(models.Model):
         elif self.product_id and self.stage and self.responsible_id:
             mrp_orders = self.env['mrp.production'].search(
                 [('product_id', 'in', self.product_id.ids),
-                 ('state', '=', self.stage), ('user_id', 'in', self.responsible_id.ids)])
+                 ('state', '=', self.stage),
+                 ('user_id', 'in', self.responsible_id.ids)])
         elif self.product_id and self.date_from and self.responsible_id:
             mrp_orders = self.env['mrp.production'].search(
                 [('product_id', 'in', self.product_id.ids),
@@ -66,11 +80,13 @@ class MrpReportWizard(models.Model):
                  ('user_id', 'in', self.responsible_id.ids)])
         elif self.stage and self.date_from and self.responsible_id:
             mrp_orders = self.env['mrp.production'].search(
-                [('state', '=', self.stage), ('date_planned_start', '>=', self.date_from),
+                [('state', '=', self.stage),
+                 ('date_planned_start', '>=', self.date_from),
                  ('user_id', 'in', self.responsible_id.ids)])
         elif self.product_id and self.stage:
             mrp_orders = self.env['mrp.production'].search(
-                [('product_id', 'in', self.product_id.ids), ('state', '=', self.stage)])
+                [('product_id', 'in', self.product_id.ids),
+                 ('state', '=', self.stage)])
         elif self.product_id and self.date_from:
             mrp_orders = self.env['mrp.production'].search(
                 [('product_id', 'in', self.product_id.ids),
@@ -85,7 +101,8 @@ class MrpReportWizard(models.Model):
                  ('date_planned_start', '>=', self.date_from)])
         elif self.stage and self.responsible_id:
             mrp_orders = self.env['mrp.production'].search(
-                [('state', '=', self.stage), ('user_id', 'in', self.responsible_id.ids)])
+                [('state', '=', self.stage),
+                 ('user_id', 'in', self.responsible_id.ids)])
         elif self.date_from and self.responsible_id:
             mrp_orders = self.env['mrp.production'].search(
                 [('date_planned_start', '>=', self.date_from),
@@ -114,6 +131,7 @@ class MrpReportWizard(models.Model):
                 'start_date': rec.date_planned_start,
                 'state': rec.state,
             })
+            print('orders', orders)
         data = {
             'date_from': self.date_from,
             'stage': self.stage,
@@ -138,16 +156,19 @@ class MrpReportWizard(models.Model):
         if self.product_id and self.stage and self.date_from and self.responsible_id:
             mrp_orders = self.env['mrp.production'].search(
                 [('product_id', 'in', self.product_id.ids),
-                 ('state', '=', self.stage), ('date_planned_start', '>=', self.date_from),
+                 ('state', '=', self.stage),
+                 ('date_planned_start', '>=', self.date_from),
                  ('user_id', 'in', self.responsible_id.ids)])
         elif self.product_id and self.stage and self.date_from:
             mrp_orders = self.env['mrp.production'].search(
                 [('product_id', 'in', self.product_id.ids),
-                 ('state', '=', self.stage), ('date_planned_start', '>=', self.date_from)])
+                 ('state', '=', self.stage),
+                 ('date_planned_start', '>=', self.date_from)])
         elif self.product_id and self.stage and self.responsible_id:
             mrp_orders = self.env['mrp.production'].search(
                 [('product_id', 'in', self.product_id.ids),
-                 ('state', '=', self.stage), ('user_id', 'in', self.responsible_id.ids)])
+                 ('state', '=', self.stage),
+                 ('user_id', 'in', self.responsible_id.ids)])
         elif self.product_id and self.date_from and self.responsible_id:
             mrp_orders = self.env['mrp.production'].search(
                 [('product_id', 'in', self.product_id.ids),
@@ -155,11 +176,13 @@ class MrpReportWizard(models.Model):
                  ('user_id', 'in', self.responsible_id.ids)])
         elif self.stage and self.date_from and self.responsible_id:
             mrp_orders = self.env['mrp.production'].search(
-                [('state', '=', self.stage), ('date_planned_start', '>=', self.date_from),
+                [('state', '=', self.stage),
+                 ('date_planned_start', '>=', self.date_from),
                  ('user_id', 'in', self.responsible_id.ids)])
         elif self.product_id and self.stage:
             mrp_orders = self.env['mrp.production'].search(
-                [('product_id', 'in', self.product_id.ids), ('state', '=', self.stage)])
+                [('product_id', 'in', self.product_id.ids),
+                 ('state', '=', self.stage)])
         elif self.product_id and self.date_from:
             mrp_orders = self.env['mrp.production'].search(
                 [('product_id', 'in', self.product_id.ids),
@@ -170,10 +193,12 @@ class MrpReportWizard(models.Model):
                  ('user_id', 'in', self.responsible_id.ids)])
         elif self.stage and self.date_from:
             mrp_orders = self.env['mrp.production'].search(
-                [('state', '=', self.stage), ('date_planned_start', '>=', self.date_from)])
+                [('state', '=', self.stage),
+                 ('date_planned_start', '>=', self.date_from)])
         elif self.stage and self.responsible_id:
             mrp_orders = self.env['mrp.production'].search(
-                [('state', '=', self.stage), ('user_id', 'in', self.responsible_id.ids)])
+                [('state', '=', self.stage),
+                 ('user_id', 'in', self.responsible_id.ids)])
         elif self.date_from and self.responsible_id:
             mrp_orders = self.env['mrp.production'].search(
                 [('date_planned_start', '>=', self.date_from),
@@ -209,14 +234,17 @@ class MrpReportWizard(models.Model):
             'mrp': orders
         }
         return self.env.ref(
-            'manufacturing_reports.action_mrp_report').report_action(self, data=data)
+            'manufacturing_reports.action_mrp_report').report_action(self,
+                                                                     data=data)
 
     def get_xlsx_report(self, data, response):
+        print('get_xlsx_report(self, data, response)')
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         sheet = workbook.add_worksheet()
         cell_format = workbook.add_format({'font_size': '12px', 'bold': True})
-        head = workbook.add_format({'align': 'center', 'bold': True, 'font_size': '20px'})
+        head = workbook.add_format(
+            {'align': 'center', 'bold': True, 'font_size': '20px'})
         txt_head = workbook.add_format({'font_size': '12px'})
         sheet.set_column('B:B', 15)
         sheet.set_column('C:C', 15)
@@ -236,21 +264,21 @@ class MrpReportWizard(models.Model):
         row = 9
         col = 2
         sheet.write(row, col, 'Reference', cell_format)
-        sheet.write(row, col+1, 'Product', cell_format)
-        sheet.write(row, col+2, 'Quantity', cell_format)
-        sheet.write(row, col+3, 'Unit', cell_format)
-        sheet.write(row, col+4, 'Responsible', cell_format)
-        sheet.write(row, col+5, 'Start Date', cell_format)
-        sheet.write(row, col+6, 'State', cell_format)
+        sheet.write(row, col + 1, 'Product', cell_format)
+        sheet.write(row, col + 2, 'Quantity', cell_format)
+        sheet.write(row, col + 3, 'Unit', cell_format)
+        sheet.write(row, col + 4, 'Responsible', cell_format)
+        sheet.write(row, col + 5, 'Start Date', cell_format)
+        sheet.write(row, col + 6, 'State', cell_format)
         for rec in data['mrp']:
             row += 1
             sheet.write(row, col, rec['name'])
-            sheet.write(row, col+1, rec['product'])
-            sheet.write(row, col+2, rec['quantity'])
-            sheet.write(row, col+3, rec['unit'])
-            sheet.write(row, col+4, rec['responsible'])
-            sheet.write(row, col+5, rec['start_date'])
-            sheet.write(row, col+6, rec['state'])
+            sheet.write(row, col + 1, rec['product'])
+            sheet.write(row, col + 2, rec['quantity'])
+            sheet.write(row, col + 3, rec['unit'])
+            sheet.write(row, col + 4, rec['responsible'])
+            sheet.write(row, col + 5, rec['start_date'])
+            sheet.write(row, col + 6, rec['state'])
         workbook.close()
         output.seek(0)
         response.stream.write(output.read())
