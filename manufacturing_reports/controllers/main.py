@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-#############################################################################
+###############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Javid A(<https://www.cybrosys.com>)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Javid A (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
@@ -18,7 +18,7 @@
 #    (AGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+###############################################################################
 import json
 from odoo import http
 from odoo.http import content_disposition, request
@@ -27,11 +27,15 @@ from odoo.tools import html_escape
 
 
 class XLSXReportController(http.Controller):
-    @http.route('/xlsx_reports', type='http', auth='user', methods=['POST'], csrf=False)
-    def get_report_xlsx(self, model, options, output_format, token, report_name, **kw):
+    """Class for the controller class XLSXReportController.
+       Contains the function to print XLSX report."""
+    @http.route('/xlsx_reports', type='http', auth='user', methods=['POST'],
+                csrf=False)
+    def get_report_xlsx(self, model, options, output_format, report_name):
         uid = request.session.uid
         report_obj = request.env[model].with_user(uid)
         options = json.loads(options)
+        token = 'dummy-because-api-expects-one'
         try:
             if output_format == 'xlsx':
                 response = request.make_response(

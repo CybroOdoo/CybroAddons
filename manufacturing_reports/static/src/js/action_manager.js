@@ -1,31 +1,23 @@
-odoo.define('manufacturing_reports  .action_manager', function (require) {
-"use strict";
+/** @odoo-module */
+import { registry } from "@web/core/registry";
+import { download } from "@web/core/network/download";
+import framework from 'web.framework';
+import session from 'web.session';
 /**
- * The purpose of this file is to add the actions of type
- * 'ir_actions_xlsx_download' to the ActionManager.
+ * @override
+ * Add 'xlsx' report type to the report handler
  */
-var ActionManager = require('web.ActionManager');
-var framework = require('web.framework');
-var session = require('web.session');
-ActionManager.include({
-    _executexlsxReportDownloadAction: function (action) {
-        framework.blockUI();
-        var def = $.Deferred();
-        session.get_file({
-            url: '/xlsx_reports',
-            data: action.data,
-            success: def.resolve.bind(def),
-            error: (error) => this.call('crash_manager', 'rpc_error', error),
-            complete: framework.unblockUI,
-        });
-        return def;
-    },
-    _handleAction: function (action, options) {
-        if (action.report_type === 'xlsx') {
-            return this._executexlsxReportDownloadAction(action, options);
-        }
-        return this._super.apply(this, arguments);
-
-},
-    });
-  });
+registry.category("ir.actions.report handlers").add("xlsx", async (action) => {
+   if (action.report_type === 'xlsx') {
+       framework.blockUI();
+       var def = $.Deferred();
+       session.get_file({
+           url: '/xlsx_reports',
+           data: action.data,
+           success: def.resolve.bind(def),
+           error: (error) => this.call('crash_manager', 'rpc_error', error),
+           complete: framework.unblockUI,
+       });
+       return def;
+   }
+});
