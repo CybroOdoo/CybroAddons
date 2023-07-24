@@ -105,7 +105,7 @@ odoo.define('dynamic_partner_daybook.daybook', function (require) {
                                     self.$el.find('.journals').select2({
                                         placeholder: ' Journals...',
                                     });
-                                    self.$el.find('.account').select2({
+                                    self.$el.find('.account-partner').select2({
                                         placeholder: ' Accounts...',
                                     });
                                     self.$el.find('.target_move').select2({
@@ -347,7 +347,7 @@ odoo.define('dynamic_partner_daybook.daybook', function (require) {
 
             var account_res = document.getElementById("acc_res")
 
-            var account_list = $(".account").select2('data')
+            var account_list = $(".account-partner").select2('data')
             for (var i = 0; i < account_list.length; i++) {
                 if(account_list[i].element[0].selected === true){
 

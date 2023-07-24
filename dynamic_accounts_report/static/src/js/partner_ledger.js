@@ -107,7 +107,7 @@ odoo.define('dynamic_accounts_report.partner_ledger', function (require) {
                                 placeholder: ' Journals...',
                             });
 
-                            self.$el.find('.account').select2({
+                            self.$el.find('.account-partner').select2({
                                 placeholder: ' Accounts...',
                             });
                             self.$el.find('.partners').select2({
@@ -320,7 +320,7 @@ odoo.define('dynamic_accounts_report.partner_ledger', function (require) {
             var account_ids = [];
             var account_text = [];
             var span_res = document.getElementById("account_res")
-            var account_list = $(".account").select2('data')
+            var account_list = $(".account-partner").select2('data')
             for (var i = 0; i < account_list.length; i++) {
                 if(account_list[i].element[0].selected === true)
                     {account_ids.push(parseInt(account_list[i].id))

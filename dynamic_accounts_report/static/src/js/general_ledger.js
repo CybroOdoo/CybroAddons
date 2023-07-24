@@ -120,12 +120,12 @@ odoo.define('dynamic_accounts_report.general_ledger', function (require) {
                                     self.$('.filter_view_tb').html(QWeb.render('GLFilterView', {
                                         filter_data: datas['filters'],
                                         title : datas['name'],
-                                        eng_title : datas['eng_title'],
+//                                        eng_title : datas['eng_title'],
                                     }));
                                     self.$el.find('.journals').select2({
                                         placeholder: ' Journals...',
                                     });
-                                    self.$el.find('.account').select2({
+                                    self.$el.find('.account-partner').select2({
                                         placeholder: ' Accounts...',
                                     });
                                     self.$el.find('.analytics').select2({
@@ -359,7 +359,6 @@ odoo.define('dynamic_accounts_report.general_ledger', function (require) {
         },
 
         apply_filter: function(event) {
-
             event.preventDefault();
             var self = this;
             self.initial_render = false;
@@ -371,10 +370,9 @@ odoo.define('dynamic_accounts_report.general_ledger', function (require) {
             var account_text = [];
 
             var account_res = document.getElementById("acc_res")
-            var account_list = $(".account").select2('data')
+            var account_list = $(".account-partner").select2('data')
             for (var i = 0; i < account_list.length; i++) {
                 if(account_list[i].element[0].selected === true){
-
                     account_ids.push(parseInt(account_list[i].id))
                     if(account_text.includes(account_list[i].text) === false){
                         account_text.push(account_list[i].text)

@@ -94,7 +94,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                                     self.$el.find('.journals').select2({
                                         placeholder: ' Journals...',
                                     });
-                                    self.$el.find('.account').select2({
+                                    self.$el.find('.account-partner').select2({
                                         placeholder: ' Accounts...',
                                     });
                                     self.$el.find('.account-tag').select2({
@@ -109,21 +109,20 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                                     self.$el.find('.target_move').select2({
                                         placeholder: 'Target Move...',
                                     });
-
                             }
                             var child=[];
                             console.log(datas, "datas")
                         self.$('.table_view_dfr').html(QWeb.render('dfr_table', {
 
-                                            report_lines : datas['report_lines'],
-                                            filter : datas['filters'],
-                                            currency : datas['currency'],
-                                            credit_total : datas['credit_total'],
-                                            debit_total : datas['debit_total'],
-                                            debit_balance : datas['debit_balance'],
-                                            bs_lines : datas['bs_lines'],
-                                            lang: datas['lang'],
-                                        }));
+                            report_lines : datas['report_lines'],
+                            filter : datas['filters'],
+                            currency : datas['currency'],
+                            credit_total : datas['credit_total'],
+                            debit_total : datas['debit_total'],
+                            debit_balance : datas['debit_balance'],
+                            bs_lines : datas['bs_lines'],
+                            lang: datas['lang'],
+                        }));
                 });
                     }
                 catch (el) {
@@ -152,8 +151,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function (require) {
                     name: 'GL View',
                     tag: 'g_l',
                     target: 'new',
-                    domain: [['account_ids','=', account_id]],
-
+                    domain: [(['account_ids','=', account_id])],
                 }
                 return this.do_action(action);
         },
