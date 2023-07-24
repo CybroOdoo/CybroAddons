@@ -3,7 +3,7 @@
     :alt: License: AGPL-3
 
 POS Discount Manager Approval
-=============================
+=====================
 This module helps to provide Discount limit for each employee in every pos
 
 Configuration
