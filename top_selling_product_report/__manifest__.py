@@ -21,19 +21,20 @@
 #############################################################################
 {
     'name': 'Top/Least Selling Product Report',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
+    'category': 'Sales',
     'summary': 'Top Selling and Least Selling Product Reports',
-    'description': 'Top Selling Products,Fast Moving Products,Most Selling Products,Top Growing Products,Least Selling Products,',
+    'description': 'Top Selling Products,Fast Moving Products,Most Selling '
+                   'Products,Top Growing Products,Least Selling Products',
     'author': 'Cybrosys Techno solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'depends': ['base', 'sale_management', 'stock', 'sale'],
-    'category': 'Sale',
-    'data': ['wizard/top_selling_wizard.xml',
+    'data': ['security/ir.model.access.csv',
              'report/top_selling_report.xml',
              'report/top_selling_report_template.xml',
-             'security/ir.model.access.csv'
+             'wizard/top_selling_wizard.xml',
              ],
     'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
