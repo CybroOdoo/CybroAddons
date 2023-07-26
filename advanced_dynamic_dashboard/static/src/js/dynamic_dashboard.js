@@ -20,6 +20,8 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
             'click #edit_layout': '_onClick_edit_layout',
             'click #save_layout': '_onClick_save_layout',
             'change #theme-toggle': 'switch_mode',
+            'change #start-date': '_onchangeFilter',
+            'change #end-date': '_onchangeFilter',
             'mouseenter #theme-change-icon': 'show_mode_text',
             'mouseleave #theme-change-icon': 'hide_mode_text',
             'click .tile': '_onClick_tile',
@@ -75,6 +77,27 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
             this.$el.find('.theme_icon').toggleClass('bi-sun-fill', isDarkTheme);
             this.$el.find('.theme_icon').toggleClass('bi-moon-stars-fill', !isDarkTheme);
             this.$el.find('.dropdown-export').toggleClass('dropdown-menu-dark', isDarkTheme);
+        },
+        _onchangeFilter: function() {
+            var start_date = $('#start-date').val();
+            var end_date = $('#end-date').val();
+            var self = this;
+            if (!start_date) {
+                start_date = "null";
+            }
+            if (!end_date) {
+                end_date = "null";
+            }
+            this._rpc({
+                model: 'dashboard.block',
+                method: 'get_dashboard_vals',
+                args: [[], this.action_id, start_date, end_date],
+            }).then(function (result) {
+                self.block_ids = result;
+                self.$('.o_dynamic_dashboard').empty(); // Clear existing blocks before rendering
+                self.render_dashboards(); // Re-render the dashboard with updated data
+                self.gridstack_init(self); // Reinitialize gridstack after rendering
+            });
         },
         get_colors: function (x_axis) {//Function fetch random color values and set chart color
             return x_axis.map(() => `rgb(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)})`);
@@ -314,7 +337,7 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
             this.fetch_data().then(function () {//Fetch all datas
                 self.render_dashboards();
                 self.gridstack_init(self);
-                 location.reload();
+                location.reload();
             });
         },
         search_chart: function (e) {// Fetch search input value and filter the chart and tile.

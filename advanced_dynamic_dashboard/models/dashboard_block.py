@@ -20,6 +20,8 @@
 #
 ################################################################################
 from ast import literal_eval
+from datetime import datetime
+
 from odoo import fields, models
 from odoo.osv import expression
 
@@ -87,11 +89,33 @@ class DashboardBlock(models.Model):
                                help="Enable to edit chart and tile",
                                default=False, invisible=True)
 
-    def get_dashboard_vals(self, action_id):
+    def get_dashboard_vals(self, action_id, start_date=None, end_date=None):
         """Fetch block values from js and create chart"""
         block_id = []
         for rec in self.env['dashboard.block'].sudo().search(
             [('client_action_id', '=', int(action_id))]):
+            if rec.filter is False:
+                rec.filter = "[]"
+
+            filter_list = literal_eval(rec.filter)
+
+            # Remove existing date filters if they exist
+            filter_list = [filter_item for filter_item in filter_list if not (
+                    isinstance(filter_item, tuple) and filter_item[
+                0] == 'create_date')]
+
+            if start_date and start_date != 'null':
+                start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
+                filter_list.append(
+                    ('create_date', '>=', start_date_obj.strftime('%Y-%m-%d')))
+
+            if end_date and end_date != 'null':
+                end_date_obj = datetime.strptime(end_date, '%Y-%m-%d')
+                filter_list.append(
+                    ('create_date', '<=', end_date_obj.strftime('%Y-%m-%d')))
+
+            rec.filter = repr(filter_list)
+
             vals = {'id': rec.id, 'name': rec.name, 'type': rec.type,
                     'graph_type': rec.graph_type, 'icon': rec.fa_icon,
                     'cols': rec.graph_size,
