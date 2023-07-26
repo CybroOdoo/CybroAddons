@@ -51,6 +51,10 @@ class InsuranceDetails(models.Model):
         required=True, default='draft')
     hide_inv_button = fields.Boolean(copy=False)
     note_field = fields.Html(string='Comment')
+    policy_number = fields.Integer(string="Policy Number", required=True,
+                                   help="Policy number is a unique number that"
+                                        "an insurance company uses to identify"
+                                        "you as a policyholder")
 
     @api.constrains('commission_rate')
     def _check_commission_rate(self):
@@ -59,6 +63,12 @@ class InsuranceDetails(models.Model):
                         reward.commission_rate < 0 or reward.commission_rate > 100)):
             raise ValidationError(
                 _('Commission Percentage should be between 1-100'))
+
+    @api.constrains('policy_number')
+    def _check_policy_number(self):
+        if not self.policy_number:
+            raise ValidationError(
+                _('Please add the policy number'))
 
     def action_confirm_insurance(self):
         if self.amount > 0:
