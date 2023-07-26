@@ -80,10 +80,12 @@ class ProductMultiBarcode(models.Model):
     product_multi = fields.Many2one('product.product')
     template_multi = fields.Many2one('product.template')
 
-    _sql_constraints = [('field_unique', 'unique(multi_barcode)', 'Existing barcode is not allowed !'), ]
+    _sql_constraints = [('field_unique', 'unique(multi_barcode)',
+                         'Existing barcode is not allowed !'), ]
 
     def get_barcode_val(self, product):
         """returns barcode of record in self and product id"""
+        print(self.multi_barcode, product)
         return self.multi_barcode, product
 
 
@@ -93,8 +95,17 @@ class PosSessions(models.Model):
     def _pos_ui_models_to_load(self):
         result = super()._pos_ui_models_to_load()
         new_model = 'multi.barcode.products'
-        result.append(new_model)
+        if new_model not in result:
+            result.append(new_model)
         return result
+
+    def _loader_params_multi_barcode_products(self):
+        record = {
+            'search_params': {
+                'fields': ['product_multi', 'multi_barcode']
+            }
+        }
+        return record
 
     def _loader_params_product_product(self):
         result = super()._loader_params_product_product()
@@ -102,16 +113,13 @@ class PosSessions(models.Model):
         return result
 
     def _get_pos_ui_multi_barcode_products(self, params):
-        return self.env['multi.barcode.products'].with_context(
-            **params['context']).search_read(**params['search_params'])
+        record = self.env['multi.barcode.products'].search_read(
+            **params['search_params'])
+        return record
 
-    def _loader_params_multi_barcode_products(self):
-        return {
-            'search_params': {
-
-                'fields': [
-                    'multi_barcode'
-                ],
-            },
-            'context': {'display_default_code': False},
-        }
+    def _pos_data_process(self, loaded_data):
+        super()._pos_data_process(loaded_data)
+        context = {}
+        for rec in loaded_data['multi.barcode.products']:
+            context[rec['multi_barcode']] = rec['product_multi'][0]
+        loaded_data['multi_barcode'] = context
