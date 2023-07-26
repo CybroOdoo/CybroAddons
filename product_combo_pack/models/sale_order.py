@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-###################################################################################
+################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
-#    Author: Afras Habis (odoo@cybrosys.com)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies (<https://www.cybrosys.com>)
+#    Author: Jumana Jabin MP (odoo@cybrosys.com)
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
@@ -19,15 +19,36 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-###################################################################################
-
+################################################################################
 from odoo import api, fields, models
 
 
 class SalePack(models.Model):
+    """Model for extending the sale order to include a selection of packs."""
     _inherit = 'sale.order'
 
+    product_pack_id = fields.Many2one('product.product', string='Select Pack',
+                                      domain=[('is_pack', '=', True)],
+                                      required=True,
+                                      help='The selected pack product for'
+                                           ' the sale order.')
+
+    @api.onchange('product_pack_id')
+    def onchange_product_pack_id(self):
+        """Perform actions when the selected pack product changes."""
+        if self.product_pack_id:
+            self.order_line = [(0, 0, {
+                'product_id': self.product_pack_id.id,
+                'name': self.product_pack_id.name,
+                'product_uom_qty': 1,
+                'price_unit': self.product_pack_id.list_price,
+            })]
+        elif not self.product_pack_id:
+            self.order_line = [(5, 0, 0)]
+
     def action_confirm(self):
+        """Override the action_confirm method to create stock moves
+        for pack products."""
         super(SalePack, self).action_confirm()
         for line in self.order_line:
             if line.product_id.is_pack:

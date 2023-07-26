@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-###################################################################################
+################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
-#    Author: Afras Habis (odoo@cybrosys.com)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies (<https://www.cybrosys.com>)
+#    Author: Jumana jabin MP (odoo@cybrosys.com)
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
@@ -19,11 +19,10 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-###################################################################################
-
+################################################################################
 {
     'name': 'Product Pack',
-    'version': '16.0.1.0.2',
+    'version': '16.0.1.0.3',
     'summary': 'Manage Products as Pack',
     'description': 'Manage Products as Pack',
     'category': 'Sales',
@@ -34,12 +33,12 @@
     'depends': ['base', 'sale_management', 'stock'],
     'data': [
         'security/ir.model.access.csv',
-        'views/product_form_view.xml',
-        'wizard/select_product_pack_view.xml',
-        'views/sale_order_view.xml',
+        'views/product_form_views.xml',
+        'views/sale_order_views.xml',
     ],
     'images': ['static/description/banner.png'],
-    'installable': True,
     'license': 'AGPL-3',
+    'installable': True,
     'auto_install': False,
+    'application': True,
 }
