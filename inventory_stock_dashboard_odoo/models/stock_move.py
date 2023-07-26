@@ -23,7 +23,7 @@
 from odoo import api, models
 
 
-class StockMoveInherit(models.Model):
+class StockMove(models.Model):
     _inherit = "stock.move"
 
     @api.model

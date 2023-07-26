@@ -1,6 +1,5 @@
 odoo.define("inventory_dashboard.dashboard", function (require) {
     "use strict";
-
     var AbstractAction = require('web.AbstractAction');
     var core = require('web.core');
     var rpc = require('web.rpc');
@@ -32,19 +31,16 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
             'click #product_move_info': 'onclick_product_move_info',
             'click #stock_move_info': 'onclick_stock_move_info',
         },
-
         init: function(parent, context) {
         this._super(parent, context);
         this.dashboards_templates = ['InventoryTiles', 'ProductSaleBarGraph'];
         },
-
         willStart: function() {
             var self = this;
             return $.when(this._super()).then(function() {
                 return;
             });
         },
-
         start: function() {
             var self = this;
             this.set("title", 'Dashboard');
@@ -54,7 +50,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 self.$el.parent().addClass('oe_background_grey');
             });
         },
-
         render_dashboards: function() {
             var self = this;
                 _.each(this.dashboards_templates, function(template) {
@@ -72,7 +67,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
             self.render_out_of_stock_graph();
             self.render_dead_of_stock_graph();
         },
-
     //     fetch data function-operation type tiles and graph include this function
         render_operation_tile: function() {
             var self = this;
@@ -92,13 +86,11 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                     var result_1 = key;
                     result_2 = value;
                     const colors = ["red", "blue","green","orange","purple","steel","rebecca","brown","pink","grey","black"];
-
                     $('#set').append('<div class="col-sm-12 col-md-6 col-lg-3" id="' + result_1 +  '">
                     <div class="dashboard-card dashboard-card--border-top dashboard-card--border-top-' + colors[g] +  '">
                     <div class="dashboard-card__details"><span class="dashboard-card__title">' + result[3][result_1] + '</span>
                     <span class="count-container">' + result_2 +  '</span></div> <ul class="dashboard-card__stats"></ul></div></div>');
                     g++;
-
                     if (key in late) {
                         $('#' + key +  ' .dashboard-card__stats').append('<li class="dashboard-card__stat_late" id="' + result_1 +  '">
                         <div class="d-flex justify-content-between align-items-center text-dark text-decoration-none">
@@ -120,7 +112,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                     var name = Object.values(result[3]) // Add data values to array
                     var count = Object.values(result[0])
                     var j = 0;
-
                     for (var c in count) {
                         $('#operation_type_table').append('<tr><td>'+name[j]+'</td><td>'+count[c]+'</td></tr>')
                         j++;
@@ -144,7 +135,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                     "#a05195",
                                     "#6d5c16",
                                     "#CCCCFF"
-
                                 ],
                                 borderColor: [
                                     "#003f5c",
@@ -179,7 +169,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                     });
             });
         },
-
     //    top ten bar graph
         render_top_product_bar_graph:function(){
             var self = this
@@ -214,7 +203,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                 "#a05195",
                                 "#6d5c16",
                                 "#CCCCFF"
-
                             ],
                             borderColor: [
                                 "#003f5c",
@@ -228,7 +216,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                 "#6d5c16",
                                 "#CCCCFF"
                             ],
-
                             barPercentage: 0.5,
                             barThickness: 6,
                             maxBarThickness: 8,
@@ -250,7 +237,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 });
             });
         },
-
     //    product categories doughnut graph
         render_product_category:function(){
             var self = this
@@ -286,11 +272,9 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                 "#a05195",
                                 "#6d5c16",
                                 "#CCCCFF"
-
                             ],
                             borderColor: [
                                 "#003f5c",
-
                             ],
                             barPercentage: 0.5,
                             barThickness: 6,
@@ -313,7 +297,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 });
             });
         },
-
         //    product move line graph
         render_product_move_graph_this_month:function(){
             var self = this
@@ -336,7 +319,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                         $('#product_move_selection').append('<option id="'+key+'" value="'+category_id[k]+'">'+value+'</option>')
                         k++;
                     }
-
                 });
                 var opti = $(self.target).val();
             var option = $( "#product_move_selection" ).val();
@@ -383,12 +365,9 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                         maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height
                     }
                     });
-
                 });
             });
-
         },
-
     //    stock moves pie graph
         render_stock_moves:function(){
             rpc.query({
@@ -422,7 +401,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                 "#a05195",
                                 "#6d5c16",
                                 "#CCCCFF"
-
                             ],
                             borderColor: [
                                 "#003f5c",
@@ -457,7 +435,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 });
             });
         },
-
     //    location-on hand table
         render_storage_location:function(){
             var self = this
@@ -471,7 +448,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 });
             });
         },
-
 //out of stock graph
         render_out_of_stock_graph:function(){
             var self = this
@@ -525,10 +501,8 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                     }
                 });
                 }
-
             });
         },
-
 //dead stock graph
         render_dead_of_stock_graph:function(){
             var self = this
@@ -536,7 +510,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 model: "stock.move",
                 method: "get_dead_of_stock",
             }).then(function (result) {
-
                 if (result) {
                 $('#graphs').append('<div class="year_to_date_graph_div col-sm-12 col-md-6 my-4">
                 <div class="chart-container card-shadow" id="tiles"><div style="height: 20px; max-height: 20px;"><h2>Dead Stock</h2>
@@ -583,10 +556,8 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                     }
                 });
                 }
-
             });
         },
-
     //    event functions
     //top product selection
         onclick_top_product_selection:function(events){
@@ -626,7 +597,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                 "#a05195",
                                 "#6d5c16",
                                 "#CCCCFF"
-
                             ],
                             borderColor: [
                                 "#003f5c",
@@ -640,7 +610,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                 "#6d5c16",
                                 "#CCCCFF"
                             ],
-
                             barPercentage: 0.5,
                             barThickness: 6,
                             maxBarThickness: 8,
@@ -661,7 +630,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                     }
                 });
             });
-
             }
             if (option == 'top_last_30_days'){
                 var self = this;
@@ -698,7 +666,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                 "#a05195",
                                 "#6d5c16",
                                 "#CCCCFF"
-
                             ],
                             borderColor: [
                                 "#003f5c",
@@ -712,7 +679,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                 "#6d5c16",
                                 "#CCCCFF"
                             ],
-
                             barPercentage: 0.5,
                             barThickness: 6,
                             maxBarThickness: 8,
@@ -768,7 +734,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                 "#a05195",
                                 "#6d5c16",
                                 "#CCCCFF"
-
                             ],
                             borderColor: [
                                 "#003f5c",
@@ -838,7 +803,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                 "#a05195",
                                 "#6d5c16",
                                 "#CCCCFF"
-
                             ],
                             borderColor: [
                                 "#003f5c",
@@ -852,7 +816,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                 "#6d5c16",
                                 "#CCCCFF"
                             ],
-
                             barPercentage: 0.5,
                             barThickness: 6,
                             maxBarThickness: 8,
@@ -875,7 +838,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
             });
             }
         },
-
     //    stock moves this_mont,last_year change
         onclick_stock_moves_selection:function(events){
             var option = $(events.target).val();
@@ -913,7 +875,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                     "#a05195",
                                     "#6d5c16",
                                     "#CCCCFF"
-
                                 ],
                                 borderColor: [
                                     "#003f5c",
@@ -946,9 +907,7 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                             maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height
                         }
                     });
-
                 });
-
             }
             if (option == 'this_month'){
                 rpc.query({
@@ -984,7 +943,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                     "#a05195",
                                     "#6d5c16",
                                     "#CCCCFF"
-
                                 ],
                                 borderColor: [
                                     "#003f5c",
@@ -1017,9 +975,7 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                             maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height
                         }
                     });
-
                 });
-
             }
             if (option == 'last_3_month'){
                 rpc.query({
@@ -1055,7 +1011,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                     "#a05195",
                                     "#6d5c16",
                                     "#CCCCFF"
-
                                 ],
                                 borderColor: [
                                     "#003f5c",
@@ -1088,9 +1043,7 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                             maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height
                         }
                     });
-
                 });
-
             }
             else if (option == 'last_year'){
                 rpc.query({
@@ -1126,7 +1079,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                                     "#a05195",
                                     "#6d5c16",
                                     "#CCCCFF"
-
                                 ],
                                 borderColor: [
                                     "#003f5c",
@@ -1159,11 +1111,9 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                             maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height
                         }
                     });
-
                 });
             }
         },
-
 //    product move selection
         onclick_product_moves_selection:function(events){
             var option = $(events.target).val();
@@ -1211,10 +1161,8 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                         maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height
                     }
                     });
-
                 });
         },
-
     //    tile click
         onclick_tiles: function(f) {
             var id = parseInt(this.$(f.currentTarget).attr('id'));
@@ -1231,8 +1179,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 target: 'current',
             }, options);
         },
-
-
     //    tile late status onclick
         onclick_late_status: function(f) {
             f.stopPropagation();
@@ -1251,7 +1197,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 target: 'current',
             }, options)
         },
-
     //    tile waiting status onclick
         onclick_waiting_status: function(f) {
             f.stopPropagation();
@@ -1269,7 +1214,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 target: 'current',
             }, options)
         },
-
     //    tile backorder status onclick
         onclick_backorders_status: function(f) {
             f.stopPropagation();
@@ -1287,7 +1231,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 target: 'current',
             }, options)
         },
-
     //    top ten product show details button click
         onclick_top_product_info: function(f) {
             var x = document.getElementById("pro_info");
@@ -1297,7 +1240,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 x.style.display = "none";
             }
         },
-
     //    product category graph show details button click
         onclick_pro_cate_info: function(f) {
             var x = document.getElementById("category_table");
@@ -1307,7 +1249,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 x.style.display = "none";
             }
         },
-
     //    stock moves show details button click
         onclick_location_info: function(f) {
             var x = document.getElementById("location_table");
@@ -1317,7 +1258,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 x.style.display = "none";
             }
         },
-
     //    operation types table show details button click
         onclick_operation_type_info: function(f) {
             var x = document.getElementById("operation_type_table");
@@ -1327,7 +1267,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 x.style.display = "none";
             }
         },
-
         //    dead stock table show details button click
         onclick_dead_stock_info: function(f) {
             var x = document.getElementById("dead_stock_table");
@@ -1337,7 +1276,6 @@ odoo.define("inventory_dashboard.dashboard", function (require) {
                 x.style.display = "none";
             }
         },
-
         //    out of stock table show details button click
         onclick_out_of_stock_info: function(f) {
             var x = document.getElementById("out_of_stock_table");

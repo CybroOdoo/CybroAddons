@@ -21,18 +21,18 @@
 #############################################################################
 {
     'name': 'Inventory Dashboard Odoo 16',
-    'version': '16.0.1.0.0',
-    'summary': 'Inventory Dashboard',
-    'description': """  Detailed Dashboard View For Inventory""",
+    'version': '16.0.1.0.1',
     'category': 'Inventory',
+    'summary': 'Inventory Dashboard',
+    'description': "Detailed Dashboard View For Inventory",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'depends': ['stock', 'base'],
     'data': ['views/style.xml',
-             'views/dashboard_menu.xml',
-             'views/res_config_settings_inherit.xml',
+             'views/dashboard_menus.xml',
+             'views/res_config_settings_views.xml',
              ],
     'assets': {
         'web.assets_backend': [
@@ -45,6 +45,6 @@
     'license': 'LGPL-3',
     'images': ['static/description/banner.png'],
     'installable': True,
-    'application': True,
     'auto_install': False,
+    'application': True,
 }

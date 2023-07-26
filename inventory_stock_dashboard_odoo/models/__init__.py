@@ -20,9 +20,8 @@
 #
 #############################################################################
 
-from . import stock_move_inherit
-from . import stock_picking_inherit
-from . import res_config_settings_inherit
-from . import stock_quant_inherit
-from . import stock_move_line_inherit
-
+from . import res_config_settings
+from . import stock_move
+from . import stock_move_line
+from . import stock_picking
+from . import stock_quant
