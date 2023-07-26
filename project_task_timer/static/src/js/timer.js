@@ -1,5 +1,4 @@
 /** @odoo-module **/
-
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { parseFloatTime } from "@web/views/fields/parsers";
@@ -15,11 +14,12 @@ function formatMinutes(value) {
     if (isNegative) {
         value = Math.abs(value);
     }
-    let min = Math.floor(value);
-    let sec = Math.floor((value % 1) * 60);
-    sec = `${sec}`.padStart(2, "0");
-    min = `${min}`.padStart(2, "0");
-    return `${isNegative ? "-" : ""}${min}:${sec}`;
+    let hours = Math.floor(value / 60);
+    let minutes = Math.floor(value % 60);
+    let seconds = Math.floor((value % 1) * 60);
+    seconds = `${seconds}`.padStart(2, "0");
+    minutes = `${minutes}`.padStart(2, "0");
+    return `${isNegative ? "-" : ""}${hours}:${minutes}:${seconds}`;
 }
 
 export class TaskTimer extends Component {
@@ -76,6 +76,11 @@ export class TaskTimer extends Component {
                 this._runTimer();
             }
         }, 1000);
+    }
+
+    // add hour to timer
+    addHour() {
+        this.state.duration += 60;
     }
 }
 
