@@ -25,7 +25,7 @@
     'name': 'POS Product Multi Barcode',
     'summary': """Allows to create multiple barcode for a single product""",
     'description': """Allows to create multiple barcode for a single product""",
-    'version': '15.0.1.0.1',
+    'version': '15.0.1.0.2',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -39,7 +39,10 @@
     ],
     'assets': {
         'point_of_sale.assets': [
-            'multi_barcodes_pos/static/src/js/pos_scan.js'
+            'multi_barcodes_pos/static/src/js/search_bar.js',
+            'multi_barcodes_pos/static/src/js/ProductsWidgetControlPanel.js',
+            'multi_barcodes_pos/static/src/js/pos_scan.js',
+
         ],
     },
     'images': ['static/description/banner.png'],

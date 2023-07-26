@@ -86,5 +86,4 @@ class ProductMultiBarcode(models.Model):
     template_multi = fields.Many2one('product.template')
 
     def get_barcode_val(self, product):
-        # returns barcode of record in self and product id
         return self.multi_barcode, product
