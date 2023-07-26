@@ -138,12 +138,12 @@ class BalanceSheetView(models.TransientModel):
 
         filter_movelines_parents(report_lines)
 
-        for rec in report_lines_move:
-            if rec['report_type'] == 'accounts':
-                if rec['account'] in move_line_accounts:
-                    rec['debit'] = move_lines_dict[rec['account']]['debit']
-                    rec['credit'] = move_lines_dict[rec['account']]['credit']
-                    rec['balance'] = move_lines_dict[rec['account']]['balance']
+        # for rec in report_lines_move:
+        #     if rec['report_type'] == 'accounts':
+        #         if rec['account'] in move_line_accounts:
+        #             rec['debit'] = move_lines_dict[rec['account']]['debit']
+        #             rec['credit'] = move_lines_dict[rec['account']]['credit']
+        #             rec['balance'] = move_lines_dict[rec['account']]['balance']
 
         parent_list = list(set(parent_list))
         max_level = 0
