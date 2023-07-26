@@ -22,16 +22,15 @@
 {
     'name': 'Separate Quotation Number',
     'version': '16.0.1.0.0',
-    'summary': 'Separate Quotation Number',
-    'sequence': 4,
-    'description': """Separate sequence number for sales quotation and sale 
-    orders. This is used to separate sales quotation and sale orders.""",
     'category': 'Sales',
+    'summary': 'Separate Quotation Number',
+    'description': """Separate sequence number for sales quotation and sale orders. 
+                 This is used to separate sales quotation and sale orders.""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'license': 'LGPL-3',
+    'images': ['static/description/banner.png'],
     'depends': [
         'base',
         'sale_management',
@@ -41,7 +40,7 @@
         'data/ir_sequence_data.xml',
         'views/sale_order_views.xml'
     ],
-    'images': ['static/description/banner.png'],
+    'license': 'LGPL-3',
     'installable': True,
     'application': False,
     'auto_install': False,
