@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Kanban view for public parking entry-->
+    <record id="parking_entry_view_kanban" model="ir.ui.view">
+        <field name="name">parking.entry.view.kanban</field>
+        <field name="model">parking.entry</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="name"/>
+                <field name="slot_id"/>
+                <field name="vehicle_id"/>
+                <field name="check_in"/>
+                <field name="check_out"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click">
+                            <div class="oe_kanban_details">
+                                <strong>
+                                    <field name="name"/>
+                                    <br/>
+                                    Slot:
+                                    <field name="slot_id"/>
+                                    <br/>
+                                    Vehicle:
+                                    <field name="vehicle_id"/>
+                                    <br/>
+                                    Check In:
+                                    <field name="check_in"/>
+                                    <br/>
+                                    Check Out:
+                                    <field name="check_out"/>
+                                    <br/>
+                                </strong>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!--Kanban view for parking entry which are allocated-->
+    <record id="parking_entry_view_kanban_allocated" model="ir.ui.view">
+        <field name="name">parking.entry.view.kanban.allocated</field>
+        <field name="model">parking.entry</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="slot_type_id" class="o_kanban_small_column o_kanban_project_tasks"
+                    records_draggable="false" default_order="slot_type_id"
+                    examples="project" js_class="project_task_kanban" sample="1" create="0" edit="0" group_create="0">
+                <field name="slot_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click" style="background:lightgray;">
+                            <div class="oe_kanban_details">
+                                <strong>
+                                    <field name="slot_id"/>
+                                    <br/>
+                                </strong>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!--Kanban view for parking entry which are not allocated-->
+    <record id="parking_entry_view_kanban_non_allocated" model="ir.ui.view">
+        <field name="name">parking.entry.view.kanban.non.allocated</field>
+        <field name="model">parking.entry</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="slot_type_id" class="o_kanban_small_column o_kanban_project_tasks"
+                    records_draggable="false" default_order="slot_type_id"
+                    examples="project" js_class="project_task_kanban" sample="1" create="0" edit="0" group_create="0">
+                <field name="slot_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click" style="background:lightgray;">
+                            <div class="oe_kanban_details">
+                                <strong>
+                                    <field name="slot_id"/>
+                                    <br/>
+                                </strong>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!--Tree view for parking entry-->
+    <record id="parking_entry_view_tree" model="ir.ui.view">
+        <field name="name">parking.entry.view.tree</field>
+        <field name="model">parking.entry</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="vehicle_id"/>
+                <field name="check_in"/>
+                <field name="check_out"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    <!--Form view for parking entry-->
+    <record id="parking_entry_view_form" model="ir.ui.view">
+        <field name="name">parking.entry.view.form</field>
+        <field name="model">parking.entry</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_check_in" string="Check In"
+                            type="object" class="oe_highlight"
+                            data-hotkey="v" states="draft"/>
+                    <button name="action_check_out" string="Check Out"
+                            type="object" class="oe_highlight"
+                            data-hotkey="v"
+                            states="check_in"/>
+                    <button name="action_register_payment" string="Register Payment"
+                            type="object" class="oe_highlight" data-hotkey="v"
+                            states="check_out"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,check_in,check_out,payment"
+                           invisible="1"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Check Out"
+                            bg_color="bg-danger"
+                            attrs="{'invisible': [('check_out_bool', '=', False)]}"/>
+                    <widget name="web_ribbon" title="Check In"
+                            bg_color="bg-success"
+                            attrs="{'invisible': [('check_in_bool', '=', False)]}"/>
+                    <widget name="web_ribbon" title="Paid"
+                            bg_color="bg-success" attrs="{'invisible': [('paid_bool', '=', False)]}"/>
+                    <h1>
+                        <field name="name"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="mobile"/>
+                            <field name="email"/>
+                            <field name="vehicle_id"/>
+                            <field name="vehicle_number"/>
+                            <field name="slot_type_id"/>
+                            <field name="slot_id"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="created_date"/>
+                            <field name="check_in"/>
+                            <field name="check_out"/>
+                            <field name="duration" widget="float_time"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="parking_cost"/>
+                            <field name="customer_type"/>
+                            <field name="company_id"/>
+                            <field name="location_id"/>
+                            <field name="check_out_bool" invisible="1"/>
+                            <field name="check_in_bool" invisible="1"/>
+                            <field name="paid_bool" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--    menu action for all,private, public parking entries-->
+    <record id="parking_entry_action_all_parking_entries" model="ir.actions.act_window">
+        <field name="name">All Parking Entry</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">parking.entry</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="context">{'search_default_available':1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                View Your Parking Entries
+            </p>
+        </field>
+    </record>
+    <record id="parking_entry_action_public_parking_entry"
+            model="ir.actions.act_window">
+        <field name="name">Public Parking Entry</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">parking.entry</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="context">{'default_customer_type':'public'}</field>
+        <field name="domain">[('customer_type', '=', ('public'))]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create Your First Public Parking Entry
+            </p>
+        </field>
+    </record>
+    <record id="parking_entry_action_private_parking_entry"
+            model="ir.actions.act_window">
+        <field name="name">Private Parking Entry</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">parking.entry</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="context">{'default_customer_type':'private'}</field>
+        <field name="domain">[('customer_type', '=', ('private'))]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create Your First Private Parking Entry
+            </p>
+        </field>
+    </record>
+    <!--    menu items for all. private, public parking entries-->
+    <menuitem id="parking_entry_menu_parking_management_root"
+              name="Parking"
+              web_icon="odoo_parking_management,static/description/icon.png"
+              sequence="20"/>
+    <menuitem id="parking_entry_menu_configuration_root"
+              name="Configuration"
+              parent="odoo_parking_management.parking_entry_menu_parking_management_root"
+              groups="odoo_parking_management_group_parking_manager"
+              sequence="100"/>
+    <menuitem id="menu_reporting_root"
+              name="Reporting"
+              parent="odoo_parking_management.parking_entry_menu_parking_management_root"
+              groups="odoo_parking_management_group_parking_manager"
+              sequence="80"/>
+    <menuitem id="menu_all_parking_entries"
+              name="All Parking Entries"
+              parent="odoo_parking_management.menu_reporting_root"
+              action="parking_entry_action_all_parking_entries"
+              sequence="20"/>
+    <menuitem id="menu_private_parking"
+              name="Private Parking Entry"
+              parent="odoo_parking_management.parking_entry_menu_parking_management_root"
+              action="parking_entry_action_private_parking_entry"
+              sequence="20"/>
+    <menuitem id="menu_public_parking"
+              name="Public Parking Entry"
+              parent="odoo_parking_management.parking_entry_menu_parking_management_root"
+              action="parking_entry_action_public_parking_entry"
+              sequence="40"/>
+</odoo>
