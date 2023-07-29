@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Form View For Invoice Payment-->
+    <record id="invoice_payment_view_form" model="ir.ui.view">
+        <field name="name">invoice.payment.view.form</field>
+        <field name="model">invoice.payment</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="case_id"/>
+                        <field name="client_id"/>
+                        <field name="lawyer_id"/>
+                    </group>
+                    <group>
+                        <field name="date"/>
+                        <field name="is_last_trial"/>
+                        <field name="cost"
+                               attrs="{'readonly':[('cost_hide','=',True)]}"/>
+                        <field name="cost_hide" invisible="1"/>
+                        <field name="trial_hide" invisible="1"/>
+                    </group>
+                </group>
+                <notebook>
+                    <page string="Trials"
+                          attrs="{'invisible':[('trial_hide','=',True)]}">
+                        <field name="trial_ids" context="{'create': False}">
+                            <tree>
+                                <field name="name" context="{'create': False}"/>
+                                <field name="trial_date"
+                                       context="{'create': False}"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+                <footer>
+                    <button name="print_invoice"
+                            string="CREATE AND VIEW INVOICE" type="object"
+                            class="btn-primary"/>
+                    <button string="CANCEL" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!-- Action -->
+    <record id="invoice_payment_action" model="ir.actions.act_window">
+        <field name="name">Invoice Payment</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">invoice.payment</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="invoice_payment_view_form"/>
+        <field name="target">new</field>
+    </record>
+</odoo>

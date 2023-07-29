@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Tree View For Case Registration -->
+    <record id="case_registration_view_tree" model="ir.ui.view">
+        <field name="name">case.registration.tree</field>
+        <field name="model">case.registration</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="client_id"/>
+                <field name="lawyer_id" optional="hide"/>
+                <field name="court_id"/>
+                <field name="state"
+                       decoration-success="state == 'in progress' or state == 'won'"
+                       decoration-info="state == 'draft'" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Kanban View For Case registration-->
+    <record id="case_registration_view_kanban" model="ir.ui.view">
+        <field name="name">case.registration.kanban</field>
+        <field name="model">case.registration</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="name"/>
+                <field name="client_id"/>
+                <field name="lawyer_id"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_details">
+                                <ul type="none">
+                                    <li>
+                                        <strong class="o_kanban_record_title">
+                                            <span>
+                                                <field name="name"/>
+                                            </span>
+                                        </strong>
+                                    </li>
+                                    <li>
+                                        <strong class="o_kanban_record_subtitle">
+                                            Client:
+                                            <field name="client_id"/>
+                                        </strong>
+                                    </li>
+                                    <li>
+                                        <strong class="o_kanban_record_subtitle">
+                                            Lawyer:
+                                            <field name="lawyer_id"/>
+                                        </strong>
+                                    </li>
+                                    <li>
+                                        <field name="state"
+                                               decoration-success="state == 'in progress'
+                                               or state == 'won'"
+                                               decoration-info="state == 'draft'"
+                                               widget="badge"/>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!-- Form view For Case Registration -->
+    <record id="case_registration_view_form" model="ir.ui.view">
+        <field name="name">case.registration.view.form</field>
+        <field name="model">case.registration</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,in_progress,invoiced"/>
+                    <button name="action_confirm"
+                            string="Confirm" type="object"
+                            class="oe_highlight" states="draft"/>
+                    <button name="action_reject" string="Reject" type="object"
+                            class="oe_highlight" states="draft"/>
+                    <button name="action_evidence" string="Evidence"
+                            type="object"
+                            class="oe_highlight" states="in_progress"/>
+                    <button name="action_trial" string="Trial" type="object"
+                            class="oe_highlight" states="in_progress"/>
+                    <button name="action_invoice"
+                            string="Create Invoice" type="object"
+                            class="oe_highlight" states="in_progress"/>
+                    <button name="action_full_settlement"
+                            string="Full Settlement" type="object"
+                            class="btn-secondary" states="in_progress"/>
+                    <button name="action_won"
+                            string="Won" type="object"
+                            class="oe_highlight" states="invoiced"/>
+                    <button name="action_lost"
+                            string="Lost" type="object"
+                            class="btn-secondary" states="invoiced"/>
+                    <button name="action_cancel"
+                            string="Cancel" type="object"
+                            class="btn-secondary" states="in_progress"/>
+                    <button name="action_reset_to_draft"
+                            string="Reset To Draft" type="object"
+                            class="oe_highlight" states="cancel"/>
+                </header>
+                <sheet>
+                    <div name="button_box" position="inside">
+                        <button name="get_attachments" type="object"
+                                class="oe_stat_button"
+                                icon="fa-paperclip">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="case_attachment_count"/>
+                                </span>
+                                <span class="o_stat_text">Attachment</span>
+                            </div>
+                        </button>
+                        <button name="get_invoice" type="object"
+                                class="oe_stat_button"
+                                icon="fa-pencil-square-o"
+                                attrs="{'invisible':[('state','=','draft')]}">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="invoice_count"/>
+                                </span>
+                                <span class="o_stat_text">Invoice</span>
+                            </div>
+                        </button>
+                        <button name="get_evidence" type="object"
+                                class="oe_stat_button"
+                                icon="fa-eye"
+                                attrs="{'invisible':[('state','=','draft')]}">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="evidence_count"/>
+                                </span>
+                                <span class="o_stat_text">Evidence</span>
+                            </div>
+                        </button>
+                        <button name="get_trial" type="object"
+                                class="oe_stat_button"
+                                icon="fa-gavel"
+                                attrs="{'invisible':[('state','=','draft')]}">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="trial_count"/>
+                                </span>
+                                <span class="o_stat_text">Trial</span>
+                            </div>
+                        </button>
+                    </div>
+                    <group>
+                        <h1>
+                            <field name="name" placeholder="Case No"/>
+                        </h1>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="client_id"/>
+                            <field name="email"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group>
+                            <field name="start_date"
+                                   attrs="{'readonly':[('state', 'in', ['won', 'lost', 'cancel'])]}"/>
+                            <field name="end_date" readonly="1"
+                                   attrs="{'invisible':[('state', 'in', ['invoiced', 'in_progress', 'draft'])]}"/>
+                            <field name="contact_no"/>
+                            <field name="payment_method"
+                                   attrs="{'invisible':[('state','=','draft')]}"/>
+                            <field name="register_date"
+                                   attrs="{'invisible':[   ('state','!=','draft')]}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description">
+                            <field name="description"/>
+                        </page>
+                        <page string="Case Details">
+                            <group>
+                                <group>
+                                    <field name="lawyer_unavailable"
+                                           invisible="1"/>
+                                    <field name="lawyer_id"
+                                           attrs="{'invisible':[('state','=','draft')]}"
+                                           options="{'no_create': True}"/>
+                                    <field name="junior_lawyer_id"
+                                           attrs="{'invisible':['|', ('state','=','draft'), ('lawyer_unavailable','=',False)]}"
+                                           options="{'no_create': True}"/>
+                                    <field name="case_category_id"/>
+                                </group>
+                                <group>
+                                    <field name="court_no_required"
+                                           invisible="1"/>
+                                    <field name="court_id" attrs="{'required':[('court_no_required','!=',False), ('state', '!=', 'draft')],
+                                    'invisible': [('state', '=', 'draft')]}"
+                                           options="{'no_create': True}"/>
+                                    <field name="judge_id"
+                                           attrs="{'invisible':[('state','=','draft')]}"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Oppositions"
+                              attrs="{'invisible': [('state', '=', 'draft')]}">
+                            <group>
+                                <group>
+                                    <field name="opposition_name"/>
+                                    <field name="opp_party_contact"/>
+                                </group>
+                                <group>
+                                    <field name="opposite_lawyer"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Victim"
+                              attrs="{'invisible':[('state','=','draft')]}">
+                            <field name="victim_ids">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                    <field name="contact"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Sittings"
+                              attrs="{'invisible':[('state','=','draft')]}">
+                            <field name="sitting_detail_ids">
+                                <tree editable="bottom">
+                                    <field name="details"/>
+                                    <field name="contact"/>
+                                    <field name="date"/>
+                                    <field name="done"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Template For Portal View For Case Registration-->
+    <template id="portal_legal_case_page" name="Case Portal Template"
+              inherit_id="portal.portal_sidebar" primary="True">
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+            <t t-set="o_portal_fullwidth_alert">
+                <t t-call="portal.portal_back_in_edit_mode">
+                    <t t-set="url" t-value="'/my/cases/#'"/>
+                </t>
+            </t>
+            <div class="row mt16 o_portal_sale_sidebar">
+                <t t-set="o_portal_fullwidth_alert">
+                    <t t-call="portal.portal_back_in_edit_mode">
+                        <t t-set="backend_url"
+                           t-value="'/web#return_label=Website&amp;model=%s&amp;id=%s&amp;' % (case_record._name, case_record.id)"/>
+                    </t>
+                </t>
+                <div id="case_content"
+                     class="col-12 col-lg justify-content-end">
+                    <div t-attf-class="card #{'pb-5' if report_type == 'pdf' else ''}"
+                         id="portal_sale_content">
+                        <div t-call="legal_case_management.case_portal_content"/>
+                    </div>
+                </div>
+                <div id="legal_case_communication"
+                     class="mt-4">
+                    <h2>History</h2>
+                    <t t-call="portal.message_thread">
+                        <t t-set="object"
+                           t-value="case_record"/>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <!-- Template For Case Details in Portal View-->
+    <template id="case_portal_content" name="Payslip Portal Content">
+        <div id="introduction" class="pb-2 pt-3 card-header bg-white">
+            <h2 class="my-0">
+                <t t-out="case_record.name"/>
+            </h2>
+        </div>
+        <div class="card-body">
+            <!-- Informations -->
+            <div id="informations">
+                <div class="row" id="so_date">
+                    <div class="mb-3 col-6">
+                        <strong>Register Date:</strong>
+
+                        <span t-field="case_record.start_date"
+                              t-options='{"widget": "date"}'/>
+                    </div>
+                </div>
+                <div class="row" id="invoicing_shipping_address">
+                    <div class="col-lg-6">
+                        <strong class="d-block mb-1">
+
+                            Client Details:
+                        </strong>
+                        <address t-field="case_record.client_id"
+                                 t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                    </div>
+                    <div id="lawyer_details"
+                         class="col-lg-6">
+                        <t t-if="case_record.lawyer_id">
+                            <strong class="d-block mb-1">
+                                Lawyer:
+                            </strong>
+                            <address t-field="case_record.lawyer_id.name"/>
+                        </t>
+                    </div>
+                </div>
+            </div>
+            <section id="details" style="page-break-inside: auto;" class="mt32">
+                <h3 id="details">Case Details</h3>
+                <table t-att-data-order-id="case_record.id"
+                       class="table table-sm">
+                    <thead class="bg-100">
+                        <tr>
+                            <th class="text-start" id="product_name_header">
+                                Case Category
+                            </th>
+                            <th class="text-start" id="product_name_header">
+                                Case Details
+                            </th>
+                            <th class="text-start" id="product_name_header">
+                                Contact Number
+                            </th>
+                            <t t-if="evidence">
+                                <th class="text-start" id="product_name_header">
+                                    Evidence
+                                </th>
+                            </t>
+                            <t t-if="trial">
+                                <th class="text-start" id="product_name_header">
+                                    Trial
+                                </th>
+                            </t>
+                            <th class="text-start" id="product_name_header">
+                                State
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="sale_tbody">
+                        <tr>
+                            <td>
+                                <span t-field="case_record.case_category_id.name"/>
+                            </td>
+                            <td>
+                                <span t-field="case_record.description"/>
+                            </td>
+                            <td>
+                                <span t-field="case_record.contact_no"/>
+                            </td>
+                            <t t-if="evidence">
+                                <t t-foreach="evidence" t-as="evidence">
+                                    <td>
+                                        <span t-field="evidence.name"/>
+                                    </td>
+                                    <br/>
+                                </t>
+                            </t>
+                            <t t-if="evidence">
+                                <t t-foreach="trial" t-as="trial">
+                                    <td>
+                                        <span t-field="trial.name"/>
+                                    </td>
+                                </t>
+                            </t>
+                            <td>
+                                <t t-if="case_record.state=='draft'">
+                                    <span class="badge rounded-pill text-bg-info">
+                                        <i class="fa fa-fw fa-clock-o"
+                                           aria-label="Opened" title="Opened"
+                                           role="img"/>
+                                        <span class="d-none d-md-inline">Draft
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="case_record.state=='in_progress'">
+                                    <span class="badge rounded-pill text-bg-success">
+                                        <i class="fa fa-fw fa-check"
+                                           aria-label="In Progress" title="Paid"
+                                           role="img"/>
+                                        <span class="d-none d-md-inline">In
+                                            Progress
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="case_record=='invoiced'">
+                                    <span class="badge rounded-pill text-bg-success">
+                                        <i class="fa fa-fw fa-check"
+                                           aria-label="Reversed"
+                                           title="Invoiced" role="img"/>
+                                        <span class="d-none d-md-inline">
+                                            Invoiced
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="case_record.state=='won'">
+                                    <span class="badge rounded-pill text-bg-success">
+                                        <i class="fa fa-fw fa-check"
+                                           aria-label="Reversed"
+                                           title="Invoiced" role="img"/>
+                                        <span class="d-none d-md-inline">
+                                            Won
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="case_record.state=='lost'">
+                                    <span class="badge rounded-pill text-bg-danger">
+                                        <i class="fa fa-fw fa-check"
+                                           aria-label="Reversed"
+                                           title="Lost" role="img"/>
+                                        <span class="d-none d-md-inline">
+                                            Lost
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="case_record.state=='cancel'">
+                                    <span class="badge rounded-pill text-bg-warning">
+                                        <i class="fa fa-fw fa-remove"
+                                           aria-label="Cancelled"
+                                           title="Cancelled" role="img"/>
+                                        <span class="d-none d-md-inline">
+                                            Cancelled
+                                        </span>
+                                    </span>
+                                </t>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </template>
+</odoo>
