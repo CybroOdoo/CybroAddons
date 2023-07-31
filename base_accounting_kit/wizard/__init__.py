@@ -23,6 +23,7 @@ from . import account_bank_book_wizard
 from . import account_cash_book_wizard
 from . import account_day_book_wizard
 from . import account_lock_date
+from . import account_payment_register
 from . import account_report_common_partner
 from . import aged_partner
 from . import asset_depreciation_confirmation_wizard

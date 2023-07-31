@@ -16,12 +16,9 @@
 #
 #    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
 #    (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
-#############################################################################
 {
     'name': 'Odoo 15 Full Accounting Kit',
-    'version': '15.0.2.2.5',
+    'version': '15.0.2.2.6',
     'category': 'Accounting',
     'live_test_url': 'https://www.youtube.com/watch?v=peAp2Tx_XIs',
     'summary': """ Asset and Budget Management,
@@ -72,6 +69,7 @@
         'views/recurring_payments_view.xml',
         'views/account_followup.xml',
         'views/followup_report.xml',
+        'wizard/account_payment_register_wizard_views.xml',
         'wizard/asset_depreciation_confirmation_wizard_views.xml',
         'wizard/asset_modify_views.xml',
         'views/account_asset_views.xml',
@@ -135,3 +133,6 @@
     'auto_install': False,
     'application': True,
 }
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
