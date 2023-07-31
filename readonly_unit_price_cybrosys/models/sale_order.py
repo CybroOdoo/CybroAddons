@@ -20,22 +20,22 @@
 #
 #############################################################################
 
-from odoo import api, fields, models, _
+from odoo import fields, models, _
 
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
-    price_unit_boolean = fields.Boolean(default=False,
-                                        compute='_compute_price_unit_boolean')
+    price_unit_boolean = fields.Boolean(
+        string='Price unite boolean',
+        help="This field check whether readonly for user on not ",
+        default=lambda self: self.env.user.readonly_unit_price_sales,
+        compute='_compute_price_unit_boolean')
 
     def _compute_price_unit_boolean(self):
         """ Compute function for price_unit_boolean.
-        This function will check the boolean field of the currently logged user is true or false.
-        And it will pass the value to price_unit_boolean."""
+                This function will check the boolean field of the currently
+                logged user is true or false.
+                And it will pass the value to price_unit_boolean."""
         for rec in self:
-            u_id = self.env['res.users'].search([('id', '=', self._uid)])
-            if u_id.readonly_unit_price_sales == False:
-                rec.price_unit_boolean = False
-            else:
-                rec.price_unit_boolean = True
+            rec.price_unit_boolean = self.env.user.readonly_unit_price_sales
