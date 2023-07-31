@@ -19,7 +19,21 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import res_company
-from . import doc_layout
-from . import account_move
-from . import base_document_layout
+"""Inherit account move model"""
+from odoo import models, fields
+
+
+class TemplateInvoice(models.Model):
+    """Inheriting the account move model and added the base layout model and
+    a relational field to doc layout model"""
+    _inherit = 'account.move'
+
+    base_layout = fields.Selection(selection=[('default', 'Default'),
+                                              ('modern', 'Modern'),
+                                              ('normal', 'Normal'),
+                                              ('old', 'Old Standard')],
+                                   required=True,
+                                   string="Invoice Document Layout",
+                                   default="default")
+    theme_id = fields.Many2one('doc.layout',
+                               related='company_id.document_layout_id')
