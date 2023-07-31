@@ -28,6 +28,7 @@ odoo.define('pos_kitchen_screen_odoo.SubmitOrderButtons', function(require) {
                             'id': 29,
                             'pack_lot_ids': [],
                             'full_product_name': orders.product.display_name,
+                            'note': orders.note,
                             'price_extra': orders.price_extra,
                             'name': 'newsx/0031',
                             'is_cooking': true
@@ -44,7 +45,8 @@ odoo.define('pos_kitchen_screen_odoo.SubmitOrderButtons', function(require) {
                         'is_cooking': true,
                         'order_status': 'draft',
                         'company_id': this.env.pos.company.id,
-                        'pricelist_id': this.env.pos.pricelists[0].id
+                        'pricelist_id': this.env.pos.pricelists[0].id,
+                        'order_time': new Date().toLocaleString()
                     }]
                     self.rpc({
                         model: 'pos.order',

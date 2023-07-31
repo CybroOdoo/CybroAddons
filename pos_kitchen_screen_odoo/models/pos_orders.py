@@ -37,6 +37,8 @@ class PosOrder(models.Model):
                             help='Reference of the order')
     is_cooking = fields.Boolean(string="Is Cooking",
                                 help='To identify the order is  kitchen orders')
+    order_time = fields.Char(string="Order Time", readonly=True,
+                             help='To set the time of each order')
 
     def write(self, vals):
         """Super the write function for adding order status in vals"""
