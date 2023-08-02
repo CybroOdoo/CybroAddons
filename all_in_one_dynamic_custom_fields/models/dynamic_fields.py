@@ -20,7 +20,6 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###################################################################################
-
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
@@ -80,9 +79,9 @@ class DynamicFields(models.Model):
     def create_dynamic_fields(self):
         self.write({'status': 'form'})
         if self.field_type == 'monetary' and not self.env[
-                'ir.model.fields'].sudo().search([
-                ('model', '=', self.model_id.id),
-                ('name', '=', 'currency_id')]):
+            'ir.model.fields'].sudo().search([
+            ('model', '=', self.model_id.id),
+            ('name', '=', 'currency_id')]):
             self.env['ir.model.fields'].sudo().create({
                 'name': 'x_currency_id',
                 'field_description': 'Currency',
@@ -142,10 +141,7 @@ class DynamicFields(models.Model):
         }
 
     def add_field_to_tree_view(self):
-        if self.env['ir.model.fields'].sudo().search(
-                [('model', '=', self.model_id.model),
-                 ('name', '=', 'state')]):
-            self.write({'status': 'tree'})
+        if self.add_field_in_tree:
             if self.add_field_in_tree:
                 inherit_tree_view_name = str(
                     self.tree_view_id.name) + ".inherit.dynamic.custom" + \
@@ -153,10 +149,10 @@ class DynamicFields(models.Model):
                 tree_view_arch_base = _(
                     '<?xml version="1.0"?>'
                     '<data>'
-                    '''<xpath expr="//field[@name='state']" position="before">'''
+                    '''<xpath expr="//tree" position="inside">'''
                     '''<field name="%s" optional="show"/>'''
                     '''</xpath>'''
-                    '''</data>''') % (self.name)
+                    '''</data>''') % self.name
                 self.tree_view_id = self.env['ir.ui.view'].sudo().create({
                     'name': inherit_tree_view_name,
                     'type': 'tree',
@@ -165,16 +161,14 @@ class DynamicFields(models.Model):
                     'inherit_id': self.tree_view_id.id,
                     'arch_base': tree_view_arch_base,
                     'active': True})
+                self.write({'status': 'tree'})
                 return {
                     'type': 'ir.actions.client',
                     'tag': 'reload',
                 }
-
         else:
             raise ValidationError(
-                _('Error! Selected Model You cannot add a custom field to the tree view.'
-                  'The feature only applies to the model tree/list view that contains the state '
-                  'field.'))
+                _('Error! Please select the boolean field Add Field to the Tree View.'))
 
     @api.depends('model_id')
     @api.onchange('model_id')
