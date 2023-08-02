@@ -20,7 +20,6 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###################################################################################
-
 from . import ir_model_fields
 from . import field_widgets
 from . import dynamic_fields

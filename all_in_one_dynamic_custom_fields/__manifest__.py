@@ -20,10 +20,9 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###################################################################################
-
 {
     'name': 'All in One Dynamic Fields',
-    'version': '15.0.1.0.2',
+    'version': '15.0.1.1.3',
     'summary': 'Create Custom Fields As Per Your Need Without Any Coding.',
     'description': 'All in One Dynamic Fields, All in One Custom Fields, Dynamic Fields, Custom Fields, Create Fields Dynamically',
     'category': 'Extra Tools',
