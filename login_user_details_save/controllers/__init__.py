@@ -19,4 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import main
+from . import login_user_details_save

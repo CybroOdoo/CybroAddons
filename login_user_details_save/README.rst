@@ -2,9 +2,9 @@
     :target: http://www.gnu.org/licenses/Lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 
-Save User's Login info
+Save User's Login Info
 =======================
-This module allows us to Save User's Login info For Odoo 16.
+This module allows us to Save User's Login Info For Odoo 16.
 
 Company
 -------
@@ -13,12 +13,11 @@ Company
 License
 -------
 General Public License, Version 3 (LGPL v3).
-(https://www.odoo.com/documentation/user/16.0/legal/licenses/licenses.html)
+(http://www.gnu.org/licenses/Lgpl-3.0-standalone.html)
 
 Credits
 -------
-Developers: Version 16 - Swaroop N P @cybrosys
-
+Developers:(V16) Swaroop N P, Contact: odoo@cybrosys.com
 
 Contacts
 --------

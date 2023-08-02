@@ -19,18 +19,17 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 {
-    'name': "Save User's Login info",
+    'name': "Save User's Login Info",
     'category': 'Extra Tools',
     'version': '16.0.1.0.0',
+    'summary': """
+            Allows us to save our login info  for easier access next time
+        """,
     'description': """
         This app allows us to save our login info , our name will be 
         displayed in login page and we can click on it and it automatically 
         fills our username
-    """,
-    'summary': """
-        Allows us to save our login info  for easier access next time
     """,
     'author': "Cybrosys Techno Solutions",
     'company': 'Cybrosys Techno Solutions',
@@ -39,8 +38,8 @@
     'depends': ['base', 'website', 'web'],
     'data': [
         'security/ir.model.access.csv',
-        'views/logout_popup_view.xml',
-        'views/templates.xml',
+        'views/logout_popup_views.xml',
+        'views/web_templates.xml',
     ],
     'assets': {
         'web.assets_backend': [
@@ -50,6 +49,6 @@
     'images': ['static/description/banner.png'],
     'license': 'LGPL-3',
     'installable': True,
-    'application': True,
+    'application': False,
     'auto_install': False,
 }
