@@ -126,7 +126,7 @@ class DynamicFields(models.Model):
                           '</data>') % (self.position_field.name,
                                         self.position, self.name,
                                         self.widget.name)
-        self.form_view_id = self.env['ir.ui.view'].sudo().create({
+        self.env['ir.ui.view'].sudo().create({
             'name': inherit_form_view_name,
             'type': 'form',
             'model': self.model_id.model,
@@ -153,7 +153,7 @@ class DynamicFields(models.Model):
                     '''<field name="%s" optional="show"/>'''
                     '''</xpath>'''
                     '''</data>''') % self.name
-                self.tree_view_id = self.env['ir.ui.view'].sudo().create({
+                self.env['ir.ui.view'].sudo().create({
                     'name': inherit_tree_view_name,
                     'type': 'tree',
                     'model': self.model_id.model,
