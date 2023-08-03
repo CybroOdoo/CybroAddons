@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+<!--    Changing the main menu icon-->
+    <t t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension" owl="1">
+        <xpath expr="//Dropdown" position="replace">
+            <div class="d-flex justify-content-center align-items-center o_main-menu-button p-2"
+                 t-on-click="OnClickMainMenu">
+                <i class="oi oi-apps" style="font-size: 18px !important; color: white; margin-top: 3px;"/>
+            </div>
+        </xpath>
+    </t>
+<!--    Changing the app drawer like EnterPrice edition-->
+    <t t-inherit-mode="extension" t-inherit="web.NavBar" owl="1">
+        <xpath expr="//header" position="after">
+            <div class="app_components">
+                <div class="search-container form-row align-items-center m-auto col-12"
+                     style="padding-left: calc((100vw - 850px) / 2);padding-right: calc((100vw - 850px) / 2);padding-top:20px;padding-bottom:20px;">
+                    <div class="search-input col-md-10"
+                         style="padding:0.8rem 1.2rem;"
+                         t-on-input="_searchMenusSchedule">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text"
+                                         style="background:none;border:none;color:white;font-size:1.5rem;">
+                                        <i class="fa fa-search"/>
+                                    </div>
+                                </div>
+                                <input type="search"
+                                       autocomplete="off"
+                                       placeholder="Search menus..."
+                                       class="form-control" style="background:none;border:none;color:white;"/>
+                            </div>
+                    </div>
+                    <div class="search-results col-md-10 ml-auto mr-auto"
+                         style="margin-top:20px;"/>
+                 </div>
+                <div class="app-menu">
+                    <t t-foreach="menuService.getApps()" t-as="app"
+                       t-key="app_index">
+                          <a role="menuitem"
+                             t-on-click="() => this.onNavBarDropdownItemSelection(app)"
+                             t-att-class="{ o_dropdown_active: menuService.getCurrentApp() === app }">
+                            <img t-if="app.webIcon.includes('.png')" t-att-title="app.name"
+                                 style="width: 70px !important;height: 70px !important;margin: 5px 5px 5px 5px;"
+                                 t-attf-src="data:image/png;base64,{{app.webIconData}}"/>
+                              <img t-if="app.webIcon.includes('.svg')" t-att-title="app.name"
+                                   style="width: 70px !important;height: 70px !important;margin: 5px 5px 5px 5px;"
+                                   t-attf-src="data:image/svg+xml;base64,{{app.webIconData}}"/>
+                              <b class="a_app_menu_title" style="color:white;text-shadow: 1px 1px 1px rgb(0 0 0 / 40%);"><t t-esc="app.name"/></b>
+                         </a>
+                    </t>
+                 </div>
+            </div>
+        </xpath>
+    </t>
+</templates>
