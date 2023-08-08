@@ -2,8 +2,8 @@
     :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 
-Payment Details Invoice Report
-==============================
+Payment Details In Invoice Report
+=================================
 We can see the current payment state of the invoice in the report.
 We can add all the payment details of a particular invoice while
 print the invoice. Here we have the details such as Payment reference,

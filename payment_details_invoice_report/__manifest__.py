@@ -20,7 +20,7 @@
 #
 ################################################################################
 {
-    'name': "Payment Details Invoice Report",
+    'name': "Payment Details In Invoice Report",
     'version': '16.0.1.0.0',
     'category': 'Accounting',
     'summary': 'All the payment details for the invoice can be added in the'
