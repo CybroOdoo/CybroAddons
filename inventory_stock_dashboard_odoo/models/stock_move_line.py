@@ -77,7 +77,7 @@ class StockMoveLine(models.Model):
         name = []
         for record in product_move:
             quantity_done.append(record.get('sum'))
-            name.append(record.get('name'))
+            name.append(record.get('name')['en_US'])
         value = {
             'name': name,
             'count': quantity_done,

@@ -46,7 +46,7 @@ class StockMove(models.Model):
         product_name = []
         for record in top_product[:10]:
             total_quantity.append(record.get('sum'))
-            product_name.append(record.get('name'))
+            product_name.append(record.get('name')['en_US'])
         value = {'products': product_name, 'count': total_quantity}
         return value
 
@@ -70,7 +70,7 @@ class StockMove(models.Model):
         product_name = []
         for record in top_product[:10]:
             total_quantity.append(record.get('sum'))
-            product_name.append(record.get('name'))
+            product_name.append(record.get('name')['en_US'])
         value = {'products': product_name, 'count': total_quantity}
         return value
 
@@ -94,7 +94,7 @@ class StockMove(models.Model):
         product_name = []
         for record in top_product[:10]:
             total_quantity.append(record.get('sum'))
-            product_name.append(record.get('name'))
+            product_name.append(record.get('name')['en_US'])
         value = {'products': product_name, 'count': total_quantity}
         return value
 
@@ -118,7 +118,7 @@ class StockMove(models.Model):
         product_name = []
         for record in top_product[:10]:
             total_quantity.append(record.get('sum'))
-            product_name.append(record.get('name'))
+            product_name.append(record.get('name')['en_US'])
         value = {'products': product_name, 'count': total_quantity}
         return value
 
@@ -143,7 +143,7 @@ class StockMove(models.Model):
         product_name = []
         for record in top_product[:10]:
             total_quantity.append(record.get('sum'))
-            product_name.append(record.get('name'))
+            product_name.append(record.get('name')['en_US'])
         value = {'products': product_name, 'count': total_quantity}
         return value
 
