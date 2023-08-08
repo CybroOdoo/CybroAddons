@@ -134,7 +134,6 @@ class MasterSearch(models.Model):
     def _get_operator_count(self):
         """ Get customer count """
         self.customer_count = len(self.customer_ids)
-        print(self.customer_count)
 
     @api.depends('transaction_count')
     def _get_transaction_count(self):
@@ -190,13 +189,11 @@ class MasterSearch(models.Model):
         # search for all the words
         for key in search_keys:
             search_vals = self._search_query(key)
-            print('search valss', search_vals)
 
         self.name = self.search_string
 
     def _search_query(self, key):
         """ search for the model with given key and update result """
-        print('help')
         company_id = self.env.user.company_id.id
         if self.search_mode == 'all':
             active_qry = """ 
@@ -338,7 +335,6 @@ class MasterSearch(models.Model):
         transactions = self._cr.dictfetchall()
         transaction_ids = self.env['stock.picking'].browse(
             [i['id'] for i in transactions])
-        print(self.transaction_details)
         self.transaction_details += transaction_ids
 
     def _search_products(self, key, active_qry, company_id):
@@ -370,7 +366,6 @@ class MasterSearch(models.Model):
         product_template_ids = self.env['product.template'].browse(
             [i['id'] for i in template_ids])
         self.product_ids += product_template_ids
-        print('2',product_template_ids)
 
     def _search_customer(self, key, active_qry):
         """ search for customer """
