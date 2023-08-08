@@ -126,7 +126,7 @@ class DynamicFields(models.Model):
                           '</data>') % (self.position_field.name,
                                         self.position, self.name,
                                         self.widget.name)
-        self.env['ir.ui.view'].sudo().create({
+        self.form_view_id = self.env['ir.ui.view'].sudo().create({
             'name': inherit_form_view_name,
             'type': 'form',
             'model': self.model_id.model,
@@ -153,7 +153,7 @@ class DynamicFields(models.Model):
                     '''<field name="%s" optional="show"/>'''
                     '''</xpath>'''
                     '''</data>''') % self.name
-                self.env['ir.ui.view'].sudo().create({
+                self.tree_view_id = self.env['ir.ui.view'].sudo().create({
                     'name': inherit_tree_view_name,
                     'type': 'tree',
                     'model': self.model_id.model,
@@ -170,8 +170,8 @@ class DynamicFields(models.Model):
             raise ValidationError(
                 _('Error! Please select the boolean field Add Field to the Tree View.'))
 
-    @api.depends('model_id')
-    @api.onchange('model_id')
+    @api.depends('model_id','add_field_in_tree')
+    @api.onchange('model_id','add_field_in_tree')
     def set_domain(self):
         """Return the fields that currently present in the form"""
         form_view_ids = self.model_id.view_ids.filtered(
