@@ -1,28 +1,14 @@
-# -*- coding: utf-8 -*-
-###############################################################################
-#
-#    Cybrosys Technologies Pvt. Ltd.
-#
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Mohamed Muzammil VP (odoo@cybrosys.com)
-#
-#    You can modify it under the terms of the GNU AFFERO
-#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
-#
-#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
-#    (AGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
-###############################################################################
 import cv2
 from pyzbar.pyzbar import decode
 from odoo.http import Controller, request
 from odoo import http
+
+SIGN_UP_REQUEST_PARAMS = {'db', 'login', 'debug', 'token', 'message', 'error',
+                          'scope', 'mode',
+                          'redirect', 'redirect_hostname', 'email', 'name',
+                          'partner_id',
+                          'password', 'confirm_password', 'city', 'country_id',
+                          'lang', 'signup_email'}
 
 
 class LoginController(Controller):
@@ -30,7 +16,7 @@ class LoginController(Controller):
 
     @http.route(['/web/redirect'], type='http', auth='none', website=True,
                 csrf=False, csrf_token=None)
-    def open_scanner(self):
+    def open_scanner(self, *args, **kw):
         """This code scan the QR provided and Login to the corresponding user
         note: Only Internal User can login through it"""
         try:
@@ -58,8 +44,16 @@ class LoginController(Controller):
                     else:
                         cap.release()
                         cv2.destroyAllWindows()
-                        # Rendering the template of redirect
-                        return request.render("login_using_qr.redirect_to")
+                        # Use the overridden web_login method to show error message
+                        values = {k: v for k, v in request.params.items() if
+                                  k in SIGN_UP_REQUEST_PARAMS}
+
+                        values['error'] = ("Wrong QR Code")
+                        request.update_env(user=request.session.uid)
+                        request.env["ir.http"]._auth_method_public()
+                        response = request.render('web.login', values)
+
+                        return response
 
                 # Display the resulting frame
                 cv2.imshow('scanner- to exit press "q"', frame)
@@ -71,3 +65,4 @@ class LoginController(Controller):
                     return request.redirect('/web/login')
         except Exception:
             return request.render("login_using_qr.be_patient")
+

@@ -19,6 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
+
 try:
     import qrcode
 except ImportError:
@@ -45,14 +46,14 @@ class ResUsers(models.Model):
                 qr = qrcode.QRCode(
                     version=1,
                     error_correction=qrcode.constants.ERROR_CORRECT_L,
-                    box_size=3,
-                    border=4,
+                    box_size=10,
+                    border=1,
                 )
                 qr.add_data(detail.login)
                 qr.make(fit=True)
                 img = qr.make_image()
                 temp = BytesIO()
-                img.save(temp, format="PNG")
+                img.save(temp, format="PNG",optimise=True)
                 qr_image = base64.b64encode(temp.getvalue())
                 detail.update({'qr_code': qr_image})
             else:
