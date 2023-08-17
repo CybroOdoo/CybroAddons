@@ -1,6 +1,6 @@
-Hide Variants for Odoo 16
+Disable Variants in Website for Odoo 16
 ================================================
-* Hide Variants for Odoo 16
+* Disable Variants in Website for Odoo 16
 
 Installation
 ============
