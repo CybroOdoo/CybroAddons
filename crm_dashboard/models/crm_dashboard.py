@@ -32,23 +32,35 @@ from datetime import datetime
 
 
 class CRMSalesTeam(models.Model):
+    """CRMSalesTeam model extends the base crm.team model to add a field,
+    crm_lead_state_id, which represents the default CRM Lead stage for
+    leads associated with this sales team.
+   """
     _inherit = 'crm.team'
 
     crm_lead_state_id = fields.Many2one("crm.stage", string="CRM Lead",
-                                        store=True)
+                                        store=True,
+                                        help="CRM Lead stage for leads "
+                                             "associated with this sales team.")
 
 
 class ResUser(models.Model):
+    """ResUser model extends the base res.users model to add a field 'sales'
+    that represents the target for the salesperson."""
     _inherit = 'res.users'
 
-    sales = fields.Float(string="Target")
+    sales = fields.Float(string="Target", help="The target value for the "
+                                               "salesperson.")
 
 
 class SalesOrder(models.Model):
     _inherit = 'sale.order'
 
     def action_confirm(self):
-        """Supering the Confirm Button for Changing CRM Stage"""
+        """Override the action_confirm method to change CRM Stage.
+        Returns:
+            dict: A dictionary containing the result of the original
+            action_confirm method."""
         res = super(SalesOrder, self).action_confirm()
         self.opportunity_id.stage_id = self.team_id.crm_lead_state_id
         return res
@@ -57,13 +69,14 @@ class SalesOrder(models.Model):
 class CRMLead(models.Model):
     _inherit = 'crm.lead'
 
-    crm_manager_id = fields.Many2one("res.users", string="CRM Manager",
-                                     store=True)
     monthly_goal = fields.Float(string="Monthly Goal")
     achievement_amount = fields.Float(string="Monthly Achievement")
 
     @api.model
     def _get_currency(self):
+        """Get the currency symbol and position for the current user's company.
+        Returns:
+            list: A list containing the currency symbol and its position."""
         currency_array = [self.env.user.company_id.currency_id.symbol,
                           self.env.user.company_id.currency_id.position]
         return currency_array
