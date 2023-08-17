@@ -21,10 +21,10 @@
 ########################################################################################
 
 {
-    'name': 'Saudi VAT Invoice /Saudi Electronic Invoice',
+    'name': 'e-Invoicing For Saudi | Saudi VAT Invoice | Saudi Electronic Invoice | Saudi Zatca',
     'version': '16.0.1.0.0',
-    'summary': 'Saudi VAT Invoice /Saudi E-Invoice /Saudi Electronic Invoice',
-    'description': 'Saudi VAT Invoice /Saudi E-Invoice /Saudi Electronic Invoice',
+    'summary': 'e-Invoicing For Saudi | Saudi VAT Invoice | Saudi Electronic Invoice | Saudi Zatca',
+    'description': 'e-Invoicing For Saudi,Saudi VAT Invoice,Saudi Electronic Invoice,Saudi Zatca,Zatca,Saudi,e-Invoicing',
     'author': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
