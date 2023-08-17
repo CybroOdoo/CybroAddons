@@ -4,7 +4,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2022-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
-#    Author: Megha K (<https://www.cybrosys.com>)
+#    Author: Cybrosys Technologies (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
@@ -20,5 +20,4 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###################################################################################
-
 from . import models

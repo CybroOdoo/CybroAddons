@@ -4,7 +4,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #    Copyright (C) 2022-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
-#    Author: Megha K (<https://www.cybrosys.com>)
+#    Author: Cybrosys Technologies (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
@@ -20,7 +20,6 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###################################################################################
-
 from datetime import date, datetime
 from collections import defaultdict
 import pytz
@@ -30,25 +29,32 @@ from odoo.exceptions import UserError
 
 
 class MailActivity(models.Model):
+    """Inherited mail.activity model
+    mostly to add dashboard functionalities"""
     _inherit = "mail.activity"
 
     state = fields.Selection([
         ('overdue', 'Overdue'), ('today', 'Today'), ('planned', 'Planned'),
-        ('done', 'Done'), ('cancel', 'Cancelled')], 'State',
+        ('done', 'Done'), ('cancel', 'Cancelled')], string='State',
+        help='Track state of activity.',
         compute='_compute_state', store=True)
-    active = fields.Boolean('Active', default=True)
-
+    active = fields.Boolean(string='Active',
+                            help='Default field to archive',
+                            default=True)
     type = fields.Selection(
         [('overdue', 'Overdue'), ('today', 'Today'), ('planned', 'Planned'),
-         ('done', 'Done'), ('cancel', 'Cancelled')])
-    activity_type = fields.Many2many('activity.tag')
+         ('done', 'Done'), ('cancel', 'Cancelled')],
+        string='Type', help='Choose the type of activity.')
+
+    activity_tag_ids = fields.Many2many('activity.tag', string='Activity Tags',
+                                        help='Select activity tags.')
 
     def activity_cancel(self):
         """cancel activity"""
         for rec in self:
             if rec.state == 'cancel':
                 raise UserError(
-                    _("You Cant Cancelled this activity %s") % rec.res_name)
+                    _("You Cant Cancel this activity %s") % rec.res_name)
             else:
                 rec.action_cancel()
 
@@ -57,20 +63,25 @@ class MailActivity(models.Model):
         for rec in self:
             if rec.state == 'done':
                 raise UserError(
-                    _("You Cant Cancelled this activity %s") % rec.res_name)
+                    _("You Cant Cancel this activity %s") % rec.res_name)
             else:
                 rec._action_done()
 
     def get_activity_count(self):
         """get the activity count details"""
         activity = self.env['mail.activity']
-        all = activity.search([])
-        planned = activity.search([('state', '=', 'planned')])
-        overdue = activity.search([('state', '=', 'overdue')])
-        today = activity.search([('state', '=', 'today')])
-        done = activity.search([('state', '=', 'done'), ('active', '=', False)])
-        cancel = activity.search([('state', '=', 'cancel')])
-        return {
+        domain = []
+        if self.env.user._is_admin():
+            domain = domain
+        else:
+            domain.append(('user_id', '=', self.env.user.id), )
+        all = activity.with_context(active_test=False).search(domain)
+        planned = all.filtered(lambda x: x.state == 'planned')
+        overdue = all.filtered(lambda x: x.state == 'overdue')
+        today = all.filtered(lambda x: x.state == 'today')
+        done = all.filtered(lambda x: x.state == 'done')
+        cancel = all.filtered(lambda x: x.state == 'cancel')
+        res = {
             'len_all': len(all),
             'len_overdue': len(overdue),
             'len_planned': len(planned),
@@ -78,9 +89,11 @@ class MailActivity(models.Model):
             'len_done': len(done),
             'len_cancel': len(cancel)
         }
+        print('res', res)
+        return res
 
     def get_activity(self, id):
-        activity = self.env['mail.activity'].search([('id', '=', id)])
+        activity = self.env['mail.activity'].browse(id)
         return {
             'model': activity.res_model,
             'res_id': activity.res_id
@@ -139,7 +152,6 @@ class MailActivity(models.Model):
         for rec in self:
             rec.state = 'done'
             rec.active = False
-
         return messages, next_activities
 
     @api.model

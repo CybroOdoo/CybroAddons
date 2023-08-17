@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="mail_activity_view_form" model="ir.ui.view">
+        <field name="name">mail.activity.view.form</field>
+        <field name="model">mail.activity</field>
+        <field name="arch" type="xml">
+            <form string="Log an Activity" create="false">
+                <header>
+                    <button id="mail_activity_schedule" string="Schedule"
+                            name="action_close_dialog" type="object"
+                            class="btn-primary"
+                            attrs="{'invisible': [('id', '!=', False)]}"
+                            data-hotkey="q"/>
+                    <button attrs="{'invisible': ['|', ('chaining_type', '=', 'trigger'), ('state', 'in', ['done', 'cancel'])]}"
+                            string="Mark as Done" name="action_done"
+                            type="object" class="btn-secondary"
+                            data-hotkey="w"
+                            context="{'mail_activity_quick_update': True}"/>
+                    <button attrs="{'invisible': ['|', ('chaining_type', '=', 'trigger'), ('state', 'in', ['done', 'cancel'])]}"
+                            string="Done &amp; Schedule Next"
+                            name="action_done_schedule_next" type="object"
+                            class="btn-secondary" data-hotkey="x"
+                            context="{'mail_activity_quick_update': True}"/>
+                    <button attrs="{'invisible': ['|', ('chaining_type', '=', 'trigger'), ('state', 'in', ['done', 'cancel'])]}"
+                            string="Done &amp; Launch Next"
+                            name="action_done_schedule_next" type="object"
+                            class="btn-secondary" data-hotkey="x"
+                            context="{'mail_activity_quick_update': True}"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="today,planned,done"/>
+                </header>
+                <sheet string="Activity">
+                    <group invisible="0">
+                        <field name="type" invisible="1"/>
+                        <field name="activity_category" invisible="0"/>
+                        <field name="res_model" invisible="0"/>
+                        <field name="res_model_id" invisible="0"/>
+                        <field name="res_id" invisible="0"
+                               widget="integer"/>
+                        <field name="chaining_type" invisible="1"/>
+                        <field name="previous_activity_type_id"/>
+                        <field name="has_recommended_activities"/>
+                    </group>
+                    <group attrs="{'invisible': [('has_recommended_activities','=',False)]}">
+                        <div class="o_row">
+                            <strong>Recommended Activities</strong>
+                            <field name="recommended_activity_type_id"
+                                   widget="selection_badge"
+                                   domain="[('previous_type_ids', '=', previous_activity_type_id)]"
+                                   nolabel="1"/>
+                        </div>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="activity_type_id" required="1"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="summary"
+                                   placeholder="e.g. Discuss proposal"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="date_deadline"/>
+                            <field name="user_id"/>
+                            <field name="activity_tag_ids"
+                                   widget="many2many_tags"
+                                   options="{'color_field': 'color'}"/>
+                        </group>
+                    </group>
+                    <field name="note" class="oe-bordered-editor"
+                           placeholder="Log a note..."/>
+                </sheet>
+            </form>
+
+        </field>
+    </record>
+
+    <record id="mail_activity_view_tree" model="ir.ui.view">
+        <field name="name">mail_activity.view.tree</field>
+        <field name="model">mail.activity</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="res_name"/>
+                <field name="activity_type_id"/>
+                <field name="summary"/>
+                <field name="date_deadline"/>
+                <field name="activity_tag_ids" widget="many2many_tags"
+                       options="{'color_field': 'color'}"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <record id="mail_activity_action" model="ir.actions.act_window">
+        <field name="name">Activities</field>
+        <field name="res_model">mail.activity</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{
+            'tree_view_ref':'mail_activity_type_view_form'}
+        </field>
+        <field name="view_id"
+               ref="activity_dashboard_mngmnt.mail_activity_view_tree"/>
+    </record>
+
+    <menuitem id="activity_menu_root" name="Activity Dashboard"
+              sequence="25"
+              web_icon="activity_dashboard_mngmnt,static/description/icon.png"/>
+
+    <menuitem id="menu_my_activities" name="Activity"
+              parent="activity_dashboard_mngmnt.activity_menu_root"
+              action="activity_dashboard_mngmnt.mail_activity_action"
+              sequence="2"/>
+
+</odoo>

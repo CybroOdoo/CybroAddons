@@ -51,27 +51,30 @@ odoo.define('activity_dashboard_mngmnt.activity_dashboard', function (require) {
                 len_cancel: result.len_cancel
             }));
         });
-//        this.$('.table_view').html(QWeb.render('ManageActivity'));
         self.results = ''
         self._rpc({
             model: 'mail.activity',
             method : 'search_read',
-            domain: [["state", "=", 'done'], ["active", "=", false]],
+            domain: [["state", "=", 'done']],
+            context: { active_test: false },
             }).then(function(done_activity){
                 self._rpc({
                     model: 'mail.activity',
                     method : 'search_read',
                     domain: [["state", "=", 'planned']],
+                    context: { active_test: false },
                 }).then(function(planned_activity){
                     self._rpc({
                         model: 'mail.activity',
                         method : 'search_read',
                         domain: [["state", "=", 'today']],
+                        context: { active_test: false },
                     }).then(function(today_activity){
                         self._rpc({
                             model: 'mail.activity',
                             method : 'search_read',
                             domain: [["state", "=", 'overdue']],
+                            context: { active_test: false },
                         }).then(function(overdue_activity){
                             self.$('.table_view_activity').html(QWeb.render('ActivityTable', {
                                 done_activity: done_activity,
@@ -85,14 +88,14 @@ odoo.define('activity_dashboard_mngmnt.activity_dashboard', function (require) {
             });
        },
     click_view: function(e){
-        var id = e.target.value
+        var id = e.target.value;
         this.do_action({
             type: 'ir.actions.act_window',
             name: 'All Activity',
             res_model: 'mail.activity',
-            domain: [['id', '=', id]],
-            views: [[false, 'list'], [false, 'form']],
-            view_mode: 'list,form',
+            res_id: parseInt(id),
+            views: [[false, 'form']],
+            view_mode: 'form',
             target: 'current'
         });
     },
@@ -108,13 +111,14 @@ odoo.define('activity_dashboard_mngmnt.activity_dashboard', function (require) {
             type: 'ir.actions.act_window',
             name: 'Activity Origin',
             res_model: result.model,
-            domain: [['id', '=', result.res_id]],
-            views: [[false, 'list'], [false, 'form']],
-            view_mode: 'list,form',
+            res_id: result.res_id,
+            views: [[false, 'form']],
+            view_mode: 'form',
             target: 'current'
         });
         });
     },
+
     all_activity: function(e) {
         var self = this;
         e.stopPropagation();
@@ -126,11 +130,11 @@ odoo.define('activity_dashboard_mngmnt.activity_dashboard', function (require) {
             type: 'ir.actions.act_window',
             name: 'All Activity',
             res_model: 'mail.activity',
-    //                res_id: [1],
             domain: [],
             views: [[false, 'list'], [false, 'form']],
             view_mode: 'list',
-            target: 'current'
+            target: 'current',
+            context: { active_test: false },
         });
     },
 
@@ -148,7 +152,8 @@ odoo.define('activity_dashboard_mngmnt.activity_dashboard', function (require) {
             domain: [['state', '=', 'planned']],
             views: [[false, 'list'], [false, 'form']],
             view_mode: 'list',
-            target: 'current'
+            target: 'current',
+            context: { active_test: false },
         });
     },
 
@@ -163,10 +168,11 @@ odoo.define('activity_dashboard_mngmnt.activity_dashboard', function (require) {
             type: 'ir.actions.act_window',
             name: 'Completed Activity',
             res_model: 'mail.activity',
-            domain: [['state', '=', 'done'], ['active', '=', false]],
+            domain: [['state', '=', 'done']],
             views: [[false, 'list'], [false, 'form']],
             view_mode: 'list',
-            target: 'current'
+            target: 'current',
+            context: { active_test: false },
         });
     },
 
@@ -182,7 +188,8 @@ odoo.define('activity_dashboard_mngmnt.activity_dashboard', function (require) {
             domain: [['state', '=', 'today']],
             views: [[false, 'list'], [false, 'form']],
             view_mode: 'list',
-            target: 'current'
+            target: 'current',
+            context: { active_test: false },
         });
     },
 
@@ -200,7 +207,8 @@ odoo.define('activity_dashboard_mngmnt.activity_dashboard', function (require) {
             domain: [['state', '=', 'overdue']],
             views: [[false, 'list'], [false, 'form']],
             view_mode: 'list',
-            target: 'current'
+            target: 'current',
+            context: { active_test: false },
         });
 
     },
@@ -219,7 +227,8 @@ odoo.define('activity_dashboard_mngmnt.activity_dashboard', function (require) {
             domain: [['state', '=', 'cancel']],
             views: [[false, 'list'], [false, 'form']],
             view_mode: 'list',
-            target: 'current'
+            target: 'current',
+            context: { active_test: false },
         });
     },
 
