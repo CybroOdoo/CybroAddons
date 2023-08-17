@@ -24,3 +24,8 @@
 #### Version 16.0.2.0.5
 #### UPDT
 - Cash journal Bug Fix
+
+#### 17.08.2023
+#### Version 16.0.2.0.7
+#### UPDT
+- Asset type Bug Fix
