@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from odoo import models
+from odoo import models, api, fields
 
 
 class SaleOrderInherit(models.Model):
@@ -28,7 +28,9 @@ class SaleOrderInherit(models.Model):
     def action_confirm(self):
         """ Create manufacturing order of components in selected BOM """
         for rec in self.order_line:
-            if rec.bom_id:
+            check_route = [routes.name for routes in
+                           rec.product_template_id.route_ids]
+            if rec.bom_id and 'Manufacture' not in check_route:
                 move_raw = []
                 bom_line = self.env['mrp.bom.line'].search(
                     [('bom_id', '=', rec.bom_id.id)])
@@ -56,3 +58,5 @@ class SaleOrderInherit(models.Model):
                     'move_raw_ids': move_raw
                 })
         return super(SaleOrderInherit, self).action_confirm()
+
+
