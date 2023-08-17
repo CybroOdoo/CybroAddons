@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -85,8 +85,12 @@ class PurchaseRequisition(models.Model):
     internal_picking_id = fields.Many2one('stock.picking.type',
                                           string="Internal Picking")
     requisition_description = fields.Text(string="Reason For Requisition")
-    purchase_count = fields.Integer(string='Purchase Count')
-    internal_transfer_count = fields.Integer(string='Internal Transfer count')
+    purchase_count = fields.Integer(string='Purchase Count',
+                                    help='Purchase Count',
+                                    compute='_compute_purchase_count')
+    internal_transfer_count = fields.Integer(string='Internal Transfer count',
+                                             help='Internal Transfer count',
+                                             compute='_compute_internal_transfer_count')
     state = fields.Selection(
         [('new', 'New'),
          ('waiting_department_approval', 'Waiting Department Approval'),
@@ -160,16 +164,21 @@ class PurchaseRequisition(models.Model):
                 })
             else:
                 self.env['purchase.order'].create({
-                    'partner_id': self.employee_id.work_contact_id.id,
+                    'partner_id': rec.partner_id.id,
                     'requisition_order': self.name,
                     "order_line": [(0, 0, {
                         'product_id': rec.product_id.id,
                         'product_qty': rec.quantity,
                     })]})
         self.write({'state': 'purchase_order_created'})
-        self.purchase_count = self.env['purchase.order'].search_count([
-            ('requisition_order', '=', self.name)])
+
+    def _compute_internal_transfer_count(self):
+        # self.internal_active = 0
         self.internal_transfer_count = self.env['stock.picking'].search_count([
+            ('requisition_order', '=', self.name)])
+
+    def _compute_purchase_count(self):
+        self.purchase_count = self.env['purchase.order'].search_count([
             ('requisition_order', '=', self.name)])
 
     def action_receive(self):
