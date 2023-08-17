@@ -24,7 +24,24 @@ odoo.define('pos_product_creation.product_create_button', function(require) {
                 var product_image;
                 var image = $('#product-image')[0].files[0]
                 var reader = new FileReader();
-                await reader.readAsDataURL(image);
+                if (image){
+                    if(image.type == "image/jpeg"){
+                        await reader.readAsDataURL(image);
+                    } else {
+//                        return self.showPopup('ErrorPopup', {
+//                          title: _('Choose Image In JPEG Format'),
+//                        });
+                        return self.showPopup('ErrorPopup', {
+                            title: self.env._t('Filed Error'),
+                            body: self.env._t('Choose Image In JPEG Format.'),
+                         });
+                    }
+                } else {
+                    return self.showPopup('ErrorPopup', {
+                        title: self.env._t('Empty Filed'),
+                        body: self.env._t('All Fields Are Required.'),
+                    });
+                }
                 reader.onload = function(){
                     product_image = reader.result
                     var image = product_image.slice(23);
@@ -35,17 +52,7 @@ odoo.define('pos_product_creation.product_create_button', function(require) {
                     var unit_measure = payload[5];
                     var product_categories = payload[6];
                     var barcode = payload[7];
-                    if (!product_name){
-                        return self.showPopup('ErrorPopup', {
-                          title: _('Product Name Is Required'),
-                        });
-                    }
-                    if (!unit_measure){
-                        return self.showPopup('ErrorPopup', {
-                          title: _('A Unit Of Measure Is Required'),
-                        });
-                    }
-                    ajax.jsonRpc('/create_product', 'call', {
+                    let datas = {
                         'category': product_category,
                         'image': image,
                         'name': product_name,
@@ -54,8 +61,22 @@ odoo.define('pos_product_creation.product_create_button', function(require) {
                         'unit_measure': unit_measure,
                         'product_categories': product_categories,
                         'barcode': barcode,
-                    })
-
+                    }
+                    for (const [key, value] of Object.entries(datas)){
+                        if (value === null || value === undefined){
+                            var errorFound = 1;
+                        } else {
+                            let errorFound = 0;
+                        }
+                    }
+                    if (errorFound == 1){
+                        return self.showPopup('ErrorPopup', {
+                            title: self.env._t('Empty Filed'),
+                            body: self.env._t('All Fields Are Required.'),
+                        });
+                    } else {
+                        ajax.jsonRpc('/create_product', 'call', datas)
+                    }
                 }
 
            }
@@ -71,6 +92,5 @@ odoo.define('pos_product_creation.product_create_button', function(require) {
     });
 
     Registries.Component.add(ProductCreateButton);
-
     return ProductCreateButton;
 });

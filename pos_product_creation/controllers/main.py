@@ -33,7 +33,7 @@ class PosProductCreation(http.Controller):
             product_category = 'consu'
         elif category == 'Service':
             product_category = 'service'
-        elif category == 'Stockable':
+        elif category == 'Storable':
             product_category = 'product'
         else:
             product_category = ''
