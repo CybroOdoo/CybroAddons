@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'POS Booking Order',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': """From a POS session, users can create pickup or 
                 delivery orders, which they can then confirm as POS orders.""",
     'description': """The module helps you to book orders from Shop,

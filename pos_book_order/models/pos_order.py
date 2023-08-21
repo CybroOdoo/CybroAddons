@@ -38,8 +38,8 @@ class PosOrder(models.Model):
            dict: returns dictionary of pos order field values
         """
         order_fields = super(PosOrder, self)._order_fields(ui_order)
-        if ui_order['is_booked']:
-            order_fields['booking_ref_id'] = ui_order['booked_data']['id']
-            self.env['book.order'].browse(ui_order['booked_data']['id']).write(
+        if ui_order.get('is_booked'):
+            order_fields['booking_ref_id'] = ui_order.get('booked_data')['id']
+            self.env['book.order'].browse(ui_order.get('booked_data')['id']).write(
                 {'state': 'confirmed'})
         return order_fields
