@@ -78,7 +78,7 @@ class CalendarEvent(models.Model):
         duration = cal_event.duration * 60
         payload = json.dumps({
             "start_time": cal_event.start.isoformat(),
-            "timezone": user_id.tz,
+            "timezone": 'UTC',
             "topic": cal_event.name,
             "duration": int(duration),
             "settings": {
