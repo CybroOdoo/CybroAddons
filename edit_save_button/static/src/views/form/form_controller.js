@@ -13,7 +13,7 @@ import { usePager } from "@web/search/pager_hook";
 import { isX2Many } from "@web/views/utils";
 import { registry } from "@web/core/registry";
 const viewRegistry = registry.category("views");
-import { StockPickingFormController } from "@stock/views/picking_form/picking_form_controller";
+
 
 odoo.__DEBUG__ && console.log("Console log inside the patch function", FormController.prototype, "form_controller");
 var data = false;
