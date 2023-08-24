@@ -20,9 +20,11 @@
 ###################################################################################
 {
     'name': 'Product Brand in Inventory',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Warehouse',
     'summary': 'Product Brand in Inventory',
+    'description': 'This module lets you add '
+                   'Brand in Inventory and for products.',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -30,12 +32,11 @@
     'website': 'https://www.cybrosys.com',
     'depends': ['stock'],
     'data': [
-        'views/brand_views.xml',
         'security/ir.model.access.csv',
+        'views/brand_views.xml',
     ],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
     'application': False,
-
 }

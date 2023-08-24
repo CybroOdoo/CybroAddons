@@ -18,7 +18,6 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###################################################################################
-
 from odoo import models, fields, api
 
 
@@ -38,7 +37,6 @@ class BrandProduct(models.Model):
 
     @api.depends('member_ids')
     def get_count_products(self):
-        print('brand')
         self.product_count = len(self.member_ids)
 
 
