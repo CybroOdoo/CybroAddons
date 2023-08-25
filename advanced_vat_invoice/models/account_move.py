@@ -1,26 +1,31 @@
 # -*- coding: utf-8 -*-
-######################################################################################
+###############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>))
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Athira P S (odoo@cybrosys.com)
 #
-#    This program is under the terms of the Odoo Proprietary License v1.0 (OPL-1)
-#    It is forbidden to publish, distribute, sublicense, or sell copies of the Software
-#    or modified copies of the Software.
+#    You can modify it under the terms of the GNU AFFERO
+#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
 #
-#    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-#    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-#    DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-#    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#    DEALINGS IN THE SOFTWARE.
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
 #
-########################################################################################
+#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
+#    (AGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
 
-from odoo import fields, models, api, _
+###############################################################################
+from io import BytesIO
+import binascii
+import pytz
+
+from odoo import api, fields, models, _
+from odoo.exceptions import UserError
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 
 try:
     import qrcode
@@ -30,27 +35,34 @@ try:
     import base64
 except ImportError:
     base64 = None
-from io import BytesIO
-import binascii
-import pytz
-from odoo.exceptions import UserError
-from odoo.tools.pycompat import to_text
-from odoo.tools import float_is_zero, float_compare, DEFAULT_SERVER_DATETIME_FORMAT
 
 
-class InheritAccountMove(models.Model):
+class AccountMove(models.Model):
+    """Class for adding new button and a page in account move"""
     _inherit = 'account.move'
 
-    qr = fields.Binary("QR Code", compute='generate_qrcode', store=True)
+    qr = fields.Binary(string="QR Code", compute='generate_qrcode', store=True,
+                       help="QR code")
+    qr_button = fields.Boolean(struct="Qr Button", compute="_compute_qr",
+                               help="Is QR button is enable or not")
+
+    @api.depends('qr_button')
+    def _compute_qr(self):
+        """Compute function for checking the value of a field in settings"""
+        for record in self:
+            qr_code = self.env['ir.config_parameter'].sudo().get_param(
+                'advanced_vat_invoice.is_qr')
+            record.qr_button = qr_code == 'True'
 
     def timezone(self, userdate):
-
+        """Function to convert a user's date to their timezone."""
         tz_name = self.env.context.get('tz') or self.env.user.tz
         contex_tz = pytz.timezone(tz_name)
         date_time = pytz.utc.localize(userdate).astimezone(contex_tz)
         return date_time.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
 
     def string_hexa(self, value):
+        """Convert a string to a hexadecimal representation."""
         if value:
             string = str(value)
             string_bytes = string.encode("UTF-8")
@@ -59,10 +71,12 @@ class InheritAccountMove(models.Model):
             return hex_value
 
     def hexa(self, tag, length, value):
+        """Generate a hex value with tag, length, and value."""
         if tag and length and value:
             hex_string = self.string_hexa(value)
             length = int(len(hex_string) / 2)
-            conversion_table = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
+            conversion_table = ['0', '1', '2', '3', '4', '5', '6', '7', '8',
+                                '9', 'a', 'b', 'c', 'd', 'e', 'f']
             hexadecimal = ''
             while (length > 0):
                 remainder = length % 16
@@ -73,20 +87,25 @@ class InheritAccountMove(models.Model):
             return tag + hexadecimal + hex_string
 
     def qr_code_data(self):
-        sellername = str(self.company_id.name)
+        """Generate QR code data for the current record."""
+        seller_name = str(self.company_id.name)
         seller_vat_no = self.company_id.vat or ''
-        seller_hex = self.hexa("01", "0c", sellername)
+        seller_hex = self.hexa("01", "0c", seller_name)
         vat_hex = self.hexa("02", "0f", seller_vat_no) or ""
         time_stamp = self.timezone(self.create_date)
         date_hex = self.hexa("03", "14", time_stamp)
-        total_with_vat_hex = self.hexa("04", "0a", str(round(self.amount_total, 2)))
-        total_vat_hex = self.hexa("05", "09", str(round(self.amount_tax, 2)))
-        qr_hex = seller_hex + vat_hex + date_hex + total_with_vat_hex + total_vat_hex
+        total_with_vat_hex = self.hexa("04", "0a",
+                                       str(round(self.amount_total, 2)))
+        total_vat_hex = self.hexa("05", "09",
+                                  str(round(self.amount_tax, 2)))
+        qr_hex = (seller_hex + vat_hex + date_hex + total_with_vat_hex +
+                  total_vat_hex)
         encoded_base64_bytes = base64.b64encode(bytes.fromhex(qr_hex)).decode()
         return encoded_base64_bytes
 
     @api.depends('state')
     def generate_qrcode(self):
+        """Generate and save QR code after the invoice is posted."""
         param = self.env['ir.config_parameter'].sudo()
         qr_code = param.get_param('advanced_vat_invoice.generate_qr')
         for rec in self:
@@ -107,9 +126,12 @@ class InheritAccountMove(models.Model):
                         qr_image = base64.b64encode(temp.getvalue())
                         rec.qr = qr_image
                 else:
-                    raise UserError(_('Necessary Requirements To Run This Operation Is Not Satisfied'))
+                    raise UserError(
+                        _('Necessary Requirements To Run This Operation Is '
+                          'Not Satisfied'))
 
     def generate_qr_button(self):
+        """Manually generate and save QR code."""
         param = self.env['ir.config_parameter'].sudo()
         qr_code = param.get_param('advanced_vat_invoice.generate_qr')
         for rec in self:
@@ -129,4 +151,6 @@ class InheritAccountMove(models.Model):
                     qr_image = base64.b64encode(temp.getvalue())
                     rec.qr = qr_image
             else:
-                raise UserError(_('Necessary Requirements To Run This Operation Is Not Satisfied'))
+                raise UserError(
+                    _('Necessary Requirements To Run This Operation Is '
+                      'Not Satisfied'))

@@ -1,46 +1,45 @@
 # -*- coding: utf-8 -*-
-######################################################################################
+###############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>))
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Athira P S (odoo@cybrosys.com)
 #
-#    This program is under the terms of the Odoo Proprietary License v1.0 (OPL-1)
-#    It is forbidden to publish, distribute, sublicense, or sell copies of the Software
-#    or modified copies of the Software.
+#    You can modify it under the terms of the GNU AFFERO
+#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
 #
-#    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-#    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-#    DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-#    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#    DEALINGS IN THE SOFTWARE.
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
 #
-########################################################################################
+#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
+#    (AGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
 
+###############################################################################
 {
     'name': 'e-Invoicing For Saudi | Saudi VAT Invoice | Saudi Electronic Invoice | Saudi Zatca',
     'version': '16.0.1.0.0',
-    'summary': 'e-Invoicing For Saudi | Saudi VAT Invoice | Saudi Electronic Invoice | Saudi Zatca',
-    'description': 'e-Invoicing For Saudi,Saudi VAT Invoice,Saudi Electronic Invoice,Saudi Zatca,Zatca,Saudi,e-Invoicing',
+    'category': 'Accounting',
+    'summary': "Module for e-Invoicing For Saudi | Saudi VAT Invoice | Saudi Electronic Invoice | Saudi Zatca",
+    'description': "e-Invoicing For Saudi,Saudi VAT Invoice,Saudi Electronic Invoice,Saudi Zatca,Zatca,Saudi,e-Invoicing",
     'author': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'depends': ['base', 'account'],
-    'images': ['static/description/banner.png'],
     'data': [
-        'views/qr_config.xml',
-        'views/qrcode_in_invoices.xml',
-        'report/invoice_pdf.xml',
-        'report/vat_invoice_report_template.xml',
-        'views/vat_invoice_in_action.xml',
-        'report/simplified_tax_report_template.xml'
+        'views/res_config_settings_views.xml',
+        'views/account_move_views.xml',
+        'report/account_move_reports.xml',
+        'report/vat_invoice_report_templates.xml',
+        'report/simplified_tax_report_templates.xml'
     ],
+    'images': ['static/description/banner.png'],
+    'license': 'AGPL-3',
     'installable': True,
     'application': False,
     'auto_install': False,
-    'license': 'AGPL-3',
 }
