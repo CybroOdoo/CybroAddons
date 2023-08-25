@@ -112,7 +112,7 @@ class SalonBookingWeb(http.Controller):
         salon_working_hours_obj = request.env['salon.working.hours'].search([])
         salon_holiday_obj = request.env['salon.holiday'].search(
             [('holiday', '=', True)])
-        date_check = fields.Date.context_today(request)
+        date_check = fields.Date.today()
         date_start = pytz.timezone(request.env.user.tz).localize(
             datetime.combine(date_check, time(0, 0, 0))).astimezone(
             pytz.UTC).replace(tzinfo=None)
