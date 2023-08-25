@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'POS Theme Sapphire V16',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': 'The POS Theme Sapphire Is A Responsive And Ultimate Theme For Your Odoo V16.'
                'This Theme Will Give You A New Experience With Odoo.',
     'description': """Minimalist and elegant backend POS theme for Odoo 16""",
