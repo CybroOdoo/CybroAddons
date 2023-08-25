@@ -27,19 +27,51 @@ class PosSession(models.Model):
     _inherit = 'pos.session'
 
     def _pos_ui_models_to_load(self):
-        """For load module to POS"""
-        result = super()._pos_ui_models_to_load()
-        result += [
+        models_to_load = [
+            'res.company',
             'res.partner.category',
+            'decimal.precision',
+            'uom.uom',
+            'res.country.state',
+            'res.country',
+            'res.lang',
+            'account.tax',
+            'pos.session',
+            'pos.config',
+            'pos.bill',
+            'res.partner',
+            'stock.picking.type',
+            'res.users',
+            'product.pricelist',
+            'res.currency',
+            'pos.category',
+            'product.product',
+            'product.packaging',
+            'account.cash.rounding',
+            'pos.payment.method',
+            'account.fiscal.position',
         ]
-        return result
+        return models_to_load
 
     def _loader_params_res_partner_category(self):
         """For load res partner category fields"""
         return {
-            'search_params': {'fields': ['name', 'partner_ids']}}
+            'search_params': {'fields': ['id', 'name']}}
 
     def _get_pos_ui_res_partner_category(self, params):
         """For getting parameters of res partner category model"""
         return self.env['res.partner.category'].search_read(
             **params['search_params'])
+
+    def _loader_params_res_partner(self):
+        return {
+            'search_params': {
+                'domain': self._get_partners_domain(),
+                'fields': [
+                    'name', 'street', 'city', 'state_id', 'country_id',
+                    'vat', 'lang', 'phone', 'zip', 'mobile', 'email',
+                    'category_id', 'barcode', 'write_date',
+                    'property_account_position_id', 'property_product_pricelist', 'parent_name'
+                ],
+            },
+        }

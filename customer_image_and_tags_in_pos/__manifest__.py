@@ -21,16 +21,15 @@
 ###############################################################################
 {
     'name': 'Customer Image And Tags In POS',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
+    'category': 'Point of Sale',
     'summary': 'Images and tags in pos customer session',
     'description': 'Can see the image and tags of customer in '
                    'customer selection page while choosing'
                    ' the customer in pos',
-    'category': 'Point of Sale',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'images': ['static/description/banner.png'],
     'website': 'https://www.cybrosys.com',
     'depends': ['base', 'point_of_sale'],
     'assets': {
@@ -40,8 +39,10 @@
             'customer_image_and_tags_in_pos/static/src/xml/PartnerLine.xml',
         ],
     },
-    'application': False,
+    'images': ['static/description/banner.jpg'],
+    'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
-    'license': 'LGPL-3',
+    'application': False,
+
 }
