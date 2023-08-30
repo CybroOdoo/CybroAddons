@@ -1,4 +1,24 @@
-import time
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
 from datetime import datetime
 
 from odoo import models, api, fields
@@ -18,7 +38,7 @@ class AccountCasgFlow(models.TransientModel):
 
     date_from = fields.Date(string="Start Date", default=str(year)+'-01-01')
     date_to = fields.Date(string="End Date", default=fields.Date.today)
-    today = fields.Date("Report Date", default=fields.Date.today)
+    today = fields.Date(string="Report Date", default=fields.Date.today)
     levels = fields.Selection([('summary', 'Summary'),
                                ('consolidated', 'Consolidated'),
                                ('detailed', 'Detailed'),
@@ -29,11 +49,8 @@ class AccountCasgFlow(models.TransientModel):
                                    'Consolidated: Based on account types.\n'
                                    'Detailed: Based on accounts.\n'
                                    'Very Detailed: Accounts with their move lines')
-
-    account_ids = fields.Many2many(
-        "account.account",
-        string="Accounts",
-    )
+    account_ids = fields.Many2many("account.account",
+                                   string="Accounts")
 
     @api.model
     def view_report(self, option):
@@ -52,7 +69,6 @@ class AccountCasgFlow(models.TransientModel):
             data.update({
                 'date_to': r.date_to,
             })
-
         filters = self.get_filter(option)
         report_lines = self._get_report_values(data, option)
         fetched_data = report_lines['fetched_data']
@@ -61,7 +77,6 @@ class AccountCasgFlow(models.TransientModel):
         journal_res = report_lines['journal_res']
         levels = report_lines['levels']
         currency = self._get_currency()
-
         return {
             'name': "Cash Flow Statements",
             'type': 'ir.actions.client',
@@ -80,11 +95,13 @@ class AccountCasgFlow(models.TransientModel):
         data = self.get_filter_data(option)
         filters = {}
         if data.get('journal_ids'):
-            filters['journals'] = self.env['account.journal'].browse(data.get('journal_ids')).mapped('code')
+            filters['journals'] = self.env['account.journal'].browse(
+                data.get('journal_ids')).mapped('code')
         else:
             filters['journals'] = ['All']
         if data.get('account_ids', []):
-            filters['accounts'] = self.env['account.account'].browse(data.get('account_ids', [])).mapped('code')
+            filters['accounts'] = self.env['account.account'].browse(
+                data.get('account_ids', [])).mapped('code')
         else:
             filters['accounts'] = ['All']
         if data.get('target_move'):
@@ -95,13 +112,11 @@ class AccountCasgFlow(models.TransientModel):
             filters['date_to'] = data.get('date_to')
         if data.get('levels'):
             filters['levels'] = data.get('levels')
-
         filters['company_id'] = ''
         filters['accounts_list'] = data.get('accounts_list')
         filters['journals_list'] = data.get('journals_list')
         filters['company_name'] = data.get('company_name')
         filters['target_move'] = data.get('target_move').capitalize()
-
         return filters
 
     def get_filter_data(self, option):
@@ -109,9 +124,10 @@ class AccountCasgFlow(models.TransientModel):
         default_filters = {}
         company_id = self.env.companies
         company_domain = [('company_id', 'in', company_id.ids)]
-        journals = r.journal_ids if r.journal_ids else self.env['account.journal'].search(company_domain)
-        accounts = self.account_ids if self.account_ids else self.env['account.account'].search(company_domain)
-
+        journals = r.journal_ids if r.journal_ids else (
+            self.env[('account.journal')].search(company_domain))
+        accounts = self.account_ids if self.account_ids else (
+            self.env['account.account'].search(company_domain))
         filter_dict = {
             'journal_ids': r.journal_ids.ids,
             'account_ids': self.account_ids.ids,
@@ -127,7 +143,7 @@ class AccountCasgFlow(models.TransientModel):
         filter_dict.update(default_filters)
         return filter_dict
 
-    def _get_report_values(self, data, option):
+    def _get_report_values(self, data,option):
         cr = self.env.cr
         data = self.get_filter(option)
         company_id = self.env.company
@@ -135,7 +151,6 @@ class AccountCasgFlow(models.TransientModel):
         symbol = company_id.currency_id.symbol
         rounding = company_id.currency_id.rounding
         position = company_id.currency_id.position
-
         fetched_data = []
         account_res = []
         journal_res = []
@@ -145,18 +160,21 @@ class AccountCasgFlow(models.TransientModel):
         if data.get('levels') == 'summary':
             state = """ AND am.state = 'posted' """ if data.get('target_move') == 'Posted' else ''
             state2 = ' AND aml.company_id IN %s' % str(tuple(self.env.companies.ids) + tuple([0]))
-            query3 = """SELECT to_char(am.date, 'Month') as month_part, extract(YEAR from am.date) as year_part,
-                         sum(aml.debit) AS total_debit, sum(aml.credit) AS total_credit,
-                                 sum(aml.balance) AS total_balance FROM (SELECT am.date, am.id, am.state FROM account_move as am
-                                 LEFT JOIN account_move_line aml ON aml.move_id = am.id
-                                 LEFT JOIN account_account aa ON aa.id = aml.account_id
-                                 WHERE am.date BETWEEN '""" + str(
+            query3 = """SELECT to_char(am.date, 'Month') as month_part, 
+                     extract(YEAR from am.date) as year_part,
+                     sum(aml.debit) AS total_debit, sum(aml.credit) AS 
+                     total_credit,
+                     sum(aml.balance) AS total_balance FROM (SELECT am.date, 
+                     am.id, am.state FROM account_move as am
+                     LEFT JOIN account_move_line aml ON aml.move_id = am.id
+                     LEFT JOIN account_account aa ON aa.id = aml.account_id
+                     WHERE am.date BETWEEN '""" + str(
                 data.get('date_from')) + """' and '""" + str(
                 data.get('date_to')) + """' AND aa.account_type='""" + str(
                 account_type_id) + """' """ + state + state2 +""") am  
-                                             LEFT JOIN account_move_line aml ON aml.move_id = am.id
-                                             LEFT JOIN account_account aa ON aa.id = aml.account_id
-                                             GROUP BY month_part,year_part"""
+                                 LEFT JOIN account_move_line aml ON aml.move_id = am.id
+                                 LEFT JOIN account_account aa ON aa.id = aml.account_id
+                                 GROUP BY month_part,year_part"""
             cr = self._cr
             cr.execute(query3)
             fetched_data = cr.dictfetchall()

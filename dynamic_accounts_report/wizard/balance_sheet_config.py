@@ -1,5 +1,26 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
 import re
-from odoo import models, fields, api
+from odoo import models
 
 
 class BalanceSheet(models.TransientModel):
@@ -15,8 +36,8 @@ class BalanceSheet(models.TransientModel):
 
         def set_report_level(rec):
             """This function is used to set the level of each item.
-            This level will be used to set the alignment in the dynamic reports."""
-
+            This level will be used to set the alignment in the dynamic
+            reports."""
             level = 1
             if not rec['parent']:
                 return level
@@ -42,10 +63,7 @@ class BalanceSheet(models.TransientModel):
         return data
 
     def _compute_account_balance(self, accounts):
-        """ compute the balance, debit
-        and credit for the provided accounts
-        """
-
+        """ compute the balance, debit and credit for the provided accounts"""
         mapping = {
             'balance':
                 "COALESCE(SUM(debit),0) - COALESCE(SUM(credit), 0)"
@@ -53,11 +71,9 @@ class BalanceSheet(models.TransientModel):
             'debit': "COALESCE(SUM(debit), 0) as debit",
             'credit': "COALESCE(SUM(credit), 0) as credit",
         }
-
         res = {}
         for account in accounts:
-            res[account.id] = dict((fn, 0.0)
-                                   for fn in mapping.keys())
+            res[account.id] = dict((fn, 0.0) for fn in mapping.keys())
         if accounts:
             tables, where_clause, where_params = (
                 self.env['account.move.line']._query_get())
@@ -74,11 +90,9 @@ class BalanceSheet(models.TransientModel):
                        filters +
                        " GROUP BY account_id")
             params = (tuple(accounts._ids),) + tuple(where_params)
-
             self.env.cr.execute(request, params)
             for row in self.env.cr.dictfetchall():
                 res[row['id']] = row
-
         return res
 
     def _compute_report_balance(self, reports):
@@ -101,28 +115,13 @@ class BalanceSheet(models.TransientModel):
             if report.type == 'accounts':
                 # it's the sum of the linked accounts
                 res[report.id]['account'] = self._compute_account_balance(
-                    report.account_ids
-                )
-                for value in \
-                        res[report.id]['account'].values():
+                    report.account_ids)
+                for value in res[report.id]['account'].values():
                     for field in fields:
                         res[report.id][field] += value.get(field)
             elif report.type == 'account_type':
                 # it's the sum the leaf accounts
                 #  with such an account type
-
-                """Eccccc"""
-                # if report.id == 11:
-                #     states = ['liability_payable','equity','liability_non_current','liability_current']
-                # elif report.id ==9:
-                #     states = ['asset_fixed','asset_non_current','asset_current','asset_cash','asset_receivable']
-                # elif report.id ==9:
-                #     states = ['asset_fixed','asset_non_current','asset_current','asset_cash','asset_receivable']
-
-                # else:
-                #     states = [report.account_type_ids]
-
-                """end"""
                 accounts = self.env['account.account'].search([
                     ('account_type', 'in',
                      report.account_ids.mapped('account_type'))
@@ -159,8 +158,8 @@ class BalanceSheet(models.TransientModel):
                 res[report_id]['comp_bal'] = value['balance']
                 report_acc = res[report_id].get('account')
                 if report_acc:
-                    for account_id, val in \
-                            comparison_res[report_id].get('account').items():
+                    for account_id, val in comparison_res[report_id
+                    ].get('account').items():
                         report_acc[account_id]['comp_bal'] = val['balance']
         for report in child_reports:
             r_name = str(report.name)
@@ -171,11 +170,9 @@ class BalanceSheet(models.TransientModel):
                     report.parent_id.id)
             else:
                 p_name = False
-
             child_ids = []
             for chd in report.children_ids:
                 child_ids.append(chd.id)
-
             vals = {
                 'r_id': report.id,
                 'p_id': report.parent_id.id,
@@ -201,7 +198,6 @@ class BalanceSheet(models.TransientModel):
             if data['enable_filter']:
                 vals['balance_cmp'] = res[report.id]['comp_bal'] * int(
                     report.sign)
-
             lines.append(vals)
             if report.display_detail == 'no_detail':
                 # the rest of the loop is
@@ -209,7 +205,6 @@ class BalanceSheet(models.TransientModel):
                 #  financial report, so it's not needed here.
                 continue
             if res[report.id].get('account'):
-
                 sub_lines = []
                 for account_id, value \
                         in res[report.id]['account'].items():
@@ -228,16 +223,16 @@ class BalanceSheet(models.TransientModel):
                         'c_ids': [],
                         'account': account.id,
                         'code': account.code,
-                        'a_id': account.code + re.sub('[^0-9a-zA-Z]+', 'acnt',
+                        'a_id': account.code + re.sub('[^0-9a-zA-Z]+',
+                                                      'acnt',
                                                       account.name) + str(
                             account.id),
                         'name': account.code + '-' + account.name,
                         'balance': value['balance'] * int(report.sign) or 0.0,
                         'type': 'account',
                         'parent': r_name + str(report.id),
-                        'level': (
-                                report.display_detail == 'detail_with_hierarchy' and
-                                4),
+                        'level': (report.display_detail ==
+                                  'detail_with_hierarchy' and 4),
                         'account_type': account.account_type,
                     }
                     if data['debit_credit']:
@@ -259,8 +254,6 @@ class BalanceSheet(models.TransientModel):
                             flag = True
                     if flag:
                         sub_lines.append(vals)
-                    # sub_lines.append({'r_id': False, 'p_id': 11, 'report_type': 'accounts', 'c_ids': [], 'account': 14, 'code': '211000', 'a_id': '211000AccountacntPayable14', 'name': '211000-Account Payable', 'balance': -2036.77, 'type': 'account', 'parent': 'Liability11', 'level': 4, 'debit': 0.0, 'credit': 2036.77, 'balance_cmp': -2036.77})
-
                 lines += sorted(sub_lines,
                                 key=lambda sub_line: sub_line['name'])
         return lines
@@ -303,8 +296,8 @@ class BalanceSheet(models.TransientModel):
 
                 for j in items:
                     temp = j['id']
-                    j['id'] = re.sub('[^0-9a-zA-Z]+', '', i['name']) + str(
-                        temp)
+                    j['id'] = re.sub('[^0-9a-zA-Z]+', '',
+                                     i['name']) + str(temp)
                     j['p_id'] = str(i['a_id'])
                     j['type'] = 'journal_item'
                     journal_items.append(j)

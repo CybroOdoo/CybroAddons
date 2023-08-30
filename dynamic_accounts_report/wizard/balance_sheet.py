@@ -89,9 +89,9 @@ class BalanceSheetView(models.TransientModel):
         #     tag_upd = trans_tag
         # else:
         tag_upd = tag
-
+        lang = self.env.context.get('lang') or 'en_US'
         account_report_id = self.env['account.financial.report'].with_context(
-            lang='en_US').search([
+            lang=lang).search([
             ('name', 'ilike', tag_upd)])
 
         new_data = {'id': self.id, 'date_from': False,
@@ -107,7 +107,7 @@ class BalanceSheetView(models.TransientModel):
                                      'date_to': filters['date_to'],
                                      'strict_range': False,
                                      'company_id': self.company_id,
-                                     'lang': 'en_US'}}
+                                     'lang': lang}}
 
         account_lines = self.get_account_lines(new_data)
         report_lines = self.view_report_pdf(account_lines, new_data)[
@@ -390,7 +390,6 @@ class BalanceSheetView(models.TransientModel):
         return res
 
     def write(self, vals):
-
         if vals.get('target_move'):
             vals.update({'target_move': vals.get('target_move').lower()})
         if vals.get('journal_ids'):
@@ -414,12 +413,6 @@ class BalanceSheetView(models.TransientModel):
         if not vals.get('account_tag_ids'):
             vals.update({'account_tag_ids': [(5,)]})
 
-        # if vals.get('analytic_tag_ids'):
-        #     vals.update({'analytic_tag_ids': [(4, j) for j in
-        #                                       vals.get('analytic_tag_ids')]})
-        # if not vals.get('analytic_tag_ids'):
-        #     vals.update({'analytic_tag_ids': [(5,)]})
-
         res = super(BalanceSheetView, self).write(vals)
         return res
 
@@ -439,53 +432,64 @@ class BalanceSheetView(models.TransientModel):
                                               'm').replace(
             'account_move_line', 'l')
         new_final_filter = final_filters
-
         if data['target_move'] == 'posted':
             new_final_filter += " AND m.state = 'posted'"
         else:
             new_final_filter += " AND m.state in ('draft','posted')"
-
         if data.get('date_from'):
             new_final_filter += " AND l.date >= '%s'" % data.get('date_from')
         if data.get('date_to'):
             new_final_filter += " AND l.date <= '%s'" % data.get('date_to')
-
         if data['journals']:
             new_final_filter += ' AND j.id IN %s' % str(
                 tuple(data['journals'].ids) + tuple([0]))
-
         if data.get('accounts'):
             WHERE = "WHERE l.account_id IN %s" % str(
                 tuple(data.get('accounts').ids) + tuple([0]))
         else:
             WHERE = "WHERE l.account_id IN %s"
-
-        if data['analytics']:
-            WHERE += ' AND anl.id IN %s' % str(
+        if data.get('analytics'):
+            WHERE += ' AND an.id IN %s' % str(
                 tuple(data.get('analytics').ids) + tuple([0]))
+        if data.get('account_tags'):
+            WHERE += ' AND act.id IN %s' % str(tuple(data.get('account_tags').ids)+ tuple([0]))
 
         # if data['analytic_tags']:
         #     WHERE += ' AND anltag.account_analytic_tag_id IN %s' % str(
         #         tuple(data.get('analytic_tags').ids) + tuple([0]))
 
         # Get move lines base on sql query and Calculate the total balance of move lines
-        sql = ('''SELECT l.account_id AS account_id, a.code AS code,a.id AS id, a.name AS name, ROUND(COALESCE(SUM(l.debit),0),2) AS debit, ROUND(COALESCE(SUM(l.credit),0),2) AS credit, ROUND(COALESCE(SUM(l.balance),0),2) AS balance
-
-                                    FROM account_move_line l\
-                                    JOIN account_move m ON (l.move_id=m.id)\
-                                    LEFT JOIN res_currency c ON (l.currency_id=c.id)\
-                                    LEFT JOIN res_partner p ON (l.partner_id=p.id)\
-                                    LEFT JOIN account_account_tag_account_move_line_rel acc ON (acc.account_move_line_id=l.id)
-                                    JOIN account_journal j ON (l.journal_id=j.id)\
-                                    JOIN account_account a ON (l.account_id = a.id) '''
-               + WHERE + new_final_filter + ''' GROUP BY l.account_id, a.code, a.name, a.id''')
+        sql = ('''SELECT l.account_id AS account_id, a.code AS code,a.id AS id, a.name AS name, 
+                    ROUND(COALESCE(SUM(l.debit),0),2) AS debit, 
+                    ROUND(COALESCE(SUM(l.credit),0),2) AS credit, 
+                    ROUND(COALESCE(SUM(l.balance),0),2) AS balance,
+                    anl.keys, act.name as tag
+                    FROM account_move_line l
+                    JOIN account_move m ON (l.move_id=m.id)
+                    LEFT JOIN res_currency c ON (l.currency_id=c.id)
+                    LEFT JOIN res_partner p ON (l.partner_id=p.id)
+                    LEFT JOIN account_account_tag_account_move_line_rel acc ON (acc.account_move_line_id=l.id)
+                    JOIN account_journal j ON (l.journal_id=j.id)
+                    JOIN account_account a ON (l.account_id = a.id) LEFT JOIN account_account_account_tag acct ON 
+                    (acct.account_account_id = l.account_id)
+                    LEFT JOIN account_account_tag act ON 
+                    (act.id = acct.account_account_tag_id)
+                    LEFT JOIN LATERAL (
+                    SELECT jsonb_object_keys(l.analytic_distribution)::INT 
+                    AS keys) anl ON true
+                    LEFT JOIN account_analytic_account an 
+                    ON (anl.keys = an.id)'''
+               + WHERE + final_filters + ''' GROUP BY l.account_id, 
+                   a.code,a.id,a.name,anl.keys, act.name''')
 
         if data.get('accounts'):
             params = tuple(where_params)
         else:
             params = (tuple(accounts.ids),) + tuple(where_params)
         cr.execute(sql, params)
+
         account_res = cr.dictfetchall()
+
         return account_res
 
         # for row in cr.dictfetchall():

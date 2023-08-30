@@ -1,3 +1,24 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
 import time
 from odoo import fields, models, api, _
 
@@ -31,13 +52,13 @@ class PartnerView(models.TransientModel):
     partner_ids = fields.Many2many('res.partner', string='Partner')
     partner_category_ids = fields.Many2many('res.partner.category',
                                             string='Partner tags')
-    reconciled = fields.Selection([
-        ('unreconciled', 'Unreconciled Only'), ('all', 'All')],
+    reconciled = fields.Selection([('all', 'All'),
+        ('unreconciled', 'Unreconciled Only')],
         string='Reconcile Type', default='all')
 
-    account_type_id = fields.Selection([
-        ("asset_receivable", "Receivable"), ("liability_payable", "Payable")],
-        string="Account Type")
+    account_type = fields.Selection([
+        ("asset_receivable", "Receivable"), ("liability_payable", "Payable"),
+        ('all', 'All')], string="Account Type", default='all')
 
     @api.model
     def view_report(self, option):
@@ -50,7 +71,7 @@ class PartnerView(models.TransientModel):
             'target_move': r.target_move,
             'partners': r.partner_ids,
             'reconciled': r.reconciled,
-            'account_type': r.account_type_id,
+            'account_type': r.account_type,
             'partner_tags': r.partner_category_ids,
         }
 
@@ -62,11 +83,9 @@ class PartnerView(models.TransientModel):
             data.update({
                 'date_to': r.date_to,
             })
-
         filters = self.get_filter(option)
-        records = self._get_report_values(data)
+        records = self._get_report_value(data)
         currency = self._get_currency()
-
         return {
             'name': "partner Ledger",
             'type': 'ir.actions.client',
@@ -82,16 +101,19 @@ class PartnerView(models.TransientModel):
     def get_filter(self, option):
         data = self.get_filter_data(option)
         filters = {}
+        # journal filter
         if data.get('journal_ids'):
             filters['journals'] = self.env['account.journal'].browse(
                 data.get('journal_ids')).mapped('code')
         else:
             filters['journals'] = ['All']
+        # Accounts filter
         if data.get('account_ids', []):
             filters['accounts'] = self.env['account.account'].browse(
-                data.get('account_ids', [])).mapped('code')
+                data.get('account_ids', [])).mapped('name')
         else:
             filters['accounts'] = ['All Payable and Receivable']
+        # target move filter
         if data.get('target_move'):
             filters['target_move'] = data.get('target_move').capitalize()
         if data.get('date_from'):
@@ -114,12 +136,14 @@ class PartnerView(models.TransientModel):
         if data.get('reconciled') == 'unreconciled':
             filters['reconciled'] = 'Unreconciled'
 
-        if data.get('account_type', []):
-            filters['account_type'] = self.env[
-                'account.account.type'].sudo().browse(
-                data.get('account_type', [])).mapped('name')
+        if data.get('account_type') == 'asset_receivable':
+            filters['account_type'] = 'asset_receivable'
+
+        elif data.get('account_type') == 'liability_payable':
+            filters['account_type'] = 'liability_payable'
+
         else:
-            filters['account_type'] = ['Receivable and Payable']
+            filters['account_type'] = 'Receivable and Payable'
 
         if data.get('partner_tags', []):
             filters['partner_tags'] = self.env['res.partner.category'].browse(
@@ -147,7 +171,8 @@ class PartnerView(models.TransientModel):
             'res.partner'].search([])
         categories = self.partner_category_ids if self.partner_category_ids \
             else self.env['res.partner.category'].search([])
-        account_types = r.account_type_id
+
+
 
         journals = []
         o_company = False
@@ -158,14 +183,15 @@ class PartnerView(models.TransientModel):
             journals.append((j.id, j.name, j.code))
 
         accounts = []
-
         o_company = False
         for j in accounts_ids:
             if j.company_id != o_company:
                 accounts.append(('divider', j.company_id.name))
                 o_company = j.company_id
             accounts.append((j.id, j.name))
-
+        partner_data = []
+        for p in partner:
+            partner_data.append((p.id, p.name))
         filter_dict = {
             'journal_ids': r.journal_ids.ids,
             'account_ids': r.account_ids.ids,
@@ -175,21 +201,18 @@ class PartnerView(models.TransientModel):
             'target_move': r.target_move,
             'journals_list': journals,
             'accounts_list': accounts,
-            # 'company_name': company_id and company_id.name,
             'company_name': ', '.join(self.env.companies.mapped('name')),
             'partners': r.partner_ids.ids,
             'reconciled': r.reconciled,
-            'account_type': r.account_type_id,
+            'account_type': r.account_type,
             'partner_tags': r.partner_category_ids.ids,
-            'partners_list': [(p.id, p.name) for p in partner],
-            'category_list': [(c.id, c.name) for c in categories],
-            'account_type_list': account_types
-
+            'partners_list': partner_data,
+            'category_list': [(c.id, c.display_name) for c in categories],
         }
         filter_dict.update(default_filters)
         return filter_dict
 
-    def _get_report_values(self, data):
+    def _get_report_value(self, data):
         docs = data['model']
         display_account = data['display_account']
         init_balance = True
@@ -199,11 +222,11 @@ class PartnerView(models.TransientModel):
              ('company_id', 'in', company_id)])
         if data['account_type']:
             accounts = self.env['account.account'].search(
-                [('account_type', 'in', data['account_type'].ids),
+                [('account_type', 'in',
+                  ('asset_receivable', 'liability_payable')),
                  ('company_id', 'in', company_id)])
 
         partners = self.env['res.partner'].search([])
-
         if data['partner_tags']:
             partners = self.env['res.partner'].search(
                 [('category_id', 'in', data['partner_tags'].ids)])
@@ -211,7 +234,6 @@ class PartnerView(models.TransientModel):
             raise UserError(_("No Accounts Found! Please Add One"))
         partner_res = self._get_partners(partners, accounts, init_balance,
                                          display_account, data)
-
         debit_total = 0
         debit_total = sum(x['debit'] for x in partner_res)
         credit_total = sum(x['credit'] for x in partner_res)
@@ -236,44 +258,43 @@ class PartnerView(models.TransientModel):
     def write(self, vals):
         if vals.get('target_move'):
             vals.update({'target_move': vals.get('target_move').lower()})
+        # journal filter
         if vals.get('journal_ids'):
             vals.update({'journal_ids': [(6, 0, vals.get('journal_ids'))]})
         if not vals.get('journal_ids'):
             vals.update({'journal_ids': [(5,)]})
+        # Accounts filter
         if vals.get('account_ids'):
-            vals.update(
-                {'account_ids': [(4, j) for j in vals.get('account_ids')]})
+            vals.update({'account_ids': [(6, 0, vals.get('account_ids'))]})
         if not vals.get('account_ids'):
             vals.update({'account_ids': [(5,)]})
+        # Partner filter
         if vals.get('partner_ids'):
-            vals.update(
-                {'partner_ids': [(4, j) for j in vals.get('partner_ids')]})
+            vals.update({'partner_ids': [(6, 0, vals.get('partner_ids'))]})
         if not vals.get('partner_ids'):
             vals.update({'partner_ids': [(5,)]})
+        # Partner Category filter
         if vals.get('partner_category_ids'):
-            vals.update({'partner_category_ids': [(4, j) for j in vals.get(
-                'partner_category_ids')]})
+            vals.update({'partner_category_ids': [(6, 0, vals.get(
+                'partner_category_ids'))]})
         if not vals.get('partner_category_ids'):
             vals.update({'partner_category_ids': [(5,)]})
-
-        # if vals.get('account_type-ids'):
+        # Account Type filter
+        # if vals.get('account_type'):
+        #     print('vals.get account_type..........',vals.get('account_type'))
         #     vals.update(
-        #         {'account_type_ids': [(4, j) for j in
-        #                               vals.get('account_type_ids')]})
-        # if not vals.get('account_type_ids'):
-        #     vals.update({'account_type_ids': [(5,)]})
-
+        #         {'account_type': [(6, 0, vals.get('account_type'))]})
+        # if not vals.get('account_type'):
+        #     vals.update({'account_type': [(5,)]})
         res = super(PartnerView, self).write(vals)
         return res
 
     def _get_partners(self, partners, accounts, init_balance, display_account,
-                      data):
-
+                      data, asset_receivable=None):
         cr = self.env.cr
         move_line = self.env['account.move.line']
         move_lines = {x: [] for x in partners.ids}
         currency_id = self.env.company.currency_id
-
         tables, where_clause, where_params = move_line._query_get()
         wheres = [""]
         if where_clause.strip():
@@ -295,7 +316,6 @@ class PartnerView(models.TransientModel):
         if data['journals']:
             new_final_filter += ' AND j.id IN %s' % str(
                 tuple(data['journals'].ids) + tuple([0]))
-
         if data.get('accounts'):
             WHERE = "WHERE l.account_id IN %s" % str(
                 tuple(data.get('accounts').ids) + tuple([0]))
@@ -305,34 +325,49 @@ class PartnerView(models.TransientModel):
         if data.get('partners'):
             WHERE += ' AND p.id IN %s' % str(
                 tuple(data.get('partners').ids) + tuple([0]))
+
         if data.get('reconciled') == 'unreconciled':
             WHERE += ' AND l.full_reconcile_id is null AND' \
-                     ' l.balance != 0 AND a.reconcile is true'
+                     ' l.balance != 0 AND acc.reconcile is true'
 
-        sql = ('''SELECT l.id AS lid,l.partner_id AS partner_id,m.id AS move_id, 
-                    l.account_id AS account_id, l.date AS ldate, j.code AS lcode, l.currency_id, 
-                    l.amount_currency, l.ref AS lref, l.name AS lname, 
-                    COALESCE(l.debit,0) AS debit, COALESCE(l.credit,0) AS credit, 
-                    COALESCE(SUM(l.balance),0) AS balance,\
-                    m.name AS move_name, c.symbol AS currency_code,c.position AS currency_position, p.name AS partner_name\
-                    FROM account_move_line l\
-                    JOIN account_move m ON (l.move_id=m.id)\
-                    JOIN account_account a ON (l.account_id=a.id)
-                    LEFT JOIN res_currency c ON (l.currency_id=c.id)\
-                    LEFT JOIN res_partner p ON (l.partner_id=p.id)\
-                    JOIN account_journal j ON (l.journal_id=j.id)\
-                    JOIN account_account acc ON (l.account_id = acc.id) '''
-               + WHERE + new_final_filter + ''' GROUP BY l.id, m.id,  l.account_id, l.date, j.code, l.currency_id, l.amount_currency, l.ref, l.name, m.name, c.symbol, c.position, p.name ORDER BY l.date''')
+        if data.get('account_type') == 'asset_receivable':
+            WHERE += " AND acc.account_type = 'asset_receivable' "
+
+        elif data.get('account_type') == 'liability_payable':
+            WHERE += " AND acc.account_type = 'liability_payable' "
+
+        sql = ('''SELECT l.id AS lid,l.partner_id AS partner_id,
+                m.id AS move_id, 
+                l.account_id AS account_id, l.date AS ldate, 
+                acc.account_type AS account_type,
+                j.code AS lcode, l.currency_id, 
+                l.amount_currency, l.ref AS lref, l.name AS lname, 
+                COALESCE(l.debit,0) AS debit, COALESCE(l.credit,0) AS credit, 
+                COALESCE(SUM(l.balance),0) AS balance,
+                m.name AS move_name, c.symbol AS currency_code,c.position
+                AS currency_position, p.name AS partner_name
+                FROM account_move_line l
+                JOIN account_move m ON (l.move_id=m.id)
+                LEFT JOIN res_currency c ON (l.currency_id=c.id)
+                LEFT JOIN res_partner p ON (l.partner_id=p.id)
+                JOIN account_journal j ON (l.journal_id=j.id)
+                JOIN account_account acc ON (l.account_id = acc.id)
+                ''' + WHERE + new_final_filter +
+               ''' GROUP BY l.id, m.id,  
+                l.account_id, l.date, j.code, l.currency_id, 
+                l.amount_currency, l.ref, l.name, m.name, c.symbol, 
+                c.position, p.name, acc.account_type ORDER BY l.date
+                '''
+               )
         if data.get('accounts'):
             params = tuple(where_params)
         else:
             params = (tuple(accounts.ids),) + tuple(where_params)
         cr.execute(sql, params)
-
         account_list = {x.id: {'name': x.name, 'code': x.code} for x in
                         accounts}
-
-        for row in cr.dictfetchall():
+        a=cr.dictfetchall()
+        for row in a:
             balance = 0
             if row['partner_id'] in move_lines:
                 for line in move_lines.get(row['partner_id']):
@@ -384,7 +419,6 @@ class PartnerView(models.TransientModel):
     def get_dynamic_xlsx_report(self, data, response, report_data, dfr_data):
         report_data = json.loads(report_data)
         filters = json.loads(data)
-
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         cell_format = workbook.add_format(

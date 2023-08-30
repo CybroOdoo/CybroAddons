@@ -1,3 +1,24 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
 import time
 from datetime import datetime
 
@@ -21,24 +42,20 @@ class AgeingView(models.TransientModel):
     period_length = fields.Integer(string='Period Length (days)',
                                    required=True, default=30)
     date_from = fields.Date(default=lambda *a: time.strftime('%Y-%m-%d'))
-    result_selection = fields.Selection([('customer', 'Receivable Accounts'),
+    result_selection = fields.Selection([('customer',
+                                          'Receivable Accounts'),
                                          ('supplier', 'Payable Accounts'),
                                          ('customer_supplier',
                                           'Receivable and Payable Accounts')
                                          ], string="Partner's", required=True,
                                         default='customer')
-
-    partner_ids = fields.Many2many(
-        'res.partner', string='Partner'
-    )
-    partner_category_ids = fields.Many2many(
-        'res.partner.category', string='Partner Tag',
-    )
+    partner_ids = fields.Many2many('res.partner', string='Partner')
+    partner_category_ids = fields.Many2many('res.partner.category',
+                                            string='Partner Tag')
 
     @api.model
     def view_report(self, option):
         r = self.env['account.partner.ageing'].search([('id', '=', option[0])])
-
         data = {
             'result_selection': r.result_selection,
             'model': self,
@@ -47,17 +64,13 @@ class AgeingView(models.TransientModel):
             'period_length': r.period_length,
             'partners': r.partner_ids,
             'partner_tags': r.partner_category_ids,
-
         }
         if r.date_from:
             data.update({
                 'date_from': r.date_from,
             })
-
         filters = self.get_filter(option)
-
         records = self._get_report_values(data)
-
         currency = self._get_currency()
         return {
             'name': "Partner Ageing",
@@ -71,7 +84,6 @@ class AgeingView(models.TransientModel):
     def get_filter(self, option):
         data = self.get_filter_data(option)
         filters = {}
-
         if data.get('target_move'):
             filters['target_move'] = data.get('target_move')
         if data.get('date_from'):
@@ -82,48 +94,42 @@ class AgeingView(models.TransientModel):
             filters['result_selection'] = 'Payable'
         else:
             filters['result_selection'] = 'Receivable and Payable'
-
         if data.get('partners'):
             filters['partners'] = self.env['res.partner'].browse(
                 data.get('partners')).mapped('name')
         else:
             filters['partners'] = ['All']
-
         if data.get('partner_tags', []):
             filters['partner_tags'] = self.env['res.partner.category'].browse(
                 data.get('partner_tags', [])).mapped('name')
         else:
             filters['partner_tags'] = ['All']
-
         filters['company_id'] = ''
         filters['company_name'] = data.get('company_name')
         filters['partners_list'] = data.get('partners_list')
         filters['category_list'] = data.get('category_list')
         filters['company_name'] = data.get('company_name')
         filters['target_move'] = data.get('target_move').capitalize()
-
         return filters
 
     def get_filter_data(self, option):
         r = self.env['account.partner.ageing'].search([('id', '=', option[0])])
         default_filters = {}
         company_id = self.env.companies
-        company_domain = [('company_id', 'in', company_id.ids)]
+        # company_domain = [('company_id', 'in', company_id.ids)]
         partner = r.partner_ids if r.partner_ids else self.env[
             'res.partner'].search([])
         categories = r.partner_category_ids if r.partner_category_ids \
             else self.env['res.partner.category'].search([])
-
         filter_dict = {
             'partners': r.partner_ids.ids,
             'partner_tags': r.partner_category_ids.ids,
             'company_id': company_id.ids,
             'date_from': r.date_from,
-
             'target_move': r.target_move,
             'result_selection': r.result_selection,
             'partners_list': [(p.id, p.name) for p in partner],
-            'category_list': [(c.id, c.name) for c in categories],
+            'category_list': [(c.id, c.display_name) for c in categories],
             'company_name': ', '.join(self.env.companies.mapped('name')),
         }
         filter_dict.update(default_filters)
@@ -137,18 +143,16 @@ class AgeingView(models.TransientModel):
         elif data['result_selection'] == 'supplier':
             account_type = ['liability_payable']
         else:
-            account_type = ['liability_payable', 'asset_receivable']
+            account_type = ['payable', 'receivable']
         target_move = data['target_move']
         partners = data.get('partners')
         if data['partner_tags']:
             partners = self.env['res.partner'].search(
                 [('category_id', 'in', data['partner_tags'].ids)])
-
         account_res = self._get_partner_move_lines(data, partners, date_from,
                                                    target_move,
                                                    account_type,
                                                    data['period_length'])
-
         return {
             'doc_ids': self.ids,
             'docs': docs,
@@ -185,7 +189,6 @@ class AgeingView(models.TransientModel):
     def _get_partner_move_lines(self, data, partners, date_from, target_move,
                                 account_type,
                                 period_length):
-
         periods = {}
         start = datetime.strptime(date_from, "%Y-%m-%d")
         date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
@@ -206,17 +209,13 @@ class AgeingView(models.TransientModel):
         total = []
         cr = self.env.cr
         user_company = self.env.company
-
         user_currency = user_company.currency_id
         ResCurrency = self.env['res.currency'].with_context(date=date_from)
-        # company_ids = self._context.get('company_ids') or [user_company.id]
-
         company_ids = self.env.companies.ids
         move_state = ['draft', 'posted']
         if target_move == 'posted':
             move_state = ['posted']
         arg_list = (tuple(move_state), tuple(account_type))
-
         reconciliation_clause = '(l.reconciled IS FALSE)'
         cr.execute(
             'SELECT debit_move_id, credit_move_id FROM account_partial_reconcile where max_date > %s',
@@ -241,7 +240,6 @@ class AgeingView(models.TransientModel):
                         AND (l.move_id = am.id)
                         AND (am.state IN %s)
                         AND (account_account.account_type IN %s)
-
                         AND ''' + reconciliation_clause + '''          
                         AND (l.date <= %s)
                         AND l.company_id IN %s
@@ -249,33 +247,29 @@ class AgeingView(models.TransientModel):
 
                     ORDER BY UPPER(res_partner.name)'''
         cr.execute(query, arg_list)
-
         partners = cr.dictfetchall()
-
         # put a total of 0
         for i in range(7):
             total.append(0)
-
         # Build a string like (1,2,3) for easy use in SQL query
         partner_ids = [partner['partner_id'] for partner in partners if
                        partner['partner_id']]
-
         lines = dict(
             (partner['partner_id'] or False, []) for partner in partners)
         if not partner_ids:
             return [], [], {}
-
         # This dictionary will store the not due amount of all partners
         undue_amounts = {}
         query = '''SELECT l.id
-                        FROM account_move_line AS l, account_account, account_move am
-                        WHERE (l.account_id = account_account.id) AND (l.move_id = am.id)
-                            AND (am.state IN %s)
-                            AND (account_account.account_type IN %s)
-                            AND (COALESCE(l.date_maturity,l.date) >= %s)\
-                            AND ((l.partner_id IN %s) OR (l.partner_id IS NULL))
-                        AND (l.date <= %s)
-                        AND l.company_id IN %s'''
+                FROM account_move_line AS l, account_account, account_move am
+                WHERE (l.account_id = account_account.id) 
+                AND (l.move_id = am.id)
+                AND (am.state IN %s)
+                AND (account_account.account_type IN %s)
+                AND (COALESCE(l.date_maturity,l.date) >= %s)\
+                AND ((l.partner_id IN %s) OR (l.partner_id IS NULL))
+                AND (l.date <= %s)
+                AND l.company_id IN %s'''
         cr.execute(query, (
             tuple(move_state), tuple(account_type), date_from,
             tuple(partner_ids), date_from, tuple(company_ids)))
@@ -291,7 +285,6 @@ class AgeingView(models.TransientModel):
             jrnl_id = line.journal_id.name
             currency_id = line.company_id.currency_id.position
             currency_symbol = line.company_id.currency_id.symbol
-
             if partner_id not in undue_amounts:
                 undue_amounts[partner_id] = 0.0
             line_amount = ResCurrency._compute(line.company_id.currency_id,
@@ -325,42 +318,35 @@ class AgeingView(models.TransientModel):
                     'period6': 6,
                 })
 
-        # Use one query per period and store results in history (a list variable)
-        # Each history will contain: history[1] = {'<partner_id>': <partner_debit-credit>}
+        # Use one query per period and store results in history (a list
+        # variable) Each history will contain: history[1] = {'<partner_id>':
+        # <partner_debit-credit>}
         history = []
         for i in range(5):
             args_list = (
                 tuple(move_state), tuple(account_type), tuple(partner_ids),)
             dates_query = '(COALESCE(l.date_maturity,l.date)'
-
             if periods[str(i)]['start'] and periods[str(i)]['stop']:
                 dates_query += ' BETWEEN %s AND %s)'
-
                 args_list += (
                     periods[str(i)]['start'], periods[str(i)]['stop'])
             elif periods[str(i)]['start']:
                 dates_query += ' >= %s)'
-
                 args_list += (periods[str(i)]['start'],)
             else:
                 dates_query += ' <= %s)'
                 args_list += (periods[str(i)]['stop'],)
-
             args_list += (date_from, tuple(company_ids))
-
             query = '''SELECT l.id
                             FROM account_move_line AS l, account_account, account_move am
                             WHERE (l.account_id = account_account.id) AND (l.move_id = am.id)
-                                AND (am.state IN %s)
-                                AND (account_account.account_type IN %s)
-                                AND ((l.partner_id IN %s) OR (l.partner_id IS NULL))
-                                AND ''' + dates_query + '''
-
-
+                            AND (am.state IN %s)
+                            AND (account_account.account_type IN %s)
+                            AND ((l.partner_id IN %s) OR (l.partner_id IS NULL))
+                            AND ''' + dates_query + '''
                             AND (l.date <= %s)
                             AND l.company_id IN %s'''
             cr.execute(query, args_list)
-
             partners_amount = {}
             aml_ids = cr.fetchall()
             aml_ids = aml_ids and [x[0] for x in aml_ids] or []
@@ -495,7 +481,6 @@ class AgeingView(models.TransientModel):
             if partner[
                 'partner_id'] in undue_amounts:  # Making sure this partner actually was found by the query
                 undue_amt = undue_amounts[partner['partner_id']]
-
             total[6] = total[6] + undue_amt
             values['direction'] = undue_amt
             for rec in lines:
@@ -505,7 +490,6 @@ class AgeingView(models.TransientModel):
             if not float_is_zero(values['direction'],
                                  precision_rounding=self.env.company.currency_id.rounding):
                 at_least_one_amount = True
-
             for i in range(5):
                 during = False
                 if partner['partner_id'] in history[i]:
@@ -531,7 +515,6 @@ class AgeingView(models.TransientModel):
             else:
                 values['name'] = _('Unknown Partner')
                 values['trust'] = False
-
             if at_least_one_amount or (
                     self._context.get('include_nullified_amount') and lines[
                 partner['partner_id']]):
@@ -556,9 +539,7 @@ class AgeingView(models.TransientModel):
 
         report_data_main = json.loads(report_data)
         output = io.BytesIO()
-
         filters = json.loads(data)
-
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         sheet = workbook.add_worksheet()
         head = workbook.add_format({'align': 'center', 'bold': True,
@@ -601,7 +582,6 @@ class AgeingView(models.TransientModel):
             [lt or '' for lt in
              filters['partner_tags']]),
                           date_head)
-
         sheet.merge_range('A7:C7', 'Partner', heading)
         sheet.write('D7', 'Total', heading)
         sheet.write('E7', 'Not Due', heading)
@@ -610,7 +590,6 @@ class AgeingView(models.TransientModel):
         sheet.write('H7', '60-90', heading)
         sheet.write('I7', '90-120', heading)
         sheet.write('J7', '120+', heading)
-
         lst = []
         for rec in report_data_main[0]:
             lst.append(rec)
@@ -623,11 +602,9 @@ class AgeingView(models.TransientModel):
         sheet.set_column(9, 4, 15)
         sheet.set_column(10, 5, 15)
         sheet.set_column(11, 6, 15)
-
         for rec_data in report_data_main[0]:
             one_lst = []
             two_lst = []
-
             row += 1
             sheet.merge_range(row, col, row, col + 2, rec_data['name'], txt_l)
             sheet.write(row, col + 3, rec_data['total'], txt_l)
@@ -648,7 +625,6 @@ class AgeingView(models.TransientModel):
             sheet.write(row, col + 7, '60 - 90', sub_heading)
             sheet.write(row, col + 8, '90 - 120', sub_heading)
             sheet.write(row, col + 9, '120 +', sub_heading)
-
             for line_data in rec_data['child_lines']:
                 row += 1
                 sheet.write(row, col, line_data.get('move'), txt)
@@ -679,7 +655,6 @@ class AgeingView(models.TransientModel):
                     sheet.write(row, col + 9, line_data.get('amount'), txt)
                 else:
                     sheet.write(row, col + 9, "0", txt_v)
-
         workbook.close()
         output.seek(0)
         response.stream.write(output.read())
