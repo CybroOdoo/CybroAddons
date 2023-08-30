@@ -55,9 +55,7 @@ odoo.define('pos_receipt_extend.PaymentScreen', function (require) {
                 }).then(function(result){
                 const address = `${result.base_url}/my/invoices/${result.invoice_id}?`
                 let qr_code_svg = new XMLSerializer().serializeToString(codeWriter.write(address, 150, 150));
-                if (qr_code) {
-                   self.env.pos.qr_image = "data:image/svg+xml;base64,"+ window.btoa(qr_code_svg);
-                }
+                self.env.pos.qr_image = "data:image/svg+xml;base64,"+ window.btoa(qr_code_svg);
                 if (number) {
                    self.env.pos.invoice  = result.invoice_name
                 }
@@ -65,8 +63,6 @@ odoo.define('pos_receipt_extend.PaymentScreen', function (require) {
                 return receipt_order
          }
          }
-
-
 
        Registries.Component.extend(PaymentScreen, PosPaymentReceiptExtend);
 
