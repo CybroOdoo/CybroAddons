@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
+    <!--    Form view-->
     <record id="view_helpdesk_form" model="ir.ui.view">
         <field name="name">help.ticket.form</field>
         <field name="model">help.ticket</field>
@@ -13,13 +15,24 @@
                     <button name="create_invoice" string="Create Invoice"
                             type="object" class="btn-primary"
                             attrs="{'invisible':[('billable','=',False)]}"/>
-                    <field name="stage_id" widget="statusbar" options="{'clickable': '1'}"/>
+                    <field name="stage_id" widget="statusbar"
+                           options="{'clickable': '1'}"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button class="oe_stat_button" name="open_tasks"
                                 string="Tasks" type="object" icon="fa-tasks"
                                 attrs="{'invisible':[('create_task','=',False)]}">
+                        </button>
+                        <button class="oe_stat_button"
+                                name="open_merged_tickets"
+                                string="Merged Tickets" type="object"
+                                icon="fa-list"
+                                attrs="{'invisible':[('merge_ticket_invisible','=',False)]}">
+                            <div class="o_stat_info">
+                                <field name="merge_count" readonly="True"/>
+                                <span class="o_stat_text">Merged Tickets</span>
+                            </div>
                         </button>
 
                         <button class="oe_stat_button" name="open_invoices"
@@ -45,7 +58,7 @@
                             <field name="email"/>
                             <field name="phone"/>
                             <field name="tags" widget="many2many_tags"/>
-                            </group>
+                        </group>
                         <group>
                             <field name="show_category" invisible="1"/>
                             <field name="priority" widget="priority"/>
@@ -54,33 +67,32 @@
                             <field name="end_date"/>
                             <field name="product_id" widget="many2many_tags"/>
                             <field name="show_category" invisible="1"/>
+                            <field name="merge_count" invisible="1"/>
+                            <field name="merge_ticket_invisible" invisible="1"/>
                         </group>
                     </group>
-
                     <notebook>
                         <page string="Issue Description">
                             <field name="description"
                                    placeholder="Provide the reason in detail"/>
                         </page>
-
                         <page string="Attachments">
                             <field name="attachment_ids">
-                            <tree string="Attachments" no_open="1">
-                                <field name="name"/>
-                                <field name="res_model"/>
-                                <field name="res_field"/>
-                                <field name="res_id"/>
-                                <field name="type"/>
-                                <field name="file_size"/>
-                                <field name="company_id"/>
-                                <field name="create_uid"/>
-                                <field name="create_date"/>
-                                <field name="datas" widget="binary"
-                                       filename="name"/>
-                            </tree>
+                                <tree string="Attachments" no_open="1">
+                                    <field name="name"/>
+                                    <field name="res_model"/>
+                                    <field name="res_field"/>
+                                    <field name="res_id"/>
+                                    <field name="type"/>
+                                    <field name="file_size"/>
+                                    <field name="company_id"/>
+                                    <field name="create_uid"/>
+                                    <field name="create_date"/>
+                                    <field name="datas" widget="binary"
+                                           filename="name"/>
+                                </tree>
                             </field>
                         </page>
-
                         <page string="Customer Rating">
                             <group>
                                 <field name="customer_rating"
@@ -88,7 +100,6 @@
                                 <field name="review"/>
                             </group>
                         </page>
-
                         <page string="Other Information">
                             <group>
                                 <group>
@@ -125,7 +136,7 @@
             </form>
         </field>
     </record>
-
+    <!--Tree view-->
     <record id="view_helpdesk_tree" model="ir.ui.view">
         <field name="name">help.ticket.tree</field>
         <field name="model">help.ticket</field>
@@ -152,6 +163,7 @@
             </form>
         </field>
     </record>
+    <!--    Kanban view-->
     <record id="view_helpdesk_kanban" model="ir.ui.view">
         <field name="name">help.ticket.kanban</field>
         <field name="model">help.ticket</field>
@@ -199,7 +211,6 @@
                                             <field name="name"/>
                                         </strong>
                                     </div>
-
                                 </div>
                                 <div class="text-muted">
                                     <field name="customer_id"/>
@@ -215,11 +226,14 @@
                                     <div class="oe_kanban_bottom_left">
                                         <field name="priority"
                                                widget="priority"/>
-                                        <field name="activity_ids" widget="kanban_activity"/>
+                                        <field name="activity_ids"
+                                               widget="kanban_activity"/>
                                     </div>
                                     <div class="oe_kanban_bottom_right">
-                                        <field name="kanban_state" widget="state_selection"/>
-                                        <field name="user_id" widget="many2one_avatar_user"/>
+                                        <field name="kanban_state"
+                                               widget="state_selection"/>
+                                        <field name="user_id"
+                                               widget="many2one_avatar_user"/>
                                     </div>
                                 </div>
                             </div>
@@ -230,8 +244,7 @@
             </kanban>
         </field>
     </record>
-
-
+    <!--    Activity view-->
     <record id="helpdesk_view_activity" model="ir.ui.view">
         <field name="name">help.ticket.activity</field>
         <field name="model">help.ticket</field>
@@ -249,7 +262,7 @@
             </activity>
         </field>
     </record>
-
+    <!--Calendar view-->
     <record id="help_ticket_view_calendar" model="ir.ui.view">
         <field name="name">help.ticket.calendar</field>
         <field name="model">help.ticket</field>
@@ -263,8 +276,7 @@
             </calendar>
         </field>
     </record>
-
-
+    <!--    Stage form view-->
     <record id="view_helpdesk_stage_form" model="ir.ui.view">
         <field name="name">ticket.stage.form</field>
         <field name="model">ticket.stage</field>
@@ -289,7 +301,7 @@
             </form>
         </field>
     </record>
-
+    <!--Stage tree view-->
     <record id="view_helpdesk_stage_tree" model="ir.ui.view">
         <field name="name">ticket.stage.tree</field>
         <field name="model">ticket.stage</field>
@@ -302,7 +314,7 @@
             </tree>
         </field>
     </record>
-
+    <!--Type tree view-->
     <record id="view_helpdesk_types_tree" model="ir.ui.view">
         <field name="name">helpdesk.types.tree</field>
         <field name="model">helpdesk.types</field>
@@ -312,7 +324,7 @@
             </tree>
         </field>
     </record>
-
+    <!--tag tree-->
     <record id="view_helpdesk_tag_tree" model="ir.ui.view">
         <field name="name">helpdesk.tag.tree</field>
         <field name="model">helpdesk.tag</field>
@@ -322,7 +334,7 @@
             </tree>
         </field>
     </record>
-
+    <!--Pivot view-->
     <record id="help_ticket_view_pivot" model="ir.ui.view">
         <field name="name">help.ticket.pivot</field>
         <field name="model">help.ticket</field>
@@ -340,7 +352,7 @@
             </pivot>
         </field>
     </record>
-
+    <!--Graph view-->
     <record id="help_ticket_view_graph" model="ir.ui.view">
         <field name="name">help.ticket.graph</field>
         <field name="model">help.ticket</field>
@@ -358,7 +370,7 @@
             </graph>
         </field>
     </record>
-
+    <!--Search view-->
     <record id="help_ticket_search" model="ir.ui.view">
         <field name="name">help.ticket.search</field>
         <field name="model">help.ticket</field>
@@ -368,16 +380,21 @@
                 <field name="subject"/>
                 <filter string="my_ticket" name="My Ticket"
                         domain="[('assigned_user', '=', uid)]"/>
+                <filter string="Archived" name="filter_archived"
+                        domain="[('active','=', False)]"/>
+                <filter string="UnArchived" name="filter_unarchived"
+                        domain="[('active','=', True)]"/>
                 <group expand="0" string="Group By">
                     <filter name="Customer" string="Customer"
                             context="{'group_by':'customer_id'}"/>
                     <filter name="Team" string="Team"
                             context="{'group_by':'team_id'}"/>
-                    <filter name="Team_Head" string="Team Head" context="{'group_by':'team_head'}"/>
-                    <filter name="assign" string="Assigned To" context="{'group_by':'assigned_user'}"/>
+                    <filter name="Team_Head" string="Team Head"
+                            context="{'group_by':'team_head'}"/>
+                    <filter name="assign" string="Assigned To"
+                            context="{'group_by':'assigned_user'}"/>
                 </group>
             </search>
         </field>
     </record>
-
 </odoo>

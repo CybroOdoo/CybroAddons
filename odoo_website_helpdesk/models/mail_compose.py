@@ -23,9 +23,11 @@ from odoo import fields, models
 
 
 class MailComposeMessage(models.TransientModel):
+    """Inheriting the Mail compose message"""
     _inherit = 'mail.compose.message'
 
     def _action_send_mail(self, auto_commit=False):
+        """Send mail function"""
         if self.model == 'help.ticket':
             ticket_id = self.env['help.ticket'].browse(self.res_id)
             ticket_id.replied_date = fields.Date.today()

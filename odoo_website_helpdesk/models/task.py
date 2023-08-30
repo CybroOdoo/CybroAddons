@@ -19,16 +19,19 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import models, fields
+from odoo import fields, models
 
 
 class Task(models.Model):
+    """Inheriting the project task"""
     _inherit = 'project.task'
 
-    ticket_id = fields.Many2one('help.ticket', string='Ticket')
+    ticket_id = fields.Many2one('help.ticket', string='Ticket',
+                                help='Ticket')
 
 
 class AccountMove(models.Model):
+    """Inheriting the account.move model"""
     _inherit = 'account.move'
 
     ticket_id = fields.Many2one('help.ticket', string='Ticket')

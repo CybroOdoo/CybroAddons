@@ -44,63 +44,95 @@ RATING = [
 
 
 class HelpDeskTicket(models.Model):
+    """Help_ticket model"""
     _name = 'help.ticket'
     _description = 'Helpdesk Ticket'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
     name = fields.Char('Name', default=lambda self: self.env['ir.sequence'].
                        next_by_code('help.ticket') or _('New'))
-    customer_id = fields.Many2one('res.partner', string='Customer Name')
-    customer_name = fields.Char('Customer Name')
-    subject = fields.Text('Subject', required=True)
-    description = fields.Text('Description', required=True)
-    email = fields.Char('Email')
-    phone = fields.Char('Phone')
-    team_id = fields.Many2one('help.team', string='Helpdesk Team')
-    product_id = fields.Many2many('product.template', string='Product')
-    project_id = fields.Many2one('project.project', string='Project',
+    customer_id = fields.Many2one('res.partner',
+                                  string='Customer Name',
+                                  help='Customer Name')
+    customer_name = fields.Char('Customer Name', help='Customer Name')
+    subject = fields.Text('Subject', required=True,
+                          help='Subject of the Ticket')
+    description = fields.Text('Description', required=True,
+                              help='Description')
+    email = fields.Char('Email', help='Email')
+    phone = fields.Char('Phone', help='Contact Number')
+    team_id = fields.Many2one('help.team', string='Helpdesk Team',
+                              help='Helpdesk Team Name')
+    product_id = fields.Many2many('product.template',
+                                  string='Product',
+                                  help='Product Name')
+    project_id = fields.Many2one('project.project',
+                                 string='Project',
                                  readonly=False,
-                                 related='team_id.project_id', store=True)
+                                 related='team_id.project_id',
+                                 store=True,
+                                 help='Project Name')
 
-    priority = fields.Selection(PRIORITIES, default='1')
+    priority = fields.Selection(PRIORITIES, default='1', help='Priority of the'
+                                                              ' Ticket')
     stage_id = fields.Many2one('ticket.stage', string='Stage',
                                default=lambda self: self.env[
                                    'ticket.stage'].search(
                                    [('name', '=', 'Draft')], limit=1).id,
                                tracking=True,
-                               group_expand='_read_group_stage_ids')
+                               group_expand='_read_group_stage_ids',
+                               help='Stages')
     user_id = fields.Many2one('res.users',
                               default=lambda self: self.env.user,
                               check_company=True,
-                              index=True, tracking=True)
-    cost = fields.Float('Cost per hour')
+                              index=True, tracking=True,
+                              help='Login User')
+    cost = fields.Float('Cost per hour', help='Cost Per Unit')
     service_product_id = fields.Many2one('product.product',
                                          string='Service Product',
+                                         help='Service Product',
                                          domain=[
                                              ('detailed_type', '=', 'service')])
-    create_date = fields.Datetime('Creation Date')
-    start_date = fields.Datetime('Start Date')
-    end_date = fields.Datetime('End Date')
-    public_ticket = fields.Boolean(string="Public Ticket")
-    invoice_ids = fields.Many2many('account.move', string='Invoices')
-    task_ids = fields.Many2many('project.task', string='Tasks')
-    color = fields.Integer(string="Color")
-    replied_date = fields.Datetime('Replied date')
-    last_update_date = fields.Datetime('Last Update Date')
-    ticket_type = fields.Many2one('helpdesk.types', string='Ticket Type')
+    create_date = fields.Datetime('Creation Date', help='Created date')
+    start_date = fields.Datetime('Start Date', help='Start Date')
+    end_date = fields.Datetime('End Date', help='End Date')
+    public_ticket = fields.Boolean(string="Public Ticket", help='Public Ticket')
+    invoice_ids = fields.Many2many('account.move',
+                                   string='Invoices',
+                                   help='Invoicing id'
+                                   )
+    task_ids = fields.Many2many('project.task',
+                                string='Tasks',
+                                help='Task id')
+    color = fields.Integer(string="Color", help='Color')
+    replied_date = fields.Datetime('Replied date', help='Replied Date')
+    last_update_date = fields.Datetime('Last Update Date',
+                                       help='Last Update Date')
+    ticket_type = fields.Many2one('helpdesk.types',
+                                  string='Ticket Type', help='Ticket Type')
     team_head = fields.Many2one('res.users', string='Team Leader',
-                                compute='_compute_team_head')
+                                compute='_compute_team_head',
+                                help='Team Leader Name')
     assigned_user = fields.Many2one('res.users',
                                     domain=lambda self: [
                                         ('groups_id', 'in', self.env.ref(
-                                            'odoo_website_helpdesk.helpdesk_user').id)])
-    category_id = fields.Many2one('helpdesk.categories')
-    tags = fields.Many2many('helpdesk.tag')
-    assign_user = fields.Boolean(default=False)
-    attachment_ids = fields.One2many('ir.attachment', 'res_id')
+                                            'odoo_website_helpdesk.helpdesk_user').id)],
+                                    help='Assigned User Name')
+    category_id = fields.Many2one('helpdesk.categories',
+                                  help='Category')
+    tags = fields.Many2many('helpdesk.tag', help='Tags')
+    assign_user = fields.Boolean(default=False, help='Assign User')
+    attachment_ids = fields.One2many('ir.attachment', 'res_id',
+                                     help='Attachment Line')
+    merge_ticket_invisible = fields.Boolean(string='Merge Ticket',
+                                            help='Merge Ticket Invisible or '
+                                                 'Not', default=False)
+    merge_count = fields.Integer(string='Merge Count', help='Merged Tickets '
+                                                            'Count')
 
     @api.onchange('team_id', 'team_head')
     def team_leader_domain(self):
+        """Changing the team leader when selecting the team"""
         li = []
         for rec in self.team_id.member_ids:
             li.append(rec.id)
@@ -108,10 +140,12 @@ class HelpDeskTicket(models.Model):
 
     @api.depends('team_id')
     def _compute_team_head(self):
+        """Compute the team head function"""
         self.team_head = self.team_id.team_lead_id.id
 
     @api.onchange('stage_id')
     def mail_snd(self):
+        """Sending mail to the user function"""
         rec_id = self._origin.id
         data = self.env['help.ticket'].search([('id', '=', rec_id)])
         data.last_update_date = fields.Datetime.now()
@@ -124,6 +158,7 @@ class HelpDeskTicket(models.Model):
             mail_template.send_mail(self._origin.id, force_send=True)
 
     def assign_to_teamleader(self):
+        """Assigning team leader function"""
         if self.team_id:
             self.team_head = self.team_id.team_lead_id.id
             mail_template = self.env.ref(
@@ -137,6 +172,7 @@ class HelpDeskTicket(models.Model):
             raise ValidationError("Please choose a Helpdesk Team")
 
     def _default_show_create_task(self):
+        """Task creation"""
         return self.env['ir.config_parameter'].sudo().get_param(
             'odoo_website_helpdesk.show_create_task')
 
@@ -148,6 +184,7 @@ class HelpDeskTicket(models.Model):
     billable = fields.Boolean(string="Billable", default=False)
 
     def _default_show_category(self):
+        """Show category default"""
         return self.env['ir.config_parameter'].sudo().get_param(
             'odoo_website_helpdesk.show_category')
 
@@ -162,16 +199,19 @@ class HelpDeskTicket(models.Model):
         ('blocked', 'Blocked'), ], default='normal')
 
     def _compute_show_category(self):
+        """Compute show category"""
         show_category = self._default_show_category()
         for rec in self:
             rec.show_category = show_category
 
     def _compute_show_create_task(self):
+        """Compute the created task"""
         show_create_task = self._default_show_create_task()
         for record in self:
             record.show_create_task = show_create_task
 
     def auto_close_ticket(self):
+        """Automatically closing the ticket"""
         auto_close = self.env['ir.config_parameter'].sudo().get_param(
             'odoo_website_helpdesk.auto_close_ticket')
         if auto_close:
@@ -201,13 +241,16 @@ class HelpDeskTicket(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        """Create function"""
         return super(HelpDeskTicket, self).create(vals_list)
 
     def write(self, vals):
+        """Write function"""
         result = super(HelpDeskTicket, self).write(vals)
         return result
 
     def create_invoice(self):
+        """Create Invoice based on the ticket"""
         tasks = self.env['project.task'].search(
             [('project_id', '=', self.project_id.id),
              ('ticket_id', '=', self.id)]).filtered(
@@ -219,7 +262,7 @@ class HelpDeskTicket(models.Model):
 
         invoice_no = self.env['ir.sequence'].next_by_code(
             'ticket.invoice')
-        move = self.env['account.move'].create([
+        self.env['account.move'].create([
             {
                 'name': invoice_no,
                 'move_type': 'out_invoice',
@@ -247,6 +290,7 @@ class HelpDeskTicket(models.Model):
         }
 
     def create_tasks(self):
+        """Task creation"""
         task_id = self.env['project.task'].create({
             'name': self.name + '-' + self.subject,
             'project_id': self.project_id.id,
@@ -268,6 +312,7 @@ class HelpDeskTicket(models.Model):
         }
 
     def open_tasks(self):
+        """View the Created task """
         return {
             'name': 'Tasks',
             'domain': [('ticket_id', '=', self.id)],
@@ -278,6 +323,7 @@ class HelpDeskTicket(models.Model):
         }
 
     def open_invoices(self):
+        """View the Created invoice"""
         return {
             'name': 'Invoice',
             'domain': [('ticket_id', '=', self.id)],
@@ -287,7 +333,26 @@ class HelpDeskTicket(models.Model):
             'type': 'ir.actions.act_window',
         }
 
+    def open_merged_tickets(self):
+        """Open the merged tickets tree view"""
+        ticket_ids = self.env['support.tickets'].search(
+            [('merged_ticket', '=', self.id)])
+        # Get the display_name matching records from the support.tickets
+        helpdesk_ticket_ids = ticket_ids.mapped('display_name')
+        # Get the IDs of the help.ticket records matching the display names
+        help_ticket_records = self.env['help.ticket'].search(
+            [('name', 'in', helpdesk_ticket_ids)])
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Helpdesk Ticket',
+            'view_mode': 'tree,form',
+            'res_model': 'help.ticket',
+            'domain': [('id', 'in', help_ticket_records.ids)],
+            'context': self.env.context,
+        }
+
     def action_send_reply(self):
+        """Action to sent reply button"""
         template_id = self.env['ir.config_parameter'].sudo().get_param(
             'odoo_website_helpdesk.reply_template_id'
         )
@@ -321,24 +386,31 @@ class HelpDeskTicket(models.Model):
 
 
 class StageTicket(models.Model):
+    """Stage Ticket class"""
     _name = 'ticket.stage'
     _description = 'Ticket Stage'
     _order = 'sequence, id'
     _fold_name = 'fold'
 
-    name = fields.Char('Name')
-    active = fields.Boolean(default=True)
-    sequence = fields.Integer(default=50)
-    closing_stage = fields.Boolean('Closing Stage', default=False)
-    cancel_stage = fields.Boolean('Cancel Stage', default=False)
-    starting_stage = fields.Boolean('Start Stage', default=False)
-    folded = fields.Boolean('Folded in Kanban', default=False)
+    name = fields.Char('Name', help='Name')
+    active = fields.Boolean(default=True, help='Active', string='Active')
+    sequence = fields.Integer(default=50, help='Sequence', string='Sequence')
+    closing_stage = fields.Boolean('Closing Stage', default=False,
+                                   help='Closing stage')
+    cancel_stage = fields.Boolean('Cancel Stage', default=False,
+                                  help='Cancel stage')
+    starting_stage = fields.Boolean('Start Stage', default=False,
+                                    help='Starting Stage')
+    folded = fields.Boolean('Folded in Kanban', default=False,
+                            help='Folded Stage')
     template_id = fields.Many2one('mail.template',
+                                  help='Templates',
                                   domain="[('model', '=', 'help.ticket')]")
-    group_ids = fields.Many2many('res.groups')
-    fold = fields.Boolean(string='Fold')
+    group_ids = fields.Many2many('res.groups', help='Group ID')
+    fold = fields.Boolean(string='Fold', help='Folded')
 
     def unlink(self):
+        """Unlinking Function"""
         for rec in self:
             tickets = rec.search([])
             sequence = tickets.mapped('sequence')
@@ -354,20 +426,24 @@ class StageTicket(models.Model):
 
 
 class HelpdeskTypes(models.Model):
+    """Helpdesk types """
     _name = 'helpdesk.types'
     _description = 'Helpdesk Types'
 
-    name = fields.Char(string='Type')
+    name = fields.Char(string='Type', help='Types')
 
 
 class Tasks(models.Model):
+    """Inheriting the task"""
     _inherit = 'project.task'
 
-    ticket_billed = fields.Boolean('Billed', default=False)
+    ticket_billed = fields.Boolean('Billed', default=False,
+                                   help='Billed Tickets')
 
 
 class HelpdeskTags(models.Model):
+    """Helpdesk tags"""
     _name = 'helpdesk.tag'
     _description = 'Helpdesk Tags'
 
-    name = fields.Char(string='Tag')
+    name = fields.Char(string='Tag', help='Tag Name')

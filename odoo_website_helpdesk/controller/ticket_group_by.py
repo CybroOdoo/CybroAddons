@@ -4,12 +4,13 @@ from odoo.http import request
 
 class TicketGroupBy(http.Controller):
     @http.route(['/ticketgroupby'], type='json', auth="public", website=True)
-    def ticket_group_by(self,**kwargs):
+    def ticket_group_by(self, **kwargs):
         context = []
         group_value = kwargs.get("search_value")
         if group_value == '0':
             context = []
             tickets = request.env["help.ticket"].search([])
+            context.append(tickets)
         if group_value == '1':
             context = []
             stage_ids = request.env['ticket.stage'].search([])

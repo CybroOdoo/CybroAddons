@@ -22,7 +22,7 @@
 
 {
     'name': "Website Helpdesk Support Ticket Management",
-    'version': '16.0.3.0.0',
+    'version': '16.0.4.0.0',
     'summary': """Helpdesk Module for community""",
     'description': """Can create ticket from website also and can manage it from backend.
     Bill can be created for ticket with service cost""",
@@ -34,7 +34,6 @@
     'data': [
         'security/security_groups.xml',
         'security/ir.model.access.csv',
-        'views/helpdesk.xml',
         'views/team.xml',
         'views/portal_search.xml',
         'views/res_config_settings.xml',
@@ -45,6 +44,7 @@
         'views/portal.xml',
         'views/categories.xml',
         'views/rating_form.xml',
+        'views/merge_tickets_views.xml',
         'templates/helpdesk_replay_template.xml',
         'data/ticket_sequence.xml',
         'data/ticket_stage_data.xml',
@@ -54,14 +54,14 @@
         'report/helpdesk_ticket_report_template.xml',
     ],
     'assets': {
-        'web.assets_frontend': [
-            'odoo_website_helpdesk/static/src/js/ticket_details.js',
-        ],
+        # 'web.assets_frontend': [
+        # ],
         'web.assets_backend': [
             'odoo_website_helpdesk/static/src/xml/helpdesk_dashboard.xml',
             'odoo_website_helpdesk/static/src/js/helpdesk_dashboard_action.js',
         ],
         'web.assets_frontend': [
+            'odoo_website_helpdesk/static/src/js/ticket_details.js',
             '/odoo_website_helpdesk/static/src/js/portal_search.js',
             '/odoo_website_helpdesk/static/src/js/portal_groupby.js',
             '/odoo_website_helpdesk/static/src/js/multiple_product_choose.js',

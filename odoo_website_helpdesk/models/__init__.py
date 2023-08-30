@@ -25,3 +25,5 @@ from . import res_config
 from . import categories
 from . import heldesk_team
 from . import mail_compose
+from . import merge_tickets
+from . import support_tickets
