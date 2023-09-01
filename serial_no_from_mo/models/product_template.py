@@ -55,11 +55,12 @@ class MrpProduction(models.Model):
                             'code': 'mrp.production.sequence',
                             'prefix': prefix,
                             'padding': digit})
-                    serial_id = self.env['stock.production.lot'].create({
-                        'name': self.env['ir.sequence'].sudo().next_by_code('mrp.production.sequence'),
-                        'product_id': rec.product_id.id,
-                        'company_id': rec.company_id.id,
-                    })
+                    if rec.product_qty == 1:
+                        serial_id = self.env['stock.production.lot'].create({
+                            'name': self.env['ir.sequence'].sudo().next_by_code('mrp.production.sequence'),
+                            'product_id': rec.product_id.id,
+                            'company_id': rec.company_id.id,
+                        })
                 else:
                     seq = self.env['ir.sequence'].sudo().search([('code', '=', rec.product_id.name)])
                     if seq:
@@ -74,10 +75,12 @@ class MrpProduction(models.Model):
                             'code': rec.product_id.name,
                             'prefix': rec.product_id.product_tmpl_id.prefix,
                             'padding': rec.product_id.product_tmpl_id.digit})
-                    serial_id = self.env['stock.production.lot'].create({
-                        'name': self.env['ir.sequence'].sudo().next_by_code(rec.product_id.name),
-                        'product_id': rec.product_id.id,
-                        'company_id': rec.company_id.id,
-                    })
-                rec.lot_producing_id = serial_id
+                    if rec.product_qty == 1:
+                        serial_id = self.env['stock.production.lot'].create({
+                            'name': self.env['ir.sequence'].sudo().next_by_code(rec.product_id.name),
+                            'product_id': rec.product_id.id,
+                            'company_id': rec.company_id.id,
+                        })
+                if rec.product_qty == 1:
+                    rec.lot_producing_id = serial_id
             return super(MrpProduction, self).action_confirm()
