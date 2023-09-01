@@ -35,6 +35,7 @@
         'security/security.xml',
         'security/ir.model.access.csv',
         'data/uom_demo.xml',
+        'data/subscription_package_stop_data.xml',
         'data/subscription_stage_data.xml',
         'data/mail_template.xml',
         'data/cron.xml',

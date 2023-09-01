@@ -76,6 +76,8 @@ class SubscriptionPlan(models.Model):
     def _compute_renewal_time(self):
         """ This method calculate renewal time based on renewal value """
         for rec in self:
+            if int(rec.renewal_value) == 0 or int(rec.renewal_value) < 0:
+                rec.renewal_value = 1
             if rec.renewal_period == 'days':
                 rec.renewal_time = int(rec.renewal_value)
             elif rec.renewal_period == 'weeks':
@@ -92,6 +94,8 @@ class SubscriptionPlan(models.Model):
         """ This method calculate days to end for subscription plan based on
         limit count """
         for rec in self:
+            if rec.limit_count == 0 or rec.limit_count < 0:
+                rec.limit_count = 1
             if rec.limit_choice == 'ones':
                 rec.days_to_end = rec.renewal_time
             if rec.limit_choice == 'manual':

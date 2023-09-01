@@ -112,8 +112,10 @@ class SubscriptionPackage(models.Model):
                                           readonly=False)
     plan_id = fields.Many2one('subscription.package.plan',
                               string='Subscription Plan')
-    start_date = fields.Date(string='Start Date', store=True,
+    start_date = fields.Date(string='Period Start Date', store=True,
                              ondelete='restrict')
+    date_started = fields.Date(string='Subsciption Start date', store=True,
+                               ondelete='restrict', readonly=True)
     next_invoice_date = fields.Date(string='Next Invoice Date', readonly=False,
                                     store=True,
                                     compute="_compute_next_invoice_date")
@@ -239,8 +241,8 @@ class SubscriptionPackage(models.Model):
     def button_start_date(self):
         """Button to start subscription package"""
 
-        if not self.start_date:
-            self.start_date = datetime.date.today()
+        stage_id = (self.env['subscription.package.stage'].search([
+            ('category', '=', 'progress')], limit=1).id)
         for rec in self:
             if len(rec.env['subscription.package.stage'].search(
                     [('category', '=', 'draft')])) > 1:
@@ -250,9 +252,8 @@ class SubscriptionPackage(models.Model):
                       'only one stage is allowed to have category "Draft"'))
             else:
                 rec.write(
-                    {'stage_id': (rec.env[
-                                      'subscription.package.stage'].search([
-                        ('category', '=', 'draft')]).id) + 1})
+                    {'stage_id': stage_id,
+                     'date_started': fields.Date.today()})
 
     def button_sale_order(self):
         """Button to create sale order"""
@@ -321,54 +322,114 @@ class SubscriptionPackage(models.Model):
             sub.write(values)
         return True
 
+    def send_renew_alert_mail(self, today, renew_date, sub_id):
+        if today == renew_date:
+            self.env.ref(
+                'subscription_package'
+                '.mail_template_subscription_renew').send_mail(
+                sub_id, force_send=True)
+            subscription = self.env['subscription.package'].browse(sub_id)
+            subscription.write({'to_renew': True})
+            return True
+        else:
+            return False
+
+    def find_renew_date(self, next_invoice, date_started, end):
+        if end == 0:
+            end_date = next_invoice
+            difference = (next_invoice - date_started).days / 10
+            renew_date = next_invoice - relativedelta(
+                days=difference)
+            close_date = next_invoice
+        else:
+            end_date = fields.Date.add(date_started,
+                                       days=end)
+            close = date_started + relativedelta(days=end)
+            difference = (close - date_started).days / 10
+            renew_date = close - relativedelta(
+                days=difference)
+            close_date = close
+
+        data = {'renew_date': renew_date,
+                'end_date': end_date,
+                'close_date': close_date}
+        return data
+
     def close_limit_cron(self):
-        """ It Checks renew date, close date. It will send mail when renew date """
+        """ It Checks renew date, close date. It will send mail when renew
+        date and also generates invoices based on the plan.
+        It wil close the subscription automatically if renewal limit is exceeded """
         pending_subscriptions = self.env['subscription.package'].search(
             [('stage_category', '=', 'progress')])
-        today_date = fields.Date.today()
-        pending_subscription = False
-        close_subscription = False
-        for pending_subscription in pending_subscriptions:
-            if pending_subscription.start_date:
-                pending_subscription.close_date = pending_subscription.start_date + relativedelta(
-                    days=pending_subscription.plan_id.days_to_end)
-            difference = (pending_subscription.close_date -
-                          pending_subscription.start_date).days / 10
-            renew_date = pending_subscription.close_date - relativedelta(
-                days=difference)
-            if today_date == renew_date:
-                pending_subscription.to_renew = True
-                self.env.ref(
-                    'subscription_package.mail_template_subscription_renew').send_mail(
-                    pending_subscription.id, force_send=True)
+        # today_date = fields.Date.today()
+        today_date = datetime.datetime.strptime('21092023', '%d%m%Y').date()
 
+        pending_subscription = False
+        for pending_subscription in pending_subscriptions:
+            get_dates = self.find_renew_date(
+                pending_subscription.next_invoice_date,
+                pending_subscription.date_started,
+                pending_subscription.plan_id.days_to_end)
+            renew_date = get_dates['renew_date']
+            end_date = get_dates['end_date']
+            pending_subscription.close_date = get_dates['close_date']
+            if today_date == pending_subscription.next_invoice_date:
                 if pending_subscription.plan_id.invoice_mode == 'draft_invoice':
                     this_products_line = []
                     for rec in pending_subscription.product_line_ids:
                         rec_list = [0, 0, {'product_id': rec.product_id.id,
-                                           'quantity': rec.product_qty}]
+                                           'quantity': rec.product_qty,
+                                           'price_unit': rec.unit_price,
+                                           'discount': rec.discount
+                                           }]
                         this_products_line.append(rec_list)
-                    b = self.env['account.move'].create(
-                        {
-                            'move_type': 'out_invoice',
-                            'subscription_id': pending_subscription.id,
-                            'date': fields.Date.today(),
-                            'invoice_date': fields.Date.today(),
-                            'state': 'draft',
-                            'partner_id': pending_subscription.partner_invoice_id.id,
-                            'currency_id': pending_subscription.partner_invoice_id.currency_id.id,
-                            'invoice_line_ids': this_products_line
-                        })
-                pending_subscription.write({'to_renew': False,
-                                            'start_date': datetime.datetime.today()})
-        close_subscriptions = self.env['subscription.package'].search(
-            [('stage_category', '=', 'progress'), ('to_renew', '=', True)])
-        for close_subscription in close_subscriptions:
-            close_subscription.close_date = close_subscription.start_date + relativedelta(
-                days=close_subscription.plan_id.days_to_end)
-            if today_date == close_subscription.close_date:
-                close_subscription.set_close()
-        return dict(pending=pending_subscription, closed=close_subscription)
+                        self.env['account.move'].create(
+                            {
+                                'move_type': 'out_invoice',
+                                'invoice_date_due': today_date,
+                                'invoice_payment_term_id': False,
+                                'invoice_date': today_date,
+                                'state': 'draft',
+                                'subscription_id': pending_subscription.id,
+                                'partner_id': pending_subscription.partner_invoice_id.id,
+                                'currency_id': pending_subscription.partner_invoice_id.currency_id.id,
+                                'invoice_line_ids': this_products_line
+                            })
+
+                    pending_subscription.write({'to_renew': False,
+                                                'start_date': pending_subscription.next_invoice_date})
+                    new_date = self.find_renew_date(
+                        pending_subscription.next_invoice_date,
+                        pending_subscription.date_started,
+                        pending_subscription.plan_id.days_to_end)
+                    pending_subscription.write(
+                        {'close_date': new_date['close_date']})
+                    self.send_renew_alert_mail(today_date,
+                                               new_date['renew_date'],
+                                               pending_subscription.id)
+
+            if (today_date == end_date) and (
+                    pending_subscription.plan_id.limit_choice != 'manual'):
+                display_msg = ("<h5><i>The renewal limit has been exceeded "
+                               "today for this subscription based on the "
+                               "current subscription plan.</i></h5>")
+                pending_subscription.message_post(body=display_msg)
+                pending_subscription.is_closed = True
+                reason = (self.env['subscription.package.stop'].search([
+                    ('name', '=', 'Renewal Limit Exceeded')]).id)
+                pending_subscription.close_reason = reason
+                pending_subscription.closed_by = self.user_id
+                pending_subscription.close_date = fields.Date.today()
+                stage = (self.env['subscription.package.stage'].search([
+                    ('category', '=', 'closed')]).id)
+                values = {'stage_id': stage, 'to_renew': False,
+                          'next_invoice_date': False}
+                pending_subscription.write(values)
+
+            self.send_renew_alert_mail(today_date, renew_date,
+                                       pending_subscription.id)
+
+        return dict(pending=pending_subscription)
 
     @api.depends('product_line_ids.total_amount')
     def _compute_total_recurring_price(self):
