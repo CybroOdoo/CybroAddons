@@ -96,6 +96,9 @@ class WebsiteFormInherit(WebsiteForm):
                 request.session['form_builder_id'] = ticket_id.id
                 return json.dumps({'id': ticket_id.id})
             else:
+                lowest_sequence = tickets.filtered(
+                    lambda x: x.sequence == min(sequence))
+                lowest_stage_id = lowest_sequence
                 rec_val = {
                     'customer_name': kwargs.get('customer_name'),
                     'subject': kwargs.get('subject'),

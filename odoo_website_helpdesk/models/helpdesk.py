@@ -129,6 +129,8 @@ class HelpDeskTicket(models.Model):
                                                  'Not', default=False)
     merge_count = fields.Integer(string='Merge Count', help='Merged Tickets '
                                                             'Count')
+    active = fields.Boolean(default=True, help='Active', string='Active')
+
 
     @api.onchange('team_id', 'team_head')
     def team_leader_domain(self):
