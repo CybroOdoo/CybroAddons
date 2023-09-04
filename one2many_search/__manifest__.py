@@ -22,7 +22,7 @@
 
 {
     'name': "One2many Search Widget Odoo15",
-    "version": "15.0.1.0.0",
+    "version": "15.0.1.0.1",
     'description': "Quick Search Feature For One2many Fields In Odoo",
     'summary': 'Quick Search Feature For One2many Fields In Odoo',
     "website": "https://www.cybrosys.com",
