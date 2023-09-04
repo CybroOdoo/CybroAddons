@@ -22,7 +22,7 @@
 {
     'name': 'Hide Cost Price',
     'summary': """Hide cost price of product for specified users""",
-    'version': '16.0.1.0.0',
+    'version': '16.0.2.0.0',
     'description': """Product cost price will be visible only for specified 
     group""",
     'author': 'Cybrosys Techno Solutions',
@@ -39,5 +39,4 @@
     'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,
-
 }
