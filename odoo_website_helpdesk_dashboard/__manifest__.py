@@ -25,6 +25,7 @@
     'description': """Helpdesk Support Ticket Management Dashboard""",
     'summary': """Website HelpDesk Dashboard Module Brings a Multipurpose"""
                """Graphical Dashboard for Website HelpDesk module""",
+    'version': '14.0.1.0.1',
     'author': "Cybrosys Techno Solutions",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

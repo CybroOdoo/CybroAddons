@@ -34,83 +34,71 @@ odoo.define("odoo_website_helpdesk_dashboard.dashboard_view", function (require)
             var self = this;
             self.render_tickets_month_graph();
             self.render_team_ticket_count_graph();
-            self.render_projects_ticket_graph();
-            self.render_billed_task_team_graph();
-            self.render_team_ticket_done_graph();
+//            self.render_projects_ticket_graph();
+//            self.render_billed_task_team_graph();
+//            self.render_team_ticket_done_graph();
 
         },
-        render_tickets_month_graph: function () {
-            var self = this
-            var ctx = self.$(".ticket_month");
-            rpc.query({
-                model: "help.ticket",
-                method: "get_ticket_month_pie",
-            }).then(function (arrays) {
-                var data = {
-                    labels: arrays[1],
-                    datasets: [{
-                        label: "",
-                        data: arrays[0],
-                        backgroundColor: [
-                            "#665191",
-                            "#ff7c43",
-                            "#ffa600",
-                            "#a05195",
-                            "#2f4b7c",
-                            "#f95d6a",
-                            "#6d5c16",
-                            "#003f5c",
-                            "#d45087"
-                        ],
-                        borderColor: [
-                            "#003f5c",
-                            "#2f4b7c",
-                            "#f95d6a",
-                            "#665191",
-                            "#d45087",
-                            "#ff7c43",
-                            "#ffa600",
-                            "#a05195",
-                            "#6d5c16"
-                        ],
-                        borderWidth: 1
-                    },]
-                };
+      render_tickets_month_graph: function () {
+    var self = this;
+    var ctx = self.$(".ticket_month");
+    rpc.query({
+        model: "help.ticket",
+        method: "get_tickets_view",
+    }).then(function (values) {
+        var data = {
+            labels: ['New', 'In Progress', 'Solved'],
+            datasets: [{
+                data: [values.inbox_count, values.progress_count, values.done_count],
+                backgroundColor: [
+                    "#665191",
+                    "#ff7c43",
+                    "#ffa600"
+                ],
+                borderColor: [
+                    "#003f5c",
+                    "#2f4b7c",
+                    "#f95d6a"
+                ],
+                borderWidth: 1
+            }]
+        };
 
-                //options
-                var options = {
-                    responsive: true,
-                    title: false,
-                    legend: {
-                        display: true,
-                        position: "right",
-                        labels: {
-                            fontColor: "#333",
-                            fontSize: 16
-                        }
+        //options
+        var options = {
+            responsive: true,
+            title: false,
+            legend: {
+                display: true,
+                position: "right",
+                labels: {
+                    fontColor: "#333",
+                    fontSize: 16
+                }
+            },
+            scales: {
+                yAxes: [{
+                    gridLines: {
+                        color: "rgba(0, 0, 0, 0)",
+                        display: false,
                     },
-                    scales: {
-                        yAxes: [{
-                            gridLines: {
-                                color: "rgba(0, 0, 0, 0)",
-                                display: false,
-                            },
-                            ticks: {
-                                min: 0,
-                                display: false,
-                            }
-                        }]
+                    ticks: {
+                        min: 0,
+                        display: false,
                     }
-                };
+                }]
+            }
+        };
 
-                //create Chart class object
-                var chart = new Chart(ctx, {
-                    type: "doughnut",
-                    data: data,
-                    options: options
-                });
-            });
-        },
+        //create Chart class object
+        var chart = new Chart(ctx, {
+            type: "doughnut",
+            data: data,
+            options: options
+        });
+    });
+},
+
         render_team_ticket_count_graph: function () {
             var self = this
             var ctx = self.$(".team_ticket_count");
@@ -174,195 +162,6 @@ odoo.define("odoo_website_helpdesk_dashboard.dashboard_view", function (require)
             });
         },
 
-        render_projects_ticket_graph: function () {
-            var self = this
-            var ctx = self.$(".projects_ticket");
-            rpc.query({
-                model: "help.ticket",
-                method: "get_project_ticket_count",
-            }).then(function (arrays) {
-                var data = {
-                    labels: arrays[1],
-                    datasets: [{
-                        label: "",
-                        data: arrays[0],
-                        backgroundColor: [
-                            "rgba(175,180,255,0.75)",
-                            "rgba(133,208,255,0.9)",
-                            "rgba(113,255,221,0.79)",
-                            "rgba(255,187,95,0.77)",
-                            "#2c7fb8",
-                            "#fa9fb5",
-                            "#2f4b7c",
-                        ],
-                        borderColor: [
-                            "#003f5c",
-                            "#2f4b7c",
-                            "#f95d6a",
-                            "#665191",
-                            "#d45087",
-                            "#ff7c43",
-                            "#ffa600",
-                            "#a05195",
-                            "#6d5c16"
-                        ],
-                        borderWidth: 1
-                    },]
-                };
-
-                  //options
-                var options = {
-                    responsive: true,
-                    title: false,
-                    maintainAspectRatio: true,
-                    legend: {
-                        display: false //This will do the task
-                    },
-                    scales: {
-                        yAxes: [{
-                            display: true,
-                            ticks: {
-                                beginAtZero: true,
-                                steps: 10,
-                                stepValue: 5,
-                                // max: 100
-                            }
-                        }]
-                    }
-                };
-
-                //create Chart class object
-                var chart = new Chart(ctx, {
-                    type: "bar",
-                    data: data,
-                    options: options
-                });
-            });
-        },
-        render_billed_task_team_graph: function () {
-            var self = this
-            var ctx = self.$(".billed_team");
-            rpc.query({
-                model: "help.ticket",
-                method: "get_billed_task_team_chart",
-            }).then(function (arrays) {
-                var data = {
-                    labels: arrays[1],
-                    datasets: [{
-                        label: "",
-                        data: arrays[0],
-                        backgroundColor: [
-                            "#a07fcd",
-                            "#fea84c",
-                            "#2cb8b1",
-                            "#fa9fb5",
-                            "#2f4b7c",
-                            "#2c7fb8"
-                        ],
-                        borderColor: [
-                            "#4fc9ff",
-                            "#2f4b7c",
-                            "#f95d6a",
-                            "#665191",
-                            "#d45087",
-                            "#ff7c43",
-                            "#ffa600",
-                            "#a05195",
-                            "#6d5c16"
-                        ],
-                        borderWidth: 1
-                    },]
-                };
-
-                //options
-                var options = {
-                    responsive: true,
-                    title: false,
-                    legend: {
-                        display: true,
-                        position: "right",
-                        labels: {
-                            fontColor: "#333",
-                            fontSize: 16
-                        }
-                    },
-                    scales: {
-                        yAxes: [{
-                            gridLines: {
-                                color: "rgba(0, 0, 0, 0)",
-                                display: false,
-                            },
-                            ticks: {
-                                min: 0,
-                                display: false,
-                            }
-                        }]
-                    }
-                };
-
-                //create Chart class object
-                var chart = new Chart(ctx, {
-                    type: "polarArea",
-                    data: data,
-                    options: options
-                });
-            });
-        },
-        render_team_ticket_done_graph: function () {
-            var self = this
-            var ctx = self.$(".team_ticket_done");
-            rpc.query({
-                model: "help.ticket",
-                method: "get_team_ticket_done_pie",
-            }).then(function (arrays) {
-                var data = {
-                    labels: arrays[1],
-                    datasets: [{
-                        fill: false,
-                        label: "",
-                        data: arrays[0],
-                        backgroundColor:[
-                            "#b7c1ff",
-                            "#6159ff",
-                            "#c79bff",
-                            "#0095b2"
-                        ],
-                        borderColor:
-                            'rgba(54,162,235,0.49)'
-                        ,
-                        borderWidth: 2
-                    },]
-                };
-
-                //options
-                var options = {
-                    responsive: true,
-                    title: false,
-                    maintainAspectRatio: true,
-                    legend: {
-                        display: false //This will do the task
-                    },
-                    scales: {
-                        yAxes: [{
-                            display: true,
-                            ticks: {
-                                beginAtZero: true,
-                                steps: 10,
-                                stepValue: 5,
-                                // max: 100
-                            }
-                        }]
-                    }
-                };
-
-                //create Chart class object
-                var chart = new Chart(ctx, {
-                    type: "line",
-                    data: data,
-                    options: options
-                });
-            });
-        },
 
         render_dashboards: function () {
             var self = this;
@@ -382,6 +181,66 @@ odoo.define("odoo_website_helpdesk_dashboard.dashboard_view", function (require)
                     $("#done_count").append("<span class='stat-digit'>" + result.done_count + "</span>");
                     $("#team_count").append("<span class='stat-digit'>" + result.team_count + "</span>");
 
+
+                        var priorityCounts = {
+                        very_low: result.very_low_count1,
+                        low: result.low_count1,
+                        normal: result.normal_count1,
+                        high: result.high_count1,
+                        very_high : result.very_high_count1
+                        // Add other priorities and their corresponding count properties
+                    };
+
+                    // Loop through the priorities and create progress bars
+                    for (var priority in priorityCounts) {
+                        var progressBarWidth = priorityCounts[priority] + "%";
+
+                        var progressBar = $("<div class='progress-bar'></div>").css("width", progressBarWidth);
+                        var progressBarContainer = $("<div class='progress'></div>").append(progressBar);
+                        var progressValue = $("<div class='progress-value'></div>").text(priorityCounts[priority] + "%");
+
+                        // Append the progress bar container to elements with class corresponding to the priority
+                        $("." + priority + "_count").append(progressBarContainer);
+                        $("." + priority + "_count .progress-value").append(progressValue);
+
+                    }
+
+                         var tbody = $(".ticket-details");
+                        var ticket_details = result.ticket_details;
+
+                        for (var i = 0; i < ticket_details.length; i++) {
+                            var ticket = ticket_details[i]; // Get the current ticket object
+                            var row = $("<tr></tr>");
+                            // Assuming you have the Base64-encoded image data in a variable called ticket.assigned_image
+                           var base64Image = ticket.assigned_image;
+
+                             var assignedUserCell = $("<td class='td'></td>");
+                            var imgElement = $("<img>");
+                            imgElement.attr("src", "data:image/png;base64," + base64Image); // Set the image source
+                            imgElement.attr("alt", "User Image"); // Set an alt attribute for accessibility
+                            imgElement.addClass("user-image"); // Add the 'oe-avatar' class to the <img> element
+
+                            // Append the img element to the assignedUserCell
+                            assignedUserCell.append(imgElement);
+
+                            // Append the assignedUserCell to the row
+                            row.append(assignedUserCell);
+
+
+                            row.append("<td class='td'>" + ticket.customer_name + "</td>");
+                            row.append("<td class='td'>" + ticket.ticket_name + "</td>");
+                            row.append(assignedUserCell);
+                            row.append("<td>" + ticket.assigned_to + "</td>");
+                            row.append("<td>" + ticket.subject + "</td>");
+                            row.append("<td>" + ticket.priority + "</td>");
+                            tbody.append(row);
+                        }
+
+
+
+
+
+                    $(".response").append(result.response);
                     ajax.jsonRpc("/help/tickets", "call", {}).then(function (values) {
                         $('.pending_tickets').append(values);
                     });

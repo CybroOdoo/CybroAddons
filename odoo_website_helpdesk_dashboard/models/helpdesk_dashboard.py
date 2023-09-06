@@ -19,12 +19,12 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
-from odoo import models, api
 import calendar
+from odoo import models, api
 
 
 class HelpDeskTicket(models.Model):
+    """ Inherited class to get help desk ticket details...."""
     _inherit = 'help.ticket'
 
     @api.model
@@ -33,17 +33,50 @@ class HelpDeskTicket(models.Model):
         user = self.env.user
         if user.has_group('base.group_user'):
             return True
-        else:
-            return False
+        return False
 
     @api.model
     def get_tickets_count(self):
+        """ Function To Get The Ticket Count"""
+
+        ticket_details = self.env['help.ticket'].search([])
+        ticket_data = []
+        for ticket in ticket_details:
+            ticket_data.append({
+                'ticket_name': ticket.name,
+                'customer_name': ticket.customer_id.name,
+                'subject': ticket.subject,
+                'priority': ticket.priority,
+                'assigned_to': ticket.assigned_user.name,
+                'assigned_image': ticket.assigned_user.image_1920,
+            })
+
         tickets_new_count = self.env['help.ticket'].search_count(
             [('stage_id.name', 'in', ['Inbox', 'Draft'])])
         tickets_in_progress_count = self.env['help.ticket'].search_count(
             [('stage_id.name', '=', 'In Progress')])
         tickets_closed_count = self.env['help.ticket'].search_count(
             [('stage_id.name', '=', 'Done')])
+        very_low_count = self.env['help.ticket'].search_count([
+            ('priority', '=', '0')])
+        very_low_count1 = very_low_count * 10
+
+        low_count = self.env['help.ticket'].search_count([
+            ('priority', '=', '1')])
+        low_count1 = low_count * 10
+        normal_count = self.env['help.ticket'].search_count([
+            ('priority', '=', '2')])
+        normal_count1 = normal_count * 10
+        high_count = self.env['help.ticket'].search_count([
+            ('priority', '=', '3')])
+        high_count1 = high_count * 10
+        very_high_count = self.env['help.ticket'].search_count([
+            ('priority', '=', '4')])
+        very_high_count1 = very_high_count * 10
+
+        response = self.env['help.ticket'].search_count([
+            ('review', '!=', None)])
+
         teams_count = self.env['help.team'].search_count([])
 
         tickets = self.env['help.ticket'].search(
@@ -51,18 +84,26 @@ class HelpDeskTicket(models.Model):
         p_tickets = []
         for ticket in tickets:
             p_tickets.append(ticket.name)
-
         values = {
             'inbox_count': tickets_new_count,
             'progress_count': tickets_in_progress_count,
             'done_count': tickets_closed_count,
             'team_count': teams_count,
-            'p_tickets': p_tickets
+            'p_tickets': p_tickets,
+            'very_low_count1': very_low_count1,
+            'low_count1': low_count1,
+            'normal_count1': normal_count1,
+            'high_count1': high_count1,
+            'very_high_count1': very_high_count1,
+            'response': response,
+            'ticket_details': ticket_data,
+
         }
         return values
 
     @api.model
     def get_tickets_view(self):
+        """ Function To Get The Ticket View"""
         tickets_new_count = self.env['help.ticket'].search_count(
             [('stage_id.name', 'in', ['Inbox', 'Draft'])])
         tickets_in_progress_count = self.env['help.ticket'].search_count(
@@ -149,102 +190,6 @@ class HelpDeskTicket(models.Model):
         ticket_count = []
         team_list = []
         tickets = self.env['help.ticket'].search([])
-
-        for rec in tickets:
-            if rec.team_id:
-                team = rec.team_id.name
-                if team not in team_list:
-                    team_list.append(team)
-                ticket_count.append(team)
-
-        team_val = []
-        for index in range(len(team_list)):
-            value = ticket_count.count(team_list[index])
-            team_name = team_list[index]
-            team_val.append({'label': team_name, 'value': value})
-        name = []
-        for record in team_val:
-            name.append(record.get('label'))
-        #
-        count = []
-        for record in team_val:
-            count.append(record.get('value'))
-        #
-        team = [count, name]
-        return team
-
-    @api.model
-    def get_project_ticket_count(self):
-        """bar chart"""
-        ticket_count = []
-        project_list = []
-        tickets = self.env['help.ticket'].search([])
-
-        for rec in tickets:
-            if rec.project_id:
-                project = rec.project_id.name
-                if project not in project_list:
-                    project_list.append(project)
-                ticket_count.append(project)
-
-        project_val = []
-        for index in range(len(project_list)):
-            value = ticket_count.count(project_list[index])
-            project_name = project_list[index]
-            project_val.append({'label': project_name, 'value': value})
-        name = []
-        for record in project_val:
-            name.append(record.get('label'))
-        #
-        count = []
-        for record in project_val:
-            count.append(record.get('value'))
-        #
-        project = [count, name]
-        return project
-
-    @api.model
-    def get_billed_task_team_chart(self):
-        """polarArea chart"""
-        ticket_count = []
-        team_list = []
-        tasks=[]
-        project_task = self.env['project.task'].search([('ticket_billed', '=', True)])
-        for rec in project_task:
-            tasks.append(rec.ticket_id.id)
-        tickets = self.env['help.ticket'].search([('id', 'in', tasks)])
-
-
-        for rec in tickets:
-            # if rec.id in teams.ids:
-            team = rec.team_id.name
-            if team not in team_list:
-                team_list.append(team)
-            ticket_count.append(team)
-
-        team_val = []
-        for index in range(len(team_list)):
-            value = ticket_count.count(team_list[index])
-            team_name = team_list[index]
-            team_val.append({'label': team_name, 'value': value})
-        name = []
-        for record in team_val:
-            name.append(record.get('label'))
-        #
-        count = []
-        for record in team_val:
-            count.append(record.get('value'))
-        #
-        team = [count, name]
-        return team
-
-    @api.model
-    def get_team_ticket_done_pie(self):
-        """bar chart"""
-        ticket_count = []
-        team_list = []
-        tickets = self.env['help.ticket'].search(
-            [('stage_id.name', '=', 'Done')])
 
         for rec in tickets:
             if rec.team_id:
