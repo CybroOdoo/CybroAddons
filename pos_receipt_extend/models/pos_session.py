@@ -41,7 +41,7 @@ class PosSessionLoadFields(models.Model):
             'search_params': {
                 'fields': ['qr_code', 'invoice_number', 'customer_name',
                            'customer_address', 'customer_mobile',
-                           'customer_phone', 'customer_email', 'customer_vat'],
+                           'customer_phone', 'customer_email', 'customer_vat', 'customer_details'],
 
             },
         }

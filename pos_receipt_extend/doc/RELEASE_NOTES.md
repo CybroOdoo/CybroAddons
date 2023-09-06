@@ -10,3 +10,8 @@
 ##### FIX
 -Removed the error of not displaying customer details in pos receipt.
 -Changed the index file.
+
+#### 06.09.2023
+#### Version 16.0.2.0.1
+##### FIX
+-Removed the error of not displaying the receipt without choosing the partner.

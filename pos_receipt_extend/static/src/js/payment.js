@@ -12,7 +12,6 @@ odoo.define('pos_receipt_extend.PaymentScreen', function (require) {
          async validateOrder(isForceValidate) {
             var receipt_number = this.env.pos.selectedOrder.name
             var orders = this.env.pos.selectedOrder
-            var datas = this.env.pos.session_orders
             const receipt_order = await super.validateOrder(...arguments);
             const codeWriter = new window.ZXing.BrowserQRCodeSvgWriter();
             const data = this.env.pos.session_orders;
@@ -26,6 +25,10 @@ odoo.define('pos_receipt_extend.PaymentScreen', function (require) {
             var name = order.customer_name;
             var number = order.invoice_number;
             var qr_code = order.qr_code;
+            var customer_details = order.customer_details;
+            var self= this;
+            self.env.pos.qr_code = order.qr_code;
+            self.env.pos.customer_details = order.customer_details;
             if (!address) {
                               this.env.pos.selectedOrder.partner.street = null;
             }
@@ -55,7 +58,9 @@ odoo.define('pos_receipt_extend.PaymentScreen', function (require) {
                 }).then(function(result){
                 const address = `${result.base_url}/my/invoices/${result.invoice_id}?`
                 let qr_code_svg = new XMLSerializer().serializeToString(codeWriter.write(address, 150, 150));
-                self.env.pos.qr_image = "data:image/svg+xml;base64,"+ window.btoa(qr_code_svg);
+                if (qr_code) {
+                   self.env.pos.qr_image = "data:image/svg+xml;base64,"+ window.btoa(qr_code_svg);
+                }
                 if (number) {
                    self.env.pos.invoice  = result.invoice_name
                 }
@@ -63,6 +68,8 @@ odoo.define('pos_receipt_extend.PaymentScreen', function (require) {
                 return receipt_order
          }
          }
+
+
 
        Registries.Component.extend(PaymentScreen, PosPaymentReceiptExtend);
 
