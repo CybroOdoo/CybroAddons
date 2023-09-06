@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--    Kanban view for the Venue-->
+    <record id="venue_view_kanban" model="ir.ui.view">
+        <field name="name">venue.view.kanban</field>
+        <field name="model">venue</field>
+        <field name="type">kanban</field>
+        <field name="arch" type="xml">
+            <kanban class="oe_background_grey o_kanban_dashboard" create="0">
+                <field name="name"/>
+                <field name="venue_count"/>
+                <field name="id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="col-md-12 oe_kanban_card">
+                            <div>
+                                <button type="edit" string="Settings"
+                                        class="button_background"
+                                        groups="venue_booking_management.venue_booking_management_group_venue_manager"
+                                        style="float: right;margin-top: 2px;background: none !important;border: none !IMPORTANT;FONT-SIZE: 16px;">
+                                    <i class="fa fa-cog" title="setting"/>
+                                </button>
+                            </div>
+                            <div class="o_primary style_event_type col-md-12"
+                                 style="padding-bottom: 4%;">
+                                <div class="col-md-10">
+                                    <a type="object"
+                                       name="get_venue_type_action">
+                                        <h2 style="text-align:left;">
+                                            <field name="name"/>
+                                        </h2>
+                                    </a>
+                                </div>
+                                <div class="col-md-12">
+                                    <img t-att-src="kanban_image('venue', 'image', record.id.raw_value)"
+                                         alt="Image"
+                                         style="width:100%; border-radius: 13px;height:150px;"/>
+                                </div>
+                                <div class="col-md-12">
+                                    <span style="margin-top:  20%;margin-bottom:  2%;font-size: 18px;">
+                                        <span class=" o_primary"
+                                              style="float: left;margin-top:2px;">
+                                            Total Booking :
+                                        </span>
+                                        <field name="venue_count"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!--    Kanban view action for the Venue-->
+    <record id="venue_booking_type_action_view_kanban"
+            model="ir.actions.act_window">
+        <field name="name">Venue Booking Kanban Board</field>
+        <field name="res_model">venue</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="context">{}</field>
+    </record>
+
+     <!--    The client action record to view the Dashboard-->
+    <record id="dashboard_view_action" model="ir.actions.client">
+        <field name="name">Dashboard</field>
+        <field name="tag">dashboard_tags</field>
+    </record>
+
+    <menuitem id="dashboard_view_menu_action" name="Dashboard"
+              parent="venue_booking_management.venue_booking_menu_root"
+              sequence="1"/>
+
+    <menuitem id="venue_booking_management_dashboard_menu" action="dashboard_view_action"
+              parent="venue_booking_management.dashboard_view_menu_action"
+              sequence="1"/>
+
+    <!--    MenuItem for the Venue-->
+    <menuitem id="venue_booking_management_kanban_dashboard_menu"
+              parent="venue_booking_management.dashboard_view_menu_action"
+              action="venue_booking_type_action_view_kanban"
+              sequence="2"/>
+
+</odoo>
+

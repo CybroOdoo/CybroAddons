@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Tree View for the Venue Booking-->
+    <record id="venue_booking_view_tree" model="ir.ui.view">
+        <field name="name">venue.booking.view.tree</field>
+        <field name="model">venue.booking</field>
+        <field name="arch" type="xml">
+            <tree decoration-info="state == 'draft'"
+                  decoration-warning="state == 'confirm'"
+                  decoration-success="state == 'invoice'">
+                <field name="name"/>
+                <field name="venue_type_id"/>
+                <field name="partner_id"/>
+                <field name="date"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'invoice'"
+                       decoration-warning="state == 'confirm'"
+                       decoration-info="state =='draft'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Kanban View for the Venue Booking-->
+    <record id="venue_booking_view_kanban" model="ir.ui.view">
+        <field name="name">venue.booking.view.kanban</field>
+        <field name="model">venue.booking</field>
+        <field name="arch" type="xml">
+            <kanban quick_create="false">
+                <field name="venue_type_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click col-md-2 style_event">
+
+
+                            <div class="o_kanban_image" style="width:100%; ">
+                                <t>
+                                    <img t-att-src="kanban_image('venue.type', 'image', record.venue_type_id.raw_value)"
+                                         alt="type"
+                                         style="width:100%; border-radius: 23px;"/>
+                                </t>
+                            </div>
+                            <div class="oe_kanban_content"
+                                 style="padding-left:  0px !important;">
+                                <div style="text-align:  center;;font-size:15px;">
+                                    <strong>
+                                        <field name="name"/>
+                                    </strong>
+                                </div>
+                            </div>
+                            <div class="oe_clear"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Form View for the Venue Booking-->
+    <record id="venue_booking_view_form" model="ir.ui.view">
+        <field name="name">venue.booking.view.form</field>
+        <field name="model">venue.booking</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_booking_confirm" string="Confirm"
+                            confirm="Are you sure to confirm this Booking?"
+                            type="object" class="oe_highlight" states="draft"/>
+                    <button name="action_booking_invoice_create"
+                            string="Create Invoice" type="object"
+                            class="oe_highlight"
+                            attrs="{'invisible': [('state', 'not in', ['confirm'])]}"/>
+                    <button name="action_booking_cancel" string="Cancel"
+                            type="object" states="draft"/>
+                    <button name="action_reset_to_draft"
+                            string="Reset to Draft"
+                            type="object" states="confirm"/>
+                    <button name="action_send_confirmation_mail"
+                            string="Send Mail"
+                            type="object" states="confirm"/>
+                    <button name="action_booking_close" string="Close"
+                            type="object" states="invoice"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirm,invoice,close"/>
+                </header>
+                <sheet>
+                    <div name="button_box" position="inside">
+                        <button class="oe_stat_button" type="object"
+                                name="action_view_invoice"
+                                icon="fa-pencil-square-o"
+                                attrs="{'invisible': [('invoice_count', '=', '0')]}">
+                            <field string="Invoice" name="invoice_count"
+                                   widget="statinfo"/>
+                        </button>
+                    </div>
+                    <h1 class="mt0">
+                        <field name="name" readonly="1"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="partner_id"
+                                   attrs="{'readonly': [('state', 'not in', ['draft'])]}"/>
+                            <field name="ref" readonly="1"/>
+                            <field name="venue_id"
+                                   attrs="{'readonly': [('state', 'not in', ['draft'])]}"/>
+                            <field name="venue_type_id"
+                                   attrs="{'readonly': [('state', 'not in', ['draft'])]}"/>
+                            <field name="booking_type" widget="radio"
+                                   attrs="{'readonly': [('state', 'not in', ['draft', 'confirm'])]}"/>
+                            <field name="is_additional_charge"
+                                   attrs="{'readonly': [('state', 'not in', ['draft', 'confirm'])]}"/>
+                        </group>
+
+                        <group>
+                            <field name="date"
+                                   attrs="{'readonly': [('state', 'not in', ['draft'])]}"/>
+                            <field name="start_date"
+                                   attrs="{'readonly': [('state', 'not in', ['draft'])]}"/>
+                            <field name="end_date"
+                                   attrs="{'readonly': [('state', 'not in', ['draft'])]}"/>
+                            <field name="days_difference"
+                                   attrs="{'readonly': [('state', 'not in', ['draft'])]}"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="pending_invoice" invisible="1"/>
+                            <field name="booking_charge_per_day"
+                                   attrs="{'invisible': [('booking_type', '=', 'hour')]}"/>
+                            <field name="booking_charge_per_hour"
+                                   attrs="{'invisible': [('booking_type', '=', 'day')]}"/>
+                            <field name="booking_charge"/>
+
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Extra Amenities">
+                            <field name="venue_booking_line_ids"
+                                   attrs="{'readonly': [('state', 'not in', ['draft', 'confirm'])]}">
+                                <tree editable="bottom">
+                                    <field name="amenity_id"/>
+                                    <field name="quantity"/>
+                                    <field name="amount"/>
+                                    <field name="sub_total"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right"
+                                   colspan="2" name="event_total">
+                                <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                    <label for="total"/>
+                                </div>
+                                <field name="total" nolabel="1"
+                                       class="oe_subtotal_footer_separator"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+                            </group>
+                            <field name="note" class="oe_inline"
+                                   placeholder="Setup default terms and conditions in your company settings."
+                                   attrs="{'readonly': [('state', 'not in', ['draft'])]}"/>
+                            <div class="oe_clear"/>
+                        </page>
+                        <page string="Included Amenities">
+                            <field name="amenity_line_ids">
+                                <tree editable="bottom">
+                                    <field name="amenity_id"/>
+                                    <field name="quantity"/>
+                                    <field name="amount"/>
+                                    <field name="sub_total"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View for the Venue Booking-->
+    <record id="venue_booking_view_search" model="ir.ui.view">
+        <field name="name">venue.booking.view.search</field>
+        <field name="model">venue.booking</field>
+        <field name="arch" type="xml">
+            <search string="Space Reservation Management">
+                <field name="venue_type_id"/>
+                <field name="partner_id"/>
+                <group expand="0" string="Group By">
+                    <filter string="Venue Type" name="group_by_event"
+                            domain="[]"
+                            context="{'group_by':'venue_type_id'}"/>
+                    <filter string="State" name="group_by_state" domain="[]"
+                            context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Calendar View for the Venue Booking -->
+    <record id="venue_booking_view_calender" model="ir.ui.view">
+        <field name="name">venue.booking.view.calendar</field>
+        <field name="model">venue.booking</field>
+        <field name="arch" type="xml">
+            <calendar string="Venue Bookings" date_start="start_date"
+                      date_stop="end_date" color="venue_type_id">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="state"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- Graph View for the Venue Booking-->
+    <record id="venue_booking_view_graph" model="ir.ui.view">
+        <field name="name">venue.booking.view.graph</field>
+        <field name="model">venue.booking</field>
+        <field name="arch" type="xml">
+            <graph string="Venue Bookings">
+                <field name="partner_id"/>
+                <field name="venue_type_id"/>
+            </graph>
+        </field>
+    </record>
+
+    <!--    Pivot view of the Booking-->
+    <record id="venue_booking_view_pivot" model="ir.ui.view">
+        <field name="name">venue.booking.view.pivot</field>
+        <field name="model">venue.booking</field>
+        <field name="arch" type="xml">
+            <pivot string="Venue Booking" sample="1">
+                <field name="venue_id" type="col"/>
+                <field name="partner_id" type="col"/>
+                <field name="date" interval="month" type="row"/>
+                <field name="total" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!--    Action for the Venue Booking-->
+    <record id="venue_booking_action_view_kanban"
+            model="ir.actions.act_window">
+        <field name="name">Venue Booking</field>
+        <field name="res_model">venue.booking</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">kanban,tree,form,calendar,graph,pivot</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to add an Venue Reservation.
+            </p>
+            <p>
+                Here you can create and manage your Venue .
+            </p>
+        </field>
+    </record>
+
+    <!--   Booking Request Action -->
+    <record id="venue_booking_action_user_request"
+            model="ir.actions.act_window">
+        <field name="name">Booking Requests</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">venue.booking</field>
+        <field name="view_mode">tree,form,kanban,calendar</field>
+        <field name="domain">[('state','=','draft')]</field>
+        <field name="context">{'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new record!
+            </p>
+        </field>
+    </record>
+
+    <!--   Confirmed Booking Action -->
+    <record id="venue_booking_action_confirmed" model="ir.actions.act_window">
+        <field name="name">Confirmed bookings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">venue.booking</field>
+        <field name="view_mode">tree,form,kanban,calendar</field>
+        <field name="domain">[('state','in',['confirm', 'invoice'])]</field>
+        <field name="context">{'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new record!
+            </p>
+        </field>
+    </record>
+
+    <!--    MenuItems-->
+    <menuitem id="venue_booking_menu_root"
+              name="Venue Booking"
+              groups="venue_booking_management.venue_booking_management_group_venue_manager,venue_booking_management.venue_booking_management_group_venue_user"
+              web_icon="venue_booking_management,static/description/icon.png"
+              sequence="20"/>
+    <menuitem id="venue_menu_booking" name="Venue Booking"
+              parent="venue_booking_menu_root"
+              sequence="5"/>
+    <menuitem id="venue_menu_booking_2" name="Venue Booking"
+              parent="venue_menu_booking"
+              action="venue_booking_action_view_kanban" sequence="2"/>
+    <menuitem id="venue_menu_booking_request" name="Booking Requests"
+              parent="venue_menu_booking"
+              action="venue_booking_action_user_request" sequence="5"/>
+    <menuitem id="venue_menu_booking_confirmed" name="Confirmed Bookings"
+              parent="venue_menu_booking"
+              action="venue_booking_action_confirmed" sequence="10"/>
+</odoo>

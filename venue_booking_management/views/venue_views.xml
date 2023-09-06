@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--    Records for creating venue Form, tree and actions-->
+    <record id="venue_view_tree" model="ir.ui.view">
+        <field name="name">venue.view.tree</field>
+        <field name="model">venue</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="venue_type_id"/>
+                <field name="capacity"/>
+                <field name="seating"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="venue_view_form" model="ir.ui.view">
+        <field name="name">venue.view.form</field>
+        <field name="model">venue</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                            <field name="image" widget="image"
+                                   class="oe_avatar"/>
+                        </group>
+
+                    </group>
+                    <group>
+                        <group>
+                            <field name="venue_type_id"/>
+                            <field name="venue_location"/>
+                        </group>
+                        <group>
+                            <group>
+                                <span>Capacity:<field name="capacity"
+                                                      class="oe_inline"/>Units
+                                </span>
+                            </group>
+                            <group>
+                                <span>Seating:<field name="seating"
+                                                     class="oe_inline"/>Units
+                                </span>
+                            </group>
+
+                        </group>
+                    </group>
+                    <group>
+                        <group name="venue_charge" string="Venue Charges">
+                            <field name="venue_charge_hour"/>
+                            <field name="venue_charge_day"/>
+                        </group>
+                        <group name="additional_charge"
+                               string="Additional Charges">
+                            <field name="additional_charge_hour"/>
+                            <field name="additional_charge_day"/>
+                        </group>
+                    </group>
+                    <group name="hours" string="Hours">
+                        <group>
+                            <field name="open_time" widget="float_time"/>
+                            <field name="closed_time" widget="float_time"/>
+                        </group>
+
+                    </group>
+                    <notebook>
+                        <page name="Amenities">
+                            <field name="venue_line_ids">
+                                <tree string="Amenities" editable="bottom">
+                                    <field name="amenities_id"/>
+                                    <field name="quantity"/>
+                                    <field name="amount"/>
+                                    <field name="sub_total" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right"
+                                   colspan="2" name="event_total">
+                                <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                    <label for="price_subtotal"/>
+                                </div>
+                                <field name="price_subtotal" nolabel="1"
+                                       class="oe_subtotal_footer_separator"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="venue_action" model="ir.actions.act_window">
+        <field name="name">Venue</field>
+        <field name="res_model">venue</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to add Venue.
+            </p>
+            <p>
+                Here you can create different Venue.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="venue_booking_management_venue_menu"
+              name="Venue"
+              parent="venue_booking_menu_root" sequence="10"
+              groups="venue_booking_management.venue_booking_management_group_venue_manager"/>
+    <menuitem id="venue_menu" name="Venue"
+              parent="venue_booking_management_venue_menu"
+              action="venue_action"/>
+</odoo>
