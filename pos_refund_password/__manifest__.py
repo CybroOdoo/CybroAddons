@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Restrict POS Refund with Password In Odoo 16',
-    'version': '16.0.1.0.1',
+    'version': '16.0.1.0.2',
     'summary': """Restrict POS Refund with Password In Odoo 16""",
     'description': """Restrict POS Refund with Password In Odoo 16""",
     'category': 'Point of Sale',

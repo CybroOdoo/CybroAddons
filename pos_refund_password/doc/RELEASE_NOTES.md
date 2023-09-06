@@ -8,3 +8,7 @@
 #### Version 16.0.1.0.1
 #### FIX
 - Fixed the undeclared body 
+- #### 06.09.2023
+#### Version 16.0.1.0.2
+#### FIX
+- Fixed the refund password issue

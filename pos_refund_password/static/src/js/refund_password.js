@@ -11,6 +11,7 @@ odoo.define('pos_refund_password.RefundPasswordButton', function (require) {
         class extends TicketScreen {
             async _onDoRefund() {
             var refund="";
+            var session_refund= false;
             var data = await rpc.query({
                 model: 'ir.config_parameter',
                 method: 'get_param',
@@ -23,19 +24,34 @@ odoo.define('pos_refund_password.RefundPasswordButton', function (require) {
                     'Incorrect Password')
                     };
             if (!refund){
-                refund=this.env.pos.config.refund_security;            }
-            const { confirmed, payload } = await this.showPopup('NumberPopup')
-            if(refund == payload)
-            {
-            super._onDoRefund();
+                session_refund = this.env.pos.config.refund_security;
+                }
+            if(refund){
+                const { confirmed, payload } = await this.showPopup('NumberPopup')
+                if(refund == payload){
+                    super._onDoRefund();
+                }
+                else{
+                        this.showPopup('ErrorPopup',{
+                        body : this.env._t('Invalid Password, Enter your global password'),
+                        });
+                    }
+            }
+            else if(session_refund){
+                const { confirmed, payload } = await this.showPopup('NumberPopup')
+                if(session_refund == payload){
+                    super._onDoRefund();
+                }
+                else{
+                        this.showPopup('ErrorPopup',{
+                        body : this.env._t('Incorrect Password'),
+                        });
+                    }
             }
             else{
-                    this.showPopup('ErrorPopup',{
-                    body : this.env._t('Invalid Password'),
-                    });
-                }
+                super._onDoRefund();
             }
-
+            }
         };
         Registries.Component.extend(TicketScreen, PosResTicketScreen1);
     });
