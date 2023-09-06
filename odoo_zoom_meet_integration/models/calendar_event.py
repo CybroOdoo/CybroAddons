@@ -37,6 +37,7 @@ class CalendarEvent(models.Model):
                                  help='Joining Meeting Code')
     zoom_event = fields.Char(string='Zoom Event ID',
                              help='Event ID of the zoom meet')
+    videocall_location = fields.Char('Meeting URL', related='zoom_meet_url')
 
     def action_zoom_meet_url(self):
         """Join zoom from Odoo"""
