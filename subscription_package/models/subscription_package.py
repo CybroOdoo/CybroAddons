@@ -52,6 +52,10 @@ class SubscriptionPackageProductLine(models.Model):
     unit_price = fields.Float(string='Unit Price', store=True, readonly=False,
                               related='product_id.list_price')
     discount = fields.Float(string="Discount (%)")
+    tax_id = fields.Many2many('account.tax', string="Taxes",ondelete='restrict',
+                              related='product_id.taxes_id', readonly=False)
+    price_total = fields.Monetary(store=True, readonly=True)
+    price_tax = fields.Monetary(store=True, readonly=True)
     currency_id = fields.Many2one('res.currency', string='Currency',
                                   store=True,
                                   related='subscription_id.currency_id')
@@ -63,14 +67,24 @@ class SubscriptionPackageProductLine(models.Model):
                                      store=True,
                                      related='subscription_id.partner_id')
 
-    @api.depends('product_qty', 'unit_price', 'discount')
+    @api.depends('product_qty', 'unit_price', 'discount', 'tax_id',
+                 'currency_id')
     def _compute_total_amount(self):
         """ Calculate subtotal amount of product line """
-        for rec in self:
-            if rec.product_id:
-                rec.total_amount = rec.unit_price * rec.product_qty
-                if rec.discount != 0:
-                    rec.total_amount -= rec.total_amount * (rec.discount / 100)
+        for line in self:
+            price = line.unit_price * (1 - (line.discount or 0.0) / 100.0)
+            taxes = line.tax_id._origin.compute_all(price,
+                                                    line.subscription_id._origin.currency_id,
+                                                    line.product_qty,
+                                                    product=line.product_id,
+                                                    partner=line.subscription_id._origin.partner_id)
+            print(taxes)
+            line.write({
+                'price_tax': sum(
+                    t.get('amount', 0.0) for t in taxes.get('taxes', [])),
+                'price_total': taxes['total_included'],
+                'total_amount': taxes['total_excluded'],
+            })
 
     def _valid_field_parameter(self, field, name):
         if name == 'ondelete':
@@ -153,9 +167,12 @@ class SubscriptionPackage(models.Model):
     close_date = fields.Date(string='Closed on')
     stage_category = fields.Selection(related='stage_id.category', store=True)
     invoice_mode = fields.Selection(related="plan_id.invoice_mode")
-    total_recurring_price = fields.Float(string='Recurring Price',
+    total_recurring_price = fields.Float(string='Untaxed Amount',
                                          compute='_compute_total_recurring_price',
                                          store=True)
+    tax_total = fields.Float("Taxes", readonly=True)
+    total_with_tax = fields.Monetary("Total Recurring Price", readonly=True,
+                                     store=True)
 
     def _valid_field_parameter(self, field, name):
         if name == 'ondelete':
@@ -251,9 +268,14 @@ class SubscriptionPackage(models.Model):
                       'Please change category of stage to "In Progress", '
                       'only one stage is allowed to have category "Draft"'))
             else:
-                rec.write(
-                    {'stage_id': stage_id,
-                     'date_started': fields.Date.today()})
+                if not rec.product_line_ids:
+                    raise UserError("Empty order lines !! Please add the "
+                                    "subscription product.")
+                else:
+                    rec.write(
+                        {'stage_id': stage_id,
+                         'date_started': fields.Date.today(),
+                         'start_date': fields.Date.today()})
 
     def button_sale_order(self):
         """Button to create sale order"""
@@ -361,9 +383,8 @@ class SubscriptionPackage(models.Model):
         It wil close the subscription automatically if renewal limit is exceeded """
         pending_subscriptions = self.env['subscription.package'].search(
             [('stage_category', '=', 'progress')])
-        # today_date = fields.Date.today()
-        today_date = datetime.datetime.strptime('21092023', '%d%m%Y').date()
-
+        today_date = fields.Date.today()
+        # today_date = datetime.datetime.strptime('05102023', '%d%m%Y').date()
         pending_subscription = False
         for pending_subscription in pending_subscriptions:
             get_dates = self.find_renew_date(
@@ -372,6 +393,7 @@ class SubscriptionPackage(models.Model):
                 pending_subscription.plan_id.days_to_end)
             renew_date = get_dates['renew_date']
             end_date = get_dates['end_date']
+            # print(renew_date)
             pending_subscription.close_date = get_dates['close_date']
             if today_date == pending_subscription.next_invoice_date:
                 if pending_subscription.plan_id.invoice_mode == 'draft_invoice':
@@ -380,21 +402,22 @@ class SubscriptionPackage(models.Model):
                         rec_list = [0, 0, {'product_id': rec.product_id.id,
                                            'quantity': rec.product_qty,
                                            'price_unit': rec.unit_price,
-                                           'discount': rec.discount
+                                           'discount': rec.discount,
+                                           'tax_ids': rec.tax_id
                                            }]
                         this_products_line.append(rec_list)
-                        self.env['account.move'].create(
-                            {
-                                'move_type': 'out_invoice',
-                                'invoice_date_due': today_date,
-                                'invoice_payment_term_id': False,
-                                'invoice_date': today_date,
-                                'state': 'draft',
-                                'subscription_id': pending_subscription.id,
-                                'partner_id': pending_subscription.partner_invoice_id.id,
-                                'currency_id': pending_subscription.partner_invoice_id.currency_id.id,
-                                'invoice_line_ids': this_products_line
-                            })
+                    self.env['account.move'].create(
+                        {
+                            'move_type': 'out_invoice',
+                            'invoice_date_due': today_date,
+                            'invoice_payment_term_id': False,
+                            'invoice_date': today_date,
+                            'state': 'draft',
+                            'subscription_id': pending_subscription.id,
+                            'partner_id': pending_subscription.partner_invoice_id.id,
+                            'currency_id': pending_subscription.partner_invoice_id.currency_id.id,
+                            'invoice_line_ids': this_products_line
+                        })
 
                     pending_subscription.write({'to_renew': False,
                                                 'start_date': pending_subscription.next_invoice_date})
@@ -431,14 +454,24 @@ class SubscriptionPackage(models.Model):
 
         return dict(pending=pending_subscription)
 
-    @api.depends('product_line_ids.total_amount')
+    @api.depends('product_line_ids.total_amount',
+                 'product_line_ids.price_total', 'product_line_ids.tax_id')
     def _compute_total_recurring_price(self):
         """ Calculate recurring price """
         for record in self:
             total_recurring = 0
+            total_tax = 0.0
             for line in record.product_line_ids:
+                # print(line.tax_id._origin)
+                if line.total_amount != line.price_total:
+                    line_tax = line.price_total - line.total_amount
+                    total_tax += line_tax
+
                 total_recurring += line.total_amount
             record['total_recurring_price'] = total_recurring
+            record['tax_total'] = total_tax
+            total_with_tax = total_recurring + total_tax
+            record['total_with_tax'] = total_with_tax
 
     def action_renew(self):
         return self.button_sale_order()
