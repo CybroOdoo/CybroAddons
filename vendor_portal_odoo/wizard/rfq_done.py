@@ -36,6 +36,8 @@ class RfqDone(models.TransientModel):
                                    related='vendor_id.quoted_price', string='Quoted Price')
     currency_id = fields.Many2one('res.currency', string='Currency',
                                   required=True,
+                                  default=lambda
+                                      self: self.env.user.company_id.currency_id,
                                   related='vendor_id.currency_id')
     estimate_date = fields.Date(related='vendor_id.estimate_date', string='Estimate Date')
 
@@ -56,8 +58,7 @@ class RfqDone(models.TransientModel):
             'email_from': self.env.user.partner_id.email,
         }
         self.env['mail.template'].browse(template_id).with_context(
-            context).send_mail(self.vendor_id.quote_id.id,
-                               email_values=email_values,
+            context).send_mail(self.vendor_id.quote_id.id, email_values=email_values,
                                force_send=True)
         rfq.write({
             'approved_vendor_id': self.vendor_id.vendor_id.id,

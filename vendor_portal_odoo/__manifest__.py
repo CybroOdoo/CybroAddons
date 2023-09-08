@@ -22,7 +22,7 @@
 
 {
     'name': 'Odoo Vendor Portal',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Purchases',
     'summary': """Vendor Portal Management in Odoo""",
     'description': """This module helps to sent quotations for a product to multiple vendors and vendors can add their
