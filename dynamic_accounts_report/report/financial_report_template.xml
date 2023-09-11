@@ -7,18 +7,19 @@
                 <t t-set="data_report_header_spacing" t-value="9"/>
                 <t t-set="data_report_dpi" t-value="110"/>
                 <div class="page">
-                    <h3><span t-esc="Filters.get('company_name')"/>: <span t-esc="report_name"/>
+                    <h3><span t-esc="Filters.get('company_name')"/>:
+                        <span t-esc="report_name"/>
                     </h3>
 
                     <div>
                         <span t-if="Filters.get('date_from')">
-                        <strong> From:</strong>
-                        <t t-esc="Filters['date_from']"/>
+                            <strong>From:</strong>
+                            <t t-esc="Filters['date_from']"/>
                         </span>
 
                         <span t-if="Filters.get('date_to')">
-                        <strong>To:</strong>
-                        <t t-esc="Filters['date_to']"/>
+                            <strong>To:</strong>
+                            <t t-esc="Filters['date_to']"/>
                         </span>
 
                         <div style="width:100%;">
@@ -26,7 +27,8 @@
 
                                 <div class="col-2">
                                     <strong>Journals:</strong>
-                                    <t t-foreach="Filters['journals']" t-as="ps">
+                                    <t t-foreach="Filters['journals']"
+                                       t-as="ps">
                                         <li>
                                             <t t-esc="ps"/>
                                         </li>
@@ -34,45 +36,48 @@
                                 </div>
 
                                 <div class="col-2">
-                                        <strong>Accounts:</strong>
-                                        <t t-foreach="Filters['accounts']" t-as="ps">
-                                            <li>
-                                                <t t-esc="ps"/>
-                                            </li>
-                                        </t>
+                                    <strong>Accounts:</strong>
+                                    <t t-foreach="Filters['accounts']"
+                                       t-as="ps">
+                                        <li>
+                                            <t t-esc="ps"/>
+                                        </li>
+                                    </t>
                                 </div>
 
                                 <div class="col-2">
-                                        <strong>Account Tags:</strong>
-                                        <t t-foreach="Filters['account_tags']" t-as="ps">
-                                            <li>
-                                                <t t-esc="ps"/>
-                                            </li>
-                                        </t>
+                                    <strong>Account Tags:</strong>
+                                    <t t-foreach="Filters['account_tags']"
+                                       t-as="ps">
+                                        <li>
+                                            <t t-esc="ps"/>
+                                        </li>
+                                    </t>
                                 </div>
                                 <div class="col-2">
                                     <strong>Analytic:</strong>
-                                    <t t-foreach="Filters['analytics']" t-as="ps">
+                                    <t t-foreach="Filters['analytics']"
+                                       t-as="ps">
                                         <li>
                                             <t t-esc="ps"/>
                                         </li>
                                     </t>
                                 </div>
 
-<!--                                 <div class="col-2">-->
-<!--                                        <strong>Analytic Tag:</strong>-->
-<!--                                        <t t-foreach="Filters['analytic_tags']" t-as="ps">-->
-<!--                                            <li>-->
-<!--                                                <t t-esc="ps"/>-->
-<!--                                            </li>-->
-<!--                                        </t>-->
-<!--                                </div>-->
+                                <!--                                 <div class="col-2">-->
+                                <!--                                        <strong>Analytic Tag:</strong>-->
+                                <!--                                        <t t-foreach="Filters['analytic_tags']" t-as="ps">-->
+                                <!--                                            <li>-->
+                                <!--                                                <t t-esc="ps"/>-->
+                                <!--                                            </li>-->
+                                <!--                                        </t>-->
+                                <!--                                </div>-->
 
                                 <div class="col-3">
                                     <strong>Target move:</strong>
-                                        <li>
-                                            <t t-esc="Filters['target_move']"/>
-                                        </li>
+                                    <li>
+                                        <t t-esc="Filters['target_move']"/>
+                                    </li>
                                 </div>
                             </div>
                         </div>
@@ -85,7 +90,7 @@
                                 <th></th>
                                 <th class="text-right">Debit</th>
                                 <th class="text-right">Credit</th>
-                                <th class="text-right">Balance</th>
+                                <th class="text-right">Balance001</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -93,18 +98,37 @@
 
                                 <t t-if="a['level'] != 0">
                                     <t t-if="a.get('level') &gt; 2">
-                                            <t t-set="style" t-value="'font-weight: normal;'"/>
-                                        </t>
-                                        <t t-if="not a.get('level') &gt; 2">
-                                            <t t-set="style" t-value="'font-weight: bold;'"/>
+                                        <t t-set="style"
+                                           t-value="'font-weight: normal;'"/>
+                                    </t>
+                                    <t t-if="not a.get('level') &gt; 2">
+                                        <t t-set="style"
+                                           t-value="'font-weight: bold;'"/>
                                     </t>
                                     <t t-if="a.get('code')">
-                                       <t t-foreach="account_data" t-as="line">
+                                        <t t-foreach="account_data" t-as="line">
                                             <t t-if="line['id'] == a.get('account')">
                                                 <tr>
                                                     <td>
-                                                        <span style="color: white;" t-esc="'..' * a.get('level', 0) * 3"/>
-                                                        <span t-att-style="style" t-esc="line['name']"/>
+                                                        <span style="color: white;"
+                                                              t-esc="'..' * a.get('level', 0) * 3"/>
+                                                        <span>
+                                                            <t t-set="language"
+                                                               t-value="request.env.context.get('lang')"/>
+                                                            <t t-esc="line['code']"/>
+                                                            -
+                                                            <t t-if="language != 'en_US'">
+                                                                <t t-if="line['name'][lang] and lang != 'en_US'">
+                                                                    <t t-esc="line['name'][lang]"/>
+                                                                </t>
+                                                                <t t-elif="line['name']['en_US']">
+                                                                    <t t-esc="line['name']['en_US']"/>
+                                                                </t>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <t t-esc="line['name']"/>
+                                                            </t>
+                                                        </span>
                                                     </td>
                                                     <td class="text-right">
                                                         <span t-esc="line['debit']"
@@ -122,23 +146,29 @@
                                             </t>
                                         </t>
                                     </t>
-
                                     <t t-else="">
-
                                         <td>
-                                            <span style="color: white;" t-esc="'..' * a.get('level', 0) * 3"/>
-                                            <span t-att-style="style" t-esc="a.get('name')"/>
+                                            <span style="color: white;"
+                                                  t-esc="'..' * a.get('level', 0) * 3"/>
+                                            <span t-att-style="style"
+                                                  t-esc="a.get('name')"/>
                                         </td>
-                                        <td class="text-right" style="white-space: text-nowrap;">
-                                            <span t-att-style="style" t-esc="a.get('debit')"
+                                        <td class="text-right"
+                                            style="white-space: text-nowrap;">
+                                            <span t-att-style="style"
+                                                  t-esc="a.get('debit')"
                                                   t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
                                         </td>
-                                        <td class="text-right" style="white-space: text-nowrap;">
-                                            <span t-att-style="style" t-esc="a.get('credit')"
+                                        <td class="text-right"
+                                            style="white-space: text-nowrap;">
+                                            <span t-att-style="style"
+                                                  t-esc="a.get('credit')"
                                                   t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
                                         </td>
-                                        <td class="text-right" style="white-space: text-nowrap;">
-                                            <span t-att-style="style" t-esc="a.get('balance')"
+                                        <td class="text-right"
+                                            style="white-space: text-nowrap;">
+                                            <span t-att-style="style"
+                                                  t-esc="a.get('balance')"
                                                   t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
                                         </td>
                                     </t>
@@ -155,11 +185,11 @@
     </template>
 
     <record id="action_print_balance_sheet" model="ir.actions.report">
-            <field name="name">Financial Report</field>
-            <field name="model">dynamic.balance.sheet.report</field>
-            <field name="report_type">qweb-pdf</field>
-            <field name="report_name">dynamic_accounts_report.balance_sheet</field>
-            <field name="report_file">dynamic_accounts_report.balance_sheet</field>
+        <field name="name">Financial Report</field>
+        <field name="model">dynamic.balance.sheet.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dynamic_accounts_report.balance_sheet</field>
+        <field name="report_file">dynamic_accounts_report.balance_sheet</field>
     </record>
 
 </odoo>
