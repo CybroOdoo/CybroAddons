@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--       Create approval request information of user -->
+    <record id="res_user_approve_view_tree" model="ir.ui.view">
+        <field name="name">res.users.approve.view.tree</field>
+        <field name="model">res.users.approve</field>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="email"/>
+                <field name="password"/>
+            </tree>
+        </field>
+    </record>
+    <record id="res_user_approve_view_form" model="ir.ui.view">
+        <field name="name">res.users.approve.view.form</field>
+        <field name="model">res.users.approve</field>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <form string="Form">
+                <header>
+                    <button name="action_approve_login" type="object"
+                            class="oe_highlight" string="Approve Login"/>
+                    <button name="action_reject_login" type="object"
+                            class="oe_highlight" string="Reject Login"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="APPROVED"
+                            bg_color="bg-success"
+                            attrs="{'invisible': [('for_approval_menu', '=', False)]}"/>
+                    <group>
+                        <group>
+                            <field name="for_approval_menu"/>
+                        </group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="email" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="password" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string='Documents'>
+                            <field name="attachment_ids" readonly="1">
+                                <tree>
+                                    <field name="attachments"
+                                           options="{'no_quick_create': True,'size': [600, 600]}"
+                                           widget="image"
+                                           class="oe_avatar"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="res_users_approve_action" model="ir.actions.act_window">
+        <field name="name">Portal Approval</field>
+        <field name="res_model">res.users.approve</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="res_user_approve_view_tree"/>
+    </record>
+    <menuitem id="res_users_approve_menu" parent="base.menu_users"
+              action="res_users_approve_action"/>
+</odoo>

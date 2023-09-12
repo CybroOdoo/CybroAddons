@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    These templates are used to sent approval request with uploaded documents-->
+    <template id="document_fields" inherit_id="auth_signup.fields">
+        <xpath expr="//input[@name='confirm_password']" position="after">
+            <t t-if="request.env['ir.config_parameter'].sudo().get_param('website_signup_approval.auth_signup_approval') == 'True'">
+                <t t-set="get_attachments_set"
+                   t-value="request.env['ir.config_parameter'].sudo().get_param('website_signup_approval.documents_ids')"/>
+                <t t-if="get_attachments_set">
+                    <t t-foreach="json.loads(get_attachments_set)" t-as="res">
+                        <t t-set="get_attachments_values"
+                           t-value="request.env['document.attachment'].sudo().search([('id', '=', res)])"/>
+                        <table class="table">
+                            <t t-foreach="get_attachments_values" t-as="rec">
+                                <tr>
+                                    <th>
+                                        <span t-esc="rec.document"
+                                              class="oe_inline"/>
+                                    </th>
+                                    <td>
+                                        <input type="file"
+                                               class="oe_import_file get_attach"
+                                               required="1"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </table>
+                    </t>
+                </t>
+            </t>
+        </xpath>
+    </template>
+</odoo>
