@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="verify_checkout" inherit_id="website_sale.cart">
+        <!--         Replacing the button checkout -->
+        <xpath expr="//a[@t-attf-href='{{redirect_url}}']" position="replace">
+            <!-- Checking if it is the cart total amount is less than
+            the purchase limit set to the settings.if it is less than  then
+                        open a modal to verify   -->
+            <t t-set="enabled"
+               t-value="request.env['ir.config_parameter'].sudo().get_param('website_purchase_limit.enabled_limit')"/>
+            <t t-set="limit"
+               t-value="request.env['ir.config_parameter'].sudo().get_param('website_purchase_limit.purchase_limit')"/>
+            <t t-set="total_amount" t-value="website_sale_order.amount_total"/>
+<!--            Checking the settings purchase limit is enabled or not-->
+            <t t-if="enabled and limit">
+<!--                Checking the amount is less than the purchase limit -->
+                <t t-if="total_amount &lt; float(limit)">
+                    <a role="button" class="btn btn-primary float-end"
+                       data-bs-toggle="modal"
+                       data-bs-target="#popup_error_message">
+                        <span>Process Checkout</span>
+                        <span class="fa fa-chevron-right"/>
+                    </a>
+                    <div t-attf-class="modal #{'show d-block' if open_deactivate_modal else ''}"
+                         id="popup_error_message" tabindex="-1"
+                         role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="btn-close"
+                                            data-bs-dismiss="modal"/>
+                                </div>
+                                <form class="oe_login_form modal-body"
+                                      role="form">
+                                    <strong>Purchase amount fail to meet the limit!</strong>
+                                    The purchase amount must be greater than the
+                                    limit
+                                    <b>
+                                        <span t-esc="limit"/>
+                                    </b>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                <t t-else="">
+                <a class="btn btn-primary float-end" role="button"
+                   t-attf-href="{{redirect_url}}" id="checkout">
+                    <t t-if="redirect_to_sign_in">
+                        <span>Sign In</span>
+                        <span class="fa fa-sign-in"/>
+                    </t>
+                    <t t-else="">
+                        <span>Process Checkout</span>
+                        <span class="fa fa-chevron-right"/>
+                    </t>
+                </a>
+            </t>
+            </t>
+             <t t-else="">
+                <a class="btn btn-primary float-end" role="button"
+                   t-attf-href="{{redirect_url}}" id="checkout">
+                    <t t-if="redirect_to_sign_in">
+                        <span>Sign In</span>
+                        <span class="fa fa-sign-in"/>
+                    </t>
+                    <t t-else="">
+                        <span>Process Checkout</span>
+                        <span class="fa fa-chevron-right"/>
+                    </t>
+                </a>
+            </t>
+
+        </xpath>
+    </template>
+    <template id="verify_checkout_cart_summary"
+              inherit_id="website_sale.short_cart_summary">
+        <!--         Replacing the second checkout button -->
+        <xpath expr="//a[@t-attf-href='{{redirect_url}}']" position="replace">
+            <t t-if="enabled and limit">
+                <t t-if="total_amount &lt; float(limit)">
+                    <a role="button" class="btn btn-primary float-end"
+                       data-bs-toggle="modal"
+                       data-bs-target="#popup_error_message">
+                        <span>Process Checkout</span>
+                        <span class="fa fa-chevron-right"/>
+                    </a>
+                </t>
+                <t t-else="">
+                <a class="btn btn-primary float-end" role="button"
+                   t-attf-href="{{redirect_url}}" id="checkout">
+                    <t t-if="redirect_to_sign_in">
+                        <span>Sign In</span>
+                        <span class="fa fa-sign-in"/>
+                    </t>
+                    <t t-else="">
+                        <span>Process Checkout</span>
+                        <span class="fa fa-chevron-right"/>
+                    </t>
+                </a>
+            </t>
+            </t>
+            <t t-else="">
+                <a class="btn btn-primary float-end" role="button"
+                   t-attf-href="{{redirect_url}}" id="checkout">
+                    <t t-if="redirect_to_sign_in">
+                        <span>Sign In</span>
+                        <span class="fa fa-sign-in"/>
+                    </t>
+                    <t t-else="">
+                        <span>Process Checkout</span>
+                        <span class="fa fa-chevron-right"/>
+                    </t>
+                </a>
+            </t>
+        </xpath>
+    </template>
+</odoo>
