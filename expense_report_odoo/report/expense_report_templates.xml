@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Report Template-->
+    <template id="report_expense_report_details">
+        <t t-call="web.html_container">
+            <t t-foreach="emp_name" t-as="emp">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="text-center">
+                            <h1>
+                                <u>Expense Report</u>
+                            </h1>
+                        </div>
+                        <div class="oe_structure"/>
+                        <div>
+                            <p>
+                                <b>Employee Name:</b>
+                                <span t-esc="emp"/>
+                            </p>
+                            <t t-if="from_date">
+                                <p>
+                                    <b>Date from :</b>
+                                    <span t-esc="datetime.datetime.strptime(from_date, '%Y-%m-%d').strftime('%d-%m-%Y')"/>
+                                </p>
+                            </t>
+                            <t t-if="to_date">
+                                <p>
+                                    <b>Date to :</b>
+                                    <span t-esc="datetime.datetime.strptime(to_date, '%Y-%m-%d').strftime('%d-%m-%Y')"/>
+                                </p>
+                            </t>
+                        </div>
+                        <style>
+                            table {
+                            width: 100%;
+                            border: 1px solid black;
+                            border-collapse: collapse;
+                            }
+                            th, td {
+                            border: 1px solid black;
+                            padding: 8px;
+                            max-width:250px;
+                            text-align:center;
+                            }
+                        </style>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>SR.No</th>
+                                    <th>Employee name</th>
+                                    <th style="min-width:120px;">Date</th>
+                                    <th>Description</th>
+                                    <th style="min-width:120px;">Unit Price</th>
+                                    <th>Quantity</th>
+                                    <th style="min-width:120px;">Total</th>
+                                    <th style="min-width:120px;">Status</th>
+                                </tr>
+                            </thead>
+                            <t t-set="i" t-value="1"/>
+                            <t t-set="total_expense" t-value="0"/>
+                            <t t-foreach="data_pdf" t-as="data">
+                                <t t-if="data.get('t3', False) == emp">
+                                    <tr>
+                                        <td>
+                                            <t t-esc="i"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="data.get('t3', False)"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="datetime.datetime.strptime(data.get('date', False), '%Y-%m-%d').strftime('%d-%m-%Y')"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="data.get('name', False)"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="data.get('t4', False)"/>
+                                            <t t-esc="data.get('unit_amount', False)"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="data.get('quantity', False)"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="data.get('t4', False)"/>
+                                            <t t-esc="data.get('total_amount', False)"/>
+                                        </td>
+                                        <td>
+                                            <t t-if="data.get('state', False) == 'draft'">
+                                                To Submit
+                                            </t>
+                                            <t t-if="data.get('state', False) == 'reported'">
+                                                Submitted
+                                            </t>
+                                            <t t-if="data.get('state', False) == 'approved'">
+                                                Approved
+                                            </t>
+                                            <t t-if="data.get('state', False) == 'done'">
+                                                Paid
+                                            </t>
+                                            <t t-if="data.get('state', False) == 'refused'">
+                                                Refused
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <t t-if="data.get('total_amount', False)">
+                                        <t t-set="total_expense"
+                                           t-value="total_expense + data['total_amount']"/>
+                                    </t>
+                                    <t t-set="i" t-value="i+1"/>
+                                </t>
+                            </t>
+                        </table>
+                        <br/>
+                        <div>
+                            <strong>Total Expense:</strong>
+                            <t t-if="data and 't4' in data">
+                                <t t-esc="data.get('t4', False)"/>
+                            </t>
+                            <t t-esc="'{:.2f}'.format(total_expense)"/>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
