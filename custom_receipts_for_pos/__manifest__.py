@@ -33,12 +33,12 @@
     'website': "https://www.cybrosys.com",
     'depends': ['base', 'point_of_sale'],
     'data': [
+        'data/pos_receipt_views_data.xml',
         'security/ir.model.access.csv',
         'views/point_of_sale_view.xml',
         'views/pos_receipt_views.xml',
         'views/res_config_settings_views.xml',
     ],
-    'demo':['demo/pos_receipt_views_demo.xml'],
     'assets': {
         'point_of_sale.assets': [
             'custom_receipts_for_pos/static/js/ReceiptScreen/order_receipt.js',
