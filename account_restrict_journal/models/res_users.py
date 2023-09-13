@@ -27,8 +27,17 @@ class ResUsers(models.Model):
 
     _inherit = 'res.users'
 
+    check_user = fields.Boolean(string="Check", compute='_compute_check_user',
+                                help="Check the field is true or false")
     journal_ids = fields.Many2many(
         'account.journal',
-        string='Allowed Journals',
+        string='Restricted Journals',
         help='Only the selected journal will be visible'
              ' to the particular user')
+
+    def _compute_check_user(self):
+        """Function for viewing the page for restrict journal users."""
+        self.check_user = False
+        if (self.env.ref('account_restrict_journal.user_allowed_journal').id in
+                self.groups_id.mapped('id')):
+            self.check_user = True

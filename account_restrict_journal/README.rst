@@ -1,5 +1,5 @@
 .. image:: https://img.shields.io/badge/licence-LGPL--3-blue.svg
-    :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
+    :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 
 Restrict Journal for Users
@@ -17,11 +17,11 @@ Company
 License
 -------
 General Public License, Version 3 (LGPL v3).
-(https://www.odoo.com/documentation/user/16.0/legal/licenses/licenses.html)
+(https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
 
 Credits
 -------
-Developer: Sreeshanth V S @cybrosys, Contact: odoo@cybrosys.com
+Developer: (V16) Sreeshanth V S @cybrosys, Contact: odoo@cybrosys.com
 
 Contacts
 --------

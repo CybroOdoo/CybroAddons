@@ -21,20 +21,21 @@
 #############################################################################
 {
     'name': "Restrict Journal for Users",
-    "description": """ Restrict account journal for the 
-                        specific users to access allowed journals only""",
-    "summary": "User can select only allowed journals",
+    "version": "16.0.2.1.1",
     "category": "Accounting",
-    "version": "16.0.1.0.0",
+    "summary": "User can select only allowed journals",
+    "description": """ Restrict account journal for the specific users to 
+    access allowed journals only""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['account', 'base'],
+    'depends': ['base', 'base_accounting_kit'],
     'data': [
         'security/account_journal_security.xml',
         'security/ir_rule.xml',
-        'views/res_users_views.xml'
+        'views/res_users_views.xml',
+        'views/account_move_views.xml'
     ],
     'images': [
         'static/description/banner.png'],
