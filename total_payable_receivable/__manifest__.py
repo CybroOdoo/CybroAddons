@@ -20,19 +20,21 @@
 #############################################################################
 {
     'name': 'Payable And Receivable Amount',
+    'version': '16.0.1.0.1',
+    'category': 'Accounting',
     'summary': """Amount Payable & Receivable In Partner Form""",
-    'version': '16.0.1.0.0',
     'description': """Amount Payable & Receivable In Partner Form""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'category': 'Accounting',
     'depends': ['base', 'sale', 'purchase'],
-    'license': 'AGPL-3',
     'data': [
-        'views/total_payable_receivable_view.xml',
+        'views/res_partner_views.xml',
     ],
     'images': ['static/description/banner.png'],
+    'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
+    'application': False,
 }

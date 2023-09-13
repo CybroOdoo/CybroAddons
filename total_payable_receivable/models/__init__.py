@@ -18,4 +18,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import total_payable_receivable
+from . import res_partner
