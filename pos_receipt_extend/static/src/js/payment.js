@@ -29,27 +29,6 @@ odoo.define('pos_receipt_extend.PaymentScreen', function (require) {
             var self= this;
             self.env.pos.qr_code = order.qr_code;
             self.env.pos.customer_details = order.customer_details;
-            if (!address) {
-                              this.env.pos.selectedOrder.partner.street = null;
-            }
-            if (!name) {
-                              this.env.pos.selectedOrder.partner.name = null;
-            }
-            if (!mobile) {
-                              this.env.pos.selectedOrder.partner.mobile = null;
-            }
-            if (!phone) {
-                              this.env.pos.selectedOrder.partner.phone = null;
-            }
-            if (!email) {
-                              this.env.pos.selectedOrder.partner.email = null;
-            }
-            if (!vat) {
-                              this.env.pos.selectedOrder.partner.vat = null;
-            }
-            if (!number) {
-                              this.env.pos.selectedOrder.name = null;
-            }
             var self= this;
          rpc.query({
                 model: 'pos.order',
@@ -65,10 +44,10 @@ odoo.define('pos_receipt_extend.PaymentScreen', function (require) {
                    self.env.pos.invoice  = result.invoice_name
                 }
                 });
+                console.log(self.env.pos.invoice,'this.env.pos.invoice')
                 return receipt_order
          }
          }
-
 
 
        Registries.Component.extend(PaymentScreen, PosPaymentReceiptExtend);
