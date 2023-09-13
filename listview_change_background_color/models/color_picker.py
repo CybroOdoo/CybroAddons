@@ -34,7 +34,8 @@ class ColorPicker(models.Model):
     @api.model
     def get_color_picker_model_and_id(self, **kw):
         """We can get the all records, models and colors"""
-        record = self.search([('record_id', '=', kw['record_id']), ('res_model', '=', kw['model_name'])])
+        record = self.search([('record_id', '=', kw['record_id']),
+                              ('res_model', '=', kw['model_name'])])
         if record:
             record.write({'color': kw['record_color']})
         else:
