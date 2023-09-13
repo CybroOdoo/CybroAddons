@@ -955,6 +955,7 @@ class DashBoard(models.Model):
                               where Extract(month FROM l.date) = Extract(month FROM DATE(NOW())) AND
                               Extract(YEAR FROM l.date) = Extract(YEAR FROM DATE(NOW())) AND
                               L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                              l.product_id IS NULL AND
                               l.balance != 0 AND a.reconcile IS F 
                               AND l.''' + states_arg + '''
                               AND  l.company_id in ''' + str(tuple(company_id)) + '''                              
@@ -964,6 +965,7 @@ class DashBoard(models.Model):
                               where Extract(month FROM l.date) = Extract(month FROM DATE(NOW())) AND
                               Extract(YEAR FROM l.date) = Extract(YEAR FROM DATE(NOW())) AND
                               L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                              l.product_id IS NULL AND
                               l.balance != 0 AND a.reconcile IS TRUE 
                               AND l.%s
                               AND  l.company_id in ''' + str(tuple(company_id)) + '''                              
@@ -1000,6 +1002,7 @@ class DashBoard(models.Model):
         self._cr.execute(('''  select count(*) FROM account_move_line l,account_account a
                                   where Extract(year FROM l.date) = Extract(year FROM DATE(NOW())) AND
                                   l.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                                  l.product_id IS NULL AND
                                   l.balance != 0 AND a.reconcile IS TRUE  
                                   AND l.%s
                                   AND  l.company_id in ''' + str(tuple(company_id)) + '''       
@@ -1275,6 +1278,7 @@ class DashBoard(models.Model):
                               where Extract(month FROM l.date) = Extract(month FROM DATE(NOW())) AND
                               Extract(YEAR FROM l.date) = Extract(YEAR FROM DATE(NOW())) AND
                               L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                              l.product_id IS NULL AND
                               l.balance != 0 AND a.reconcile IS F 
                               AND l.''' + states_arg + '''
                               AND  l.company_id in ''' + str(tuple(company_id)) + '''                              
@@ -1284,6 +1288,7 @@ class DashBoard(models.Model):
                               where Extract(month FROM l.date) = Extract(month FROM DATE(NOW())) AND
                               Extract(YEAR FROM l.date) = Extract(YEAR FROM DATE(NOW())) AND
                               L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                              l.product_id IS NULL AND
                               l.balance != 0 AND a.reconcile IS TRUE 
                               AND l.%s
                               AND  l.company_id in ''' + str(tuple(company_id)) + '''                              
@@ -1302,6 +1307,7 @@ class DashBoard(models.Model):
         self._cr.execute(('''  select l.id FROM account_move_line l,account_account a
                                   where Extract(year FROM l.date) = Extract(year FROM DATE(NOW())) AND
                                   L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                                  l.product_id IS NULL AND
                                   l.balance != 0 AND a.reconcile IS TRUE  
                                   AND l.%s
                                   AND  l.company_id in ''' + str(tuple(company_id)) + '''       
