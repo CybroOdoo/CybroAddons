@@ -1,6 +1,6 @@
-.. image:: https://img.shields.io/badge/licence-LGPL--3-blue.svg
-    :target:  https://www.gnu.org/licenses/lgpl-3.0-standalone.html
-    :alt: License: LGPL-3
+.. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
+    :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
+    :alt: License: AGPL-3
 
 Website HelpDesk Dashboard
 ==========================
@@ -20,8 +20,8 @@ Configuration
 
 License
 -------
-Lesser General Public License, Version 3 (LGPL v3)
-(https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
+General Public License, Version 3 (AGPL v3).
+(https://www.gnu.org/licenses/agpl-3.0-standalone.html)
 
 Company
 -------
