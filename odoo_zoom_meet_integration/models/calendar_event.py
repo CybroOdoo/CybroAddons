@@ -20,7 +20,9 @@
 #
 #############################################################################
 import json
+
 import requests
+
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 
@@ -38,6 +40,15 @@ class CalendarEvent(models.Model):
     zoom_event = fields.Char(string='Zoom Event ID',
                              help='Event ID of the zoom meet')
     videocall_location = fields.Char('Meeting URL', related='zoom_meet_url')
+    description = fields.Text('Description',
+                              states={'done': [('readonly', True)]},
+                              compute="_compute_description", store=True)
+
+    @api.depends('zoom_meet_code', 'zoom_meet_url')
+    def _compute_description(self):
+        for rec in self:
+            if rec.zoom_meet_code and rec.zoom_meet_url:
+                rec.description = "Join the Zoom Meeting at " + str(rec.zoom_meet_url) + "using the Meeting Code " + str(rec.zoom_meet_code)
 
     def action_zoom_meet_url(self):
         """Join zoom from Odoo"""
