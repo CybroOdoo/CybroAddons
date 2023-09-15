@@ -52,6 +52,29 @@ class AccountRegisterPayments(models.TransientModel):
             })
         return res
 
+    def _create_payment_vals_from_wizard(self, batch_result):
+        res = super(AccountRegisterPayments,
+                    self)._create_payment_vals_from_wizard(
+            batch_result)
+        if self.effective_date:
+            res.update({
+                'bank_reference': self.bank_reference,
+                'cheque_reference': self.cheque_reference,
+                'effective_date': self.effective_date,
+            })
+        return res
+
+    def _create_payment_vals_from_batch(self, batch_result):
+        res = super(AccountRegisterPayments,
+                    self)._create_payment_vals_from_batch(
+            batch_result)
+        if self.effective_date:
+            res.update({
+                'bank_reference': self.bank_reference,
+                'cheque_reference': self.cheque_reference,
+                'effective_date': self.effective_date,
+            })
+        return res
 
 
 class AccountPayment(models.Model):
