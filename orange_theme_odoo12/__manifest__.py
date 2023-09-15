@@ -24,7 +24,7 @@
     "name": "Outrageous Orange Backend Theme",
     "description": """Backend theme for Odoo 16.0 community edition.""",
     "summary": "Outrageous Orange Backend Theme",
-    'version': '16.0.1.0.0',
+    'version': '16.0.2.0.0',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
