@@ -1,4 +1,3 @@
-"""button visibility in pos"""
 # -*- coding: utf-8 -*-
 #############################################################################
 #
@@ -21,5 +20,5 @@
 #
 #############################################################################
 from . import pos_buttons
-from . import pos_sessions
+from . import pos_session
 from . import res_users

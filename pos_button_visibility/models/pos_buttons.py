@@ -1,4 +1,3 @@
-"""pos button visibility"""
 # -*- coding: utf-8 -*-
 #############################################################################
 #
@@ -23,8 +22,9 @@
 from odoo import fields, models
 
 
-class PosButton(models.Model):
+class PosButtons(models.Model):
     """This is used to store the button"""
     _name = 'pos.buttons'
+    _description = "Pos Buttons"
 
-    name = fields.Char(string="Name", help="pos buttons name")
+    name = fields.Char(string="Name", help="Pos buttons name")

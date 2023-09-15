@@ -1,4 +1,3 @@
-"""pos button visibility"""
 # -*- coding: utf-8 -*-
 #############################################################################
 #
@@ -28,12 +27,14 @@ class ResUsers(models.Model):
     _inherit = 'res.users'
 
     user_session_ids = fields.Many2many('pos.session',
-                                    domain=[('state', '!=', 'closed')],
-                                    string="Pos session", help="Session of pos")
-    buttons_pos_ids = fields.Many2many('pos.buttons', string="Pos Buttons",
-                                   help="pos buttons")
+                                        domain=[('state', '!=', 'closed')],
+                                        string="Pos session",
+                                        help="Session of pos")
+    buttons_pos_ids = fields.Many2many('pos.buttons',
+                                       string="Pos Buttons",
+                                       help="pos buttons")
 
     def pos_button_visibility(self, button):
-        """this is used to return the restricted button name"""
+        """This is used to return the restricted button name"""
         pos_buttons = self.env['pos.buttons'].browse(button).mapped('name')
         return pos_buttons

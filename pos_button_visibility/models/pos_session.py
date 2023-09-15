@@ -1,4 +1,3 @@
-"""session to load"""
 # -*- coding: utf-8 -*-
 #############################################################################
 #
@@ -28,7 +27,8 @@ class PosSession(models.Model):
     _inherit = 'pos.session'
 
     def _loader_params_res_users(self):
-        """Loading fields to pos sessions"""
+        """Loading fields to pos sessions. This function load the fields of
+        res users into POS """
         result = super()._loader_params_res_users()
         result['search_params']['fields'].append('user_session_ids')
         result['search_params']['fields'].append('buttons_pos_ids')
