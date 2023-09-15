@@ -21,15 +21,15 @@
 ###############################################################################
 {
     'name': 'Website Call For Price',
-    'version': '16.0.1.0.0',
-    'category': 'Website/Website',
+    'version': '16.0.1.0.1',
+    'category': 'Website',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'images': ['static/description/banner.png'],
     'website': 'https://www.cybrosys.com',
     'depends': ['base', 'website_sale', 'website_sale_wishlist',
-                'website_sale_comparison'],
+                'website_sale_comparison', 'stock'],
     'summary': """Helps to hide price of specified product from shop""",
     'description': "Hide price and add to cart item button of All page stores"
                    "and user must ask for a call for price",
@@ -38,10 +38,13 @@
              'views/wishlist_hide_price_template.xml',
              'views/compare_hide_price_template.xml',
              'views/call_for_price_views.xml',
-             'views/product_template_views.xml'],
+             'views/product_product_views.xml',
+    ],
     'assets': {
         'web.assets_frontend': [
-            '/call_for_price_website/static/src/js/create_call_form.js']
+            '/call_for_price_website/static/src/js/create_call_form.js',
+            '/call_for_price_website/static/src/js/variant_mixin.js'
+        ]
     },
     'license': 'AGPL-3',
     'installable': True,

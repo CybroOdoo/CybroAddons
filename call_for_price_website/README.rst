@@ -3,7 +3,7 @@
     :alt: License: AGPL-3
 
 WEBSITE CALL FOR PRICE
-====================
+======================
 This module helps hide specific products prices from the shop and using 'Call for Price' button customer can sent their details, the user will follow up the details and get the product price.
 
 Configuration
@@ -16,7 +16,7 @@ Company
 
 Credits
 -------
-Developer: Raneesha M K @cybrosys, Contact: odoo@cybrosys.com
+Developers: Raneesha M K  @cybrosys, Muhsina V @cybrosys, Contact: odoo@cybrosys.com
 
 Contacts
 --------

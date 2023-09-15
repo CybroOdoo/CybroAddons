@@ -20,4 +20,5 @@
 #
 ###############################################################################
 
-from . import call_price, product_template
+from . import call_price
+from . import product_product
