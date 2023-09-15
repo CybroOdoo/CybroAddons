@@ -89,7 +89,6 @@ class MailActivity(models.Model):
             'len_done': len(done),
             'len_cancel': len(cancel)
         }
-        print('res', res)
         return res
 
     def get_activity(self, id):
