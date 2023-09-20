@@ -21,8 +21,8 @@
 ############################################################################
 {
     'name': "Website SEO Kit",
-    'version': '16.0.1.0.0',
-    'summary': """website seo kit used for 
+    'version': '16.0.1.1.0',
+    'summary': """Website seo kit used for 
                 automatically generate meta titles, descriptions, 
                 and keywords for each product and product category""",
     'description': """This module help to generate seo content""",
@@ -34,7 +34,7 @@
     'images': ['static/description/banner.png'],
     'depends': ['base', 'website', 'website_sale'],
     'data': [
-        'security/security_rule.xml',
+        'security/ir_rule.xml',
         'security/ir.model.access.csv',
         'views/seo_categ_view.xml',
         'views/seo_generator_view.xml',

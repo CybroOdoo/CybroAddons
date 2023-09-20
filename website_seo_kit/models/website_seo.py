@@ -23,7 +23,7 @@ from odoo import api, exceptions, fields, models
 
 
 class WebsiteSeoAttribute(models.Model):
-    """this module allows to user to give attributes"""
+    """This module allows to user to give attributes"""
     _name = 'website.seo.attributes'
     _description = 'Website SEO'
 
@@ -33,19 +33,21 @@ class WebsiteSeoAttribute(models.Model):
                                 ('description_sale', 'Product Description'),
                                 ('default_code', 'Internal Reference'),
                                 ('company_id', 'Company Name')],
-                               help='Select Product')
+                               help='Select Product', string="Product")
     models = fields.Selection([('product', 'Product'),
                                ('product_category', 'Product Category')],
                               string='Model', help='Choose your model')
-    tech_name = fields.Char(string='Technical name')
+    tech_name = fields.Char(string='Technical name', help="Technical Name")
     category = fields.Selection([('name', 'Category Name'),
                                  ('parent_id', 'Category Parent Name'),
                                  ('category_description',
                                   'Category Description')],
-                                help='Select Product Category')
+                                help='Select Product Category',
+                                string="Select Product Category")
 
     @api.constrains('name')
     def _check_unique_name(self):
+        """Check for unique name"""
         for rec in self:
             domain = [('name', '=', rec.name.lower())]
             if self.search_count(domain) > 1:
@@ -63,22 +65,18 @@ class GenerateSeo(models.Model):
                                    ('product_category', 'Product Category')],
                                   string='SEO Meta Configuration For',
                                   help='Select any these model', required=True)
-
     meta_title_ids = fields.Many2many('website.seo.attributes',
                                       'title', 'title_id', string='Meta Title',
                                       help='Choose meta tittle', required=True)
-
     meta_description_ids = fields.Many2many('website.seo.attributes',
                                             'description', 'description_id',
                                             string='Meta Description',
                                             help='Choose meta description',
                                             required=True)
-
     attribute_separator = fields.Char(string="Multi Attribute Separator",
                                       default="|", required=True)
     company_id = fields.Many2one('res.company', string='Company',
                                  default=lambda self: self.env.company)
-
     meta_ids = fields.Many2many('website.seo.attributes', 'meta', 'meta_id',
                                 string='Title !')
     state = fields.Selection([
@@ -100,7 +98,7 @@ class GenerateSeo(models.Model):
                                  [('models', '=', 'product_category')])]
 
     def action_save_seo_info(self):
-        """save the seo content"""
+        """Save the seo content"""
         for rec in self.search([]):
             if rec.id == self.id:
                 self.write({'state': 'activated'})
@@ -127,7 +125,6 @@ class GenerateSeo(models.Model):
                         'website_meta_keywords': pro.name
                     })
                     meta_title.append(values)
-
             if self.meta_description_ids:
                 products = self.env['product.template'].search_read(
                     [], fields=self.meta_description_ids.mapped('product'))
@@ -158,7 +155,6 @@ class GenerateSeo(models.Model):
                     'sticky': False,
                 }
             }
-
         elif self.model_name == 'product_category':
             if self.meta_title_ids:
                 products = self.env['product.public.category'].search_read(
@@ -183,11 +179,10 @@ class GenerateSeo(models.Model):
                             'website_meta_keywords': pro.name
                         })
                     meta_categ_title.append(values)
-
             if self.meta_description_ids:
                 products = self.env['product.public.category'].search_read(
                     [('is_auto_seo', '=', True)],
-                    fields= self.meta_description_ids.mapped('category'))
+                    fields=self.meta_description_ids.mapped('category'))
                 meta_categ_description = []
                 for product in products:
                     sep = self.attribute_separator
@@ -199,12 +194,12 @@ class GenerateSeo(models.Model):
                         'string': string,
                         'id': product['id']
                     }
-                    pro = self.env['product.public.category'].browse(values['id'])
+                    pro = self.env[
+                        'product.public.category'].browse(values['id'])
                     pro.write({
                         'website_meta_description': values['string'],
                     })
                     meta_categ_description.append(values)
-
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
@@ -220,12 +215,11 @@ class GenerateSeo(models.Model):
 
 
 class SeoPublicCategory(models.Model):
-    """here user can include category by enabling is_auto_seo field"""
+    """Here user can include category by enabling is_auto_seo field"""
     _inherit = 'product.public.category'
 
     is_auto_seo = fields.Boolean(string="Auto Update SEO",
                                  help='enable for generate seo content '
                                       'automatically for this category')
     category_description = fields.Text(string='Description For This Category',
-                                       help='Description For This Category',
-                                       required=True)
+                                       help='Description For This Category')
