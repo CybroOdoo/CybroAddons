@@ -20,7 +20,7 @@
 ################################################################################
 {
     'name': 'Easy Language Selector',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Extra Tools',
     'summary': """User can change the language of the odoo back-end in 
      easy way""",

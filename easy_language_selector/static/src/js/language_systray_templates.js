@@ -31,6 +31,7 @@ var LanguageWidget = Widget.extend({
      */
     _onChangeLang: function() {
         var lang_code = this.$el.find("#language_selector").val();
+        self =this;
         if (lang_code == "add_extra_lang") {
             this.do_action({
                 type: 'ir.actions.act_window',
@@ -47,7 +48,7 @@ var LanguageWidget = Widget.extend({
             ajax.rpc('/easy_language_selector/change', {
                 'data': lang_code
             }).then(function() {
-                window.location.reload();
+                self.do_action('reload_context');
             })
         }
     },
