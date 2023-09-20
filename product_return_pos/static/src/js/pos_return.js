@@ -176,9 +176,8 @@ var OrderListScreenWidget = ScreenWidget.extend({
 
         this.render_list(orders);
         var search_timeout = null;
-        this.$('.searchbox input').on('keypress',function(event){
+        this.$('.searchbox input').on('input',function(event){
             clearTimeout(search_timeout);
-
             var searchbox = this;
 
             search_timeout = setTimeout(function(){
@@ -191,6 +190,7 @@ var OrderListScreenWidget = ScreenWidget.extend({
         });
         this.$('.return_order').click(function(e){
             var order = $(e.target).closest("tr").data('id');
+
             self.return_order(order);
         });
     },
@@ -202,13 +202,25 @@ var OrderListScreenWidget = ScreenWidget.extend({
         return this.gui.get_current_screen_param('orders');
     },
     perform_search: function(query, associate_result){
+        var self = this;
         var orders;
+
         if(query){
+            console.log(query);
             orders = this.search_order(query);
             this.render_list(orders);
+            this.$('.return_order').click(function(e){
+            var order = $(e.target).closest("tr").data('id');
+
+            self.return_order(order);
+        });
         }else{
             orders = this.pos.orders;
             this.render_list(orders);
+            this.$('.return_order').click(function(e){
+            var order = $(e.target).closest("tr").data('id');
+            self.return_order(order);
+        });
         }
     },
     search_order: function(query){
@@ -227,10 +239,16 @@ var OrderListScreenWidget = ScreenWidget.extend({
         return results;
     },
     clear_search: function(){
+        var self = this;
         var orders = this.pos.orders;
         this.render_list(orders);
+        this.$('.return_order').click(function(e){
+            var order = $(e.target).closest("tr").data('id');
+            self.return_order(order);
+        });
         this.$('.searchbox input')[0].value = '';
         this.$('.searchbox input').focus();
+
     },
     render_list: function(orders){
         var contents = this.$el[0].querySelector('.order-list-contents');
