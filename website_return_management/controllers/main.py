@@ -47,11 +47,11 @@ class CustomerRegistration(main.Home):
             'create_date': datetime.now(),
         }
         stock_picks = request.env['stock.picking'].search([('origin', '=', order.name)])
-        moves = stock_picks.mapped('move_ids_without_package').filtered(lambda p: p.product_id == product_id)
+        moves = stock_picks.mapped('move_ids_without_package').with_user(1).filtered(lambda p: p.product_id == product_id)
         if moves:
             moves = moves.sorted('product_uom_qty', reverse=True)
             values.update({'state': 'draft'})
-            ret_order = request.env['sale.return'].create(values)
+            ret_order = request.env['sale.return'].with_user(1).create(values)
             moves[0].picking_id.return_order = ret_order.id
             moves[0].picking_id.return_order_picking = False
         return request.redirect('/my/request-thank-you')
