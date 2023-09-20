@@ -32,6 +32,7 @@ class CustomerRegistration(main.Home):
                 csrf=False)
     def sale_return(self, **kwargs):
         """Controller to create return order"""
+        print("1234")
         product_id = request.env['product.product'].sudo().search([('id', '=', int(kwargs['product']))])
         order = request.env['sale.order'].sudo().search([('id', '=', int(kwargs['order_id']))])
         qty = kwargs['qty']
@@ -46,11 +47,11 @@ class CustomerRegistration(main.Home):
             'create_date': datetime.now(),
         }
         stock_picks = request.env['stock.picking'].search([('origin', '=', order.name)])
-        moves = stock_picks.mapped('move_ids_without_package').filtered(lambda p: p.product_id == product_id)
+        moves = stock_picks.with_user(1).mapped('move_ids_without_package').filtered(lambda p: p.product_id == product_id)
         if moves:
             moves = moves.sorted('product_uom_qty', reverse=True)
             values.update({'state': 'draft'})
-            ret_order = request.env['sale.return'].create(values)
+            ret_order = request.env['sale.return'].with_user(1).create(values)
             moves[0].picking_id.return_order = ret_order.id
             moves[0].picking_id.return_order_picking = False
         return request.redirect('/my/request-thank-you')
