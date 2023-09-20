@@ -29,7 +29,6 @@ class SalePack(models.Model):
 
     product_pack_id = fields.Many2one('product.product', string='Select Pack',
                                       domain=[('is_pack', '=', True)],
-                                      required=True,
                                       help='The selected pack product for'
                                            ' the sale order.')
 
