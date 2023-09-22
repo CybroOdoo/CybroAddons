@@ -41,14 +41,13 @@ odoo.define('salon_management.SalonDashboard', function (require) {
             rpc.query({
                 model: "salon.booking",
                 method: "get_booking_count",
-                args: [],
+                args: [0],
             })
                 .then(function (result) {
                     $("#bookings_count").append("<span class='stat-digit'>" + result.bookings + "</span>");
                     $("#recent_count").append("<span class='stat-digit'>" + result.sales + "</span>");
                     $("#orders_count").append("<span class='stat-digit'>" + result.orders + "</span>");
                     $("#clients_count").append("<span class='stat-digit'>" + result.clients + "</span>");
-                    // console.log("pass to controller");
                     ajax.jsonRpc("/salon/chairs", "call", {}).then(function (values) {
                         $('#chairs_dashboard_view').append(values);
                     });
@@ -88,7 +87,6 @@ odoo.define('salon_management.SalonDashboard', function (require) {
             ev.stopPropagation();
             ev.preventDefault();
             var active_id = event.target.id
-            console.log(active_id,"acname")
             var options = {
                 on_reverse_breadcrumb: this.on_reverse_breadcrumb,
             };

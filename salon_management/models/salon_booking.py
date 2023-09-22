@@ -32,23 +32,26 @@ class SalonBooking(models.Model):
     _name = 'salon.booking'
     _description = 'Salon Booking'
 
-    name = fields.Char(string="Name")
+    name = fields.Char(string="Name", required=True)
     state = fields.Selection(
         string="State", default="draft",
         selection=[('draft', 'Draft'), ('approved', 'Approved'),
                    ('rejected', 'Rejected')])
-    time = fields.Datetime(string="Date")
+    time = fields.Datetime(string="Date", required=True)
     phone = fields.Char(string="Phone")
     email = fields.Char(string="E-Mail")
-    service_ids = fields.Many2many('salon.service', string="Services")
-    chair_id = fields.Many2one('salon.chair', string="Chair")
+    service_ids = fields.Many2many('salon.service',
+                                   string="Services")
+    chair_id = fields.Many2one('salon.chair', string="Chair",
+                               required=True)
     company_id = fields.Many2one(
         'res.company', 'Company',
         default=lambda self: self.env['res.company'].browse(1))
     language_id = fields.Many2one(
         'res.lang', 'Language',
         default=lambda self: self.env['res.lang'].browse(1))
-    filtered_order_ids = fields.Many2many('salon.order', string="Salon Orders",
+    filtered_order_ids = fields.Many2many('salon.order',
+                                          string="Salon Orders",
                                           compute="_compute_filtered_order_ids")
 
     def _compute_filtered_order_ids(self):
@@ -110,7 +113,6 @@ class SalonBooking(models.Model):
                                                                 force_send=True)
         self.state = "rejected"
 
-    @api.model
     def get_booking_count(self):
         salon_bookings = self.env['salon.booking'].search_count(
             [('state', '=', 'approved')])
@@ -128,5 +130,4 @@ class SalonBooking(models.Model):
             'clients': salon_clients,
             'chairs': salon_chairs
         }
-        # print(values)
         return values

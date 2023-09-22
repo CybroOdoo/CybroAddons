@@ -119,8 +119,7 @@ class SalonBookingWeb(http.Controller):
         date_end = pytz.timezone(request.env.user.tz).localize(
             datetime.combine(date_check, time(23, 59, 59))).astimezone(
             pytz.UTC).replace(tzinfo=None)
-        chair_obj = request.env['salon.chair'].search(
-            [('active_booking_chairs', '=', True)])
+        chair_obj = request.env['salon.chair'].search([])
         order_obj = request.env['salon.order'].search(
             [('chair_id.active_booking_chairs', '=', True),
              ('stage_id', 'in', [1, 2, 3]), ('start_time', '>=', date_start),
@@ -139,7 +138,6 @@ class SalonBookingWeb(http.Controller):
 class SalonOrders(http.Controller):
     @http.route(['/salon/chairs'], type="json", auth="public")
     def elearning_snippet(self, products_per_slide=3):
-        print('controller')
         chairs = []
         salon_chairs = request.env['salon.chair'].sudo().search([])
         number_of_orders = {}
@@ -148,16 +146,12 @@ class SalonOrders(http.Controller):
             number_of_orders.update({i.id: len(request.env['salon.order'].search(
                 [("chair_id", "=", i.id),
                  ("stage_id", "in", [2, 3])]))})
-            # print(i.id)
             chairs.append(
                 {'name': i.name, 'id': i.id, 'orders': number_of_orders[i.id]})
-        print(number_of_orders, 'main')
         values = {
             's_chairs': chairs
         }
-        print(values)
 
         response = http.Response(
             template='salon_management.dashboard_salon_chairs', qcontext=values)
-        print(response.render())
         return response.render()
