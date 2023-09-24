@@ -26,13 +26,13 @@ from odoo import models, fields, api
 class HideMenuUser(models.Model):
     _inherit = 'res.users'
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """
         Else the menu will be still hidden even after removing from the list
         """
         self.clear_caches()
-        return super(HideMenuUser, self).create(vals)
+        return super(HideMenuUser, self).create(vals_list)
 
     def write(self, vals):
         """
