@@ -7,6 +7,7 @@ from odoo.exceptions import UserError
 
 class InstaProfile(models.Model):
     _name = 'insta.profile'
+    _description = 'Instagram Profile'
 
     name = fields.Char(string="Name", readonly=True)
     access_token = fields.Char("Access Token")
