@@ -22,21 +22,19 @@
 from collections import OrderedDict
 from odoo import http, _
 from odoo.http import request
-from odoo.addons.portal.controllers.portal import pager as portal_pager, CustomerPortal
+from odoo.addons.portal.controllers.portal import pager as portal_pager, \
+    CustomerPortal
 
 
 class RFQCustomerPortal(CustomerPortal):
 
-    def _prepare_home_portal_values(self, counters):
+    def _prepare_home_portal_values(self, counter):
         """RFQs in home portal"""
-        user_partner = request.env.user.partner_id
-        values = super()._prepare_home_portal_values(counters)
-        if 'my_rfq_count' in counters:
-            values['my_rfq_count'] = request.env[
-                'vendor.rfq'].search_count(
-                [('vendor_ids', 'in', user_partner.ids)]) if request.env[
-                'vendor.rfq'].check_access_rights(
-                'read', raise_exception=False) else 0
+        values = super()._prepare_home_portal_values(counter)
+        partner_id = request.env.user.partner_id
+        values['my_rfq_count'] = request.env['vendor.rfq'].sudo().search_count(
+            [('vendor_ids', 'in', partner_id.ids),
+             ('state', 'not in', ['draft'])])
         return values
 
     def _rfq_get_page_view_values(self, vendor_rfq, access_token, **kwargs):
@@ -55,9 +53,10 @@ class RFQCustomerPortal(CustomerPortal):
         """Portal vendor RFQs"""
         values = self._prepare_portal_layout_values()
         user_partner = request.env.user.partner_id
-        vendor_rfq = request.env['vendor.rfq'].search([])
+        vendor_rfq = request.env['vendor.rfq'].sudo().search([])
         domain = [
-            ('vendor_ids', 'in', user_partner.ids), ('state', 'not in', ['draft'])]
+            ('vendor_ids', 'in', user_partner.ids),
+            ('state', 'not in', ['draft'])]
         if date_begin and date_end:
             domain += [('create_date', '>', date_begin),
                        ('create_date', '<=', date_end)]
@@ -117,7 +116,7 @@ class RFQCustomerPortal(CustomerPortal):
                 website=True)
     def portal_my_vendor_rfq(self, rfq_id, access_token=None, **kw):
         """displaying the RFQ details"""
-        rfq_details = request.env['vendor.rfq'].browse(int(rfq_id))
+        rfq_details = request.env['vendor.rfq'].sudo().browse(int(rfq_id))
         vendor_quote = rfq_details.vendor_quote_history_ids.filtered(
             lambda x: x.vendor_id.id == request.env.user.partner_id.id)
         quoted_price = vendor_quote.quoted_price
