@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--    Adding new field to form view-->
+    <record id="product_normal_form_view" model="ir.ui.view">
+        <field name="name">
+            product.product.view.form.inherit.openai.product.tag.description
+        </field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr=".//field[@name='barcode']" position="after">
+                <field name="product_tag_ids" widget="many2many_tags"
+                       options="{'color_field': 'tag_color', 'no_create_edit': True}"/>
+            </xpath>
+        </field>
+    </record>
+    <!--'Generate Tags from Internal Note Using Openai' in action dropdown-->
+    <record id="action_create_product_template_tag" model="ir.actions.server">
+        <field name="name">Generate Tags from Internal Note Using Openai</field>
+        <field name="model_id" ref="product.model_product_product"/>
+        <field name="binding_model_id" ref="product.model_product_product"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = model.action_create_tag_internal_note()
+        </field>
+    </record>
+    <!--'Generate Internal Note from Tags Using Openai' in action dropdown-->
+    <record id="action_create_product_template_internal_note"
+            model="ir.actions.server">
+        <field name="name">Generate Internal Note Using Openai</field>
+        <field name="model_id" ref="product.model_product_product"/>
+        <field name="binding_model_id" ref="product.model_product_product"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = model.generate_internal_notes_from_tags()
+        </field>
+    </record>
+</odoo>
