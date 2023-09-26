@@ -51,12 +51,14 @@ class ClaimDetails(models.Model):
                                  readonly=True, copy=False)
     note_field = fields.Html(string='Comment')
 
-    @api.model
-    def create(self, vals):
-        if vals.get('name', 'New') == 'New':
-            vals['name'] = self.env['ir.sequence'].next_by_code(
-                'claim.details') or 'New'
-        return super(ClaimDetails, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('name', _("New")) == _("New"):
+                vals['name'] = self.env['ir.sequence'].next_by_code(
+                    'claim.details') or _("New")
+        claim_details = super(ClaimDetails, self).create(vals_list)
+        return claim_details
 
     def action_create_bill(self):
         if not self.invoice_id:
