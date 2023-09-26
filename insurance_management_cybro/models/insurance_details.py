@@ -26,6 +26,7 @@ from odoo.exceptions import UserError, ValidationError
 
 class InsuranceDetails(models.Model):
     _name = 'insurance.details'
+    _description = 'Insurance Details'
 
     name = fields.Char(
         string='Name', required=True, copy=False, readonly=True, index=True,
@@ -85,7 +86,7 @@ class InsuranceDetails(models.Model):
             'invoice_user_id': self.env.user.id,
             'invoice_origin': self.name,
             'invoice_line_ids': [(0, 0, {
-                'name': 'Invoice For Insurance',
+                'name': _('Invoice For Insurance'),
                 'quantity': 1,
                 'price_unit': self.amount,
                 'account_id': 41,
@@ -103,9 +104,10 @@ class InsuranceDetails(models.Model):
         self.close_date = fields.Date.context_today(self)
         self.hide_inv_button = False
 
-    @api.model
-    def create(self, vals):
-        if vals.get('name', 'New') == 'New':
-            vals['name'] = self.env['ir.sequence'].next_by_code(
-                'insurance.details') or 'New'
-        return super(InsuranceDetails, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('name', _("New")) == _("New"):
+                vals['name'] = self.env['ir.sequence'].next_by_code(
+                    'insurance.details') or _("New")
+        return super(InsuranceDetails, self).create(vals_list)
