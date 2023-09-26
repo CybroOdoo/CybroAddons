@@ -104,9 +104,10 @@ class InsuranceDetails(models.Model):
         self.close_date = fields.Date.context_today(self)
         self.hide_inv_button = False
 
-    @api.model
-    def create(self, vals):
-        if vals.get('name', 'New') == 'New':
-            vals['name'] = self.env['ir.sequence'].next_by_code(
-                'insurance.details') or 'New'
-        return super(InsuranceDetails, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('name', _("New")) == _("New"):
+                vals['name'] = self.env['ir.sequence'].next_by_code(
+                    'insurance.details') or _("New")
+        return super(InsuranceDetails, self).create(vals_list)
