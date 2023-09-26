@@ -32,7 +32,6 @@ import odoo.modules.registry
 from odoo.tools.translate import _
 from odoo import http
 
-
 class Home(home.Home):
 
     @http.route('/web/login', type='http', auth="public")
@@ -56,11 +55,9 @@ class Home(home.Home):
                                                request.params['login'],
                                                request.params['password'])
             if uid is not False:
-                user_rec = request.env['res.users'].sudo().search(
-                    [('id', '=', uid)])
+                user_rec = request.env['res.users'].sudo().browse(uid)
                 if user_rec.partner_id.email and user_rec.has_group(
                         'user_login_alert.receive_login_notification'):
-                    send_mail = 0
                     agent = request.httprequest.environ.get('HTTP_USER_AGENT')
                     agent_details = httpagentparser.detect(agent)
                     user_os = agent_details['os']['name']
@@ -105,8 +102,8 @@ class Home(home.Home):
                             'email_from': request.env.user.company_id.email,
                             'email_to': email_to
                         }
-                        template_id = template_obj.create(template_data)
-                        template_obj.send(template_id)
+                        template_id = template_obj.sudo().create(template_data)
+                        template_id.send()
                 request.params['login_success'] = True
                 if not redirect:
                     redirect = '/web'

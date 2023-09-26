@@ -22,7 +22,7 @@
     'name': 'User Login Alert',
     'summary': """Secure your Odoo account by alerts at right time. If any successful login to your
                 account happens, an alert mail will be send to you with the browser and IP details.""",
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'description': """Secure your Odoo account by alerts at right time. If any successful login to your
                     account happens, an alert mail will be send to you with the browser and IP details, Odoo 16, Odoo16""",
     'author': 'Cybrosys Techno Solutions',
