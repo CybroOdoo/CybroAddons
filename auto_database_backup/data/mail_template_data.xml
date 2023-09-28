@@ -1,22 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-
 <odoo>
-
-    <data noupdate="1">
-<!-- Schedule action for generating automatic database backup-->
-        <record id="ir_cron_auto_db_backup" model="ir.cron">
-            <field name="name">Backup : Automatic Database Backup</field>
-            <field name="model_id" ref="model_db_backup_configure"/>
-            <field name="state">code</field>
-            <field name="code">model._schedule_auto_backup()</field>
-            <field name="interval_number">1</field>
-            <field name="interval_type">days</field>
-            <field name="numbercall">-1</field>
-            <field name="active">False</field>
-        </record>
-
-    </data>
-
     <data>
 <!--        Database backup operation Successful email template-->
         <record id="mail_template_data_db_backup_successful" model="mail.template">
@@ -54,6 +37,12 @@
                             <t t-elif="object.backup_destination == 'onedrive'">
                                 <i>Onedrive</i>
                             </t>
+                            <t t-elif="object.backup_destination == 'next_cloud'">
+                                <i>NextCloud</i>
+                            </t>
+                            <t t-elif="object.backup_destination == 'amazon_s3'">
+                                <i>Amazon S3</i>
+                            </t>
                             .
                             <br/>
                             <br/>
@@ -79,6 +68,12 @@
                              <t t-elif="object.backup_destination == 'onedrive'">
                                 Onedrive
                             </t>
+                            <t t-elif="object.backup_destination == 'next_cloud'">
+                                NextCloud
+                            </t>
+                            <t t-elif="object.backup_destination == 'amazon_s3'">
+                                Amazon S3
+                            </t>
                             <t t-if="object.backup_destination in ('local', 'ftp', 'sftp', 'dropbox')">
                                 <br/>
                                 Backup Path:
@@ -93,6 +88,12 @@
                                 </t>
                                 <t t-elif="object.backup_destination == 'dropbox'">
                                     <t t-out="object.dropbox_folder"/>
+                                </t>
+                                <t t-elif="object.backup_destination == 'next_cloud'">
+                                    <t t-out="object.nextcloud_folder_key"/>
+                                </t>
+                                <t t-elif="object.backup_destination == 'amazon_s3'">
+                                    <t t-out="object.aws_folder_name"/>
                                 </t>
                             </t>
                             <br/>
@@ -148,7 +149,13 @@
                              <t t-elif="object.backup_destination == 'onedrive'">
                                 Onedrive
                             </t>
-                            <t t-if="object.backup_destination in ('local', 'ftp', 'sftp', 'dropbox')">
+                            <t t-elif="object.backup_destination == 'next_cloud'">
+                                NextCloud
+                            </t>
+                            <t t-elif="object.backup_destination == 'amazon_s3'">
+                                Amazon S3
+                            </t>
+                            <t t-if="object.backup_destination in ('local', 'ftp', 'sftp', 'dropbox','next_cloud','amazon_s3')">
                                 <br/>
                                 Backup Path:
                                 <t t-if="object.backup_destination == 'local'">
@@ -162,6 +169,12 @@
                                 </t>
                                 <t t-elif="object.backup_destination == 'dropbox'">
                                     <t t-out="object.dropbox_folder"/>
+                                </t>
+                                <t t-elif="object.backup_destination == 'next_cloud'">
+                                    <t t-out="object.nextcloud_folder_key"/>
+                                </t>
+                                <t t-elif="object.backup_destination == 'amazon_s3'">
+                                    <t t-out="object.aws_folder_name"/>
                                 </t>
                             </t>
                             <br/>
@@ -177,6 +190,4 @@
             </field>
         </record>
     </data>
-
-
 </odoo>

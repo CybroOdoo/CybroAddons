@@ -1,27 +1,31 @@
-Automatic Database Backup To Local Server, Remote Server, Google Drive And Dropbox
-==================================================================================
+.. image:: https://img.shields.io/badge/licence-LGPL--3-green.svg
+    :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
+    :alt: License: LGPL-3
+
+Automatic Database Backup To Local Server, Remote Server, Google Drive, Dropbox, Onedrive, Nextcloud and Amazon S3
+==================================================================================================================
 * Generate Database Backups and store to multiple locations
 
-Installation
+Configuration
 ============
-	- www.odoo.com/documentation/16.0/setup/install.html
-	- Install our custom addon
+- www.odoo.com/documentation/16.0/setup/install.html
+- Install our custom addon
 
 License
 -------
 General Public License, Version 3 (LGPL v3).
-(https://www.odoo.com/documentation/user/16.0/legal/licenses/licenses.html)
+(https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
 
 Company
 -------
-* 'Cybrosys Techno Solutions <https://cybrosys.com/>`__
+* `Cybrosys Techno Solutions <https://cybrosys.com/>`__
 
 Credits
 -------
-* Developer:
-(v15) Midilaj @ Cybrosys
-(v16) Midilaj @ Cybrosys
-
+* Developers : (v15) Midilaj,
+               (v16) Midilaj,
+               (v16 Amazon S3,NextCloud) Anfas Faisal K
+  Contact : odoo@cybrosys.com
 
 Contacts
 --------
@@ -33,11 +37,13 @@ Bugs are tracked on GitHub Issues. In case of trouble, please check there if you
 
 Maintainer
 ==========
+.. image:: https://cybrosys.com/images/logo.png
+   :target: https://cybrosys.com
+
 This module is maintained by Cybrosys Technologies.
 
-For support and more information, please visit https://www.cybrosys.com
+For support and more information, please visit `Our Website <https://cybrosys.com/>`__
 
 Further information
 ===================
 HTML Description: `<static/description/index.html>`__
-

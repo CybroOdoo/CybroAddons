@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-#############################################################################
+###############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -18,29 +18,34 @@
 #    (LGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
-
+###############################################################################
 {
-    'name': "Automatic Database Backup To Local Server, Remote Server, Google Drive, Dropbox and Onedrive",
-    'version': '16.0.1.0.0',
-    'summary': """Generate automatic backup of databases and store to local, google drive, dropbox, onedrive or remote server""",
-    'description': """This module has been developed for creating database backups automatically 
-                    and store it to the different locations.""",
+    'name': "Automatic Database Backup To Local Server, Remote Server,"
+            "Google Drive, Dropbox, Onedrive, Nextcloud and Amazon S3",
+    'version': '16.0.2.0.1',
+    'category': 'Extra Tools',
+    'summary': 'Generate automatic backup of databases and store to local, '
+               'google drive, dropbox, nextcloud, amazon S3, onedrive or '
+               'remote server',
+    'description': 'This module has been developed for creating database '
+                   'backups automatically and store it to the different '
+                   'locations.',
     'author': "Cybrosys Techno Solutions",
-    'website': "https://www.cybrosys.com",
-    'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'category': 'Tools',
+    'company': 'Cybrosys Techno Solutions',
+    'website': "https://www.cybrosys.com",
     'depends': ['base', 'mail'],
     'data': [
         'security/ir.model.access.csv',
-        'data/data.xml',
+        'data/ir_cron_data.xml',
+        'data/mail_template_data.xml',
         'views/db_backup_configure_views.xml',
-        'wizard/authentication_wizard_views.xml',
+        'wizard/dropbox_auth_code_views.xml',
     ],
-    'external_dependencies': {'python': ['dropbox']},
-    'license': 'LGPL-3',
+    'external_dependencies': {
+        'python': ['dropbox', 'pyncclient', 'boto3', 'nextcloud-api-wrapper','paramiko']},
     'images': ['static/description/banner.gif'],
+    'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
     'application': False,
