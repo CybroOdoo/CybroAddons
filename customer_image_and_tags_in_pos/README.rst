@@ -1,5 +1,5 @@
 .. image:: https://img.shields.io/badge/licence-LGPL--3-blue.svg
-    :target: http:s//www.gnu.org/licenses/lgpl-3.0-standalone.html
+    :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 
 Customer Image And Tags In POS
@@ -18,12 +18,13 @@ License
 -------
 General Public License, Version 3 (LGPL v3).
 
-(https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
+(http://www.gnu.org/licenses/lgpl-3.0-standalone.html)
 
 Credits
 -------
-Developer: (V16) Fathima Mazlin AM, Contact: odoo@cybrosys.com
+Developers: Version 16 - Fathima Mazlin AM @cybrosys
 
+Contact: odoo@cybrosys.com
 
 Contacts
 --------

@@ -4,7 +4,7 @@ import Registries from 'point_of_sale.Registries';
 
 const CustomerTag = (PosGlobalState) => class CustomerTag extends PosGlobalState {
     /**
-    Load customer tag data to PosGlobalState
+    load customer tag data to PosGlobalState
     **/
     async _processData(loadedData) {
         await super._processData(loadedData);
