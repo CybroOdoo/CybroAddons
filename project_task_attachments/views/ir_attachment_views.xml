@@ -1,0 +1,98 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<odoo>
+    <!--   Inherit Ir Attachment form view to include extra fields-->
+    <record id="view_attachment_form" model="ir.ui.view">
+        <field name="name">
+            ir.attachment.view.form.inherit.project.task.attachments
+        </field>
+        <field name="model">ir.attachment</field>
+        <field name="inherit_id" ref="base.view_attachment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="replace">
+                <sheet>
+                    <h1>
+                        <field name="name"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="attach_to" invisible="1"/>
+                            <field name="project_id"
+                                   attrs="{'invisible':[('attach_to','=',
+                                   'task')]}"/>
+                            <field name="task_id"
+                                   attrs="{'invisible':[('attach_to','=',
+                                   'project')]}"/>
+                            <field name="type"/>
+                            <field name="datas" filename="name" string="File"
+                                   attrs="{'invisible':[('type','=','url')]}"/>
+                            <field name="url" widget="url"
+                                   attrs="{'invisible':[('type','=',
+                                   'binary')]}"/>
+                        </group>
+                        <group name="description_group" string="Description"
+                               groups="base.group_no_one" colspan="4">
+                            <field name="description" nolabel="1" colspan="2"/>
+                        </group>
+                    </group>
+                </sheet>
+            </xpath>
+        </field>
+    </record>
+     <!--   Inherit Ir Attachment tree view to include extra fields-->
+    <record id="view_attachment_tree" model="ir.ui.view">
+        <field name="name">
+            ir.attachment.view.tree.inherit.project.task.attachments
+        </field>
+        <field name="model">ir.attachment</field>
+        <field name="inherit_id" ref="base.view_attachment_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="replace">
+                <tree string="Attachments">
+                    <field name="name"/>
+                    <field name="type"/>
+                    <field name="file_size"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="create_uid"/>
+                    <field name="create_date"/>
+                </tree>
+            </xpath>
+        </field>
+    </record>
+     <!--   Project Documents menu action -->
+    <record id="ir_attachment_action_view_task_documents"
+            model="ir.actions.act_window">
+        <field name="type">ir.actions.act_window</field>
+        <field name="name">Task Documents</field>
+        <field name="res_model">ir.attachment</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'default_attach_to': 'task','default_res_model':
+            'project.task'}
+        </field>
+        <field name="domain">[('res_model', '=', 'project.task')]</field>
+    </record>
+    <!--   Task Documents Menu Action -->
+    <record id="ir_attachment_action_view_project_documents"
+            model="ir.actions.act_window">
+        <field name="type">ir.actions.act_window</field>
+        <field name="name">Project Documents</field>
+        <field name="res_model">ir.attachment</field>
+        <field name="context">{'default_attach_to':
+            'project','default_res_model': 'project.project'}
+        </field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('res_model', '=', 'project.project')]</field>
+    </record>
+    <!--   Documents Menu -->
+    <menuitem id="ir_attachment_menu" name="Documents"
+              parent="project.menu_main_pm"/>
+    <!--   Project Documents Menu -->
+    <menuitem id="ir_attachment_menu_view_project_documents"
+              name="Project Documents"
+              parent="ir_attachment_menu"
+              action="ir_attachment_action_view_project_documents"/>
+    <!--   Task Documents Menu -->
+    <menuitem id="ir_attachment_menu_view_task_documents"
+              name="Task Documents"
+              parent="ir_attachment_menu"
+              action="ir_attachment_action_view_task_documents"/>
+</odoo>
