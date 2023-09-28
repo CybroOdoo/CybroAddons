@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherited sale order to add buttons-->
+    <record id="view_order_form" model="ir.ui.view">
+        <field name="name">
+            sale.order.view.form.inherit.versioning.in.sale.order
+        </field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <field name="state" position="replace">
+                <field name="state" widget="statusbar"
+                       statusbar_visible="draft,sent,sale"/>
+            </field>
+            <xpath expr="//button[@name='action_confirm']" position="after">
+                <button name="action_create_versions"
+                        type="object"
+                        attrs="{'invisible': [('state', 'in', ['revised','cancel'])]}"
+                        string="Create Version"/>
+                <button name="action_restore"
+                        type="object"
+                        attrs="{'invisible': [('state','!=','revised')]}"
+                        string="Restore"/>
+                <button name="set_to_revise"
+                        type="object"
+                        attrs="{'invisible': ['|',('state', '=','revised'), ('is_version', '=', False)]}"
+                        string="Set to Revised "/>
+            </xpath>
+            <div class="oe_button_box" name="button_box">
+                <button name="action_view_versions"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-bars"
+                        attrs="{'invisible': [('version_count', '=', 0)]}">
+                    <field name="version_count" widget="statinfo"
+                           string="Versions"/>
+                </button>
+            </div>
+            <xpath expr="//field[@name='validity_date']" position="after">
+                <field name="is_version" invisible="1"/>
+            </xpath>
+            <xpath expr="//button[@name='action_draft']" position='attributes'>
+                <attribute name="attrs">
+                    {'invisible': ['|',('state', 'not in',
+                    'cancel'),('is_version',
+                    '=', True)]}
+                </attribute>
+                <attribute name="states"/>
+            </xpath>
+        </field>
+    </record>
+    <!--    Domain passed for only viewing the confirmed version-->
+    <record id="sale.action_quotations_with_onboarding"
+            model="ir.actions.act_window">
+        <field name="domain">[('state', '!=',
+            'cancel')]
+        </field>
+    </record>
+</odoo>
