@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Inherit and modify CRM Lead form view -->
+    <record id="crm_lead_view_form" model="ir.ui.view">
+        <field name="name">crm.lead.form.inherit.crm.check.approve.limiter
+        </field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Insert fields for checklist -->
+            <xpath expr="//page[@name='lead']" position="after">
+                <field name="check_stage_ids" invisible="1"/>
+                <page string="Check List" name="check_list"
+                      attrs="{'invisible':[('check_stage_ids','=',False)]}">
+                    <field name="checklist_progress" widget="percentpie"/>
+                    <separator/>
+                    <field name="check_list_ids"
+                           widget="many2many_checkboxes"/>
+                    <separator string="History"/>
+                    <field name="check_list_history_ids"
+                           options="{'no_create': True, 'no_create_edit':True}">
+                        <tree string="History" editable="bottom"
+                              default_order='id desc'>
+                            <field name="check_item_id"/>
+                            <field name="stage_id"/>
+                            <field name="list_action"/>
+                            <field name="user_id"/>
+                            <field name="change_date"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <!-- Inherit and modify CRM Kanban view -->
+    <record id="crm_case_kanban_view_leads" model="ir.ui.view">
+        <field name="name">
+            crm.lead.kanban.lead.inherit.crm.check.approve.limiter
+        </field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads"/>
+        <field name="arch" type="xml">
+            <!-- Add checklist progress field -->
+            <xpath expr="//field[@name='priority']" position="after">
+                <field name="checklist_progress"/>
+            </xpath>
+            <!-- Add checklist progress bar in kanban content -->
+            <xpath expr="//div[hasclass('oe_kanban_content')]"
+                   position="inside">
+                <field name="checklist_progress" widget="progressbar"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
