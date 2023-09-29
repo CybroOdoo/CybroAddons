@@ -4,4 +4,4 @@
 #### Version 16.0.1.0.0
 #### ADD
 
-- Initial commit for Point Of Sale Birthday Discount
+- Initial commit for POS Birthday Discount

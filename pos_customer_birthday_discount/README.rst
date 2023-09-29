@@ -2,8 +2,8 @@
     :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
-Point Of Sale Birthday Discount
-===============================
+POS Birthday Discount
+=====================
 
 This module aims in providing special discount for customers in POS on their respective birthdate.
 

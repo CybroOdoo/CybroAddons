@@ -20,7 +20,7 @@
 #
 ###############################################################################
 {
-    'name': "Point Of Sale Birthday Discount",
+    'name': "POS Birthday Discount",
     'version': '16.0.1.0.0',
     'category': 'Point of Sale',
     'summary': """Extra discount on customer birthday""",
