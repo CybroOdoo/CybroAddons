@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+<!--This template is for showing product quantity based on the selected value in settings-->
+    <t t-name="ProductItem" t-inherit="point_of_sale.ProductItem"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//article[hasclass('product')]" position="inside">
+            <t t-if="env.pos.config.is_display_stock">
+                <t t-if="env.pos.config.stock_type == 'qty_on_hand'">
+                    <div t-attf-class="display_qty #{props.product.qty_available lte 0 ? 'not-available':''}"
+                         id="qty_display">
+                        <t t-esc="props.product.qty_available"/>
+                    </div>
+                </t>
+                <t t-if="env.pos.config.stock_type == 'virtual_qty'">
+                    <div t-attf-class="display_virtual #{props.product.virtual_available lte 0 ? 'not-available':''}">
+                        <t t-esc="props.product.virtual_available"/>
+                    </div>
+                </t>
+                <t t-if="env.pos.config.stock_type == 'both'">
+                    <div t-attf-class="display_qty #{props.product.qty_available lte 0 ? 'not-available':''}">
+                        <t t-esc="props.product.qty_available"/>
+                    </div>
+                    <div t-attf-class="display_virtual #{props.product.virtual_available lte 0 ? 'not-available':''}">
+                        <t t-esc="props.product.virtual_available"/>
+                    </div>
+                </t>
+            </t>
+        </xpath>
+    </t>
+</templates>
