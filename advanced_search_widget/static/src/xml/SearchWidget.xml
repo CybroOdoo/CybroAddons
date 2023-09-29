@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+<!-- Template for new Search widget-->
+    <t t-name="SearchWidget" owl="1">
+        <Dropdown togglerClass="'o_searchview_dropdown_toggler d-print-none btn btn-outline-secondary'"
+                  menuClass="'o_search_widget d-flex'" >
+            <t t-set-slot="toggler">
+                <i class="fa fa-caret-down" style="color:black" />
+            </t>
+            <!-- Filter Template-->
+            <t t-if="env.searchModel.searchMenuTypes.has('filter')">
+                <div class="o_dropdown_container o_filter_menu">
+                    <div class="px-3 fs-5 mb-2">
+                        <i class="me-1" t-att-class="filterIcon"/>
+                        <h5 class="o_dropdown_title d-inline">Filters</h5>
+                    </div>
+                    <t t-set="currentGroup" t-value="null"/>
+                    <t t-foreach="Filteritems" t-as="item" t-key="item.id">
+                        <t t-if="currentGroup !== null and currentGroup !== item.groupNumber">
+                            <div class="dropdown-divider" role="separator"/>
+                        </t>
+                        <t t-if="item.options">
+                            <div class="dropdown-toggle o_menu_item dropdown-item"
+                                 href="#" data-bs-toggle="dropdown">
+                                <t t-esc="item.description"/>
+                            </div>
+                            <div id="filter_options" class="dropdown-menu"
+                                 role="menu">
+                                <t t-foreach="item.options" t-as="option"
+                                   t-key="option.id">
+                                    <t t-if="subGroup !== null and subGroup !== option.groupNumber">
+                                        <div class="dropdown-divider"
+                                             role="separator"/>
+                                    </t>
+                                    <DropdownItem
+                                            class="{ o_item_option: true, selected: option.isActive }"
+                                            t-esc="option.description"
+                                            checked="option.isActive"
+                                            parentClosingMode="'none'"
+                                            onSelected="() => this.onFilterSelected({ itemId: item.id, optionId: option.id })"
+                                    />
+                                    <t t-set="subGroup"
+                                       t-value="option.groupNumber"/>
+                                </t>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <DropdownItem
+                                    class="{ o_menu_item: true, selected: item.isActive }"
+                                    checked="item.isActive"
+                                    parentClosingMode="'none'"
+                                    t-esc="item.description"
+                                    onSelected="() => this.onFilterSelected({ itemId: item.id })"
+                            />
+                        </t>
+                        <t t-set="currentGroup" t-value="item.groupNumber"/>
+                    </t>
+                    <t t-if="Filteritems.length">
+                        <div role="separator" class="dropdown-divider"/>
+                    </t>
+                    <div style="padding-left: 15px;"
+                         class="dropdown-toggle o_menu_item dropdown-item"
+                         t-on-click="onAddCustomFilterClick">
+                            Add Custom Filter
+                    </div>
+                </div>
+            </t>
+            <!-- GroupBy Template-->
+            <t t-if="env.searchModel.searchMenuTypes.has('groupBy')">
+                <div class="o_dropdown_container o_group_by_menu">
+                    <div class="px-3 fs-5 mb-2">
+                        <i class="me-1" t-att-class="groupByIcon"/>
+                        <h5 class="o_dropdown_title d-inline">GroupBy</h5>
+                    </div>
+                    <t t-set="currentGroup" t-value="null"/>
+                    <t t-foreach="groupByitems" t-as="item" t-key="item.id">
+                        <t t-if="currentGroup !== null and currentGroup !== item.groupNumber">
+                            <div class="dropdown-divider" role="separator"/>
+                        </t>
+                        <t t-if="item.options">
+                            <div class="dropdown-toggle o_menu_item dropdown-item"
+                                 href="#" data-bs-toggle="dropdown">
+                                <t t-esc="item.description"/>
+                            </div>
+                            <div id="groupBy_options" class="dropdown-menu"
+                                 role="menu">
+                                <t t-foreach="item.options" t-as="option"
+                                   t-key="option.id">
+                                    <t t-if="subGroup !== null and subGroup !== option.groupNumber">
+                                        <div class="dropdown-divider"
+                                             role="separator"/>
+                                    </t>
+                                    <DropdownItem
+                                            class="{ o_item_option: true, selected: option.isActive }"
+                                            t-esc="option.description"
+                                            checked="option.isActive"
+                                            parentClosingMode="'none'"
+                                            onSelected="() => this.onGroupBySelected({ itemId: item.id, optionId: option.id })"
+                                    />
+                                    <t t-set="subGroup"
+                                       t-value="option.groupNumber"/>
+                                </t>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <DropdownItem
+                                    class="{ o_menu_item: true, selected: item.isActive }"
+                                    checked="item.isActive"
+                                    parentClosingMode="'none'"
+                                    t-esc="item.description"
+                                    onSelected="() => this.onGroupBySelected({ itemId: item.id })"
+                            />
+                        </t>
+                        <t t-set="currentGroup" t-value="item.groupNumber"/>
+                    </t>
+                    <t t-if="!hideCustomGroupBy and fields.length">
+                        <div t-if="groupByitems.length" role="separator"
+                             class="dropdown-divider"/>
+                        <CustomGroupByItem fields="fields"
+                                           onAddCustomGroup.bind="onAddCustomGroup"/>
+                    </t>
+                </div>
+            </t>
+            <!-- Favorites Template-->
+            <t t-if="env.searchModel.searchMenuTypes.has('groupBy')">
+                <div class="o_dropdown_container o_favorite_menu">
+                    <div class="px-3 fs-5 mb-2">
+                        <i class="me-1" t-att-class="favoriteIcon"/>
+                        <h5 class="o_dropdown_title d-inline">Favorites</h5>
+                    </div>
+                    <t t-set="currentGroup" t-value="null"/>
+                    <t t-foreach="favoriteitems" t-as="item"
+                       t-key="item.id or item.key">
+                        <t t-if="currentGroup !== null and currentGroup !== item.groupNumber">
+                            <div role="separator" class="dropdown-divider"/>
+                        </t>
+                        <t t-if="item.type ==='favorite'">
+                            <DropdownItem
+                                    class="{ o_menu_item: true, selected: item.isActive }"
+                                    checked="item.isActive"
+                                    parentClosingMode="'none'"
+                                    onSelected="() => this.onFavoriteSelected(item.id)">
+                                <span class="d-flex p-0 align-items-center justify-content-between">
+                                    <t t-esc="item.description"/>
+                                    <i class="ms-1 o_icon_right fa fa-trash-o"
+                                       title="Delete item"
+                                       t-on-click.stop="() => this.openConfirmationDialog(item.id)"/>
+                                </span>
+                            </DropdownItem>
+                        </t>
+                        <t t-else="">
+                            <t t-component="item.Component"/>
+                        </t>
+                        <t t-set="currentGroup" t-value="item.groupNumber"/>
+                    </t>
+                </div>
+            </t>
+        </Dropdown>
+    </t>
+</templates>
