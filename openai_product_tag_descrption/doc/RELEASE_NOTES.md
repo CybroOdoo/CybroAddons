@@ -1,4 +1,4 @@
-## Module <openai_product_tag_description>
+## Module <openai_product_tag_descrption>
 
 #### 19.09.2023
 #### Version 15.0.1.0.0
