@@ -114,7 +114,6 @@ class BalanceSheetView(models.TransientModel):
             'report_lines']
         move_line_accounts = []
         move_lines_dict = {}
-
         for rec in records['Accounts']:
             move_line_accounts.append(rec['id'])
             move_lines_dict[rec['id']] = {}
@@ -226,6 +225,15 @@ class BalanceSheetView(models.TransientModel):
                     rec['credit']) + " " + symbol
                 rec['m_balance'] = "{:,.2f}".format(
                     rec['balance']) + " " + symbol
+        user = self.env.user
+        user_language = user.lang
+        for item in records['Accounts']:
+            if isinstance(item['name'], dict):
+                item['new_name'] = item['name'][
+                    user_language] if user_language in item['name'] else \
+                    item['name']['en_US']
+            else:
+                item['new_name'] = item['name']
         return {
             'name': tag,
             'type': 'ir.actions.client',
@@ -369,6 +377,22 @@ class BalanceSheetView(models.TransientModel):
             raise UserError(_("No Accounts Found! Please Add One"))
         account_res = self._get_accounts(accounts, init_balance,
                                          display_account, data)
+        current_lang = self.env.user.lang
+        list_ac = []
+        default_lg = self.env['ir.http']._get_default_lang()
+        for rec in account_res:
+            list_ac.append(rec['account_id'])
+            if rec.get('name', None):
+                localized_name = rec['name']
+                if localized_name:
+                    rec['name'] = localized_name
+                else:
+                    # If the translation for the current language is not available, use a default language or handle it as needed.
+                    rec['name'] = rec['name'].get(default_lg,
+                                                  '')  # Replace 'en_US' with your desired default language.
+            else:
+                # Handle the case where 'name' is not present in the dictionary.
+                rec['name'] = ''  # You can use an
         debit_total = 0
         debit_total = sum(x['debit'] for x in account_res)
         credit_total = sum(x['credit'] for x in account_res)
@@ -457,7 +481,7 @@ class BalanceSheetView(models.TransientModel):
         # if data['analytic_tags']:
         #     WHERE += ' AND anltag.account_analytic_tag_id IN %s' % str(
         #         tuple(data.get('analytic_tags').ids) + tuple([0]))
-
+        # current_lang = self.env.user.lang
         # Get move lines base on sql query and Calculate the total balance of move lines
         sql = ('''SELECT l.account_id AS account_id, a.code AS code,a.id AS id, a.name AS name, 
                     ROUND(COALESCE(SUM(l.debit),0),2) AS debit, 

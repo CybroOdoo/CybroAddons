@@ -296,7 +296,6 @@ odoo.define('dynamic_partner_daybook.daybook', function(require) {
 		},
 
 		view_acc_move: function(event) {
-
 			event.preventDefault();
 			var self = this;
 			var context = {};
@@ -325,7 +324,6 @@ odoo.define('dynamic_partner_daybook.daybook', function(require) {
 					limit: 1,
 				})
 				.then(function(record) {
-
 					if (record.length > 0) {
 						show_acc_move('account.move', record[0].id);
 					} else {

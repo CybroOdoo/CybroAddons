@@ -22,9 +22,11 @@
 from datetime import datetime
 
 from odoo import models, api, fields
+
 FETCH_RANGE = 2000
 import io
 import json
+
 try:
     from odoo.tools.misc import xlsxwriter
 except ImportError:
@@ -36,7 +38,7 @@ class AccountCasgFlow(models.TransientModel):
     _name = "account.cash.flow"
     _inherit = "account.report"
 
-    date_from = fields.Date(string="Start Date", default=str(year)+'-01-01')
+    date_from = fields.Date(string="Start Date", default=str(year) + '-01-01')
     date_to = fields.Date(string="End Date", default=fields.Date.today)
     today = fields.Date(string="Report Date", default=fields.Date.today)
     levels = fields.Selection([('summary', 'Summary'),
@@ -77,6 +79,25 @@ class AccountCasgFlow(models.TransientModel):
         journal_res = report_lines['journal_res']
         levels = report_lines['levels']
         currency = self._get_currency()
+        user = self.env.user
+        user_language = user.lang
+        for data in fetched_data:
+            if filters['levels'] != 'summary':
+                language_name = data.get('name')
+                if isinstance(language_name, dict):
+                    data['account'] = language_name[
+                        user_language] if user_language in language_name else \
+                        language_name['en_US']
+                else:
+                    data['account'] = data.get('name')
+        for rec in journal_res:
+            for item in rec.get('journal_lines'):
+                if isinstance(item['name'], dict):
+                    item['new_name'] = item['name'][
+                        user_language] if user_language in item['name'] else \
+                        item['name']['en_US']
+                else:
+                    item['new_name']  = data.get('name')
         return {
             'name': "Cash Flow Statements",
             'type': 'ir.actions.client',
@@ -143,7 +164,7 @@ class AccountCasgFlow(models.TransientModel):
         filter_dict.update(default_filters)
         return filter_dict
 
-    def _get_report_values(self, data,option):
+    def _get_report_values(self, data, option):
         cr = self.env.cr
         data = self.get_filter(option)
         company_id = self.env.company
@@ -158,8 +179,10 @@ class AccountCasgFlow(models.TransientModel):
         account_type_id = 'asset_cash'
         model = self.env.context.get('active_model')
         if data.get('levels') == 'summary':
-            state = """ AND am.state = 'posted' """ if data.get('target_move') == 'Posted' else ''
-            state2 = ' AND aml.company_id IN %s' % str(tuple(self.env.companies.ids) + tuple([0]))
+            state = """ AND am.state = 'posted' """ if data.get(
+                'target_move') == 'Posted' else ''
+            state2 = ' AND aml.company_id IN %s' % str(
+                tuple(self.env.companies.ids) + tuple([0]))
             query3 = """SELECT to_char(am.date, 'Month') as month_part, 
                      extract(YEAR from am.date) as year_part,
                      sum(aml.debit) AS total_debit, sum(aml.credit) AS 
@@ -171,7 +194,7 @@ class AccountCasgFlow(models.TransientModel):
                      WHERE am.date BETWEEN '""" + str(
                 data.get('date_from')) + """' and '""" + str(
                 data.get('date_to')) + """' AND aa.account_type='""" + str(
-                account_type_id) + """' """ + state + state2 +""") am  
+                account_type_id) + """' """ + state + state2 + """) am  
                                  LEFT JOIN account_move_line aml ON aml.move_id = am.id
                                  LEFT JOIN account_account aa ON aa.id = aml.account_id
                                  GROUP BY month_part,year_part"""
@@ -183,7 +206,8 @@ class AccountCasgFlow(models.TransientModel):
             state = """AND am.state = 'posted' """ if data.get(
                 'target_move') == 'Posted' else """AND am.state in ('draft','posted') """
 
-            state2 = ' AND aml.company_id IN %s' % str(tuple(self.env.companies.ids) + tuple([0]))
+            state2 = ' AND aml.company_id IN %s' % str(
+                tuple(self.env.companies.ids) + tuple([0]))
             sql = """SELECT DISTINCT aa.id, aa.name,aa.code, sum(aml.debit) AS total_debit,
                                                 sum(aml.credit) AS total_credit,sum(aml.balance) AS total_balance
                                                  FROM (SELECT am.* FROM account_move as am
@@ -192,7 +216,7 @@ class AccountCasgFlow(models.TransientModel):
                                                 WHERE am.date BETWEEN '""" + str(
                 data.get('date_from')) + """' and '""" + str(
                 data.get('date_to')) + """' AND aa.account_type='""" + str(
-                account_type_id) + """' """ + state + state2 +""") am
+                account_type_id) + """' """ + state + state2 + """) am
                                                                     LEFT JOIN account_move_line aml ON aml.move_id = am.id
                                                                     LEFT JOIN account_account aa ON aa.id = aml.account_id
                                                                     GROUP BY aa.name, aa.code,aa.id"""
@@ -204,7 +228,8 @@ class AccountCasgFlow(models.TransientModel):
             state = """AND am.state = 'posted' """ if data.get(
                 'target_move') == 'Posted' else """AND am.state in ('draft','posted') """
 
-            state2 = ' AND aml.company_id IN %s' % str(tuple(self.env.companies.ids) + tuple([0]))
+            state2 = ' AND aml.company_id IN %s' % str(
+                tuple(self.env.companies.ids) + tuple([0]))
             sql = """SELECT DISTINCT aa.id, aa.name,aa.code, sum(aml.debit) AS total_debit,
                                                            sum(aml.credit) AS total_credit,sum(aml.balance) AS total_balance
                                                             FROM (SELECT am.* FROM account_move as am
@@ -225,7 +250,8 @@ class AccountCasgFlow(models.TransientModel):
             state = """AND am.state = 'posted' """ if data.get(
                 'target_move') == 'Posted' else """AND am.state in ('draft','posted') """
 
-            state2 = ' AND aml.company_id IN %s' % str(tuple(self.env.companies.ids) + tuple([0]))
+            state2 = ' AND aml.company_id IN %s' % str(
+                tuple(self.env.companies.ids) + tuple([0]))
             sql = """SELECT DISTINCT aa.id, aa.name,aa.code, sum(aml.debit) AS total_debit,
                                                            sum(aml.credit) AS total_credit,sum(aml.balance) AS total_balance
                                                             FROM (SELECT am.* FROM account_move as am
@@ -247,7 +273,8 @@ class AccountCasgFlow(models.TransientModel):
             state = """AND am.state = 'posted' """ if data.get(
                 'target_move') == 'Posted' else """AND am.state in ('draft','posted') """
 
-            state2 = ' AND aml.company_id IN %s' % str(tuple(self.env.companies.ids) + tuple([0]))
+            state2 = ' AND aml.company_id IN %s' % str(
+                tuple(self.env.companies.ids) + tuple([0]))
             sql = """SELECT DISTINCT aa.id, aa.name,aa.code, sum(aml.debit) AS total_debit,
                                                 sum(aml.credit) AS total_credit,sum(aml.balance) AS total_balance
                                                  FROM (SELECT am.* FROM account_move as am
@@ -265,24 +292,29 @@ class AccountCasgFlow(models.TransientModel):
             fetched_data = cr.dictfetchall()
 
         elif data.get('levels') == 'consolidated':
-            state = """ AND am.state = 'posted' """ if data.get('target_move') == 'Posted' else ''
-            state2 = ' AND aml.company_id IN %s' % str(tuple(self.env.companies.ids) + tuple([0]))
-            query2 = """SELECT aat.name, sum(aml.debit) AS total_debit, sum(aml.credit) AS total_credit,
+            state = """ AND am.state = 'posted' """ if data.get(
+                'target_move') == 'Posted' else ''
+            state2 = ' AND aml.company_id IN %s' % str(
+                tuple(self.env.companies.ids) + tuple([0]))
+            query2 = """SELECT aa.name, sum(aml.debit) AS total_debit, sum(aml.credit) AS total_credit,
                          sum(aml.balance) AS total_balance FROM (  SELECT am.id, am.state FROM account_move as am
                          LEFT JOIN account_move_line aml ON aml.move_id = am.id
                          LEFT JOIN account_account aa ON aa.id = aml.account_id
-                         WHERE am.date BETWEEN '""" + str(data.get('date_from')) + """' and '""" + str(
+                         WHERE am.date BETWEEN '""" + str(
+                data.get('date_from')) + """' and '""" + str(
                 data.get('date_to')) + """' AND aa.account_type='""" + str(
                 account_type_id) + """' """ + state + state2 + """) am
                                      LEFT JOIN account_move_line aml ON aml.move_id = am.id
                                      LEFT JOIN account_account aa ON aa.id = aml.account_id
-                                     GROUP BY aat.name"""
+                                     GROUP BY aa.name"""
             cr = self._cr
             cr.execute(query2)
             fetched_data = cr.dictfetchall()
         elif data.get('levels') == 'detailed':
-            state = """AND am.state = 'posted' """ if data.get('target_move') == 'Posted' else """AND am.state in ('draft','posted') """
-            state2 = ' AND aml.company_id IN %s' % str(tuple(self.env.companies.ids) + tuple([0]))
+            state = """AND am.state = 'posted' """ if data.get(
+                'target_move') == 'Posted' else """AND am.state in ('draft','posted') """
+            state2 = ' AND aml.company_id IN %s' % str(
+                tuple(self.env.companies.ids) + tuple([0]))
             query1 = """SELECT aa.id,aa.name,aa.code, sum(aml.debit) AS total_debit, sum(aml.credit) AS total_credit,
                          sum(aml.balance) AS total_balance FROM (SELECT am.id, am.state FROM account_move as am
                          LEFT JOIN account_move_line aml ON aml.move_id = am.id
@@ -304,8 +336,10 @@ class AccountCasgFlow(models.TransientModel):
 
         else:
             account_type_id = 'asset_cash'
-            state = """AND am.state = 'posted' """ if data.get('target_move') == 'Posted' else """AND am.state in ('draft','posted') """
-            state2 = ' AND aml.company_id IN %s' % str(tuple(self.env.companies.ids) + tuple([0]))
+            state = """AND am.state = 'posted' """ if data.get(
+                'target_move') == 'Posted' else """AND am.state in ('draft','posted') """
+            state2 = ' AND aml.company_id IN %s' % str(
+                tuple(self.env.companies.ids) + tuple([0]))
             # filter = " AND aml.parent_state in ('draft','posted')"
             sql = """SELECT DISTINCT aa.id, aa.name,aa.code, sum(aml.debit) AS total_debit,
                                              sum(aml.credit) AS total_credit,sum(aml.balance) AS total_balance
@@ -315,7 +349,7 @@ class AccountCasgFlow(models.TransientModel):
                                              WHERE am.date BETWEEN '""" + str(
                 data.get('date_from')) + """' and '""" + str(
                 data.get('date_to')) + """' AND aa.account_type='""" + str(
-                account_type_id) + """' """ + state + state2 +""") am
+                account_type_id) + """' """ + state + state2 + """) am
                                                                  LEFT JOIN account_move_line aml ON aml.move_id = am.id
                                                                  LEFT JOIN account_account aa ON aa.id = aml.account_id
                                                                  GROUP BY aa.name, aa.code,aa.id"""
@@ -329,7 +363,6 @@ class AccountCasgFlow(models.TransientModel):
                 journals = self.get_journal_lines(account, data)
                 if journals:
                     journal_res.append(journals)
-
         return {
             'date_from': data.get('date_from'),
             'date_to': data.get('date_to'),
@@ -347,8 +380,10 @@ class AccountCasgFlow(models.TransientModel):
 
     def _get_lines(self, account, data):
         account_type_id = 'asset_cash'
-        state = """AND am.state = 'posted' """ if data.get('target_move') == 'Posted' else """AND am.state in ('draft','posted') """
-        state2 = ' AND aml.company_id IN %s' % str(tuple(self.env.companies.ids) + tuple([0]))
+        state = """AND am.state = 'posted' """ if data.get(
+            'target_move') == 'Posted' else """AND am.state in ('draft','posted') """
+        state2 = ' AND aml.company_id IN %s' % str(
+            tuple(self.env.companies.ids) + tuple([0]))
         query = """SELECT aml.account_id,aj.id as j_id,aj.name,am.id, am.name as move_name, sum(aml.debit) AS total_debit, 
                     sum(aml.credit) AS total_credit, COALESCE(SUM(aml.debit - aml.credit),0) AS balance FROM (SELECT am.* FROM account_move as am
                     LEFT JOIN account_move_line aml ON aml.move_id = am.id
@@ -394,12 +429,14 @@ class AccountCasgFlow(models.TransientModel):
                 'journal_lines': fetch_data,
             }
 
-
-    def get_journal_lines(self, account, data, offset=0, fetch_range=FETCH_RANGE):
+    def get_journal_lines(self, account, data, offset=0,
+                          fetch_range=FETCH_RANGE):
         account_type_id = 'asset_cash'
         offset_count = offset * fetch_range
-        state = """AND am.state = 'posted' """ if data.get('target_move') == 'Posted' else """AND am.state in ('draft','posted') """
-        state2 = ' AND aml.company_id IN %s' % str(tuple(self.env.companies.ids) + tuple([0]))
+        state = """AND am.state = 'posted' """ if data.get(
+            'target_move') == 'Posted' else """AND am.state in ('draft','posted') """
+        state2 = ' AND aml.company_id IN %s' % str(
+            tuple(self.env.companies.ids) + tuple([0]))
         sql2 = """SELECT aa.name as account_name, aj.name, sum(aml.debit) AS total_debit,
          sum(aml.credit) AS total_credit, COALESCE(SUM(aml.debit - aml.credit),0) AS balance FROM (SELECT am.* FROM account_move as am
              LEFT JOIN account_move_line aml ON aml.move_id = am.id
@@ -425,9 +462,6 @@ class AccountCasgFlow(models.TransientModel):
                 'offset': offset_count,
             }
 
-
-
-
     @api.model
     def create(self, vals):
         vals['target_move'] = 'posted'
@@ -443,7 +477,8 @@ class AccountCasgFlow(models.TransientModel):
         if vals.get('journal_ids') == []:
             vals.update({'journal_ids': [(5,)]})
         if vals.get('account_ids'):
-            vals.update({'account_ids': [(4, j) for j in vals.get('account_ids')]})
+            vals.update(
+                {'account_ids': [(4, j) for j in vals.get('account_ids')]})
         if vals.get('account_ids') == []:
             vals.update({'account_ids': [(5,)]})
 
@@ -465,6 +500,8 @@ class AccountCasgFlow(models.TransientModel):
         return currency_array
 
     def get_dynamic_xlsx_report(self, data, response, report_data, dfr_data):
+        user = self.env.user
+        user_language = user.lang
         report_main_data = json.loads(dfr_data)
         data = json.loads(data)
         report_data = report_main_data.get('report_lines')
@@ -477,8 +514,8 @@ class AccountCasgFlow(models.TransientModel):
         # account_type_id = self.env.ref('account.data_account_type_liquidity').id
         currency_symbol = self.env.company.currency_id.symbol
 
-
-        logged_users = self.env['res.company']._company_default_get('account.account')
+        logged_users = self.env['res.company']._company_default_get(
+            'account.account')
         sheet = workbook.add_worksheet()
         bold = workbook.add_format({'align': 'center',
                                     'bold': True,
@@ -541,38 +578,84 @@ class AccountCasgFlow(models.TransientModel):
 
         for i_rec in fetched_data_list:
             if data['levels'] == 'summary':
-                sheet.write(row_num + 1, col_num, str(i_rec['month_part']) + str(int(i_rec['year_part'])), txt_left)
-                sheet.write(row_num + 1, col_num + 1, str(i_rec['total_debit']) + str(currency_symbol), amount)
-                sheet.write(row_num + 1, col_num + 2, str(i_rec['total_credit']) + str(currency_symbol), amount)
+                sheet.write(row_num + 1, col_num,
+                            str(i_rec['month_part']) + str(
+                                int(i_rec['year_part'])), txt_left)
+                sheet.write(row_num + 1, col_num + 1,
+                            str(i_rec['total_debit']) + str(currency_symbol),
+                            amount)
+                sheet.write(row_num + 1, col_num + 2,
+                            str(i_rec['total_credit']) + str(currency_symbol),
+                            amount)
                 sheet.write(row_num + 1, col_num + 3,
-                            str(i_rec['total_debit'] - i_rec['total_credit']) + str(currency_symbol),
+                            str(i_rec['total_debit'] - i_rec[
+                                'total_credit']) + str(currency_symbol),
                             amount)
                 row_num = row_num + 1
             elif data['levels'] == 'consolidated':
-                sheet.write(row_num + 1, col_num, i_rec['name'], txt_left)
-                sheet.write(row_num + 1, col_num + 1, str(i_rec['total_debit']) + str(currency_symbol), amount)
-                sheet.write(row_num + 1, col_num + 2, str(i_rec['total_credit']) + str(currency_symbol), amount)
+                langs = i_rec['name']
+                if isinstance(langs, dict):
+                     language = user_language if user_language in langs else 'en_US'
+                     sheet.write(row_num + 1, col_num, i_rec['name'][language],
+                                 txt_left)
+                else:
+                    sheet.write(row_num + 1, col_num, i_rec['name'],
+                                txt_left)
+                sheet.write(row_num + 1, col_num + 1,
+                            str(i_rec['total_debit']) + str(currency_symbol),
+                            amount)
+                sheet.write(row_num + 1, col_num + 2,
+                            str(i_rec['total_credit']) + str(currency_symbol),
+                            amount)
                 sheet.write(row_num + 1, col_num + 3,
-                            str(i_rec['total_debit'] - i_rec['total_credit']) + str(currency_symbol),
+                            str(i_rec['total_debit'] - i_rec[
+                                'total_credit']) + str(currency_symbol),
                             amount)
                 row_num = row_num + 1
 
         for j_rec in journal_res_list:
             if data['levels'] == 'detailed':
                 for k in fetched_data_list:
+                    language_two = user_language if user_language in k[
+                        'name'] else 'en_US'
                     if k['id'] == j_rec['id']:
-                        sheet.write(row_num + 1, col_num, str(k['code']) + str(k['name']), txt_bold)
-                        sheet.write(row_num + 1, col_num + 1, str(k['total_debit']) + str(currency_symbol), amount_bold)
-                        sheet.write(row_num + 1, col_num + 2, str(k['total_credit']) + str(currency_symbol), amount_bold)
+                        if isinstance(k['name'], dict):
+                            sheet.write(row_num + 1, col_num,
+                                        str(k['code']) + str(
+                                            k['name'][language_two]), txt_bold)
+                        else:
+                            sheet.write(row_num + 1, col_num,
+                                        str(k['code']) + str(
+                                            k['name']), txt_bold)
+                        sheet.write(row_num + 1, col_num + 1,
+                                    str(k['total_debit']) + str(
+                                        currency_symbol), amount_bold)
+                        sheet.write(row_num + 1, col_num + 2,
+                                    str(k['total_credit']) + str(
+                                        currency_symbol), amount_bold)
                         sheet.write(row_num + 1, col_num + 3,
-                                    str(k['total_debit'] - k['total_credit']) + str(currency_symbol), amount_bold)
+                                    str(k['total_debit'] - k[
+                                        'total_credit']) + str(currency_symbol),
+                                    amount_bold)
                         row_num = row_num + 1
                 for l_jrec in j_rec['journal_lines']:
-                    sheet.write(row_num + 1, col_num, l_jrec['name'], txt_left)
-                    sheet.write(row_num + 1, col_num + 1, str(l_jrec['total_debit']) + str(currency_symbol), amount)
-                    sheet.write(row_num + 1, col_num + 2, str(l_jrec['total_credit']) + str(currency_symbol), amount)
+                    language_one = user_language if user_language in l_jrec[
+                        'name'] else 'en_US'
+                    if isinstance(l_jrec['name'], dict):
+                        sheet.write(row_num + 1, col_num,
+                                        l_jrec['name'][language_one], txt_left)
+                    else:
+                        sheet.write(row_num + 1, col_num,
+                                    l_jrec['name'], txt_left)
+                    sheet.write(row_num + 1, col_num + 1,
+                                str(l_jrec['total_debit']) + str(
+                                    currency_symbol), amount)
+                    sheet.write(row_num + 1, col_num + 2,
+                                str(l_jrec['total_credit']) + str(
+                                    currency_symbol), amount)
                     sheet.write(row_num + 1, col_num + 3,
-                                str(l_jrec['total_debit'] - l_jrec['total_credit']) + str(currency_symbol),
+                                str(l_jrec['total_debit'] - l_jrec[
+                                    'total_credit']) + str(currency_symbol),
                                 amount)
                     row_num = row_num + 1
 
@@ -580,28 +663,56 @@ class AccountCasgFlow(models.TransientModel):
             if data['levels'] == 'very':
                 for k in fetched_data_list:
                     if k['id'] == j_rec['id']:
-                        sheet.write(row_num + 1, col_num, str(k['code']) + str(k['name']), txt_bold)
-                        sheet.write(row_num + 1, col_num + 1, str(k['total_debit']) + str(currency_symbol), amount_bold)
-                        sheet.write(row_num + 1, col_num + 2, str(k['total_credit']) + str(currency_symbol), amount_bold)
+                        all_lang = k['name']
+                        language_four = user_language if user_language in all_lang else 'en_US'
+                        if isinstance(all_lang, dict):
+                            sheet.write(row_num + 1, col_num,
+                                        str(k['code']) + str(
+                                            k['name'][language_four]), txt_bold)
+                        else:
+                            sheet.write(row_num + 1, col_num,
+                                        str(k['code']) + str(
+                                            k['name']), txt_bold)
+                        sheet.write(row_num + 1, col_num + 1,
+                                    str(k['total_debit']) + str(
+                                        currency_symbol), amount_bold)
+                        sheet.write(row_num + 1, col_num + 2,
+                                    str(k['total_credit']) + str(
+                                        currency_symbol), amount_bold)
                         sheet.write(row_num + 1, col_num + 3,
-                                    str(k['total_debit'] - k['total_credit']) + str(currency_symbol), amount_bold)
+                                    str(k['total_debit'] - k[
+                                        'total_credit']) + str(currency_symbol),
+                                    amount_bold)
                         row_num = row_num + 1
                 for l_jrec in j_rec['journal_lines']:
                     if l_jrec['account_name'] == j_rec['account']:
-                        sheet.write(row_num + 1, col_num, l_jrec['name'], txt_left)
-                        sheet.write(row_num + 1, col_num + 1, str(l_jrec['total_debit']) + str(currency_symbol), amount)
-                        sheet.write(row_num + 1, col_num + 2, str(l_jrec['total_credit']) + str(currency_symbol), amount)
+                        sheet.write(row_num + 1, col_num, l_jrec['name'],
+                                    txt_left)
+                        sheet.write(row_num + 1, col_num + 1,
+                                    str(l_jrec['total_debit']) + str(
+                                        currency_symbol), amount)
+                        sheet.write(row_num + 1, col_num + 2,
+                                    str(l_jrec['total_credit']) + str(
+                                        currency_symbol), amount)
                         sheet.write(row_num + 1, col_num + 3,
-                                    str(l_jrec['total_debit'] - l_jrec['total_credit']) + str(currency_symbol),
+                                    str(l_jrec['total_debit'] - l_jrec[
+                                        'total_credit']) + str(currency_symbol),
                                     amount)
                         row_num = row_num + 1
                     for m_rec in j_rec['move_lines']:
                         if m_rec['name'] == l_jrec['name']:
-                            sheet.write(row_num + 1, col_num, m_rec['move_name'], txt_center)
-                            sheet.write(row_num + 1, col_num + 1, str(m_rec['total_debit']) + str(currency_symbol), amount)
-                            sheet.write(row_num + 1, col_num + 2, str(m_rec['total_credit']) + str(currency_symbol), amount)
+                            sheet.write(row_num + 1, col_num,
+                                        m_rec['move_name'], txt_center)
+                            sheet.write(row_num + 1, col_num + 1,
+                                        str(m_rec['total_debit']) + str(
+                                            currency_symbol), amount)
+                            sheet.write(row_num + 1, col_num + 2,
+                                        str(m_rec['total_credit']) + str(
+                                            currency_symbol), amount)
                             sheet.write(row_num + 1, col_num + 3,
-                                        str(m_rec['total_debit'] - m_rec['total_credit']) + str(currency_symbol),
+                                        str(m_rec['total_debit'] - m_rec[
+                                            'total_credit']) + str(
+                                            currency_symbol),
                                         amount)
                             row_num = row_num + 1
 

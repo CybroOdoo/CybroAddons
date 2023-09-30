@@ -9,7 +9,7 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function(require) {
 	var QWeb = core.qweb;
 	var _t = core._t;
 	var framework = require('web.framework');
-
+    var session = require('web.session');
 	var datepicker = require('web.datepicker');
 	var time = require('web.time');
 
@@ -75,7 +75,6 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function(require) {
 				widgetParent: 'body',
 				allowInputToggle: true,
 			};
-
 			$calendarInputGroup.datetimepicker(calendarOptions);
 		},
 
@@ -98,33 +97,20 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function(require) {
 							rep_lines.total_debit = self.format_currency(datas['currency'], rep_lines.total_debit);
 							rep_lines.total_credit = self.format_currency(datas['currency'], rep_lines.total_credit);
 							rep_lines.balance = self.format_currency(datas['currency'], rep_lines.balance);
-
-
-
-
 						});
-
 					});
 					_.each(datas['account_res'], function(journal_lines) {
 						_.each(journal_lines['journal_lines'], function(rep_lines) {
 							rep_lines.total_debit = self.format_currency(datas['currency'], rep_lines.total_debit);
 							rep_lines.total_credit = self.format_currency(datas['currency'], rep_lines.total_credit);
 							rep_lines.total_balance = self.format_currency(datas['currency'], rep_lines.total_balance);
-
-
 						});
 						_.each(journal_lines['move_lines'], function(move_lines) {
 							move_lines.total_debit = self.format_currency(datas['currency'], move_lines.total_debit);
 							move_lines.total_credit = self.format_currency(datas['currency'], move_lines.total_credit);
 							move_lines.balance = self.format_currency(datas['currency'], move_lines.balance);
-
-
-
-
 						});
 					});
-
-
 					if (datas['levels'] == 'detailed') {
 						$(event.currentTarget).next('tr').find('td ul').after(
 							QWeb.render('SubSectionCF', {
@@ -155,7 +141,6 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function(require) {
 			}
 		},
 
-
 		load_data: function(initial_render = true) {
 			var self = this;
 			self.$(".categ").empty();
@@ -168,16 +153,10 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function(require) {
 						[this.wizard_id]
 					],
 				}).then(function(datas) {
-
-
 					_.each(datas['fetched_data'], function(rep_lines) {
 						rep_lines.total_debit = self.format_currency(datas['currency'], rep_lines.total_debit);
 						rep_lines.total_credit = self.format_currency(datas['currency'], rep_lines.total_credit);
 						rep_lines.total_balance = self.format_currency(datas['currency'], rep_lines.total_balance);
-
-
-
-
 					});
 					if (initial_render) {
 						self.$('.filter_view_tb').html(QWeb.render('CashFilterView', {
@@ -196,7 +175,7 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function(require) {
 					var child = [];
 
 					self.$('.table_view_tb').html(QWeb.render('CashTable', {
-
+                        lang: session.bundle_params.lang,
 						account_data: datas['fetched_data'],
 						level: datas['levels'],
 						currency: datas['currency'],
@@ -235,11 +214,8 @@ odoo.define('dynamic_cash_flow_statements.cash_flow', function(require) {
 				domain: [
 					['account_ids', '=', account_id]
 				],
-
-
 			}
 			return this.do_action(action);
-
 		},
 		print_pdf: function(e) {
 			e.preventDefault();

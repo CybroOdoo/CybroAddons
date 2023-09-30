@@ -107,6 +107,20 @@ class GeneralView(models.TransientModel):
         filters = self.get_filter(option)
         records = self._get_report_value(data)
         currency = self._get_currency()
+        default_lg = self.env['ir.http']._get_default_lang().code
+        user = self.env.user
+        user_language = user.lang
+        for item in records['Accounts']:
+            if isinstance(item['name'], dict):
+                item['new_name'] = item['name'][
+                            user_language] if user_language in item['name'] else \
+                            item['name']['en_US']
+            else:
+                item['new_name']=item['name']
+            # if user_language in item['name']:
+            #     item['new_name'] = item['name'][user_language]
+            # else:
+            #     item['new_name'] = item['name'][default_lg]
         return {
             'name': title,
             'type': 'ir.actions.client',
@@ -230,9 +244,23 @@ class GeneralView(models.TransientModel):
             raise UserError(_("No Accounts Found! Please Add One"))
         account_res = self._get_accounts(accounts, init_balance,
                                          display_account, data)
+        current_lang = self.env.user.lang
+
         list_ac = []
+        default_lg = self.env['ir.http']._get_default_lang()
         for rec in account_res:
             list_ac.append(rec['account_id'])
+            if rec.get('name', None):
+                localized_name = rec['name']
+                if localized_name:
+                    rec['name'] = localized_name
+                else:
+                    # If the translation for the current language is not available, use a default language or handle it as needed.
+                    rec['name'] = rec['name'].get(default_lg, '')  # Replace 'en_US' with your desired default language.
+            else:
+                # Handle the case where 'name' is not present in the dictionary.
+                rec['name'] = ''  # You can use an
+
         title = "General Ledger"
         account_line = self.get_accounts_line(list_ac, title)['report_lines']
         acc_line_list = []
@@ -289,7 +317,6 @@ class GeneralView(models.TransientModel):
             vals.update({'account_tag_ids': [(5,)]})
         # Analytic filter
         if vals.get('analytic_ids'):
-            # print("lllllllllllllll",vals['analytic_ids'])
             vals.update({'analytic_ids': [(6, 0, vals.get('analytic_ids'))]})
         if vals.get('analytic_ids') == []:
             vals.update({'analytic_ids': [(5,)]})
@@ -328,9 +355,7 @@ class GeneralView(models.TransientModel):
                     tuple(data.get('accounts').ids) + tuple([0]))
             else:
                 WHERE = "WHERE l.account_id IN %s"
-
             if data.get('analytics'):
-                # print("Analytic account filter woking in  GL")
                 WHERE += ' AND an.id IN %s' % str(
                     tuple(data.get('analytics').ids) + tuple([0]))
             if data['account_tags']:
@@ -397,7 +422,6 @@ class GeneralView(models.TransientModel):
                 tuple(data.get('analytics').ids) + tuple([0]))
         if data.get('account_tags'):
             WHERE += ' AND act.id IN %s' % str(tuple(data.get('account_tags').ids)+ tuple([0]))
-        print('genrl ledger where !!!',WHERE)
 
     # Get move lines base on sql query and Calculate the total balance
         # of move lines
@@ -561,6 +585,8 @@ class GeneralView(models.TransientModel):
         }
 
     def get_dynamic_xlsx_report(self, data, response, report_data, dfr_data):
+        user = self.env.user
+        user_language = user.lang
         report_data_main = json.loads(report_data)
         output = io.BytesIO()
         name_data = json.loads(dfr_data)
@@ -620,9 +646,14 @@ class GeneralView(models.TransientModel):
         sheet.set_column(8, 8, 15)
         sheet.set_column(8, 9, 15)
         for rec_data in report_data_main:
+            language = user_language if user_language in rec_data[
+                'name'] else 'en_US'
             row += 1
             sheet.write(row + 1, col, rec_data['code'], txt)
-            sheet.write(row + 1, col + 1, rec_data['name'], txt)
+            if isinstance(rec_data['name'], dict):
+                sheet.write(row + 1, col + 1, rec_data['name'][language], txt)
+            else:
+                sheet.write(row + 1, col + 1, rec_data['name'], txt)
             sheet.write(row + 1, col + 2, '', txt)
             sheet.write(row + 1, col + 3, '', txt)
             sheet.write(row + 1, col + 4, '', txt)

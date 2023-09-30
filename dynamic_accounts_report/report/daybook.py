@@ -27,7 +27,6 @@ class DayBook(models.AbstractModel):
 
     @api.model
     def _get_report_values(self,docids, data=None):
-
         if self.env.context.get('daybook_pdf_report'):
 
             if data.get('report_data'):

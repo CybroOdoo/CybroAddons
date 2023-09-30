@@ -158,7 +158,6 @@ class AgeingView(models.TransientModel):
             'docs': docs,
             'time': time,
             'Partners': account_res,
-
         }
 
     @api.model
@@ -182,7 +181,6 @@ class AgeingView(models.TransientModel):
                 'partner_category_ids')]})
         if not vals.get('partner_category_ids'):
             vals.update({'partner_category_ids': [(5,)]})
-
         res = super(AgeingView, self).write(vals)
         return res
 
@@ -536,7 +534,6 @@ class AgeingView(models.TransientModel):
         return currency_array
 
     def get_dynamic_xlsx_report(self, data, response, report_data, dfr_data):
-
         report_data_main = json.loads(report_data)
         output = io.BytesIO()
         filters = json.loads(data)
@@ -630,7 +627,7 @@ class AgeingView(models.TransientModel):
                 sheet.write(row, col, line_data.get('move'), txt)
                 sheet.write(row, col + 1, line_data.get('date'), txt)
                 sheet.write(row, col + 2, line_data.get('jrnl'), txt)
-                sheet.write(row, col + 3, line_data.get('acc_code'), txt)
+                sheet.write(row, col + 3, f'({line_data.get("acc_code")}){line_data.get("acc_name")}', txt)
                 if line_data.get('period6'):
                     sheet.write(row, col + 4, line_data.get('amount'), txt)
                 else:

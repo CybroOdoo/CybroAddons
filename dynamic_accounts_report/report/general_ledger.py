@@ -27,7 +27,6 @@ class GeneralLedger(models.AbstractModel):
 
     @api.model
     def _get_report_values(self, docids, data=None):
-        print('_get_report_values........',data)
         if self.env.context.get('trial_pdf_report'):
             if data.get('report_data'):
                 data.update(

@@ -27,7 +27,6 @@ class PartnerAgeing(models.AbstractModel):
 
     @api.model
     def _get_report_values(self,docids, data=None):
-        print(data)
         if self.env.context.get('ageing_pdf_report'):
             if data.get('report_data'):
                 data.update(

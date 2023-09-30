@@ -25,7 +25,8 @@
 #### BUGFIX
 - Report Bug Fix: The issues with the analytic filter in the general ledger, partner ledger, and profit and loss statement have been fixed, and the problem with language while printing reports has also been addressed.
 
-#### 08.09.2023
+#### 18.09.2023
 #### Version 16.0.1.0.7
 #### BUGFIX
 - Report Bug Fix: Problem with language while printing profit and loss report fixed.
+- Report Bug Fix: Problem with language while opening cash flow statement.

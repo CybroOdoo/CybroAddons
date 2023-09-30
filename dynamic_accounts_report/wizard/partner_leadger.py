@@ -281,7 +281,6 @@ class PartnerView(models.TransientModel):
             vals.update({'partner_category_ids': [(5,)]})
         # Account Type filter
         # if vals.get('account_type'):
-        #     print('vals.get account_type..........',vals.get('account_type'))
         #     vals.update(
         #         {'account_type': [(6, 0, vals.get('account_type'))]})
         # if not vals.get('account_type'):
@@ -444,9 +443,8 @@ class PartnerView(models.TransientModel):
                           'Target Moves: ' + filters.get('target_move'),
                           date_head)
 
-        sheet.merge_range('C4:D4', 'Account Type: ' + ', '.join(
-            [lt or '' for lt in
-             filters['account_type']]),
+        sheet.merge_range('C4:D4', 'Account Type: ' +
+                          filters['account_type'],
                           date_head)
         sheet.merge_range('E3:F3', ' Partners: ' + ', '.join(
             [lt or '' for lt in

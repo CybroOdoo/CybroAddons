@@ -279,7 +279,6 @@ odoo.define('dynamic_accounts_report.general_ledger', function(require) {
 					//                             });
 
 					for (var i = 0; i < data['report_lines'].length; i++) {
-
 						if (account_id == data['report_lines'][i]['id']) {
 							$(event.currentTarget).next('tr').find('td').remove();
 							$(event.currentTarget).next('tr').after(
@@ -291,7 +290,7 @@ odoo.define('dynamic_accounts_report.general_ledger', function(require) {
 
 								}))
 							$(event.currentTarget).next('tr').find('td ul li:first a').css({
-								'background-color': '#00ede8',
+								'background-color': '#fcba03',
 								'font-weight': 'bold',
 							});
 						}
