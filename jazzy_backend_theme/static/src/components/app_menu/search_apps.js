@@ -1,14 +1,11 @@
 /** @odoo-module */
-
 import { NavBar } from "@web/webclient/navbar/navbar";
 import { registry } from "@web/core/registry";
 const { fuzzyLookup } = require('@web/core/utils/search');
 import { computeAppsAndMenuItems } from "@web/webclient/menus/menu_helpers";
 import core from 'web.core';
-
 const commandProviderRegistry = registry.category("command_provider");
 const { onMounted } = owl;
-
 import { patch } from 'web.utils';
 var rpc = require('web.rpc');
 patch(NavBar.prototype, 'jazzy_backend_theme/static/src/js/appMenu.js', {
@@ -40,21 +37,22 @@ patch(NavBar.prototype, 'jazzy_backend_theme/static/src/js/appMenu.js', {
                 document.documentElement.style.setProperty("--app-bar-accent",result.appbar_color);}
             if (result.primary_hover !== false){
                 document.documentElement.style.setProperty("--primary-hover",result.primary_hover);}
-            if (result.secondary_color !== false){
-                document.documentElement.style.setProperty("--primary-accent-border",result.secondary_color);}
-            if (result.full_bg_img !== false){
-                document.documentElement.style.setProperty("--full-screen-bg",'url(data:image/png;base64,'+result.full_bg_img+')');
-
+            if (result.full_bg_img !== false) {
+                var imageUrl = 'url(data:image/png;base64,' + result.full_bg_img + ')';
+                var appComponentsDivs = document.getElementsByClassName('app_components');
+                for (var i = 0; i < appComponentsDivs.length; i++) {
+                    appComponentsDivs[i].style.backgroundImage = imageUrl;
+                }
             }
             if (result.appbar_text !== false){
                 document.documentElement.style.setProperty("--app-menu-font-color",result.appbar_text);}
-            if (result.secoundary_hover !== false){
-                document.documentElement.style.setProperty("--secoundary-hover",result.secoundary_hover);}
-            if (result.kanban_bg_color !== false){
-                document.documentElement.style.setProperty("--kanban-bg-color",result.kanban_bg_color);}
+            if (result.secondary_hover !== false){
+                document.documentElement.style.setProperty("--secondary-hover",result.secondary_hover);}
+            if (result.kanban_bg_color !== false) {
+                document.documentElement.style.setProperty("--kanban-bg-color", result.kanban_bg_color);
+            }
         });
     },
-
     onMounted() {
         this.$search_container = $(".search-container");
         this.$search_input = $(".search-input input");
@@ -68,10 +66,8 @@ patch(NavBar.prototype, 'jazzy_backend_theme/static/src/js/appMenu.js', {
         this._search_def.reject();
         this._search_def = $.Deferred();
         setTimeout(this._search_def.resolve.bind(this._search_def), 50);
-
         this._search_def.done(this._searchMenus.bind(this));
     },
-
     _searchMenus: function () {
         var query = this.$search_input.val();
         if (query === "") {
@@ -92,7 +88,6 @@ patch(NavBar.prototype, 'jazzy_backend_theme/static/src/js/appMenu.js', {
                 webIconData: menu.webIconData,
             });
         });
-
         fuzzyLookup(query, this._searchableMenus, (menu) =>
             (menu.parents + " / " + menu.label).split("/").reverse().join("/")
         ).forEach((menu) => {
@@ -103,7 +98,6 @@ patch(NavBar.prototype, 'jazzy_backend_theme/static/src/js/appMenu.js', {
                 id: menu.id,
             });
         });
-
         this.$search_container.toggleClass(
             "has-results",
             Boolean(results.length)
@@ -118,4 +112,28 @@ patch(NavBar.prototype, 'jazzy_backend_theme/static/src/js/appMenu.js', {
             )
         );
     },
+    OnClickMainMenu() {
+        if ($('.app_components').css("display") === "none") {
+            $('.app_components').fadeIn(250);
+            $('.o_menu_sections').attr('style','display: none !important');
+            $('.o_menu_brand').attr('style','display: none !important');
+            $('.o_action_manager').attr('style','display: none !important');
+            $('.sidebar_panel').attr('style','display: none !important');
+        } else {
+            $('.app_components').fadeOut(50);
+            $('.o_menu_sections').attr('style','display: flex !important');
+            $('.o_menu_brand').attr('style','display: block !important');
+            $('.o_action_manager').attr('style','display: block !important');
+            $('.sidebar_panel').attr('style','display: block !important');
+        }
+    },
+    onNavBarDropdownItemSelection(app) {
+    var appComponentsDiv = document.querySelector('.app_components');
+    appComponentsDiv.style.display = 'none';
+    $('.o_action_manager').attr('style','display: block !important');
+    $('.sidebar_panel').attr('style','display: block !important');
+    $('.o_menu_brand').attr('style','display: flex !important');
+    $('.o_menu_sections').attr('style','display: flex !important');
+    this._super(app);
+}
 });

@@ -19,4 +19,15 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import models
+"""
+This module helps user to change the backend theme of the odoo according to
+there choices
+"""
+from odoo import models, fields
+
+
+class ResCompany(models.Model):
+    """Inherits the Res Company Model"""
+    _inherit = 'res.company'
+
+    background_image = fields.Binary(string="Background Image", attachment=True)

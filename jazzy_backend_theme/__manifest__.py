@@ -22,10 +22,11 @@
 
 {
     "name": "Jazzy Backend Theme v16",
-    "description": """Minimalist and elegant backend theme for Odoo 16, Backend Theme, Theme""",
+    "description": """Minimalist and elegant backend theme for Odoo 16, 
+                    Backend Theme, Theme""",
     "summary": "Jazzy backed Theme V16 is an attractive theme for backend",
     "category": "Themes/Backend",
-    "version": "16.0.1.0.0",
+    "version": "16.0.1.1.0",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -33,7 +34,7 @@
     "depends": ['base', 'web', 'mail'],
     "data": [
         'views/style.xml',
-        'views/res_config_settings.xml',
+        'views/res_config_settings_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

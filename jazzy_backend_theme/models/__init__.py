@@ -19,4 +19,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+from . import res_company
 from . import res_config_settings
