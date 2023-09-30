@@ -93,6 +93,7 @@ class ProductPack(models.Model):
         """Update the list price of the product with the pack price."""
         self.list_price = self.pack_price
 
+
     def get_quantity(self):
         """Calculate the pack quantity based on the availability of
         pack products."""
@@ -125,12 +126,13 @@ class ProductPack(models.Model):
             if not location_id:
                 raise UserError(_(
                     'You need to select the location to update the pack quantity...!'))
-        self.env['stock.quant'].with_context(inventory_mode=True).sudo().create(
+        new_quantity = self.env['stock.quant'].with_context(inventory_mode=True).sudo().create(
             {
                 'product_id': product_id,
                 'location_id': location_id,
                 'inventory_quantity': self.pack_quantity,
             })
+        new_quantity.action_apply_inventory()
 
     @api.onchange('pack_location_id')
     def change_quantity_based_on_location(self):
