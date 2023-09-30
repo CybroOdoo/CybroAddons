@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="template" xml:space="preserve">
+    <!-- Inherit ProductScreen to Modify it -->
+    <t t-name="CustomProductScreen" t-inherit="point_of_sale.ProductScreen" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('product-screen')]" position="replace">
+            <div class="div-main" style="height: 100%;">
+                <div class="leftpane pane-border">
+                    <ProductsWidget mobileSearchBarIsShown="props.mobileSearchBarIsShown" />
+                    <MobileOrderWidget t-if="env.isMobile" pane="state.mobile_pane" t-on-switchpane="switchPane" />
+                    <OrderWidget />
+                    <NumpadWidget activeMode="env.pos.numpadMode" />
+                </div>
+                <div class="right">
+                    <div class="head">
+                        <center>
+                            <h2>CUSTOMER</h2>
+                        </center>
+                    </div>
+                    <br />
+                    <br />
+                    <div class="_o_customer">
+                        <t t-if="client">
+                            <h2>Name:</h2>
+                            <h3 t-esc="client.name" />
+                            <h2>Address:</h2>
+                            <h3 t-esc="client.address" />
+                            <h2>Email:</h2>
+                            <h3 t-esc="client.email" />
+                            <h2>Phone:</h2>
+                            <h3 t-esc="client.phone" />
+                        </t>
+                    </div>
+                    <br />
+                    <br />
+                    <center>
+
+                        <button class="customer-button" t-on-click="_onClickCustomer">
+                            <i class="fa fa-search" />
+                        </button>
+                    </center>
+                    <div class="button new-order next validation" style="bottom: 0;height: 11.65%;width: 29.35% !important;" t-att-class="{ highlight: !locked }" t-on-click="orderDone">
+                        <div class="pay-circle" style="margin-top: 21px;">
+                            <i class="fa fa-angle-double-right" />
+                        </div>
+                        <span class="next_text" style="padding-bottom: 53px;margin-left: -10px;">New Order</span>
+                    </div>
+                </div>
+                <div class="center">
+                    <section class="paymentlines-container">
+                        <t t-log="get_current_Order().length" />
+                        <div t-if="get_current_Order().length === 0" class="paymentlines-empty">
+                            <div class="total">
+                                <t t-esc="totalDueText" />
+                            </div>
+                            <div class="message">
+                                Please select a payment method.
+                            </div>
+                        </div>
+                        <div t-else="">
+                            <div class="payment-status-container">
+                                <div>
+                                    <div class="payment-status-remaining">
+                                        <span class="label">Remaining</span>
+                                        <span class="amount" t-att-class="{ highlight: currentOrder.get_due() > 0 }">
+                                            <t t-esc="remainingText" />
+                                        </span>
+                                    </div>
+                                    <div class="payment-status-total-due">
+                                        <span class="label">Total Due</span>
+                                        <span>
+                                            <t t-esc="totalDueText" />
+                                        </span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="payment-status-change">
+                                        <span class="label">Change</span>
+                                        <span class="amount" t-att-class="{ highlight: currentOrder.get_change() > 0 }">
+                                            <t t-esc="changeText" />
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <p class="title-category">Payment method</p>
+                    <div class="paymentmethods-container">
+                        <div class="paymentmethods">
+                            <t t-foreach="get_payment_methods()" t-as="paymentMethod" t-key="paymentMethod.id">
+                                <PaymentMethodButton paymentMethod="paymentMethod" />
+                            </t>
+                        </div>
+                        <p class="title-category" style="border-top: solid 5px teal;">summary</p>
+                        <PaymentScreenPaymentLines paymentLines="paymentLines" />
+                    </div>
+                    <div class="button next validation" t-on-click="confirmOrder">
+                        <div class="pay-circle">
+                            <i class="fa fa-chevron-right" role="img" aria-label="Pay" title="Pay" />
+                        </div>
+                        <span class="next_text">Validate</span>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </t>
+</template>
