@@ -32,8 +32,6 @@ LOGIN_SUCCESSFUL_PARAMS.add('account_created')
 class PasswordSecurity(Home):
     """overriding the website signup controller"""
 
-    @http.route('/web/reset_password', type='http', auth='public',
-                website=True, sitemap=False)
     def _prepare_signup_values(self, qcontext):
         """getting the values from config settings"""
         values = {key: qcontext.get(key) for key in ('login', 'name',
@@ -75,13 +73,7 @@ class PasswordSecurity(Home):
                     raise UserError(_(
                         "*****The Password Should have at least "
                         "one special symbol."))
-
-        supported_lang_codes = [code for code, _ in
-                                request.env['res.lang'].get_installed()]
-        lang = request.context.get('lang', '')
-        if lang in supported_lang_codes:
-            values['lang'] = lang
-        return values
+        return super()._prepare_signup_values(qcontext)
 
     @http.route('/web/config_params', type='json', auth="public")
     def website_get_config_value(self):
