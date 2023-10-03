@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+<!-- Template inherited for adding buttons : Reserve and un Reserve. -->
+<t t-name="table_reservation_in_pos.Waiter_Table"
+   t-inherit="pos_restaurant.EditBar"
+   t-inherit-mode="extension" owl="1">
+    <xpath expr="//div[hasclass('edit-bar')]"
+           position="inside">
+            <t t-if="env.pos.config.table_reservation">
+                <span class="edit-button"
+                  t-att-class="{ disabled: !props.selectedTable }"
+                  t-on-click.stop="props.reserve">
+                    <i class="fa fa-ticket ticket-reserve" role="img"
+                       aria-label="Reserve"
+                       title="Reserve"/>
+                </span>
+                <span class="edit-button"
+                  t-att-class="{ disabled: !props.selectedTable }"
+                  t-on-click.stop="props.vieInfo">
+                    <i class="fa fa-info" role="img"
+                       aria-label="View Info"
+                       title="View Info"/>
+                </span>
+                <span class="edit-button"
+                          t-att-class="{ disabled: !props.selectedTable }"
+                          t-on-click.stop="props.un_reserve">
+                    <i class="fa fa-ticket ticket-un-reserve" role="img"
+                       aria-label="Un Reserve"
+                       title="Un Reserve"/>
+                </span>
+            </t>
+    </xpath>
+</t>
+    <!-- Template inherited for binding two functions : reserve and un_reserve -->
+    <t t-name="table_reservation_in_pos.Waiter_Table_FloorScreen"
+       t-inherit="pos_restaurant.FloorScreen"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//EditBar"
+              position="attributes">
+            <attribute name="reserve.bind">reserve</attribute>
+            <attribute name="vieInfo.bind">vieInfo</attribute>
+            <attribute name="un_reserve.bind">un_reserve</attribute>
+        </xpath>
+    </t>
+    <!-- Template inherited for adding reserved labels in pos table-->
+    <t t-name="table_reservation_in_pos.Waiter_Table_FloorScreen_table"
+       t-inherit="pos_restaurant.TableWidget"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('table')]"
+               position="attributes">
+            <attribute name="t-attf-class">#{props.table.reserved ? 'table reserved-border' : 'table'}</attribute>
+            <attribute name="t-attf-title">#{props.table.reserved ? props.table.reservation_details : ''}</attribute>
+        </xpath>
+        <xpath expr="//div//span[hasclass('table-cover')]"
+               position="before">
+            <div class="table-reserved">
+                <span t-att-hidden="!props.table.reserved" class="reserved-label">
+                    Reserved
+                </span>
+            </div>
+        </xpath>
+    </t>
+</templates>
