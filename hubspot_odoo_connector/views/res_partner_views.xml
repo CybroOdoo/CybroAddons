@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--  Record for inherit and sync fields in partner model.  -->
+    <record id="view_partner_form" model="ir.ui.view">
+        <field name="name">res.partner.view.form.inherit.hubspot.odoo.connector</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='vat']" position="after">
+                <field name="hs_object_id"/>
+                <field name="sync_mode"/>
+            </xpath>
+        </field>
+    </record>
+    <!--  Menu action for Partners import.  -->
+    <record id="action_hubspot_contact_import" model="ir.actions.act_window">
+        <field name="name">Contacts</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form,activity</field>
+        <field name="domain">[('sync_mode', '=', 'import')]</field>
+        <field name="help" type="html">
+            <p>
+                Odoo helps you track all imported contacts from Hubspot.
+            </p>
+        </field>
+    </record>
+<!--  Menu action for Partner Export  -->
+    <record id="action_hubspot_contact_export" model="ir.actions.act_window">
+        <field name="name">Contacts</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form,activity</field>
+        <field name="domain">[('sync_mode', '=', 'export')]</field>
+        <field name="help" type="html">
+            <p>
+                Odoo helps you track all exported contacts to Hubspot.
+            </p>
+        </field>
+    </record>
+    <!--  Menus for Partners  -->
+    <menuitem
+            id="res_partner_menu"
+            name="Contacts"
+            parent="hubspot_connector_menu_root"/>
+    <menuitem
+            id="res_partner_menu_action_import"
+            name="Contacts Import"
+            action="action_hubspot_contact_import"
+            parent="res_partner_menu"/>
+    <menuitem
+            id="res_partner_menu_action_export"
+            name="Contacts Export"
+            action="action_hubspot_contact_export"
+            parent="res_partner_menu"/>
+</odoo>
