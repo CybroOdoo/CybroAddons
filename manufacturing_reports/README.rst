@@ -1,30 +1,34 @@
 .. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
-    :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
+    :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
 Manufacturing Reports
 =====================
-Provides an option to print XLSX and PDF report for the Manufacturing module.
+This module allow to manage manufacturing reports.
+
+Configuration
+=============
+* No additional configurations needed
 
 Installation
 ============
 - www.odoo.com/documentation/15.0/setup/install.html
 - Install our custom addon
 
+License
+-------
+GNU AFFERO GENERAL PUBLIC LICENSE, Version 3 (AGPLv3)
+(https://www.gnu.org/licenses/agpl-3.0-standalone.html)
+
 Company
 -------
 * `Cybrosys Techno Solutions <https://cybrosys.com/>`__
 
-License
--------
-Affero General Public License v3.0 (AGPL v3)
-(https://www.gnu.org/licenses/agpl-3.0-standalone.html)
-
 Credits
 -------
-* Developer: (V9)  Cybrosys Technologies.
-             (V14) Javid A
-             (V15) Javid A
+* Developer:
+    (V14) Javid A, Contact: odoo@cybrosys.com
+    (V15) Javid A, Contact: odoo@cybrosys.com
 
 Contacts
 --------
