@@ -1,6 +1,9 @@
+.. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
+   :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
+   :alt: License: AGPL-3
+
 Restrict POS Refund with Password in odoo 16
 ============================================
-
 This module is used to set password on refund button process in pos .
 
 Installation
@@ -10,8 +13,8 @@ Installation
 
 License
 -------
-General Public License, Version 3 (LGPL v3).
-(https://www.odoo.com/documentation/user/16.0/legal/licenses/licenses.html)
+Affero General Public License v3.0 (AGPL v3)
+(https://www.gnu.org/licenses/agpl-3.0-standalone.html)
 
 Company
 -------
@@ -21,7 +24,6 @@ Credits
 -------
 * Developer:
 (V16) Archana V  @ Cybrosys
-
 
 Contacts
 --------
@@ -33,6 +35,9 @@ Bugs are tracked on GitHub Issues. In case of trouble, please check there if you
 
 Maintainer
 ==========
+.. image:: https://cybrosys.com/images/logo.png
+   :target: https://cybrosys.com
+
 This module is maintained by Cybrosys Technologies.
 
 For support and more information, please visit https://www.cybrosys.com
@@ -40,4 +45,3 @@ For support and more information, please visit https://www.cybrosys.com
 Further information
 ===================
 HTML Description: `<static/description/index.html>`__
-
