@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Direct Print',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.1',
     'summary': 'The Direct Print is a tool that connects Odoo to PrintNode, '
                'a cloud-based printing service. This connector allows users to'
                ' send print jobs from their Odoo environment to any printer '

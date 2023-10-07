@@ -70,8 +70,8 @@ class ReportControllers(ReportController):
             pdf = report.with_context(context)._render_qweb_pdf(reportname,
                                                                 docids,
                                                                 data=data)[0]
-            print_node_url = request.env[
-                'ir.config_parameter'].sudo().get_param('url_print_node')
+            # print_node_url = request.env[
+            #     'ir.config_parameter'].sudo().get_param('url_print_node')
             print_node_api = request.env[
                 'ir.config_parameter'].sudo().get_param('api_key_print_node')
             default_printer = request.env[
@@ -91,7 +91,7 @@ class ReportControllers(ReportController):
                     int(printer))
                 multi_printer_details.append(printer_details.id_of_printer)
             if multiple_printers_boolean:
-                gateway = Gateway(url=print_node_url, apikey=print_node_api)
+                gateway = Gateway(url='https://api.printnode.com/', apikey=print_node_api)
                 data_record = base64.b64encode(pdf)
                 ir_values = {
                     'name': "Customer Report",
@@ -122,7 +122,7 @@ class ReportControllers(ReportController):
                     raise ValidationError(_(
                         'please select at least one printer'))
             else:
-                gateway = Gateway(url=print_node_url, apikey=print_node_api)
+                gateway = Gateway(url='https://api.printnode.com/', apikey=print_node_api)
                 data_record = base64.b64encode(pdf)
                 ir_values = {
                     'name': "Customer Report",

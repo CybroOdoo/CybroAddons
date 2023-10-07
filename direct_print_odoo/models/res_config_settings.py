@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-import json
 from ast import literal_eval
 from printnodeapi.gateway import Gateway
 from odoo import api, fields, models ,_
@@ -38,7 +37,6 @@ class ResConfigSettings(models.TransientModel):
             checking the available printers in the system"""
     _inherit = 'res.config.settings'
 
-    url_print_node = fields.Char(string='Url', help='URL of the printnode')
     api_key_print_node = fields.Char(string="API Key",
                                      help='API Key of the printnode')
     available_printers_id = fields.Many2one('printer.details',
@@ -52,15 +50,12 @@ class ResConfigSettings(models.TransientModel):
                                             'Printers',
                                        config_parameter='direct_print_odoo'
                                                         '.multiple_printers')
-
     @api.model
     def get_values(self):
         """Get the values in the config"""
         res = super(ResConfigSettings, self).get_values()
         res['api_key_print_node'] = self.env[
             'ir.config_parameter'].sudo().get_param('api_key_print_node')
-        res['url_print_node'] = self.env[
-            'ir.config_parameter'].sudo().get_param('url_print_node')
         res['printers_ids'] = self.env[
             'ir.config_parameter'].sudo().get_param(
             'direct_print_odoo.printers_ids')
@@ -82,8 +77,6 @@ class ResConfigSettings(models.TransientModel):
         """Set the values in the config"""
         self.env['ir.config_parameter'].sudo().set_param('api_key_print_node',
                                                          self.api_key_print_node)
-        self.env['ir.config_parameter'].sudo().set_param('url_print_node',
-                                                         self.url_print_node)
         self.env['ir.config_parameter'].sudo().set_param(
             'direct_print_odoo.printers_ids',
             self.printers_ids.ids)
@@ -91,12 +84,10 @@ class ResConfigSettings(models.TransientModel):
 
     def action_check_printers(self):
         """Check the available printer"""
-        print_node_url = self.env['ir.config_parameter'].sudo().get_param(
-            'url_print_node')
         print_node_api = self.env['ir.config_parameter'].sudo().get_param(
             'api_key_print_node')
         try:
-            gateway = Gateway(url=print_node_url, apikey=print_node_api)
+            gateway = Gateway(url="https://api.printnode.com", apikey=print_node_api)
             computer_id = int(gateway.computers()[0].id)
             if computer_id:
                 for printer in gateway.printers(computer=computer_id):
@@ -113,5 +104,5 @@ class ResConfigSettings(models.TransientModel):
                         raise ValidationError(_('Printer already exists'))
             else:
                 raise ValidationError(_('Please Connect a Computer First '))
-        except Exception as e:
+        except Exception:
             raise ValidationError(_("Please provide valid credentials"))
