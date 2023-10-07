@@ -21,7 +21,7 @@
 ###################################################################################
 {
     'name': 'Event Management',
-    'version': '16.0.1.0.0',
+    'version': '16.0.2.0.0',
     'summary': """Core Module for Managing Different Types Of Events.""",
     'description': """Core Module for Managing Different Types Of Events""",
     "category": "Industry",
