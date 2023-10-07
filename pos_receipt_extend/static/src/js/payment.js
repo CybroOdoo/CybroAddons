@@ -29,6 +29,13 @@ odoo.define('pos_receipt_extend.PaymentScreen', function (require) {
             var self= this;
             self.env.pos.qr_code = order.qr_code;
             self.env.pos.customer_details = order.customer_details;
+            self.env.pos.mobile = order.customer_mobile;
+            self.env.pos.phone = order.customer_phone;
+            self.env.pos.email = order.customer_email;
+            self.env.pos.vat = order.customer_vat;
+            self.env.pos.address = order.customer_address;
+            self.env.pos.name = order.customer_name;
+            self.env.pos.number = order.invoice_number;
             var self= this;
          rpc.query({
                 model: 'pos.order',
@@ -44,7 +51,6 @@ odoo.define('pos_receipt_extend.PaymentScreen', function (require) {
                    self.env.pos.invoice  = result.invoice_name
                 }
                 });
-                console.log(self.env.pos.invoice,'this.env.pos.invoice')
                 return receipt_order
          }
          }
