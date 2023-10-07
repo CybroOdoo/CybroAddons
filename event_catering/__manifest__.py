@@ -20,7 +20,7 @@
 ###################################################################################
 {
     'name': 'Event Catering Service',
-    'version': '16.0.1.0.0',
+    'version': '16.0.2.0.0',
     'summary': """Catering Service for Event Management Module.""",
     'description': """Catering Service for Event Management Module.""",
     "category": "Industry",
@@ -33,6 +33,7 @@
              'security/ir.model.access.csv',
              'views/catering_service.xml',
              'views/event_form.xml',
+             'views/product_product_views.xml',
              'data/catering_service.xml',
              ],
     'demo': [

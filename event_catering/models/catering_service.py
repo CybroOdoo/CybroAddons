@@ -60,7 +60,7 @@ class EventManagementInherit(models.Model):
         """Confirm the Event"""
         catering_service = self.env['event.management.catering']
         catering_line = self.service_line_ids.search([
-            ('service', '=', 'catering'), ('event_id', '=', self.id)])
+            ('service_id', '=', 'Catering'), ('event_id', '=', self.id)])
         if len(catering_line) > 0:
             self.catering_on = True
             sequence_code = 'catering.order.sequence'
@@ -86,20 +86,13 @@ class EventManagementInherit(models.Model):
         """This function returns an action that display existing catering
         service of the event."""
         action = self.env.ref(
-            'event_catering.event_management_catering_action_view_kanban').sudo().read()[0]
+            'event_catering.event_management_catering_action_view_kanban').sudo().read()[
+            0]
         action['views'] = [(self.env.ref(
             'event_catering.event_management_catering_view_form').id, 'form')]
         action['res_id'] = self.catering_id.id
         if self.catering_id.id is not False:
             return action
-
-
-class EventService(models.Model):
-    """Adding options to service line of event management model"""
-    _inherit = 'event.service.line'
-
-    service = fields.Selection(selection_add=[('catering', 'Catering')],
-                               ondelete={'catering': 'cascade'})
 
 
 class EventManagementCatering(models.Model):
@@ -140,7 +133,7 @@ class EventManagementCatering(models.Model):
             if items.work_status == 'open':
                 raise UserError(_("Catering works are pending"))
         related_product = self.env.ref(
-            'event_catering.catering_service_product').id
+            'event_management.catering_service_product').id
         for items in self.sudo().parent_event_id.service_line_ids:
             if items.id == self.sudo().catering_id:
                 items.sudo().write({'amount': self.price_subtotal,
@@ -165,7 +158,7 @@ class EventCateringWorks(models.Model):
     catering_id = fields.Many2one('event.management.catering',
                                   string="Catering Id")
     work_status = fields.Selection([('open', 'Open'), ('done', 'Done')],
-                                 string="Work Status", default='open')
+                                   string="Work Status", default='open')
 
     @api.onchange('service_id')
     def _onchange_service_id(self):
@@ -185,3 +178,11 @@ class EventCateringWorks(models.Model):
         """Button action for non completed works"""
         if self.catering_id.state == "open":
             self.work_status = 'done'
+
+
+class ProductProduct(models.Model):
+    """Inherited the model for adding a field"""
+    _inherit = 'product.product'
+
+    is_catering = fields.Boolean(string="Catering Product",
+                                 help='For specifying the catering product')
