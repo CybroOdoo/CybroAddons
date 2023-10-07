@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Cybrosys Technogies @cybrosys(odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -22,28 +22,29 @@
 
 {
     'name': 'Fleet Rental Management',
-    'version': '15.0.1.0.0',
+    'version': '15.0.2.0.0',
+    'category': "Industries",
     'summary': """This module will helps you to give the vehicles for Rent.""",
     'description': "Module Helps You To Manage Rental Contracts, Odoo13, Odoo 13, Fleet, Rental, Rent, Vehicle management",
-    'category': "Industries",
     'live_test_url': 'https://youtu.be/chN-n7nB3Ac',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'depends': ['base', 'account', 'fleet', 'mail'],
     'data': [
         'data/fleet_rental_data.xml',
         'security/rental_security.xml',
         'security/ir.model.access.csv',
+        'views/res_config_settings_views.xml',
         'views/car_rental_view.xml',
         'views/checklist_view.xml',
         'views/car_tools_view.xml',
         'reports/rental_report.xml'
     ],
-    'demo': [
-    ],
     'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'application': True,
+    'auto_install': False
 }

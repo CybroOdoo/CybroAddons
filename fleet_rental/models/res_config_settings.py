@@ -19,5 +19,17 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import models
-from . import reports
+from odoo import api, fields, models
+
+
+class ResConfigSettings(models.TransientModel):
+    """Inherit configuration settings"""
+    _inherit = 'res.config.settings'
+
+    def _get_default_product(self):
+        return self.env.ref('fleet_rental.fleet_service_product').id
+
+    fleet_service_product_id = fields.Many2one('product.template',
+                                               string="Product",
+                                               config_parameter='fleet_service_product_id',
+                                               default=_get_default_product)
