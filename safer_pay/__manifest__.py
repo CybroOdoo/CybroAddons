@@ -21,11 +21,11 @@
 #
 ###############################################################################
 {
-    'name': "Safer-pay Payment Gateway Integration",
+    'name': "Safer-Pay Payment Gateway Integration",
     'version': '15.0.1.0.0',
     'category': 'eCommerce',
-    'summary': 'Safer-pay is a payment provider that integrate with odoo',
-    'description': 'Safer-pay is a payment provider that integrate with odoo.'
+    'summary': 'Safer-Pay is a payment provider that integrate with odoo',
+    'description': 'Safer-Pay is a payment provider that integrate with odoo.'
                    'we can done payment through safer pay in ecommerce',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
