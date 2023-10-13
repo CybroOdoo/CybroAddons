@@ -479,7 +479,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function(require) {
         },
 
         onclick_toggle_two: function(ev) {
-
             this.onclick_aged_payable(this.$('#aged_receivable_values').val());
             this.onclick_aged_receivable(this.$('#aged_payable_value').val());
             this.onclick_invoice_this_year(ev);

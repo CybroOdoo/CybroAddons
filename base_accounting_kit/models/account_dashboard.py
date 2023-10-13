@@ -142,7 +142,6 @@ class DashBoard(models.Model):
             l_month = datetime.now() - relativedelta(months=i)
             text = format(l_month, '%B')
             month_list.append(text)
-
         states_arg = ""
         if post != ('posted',):
             states_arg = """ parent_state in ('posted', 'draft')"""
@@ -244,7 +243,6 @@ class DashBoard(models.Model):
             day_list.append(x)
 
         one_month_ago = (datetime.now() - relativedelta(months=1)).month
-
         states_arg = ""
         if post != ('posted',):
             states_arg = """ parent_state in ('posted', 'draft')"""
@@ -252,23 +250,24 @@ class DashBoard(models.Model):
             states_arg = """ parent_state = 'posted'"""
 
         self._cr.execute(('''select sum(debit)-sum(credit) as income ,cast(to_char(account_move_line.date, 'DD')as int)
-                            as date , internal_group from account_move_line , account_account where   
-                            Extract(month FROM account_move_line.date) in ''' + str(tuple(company_id)) + ''' 
-                            AND %s
-                            AND account_move_line.company_id in ''' + str(tuple(company_id)) + ''' 
-                            AND account_move_line.account_id=account_account.id AND internal_group='income'   
-                            group by internal_group,date                 
-                             ''') % (states_arg))
+                                    as date , internal_group from account_move_line , account_account
+                                    where   Extract(month FROM account_move_line.date) = '''+str((datetime.now() - relativedelta(months=1)).month)+'''
+                                    AND Extract(YEAR FROM account_move_line.date) = '''+str((datetime.now() - relativedelta(months=1)).year)+'''  
+                                    AND %s
+                                    AND account_move_line.company_id in ''' + str(tuple(company_id)) + ''' 
+                                    AND account_move_line.account_id=account_account.id AND internal_group='income'
+                                    group by internal_group,date                 
+                                ''') % (states_arg))
 
         record = self._cr.dictfetchall()
-
         self._cr.execute(('''select sum(debit)-sum(credit) as expense ,cast(to_char(account_move_line.date, 'DD')as int)
-                            as date ,internal_group from account_move_line ,account_account where  
-                            Extract(month FROM account_move_line.date) in ''' + str(tuple(company_id)) + ''' 
-                            AND %s
-                            AND account_move_line.company_id in ''' + str(tuple(company_id)) + ''' 
-                            AND account_move_line.account_id=account_account.id AND internal_group='expense'
-                            group by internal_group,date                 
+                                    as date , internal_group from account_move_line , account_account where  
+                                    Extract(month FROM account_move_line.date) = '''+str((datetime.now() - relativedelta(months=1)).month)+''' 
+                                    AND Extract(YEAR FROM account_move_line.date) = '''+str((datetime.now() - relativedelta(months=1)).year)+''' 
+                                    AND %s
+                                    AND account_move_line.company_id in ''' + str(tuple(company_id)) + ''' 
+                                    AND account_move_line.account_id=account_account.id AND internal_group='expense'
+                                    group by internal_group,date                 
                                  ''') % (states_arg))
         result = self._cr.dictfetchall()
         records = []
