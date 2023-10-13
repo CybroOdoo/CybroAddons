@@ -22,7 +22,7 @@
 
 {
     'name': 'Edit Button In Odoo16',
-    'version': '16.0.1.0.1',
+    'version': '16.0.1.0.2',
     'summary': 'Edit Button Odoo16',
     'description': 'Edit Button in Odoo16',
     'author': 'Cybrosys Techno Solutions',
@@ -30,7 +30,10 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'images': ['static/description/banner.png'],
     'website': 'https://www.cybrosys.com',
-    'depends': ['base'],
+    'depends': ['base', 'product'],
+    'data': [
+        'views/product_views.xml',
+    ],
     'assets': {
         'web.assets_backend': [
             '/edit_save_button/static/src/views/form/form_controller.js',

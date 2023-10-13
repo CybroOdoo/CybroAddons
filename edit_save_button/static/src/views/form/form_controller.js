@@ -20,6 +20,7 @@ var data = false;
 
 patch(FormController.prototype, "save",{
     setup() {
+        data = false;
         this.props.preventEdit = !data
         this._super();
     },
@@ -38,6 +39,16 @@ patch(FormController.prototype, "save",{
         this._super();
         data = false;
         await this.model.root.switchMode("readonly");
-    }
+    },
+     async beforeLeave() {
+        if (this.model.root.isDirty) {
+            if (confirm("The changes you have made will save Automatically!")) {
+                return this.model.root.save({noReload: true, stayInEdition: true});
+            } else {
+                this.model.root.discard();
+                return true;
+            }
+        }
+     }
 })
 
