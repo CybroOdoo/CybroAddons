@@ -21,7 +21,6 @@
 #
 ################################################################################
 from odoo import fields, models, api
-from ast import literal_eval
 
 
 class ProductVisibility(models.Model):
@@ -64,78 +63,3 @@ class ProductVisibility(models.Model):
         if self.filter_mode == 'null':
             self.website_available_cat_ids = None
             self.website_available_product_ids = None
-
-
-class WebsiteGuestVisibility(models.TransientModel):
-    """Inherit the model res.config.settings for adding the fields for
-    selecting the product for visitors"""
-    _inherit = 'res.config.settings'
-
-    product_visibility_guest_user = fields.Boolean(
-        string="Product visibility Guest User", help="Product Visibility")
-    filter_mode = fields.Selection([('product_only', 'Product Wise'),
-                                    ('categ_only', 'Category Wise')],
-                                   string='Filter Mode', default='product_only')
-    available_product_ids = fields.Many2many('product.template',
-                                             string='Available Product',
-                                             domain="[('is_published', '=', "
-                                                    "True)]",
-                                             help='The website will only '
-                                                  'display products which are '
-                                                  'within one of the selected'
-                                                  ' category trees. If no'
-                                                  ' category is specified,'
-                                                  'all available products '
-                                                  'will be shown')
-    available_cat_ids = fields.Many2many('product.public.category',
-                                         string='Available Product Categories',
-                                         help='The website will only display '
-                                              'products which are selected.'
-                                              ' If no product is specified,'
-                                              'all available products will be '
-                                              'shown')
-
-    @api.model
-    def set_values(self):
-        res = super(WebsiteGuestVisibility, self).set_values()
-        self.env['ir.config_parameter'].sudo().set_param(
-            'product_visibility_guest_user',
-            self.product_visibility_guest_user)
-        self.env['ir.config_parameter'].sudo().set_param('filter_mode',
-                                                         self.filter_mode)
-        if not self.product_visibility_guest_user:
-            self.available_cat_ids = None
-            self.available_product_ids = None
-            self.env['ir.config_parameter'].sudo().set_param('filter_mode',
-                                                             'product_only')
-        if self.filter_mode == 'product_only':
-            self.available_cat_ids = None
-        elif self.filter_mode == 'categ_only':
-            self.available_product_ids = None
-        self.env['ir.config_parameter'].sudo().set_param(
-            'website_product_visibility.available_product_ids',
-            self.available_product_ids.ids)
-        self.env['ir.config_parameter'].sudo().set_param(
-            'website_product_visibility.available_cat_ids',
-            self.available_cat_ids.ids)
-        return res
-
-    @api.model
-    def get_values(self):
-        res = super(WebsiteGuestVisibility, self).get_values()
-        product_ids = literal_eval(
-            self.env['ir.config_parameter'].sudo().get_param(
-                'website_product_visibility.available_product_ids', 'False'))
-        cat_ids = literal_eval(self.env['ir.config_parameter'].sudo().get_param(
-            'website_product_visibility.available_cat_ids', 'False'))
-        mod = self.env['ir.config_parameter'].sudo().get_param('filter_mode')
-        if mod:
-            res.update(
-                product_visibility_guest_user=self.env[
-                    'ir.config_parameter'].sudo().get_param(
-                    'product_visibility_guest_user'),
-                filter_mode=mod if mod else 'product_only',
-                available_product_ids=[(6, 0, product_ids)],
-                available_cat_ids=[(6, 0, cat_ids)],
-            )
-        return res
