@@ -497,7 +497,7 @@ class AutoDatabaseBackup(models.Model):
                     client.close()
             # Google Drive backup
             elif rec.backup_destination == 'google_drive':
-                if rec.gdrive_token_validity <= fields.Datetime.now():
+                if rec.gdrive_token_validity is not False and rec.gdrive_token_validity <= fields.Datetime.now():
                     rec.generate_gdrive_refresh_token()
                 temp = tempfile.NamedTemporaryFile(suffix='.%s' % rec.backup_format)
                 with open(temp.name, "wb+") as tmp:
@@ -559,7 +559,7 @@ class AutoDatabaseBackup(models.Model):
                         mail_template_failed.send_mail(rec.id, force_send=True)
             # Onedrive Backup
             elif rec.backup_destination == 'onedrive':
-                if rec.onedrive_token_validity <= fields.Datetime.now():
+                if rec.onedrive_token_validity is not False and rec.onedrive_token_validity <= fields.Datetime.now():
                     rec.generate_onedrive_refresh_token()
                 temp = tempfile.NamedTemporaryFile(suffix='.%s' % rec.backup_format)
                 with open(temp.name, "wb+") as tmp:
