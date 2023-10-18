@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- This view defines the form layout for the Google Task import wizard -->
+    <record id="project_google_task_import_view_form" model="ir.ui.view">
+        <field name="name">project.google.task.import.view.form</field>
+        <field name="model">project.google.task.import</field>
+        <field name="arch" type="xml">
+            <form>
+                <div>
+                    <p>From below select multiple Task to Export .</p>
+                </div>
+                <group>
+                    <field name="task_ids" widget="many2many_tags"/>
+                </group>
+                <footer>
+                    <button name="action_import_tasks" string="Import Tasks"
+                            type="object" class="btn-primary"/>
+                    <button string="Export Task" type="object"
+                            name="action_export_task" class="btn-primary"/>
+                    <button string="Cancel" special="cancel"
+                            class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!-- This action defines the behavior of the Google Task import/export window -->
+    <record id="project_google_task_import_action"
+            model="ir.actions.act_window">
+        <field name="name">Google Task Import/Export</field>
+        <field name="res_model">project.google.task.import</field>
+        <field name="view_mode">form</field>
+        <field name="view_id"
+               ref="project_google_task_import_view_form"/>
+        <field name="target">new</field>
+    </record>
+    <!-- This action defines the behavior of the Export Selected Tasks window -->
+    <record id="project_task_export_action" model="ir.actions.act_window">
+        <field name="name">Export Selected Tasks</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="project.view_task_tree2"/>
+        <field name="target">current</field>
+        <field name="context">{'search_default_my_tasks': 1}
+        </field>
+    </record>
+    <!-- This menu item adds the Import/Export Google Tasks option to the menu -->
+    <menuitem id="project_google_task_import_menu" name="Import/Export Google Tasks"
+              parent="project_task_menu"
+              sequence="2"
+              action="project_google_task_import_action"/>
+</odoo>

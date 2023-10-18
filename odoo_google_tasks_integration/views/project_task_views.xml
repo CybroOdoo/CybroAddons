@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Define the view for extending the project.task form view -->
+    <record id="view_task_form2" model="ir.ui.view">
+        <field name="name">
+            project.task.form.view.inherit.odoo.google.tasks.integration
+        </field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <header>
+                <!-- Button to export task to Google Task -->
+                <button name="action_sync_task_to_google"
+                        string="Export to Google Task"
+                        type="object" class="oe_highlight"/>
+            </header>
+            <field name="partner_id" position="before">
+                <field name="is_add_in_gtask" invisible="1"/>
+                <field name="google_task" invisible="1"/>
+            </field>
+        </field>
+    </record>
+    <!-- Define the view for extending the project.task tree view -->
+    <record id="view_task_tree2" model="ir.ui.view">
+        <field name="name">
+            project.task.view.tree.inherit.odoo.google.tasks.integration
+        </field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_tree2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                <header>
+                    <button class="btn-primary" name="action_sync_task_to_google"
+                            type="object"
+                            string="Export All"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+        <!-- Define the view for displaying synced and imported tasks -->
+    <record id="project_task_view_tree" model="ir.ui.view">
+        <field name="name">project.task.view.tree</field>
+        <field name="model">project.task</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="date_deadline"/>
+                <field name="is_add_in_gtask"/>
+                <field name="is_imported"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Define the action for showing synced and imported tasks -->
+    <record id="project_task_action"
+            model="ir.actions.act_window">
+        <field name="name">Synced and Imported Tasks</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">['|',('is_add_in_gtask', '=', True), ('is_imported',
+            '=', True)]
+        </field>
+    </record>
+     <!-- Define the action window view for synced and imported tasks -->
+    <record model="ir.actions.act_window.view"
+            id="action_project_task">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="project_task_view_tree"/>
+        <field name="act_window_id" ref="project_task_action"/>
+    </record>
+    <!-- Define the main Google Tasks menu item -->
+    <menuitem id="project_task_menu" name="Google Tasks"
+              parent="project.menu_main_pm" sequence="20"/>
+    <!-- Define the sub-menu item for synced and imported tasks -->
+    <menuitem id="project_task_menu_do_stuff" name="Tasks"
+              parent="project_task_menu" sequence="1"
+              action="project_task_action"/>
+</odoo>
