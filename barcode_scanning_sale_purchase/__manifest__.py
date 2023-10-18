@@ -21,17 +21,19 @@
 
 {
     'name': 'Barcode scanning support for sale and Purchase',
-    'version': '16.0.1.0.0',
+    'version': '16.0.2.1.0',
     'category': 'Sales',
     'live_test_url': 'https://www.youtube.com/watch?v=6tJZAfPu__s&feature=youtu.be',
     'summary': 'This module will help you to use barcode scanner in sales and purchase.',
     'author': 'Cybrosys Techno solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['purchase', 'sale_management'],
+    'depends': ['purchase', 'sale_management', 'stock'],
     'data': [
         'views/sale_order_line.xml',
         'views/purchase_order_line.xml',
+        'views/stock_picking_views.xml',
+        'views/account_move_views.xml',
     ],
     'installable': True,
     'application': False,

@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2019-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Sreejith P (<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -19,7 +19,12 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import account_move_line
-from . import purchase_order
-from . import sale_order
-from . import stock_move
+from odoo import fields, models
+
+
+class AccountMoveLine(models.Model):
+    """Inherited the model for to add field for barcode."""
+    _inherit = 'account.move.line'
+
+    barcode_scan = fields.Char(string='Product Barcode',
+                               help="Barcode for the product")
