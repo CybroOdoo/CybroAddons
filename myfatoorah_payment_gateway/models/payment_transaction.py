@@ -32,6 +32,7 @@ class PaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
 
     def _get_specific_rendering_values(self, processing_values):
+        """ Function to fetch the values of the payment gateway"""
         res = super()._get_specific_rendering_values(processing_values)
         if self.provider_code != 'myfatoorah':
             return res
@@ -59,17 +60,17 @@ class PaymentTransaction(models.Model):
             }
             for rec in order_line
         ]
-        if len(self.partner_phone.replace('-', "").rsplit(' ', 1)[1]) > 11:
-            raise ValidationError(
-                _("Phone number must not  be greater than 11 characters"))
+        MobileCountryCode = self.partner_id.country_id.phone_code
+        phone_number = self.partner_phone
+        phone_number = phone_number.replace(str(MobileCountryCode), '')
+        if phone_number.startswith('+'):
+            phone_number = phone_number[1:]
         payment_details = {
             "PaymentMethodId": 6,
             "CustomerName": self.partner_name,
             "DisplayCurrencyIso": self.currency_id.name,
-            # "MobileCountryCode": "964",
-            # "CustomerMobile": "78589587458",
-            "CustomerMobile":
-                self.partner_phone.replace('-', "").rsplit(' ', 1)[1],
+            "MobileCountryCode": MobileCountryCode,
+            "CustomerMobile": phone_number,
             "CustomerEmail": self.partner_email,
             "InvoiceValue": (self.amount - sale_order.amount_tax),
             "CallBackUrl": f"{odoo_base_url}/payment/myfatoorah/_return_url",
@@ -78,7 +79,6 @@ class PaymentTransaction(models.Model):
             "CustomerReference": self.reference,
             "CustomerAddress": {
                 "Address": f'{self.partner_address} ,{self.partner_city} {self.partner_zip} ,{self.partner_state_id.name} ,{self.partner_country_id.name}',
-
             },
             "InvoiceItems":
                 invoice_items
@@ -129,7 +129,7 @@ class PaymentTransaction(models.Model):
         reference = ""
         if response_data["Data"]["CustomerReference"]:
             reference = response_data["Data"]["CustomerReference"]
-            domain.append(reference)
+            domain.append(('reference', '=', str(reference)))
         if tx := self.search(domain):
             return tx
         else:
@@ -140,6 +140,7 @@ class PaymentTransaction(models.Model):
             )
 
     def _handle_notification_data(self, provider_code, notification_data):
+        """Function to handle the notification data """
         tx = self._get_tx_from_notification_data(provider_code,
                                                  notification_data)
         tx._process_notification_data(notification_data)
@@ -147,6 +148,7 @@ class PaymentTransaction(models.Model):
         return tx
 
     def _process_notification_data(self, notification_data):
+        """ Function to process the notification data"""
         super()._process_notification_data(notification_data)
         if self.provider_code != 'myfatoorah':
             return

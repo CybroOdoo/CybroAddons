@@ -38,11 +38,11 @@ class PaymentMyFatoorahController(http.Controller):
     @http.route('/payment/myfatoorah/response', type='http', auth='public',
                 website=True, methods=['POST'], csrf=False, save_session=False)
     def myfatoorah_payment_response(self, **data):
+        """Function to get the payment response"""
         payment_data = ast.literal_eval(data["data"])
         vals = {
             'customer': payment_data["CustomerName"],
             'currency': payment_data["DisplayCurrencyIso"],
-            # 'country_code': payment_data["MobileCountryCode"],
             'mobile': payment_data["CustomerMobile"],
             'invoice_amount': payment_data["InvoiceValue"],
             'address': payment_data["CustomerAddress"]["Address"],
@@ -54,6 +54,7 @@ class PaymentMyFatoorahController(http.Controller):
     @http.route(_return_url, type='http', auth='public',
                 methods=['GET'])
     def myfatoorah_checkout(self, **data):
+        """ Function to redirect to the payment checkout"""
         _logger.info("Received MyFatoorah return data:\n%s",
                      pprint.pformat(data))
         tx_sudo = request.env[
@@ -64,7 +65,7 @@ class PaymentMyFatoorahController(http.Controller):
 
     @http.route('/payment/myfatoorah/failed', type='http', auth='user',
                 website=True, )
-    def payment_failed(self, redirect=None,  **data):
-        # self.myfatoorah_checkout(data = data)
+    def payment_failed(self, redirect=None, **data):
+        """ Function to render the payment failed cases"""
         return request.render(
             "myfatoorah_payment_gateway.myfatoorah_payment_gateway_failed_form")
