@@ -22,7 +22,7 @@
 ################################################################################
 {
     'name': 'Website Product Visibility',
-    'version': '16.0.1.1.1',
+    'version': '16.0.1.1.2',
     'category': 'Website',
     'summary': 'Website Product visibility for Users',
     'description': """Website Product visibility for Users""",
@@ -35,7 +35,7 @@
         'views/website_product_visibility.xml',
         'views/res_config_settings_views.xml'
     ],
-    'images': ['static/description/1.png'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,

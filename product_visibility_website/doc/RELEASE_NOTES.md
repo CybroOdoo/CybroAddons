@@ -13,3 +13,8 @@
 #### Version 16.0.1.1.1
 ##### FIX
 - Feature Of Website Product Visibility For Portal Users Is Added
+
+#### 17.10.2023
+#### Version 16.0.1.1.2
+##### FIX
+- The issue with the product/product-category search functionality has been fixed
