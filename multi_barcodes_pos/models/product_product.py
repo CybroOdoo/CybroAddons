@@ -121,5 +121,6 @@ class PosSessions(models.Model):
         super()._pos_data_process(loaded_data)
         context = {}
         for rec in loaded_data['multi.barcode.products']:
-            context[rec['multi_barcode']] = rec['product_multi'][0]
+            if rec['product_multi']:
+                context[rec['multi_barcode']] = rec['product_multi'][0]
         loaded_data['multi_barcode'] = context
