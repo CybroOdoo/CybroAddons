@@ -19,21 +19,29 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models
+from odoo import fields, models
 
 
-class ResConfigSettings(models.TransientModel):
-    """Inherit configuration settings"""
-    _inherit = 'res.config.settings'
+class AccountMove(models.Model):
+    """Inherit account.move to add extra field """
+    _inherit = 'account.move'
 
-    def _get_default_product(self):
+    fleet_rent_id = fields.Many2one('car.rental.contract',
+                                    string='Rental',
+                                    help='Invoice related to which '
+                                         'rental record')
+
+    def button_cancel(self):
         """
-            Retrieve the default product ID for fleet services.
+            Override the base method button_cancel to handle additional logic
+            for 'car.rental.contract' model based on 'fleet_rent_id'.
         """
-        return self.env.ref('fleet_rental.fleet_service_product').id
-
-    fleet_service_product_id = fields.Many2one(
-        'product.template',
-        string="Product",
-        config_parameter='fleet_service_product_id',
-        default=_get_default_product)
+        res = super().button_cancel()
+        fleet_model = self.env['car.rental.contract'].search(
+            [('id', '=', self.fleet_rent_id.id)])
+        if fleet_model.state == 'running':
+            fleet_model.state = 'running'
+            fleet_model.first_invoice_created = False
+        else:
+            fleet_model.state = 'checking'
+        return res

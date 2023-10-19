@@ -19,12 +19,19 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import account_move
-from . import account_move_line
-from . import car_rental
-from . import car_rental_checklist
-from . import car_tools
-from . import fleet
-from . import fleet_rental_line
-from . import fleet_vehicle
-from . import res_config_settings
+from odoo import api, models
+
+
+class AccountMoveLine(models.Model):
+    """Inherit account.move.line"""
+    _inherit = 'account.move.line'
+
+    @api.onchange('price_unit')
+    def _onchange_price_unit(self):
+        """
+            Update the 'first_payment' field of the associated
+            'car.rental.contract' model when the 'price_unit' field changes.
+        """
+        fleet_model = self.move_id.fleet_rent_id
+        if fleet_model:
+            fleet_model.first_payment = self.price_unit
