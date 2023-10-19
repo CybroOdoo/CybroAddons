@@ -32,7 +32,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    "depends": ['web'],
+    "depends": ['web', 'mail'],
     "data": [
         'views/assets.xml',
         'views/layout.xml',
