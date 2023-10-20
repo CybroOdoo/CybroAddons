@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--Creating records for the customer membership cards-->
+    <record id="membership_card_action" model="ir.actions.act_window">
+        <field name="name">Cards</field>
+        <field name="res_model">membership.card</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Generate Membership Card Types
+            </p>
+        </field>
+    </record>
+    <!--Customer membership cards view tree-->
+    <record id="membership_card_view_tree" model="ir.ui.view">
+        <field name="name">membership.card.view.tree</field>
+        <field name="model">membership.card</field>
+        <field name="arch" type="xml">
+            <tree string="Membership">
+                <field name="membership_id"/>
+                <field name="customer_id"/>
+                <field name="expiry_date"/>
+            </tree>
+        </field>
+    </record>
+    <!--Customer membership cards view form-->
+    <record id="membership_card_view_form" model="ir.ui.view">
+        <field name="name">membership.card.view.form</field>
+        <field name="model">membership.card</field>
+        <field name="arch" type="xml">
+            <form string="Cards">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <field name="membership_code_button" invisible="1"/>
+                    <button string="Confirm" class="btn-primary oe_highlight" type='object'
+                            name="action_membership_confirm" states="draft"/>
+                    <button string="Cancel" class="btn-primary oe_highlight" type='object'
+                            name="action_membership_canceled" states="confirm"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="membership_id"
+                                   attrs="{'readonly': [('state','=','confirm')]}"/>
+                        </group>
+                        <group>
+                            <field name="validity"/>
+                            <field name="discount"
+                                   attrs="{'readonly': [('state','=','confirm')]}"/>
+                        </group>
+                        <group>
+                            <field name="customer_id"
+                                   attrs="{'readonly': [('state','=','confirm')]}"/>
+                            <field name="issue_date"
+                                   attrs="{'readonly': [('state','=','confirm')]}"/>
+                            <field name="expiry_date"
+                                   attrs="{'readonly': [('state','=','confirm')]}"/>
+                        </group>
+                        <group>
+                            <field name="code"
+                                   attrs="{'readonly': [('state','=','confirm')]}"/>
+                            <button type="object" name="generate_code"
+                                    string="Generate Code" class="btn-primary"
+                                    states="draft"/>
+                        </group>
+                    </group>
+                </sheet>
+                 <div class="oe_chatter">
+                    <field name="message_follower_ids"
+                           options="{'open_attachments': True}"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!--Membership menu -->
+    <menuitem id="pos_membership_menu_root"
+              name="Customer Membership"
+              parent="point_of_sale.menu_point_root"
+              sequence="3">
+    </menuitem>
+
+     <!--Membership card menu -->
+    <menuitem id="pos_membership_menu_membership_card"
+              name="Cards"
+              parent="pos_membership_menu_root"
+              action="membership_in_pos.membership_card_action"
+              sequence="10"/>
+</odoo>
