@@ -3,7 +3,7 @@
     :alt: License: LGPL-3
 
 Delivery Gate Pass
-=============================
+==================
 Gatepass tickets for delivery orders.
 
 Configuration
