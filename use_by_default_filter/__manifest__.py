@@ -18,26 +18,24 @@
 #
 ##############################################################################
 {
-    'name': 'Use By Default Filter',
+    'name': 'Set Default Filter',
     'version': '14.0.1.0.0',
     'category': 'Extra Tools',
     'summary': 'Make filter as default filter on a click.',
-    'description': """
-        Change filters in search view as default filter and vice versa on enabling 
-        the checkbox
-    """,
+    'description': """Change filters in search view as default filter and vice
+     versa on enabling the checkbox""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['base', 'web'],
+    'depends': ['web'],
     'data': [
         'views/assets.xml'
     ],
     'qweb': [
         'static/src/xml/checkbox_DropdownMenuItem.xml'
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,

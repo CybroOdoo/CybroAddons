@@ -1,10 +1,10 @@
-.. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
+.. image:: https://img.shields.io/badge/license-AGPL--3-blue.svg
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
-=====================
-Use By Default Filter
-=====================
+===================
+Set Default Filter
+===================
 
 This module helps in changing any of the saved filter to default filter and vice versa on enabling a checkbox.
 
@@ -30,7 +30,7 @@ GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3)
 
 Credits
 =======
-* Developer: RAHUL C K @ Cybrosys
+* Developer: (V16) RAHUL C K, Contact: odoo@cybrosys.com
 
 Contacts
 --------
