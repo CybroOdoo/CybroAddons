@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--        Template for Add To Cart Button-->
+    <template id="website_add_multi_product_item_button"
+              inherit_id="website_sale.products"
+              name="Add Multi Item To Cart Button">
+        <xpath expr="//aside[@id='products_grid_before']//div//div[1]"
+               position="after">
+            <div class="accordion-item nav-item mb-3">
+                <h6 class="mb-3 multi_item_to_cart">
+                    <b>Add multiple products to cart</b>
+                </h6>
+                <form>
+                    <span
+                            class="btn btn-primary btn-xs fa fa-shopping-cart mb-3 confirm_check">
+                        Add
+                    </span>
+                </form>
+            </div>
+        </xpath>
+    </template>
+
+    <!--        Template for selecting products-->
+    <template id="add_website_product_item"
+              inherit_id="website_sale.products_item"
+              name="Add Multi Product To Cart">
+        <xpath expr="//form[@action='/shop/cart/update']" method="post"
+               position="replace">
+            <form action="/shop/cart/update/product" method="get"
+                  class="oe_product_cart h-100 d-flex"
+                  t-att-data-publish="product.website_published and 'on' or 'off'"
+                  itemscope="itemscope"
+                  itemtype="http://schema.org/Product">
+                <button style="float: right;" type="submit"
+                        class="btn btn-default btn-xs fa fa-shopping-cart a-submit"
+                        t-if="not products"
+                        t-att-row="product.product_variant_ids[0].id"/>
+                <t t-set="product_href"
+                   t-value="keep(product.website_url, page=(pager['page']['num'] if pager['page']['num']&gt;1 else None))"/>
+                <t t-set="image_type"
+                   t-value="product._get_suitable_image_size(ppr, td_product['x'], td_product['y'])"/>
+                <div class="oe_product_image position-relative h-100 flex-grow-0 overflow-hidden">
+                    <input type="hidden" name="csrf_token"
+                           t-att-value="request.csrf_token()"
+                           t-nocache="The csrf token must always be up to date."/>
+                    <a t-att-href="product_href"
+                       class="oe_product_image_link d-block h-100 position-relative"
+                       itemprop="url" contenteditable="false">
+                        <t t-set="image_holder"
+                           t-value="product._get_image_holder()"/>
+                        <span t-field="image_holder.image_1920"
+                              t-options="{'widget': 'image', 'preview_image': image_type, 'itemprop': 'image', 'class': 'h-100 w-100 position-absolute'}"
+                              class="oe_product_image_img_wrapper d-flex h-100 justify-content-center align-items-center position-absolute"/>
+                        <t t-set="bg_color"
+                           t-value="td_product['ribbon']['bg_color'] or ''"/>
+                        <t t-set="text_color"
+                           t-value="td_product['ribbon']['text_color']"/>
+                        <t t-set="bg_class"
+                           t-value="td_product['ribbon']['html_class']"/>
+                        <span t-attf-class="o_ribbon #{bg_class}"
+                              t-attf-style="#{text_color and ('color: %s; ' % text_color)}#{bg_color and 'background-color:' + bg_color}"
+                              t-out="td_product['ribbon']['html'] or ''"/>
+                    </a>
+                </div>
+                <div class="o_wsale_product_information position-relative d-flex flex-column flex-grow-1 flex-shrink-1">
+                    <div class="o_wsale_product_information_text flex-grow-1">
+                        <h6 class="o_wsale_products_item_title mb-2">
+                            <a class="text-primary text-decoration-none"
+                               itemprop="name" t-att-href="product_href"
+                               t-att-content="product.name"
+                               t-field="product.name"/>
+                            <a t-if="not product.website_published"
+                               role="button" t-att-href="product_href"
+                               class="btn btn-sm btn-danger"
+                               title="This product is unpublished.">
+                                Unpublished
+                            </a>
+                        </h6>
+                    </div>
+                    <div class="o_wsale_product_sub d-flex justify-content-between align-items-end pb-1">
+                        <input name="product_id"
+                               t-att-value="product.product_variant_ids[0].id"
+                               type="hidden"/>
+                        <t t-set="template_price_vals"
+                           t-value="get_product_prices(product)"/>
+                        <div class="o_wsale_product_btn"/>
+                        <div class="product_price" itemprop="offers"
+                             itemscope="itemscope"
+                             itemtype="http://schema.org/Offer">
+                            <t t-if="'base_price' in template_price_vals">
+                                <del t-attf-class="text-muted me-1 h6 mb-0"
+                                     style="white-space: nowrap;">
+                                    <em class="small"
+                                        t-esc="template_price_vals['base_price']"
+                                        t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                </del>
+                            </t>
+                            <span class="h6 mb-0"
+                                  t-if="template_price_vals['price_reduce'] or not website.prevent_zero_price_sale"
+                                  t-esc="template_price_vals['price_reduce']"
+                                  t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            <span class="h6 mb-0" t-else=""
+                                  t-field="website.prevent_zero_price_sale_text"/>
+                            <span itemprop="price" style="display:none;"
+                                  t-esc="template_price_vals['price_reduce']"/>
+                            <span itemprop="priceCurrency"
+                                  style="display:none;"
+                                  t-esc="website.currency_id.name"/>
+                        </div>
+                        <div name="website_multi_product_add_to_cart">
+                            <input type="checkbox" name="pdid"
+                                   class="mycheckbox"
+                                   t-att-value="product.product_variant_ids[0].id"
+                                   style="width: 25px;height: 25px;margin-right:10px;"/>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </xpath>
+    </template>
+</odoo>
