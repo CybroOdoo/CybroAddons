@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--    Email template for task overdue email notification -->
+    <data noupdate="1">
+        <record id="overdue_task_email_template" model="mail.template">
+            <field name="name">Project Task Overdue: Send by email</field>
+            <field name="model_id" ref="task_overdue_email_odoo.model_project_task"/>
+            <field name="subject">Task Overdue Notification</field>
+            <field name="email_to">${ctx.get('user_email') }</field>
+            <field name="body_html" type="html">
+                <html>
+                    Dear Employee<div>${ctx.get('user_name', [])}</div>
+                    <br/>
+                    <head>Overdue Task List</head>
+                    <table border="1" style="width:100%">
+                        <thead style="background-color: rgb(255, 0, 149);">
+                            <tr>
+                                <th align="center">Project</th>
+                                <th align="center">Task</th>
+                                <th align="center">Deadline Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                                 %for record in ctx.get('recipient_list', []):
+                                <tr>
+                                    <td>
+                                        <div>${record[0]}</div>
+                                    </td>
+                                    <td>
+                                        <div>${record[0]}</div>
+                                    </td>
+                                    <td>
+                                        <div>${ctx.get('task_deadline', [])}</div>
+                                    </td>
+                                     %endfor
+                                </tr>
+                        </tbody>
+                    </table>
+                    <br/>
+                    <t t-esc="ctx.get('recipient_list')"/>
+                    <p>Thank you</p>
+                </html>
+            </field>
+        </record>
+    </data>
+</odoo>
