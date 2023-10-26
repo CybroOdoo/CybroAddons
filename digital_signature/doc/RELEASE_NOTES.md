@@ -1,7 +1,6 @@
 ## Module <digital_signature>
 
-#### 01.07.2022
-#### Version 16.0.1.0.0
+#### 19.10.2023
+#### Version 16.0.1.1.0
 #### ADD
-- Initial commit for Odoo 15 Digital Signature
-
+- Initial commit for Odoo 16 Digital Signature
