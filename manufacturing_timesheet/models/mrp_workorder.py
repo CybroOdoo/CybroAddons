@@ -130,9 +130,16 @@ class MrpWorkorder(models.Model):
             'planned_hours': self.duration_expected
         })
         timesheet = task_id.mapped('timesheet_ids')
+        hours = int(self.duration)
+        minutes = int((self.duration - hours) * 60)
+        time_str = f"{hours:02d}:{minutes:02d}"
+        minutes_str, seconds_str = time_str.split(":")
+        minutes = int(minutes_str)
+        seconds = int(seconds_str)
+        total_hours = (minutes + seconds / 60) / 60
         for rec in timesheet:
             rec.write({
-                'unit_amount': self.duration,
+                'unit_amount': total_hours,
             })
         return res
 
@@ -154,8 +161,15 @@ class MrpWorkorder(models.Model):
             'planned_hours': self.duration_expected
         })
         timesheet = task_id.mapped('timesheet_ids')
+        hours = int(self.duration)
+        minutes = int((self.duration - hours) * 60)
+        time_str = f"{hours:02d}:{minutes:02d}"
+        minutes_str, seconds_str = time_str.split(":")
+        minutes = int(minutes_str)
+        seconds = int(seconds_str)
+        total_hours = (minutes + seconds / 60) / 60
         for rec in timesheet:
             rec.write({
-                'unit_amount': self.duration,
+                'unit_amount': total_hours,
             })
         return res
