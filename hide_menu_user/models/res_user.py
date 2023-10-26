@@ -38,15 +38,14 @@ class HideMenuUser(models.Model):
         """
         Else the menu will be still hidden even after removing from the list
         """
-        for rec in self:
-            res = super(HideMenuUser, rec).write(vals)
-            for menu in rec.hide_menu_ids:
+        res = super(HideMenuUser, self).write(vals)
+        for record in self:
+            for menu in record.hide_menu_ids:
                 menu.write({
-                    'restrict_user_ids': [(4, rec.id)]
+                    'restrict_user_ids': [(4, record.id)]
                 })
-            rec.clear_caches()
-            return res
-
+        self.clear_caches()
+        return res
     def _get_is_admin(self):
         """
         The Hide specific menu tab will be hidden for the Admin user form.
@@ -60,7 +59,7 @@ class HideMenuUser(models.Model):
     hide_menu_ids = fields.Many2many('ir.ui.menu', string="Menu", store=True,
                                      help='Select menu items that needs to be '
                                           'hidden to this user ')
-    is_admin = fields.Boolean(compute=_get_is_admin)
+    is_admin = fields.Boolean(compute=_get_is_admin, string="Admin")
 
 
 class RestrictMenu(models.Model):
