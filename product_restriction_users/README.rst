@@ -1,18 +1,16 @@
-.. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
-    :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
+.. image:: https://img.shields.io/badge/license-AGPL--3-blue.svg
+    :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
-Product Restriction On Users
-============================
-
+Product Restriction Users
+=========================
 This module  used to allow products to user or only access products
-related to allowed categories or Allow access of products/category to user
+related to allowed categories or Allow access of products/category to user.
 
-Installation
-============
-- www.odoo.com/documentation/15.0/setup/install.html
-- Install our custom addon
-
+Configuration
+=============
+* Need to set a Restriction Type to choose the allowed products and product
+ categories in Users.
 
 Company
 -------
@@ -20,9 +18,7 @@ Company
 
 Credits
 -------
-* Developer:
-(V16) Mruthul @ Cybrosys
-
+* Developer: (V16) Mruthul Raj, Contacts:odoo@cybrosys.com
 
 Contacts
 --------
@@ -30,7 +26,8 @@ Contacts
 
 Bug Tracker
 -----------
-Bugs are tracked on GitHub Issues. In case of trouble, please check there if your issue has already been reported.
+Bugs are tracked on GitHub Issues. In case of trouble, please check there if
+your issue has already been reported.
 
 Maintainer
 ==========

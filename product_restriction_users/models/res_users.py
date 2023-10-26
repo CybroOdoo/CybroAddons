@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-################################################################################
+###############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Mruthul (odoo@cybrosys.com)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Mruthul Raj(odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
@@ -18,23 +18,25 @@
 #    (AGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-################################################################################
-from odoo import fields, models
+###############################################################################
+from odoo import fields, models, Command
 
 
 class ResUsers(models.Model):
-    """ Inherited the res.users model for adding the products
+    """ Inherited the res_users model for adding the products
     and product category"""
     _inherit = 'res.users'
 
-    restricted_type = fields.Selection([('product', 'Product'), (
-        'category', 'Category')], string='Restriction Type', default='product',
+    restricted_type = fields.Selection([('product', 'Product'),
+                                        ('category', 'Category')],
+                                       string='Restriction Type',
+                                       default='product',
                                        help='choose Product and Product '
                                             'category depends upon your need')
     allowed_product_ids = fields.Many2many('product.template',
                                            string="Products", store=True,
-                                           help='Show to allow the products for'
-                                                ' assigned users')
+                                           help='Show to allow the products '
+                                                'for assigned users')
     allowed_product_category_ids = fields.Many2many('product.category',
                                                     string="Product Category",
                                                     store=True,
@@ -67,22 +69,28 @@ class ResUsers(models.Model):
                         'restrict_user_ids': [(4, user.id)]
                     })
             else:
+                products = self.env['product.template'].sudo().search([])
                 if user.allowed_product_category_ids:
-                    products = self.env['product.template'].sudo().search([])
-                    products.restrict_user_ids = False
                     products.is_product = False
                     products_categ = self.env['product.template']. \
                         search([('categ_id', 'in', [int(categ.id) for categ in
                                                     user.allowed_product_category_ids])
                                 ])
+                    for pro in products:
+                        if pro not in products_categ:
+                            pro.sudo().write({'restrict_user_ids': [Command.unlink(user.id)]})
+                            
                     for product in products_categ:
                         product.is_product = False
                         product.sudo().write({
                             'restrict_user_ids': [(4, user.id)]
                         })
                 else:
-                    products = self.env['product.template'].sudo().search([])
                     products.is_product = True
+                    for product in products:
+                        if user in product.restrict_user_ids:
+                            product.sudo().write(
+                                {'restrict_user_ids': [Command.unlink(user.id)]})
             return res
 
     def _compute_is_admin(self):
