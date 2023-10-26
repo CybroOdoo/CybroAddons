@@ -38,13 +38,14 @@ class HideMenuUser(models.Model):
         """
         Else the menu will be still hidden even after removing from the list
         """
-        res = super(HideMenuUser, self).write(vals)
-        for menu in self.hide_menu_ids:
-            menu.write({
-                'restrict_user_ids': [(4, self.id)]
-            })
-        self.clear_caches()
-        return res
+        for rec in self:
+            res = super(HideMenuUser, rec).write(vals)
+            for menu in rec.hide_menu_ids:
+                menu.write({
+                    'restrict_user_ids': [(4, rec.id)]
+                })
+            rec.clear_caches()
+            return res
 
     def _get_is_admin(self):
         """
