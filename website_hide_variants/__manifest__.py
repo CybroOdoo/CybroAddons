@@ -35,7 +35,8 @@
         'website_sale',
         'sale_management'
     ],
-    'data': ['views/product_views.xml'],
+    'data': ['views/product_views.xml',
+             ],
 
     'assets': {
         'web.assets_frontend': [
