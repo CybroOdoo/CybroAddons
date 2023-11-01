@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Form view in wizard-->
+    <record id="profit_product_view_form" model="ir.ui.view">
+        <field name="name">profit.product.view.form</field>
+        <field name="model">profit.product</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="from_date"/>
+                        <field name="to_date"/>
+                    </group>
+                    <group>
+                        <field name="company_id" groups="base.group_multi_company"
+                               options='{"no_create": True}'/>
+                    </group>
+                    <group>
+                        <field name="categ_id" options='{"no_create": True}'/>
+                        <field name="product_product_ids" invisible="True"/>
+                        <field name="product_id"
+                               options='{"no_create": True}'
+                               domain="[('id', 'in', product_product_ids)]"
+                               attrs="{'invisible': [('categ_id', '=', False)]}"
+                        />
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_print_pdf_report" string="PDF"
+                            icon="fa-print" type="object" context="{'pdf':1}"
+                            default_focus="1" class="oe_highlight"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!--action to create wizard-->
+    <record id="profit_product_action"
+            model="ir.actions.act_window">
+        <field name="name">Profit Report</field>
+        <field name="res_model">profit.product</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="profit_product_view_form"/>
+        <field name="target">new</field>
+    </record>
+    <!--sub menu in reporting tab account model-->
+    <menuitem id="profit_report_menu" name="Product Profit Report"
+              action="profit_product_action"
+              parent="account.menu_finance_reports" sequence="21"/>
+</odoo>
