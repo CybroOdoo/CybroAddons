@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -19,30 +19,34 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 {
     'name': 'Custom List View',
-    'version': '16.0.1.0.1',
-    'summary': 'Helps to Show Row Number, Fixed Header, Duplicate Record and Highlight Selected Record in List View',
-    'description': 'Helps to Show Row Number, Fixed Header, Duplicate Record and Highlight Selected Record in List View',
-    'category': 'Tools',
+    'version': '16.0.1.1.0',
+    'category': 'Extra Tools',
+    'summary': 'Helps to Show Row Number, Fixed Header, Duplicate Record, '
+               'Highlight Selected Record, Print and Copy Listview items',
+    'description': "This module Helps to Show Row Number, Fixed Header, "
+                   "Duplicate Record and Highlight Selected Record in List "
+                   "View. Using this module the list view items can be printed"
+                   " in pdf, excel and csv format, Also there is copy to "
+                   "clipboard and pagination features.",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
-    'license': 'LGPL-3',
-    'images': ['static/description/banner.png'],
-    'depends': ['base'],
+    'website': 'https://www.cybrosys.com',
+    'depends': ['web', 'account'],
+    'data': [
+        'report/custom_list_view_templates.xml',
+        'report/custom_list_view_reports.xml'
+    ],
     'assets': {
         'web.assets_backend': [
-            'custom_list_view/static/src/js/duplicate_record.js',
-            'custom_list_view/static/src/js/record_highlight.js',
-            'custom_list_view/static/src/css/sticky_header.css',
-            'custom_list_view/static/src/css/highlight.css',
-            'custom_list_view/static/src/xml/record_highlight.xml'
-        ],
+            'custom_list_view/static/src/**/*',
+        ]
     },
+    'images': ['static/description/banner.png'],
+    'licence': 'LGPL-3',
     'installable': True,
     'auto_install': False,
-    'application': False,
+    'application': False
 }
