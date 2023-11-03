@@ -36,7 +36,7 @@
              'wizard/import_bank_statement_views.xml'
              ],
     'external_dependencies': {
-        'python': ['openpyxl', 'ofxparse']
+        'python': ['openpyxl', 'ofxparse', 'qifparse']
     },
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
