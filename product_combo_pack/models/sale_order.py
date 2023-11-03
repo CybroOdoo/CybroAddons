@@ -21,27 +21,35 @@
 #
 ################################################################################
 from odoo import api, fields, models
+from collections import defaultdict
 
 
 class SalePack(models.Model):
     """Model for extending the sale order to include a selection of packs."""
     _inherit = 'sale.order'
 
-    product_pack_id = fields.Many2one('product.product', string='Select Pack',
-                                      domain=[('is_pack', '=', True)],
-                                      help='The selected pack product for'
-                                           ' the sale order.')
+    product_pack_id = fields.Many2many('product.product', string='Select Pack',
+                                       domain=[('is_pack', '=', True)],
+                                       help='The selected pack product for'
+                                            ' the sale order.')
 
     @api.onchange('product_pack_id')
     def onchange_product_pack_id(self):
         """Perform actions when the selected pack product changes."""
         if self.product_pack_id:
-            self.order_line = [(0, 0, {
-                'product_id': self.product_pack_id.id,
-                'name': self.product_pack_id.name,
-                'product_uom_qty': 1,
-                'price_unit': self.product_pack_id.list_price,
-            })]
+            new_order_lines = []
+            for rec in self.product_pack_id:
+                product_already_added = any(
+                    line.product_id.id == rec._origin.id for line in
+                    self.order_line)
+                if not product_already_added:
+                    new_order_lines.append((0, 0, {
+                        'product_id': rec.id,
+                        'name': rec.name,
+                        'product_uom_qty': 1,
+                        'price_unit': rec.pack_price,
+                    }))
+                    self.order_line = new_order_lines
         elif not self.product_pack_id:
             self.order_line = [(5, 0, 0)]
 
