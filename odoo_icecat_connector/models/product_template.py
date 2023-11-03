@@ -33,8 +33,8 @@ class ProductTemplateInherited(models.Model):
     def get_icecat_product_details(self, product_id):
         """Returns the details of a product"""
         if product_id:
-            products = self.env['product.product'].browse(int(product_id))
-            username = self.env['ir.config_parameter'].get_param(
+            products = self.env['product.product'].sudo().browse(int(product_id))
+            username = self.env['ir.config_parameter'].sudo().get_param(
                 'odoo_icecat_connector.user_id_icecat')
             icecat_product_details = {'brand': products.brand,
                                       'product_code': products.default_code,

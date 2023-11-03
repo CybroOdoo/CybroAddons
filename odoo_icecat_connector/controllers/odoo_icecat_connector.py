@@ -43,7 +43,7 @@ class Icecat(WebsiteSale):
                 category=category and category.id, search=search, **kwargs, ), )
         # Needed to trigger the recently viewed product rpc
         view_track = request.website.viewref("website_sale.product").track
-        username = request.env['ir.config_parameter'].get_param(
+        username = request.env['ir.config_parameter'].sudo().get_param(
             'odoo_icecat_connector.user_id_icecat')
         if username:
             response = requests.get(
