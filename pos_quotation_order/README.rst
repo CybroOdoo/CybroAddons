@@ -41,4 +41,8 @@ Credits
 
 Developer: Aswani pc @ cybrosys
 
+Contributors
+============
 
+* Imanol Aranburu <iaranburu@binovo.es>
+* Luis J. Salvatierra <ljsalvatierra@binovo.es>
