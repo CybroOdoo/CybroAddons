@@ -31,9 +31,9 @@ class MailChannel(models.Model):
     _inherit = 'mail.channel'
     _description = 'Slack Channel'
 
-    is_slack = fields.Boolean("Slack", default=False)
+    is_slack = fields.Boolean(string="Slack", default=False)
     channel = fields.Char("ID")
-    msg_date = fields.Datetime()
+    msg_date = fields.Datetime(string="Message Date")
 
     def sync_members(self):
         """To load members into channels"""
@@ -52,18 +52,22 @@ class MailChannel(models.Model):
                     response = session.get(url, headers=headers, data=payload)
                     channel_members = response.json()
                     slack_user_list = []
-
                     for slack_user_id in channel_members['members']:
                         contact = self.env['res.partner'].search([('slack_user_id', '=', slack_user_id)])
-                        slack_user_list.append(contact.id)
-
+                        if contact:
+                            slack_user_list.append(contact.id)
+                        else:
+                            contact = self.env['res.partner'].create({
+                                'name': 'Slack User',
+                                'slack_user_id': slack_user_id
+                            })
+                            slack_user_list.append(contact.id)
                     current_channel_user_list = channel.channel_member_ids.mapped('partner_id.id')
                     sample_list = [
                         (0, 0, {'partner_id': contact_id})
                         for contact_id in slack_user_list
                         if contact_id not in current_channel_user_list
                     ]
-
                     channel.channel_member_ids = sample_list
 
             except RequestException as e:

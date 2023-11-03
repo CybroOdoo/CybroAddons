@@ -3,7 +3,7 @@
     :alt: License: LGPL-3
 
 Slack Odoo Connector
-=========================
+====================
 Allows to integrate with slack.
 
 Configuration
@@ -25,12 +25,12 @@ Developer:  Viswanth K v15 @ cybrosys, odoo@cybrosys.com
             Viswanth K v16 @ cybrosys, odoo@cybrosys.com
 
 Contacts
--------
+--------
 * Mail Contact : odoo@cybrosys.com
 * Website : https://cybrosys.com
 
 Bug Tracker
--------
+-----------
 Bugs are tracked on GitHub Issues. In case of trouble, please check there if your issue has already been reported.
 
 Maintainer

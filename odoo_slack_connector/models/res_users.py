@@ -23,6 +23,7 @@ import requests
 import logging
 
 from odoo import fields, models
+from odoo.exceptions import UserError
 
 
 class ResPartner(models.Model):
@@ -35,16 +36,13 @@ class ResPartner(models.Model):
     def sync_users(self):
         """To load slack users"""
         slack_internal_user_list = [user_id.slack_user_id for user_id in self]
-
         url = "https://slack.com/api/users.list"
         company_record = self.env.user.company_id
         payload = {}
         headers = {
             'Authorization': 'Bearer ' + company_record.token
         }
-
         logger = logging.getLogger(__name__)
-
         try:
             response = requests.get(url, headers=headers, data=payload)
             response.raise_for_status()
@@ -69,7 +67,17 @@ class ResPartner(models.Model):
                         vals_list.append(vals)
             try:
                 if vals_list:
-                    self.create(vals_list)
+                    for val in vals_list:
+                        existing_user = self.search([
+                            ('login', '=', val['login'])], limit=1)
+                        if existing_user:
+                            if existing_user.is_slack_internal_users:
+                                existing_user.write(
+                                    {'slack_user_id': val['slack_user_id']})
+                            else:
+                                raise UserError("User with email '%s' already exists as a Slack user." % val['login'])
+                        else:
+                            self.create(val)
             except Exception as e:
                 # Handle creation exception
                 logger.error(f"Error creating Slack users: {e}")

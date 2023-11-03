@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models, api
+from odoo import api, fields, models
 import requests, re, json
 from datetime import datetime
 from dateutil import tz
@@ -35,7 +35,7 @@ class MailMessage(models.Model):
     _description = 'Slack Message'
 
     is_slack = fields.Boolean(string="Slack", default=False)
-    channel = fields.Many2one('mail.channel')
+    channel = fields.Many2one('mail.channel', string="Channel")
 
     @api.model
     def create(self, vals):
@@ -57,9 +57,12 @@ class MailMessage(models.Model):
                     }
                     new_text = remove_html(rec.body)
                     url = "https://slack.com/api/chat.postMessage?channel=" + rec.record_name + "&" + "text=" + new_text
-                    requests.request("POST", url, headers=headers, data=payload)
+                    requests.request("POST", url, headers=headers,
+                                     data=payload)
                     rec.is_slack = True
-                converted_time = datetime.strptime(channel_date,'%Y-%m-%d %H:%M:%S').astimezone(to_zone)
+                converted_time = datetime.strptime(channel_date,
+                                                   '%Y-%m-%d %H:%M:%S').astimezone(
+                    to_zone)
                 channel.msg_date = converted_time.strftime('%Y-%m-%d %H:%M:%S')
         return res
 
@@ -74,41 +77,45 @@ class MailMessage(models.Model):
                 payload = {}
                 headers = {'Authorization': 'Bearer ' + company_record.token}
                 url = "https://slack.com/api/conversations.history?channel=" + channel_id.channel
-                channel_response = requests.request("GET", url, headers=headers,
+                channel_response = requests.request("GET", url,
+                                                    headers=headers,
                                                     data=payload)
                 channels_response = channel_response.__dict__['_content']
                 dict_channels = channels_response.decode("UTF-8")
                 channels_history = json.loads(dict_channels)
-                channels_history['messages'].reverse()
-                if not channel_id.msg_date:
-                    converted_time = datetime.strptime(channel_date,
-                                                       '%Y-%m-%d %H:%M:%S').astimezone(
-                        to_zone)
-                    channel_id.msg_date = converted_time.strftime(
-                        '%Y-%m-%d %H:%M:%S')
-                else:
-                    for i in channels_history['messages']:
-                        if 'user' in i:
-                            users = self.env['res.users'].search(
-                                [('slack_user_id', '=', i['user'])])
-                            dt_object = (
-                                datetime.fromtimestamp(float(i['ts'])).strftime(
-                                    '%Y-%m-%d %H:%M:%S'))
-                            date_time_obj = datetime.strptime(dt_object,
-                                                              '%Y-%m-%d %H:%M:%S')
-                            converted_time = date_time_obj.astimezone(to_zone)
-                            if datetime.strptime(converted_time.strftime(
-                                    '%Y-%m-%d %H:%M:%S'),
-                                    '%Y-%m-%d %H:%M:%S') > channel_id.msg_date:
-                                self.with_user(users.id).create({
-                                    'body': i['text'],
-                                    'record_name': channel_id.name,
-                                    'model': 'mail.channel',
-                                    'is_slack': True,
-                                    'res_id': channel_id.id,
-                                })
-                    converted_time = datetime.strptime(channel_date,
-                                                       '%Y-%m-%d %H:%M:%S').astimezone(
-                        to_zone)
-                    channel_id.msg_date = converted_time.strftime(
-                        '%Y-%m-%d %H:%M:%S')
+                if channels_history['ok']:
+                    channels_history['messages'].reverse()
+                    if not channel_id.msg_date:
+                        converted_time = datetime.strptime(channel_date,
+                                                           '%Y-%m-%d %H:%M:%S').astimezone(
+                            to_zone)
+                        channel_id.msg_date = converted_time.strftime(
+                            '%Y-%m-%d %H:%M:%S')
+                    else:
+                        for i in channels_history['messages']:
+                            if 'user' in i:
+                                users = self.env['res.users'].search(
+                                    [('slack_user_id', '=', i['user'])])
+                                dt_object = (
+                                    datetime.fromtimestamp(
+                                        float(i['ts'])).strftime(
+                                        '%Y-%m-%d %H:%M:%S'))
+                                date_time_obj = datetime.strptime(dt_object,
+                                                                  '%Y-%m-%d %H:%M:%S')
+                                converted_time = date_time_obj.astimezone(
+                                    to_zone)
+                                if datetime.strptime(converted_time.strftime(
+                                        '%Y-%m-%d %H:%M:%S'),
+                                        '%Y-%m-%d %H:%M:%S') > channel_id.msg_date:
+                                    self.with_user(users.id).create({
+                                        'body': i['text'],
+                                        'record_name': channel_id.name,
+                                        'model': 'mail.channel',
+                                        'is_slack': True,
+                                        'res_id': channel_id.id,
+                                    })
+                        converted_time = datetime.strptime(channel_date,
+                                                           '%Y-%m-%d %H:%M:%S').astimezone(
+                            to_zone)
+                        channel_id.msg_date = converted_time.strftime(
+                            '%Y-%m-%d %H:%M:%S')

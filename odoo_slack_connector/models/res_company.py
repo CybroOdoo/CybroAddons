@@ -20,8 +20,12 @@
 #
 #############################################################################
 import json
+import logging
 import requests
+from requests import RequestException
 from odoo import fields, models
+
+logger = logging.getLogger(__name__)
 
 
 class ResCompany(models.Model):
@@ -48,7 +52,6 @@ class ResCompany(models.Model):
         headers = {
             'Authorization': 'Bearer ' + self.token
         }
-
         users_response = requests.request("GET", url1, headers=headers,
                                           data=payload)
         users_response = users_response.__dict__['_content']
@@ -61,7 +64,6 @@ class ResCompany(models.Model):
         channels_response = channel_response.__dict__['_content']
         dict_channels = channels_response.decode("UTF-8")
         channels = json.loads(dict_channels)
-
         search_channel = self.env['mail.channel'].search([])
         for i in search_channel:
             channel_list.append(i.channel)
@@ -74,7 +76,8 @@ class ResCompany(models.Model):
                         'is_slack': True,
                     }, ])
         search_channel.sync_members()
-        self.env['res.users'].search([]).sync_users()
+        users = self.env['res.users'].search([])
+        users.sync_users()
         users_list = []
         slack_id_list = []
         channels_list = []
@@ -88,7 +91,6 @@ class ResCompany(models.Model):
                                       {'name': channel['name']}
                                       ))
         self.slack_channel_ids = channels_list
-
         record_user_list = []
         for rec in record.slack_users_ids:
             record_user_list.append(rec.user)
@@ -105,7 +107,6 @@ class ResCompany(models.Model):
                                         'email': email},
                                        ))
         self.slack_users_ids = users_list
-
         for partner_id in self.env['res.partner'].search([]):
             slack_id_list.append(partner_id.slack_user_id)
         if members is not False:

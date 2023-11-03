@@ -9,3 +9,8 @@
 #### Version 16.0.1.0.1
 ##### FIX
 - Bug Fix: Fixed the issue where slack members are not loading to odoo
+
+#### 26.10.2023
+#### Version 16.0.1.0.2
+##### FIX
+- Bug Fix: Resolved the issue causing a server error during the synchronization of Slack with Odoo.

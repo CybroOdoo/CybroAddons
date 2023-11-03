@@ -22,7 +22,7 @@
 
 {
     'name': "Slack Odoo Connector",
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.2',
     'summary': "Integrate slack with Odoo",
     'description': "This module will help you to connect with slack to manage slack Conversations",
     'category': 'Extra Tools',
