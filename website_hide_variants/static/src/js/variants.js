@@ -23,18 +23,10 @@ odoo.define('website_hide_variants.VariantMixin', function(require) {
         // Check if the selected combination has a valid product ID
         var product = combination.product_id
         if (combination.product_id) {
-            var data = {
-                'id': combination.product_id
-            }
-            await rpc.query({
-                model: 'product.product',
-                method: 'product_read',
-                args: [
-                    [], data
-                ],
-            }).then(function(res) {
-                // Check if the product is marked as "website_hide_variants"
-                if (res[0].website_hide_variants) {
+            await ajax.jsonRpc('/variants/'+combination.product_id, 'call', {
+        }).then(function(res) {
+//                // Check if the product is marked as "website_hide_variants"
+                if (res) {
                     // Disable the combination and display an appropriate message to the user
                     combination.is_combination_possible = false
                     count = true

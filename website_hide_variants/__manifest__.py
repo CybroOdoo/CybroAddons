@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Disable Variants in Website",
-    'version': '16.0.1.0.0',
+    'version': '16.0.2.0.0',
     'description': "The module helps to disable products amd product variants from website",
     'summary': "Hide Variants",
     'author': "Cybrosys Techno Solutions",

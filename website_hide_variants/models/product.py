@@ -30,9 +30,3 @@ class ProductProduct(models.Model):
                                            help="Check right if you want to "
                                                 "hide the variant in your "
                                                 "website")
-
-    def product_read(self, data):
-        if data.get('id', False):
-            prod_id = int(data.get('id'))
-            product = self.sudo().browse(prod_id).read(["website_hide_variants"])
-            return product
