@@ -49,9 +49,11 @@ odoo.define('call_for_price_website.CustomVariantMixin', function(require) {
             addToCart.removeClass('d-inline-flex').addClass('d-none');
             contactUsButton.removeClass('d-none').addClass('d-flex');
             price_call_div.removeClass('d-none').addClass('d-flex');
-            this.$el.find('#add_to_cart')[0].style.display = "none";
-            this.$el.find('#price_of_product')[0].style.display = "none";
-            this.$el.find('#price_of_product')[0].style.display = "none";
+            this.$el.find('#add_to_cart').removeClass('d-block').addClass('d-none');
+            this.$el.find('#price_of_product').removeClass('d-block').addClass('d-none');
+            this.$el.find('#price_of_product').removeClass('d-block').addClass('d-none');
+            this.$el.find('.js_add_cart_json').removeClass('d-block').addClass('d-none');
+            this.$el.find('.quantity').removeClass('d-block').addClass('d-none');
         } else {
             productPrice.removeClass('d-none').addClass('d-inline-block');
             quantity.removeClass('d-none').addClass('d-inline-flex');
@@ -59,9 +61,11 @@ odoo.define('call_for_price_website.CustomVariantMixin', function(require) {
             contactUsButton.removeClass('d-flex').addClass('d-none');
             product_unavailable.removeClass('d-flex').addClass('d-none')
             price_call_div.removeClass('d-flex').addClass('d-none')
-            this.$el.find('#add_to_cart')[0].style.display = "block";
-            this.$el.find('#price_of_product')[0].style.display = "block";
-            this.$el.find('#price_of_product')[0].style.display = "block";
+            this.$el.find('#add_to_cart').removeClass('d-none').addClass('d-block');
+            this.$el.find('#price_of_product').removeClass('d-none').addClass('d-block');
+            this.$el.find('#price_of_product').removeClass('d-none').addClass('d-block');
+            this.$el.find('.js_add_cart_json').removeClass('d-none').addClass('d-block');
+            this.$el.find('.quantity').removeClass('d-none').addClass('d-block');
         }
         // Call the original onChangeCombination function
         originalOnChangeCombination.apply(this, [ev, $parent, combination]);

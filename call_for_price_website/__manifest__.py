@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Website Call For Price',
-    'version': '16.0.1.0.1',
+    'version': '16.0.2.0.0',
     'category': 'Website',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',

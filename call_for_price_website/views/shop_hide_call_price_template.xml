@@ -1,172 +1,218 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
-	<!-- Template for hiding product price when 'price_call' is set -->
-	<template id="shop_hide_price_call" inherit_id="website_sale.products_item">
-		<xpath expr="//div[hasclass('product_price')]" position="replace">
-			<t t-foreach="product.product_variant_ids" t-as="variant">
-				<t t-if="variant.price_call">
-					<t t-set="has_price_call" t-value="True"/>
-					<t t-break="1"/></t>
-			</t>
-			<t t-if="has_price_call"></t>
-			<t t-else="">
-				<div class="product_price" itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
-					<t t-if="'base_price' in template_price_vals">
-						<del t-attf-class="text-muted me-1 h6 mb-0" style="white-space: nowrap;">
-							<em class="small" t-esc="template_price_vals['base_price']"
+    <!-- Template for hiding product price when 'price_call' is set -->
+    <template id="shop_hide_price_call" inherit_id="website_sale.products_item">
+        <xpath expr="//div[hasclass('product_price')]" position="replace">
+            <t t-foreach="product.product_variant_ids" t-as="variant">
+                <t t-if="variant.price_call">
+                    <t t-set="has_price_call" t-value="True"/>
+                    <t t-break="1"/>
+                </t>
+            </t>
+            <t t-if="has_price_call"></t>
+            <t t-else="">
+                <div class="product_price" itemprop="offers"
+                     itemscope="itemscope"
+                     itemtype="http://schema.org/Offer">
+                    <t t-if="'base_price' in template_price_vals">
+                        <del t-attf-class="text-muted me-1 h6 mb-0"
+                             style="white-space: nowrap;">
+                            <em class="small"
+                                t-esc="template_price_vals['base_price']"
                                 t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-						</del>
-					</t>
-					<span class="h6 mb-0"
+                        </del>
+                    </t>
+                    <span class="h6 mb-0"
                           t-if="template_price_vals['price_reduce'] or not website.prevent_zero_price_sale"
                           t-esc="template_price_vals['price_reduce']"
                           t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-					<span class="h6 mb-0" t-else="" t-field="website.prevent_zero_price_sale_text"/>
-					<span itemprop="price" style="display:none;" t-esc="template_price_vals['price_reduce']"/>
-					<span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name"/>
-				</div>
-			</t>
-		</xpath>
-	</template>
-	<!-- Template for hiding search details -->
-	<template id="hide_search" inherit_id="website_sale.search">
-		<xpath expr="//t[@t-set='display_detail']" position="replace">
-			<t t-set="display_detail" t-valuef="false"/>
-		</xpath>
-	</template>
-	<!-- Template for product price display -->
-	<template id="product_price" inherit_id="website_sale.product_price">
-		<xpath expr="//div[@itemprop='offers']" position="replace">
-			<div itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer" t-attf-class="product_price mt-2 mb-3 {{'d-none' if combination_info['prevent_zero_price_sale'] else 'd-inline-block'}}">
-				<h3 class="css_editable_mode_hidden" id="price_of_product">
-					<span class="oe_price" style="white-space: nowrap;" t-esc="combination_info['price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-					<span itemprop="price" style="display:none;" t-esc="combination_info['price']"/>
-					<span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name"/>
-					<span t-attf-class="text-danger oe_default_price ms-1 h5 {{'' if combination_info['has_discounted_price'] else 'd-none'}}" style="text-decoration: line-through; white-space: nowrap;"
-                      t-esc="combination_info['list_price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
-                      itemprop="listPrice"
-                />
-					<t t-esc="product_id"/>
-					<t t-if="is_view_active('website_sale.tax_indication')" t-call="website_sale.tax_indication"/>
-					<del t-if="product.compare_list_price">
-						<bdi dir="inherit">
-							<span t-field="product.compare_list_price"
-                              groups="website_sale.group_product_price_comparison"
-                              t-options='{"widget": "monetary",
+                    <span class="h6 mb-0" t-else=""
+                          t-field="website.prevent_zero_price_sale_text"/>
+                    <span itemprop="price" style="display:none;"
+                          t-esc="template_price_vals['price_reduce']"/>
+                    <span itemprop="priceCurrency" style="display:none;"
+                          t-esc="website.currency_id.name"/>
+                </div>
+            </t>
+        </xpath>
+    </template>
+    <!-- Template for hiding search details -->
+    <template id="hide_search" inherit_id="website_sale.search">
+        <xpath expr="//t[@t-set='display_detail']" position="replace">
+            <t t-set="display_detail" t-valuef="false"/>
+        </xpath>
+    </template>
+    <!-- Template for product price display -->
+    <template id="product_price" inherit_id="website_sale.product_price">
+        <xpath expr="//div[@itemprop='offers']" position="replace">
+            <div itemprop="offers" itemscope="itemscope"
+                 itemtype="http://schema.org/Offer"
+                 t-attf-class="product_price mt-2 mb-3 {{'d-none' if combination_info['prevent_zero_price_sale'] else 'd-inline-block'}}">
+                <h3 class="css_editable_mode_hidden" id="price_of_product">
+                    <span class="oe_price" style="white-space: nowrap;"
+                          t-esc="combination_info['price']"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    <span itemprop="price" style="display:none;"
+                          t-esc="combination_info['price']"/>
+                    <span itemprop="priceCurrency" style="display:none;"
+                          t-esc="website.currency_id.name"/>
+                    <span t-attf-class="text-danger oe_default_price ms-1 h5 {{'' if combination_info['has_discounted_price'] else 'd-none'}}"
+                          style="text-decoration: line-through; white-space: nowrap;"
+                          t-esc="combination_info['list_price']"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+                          itemprop="listPrice"
+                    />
+                    <t t-esc="product_id"/>
+                    <t t-if="is_view_active('website_sale.tax_indication')"
+                       t-call="website_sale.tax_indication"/>
+                    <del t-if="product.compare_list_price">
+                        <bdi dir="inherit">
+                            <span t-field="product.compare_list_price"
+                                  groups="website_sale.group_product_price_comparison"
+                                  t-options='{"widget": "monetary",
                                           "display_currency": product.currency_id,
                                           }'/>
-						</bdi>
-					</del>
-				</h3>
-				<h3 id="price_of_products" class="css_non_editable_mode_hidden decimal_precision" t-att-data-precision="str(website.currency_id.decimal_places)" style="display:none">
-					<span t-field="product.list_price"
-                      t-options='{"widget": "monetary",
+                        </bdi>
+                    </del>
+                </h3>
+                <h3 id="price_of_products"
+                    class="css_non_editable_mode_hidden decimal_precision"
+                    t-att-data-precision="str(website.currency_id.decimal_places)"
+                    style="display:none">
+                    <span t-field="product.list_price"
+                          t-options='{"widget": "monetary",
                       "display_currency": product.currency_id,
                                   }'/>
-					<t t-if="is_view_active('website_sale.tax_indication')" t-call="website_sale.tax_indication"/>
-					<del t-if="product.compare_list_price">
-						<bdi dir="inherit">
-							<span t-field="product.compare_list_price"
-                              groups="website_sale.group_product_price_comparison"
-                              t-options='{"widget": "monetary",
+                    <t t-if="is_view_active('website_sale.tax_indication')"
+                       t-call="website_sale.tax_indication"/>
+                    <del t-if="product.compare_list_price">
+                        <bdi dir="inherit">
+                            <span t-field="product.compare_list_price"
+                                  groups="website_sale.group_product_price_comparison"
+                                  t-options='{"widget": "monetary",
                                           "display_currency": product.currency_id,
                                           }'/>
-						</bdi>
-					</del>
-				</h3>
-			</div>
-			<div id="product_unavailable" t-attf-class="{{'d-flex' if combination_info['prevent_zero_price_sale'] else 'd-none'}}">
-				<h3 class="fst-italic" t-field="website.prevent_zero_price_sale_text"/>
-			</div>
-			<div id="price_call_hide" style="display:none">
-				<div>
-					<div class="alert alert-success" id="alert_message"
-                     style="display:none">
-                    Thank you for information, we will get back to you asap.
+                        </bdi>
+                    </del>
+                </h3>
+            </div>
+            <div id="product_unavailable"
+                 t-attf-class="{{'d-flex' if combination_info['prevent_zero_price_sale'] else 'd-none'}}">
+                <h3 class="fst-italic"
+                    t-field="website.prevent_zero_price_sale_text"/>
+            </div>
+            <div id="price_call_hide" style="display:none">
+                <div>
+                    <div class="alert alert-success" id="alert_message"
+                         style="display:none">
+                        Thank you for information, we will get back to you
+                        asap.
+                    </div>
+                    <a role="button" class="btn btn-primary"
+                       href="#call_for_price"
+                       data-bs-toggle="modal"
+                       id="button_call_for_price">
+                        Call for Price
+                    </a>
                 </div>
-					<a role="button" class="btn btn-primary" href="#call_for_price"
-                   data-bs-toggle="modal"
-                   id="button_call_for_price">
-                    Call for Price
-                </a>
-				</div>
-			</div>
-		</xpath>
-	</template>
-	<!-- Template for 'Call for Price' modal -->
-	<template id="shop_product_hide_price" inherit_id="website_sale.product">
-		<xpath expr="//div[@id='o_product_terms_and_share']" position="before">
-			<div id="call_for_price" class="modal fade">
-				<div class="modal-dialog modal-content" style="height:auto">
-					<div class="page">
-						<h3>
-							<center>Call For Price</center>
-						</h3>
-					</div>
-					<input type="hidden" name="product_id" id="product_id" t-att-value="product.id"/>
-					<hr/>
-					<center>
-						<table style="width:500px">
-							<tr style="height:60px">
-								<td style="width:100px">
-									<label for="first_name" class="control-label">First Name:*</label>
-								</td>
-								<td>
-									<input type="text" class="form-control" name="first_name"
-                                               id="first_name" required="required"/>
-								</td>
-							</tr>
-							<tr style="height:60px">
-								<td>
-									<label for="last_name" class="control-label">Last Name:</label>
-								</td>
-								<td>
-									<input type="text" class="form-control" name="last_name"
-                                               id="last_name"/>
-								</td>
-							</tr>
-							<tr style="height:60px">
-								<td>
-									<label for="email">Email </label>
-								</td>
-								<td>
-									<input type="text" class="form-control" name="email"
-                                               id="email" required="required"/>
-								</td>
-							</tr>
-							<tr style="height:60px">
-								<td>
-									<label for="phone">Contact No.*</label>
-								</td>
-								<td>
-									<input type="text" class="form-control" id="phone" name="phone"/>
-								</td>
-							</tr>
-							<tr style="height:60px">
-								<td>
-									<label>Quantity</label>
-								</td>
-								<td>
-									<input type="number" class="form-control" name="quantity" id="quantity"/>
-								</td>
-							</tr>
-							<tr style="height:60px">
-								<td>
-									<label>Message</label>
-								</td>
-								<td>
-									<input type="text" class="form-control" name="message" id="message"/>
-								</td>
-							</tr>
-						</table>
-						<hr/>
-						<button id="send_btn" type="button" data-bs-dismiss="modal" class="btn btn-primary">Send</button>
-						<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="call_modal_close">
-                                Close
-                            </button>
-					</center>
-				</div>
-			</div>
-		</xpath>
-	</template>
+            </div>
+        </xpath>
+    </template>
+    <!-- Template for 'Call for Price' modal -->
+    <template id="shop_product_hide_price" inherit_id="website_sale.product">
+        <xpath expr="//div[@id='o_product_terms_and_share']"
+               position="before">
+            <div id="call_for_price" class="modal fade">
+                <div class="modal-dialog modal-content" style="height:auto">
+                    <div class="page">
+                        <h3>
+                            <center>Call For Price</center>
+                        </h3>
+                    </div>
+                    <input type="hidden" name="product_id" id="product_id"
+                           t-att-value="product.id"/>
+                    <hr/>
+                    <center>
+                        <table style="width:500px">
+                            <tr style="height:60px">
+                                <td style="width:100px">
+                                    <label for="first_name"
+                                           class="control-label">First
+                                        Name:*
+                                    </label>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control"
+                                           name="first_name"
+                                           id="first_name"
+                                           required="required"/>
+                                </td>
+                            </tr>
+                            <tr style="height:60px">
+                                <td>
+                                    <label for="last_name"
+                                           class="control-label">Last Name:
+                                    </label>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control"
+                                           name="last_name"
+                                           id="last_name"/>
+                                </td>
+                            </tr>
+                            <tr style="height:60px">
+                                <td>
+                                    <label for="email">Email</label>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control"
+                                           name="email"
+                                           id="email" required="required"/>
+                                </td>
+                            </tr>
+                            <tr style="height:60px">
+                                <td>
+                                    <label for="phone">Contact No.*</label>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control"
+                                           id="phone" name="phone"/>
+                                </td>
+                            </tr>
+                            <tr style="height:60px">
+                                <td>
+                                    <label>Quantity</label>
+                                </td>
+                                <td>
+                                    <input type="number"
+                                           class="form-control"
+                                           name="quantity" id="quantity"/>
+                                </td>
+                            </tr>
+                            <tr style="height:60px">
+                                <td>
+                                    <label>Message</label>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control"
+                                           name="message" id="message"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <hr/>
+                        <button id="send_btn" type="button"
+                                data-bs-dismiss="modal"
+                                class="btn btn-primary">Send
+                        </button>
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal"
+                                id="call_modal_close">
+                            Close
+                        </button>
+                    </center>
+                </div>
+            </div>
+        </xpath>
+    </template>
 </odoo>
