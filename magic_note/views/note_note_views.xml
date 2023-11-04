@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Inherits kanban view of note.note: t-att-style is added to specify the color of note -->
+    <record id="view_note_note_kanban" model="ir.ui.view">
+        <field name="name">note.note.view.kanban.inherit.magic.note</field>
+        <field name="model">note.note</field>
+        <field name="inherit_id" ref="note.view_note_note_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="replace">
+                <kanban default_group_by="stage_id" class="oe_notes oe_kanban_quickcreate_textarea o_kanban_small_column">
+                    <field name="color"/>
+                    <field name="sequence"/>
+                    <field name="name"/>
+                    <field name="stage_id"/>
+                    <field name="open"/>
+                    <field name="memo"/>
+                    <field name="date_done"/>
+                    <field name="message_partner_ids"/>
+                    <field name="activity_ids" />
+                    <field name="activity_state" />
+                    <field name="note_color"/>
+                    <progressbar field="activity_state" colors='{"planned": "success", "today": "warning", "overdue": "danger"}'/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="#{!selection_mode ? kanban_color(record.color.raw_value) : ''} oe_kanban_global_click_edit oe_semantic_html_override oe_kanban_card"
+                                 t-attf-style="background-color: #{record.note_color.raw_value};">
+                                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                                <div class="o_dropdown_kanban dropdown">
+                                    <a role="button" class="dropdown-toggle o-no-caret btn" data-toggle="dropdown"
+                                       data-display="static" href="#" aria-label="Dropdown menu" title="Dropdown menu">
+                                        <span class="fa fa-ellipsis-v"/>
+                                    </a>
+                                    <div class="dropdown-menu" role="menu">
+                                        <a role="menuitem" type="delete" class="dropdown-item">Delete</a>
+                                        <ul class="oe_kanban_colorpicker" data-field="color"/>
+                                    </div>
+                                </div>
+                                <span>
+                                    <a name="action_close" type="object" t-if="record.open.raw_value">
+                                        <i class="fa fa-check" role="img" aria-label="Opened" title="Opened"/>
+                                    </a>
+                                    <a name="action_open" type="object" t-if="!record.open.raw_value">
+                                        <i class="fa fa-undo" role="img" aria-label="Closed" title="Closed"/>
+                                    </a>
+                                </span>
+                                <!-- kanban note -->
+                                <span t-attf-class="oe_kanban_content #{record.open.raw_value ? '' : 'note_text_line_through'}">
+                                  <!-- title -->
+                                    <field name="name"/>
+                                    <div class="o_kanban_inline_block float-right mr4">
+                                        <field name="activity_ids" widget="kanban_activity" />
+                                    </div>
+                                </span>
+                                <t t-if="record.message_partner_ids.raw_value.length &gt; 1">
+                                    <div class="clearfix"/>
+                                        <t t-foreach="record.message_partner_ids.raw_value" t-as="follower">
+                                            <img t-att-src="kanban_image('res.partner', 'image_128', follower)"
+                                                 class="oe_kanban_avatar o_image_24_cover float-right mt-2"
+                                                 t-att-data-member_id="follower" alt="Follower"/>
+                                        </t>
+                                    <div class="clearfix"/>
+                                </t>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </xpath>
+        </field>
+    </record>
+    <!-- Inherits the form view of note.note to add new field 'deadline' -->
+    <record id="view_note_note_form" model="ir.ui.view">
+        <field name="name">note.note.view.form.inherit.magic.note</field>
+        <field name="model">note.note</field>
+        <field name="inherit_id" ref="note.view_note_note_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="deadline"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
