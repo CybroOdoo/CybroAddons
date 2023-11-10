@@ -20,21 +20,24 @@
 #
 ###############################################################################
 {
-    'name': "Website Hide Button",
+    'name': "Hide Price, Add To Cart And Quantity Button In Website",
     'version': '16.0.1.0.0',
-    'category': 'Website/Website',
-    'summary': 'Hide Price, Add To Cart and Quantity for guest users',
-    'description': 'This app helps to hide Price, Add to Cart and Quantity buttons for guest users',
+    'category': 'Website',
+    'summary': """Hide Price, Add To Cart and Quantity button for guest
+     users""",
+    'description': """Login user can see Price of the Product in shop page and
+     Price of the Product, Quantity and Add To Cart button. But these 
+     features will be hidden for guest users.""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'images': ['static/description/banner.jpg'],
     'website': 'https://www.cybrosys.com',
-    'depends': ['base', 'website_sale'],
+    'depends': ['website_sale'],
     'data': [
-        'views/product_template.xml',
-        'views/shop_template.xml',
+        'views/product_templates.xml',
+        'views/shop_templates.xml',
     ],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,

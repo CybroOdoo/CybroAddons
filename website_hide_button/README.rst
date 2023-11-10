@@ -1,14 +1,19 @@
 .. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
-    :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
+    :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
-"Website Hide Button"
-=======================
-Hide Price, Add To Cart and Quantity for guest users
+"Hide Price, Add To Cart And Quantity Button In Website"
+=========================================================
+Hide Price, Add To Cart button and Quantity for guest users in Website.
 
 Configuration
 =============
 * No additional configurations needed
+
+License
+-------
+GNU AFFERO GENERAL PUBLIC LICENSE, Version 3 (AGPLv3)
+(https://www.gnu.org/licenses/agpl-3.0-standalone.html)
 
 Company
 -------
@@ -16,7 +21,7 @@ Company
 
 Credits
 -------
-Developer: Unnimaya C O @cybrosys, Contact: odoo@cybrosys.com
+Developer: (V16) Unnimaya C O, Contact: odoo@cybrosys.com
 
 Contacts
 --------
