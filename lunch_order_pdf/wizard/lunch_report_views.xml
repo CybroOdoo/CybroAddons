@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--  Wizard form view  -->
+    <record id="lunch_report_view_form" model="ir.ui.view">
+        <field name="name">lunch.report.view.form</field>
+        <field name="model">lunch.report</field>
+        <field name="arch" type="xml">
+            <form string="Lunch Report">
+                <group>
+                    <group>
+                        <field name="start_date" widget="date"/>
+                        <field name="end_date" widget="date"/>
+                        <field name="user_ids" widget="many2many_tags"
+                               options="{'create': false, 'create_edit': false}"/>
+                        <field name="lunch_supplier_ids" widget="many2many_tags"
+                               options="{'create': false, 'create_edit': false}"/>
+                    </group>
+                    <group>
+                        <field name="lunch_location_ids" widget="many2many_tags"
+                               options="{'create': false, 'create_edit': false}"/>
+                        <field name="company_ids" widget="many2many_tags"
+                               options="{'create': false, 'create_edit': false}"
+                               groups="base.group_multi_company"/>
+                        <field name="product_filter"/>
+                        <field name="product_ids" widget="many2many_tags"
+                               attrs="{'invisible': [('product_filter', '!=', 'product')], 'required': [('product_filter', '=', 'product')]}"
+                               options="{'create': false, 'create_edit': false}"/>
+                        <field name="category_ids" widget="many2many_tags"
+                               attrs="{'invisible': [('product_filter', '!=', 'category')], 'required': [('product_filter', '=', 'category')]}"
+                               options="{'create': false, 'create_edit': false}"/>
+                    </group>
+                </group>
+                <group string="Group Orders in the Report">
+                    <field name="group_order"/>
+                </group>
+                <footer>
+                    <button string="Print" name="action_print_report"
+                            type="object" class="btn-primary"/>
+                    <button string="Discard" class="btn-default"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!--  Wizard action window  -->
+    <record id="lunch_report_action" model="ir.actions.act_window">
+        <field name="name">Lunch Report</field>
+        <field name="res_model">lunch.report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="lunch_report_view_form"/>
+        <field name="target">new</field>
+    </record>
+    <!--  Report menu  -->
+    <menuitem name="Report" id="lunch_report_menu_root" sequence="52"
+              parent="lunch.menu_lunch" groups="lunch.group_lunch_manager"/>
+    <menuitem name="Lunch Report" id="lunch_report_menu_action"
+              action="lunch_report_action" sequence="5"
+              parent="lunch_order_pdf.lunch_report_menu_root"
+              groups="lunch.group_lunch_manager"/>
+</odoo>
