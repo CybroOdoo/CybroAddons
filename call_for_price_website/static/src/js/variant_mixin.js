@@ -8,9 +8,10 @@ odoo.define('call_for_price_website.CustomVariantMixin', function(require) {
     // Import the VariantMixin from website_sale module
     var VariantMixin = require('website_sale.VariantMixin');
     // Store a reference to the original onChangeCombination function
-    const originalOnChangeCombination = VariantMixin._onChangeCombination;
+    const oldOnChangeCombination = VariantMixin._onChangeCombination;
     // Override the onChangeCombination function to implement custom behavior
     VariantMixin._onChangeCombination = function(ev, $parent, combination) {
+        const result = oldOnChangeCombination.apply(this, arguments);
         const $pricePerUom = $parent.find(".o_base_unit_price:first .oe_currency_value");
         if ($pricePerUom) {
             if (combination.is_combination_possible !== false && combination.base_unit_price != 0) {
@@ -36,25 +37,31 @@ odoo.define('call_for_price_website.CustomVariantMixin', function(require) {
         const quantity = $parent.find('.css_quantity');
         const product_unavailable = $parent.find('#product_unavailable');
         const price_call_div = $parent.find('#price_call_hide');
-
         if (combination.prevent_zero_price_sale) {
             productPrice.removeClass('d-inline-block').addClass('d-none');
             quantity.removeClass('d-inline-flex').addClass('d-none');
             addToCart.removeClass('d-inline-flex').addClass('d-none');
             contactUsButton.removeClass('d-none').addClass('d-flex');
-            product_unavailable.removeClass('d-none').addClass('d-flex')
-        } else if (combination.price_call) {
-            productPrice.removeClass('d-inline-block').addClass('d-none');
+            product_unavailable.removeClass('d-none').addClass('d-flex');
+            this.$el.find('.product_price_visible').removeClass('d-none').addClass('d-block');
+            this.$el.find('.product_price').remove();
+        }
+        if (combination.price_call) {
             quantity.removeClass('d-inline-flex').addClass('d-none');
             addToCart.removeClass('d-inline-flex').addClass('d-none');
             contactUsButton.removeClass('d-none').addClass('d-flex');
             price_call_div.removeClass('d-none').addClass('d-flex');
+            this.$el.find('#contact_us_wrapper').remove();
             this.$el.find('#add_to_cart').removeClass('d-block').addClass('d-none');
+            this.$el.find('.product_price').removeClass('d-inline-block').addClass('d-none');
             this.$el.find('#price_of_product').removeClass('d-block').addClass('d-none');
             this.$el.find('#price_of_product').removeClass('d-block').addClass('d-none');
             this.$el.find('.js_add_cart_json').removeClass('d-block').addClass('d-none');
-            this.$el.find('.quantity').removeClass('d-block').addClass('d-none');
-        } else {
+            this.$el.find('.css_quantity').removeClass('d-block').addClass('d-none');
+            this.$el.find('.product_price_visible').removeClass('d-block').addClass('d-none');
+            this.$el.find('.product_price').remove();
+        }
+        else {
             productPrice.removeClass('d-none').addClass('d-inline-block');
             quantity.removeClass('d-none').addClass('d-inline-flex');
             addToCart.removeClass('d-none').addClass('d-inline-flex');
@@ -66,8 +73,8 @@ odoo.define('call_for_price_website.CustomVariantMixin', function(require) {
             this.$el.find('#price_of_product').removeClass('d-none').addClass('d-block');
             this.$el.find('.js_add_cart_json').removeClass('d-none').addClass('d-block');
             this.$el.find('.quantity').removeClass('d-none').addClass('d-block');
+            this.$el.find('.product_price_visible').removeClass('d-none').addClass('d-block');
         }
-        // Call the original onChangeCombination function
-        originalOnChangeCombination.apply(this, [ev, $parent, combination]);
+                return result
     };
 });

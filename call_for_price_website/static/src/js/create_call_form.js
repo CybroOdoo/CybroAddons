@@ -116,7 +116,6 @@ odoo.define('call_for_price_website.create_call_form', function(require) {
             this.$el.find('#quantity').val('');
             this.$el.find('#message').val('');
         },
-
     });
     return publicWidget.registry.CallForPrice;
 });

@@ -16,7 +16,9 @@ Company
 
 Credits
 -------
-Developers: Raneesha M K  @cybrosys, Muhsina V @cybrosys, Contact: odoo@cybrosys.com
+Developers: Raneesha M K  @cybrosys,
+            Muhsina V @cybrosys, Contact: odoo@cybrosys.com,
+            Farhana Jahan PT @cybrosys, Contact: odoo@cybrosys.com
 
 Contacts
 --------

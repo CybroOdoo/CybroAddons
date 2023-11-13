@@ -39,6 +39,7 @@
              'views/compare_hide_price_template.xml',
              'views/call_for_price_views.xml',
              'views/product_product_views.xml',
+             'views/website_product_template.xml'
     ],
     'assets': {
         'web.assets_frontend': [
