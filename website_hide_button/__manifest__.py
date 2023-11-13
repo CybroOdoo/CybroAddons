@@ -37,6 +37,11 @@
         'views/product_templates.xml',
         'views/shop_templates.xml',
     ],
+    'assets': {
+        'web.assets_frontend': [
+            'website_hide_button/static/src/css/product_details.css'
+        ]
+    },
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
