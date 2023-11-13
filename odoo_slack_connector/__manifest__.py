@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -22,7 +22,7 @@
 
 {
     'name': "Slack Odoo Connector",
-    'version': '16.0.1.0.2',
+    'version': '16.0.1.0.3',
     'summary': "Integrate slack with Odoo",
     'description': "This module will help you to connect with slack to manage slack Conversations",
     'category': 'Extra Tools',

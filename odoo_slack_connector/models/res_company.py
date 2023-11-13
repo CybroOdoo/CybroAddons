@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -100,7 +100,7 @@ class ResCompany(models.Model):
                     email = rec['profile']['email']
                 else:
                     email = ''
-                if rec['id'] not in record_user_list:
+                if not rec['deleted'] and rec['id'] not in record_user_list:
                     users_list.append((0, 0,
                                        {'name': rec['real_name'],
                                         'user': rec['id'],
@@ -115,7 +115,7 @@ class ResCompany(models.Model):
                     email = rec['profile']['email']
                 else:
                     email = ''
-                if rec['id'] not in slack_id_list:
+                if not rec['deleted'] and rec['id'] not in slack_id_list:
                     vals = {
                         'name': rec['real_name'],
                         'slack_user_id': rec['id'],

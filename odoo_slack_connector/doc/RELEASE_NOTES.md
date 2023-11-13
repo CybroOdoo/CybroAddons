@@ -1,6 +1,6 @@
 ## Module <odoo_slack_connector>
 
-#### 27.10.2022
+#### 27.10.2023
 #### Version 16.0.1.0.0
 ##### ADD
 - Initial commit for Slack
@@ -10,7 +10,7 @@
 ##### FIX
 - Bug Fix: Fixed the issue where slack members are not loading to odoo
 
-#### 26.10.2023
-#### Version 16.0.1.0.2
+#### 10.11.2023
+#### Version 16.0.1.0.3
 ##### FIX
 - Bug Fix: Resolved the issue causing a server error during the synchronization of Slack with Odoo.
