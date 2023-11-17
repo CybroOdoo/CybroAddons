@@ -44,4 +44,4 @@ class PosSession(models.Model):
 
     def _get_pos_ui_res_config_settings(self, params):
         """Returns the model"""
-        return self.env['res.config.settings'].search_read(**params['search_params'])
+        return self.env['res.config.settings'].sudo().search_read(**params['search_params'])
