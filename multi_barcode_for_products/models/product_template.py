@@ -46,6 +46,6 @@ class ProductTemplate(models.Model):
         """Creating the multi barcodes"""
         res = super(ProductTemplate, self).create(vals)
         res.template_multi_barcode_ids.update({
-            'product_barcode': res.product_variant_id.id
+            'product_id': res.product_variant_id.id
         })
         return res
