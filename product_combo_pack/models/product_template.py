@@ -71,10 +71,7 @@ class ProductPack(models.Model):
         if values.get('is_pack', False):
             if not values.get('pack_products_ids', []):
                 raise UserError(_(
-                    'You need to add atleast one product in the Pack...!'))
-            if values.get('type', False) == 'service':
-                raise UserError(
-                    _('You cannot define a pack product as a service..!'))
+                    'You need to add at-least one product in the Pack...!'))
         return super(ProductPack, self).create(values)
 
     def write(self, values):
@@ -85,9 +82,6 @@ class ProductPack(models.Model):
                 if not rec.pack_products_ids:
                     raise UserError(_(
                         'You need to add at least one product in the Pack...!'))
-                if rec.type == 'service':
-                    raise UserError(
-                        _('You cannot define a pack product as a service..!'))
 
     def update_price_product(self):
         """Update the list price of the product with the pack price."""
