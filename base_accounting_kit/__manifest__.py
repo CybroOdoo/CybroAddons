@@ -22,7 +22,7 @@
 
 {
     'name': 'Odoo 16 Full Accounting Kit',
-    'version': '16.0.2.0.10',
+    'version': '16.0.2.0.11',
     'category': 'Accounting',
     'live_test_url': 'https://www.youtube.com/watch?v=peAp2Tx_XIs',
     'summary': """ Asset and Budget Management,
@@ -106,7 +106,8 @@
         'views/recurring_payments_view.xml',
         'wizard/account_lock_date.xml',
         'views/account_payment_view.xml',
-        'data/account_pdc_data.xml'
+        'data/account_pdc_data.xml',
+        'views/report_payment_receipt_document_inherit.xml',
     ],
     'assets': {
         'web.assets_backend': [

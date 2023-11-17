@@ -55,3 +55,11 @@
 ### UPDT
 
 - Payment Register Bank and Cheque References Bug Fix
+
+### 08.11.2023
+
+### Version 16.0.2.0.11
+
+### UPDT
+
+- Payment Receipt  Bank and Cheque reference Report Bug Fix
