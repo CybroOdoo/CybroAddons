@@ -90,7 +90,7 @@
         'views/account_payment_view.xml',
     ],
     'license': 'LGPL-3',
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.gif'],
     'installable': True,
     'auto_install': False,
     'application': True,
