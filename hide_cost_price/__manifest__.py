@@ -2,7 +2,7 @@
 ###############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
@@ -18,18 +18,18 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-################################################################################
+###############################################################################
 {
     'name': 'Hide Cost Price',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.1.0',
+    'category': 'Sales',
     'summary': """Hide cost price module hide the cost of products""",
-    'description': """Product cost price will be visible only for specified 
-                      group""",
+    'description': 'Product cost price will be visible only for specified '
+                   'group',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'category': 'Stock',
     'depends': ['base', 'product'],
     'data': [
         'security/hide_cost_price_groups.xml',
