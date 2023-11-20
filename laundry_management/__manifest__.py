@@ -25,7 +25,7 @@
     'version': '16.0.1.0.1',
     'summary': """Complete Laundry Service Management""",
     'description': 'This module is very useful to manage all process of laundry service',
-    "category": "Industries",
+    "category": "Services",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",

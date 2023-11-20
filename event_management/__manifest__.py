@@ -24,7 +24,7 @@
     'version': '16.0.2.0.0',
     'summary': """Core Module for Managing Different Types Of Events.""",
     'description': """Core Module for Managing Different Types Of Events""",
-    "category": "Industry",
+    "category": "Services",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

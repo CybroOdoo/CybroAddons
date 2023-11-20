@@ -28,7 +28,7 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'live_test_url':
         'https://www.youtube.com/watch?v=TFmupz8MRm0&feature=youtu.be',
-    "category": "Industries",
+    "category": "Services",
     'depends': ['account', 'base', 'base_setup', 'mail', 'website', 'contacts'],
     'data': [
         'security/salon_management_groups.xml',

@@ -23,7 +23,7 @@
 {
     'name': "Legal Case Management",
     'version': '16.0.1.0.0',
-    'category': 'Industries',
+    'category': 'Services',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

@@ -22,7 +22,7 @@
     'version': '16.0.1.0.0',
     'summary': 'Complete Vehicle Workshop Operations & Reports',
     'description': 'Vehicle workshop operations & Its reports',
-    'category': 'Industries',
+    'category': 'Services',
     'author': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
