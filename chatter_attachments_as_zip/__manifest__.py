@@ -20,25 +20,26 @@
 #
 ###############################################################################
 {
-    'name': 'CHATTER ATTACHMENTS AS ZIP',
-    'version': '16.0.1.0.0',
-    'category': 'Extra Tools',
-    'summary': """Download All Chatter Attachments As A Single Zip File.""",
-    'description': """This module helps to download all chatter attachments 
+    "name": "Chatter Attachments as ZIP",
+    "version": "16.0.1.0.0",
+    "category": "Extra Tools",
+    "summary": """Download All Chatter Attachments As A Single Zip File.""",
+    "description": """This module helps to download all chatter attachments 
      in a single zip file .""",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
-    'depends': ['mail'],
-    'assets': {'web.assets_backend': [
-        'chatter_attachments_as_zip/static/src/js/attachment_box_inherit_view.js',
-        'chatter_attachments_as_zip/static/src/xml/attachment_box_inherit_view.xml'
-    ]
+    "author": "Cybrosys Techno Solutions",
+    "company": "Cybrosys Techno Solutions",
+    "maintainer": "Cybrosys Techno Solutions",
+    "website": "https://www.cybrosys.com",
+    "depends": ["mail"],
+    "assets": {
+        "web.assets_backend": [
+            "chatter_attachments_as_zip/static/src/js/attachment_box_inherit_view.js",
+            "chatter_attachments_as_zip/static/src/xml/attachment_box_inherit_view.xml",
+        ]
     },
-    'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
+    "images": ["static/description/banner.jpg"],
+    "license": "AGPL-3",
+    "installable": True,
+    "auto_install": False,
+    "application": False,
 }

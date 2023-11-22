@@ -3,4 +3,4 @@
 #### 17.10.2023
 #### Version 16.0.1.0.0
 #### ADD
-- Initial commit for CHATTER ATTACHMENTS AS ZIP
+- Initial commit for Chatter Attachments as ZIP

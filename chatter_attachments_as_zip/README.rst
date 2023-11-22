@@ -2,7 +2,7 @@
     :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
-CHATTER ATTACHMENTS AS ZIP
+Chatter Attachments as ZIP
 ==========================
 * Chatter Attachments As Zip module helps to download all attachments as a single zip file.
 
