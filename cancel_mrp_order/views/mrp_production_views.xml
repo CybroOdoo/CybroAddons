@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<odoo>
+    <!--Inherit view of mrp production to add a button cancel-->
+    <record id="mrp_production_form_view" model="ir.ui.view">
+        <field name="name">mrp.production.view.form.inherit.cancel.mrp.order</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_cancel'][2]" position="after">
+                <button name="action_cancel_manufacturing_order" groups="cancel_mrp_order.cancel_mrp_order_group_cancel_manufacturing_order"
+                        attrs="{'invisible': [('state','!=','done')]}"
+                        type="object"
+                        string="Cancel"
+                        />
+            </xpath>
+        </field>
+    </record>
+<!--    To add a button cancel manufacturing order under action menu-->
+    <record id="action_production_order_cancel" model="ir.actions.server">
+        <field name="name">Cancel Manufacturing Order</field>
+        <field name="model_id" ref="mrp.model_mrp_production"/>
+        <field name="binding_model_id" ref="mrp.model_mrp_production"/>
+        <field name="binding_view_types">list</field>
+         <field name="groups_id" eval="[(4, ref('cancel_mrp_order.cancel_mrp_order_group_cancel_manufacturing_order'))]"/>
+        <field name="state">code</field>
+        <field name="code">
+            if records:
+                for rec in records:
+                    rec.checking_access(rec)
+        </field>
+    </record>
+</odoo>
