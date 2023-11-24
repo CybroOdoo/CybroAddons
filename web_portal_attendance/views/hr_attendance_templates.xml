@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    TO ADD TITLE IN BREAD CRUMBS-->
+    <template id="portal_my_home_menu_attendance"
+              name="Portal layout : Attendance menu entries"
+              inherit_id="portal.portal_breadcrumbs" priority="30">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'attendance'"
+                t-attf-class="breadcrumb-item #{'active ' if not attendance else ''}">
+                <a t-if="attendance"
+                   t-attf-href="/attendance/list?{{ keep_query() }}">
+                    Attendance
+                </a>
+                <t t-else="">Attendance</t>
+            </li>
+        </xpath>
+    </template>
+    <!--    TO GET THE ATTENDANCE TEMPLATE AND THE COUNT  IN PORTAL VIEW-->
+    <template id="portal_view" name="Attendance" customize_show="True"
+              inherit_id="portal.portal_my_home" priority="90">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <a href="/attendance/list"
+               class="list-group-item list-group-item-action d-flex align-items-center justify-content-between"
+               title="Attendance">
+                Attendance
+                <span class="badge text-bg-secondary rounded-pill"
+                      data-oe-model="ir.ui.view" data-oe-id="405"
+                      data-oe-field="arch"
+                      data-oe-xpath="/t[1]/a[1]/t[3]/span[1]"
+                      data-placeholder_count="attendance_count">
+                </span>
+            </a>
+        </xpath>
+    </template>
+    <!--    TO VIEW THE ATTENDANCE     -->
+    <template id="portal_list_attendance_order" name="Attendance View">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Attendance
+                </t>
+            </t>
+            <t t-if="not attendance">
+                <p>There are currently no Attendance information for your
+                    account.
+                </p>
+            </t>
+            <t t-if="attendance" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>
+                            <span class='d-none d-md-inline'>Employee
+                            </span>
+                        </th>
+                        <th>
+                            <span class='d-none d-md-inline'>Check In</span>
+                        </th>
+
+                        <th>
+                            <span class='d-none d-md-inline'>Check Out</span>
+                        </th>
+                        <th>
+                            <span class='d-none d-md-inline'>Work Hours</span>
+                        </th>
+                    </tr>
+                </thead>
+                <t t-foreach="attendance" t-as="pa">
+                    <tr>
+                        <td>
+                            <t t-esc="pa.employee_id.name"/>
+                        </td>
+                        <td>
+                            <span t-field="pa.check_in"
+                                  t-options="{'widget': 'date'}"/>&amp;nbsp;
+                            <span class='d-none d-md-inline'
+                                  t-field="pa.check_in"
+                                  t-options="{'time_only': True}"/>
+                        </td>
+                        <td>
+                            <span t-field="pa.check_out"
+                                  t-options="{'widget': 'date'}"/>&amp;nbsp;
+                            <span class='d-none d-md-inline'
+                                  t-field="pa.check_out"
+                                  t-options="{'time_only': True}"/>
+                        </td>
+                        <td>
+                            <t t-set="worked_hours" t-value="pa.worked_hours"/>
+                            <t t-set="hours" t-value="int(worked_hours)"/>
+                            <t t-set="minutes"
+                               t-value="int(divmod(worked_hours, 1)[1] * 60)"/>
+                            <span t-esc="'{:02d}:{:02d}'.format(hours, minutes)"/>
+                        </td>
+                    </tr>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
+
+
+
+
