@@ -10,3 +10,9 @@
 #### FIX
 - Removed the already existing function from payment screen js function. 
 - Super the existing button action.
+
+#### 20.11.2023
+#### Version 16.0.2.0.2
+#### UPDATE
+- Manager Pin Encrypted in NumberPad.
+- Changed Pin Condition Check from Top Sequence Manager to Session Manager.

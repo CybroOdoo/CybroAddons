@@ -3,6 +3,7 @@ odoo.define('pos_discount_manager.ValidateManager', function(require) {
 
   const Registries = require('point_of_sale.Registries');
   const PaymentScreen = require('point_of_sale.PaymentScreen');
+  var session = require('web.session');
 
      const ValidateManagers = (PaymentScreen) =>
         class extends PaymentScreen {
@@ -22,9 +23,10 @@ odoo.define('pos_discount_manager.ValidateManager', function(require) {
                  if (flag != 1) {
                  const {confirmed,payload} = await this.showPopup('NumberPopup', {
                             title: this.env._t(employee_name + ', your discount is over the limit. \n Manager pin for Approval'),
+                            isPassword: true
                         });
                         if(confirmed){
-                         var output = this.env.pos.employees.filter((obj) => obj.role == 'manager');
+                         var output = this.env.pos.employees.filter((obj) => obj.role == 'manager' && obj.user_id == session.uid);
                          var pin = output[0].pin
                          if (Sha1.hash(payload) == pin) {
                             this.showScreen(this.nextScreen);
