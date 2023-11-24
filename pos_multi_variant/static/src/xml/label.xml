@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <!-- This XML snippet extends the point_of_sale.ProductItem template -->
+    <t t-inherit="point_of_sale.ProductItem" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('product-img')]" position="inside">
+            <t t-if="props.product.is_pos_variants">
+                <span class="custom-pos-label">Multi-variant</span>
+                <link rel="stylesheet" type="text/scss" href="pos_multi_variant/static/src/css/label.css"/>
+            </t>
+        </xpath>
+    </t>
+    <!-- This XML snippet extends the point_of_sale.Orderline template -->
+    <t t-name="Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension" owl="1">
+        <xpath expr="//li[@class='info']" position="inside">
+            <br></br>
+            <t t-foreach="props.line.product_variants" t-as="variant" t-key="variant_index">
+                 <t t-esc="variant['type']"/>:
+                <t t-esc="env.pos.format_currency(variant['extra_price'])"/>
+                <br></br>
+            </t>
+        </xpath>
+    </t>
+    <!-- This XML snippet extends the point_of_sale.OrderLinesReceipt template -->
+    <t t-name="ComboProductOrderReceipt"
+       t-inherit="point_of_sale.OrderLinesReceipt"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//t[@t-foreach='receipt.orderlines']" position="inside">
+            <t t-if="line.product_variants">
+                <div class="pos-receipt-right-padding">
+                    <t t-foreach="line.product_variants" t-as="variant" t-key="variant_index">
+                            <span>(<t t-esc="variant['type']"/>)</span>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>

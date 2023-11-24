@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This XML snippet modifies the view of the product.template model.Inserts fields for managing POS variants inside the 'options' -->
+<odoo>
+    <record id="product_template_only_form_view" model="ir.ui.view">
+        <field name="name">
+            product.template.view.form.inherit.pos.multi.variant
+        </field>
+        <field name="model">product.template</field>
+        <field name="inherit_id"
+               ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='options']" position="inside">
+                <div>
+                    <field name="is_pos_variants"/>
+                    <label for="is_pos_variants"/>
+                </div>
+            </xpath>
+            <xpath expr="//page[@name='general_information']" position="after">
+                <page string="Pos Variants" name="pos variants"
+                      attrs="{'invisible': [('is_pos_variants','=',False)]}">
+                    <field name="variant_line_ids">
+                        <tree string="Pos Variants" editable="bottom">
+                            <field name="attribute_id"/>
+                            <field name="value_ids" widget="many2many_tags"
+                                   options="{'no_create_edit': True}"
+                                   domain="[('attribute_id', '=', attribute_id)]"
+                                   context="{'default_attribute_id': attribute_id}"/>
+                            <field name="extra_price"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
