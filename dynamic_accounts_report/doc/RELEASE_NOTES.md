@@ -30,3 +30,8 @@
 #### BUGFIX
 - Report Bug Fix: Problem with language while printing profit and loss report fixed.
 - Report Bug Fix: Problem with language while opening cash flow statement.
+
+### 20.11.2023
+### version 16.0.1.0.9,
+### BUGFIX
+- Profit And Loss:  multiple lines of the same account in the financial reports.

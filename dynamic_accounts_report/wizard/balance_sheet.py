@@ -108,7 +108,6 @@ class BalanceSheetView(models.TransientModel):
                                      'strict_range': False,
                                      'company_id': self.company_id,
                                      'lang': lang}}
-
         account_lines = self.get_account_lines(new_data)
         report_lines = self.view_report_pdf(account_lines, new_data)[
             'report_lines']
@@ -136,7 +135,6 @@ class BalanceSheetView(models.TransientModel):
                     report_lines_move.append(each)
 
         filter_movelines_parents(report_lines)
-
         # for rec in report_lines_move:
         #     if rec['report_type'] == 'accounts':
         #         if rec['account'] in move_line_accounts:
@@ -172,6 +170,7 @@ class BalanceSheetView(models.TransientModel):
                     final_report_lines.append(rec)
             else:
                 final_report_lines.append(rec)
+
         def filter_sum(obj):
             sum_list = {}
             for pl in parent_list:
@@ -234,12 +233,22 @@ class BalanceSheetView(models.TransientModel):
                     item['name']['en_US']
             else:
                 item['new_name'] = item['name']
+        merged_data = {}
+        for line in records['Accounts']:
+            account_id = line['account_id']
+            if account_id not in merged_data:
+                merged_data[account_id] = line
+            else:
+                merged_data[account_id]['debit'] += line['debit']
+                merged_data[account_id]['credit'] += line['credit']
+                merged_data[account_id]['balance'] += line['balance']
+        report_list = list(merged_data.values())
         return {
             'name': tag,
             'type': 'ir.actions.client',
             'tag': tag,
             'filters': filters,
-            'report_lines': records['Accounts'],
+            'report_lines': report_list,
             'debit_total': records['debit_total'],
             'credit_total': records['credit_total'],
             'debit_balance': records['debit_balance'],
@@ -476,7 +485,8 @@ class BalanceSheetView(models.TransientModel):
             WHERE += ' AND an.id IN %s' % str(
                 tuple(data.get('analytics').ids) + tuple([0]))
         if data.get('account_tags'):
-            WHERE += ' AND act.id IN %s' % str(tuple(data.get('account_tags').ids)+ tuple([0]))
+            WHERE += ' AND act.id IN %s' % str(
+                tuple(data.get('account_tags').ids) + tuple([0]))
 
         # if data['analytic_tags']:
         #     WHERE += ' AND anltag.account_analytic_tag_id IN %s' % str(
