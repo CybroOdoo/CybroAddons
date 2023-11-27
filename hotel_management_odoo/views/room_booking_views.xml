@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Room Booking Form View-->
+    <record id="room_booking_view_form" model="ir.ui.view">
+        <field name="name">room.booking.view.form</field>
+        <field name="model">room.booking</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_reserve" string="Reserve"
+                            states="draft" type="object" class="btn-primary"/>
+                    <button name="action_checkin" string="Check-In"
+                            class="btn-primary"
+                            attrs="{'invisible':['|',('is_checkin', '=', True), ('state', 'in', ['check_in','check_out','done','cancel'])]}"
+                            type="object"/>
+                    <button name="action_maintenance_request"
+                            string="Maintenance Request" type="object"
+                            class="btn-primary"
+                            attrs="{'invisible':['|',('maintenance_request_sent', '=',True),('state', 'not in',['check_in', 'reserved'])]}"/>
+                    <button name="action_checkout" string="Check-Out"
+                            class="btn-primary"
+                            attrs="{'invisible':[('state', '!=', 'check_in')]}"
+                            type="object"/>
+                    <button name="action_done" string="Set as Done"
+                            class="btn-primary"
+                            attrs="{'invisible':[('state', '!=', 'check_out')]}"
+                            type="object"/>
+                    <button name="action_invoice"
+                            string="Create Invoice"
+                            type="object"
+                            class="btn-primary"
+                            attrs="{'invisible': ['|',('state', 'not in', ['draft', 'check_out']),('invoice_button_visible','=', True)
+                            ]}"
+                    />
+                    <button name="action_cancel"
+                            string="Cancel"
+                            attrs="{'invisible':[('state', 'not in',['draft','reserved'])]}"
+                            type="object"
+                            class="btn-secondary"
+                    />
+                    <field name="state" select="2" widget="statusbar"
+                           statusbar_visible="draft,check_in,check_out,done"/>
+                    <field name="invoice_status" select="2" widget="statusbar"
+                           invisible="1"/>
+                </header>
+                <sheet>
+                    <div name="button_box" position="inside">
+                        <button class="oe_stat_button" type="object"
+                                name="action_view_invoices"
+                                attrs="{'invisible': [('invoice_status', '!=', 'invoiced')]}"
+                                icon="fa-edit">
+                            <field string="Invoices" name="invoice_count"
+                                   widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div>
+                        <h1>
+                            <field name="name" colspan="4"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <!--Invisible Fields-->
+                        <field name="is_checkin" invisible="1"/>
+                        <field name="company_id" invisible="1"/>
+                        <field name="checkin_date" invisible="1"/>
+                        <field name="checkout_date" invisible="1"/>
+                        <field name="duration" readonly="1" invisible="1"/>
+                        <field name="duration_visible" invisible="1"/>
+                        <field name="invoice_button_visible" invisible="1"/>
+                        <field name="maintenance_request_sent" invisible="1"/>
+                        <group>
+                            <field name="partner_id"
+                                   widget="res_partner_many2one"
+                                   context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}"
+                                   options='{"always_reload": True}'/>
+                            <field name="user_id"
+                                   domain="[('parent_id','=',partner_id)]"
+                                   context="{'default_type':'invoice'}"
+                                   options='{"always_reload": True}'/>
+                        </group>
+                        <group>
+                            <field name="date_order"/>
+                            <field name="pricelist_id"/>
+                            <field name="need_service"
+                                   attrs="{'invisible': [('state','not in', ['check_in'])]}"/>
+                            <field name="need_fleet"
+                                   attrs="{'invisible': [('state','not in', ['check_in'])]}"/>
+                            <field name="need_food"
+                                   attrs="{'invisible': [('state','not in', ['check_in'])]}"/>
+                            <field name="need_event"
+                                   attrs="{'invisible': [('state','not in', ['check_in'])]}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="folio" string="Folio">
+                            <field name="room_line_ids"
+                                   colspan="4"
+                                   string="Room Lines"
+                                   context="{'default_checkin_date':checkin_date,
+                                        'default_checkout_date':checkout_date,
+                                        'default_uom_qty':duration}">
+                                <tree editable="bottom">
+                                    <field name="room_id"
+                                           string="Room"
+                                           required="1"
+                                           domain="[('is_room_avail','=',True)]"
+                                           options="{'no_open': True, 'no_create': True}"
+                                    />
+                                    <field name="checkin_date"/>
+                                    <field name="booking_line_visible"
+                                           invisible="1"/>
+                                    <field name="checkout_date"/>
+                                    <field name="uom_qty" string="Duration"
+                                           readonly="1" force_save="1"/>
+                                    <field name="uom_id"
+                                           attrs="{'readonly':[('booking_line_visible', '=', True)]}"
+                                           string="Unit of Measure"
+                                           options="{'no_open': True, 'no_create': True}"/>
+                                    <field name="price_unit"
+                                           attrs="{'readonly':[('booking_line_visible', '=', True)]}"/>
+                                    <field name="tax_ids"
+                                           attrs="{'readonly': [('booking_line_visible', '=', True)]}"
+                                           options="{'no_create': True}"
+                                           widget="many2many_tags"
+                                    />
+                                    <field name="price_subtotal"
+                                           widget="monetary"
+                                           attrs="{'readonly':[('booking_line_visible', '=',True)]}"
+                                    />
+                                    <field groups="account.group_show_line_subtotals_tax_included"
+                                           name="price_total"
+                                           widget="monetary"
+                                           attrs="{'readonly':[('booking_line_visible', '=', True)]}"
+                                    />
+                                </tree>
+                            </field>
+                            <group colspan="2"
+                                   class="oe_subtotal_footer oe_right">
+                                <field
+                                        name="amount_untaxed_room"
+                                        sum="Untaxed amount for Room"
+                                        widget='monetary'
+                                />
+                                <field
+                                        name="amount_untaxed_food"
+                                        sum="Untaxed amount for Food"
+                                        widget='monetary'
+                                        attrs="{'invisible':[('need_food','=',False)]}"
+                                />
+                                <field
+                                        name="amount_untaxed_service"
+                                        sum="Untaxed amount for Service"
+                                        widget='monetary'
+                                        attrs="{'invisible':[('need_service','=',False)]}"
+                                />
+                                <field
+                                        name="amount_untaxed_fleet"
+                                        sum="Untaxed amount for Fleet"
+                                        widget='monetary'
+                                        attrs="{'invisible':[('need_fleet','=',False)]}"
+                                />
+                                <field
+                                        name="amount_untaxed_event"
+                                        sum="Untaxed amount for Event"
+                                        widget='monetary'
+                                        attrs="{'invisible':[('need_event','=',False)]}"
+                                />
+                                <field
+                                        name="amount_untaxed"
+                                        sum="Untaxed amount"
+                                        widget='monetary'
+                                />
+                                <field name="amount_tax" widget='monetary'/>
+                                <label for="amount_total"/>
+                                <field
+                                        name="amount_total"
+                                        nolabel="1"
+                                        sum="Total amount"
+                                        widget='monetary'
+                                />
+                            </group>
+                            <div class="oe_clear"/>
+                        </page>
+                        <page name="food" string="Food"
+                              attrs="{'invisible':[('need_food','=',False)]}">
+                            <field name="food_order_line_ids"
+                                   colspan="4"
+                                   string="Food Lines">
+                                <tree editable="bottom">
+                                    <field name="food_id"
+                                           string="Product"
+                                           required="1"
+                                           options="{'no_open': True,'no_create': True}"/>
+                                    <field name="description"/>
+                                    <field name="uom_qty" string="Qty"
+                                           force_save="1"/>
+                                    <field name="uom_id"
+                                           string="Unit of Measure"
+                                           options="{'no_open': True,'no_create': True}"/>
+                                    <field name="price_unit"
+                                    />
+                                    <field name="tax_ids"
+                                           options="{'no_create': True}"
+                                           widget="many2many_tags"
+                                    />
+                                    <field name="price_subtotal"
+                                           widget="monetary"
+                                    />
+                                    <field groups="account.group_show_line_subtotals_tax_included"
+                                           name="price_total"
+                                           widget="monetary"
+                                    />
+                                </tree>
+                            </field>
+                            <group colspan="2"
+                                   class="oe_subtotal_footer oe_right">
+                                <field
+                                        name="amount_untaxed_food"
+                                        sum="Untaxed amount for Food"
+                                        widget='monetary'
+                                />
+                                <field name="amount_taxed_food"
+                                       widget='monetary'/>
+                                <label for="amount_total_food"/>
+                                <field
+                                        name="amount_total_food"
+                                        nolabel="1"
+                                        sum="Total amount"
+                                        widget='monetary'
+                                />
+                            </group>
+                            <div class="oe_clear"/>
+                        </page>
+                        <page name="service" string="Service"
+                              attrs="{'invisible':[('need_service','=',False)]}">
+                            <field name="service_line_ids"
+                                   colspan="4"
+                                   string="Service Lines">
+                                <tree editable="bottom">
+                                    <field name="service_id"
+                                           string="Service"
+                                           required="1"
+                                           options="{'no_open': True,'no_create': True}"/>
+                                    <field name="description"/>
+                                    <field name="uom_qty" string="Qty"
+                                           force_save="1"/>
+                                    <field name="uom_id"
+                                           string="Unit of Measure"
+                                           options="{'no_open': True,'no_create': True}"/>
+                                    <field name="price_unit"/>
+                                    <field name="tax_ids"
+                                           options="{'no_create': True}"
+                                           widget="many2many_tags"
+                                    />
+                                    <field name="price_subtotal"
+                                           widget="monetary"
+                                    />
+                                    <field groups="account.group_show_line_subtotals_tax_included"
+                                           name="price_total"
+                                           widget="monetary"
+                                    />
+                                </tree>
+                            </field>
+                            <group colspan="2"
+                                   class="oe_subtotal_footer oe_right">
+                                <field
+                                        name="amount_untaxed_service"
+                                        sum="Untaxed amount for Service"
+                                        widget='monetary'
+                                />
+                                <field name="amount_taxed_service"
+                                       widget='monetary'/>
+                                <label for="amount_total_service"/>
+                                <field
+                                        name="amount_total_service"
+                                        nolabel="1"
+                                        sum="Total amount"
+                                        widget='monetary'
+                                />
+                            </group>
+                            <div class="oe_clear"/>
+                        </page>
+                        <page name="fleet" string="Fleet"
+                              attrs="{'invisible':[('need_fleet','=',False)]}">
+                            <field name="vehicle_line_ids"
+                                   colspan="4"
+                                   string="Fleet Lines">
+                                <tree editable="bottom">
+                                    <field name="fleet_id"
+                                           string="Vehicle"
+                                           required="1"
+                                           options="{'no_open': True,'no_create': True}"/>
+                                    <field name="description"/>
+                                    <field name="uom_qty" string="Allotted KM"
+                                           force_save="1"/>
+                                    <field name="uom_id"
+                                           string="Unit of Measure"
+                                           options="{'no_open': True, 'no_create': True}"/>
+                                    <field name="price_unit"/>
+                                    <field name="tax_ids"
+                                           options="{'no_create': True}"
+                                           widget="many2many_tags"
+                                    />
+                                    <field name="price_subtotal"
+                                           widget="monetary"
+                                    />
+                                    <field groups="account.group_show_line_subtotals_tax_included"
+                                           name="price_total"
+                                           widget="monetary"
+                                    />
+                                </tree>
+                            </field>
+                            <group colspan="2"
+                                   class="oe_subtotal_footer oe_right">
+                                <field
+                                        name="amount_untaxed_fleet"
+                                        sum="Untaxed amount for Fleet"
+                                        widget='monetary'
+                                />
+                                <field name="amount_taxed_fleet"
+                                       widget='monetary'/>
+                                <label for="amount_total_fleet"/>
+                                <field
+                                        name="amount_total_fleet"
+                                        nolabel="1"
+                                        sum="Total amount"
+                                        widget='monetary'
+                                />
+                            </group>
+                            <div class="oe_clear"/>
+                        </page>
+                        <page name="event" string="Events"
+                              attrs="{'invisible':[('need_event','=',False)]}">
+                            <field name="event_line_ids"
+                                   colspan="4"
+                                   string="Event Lines">
+                                <tree editable="bottom">
+                                    <field name="event_id"
+                                           string="Event"
+                                           required="1"
+                                           options="{'no_open': True,'no_create': True}"/>
+                                    <field name="description"/>
+                                    <field name="ticket_id"
+                                           string="Ticket"
+                                           required="1"/>
+                                    <field name="uom_qty" string="Qty"
+                                           force_save="1"/>
+                                    <field name="uom_id"
+                                           string="Unit of Measure"
+                                           options="{'no_open': True, 'no_create': True}"/>
+                                    <field name="price_unit"/>
+                                    <field name="tax_ids"
+                                           options="{'no_create': True}"
+                                           widget="many2many_tags"
+                                    />
+                                    <field name="price_subtotal"
+                                           widget="monetary"
+                                    />
+                                    <field groups="account.group_show_line_subtotals_tax_included"
+                                           name="price_total"
+                                           widget="monetary"
+                                    />
+                                </tree>
+                            </field>
+                            <group colspan="2"
+                                   class="oe_subtotal_footer oe_right">
+                                <field
+                                        name="amount_untaxed_event"
+                                        sum="Untaxed amount for Event"
+                                        widget='monetary'
+                                />
+                                <field name="amount_taxed_event"
+                                       widget='monetary'/>
+                                <label for="amount_total_event"/>
+                                <field
+                                        name="amount_total_event"
+                                        nolabel="1"
+                                        sum="Total amount"
+                                        widget='monetary'/>
+                            </group>
+                            <div class="oe_clear"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--    Room Booking Tree view-->
+    <record id="room_booking_view_tree" model="ir.ui.view">
+        <field name="name">room.booking.view.tree</field>
+        <field name="model">room.booking</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="date_order"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    <!--    Room Booking Menu action-->
+    <record id="room_booking_action" model="ir.actions.act_window">
+        <field name="name">Room Booking</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">room.booking</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--    Reservation menu-->
+    <menuitem id="room_booking_menu"
+              name="Reservation"
+              sequence="10"
+              parent="hotel_management_menu_root"
+              action="room_booking_action"/>
+</odoo>

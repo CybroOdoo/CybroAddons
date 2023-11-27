@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--        Cleaning Request Tree view-->
+    <record id="cleaning_request_view_tree" model="ir.ui.view">
+        <field name="name">cleaning.request.view.tree</field>
+        <field name="model">cleaning.request</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence"/>
+                <field name="cleaning_type"/>
+                <field name="team_id"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    <!--        Cleaning Request Form view-->
+    <record id="cleaning_request_view_form" model="ir.ui.view">
+        <field name="name">cleaning.request.view.form</field>
+        <field name="model">cleaning.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_assign_cleaning" string="Assign To"
+                            groups="hotel_management_odoo.cleaning_team_group_head"
+                            states="draft" type="object"
+                            class="btn-primary"/>
+                    <button name="action_start_cleaning" string="Start"
+                            states="assign" type="object"
+                            class="btn-primary"/>
+                    <button name="action_done_cleaning" string="Completed"
+                            states="ongoing" type="object"
+                            class="btn-primary"/>
+                    <button name="action_maintain_request"
+                            string="Maintain Request" states="ongoing"
+                            type="object"
+                            class="btn-primary"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,ongoing,done"/>
+                    <button name="action_assign_support"
+                            string="Request Support"
+                            states="ongoing" type="object"
+                            groups="hotel_management_odoo.cleaning_team_group_user"
+                            class="btn-primary"/>
+                    <button name="action_assign_assign_support"
+                            string="Assign Support"
+                            groups="hotel_management_odoo.cleaning_team_group_head"
+                            states="support" type="object"
+                            class="btn-primary"/>
+                </header>
+                <sheet>
+                    <h2>
+                        <field name="sequence"/>
+                    </h2>
+                    <group>
+                        <group>
+                            <field name="team_id"/>
+                            <field name="cleaning_type"/>
+                            <field name="room_id"
+                                   attrs="{'invisible': [('cleaning_type',
+                                   '!=','room')]}"/>
+                            <field name="hotel"
+                                   attrs="{'invisible': [('cleaning_type',
+                                   '!=','hotel')]}"/>
+                            <field name="vehicle_id"
+                                   attrs="{'invisible': [('cleaning_type',
+                                   '!=','vehicle')]}"/>
+                        </group>
+                        <group>
+                            <field name="head_id"/>
+                            <field name="assigned_id"
+                                   domain="[('id','in',domain_partner_ids)]"
+                                   options="{'no_create': True}"/>
+                            <field name="domain_partner_ids" invisible="1"/>
+                            <field name="support_team_ids"
+                                   widget="many2many_tags"
+                                   domain="[('id', 'in',domain_partner_ids),
+                                   ('id', '!=', assigned_id)]"
+                                   attrs="{'invisible':[('state', 'not in',
+                                   'support')]}"
+                                   groups="hotel_management_odoo.cleaning_team_group_head"
+                                   options="{'no_create': True}"/>
+                            <field name="support_reason"
+                                   attrs="{'invisible':[('state', 'not in',
+                                   'ongoing')]}"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--        Cleaning Team Tree view-->
+    <record id="cleaning_team_view_tree" model="ir.ui.view">
+        <field name="name">cleaning.team.view.tree</field>
+        <field name="model">cleaning.team</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="team_head_id"/>
+            </tree>
+        </field>
+    </record>
+    <!--    Cleaning Request menu action-->
+    <record id="cleaning_request_action" model="ir.actions.act_window">
+        <field name="name">Cleaning Request</field>
+        <field name="res_model">cleaning.request</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+    </record>
+    <!--Menu Cleaning Request-->
+    <menuitem id="cleaning_request_menu"
+              name="Cleaning Request"
+              parent="hotel_config_menu_cleaning"
+              action="cleaning_request_action"/>
+</odoo>
