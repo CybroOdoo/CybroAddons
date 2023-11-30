@@ -23,7 +23,9 @@ from odoo import fields, models
 
 
 class ProductTemplate(models.Model):
-    """ Inherit product,so we are adding a field for defining shipping method. """
+    """Inherit product,so we are adding a field for defining shipping method."""
     _inherit = 'product.template'
 
-    shipping_method_id = fields.Many2one('delivery.carrier', string='Shipping Method',help="Choose shipping method")
+    shipping_method_id = fields.Many2one('delivery.carrier',
+                                         string='Shipping Method',
+                                         help="Choose shipping method.")

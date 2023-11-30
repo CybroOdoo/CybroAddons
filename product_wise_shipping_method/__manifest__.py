@@ -24,11 +24,12 @@
     'version': '16.0.1.0.0',
     'category': 'Sales/Sales',
     'summary': """ Product Wise Shipping Method for sale order. """,
-    'description': """ This module helps to provide shipping method easily via choosing products in order line. """,
+    'description': """ This module helps to provide shipping method easily via 
+     choosing products in order line. """,
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'depends': ['base', 'sale','delivery'],
+    'depends': ['base', 'sale', 'delivery', 'website_sale'],
     'website': 'https://www.cybrosys.com',
     'data': [
         'views/product_template_views.xml',

@@ -25,11 +25,15 @@ from odoo.exceptions import UserError
 
 
 class SaleOrder(models.Model):
-    """ Inherit sale,so we are getting shipping method corresponding to product"""
+    """ Inherit sale,so we are getting shipping method corresponding to
+    product."""
     _inherit = 'sale.order'
 
     def action_confirm(self):
-        """Create delivery method value for sale order lines with a shipping method."""
+        """Create delivery method value for sale order lines with a
+         shipping method."""
+        if self.website_id:
+            return super().action_confirm()
         order_lines_with_shipping = self.order_line.filtered(lambda line: line.product_template_id.shipping_method_id)
         vals_list = [{
                 'product_id': line.product_template_id.shipping_method_id.product_id.id,
@@ -43,25 +47,29 @@ class SaleOrder(models.Model):
 
     def merge_similar_products(self):
         """ merge similar products on order line by adding their quantity."""
-        similar_products = defaultdict(lambda: {'qty': 0, 'lines_to_remove': []})
+        similar_products = defaultdict(
+            lambda: {'qty': 0, 'lines_to_remove': []})
         order_line = self.env['sale.order.line']
         for line in self.order_line.sorted():
             key = (line.product_id.id, line.price_unit, line.tax_id)
             similar_products[key]['qty'] += line.product_uom_qty
             similar_products[key]['lines_to_remove'].append(line.id)
         for key,product_info in similar_products.items():
-            order_line.browse(product_info['lines_to_remove'][0]).write({'product_uom_qty': product_info['qty']})
+            order_line.browse(product_info['lines_to_remove'][0]).write(
+                {'product_uom_qty': product_info['qty']})
             order_line.browse(product_info['lines_to_remove'][1:]).unlink()
 
     @api.model
     def create(self, vals):
-        """ When the products are newly selected in sale order line then they are Create on sale order """
+        """ When the products are newly selected in sale order line then they
+        are Create on sale order """
         res = super(SaleOrder, self).create(vals)
         res.merge_similar_products()
         return res
 
     def write(self, vals):
-        """ When the products are previously selected then Write similar products on sale order """
+        """ When the products are previously selected then Write similar
+         products on sale order """
         res = super(SaleOrder, self).write(vals)
         self.merge_similar_products()
         return res
