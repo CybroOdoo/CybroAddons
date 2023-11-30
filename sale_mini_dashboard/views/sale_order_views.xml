@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Adding the dashboard in list view-->
+    <record id="view_quotation_tree_with_onboarding" model="ir.ui.view">
+        <field name="name">sale.order.view.tree.inherit.sale.mini.dashboard</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id"
+               ref="sale.view_quotation_tree_with_onboarding"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="js_class">sale_dashboard_list</attribute>
+            </xpath>
+        </field>
+    </record>
+    <!--Adding the dashboard in kanban view-->
+    <record id="view_sale_order_kanban" model="ir.ui.view">
+        <field name="name">sale.order.view.kanban.inherit.sale.mini.dashboard</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sale_order_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="attributes">
+                <attribute name="js_class">sale_dashboard_kanban</attribute>
+            </xpath>
+        </field>
+    </record>
+    <!--Adding additional filters used in mini dashboard-->
+    <record id="sale_order_view_search_inherit_quotation" model="ir.ui.view">
+        <field name="name">sale.order.view.search.inherit.sale.mini.dashboard</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id"
+               ref="sale.sale_order_view_search_inherit_quotation"/>
+        <field name="arch" type="xml">
+            <filter name="my_quotation" position="replace">
+                <filter string="My Total Orders" name="my_quotation"
+                        domain="[('user_id', '=', uid)]"/>
+                <filter string="My Quotations" name="my_draft"
+                        domain="[('user_id', '=', uid),('state', 'in', ['draft','sent'])]"/>
+                <filter string="My Orders" name="my_sale_orders"
+                        domain="[('user_id', '=', uid),('state','in',('sale','done'))]"/>
+                <separator/>
+            </filter>
+            <filter name="sales" position="after">
+                <filter string="Total Orders" name="total"
+                        domain="[]"/>
+                <separator/>
+            </filter>
+        </field>
+    </record>
+</odoo>
