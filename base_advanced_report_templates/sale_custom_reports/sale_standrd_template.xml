@@ -1,46 +1,49 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
     <template id="report_saleorder_standard_document">
-        <t t-if="doc and 'company_id' in doc">
-            <t t-set="company" t-value="doc.company_id"/>
-        </t>
-        <t t-if="not doc or not 'company_id' in doc">
-            <t t-set="company" t-value="res_company"/>
-        </t>
-        <div class="header row mt32 mb32">
-            <div class="page-header col-12">
-                <div t-attf-class="pull-left">
-                    <t t-if="company.logo">
-                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)"
-                             style="max-height: 80px;"/>
-                    </t>
-                </div>
-                <div t-attf-class="pull-left"
-                     t-attf-style="font:14px lucida-console,sans-serif; color:#{doc.theme_id.company_text_color} !important;">
-                    <span t-field="company.partner_id"/>
-                    <br/>
-                    <span t-field="company.partner_id.street"/>
-                    <br/>
-                    <span t-field="company.partner_id.street2"/>
-                    <br/>
-                    <span t-field="company.partner_id.city"/>
-                    <br/>
-                    <span t-field="company.partner_id.country_id"/>
-                    <br/>
-                    <span t-field="company.partner_id.vat"/>
-                    <br/>
+        <t t-call="web.external_layout">
+            <t t-if="doc and 'company_id' in doc">
+                <t t-set="company" t-value="doc.company_id"/>
+            </t>
+            <t t-if="not doc or not 'company_id' in doc">
+                <t t-set="company" t-value="res_company"/>
+            </t>
+            <div class="header row mt32 mb32">
+                <div class="page-header col-12">
+                    <div t-attf-class="pull-left">
+                        <t t-if="company.logo">
+                            <img t-if="company.logo"
+                                 t-att-src="image_data_uri(company.logo)"
+                                 style="max-height: 80px;"/>
+                        </t>
+                    </div>
+                    <div t-attf-class="pull-left"
+                         t-attf-style="font:14px lucida-console,sans-serif; color:#{doc.theme_id.company_text_color} !important;">
+                        <span t-field="company.partner_id"/>
+                        <br/>
+                        <span t-field="company.partner_id.street"/>
+                        <br/>
+                        <span t-field="company.partner_id.street2"/>
+                        <br/>
+                        <span t-field="company.partner_id.city"/>
+                        <br/>
+                        <span t-field="company.partner_id.country_id"/>
+                        <br/>
+                        <span t-field="company.partner_id.vat"/>
+                        <br/>
+                    </div>
                 </div>
             </div>
-        </div>
-        <t t-call="web.external_layout">
-
-            <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
+            <t t-set="doc"
+               t-value="doc.with_context(lang=doc.partner_id.lang)"/>
             <t t-set="forced_vat"
                t-value="doc.fiscal_position_id.foreign_vat"/> <!-- So that it appears in the footer of the report instead of the company VAT if it's set -->
 
             <h1 class="mt-4 col-12"
                 t-attf-style="background-color:#{doc.theme_id.base_color};color:#{doc.theme_id.heading_text_color};">
-                <span t-if="env.context.get('proforma', False) or is_pro_forma">Pro-Forma Invoice #</span>
+                <span t-if="env.context.get('proforma', False) or is_pro_forma">
+                    Pro-Forma Invoice #
+                </span>
                 <span t-elif="doc.state in ['draft','sent']">Quotation #</span>
                 <span t-else="">Order #</span>
                 <span t-field="doc.name"/>
@@ -84,24 +87,36 @@
                 <div class="oe_structure"/>
 
                 <!-- Is there a discount on at least one line? -->
-                <t t-set="lines_to_report" t-value="doc._get_order_lines_to_report()"/>
-                <t t-set="display_discount" t-value="any(l.discount for l in lines_to_report)"/>
+                <t t-set="lines_to_report"
+                   t-value="doc._get_order_lines_to_report()"/>
+                <t t-set="display_discount"
+                   t-value="any(l.discount for l in lines_to_report)"/>
 
                 <table class="table table-sm o_main_table mt-4">
                     <!-- In case we want to repeat the header, remove "display: table-row-group" -->
                     <thead t-attf-style="background-color:#{doc.theme_id.base_color};color:#{doc.theme_id.heading_text_color};">
                         <tr>
-                            <th name="th_description" class="text-start">Description</th>
-                            <th name="th_quantity" class="text-end">Quantity</th>
-                            <th name="th_priceunit" class="text-end">Unit Price</th>
-                            <th name="th_discount" t-if="display_discount" class="text-end"
+                            <th name="th_description" class="text-start">
+                                Description
+                            </th>
+                            <th name="th_quantity" class="text-end">Quantity
+                            </th>
+                            <th name="th_priceunit" class="text-end">Unit
+                                Price
+                            </th>
+                            <th name="th_discount" t-if="display_discount"
+                                class="text-end"
                                 groups="product.group_discount_per_so_line">
                                 <span>Disc.%</span>
                             </th>
                             <th name="th_taxes" class="text-end">Taxes</th>
                             <th name="th_subtotal" class="text-end">
-                                <span groups="account.group_show_line_subtotals_tax_excluded">Amount</span>
-                                <span groups="account.group_show_line_subtotals_tax_included">Total Price</span>
+                                <span groups="account.group_show_line_subtotals_tax_excluded">
+                                    Amount
+                                </span>
+                                <span groups="account.group_show_line_subtotals_tax_included">
+                                    Total Price
+                                </span>
                             </th>
                         </tr>
                     </thead>
@@ -111,9 +126,11 @@
 
                         <t t-foreach="lines_to_report" t-as="line">
 
-                            <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"
+                            <t t-set="current_subtotal"
+                               t-value="current_subtotal + line.price_subtotal"
                                groups="account.group_show_line_subtotals_tax_excluded"/>
-                            <t t-set="current_subtotal" t-value="current_subtotal + line.price_total"
+                            <t t-set="current_subtotal"
+                               t-value="current_subtotal + line.price_total"
                                groups="account.group_show_line_subtotals_tax_included"/>
 
                             <tr t-attf-style="color:#{doc.theme_id.customer_text_color} !important;"
@@ -136,7 +153,8 @@
                                     <td name="td_taxes" class="text-end">
                                         <span t-out="', '.join(map(lambda x: (x.description or x.name), line.tax_id))"/>
                                     </td>
-                                    <td t-if="not line.is_downpayment" name="td_subtotal"
+                                    <td t-if="not line.is_downpayment"
+                                        name="td_subtotal"
                                         class="text-end o_price_total">
                                         <span t-field="line.price_subtotal"
                                               groups="account.group_show_line_subtotals_tax_excluded"/>
@@ -186,12 +204,14 @@
                     </div>
                 </div>
 
-                <div t-if="doc.signature" class="mt-4 ml64 mr4" name="signature">
+                <div t-if="doc.signature" class="mt-4 ml64 mr4"
+                     name="signature">
                     <div class="offset-8">
                         <strong>Signature</strong>
                     </div>
                     <div class="offset-8">
-                        <img t-att-src="image_data_uri(doc.signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                        <img t-att-src="image_data_uri(doc.signature)"
+                             style="max-height: 4cm; max-width: 8cm;"/>
                     </div>
                     <div class="offset-8 text-center">
                         <p t-field="doc.signed_by"/>
@@ -218,5 +238,4 @@
             </div>
         </t>
     </template>
-
 </odoo>
