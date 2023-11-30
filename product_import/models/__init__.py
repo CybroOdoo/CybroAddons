@@ -19,4 +19,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import product_url
+from . import product_product
+from . import product_template

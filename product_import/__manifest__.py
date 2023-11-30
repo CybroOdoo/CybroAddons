@@ -19,26 +19,29 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 {
     'name': 'Product Image from URL',
+    'version': '16.0.1.1.1',
+    'category': 'Sales',
     'summary': 'Product Images from Web URL and Path',
-    'version': '16.0.1.0.0',
-    'description': """Product Images from Web URL, Product Images from path, local""",
+    'description': 'users can effortlessly import images by providing a web '
+                   'URL, ensuring swift retrieval from online sources. '
+                   'Simultaneously, users can opt for a local import, simply '
+                   'specifying the file path.',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'category': 'Sales',
-    'license': 'AGPL-3',
-    'images': ['static/description/banner.png'],
-    'depends': ['sale_management', 'stock'],
+    'depends': ['sale_management'],
     'data': [
-        'security/ir.model.access.csv',
-        'views/product_url.xml',
-        'wizard/product_import.xml',
-    ],
+            'security/ir.model.access.csv',
+            'views/product_product_views.xml',
+            'views/product_template_views.xml',
+            'wizard/product_import_views.xml',
+        ],
+    'images': ['static/description/banner.png'],
+    'license': 'AGPL-3',
     'installable': True,
-    'application': False,
     'auto_install': False,
+    'application': False,
 }
