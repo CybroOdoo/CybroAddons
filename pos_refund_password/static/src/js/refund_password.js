@@ -16,9 +16,11 @@ odoo.define('pos_refund_password.RefundPasswordButton', function (require) {
                 model: 'ir.config_parameter',
                 method: 'get_param',
                 args:["pos_refund_password.global_refund_security"],
-            }).then(result =>{
+            })
+            .then(result =>{
                 refund = result;
             });
+
             const dialogProps = {
             body : this.env._t(
                     'Incorrect Password')
@@ -27,7 +29,7 @@ odoo.define('pos_refund_password.RefundPasswordButton', function (require) {
                 session_refund = this.env.pos.config.refund_security;
                 }
             if(refund){
-                const { confirmed, payload } = await this.showPopup('NumberPopup')
+                const { confirmed, payload } = await this.showPopup('NumberPopup', { isPassword: true })
                 if(refund == payload){
                     super._onDoRefund();
                 }
@@ -38,7 +40,7 @@ odoo.define('pos_refund_password.RefundPasswordButton', function (require) {
                     }
             }
             else if(session_refund){
-                const { confirmed, payload } = await this.showPopup('NumberPopup')
+                const { confirmed, payload } = await this.showPopup('NumberPopup', { isPassword: true })
                 if(session_refund == payload){
                     super._onDoRefund();
                 }
