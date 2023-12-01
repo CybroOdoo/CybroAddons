@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <!--        Loan Request Action-->
+        <record id="loan_request_action" model="ir.actions.act_window">
+            <field name="name">Loan Request</field>
+            <field name="res_model">loan.request</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!--        Loan Request Tree View-->
+        <record id="loan_request_view_tree" model="ir.ui.view">
+            <field name="name">loan.request.view.tree</field>
+            <field name="model">loan.request</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree string="Loan Request">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="loan_amount"/>
+                    <field name="interest_rate"/>
+                    <field name="date"/>
+                    <field name="tenure"/>
+                    <field name="company_id"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--        Sequence Number Loan Request Records-->
+        <record id="increment_loan_reference" model="ir.sequence">
+            <field name="name">Loan Reference</field>
+            <field name="code">increment_loan_ref</field>
+            <field name="prefix">LOAN</field>
+            <field name="padding">3</field>
+        </record>
+
+        <!--        Loan Request Form View-->
+        <record id="loan_request_view_form" model="ir.ui.view">
+            <field name="name">loan.request.view.form</field>
+            <field name="model">loan.request</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <form string="Loan Request">
+                    <header>
+                        <div class="alert alert-info" role="alert"
+                             style="height: 40px; margin-bottom:0px;"
+                             attrs="{'invisible':[('state', 'not in', 'waiting for approval')]}"
+                             groups="advanced_loan_management.loan_management_group_user">
+                            Waiting for approval from the manager
+                        </div>
+
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,confirmed,approved"/>
+                        <button name="action_loan_request" class="oe_highlight"
+                                states="draft" string="Confirm"
+                                type="object"/>
+                        <button name="action_compute_repayment" class="oe_highlight"
+                                states="confirmed"
+                                string="Compute Repayments"
+                                type="object"/>
+                        <button name="action_request_for_loan" class="oe_highlight"
+                                states="confirmed" string="Request"
+                                type="object"/>
+                        <button name="action_loan_approved" class="oe_highlight"
+                                states="waiting for approval" string="Approve"
+                                type="object"
+                                groups="advanced_loan_management.loan_management_group_manager"/>
+                        <button name="action_loan_rejected" class="oe_highlight"
+                                states="waiting for approval" string="Reject"
+                                type="object"
+                                groups="advanced_loan_management.loan_management_group_manager"/>
+                        <button name="action_disburse_loan" class="oe_highlight"
+                                string="Disburse"
+                                type="object" states="approved"/>
+                        <button name="action_close_loan" class="oe_highlight"
+                                string="Close"
+                                type="object"
+                                states="disbursed"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" style="width: 50%%;"
+                                       placeholder="Loan Type"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="partner_id"/>
+                                <field name="loan_type_id"
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            </group>
+                            <group>
+                                <field name="tenure"
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="disbursal_amount"/>
+                                <field name="currency_id"/>
+                                <field name="date"/>
+                                <field name="request" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="loan_amount"/>
+                                <field name="interest_rate"/>
+                                <field name="company_id"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Repayment schedules"
+                                  attrs="{'invisible': [('state', '=', 'draft')]}">
+                                <field name="repayment_lines_ids" readonly="1">
+                                    <tree string="tree" create="false">
+                                        <field name="name"/>
+                                        <field name="date"/>
+                                        <field name="amount"/>
+                                        <field name="interest_amount"/>
+                                        <field name="total_amount"/>
+                                        <field name="state"
+                                               attrs="{'column_invisible': [('parent.state', '!=', 'disbursed')]}"
+                                               widget="badge"
+                                               optional="show"
+                                               decoration-danger="state == 'unpaid'"
+                                               decoration-warning="state == 'invoiced'"
+                                               decoration-success="state == 'paid'"/>
+                                        <field name="invoice" invisible="1"/>
+                                        <button attrs="{'invisible': ['|', '|', ('invoice', '=', True),
+                                           ('state', '!=', 'unpaid'), ('parent.state', '!=', 'disbursed')]}"
+                                                name="action_pay_emi"
+                                                class="oe_highlight"
+                                                string="Pay"
+                                                type="object"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Documents">
+                                <group>
+                                    <field name="documents_ids"
+                                           widget="many2many_tags"/>
+                                    <field name="img_attachment_ids"
+                                           widget="many2many_binary"/>
+                                </group>
+                            </page>
+                            <page string="Loan rejection" states="rejected">
+                                <field name="reject_reason" readonly="1"/>
+                            </page>
+                            <page string="Accounting"
+                                  attrs="{'invisible': [('state', '=', 'draft')]}">
+                                <group>
+                                    <group>
+                                        <field name="journal_id"
+                                               attrs="{'required': [('state', '=', 'approved')], 'readonly': [('state', '=', 'disbursed')]}"/>
+                                    </group>
+                                    <group>
+                                        <field name="debit_account_id"
+                                               attrs="{'required': [('state', '=', 'approved')], 'readonly': [('state', '=', 'disbursed')]}"/>
+                                        <field name="credit_account_id"
+                                               attrs="{'required': [('state', '=', 'approved')], 'readonly': [('state', '=', 'disbursed')]}"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+</odoo>

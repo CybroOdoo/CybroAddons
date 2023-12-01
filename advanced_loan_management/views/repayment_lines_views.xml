@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--        Default GroupBy-->
+        <record id="repayment_line_default_group" model="ir.ui.view">
+            <field name="name">repayment.line.default.group</field>
+            <field name="model">repayment.line</field>
+            <field name="arch" type="xml">
+                <search string="Loan">
+                    <filter name="loan" string="Loan ID" context="{'group_by': 'loan_id'}"/>
+                </search>
+            </field>
+        </record>
+
+        <!--        Repayment Line Action-->
+        <record id="repayment_line_action" model="ir.actions.act_window">
+            <field name="name">Repayment Line</field>
+            <field name="res_model">repayment.line</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_loan': 1}</field>
+            <field name="search_view_id" ref="repayment_line_default_group"/>
+        </record>
+
+        <!--        Repayment Line Tree View-->
+        <record id="repayment_line_view_tree" model="ir.ui.view">
+            <field name="name">repayment.line.view.tree</field>
+            <field name="model">repayment.line</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <tree string="Loan Request" create="false">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="loan_id"/>
+                    <field name="date"/>
+                    <field name="total_amount"/>
+                    <field name="company_id"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--        Repayment Line Form View -->
+        <record id="repayment_line_view_form" model="ir.ui.view">
+            <field name="name">repayment.line.view.form</field>
+            <field name="model">repayment.line</field>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <form string="Repayment Line" create="false">
+                    <header>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="unpaid,paid"/>
+                        <button attrs="{'invisible': ['|', ('invoice', '=', True), ('state', '!=', 'unpaid')]}"
+                                name="action_pay_emi"
+                                class="oe_highlight"
+                                string="Pay"
+                                type="object"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" style="width: 50%%;"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="partner_id"/>
+                                <field name="loan_id"/>
+                            </group>
+                            <group>
+                                <field name="date"/>
+                                <field name="amount"/>
+                                <field name="interest_amount"/>
+                                <field name="total_amount"/>
+                                <field name="invoice" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="company_id"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Accounting">
+                                <group>
+                                    <group>
+                                        <field name="journal_loan_id"/>
+                                    </group>
+                                    <group>
+                                        <field name="interest_account_id"/>
+                                        <field name="repayment_account_id"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+</odoo>
