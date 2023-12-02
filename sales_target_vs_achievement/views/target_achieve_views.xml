@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--        Tree view of Target and achieved details based on each individual-->
+        <record id="target_achieve_view_tree_user" model="ir.ui.view">
+            <field name="name">target.achieve.view.tree.user</field>
+            <field name="model">target.achieve</field>
+            <field name="arch" type="xml">
+                <tree string="User Target Achieved Details">
+                    <field name="currency_id" invisible="1"/>
+                    <field name="sale_user_id"/>
+                    <field name="user_target" widget="monetary"/>
+                    <field name="person_achieved_amt" widget="monetary"/>
+                    <field name="time_span"/>
+                    <field name="team_id"/>
+                    <field name="team_achieved_amt" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+<!--        Tree view of Target and achieved details based on each Sales team-->
+        <record id="target_achieve_view_tree_team" model="ir.ui.view">
+            <field name="name">target.achieve.view.tree.team</field>
+            <field name="model">target.achieve</field>
+            <field name="arch" type="xml">
+                <tree string="Team Target Achieved Details">
+                    <field name="currency_id" invisible="1"/>
+                    <field name="sale_user_id"/>
+                    <field name="user_target" widget="monetary"/>
+                    <field name="person_achieved_amt" invisible="1"/>
+                    <field name="team_achieved_amt" widget="monetary"/>
+                    <field name="team_target" invisible="1" force_save="1"/>
+                    <field name="time_span"/>
+                    <field name="team_id"/>
+                </tree>
+            </field>
+        </record>
+<!--        Form view to set Target and show achieved details based on each individual-->
+        <record id="target_achieve_view_form" model="ir.ui.view">
+            <field name="name">target.achieve.view.form</field>
+            <field name="model">target.achieve</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="currency_id" invisible="1"/>
+                                <field name="sale_user_id"/>
+                                <field name="user_target" widget="monetary"/>
+                                <field name="time_span"/>
+                                <field name="team_id"/>
+                            </group>
+                            <group>
+                                <field name="person_achieved_amt" widget="monetary"/>
+                                <field name="team_achieved_amt" widget="monetary"/>
+                                <field name="team_target" invisible="1" force_save="1"/>
+                                <field name="name" invisible="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                        <field name="activity_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+<!--        Search view -->
+        <record id="target_achieve_view_search" model="ir.ui.view">
+            <field name="name">target.achieve.view.search</field>
+            <field name="model">target.achieve</field>
+            <field name="arch" type="xml">
+                <search string="Search">
+                    <field name="sale_user_id"/>
+                    <field name="time_span"/>
+                    <field name="team_id"/>
+                    <filter string="Team Target" name="team"
+                            context="{'group_by':'team_id'}"/>
+                    <filter string="Person Target" name="user"
+                            context="{'group_by':'sale_user_id'}"/>
+                </search>
+            </field>
+        </record>
+<!--        Graph view-->
+        <record id="target_achieve_view_graph" model="ir.ui.view">
+            <field name="name">target.achieve.view.graph</field>
+            <field name="model">target.achieve</field>
+            <field name="type">graph</field>
+            <field name="arch" type="xml">
+                <graph string="Target Achieved Details" type="bar">
+                    <field name="team_id"/>
+                    <field name="time_span" type="row" widget="radio"/>
+                    <field name="team_achieved_amt" type="measure" force_save="1"/>
+                </graph>
+            </field>
+        </record>
+<!--    Action for the User Target Achieved Details Menu-->
+        <record id="target_achieve_action_user" model="ir.actions.act_window">
+            <field name="name">User Target Achieved Details</field>
+            <field name="res_model">target.achieve</field>
+            <field name="context">{"search_default_user":1}</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+    (0, 0, {'view_mode': 'tree', 'view_id': ref('target_achieve_view_tree_user')}),
+    (0, 0, {'view_mode': 'form', 'view_id': ref('target_achieve_view_form')}),
+    ]"/>
+            <field name="view_mode">tree</field>
+        </record>
+<!--        Action for the Team Target Achieved Details Menu-->
+        <record id="target_achieve_action_team" model="ir.actions.act_window">
+            <field name="name">Team Target Achieved Details</field>
+            <field name="res_model">target.achieve</field>
+            <field name="context">{"search_default_team":1}</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+    (0, 0, {'view_mode': 'tree', 'view_id': ref('target_achieve_view_tree_team')}),
+    (0, 0, {'view_mode': 'form', 'view_id': ref('target_achieve_view_form')}),
+    ]"/>
+            <field name="view_mode">tree</field>
+        </record>
+<!--    Action for the Graph view to show-->
+        <record id="target_achieve_action_graph" model="ir.actions.act_window">
+            <field name="name">Target Achieve Graph</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">target.achieve</field>
+            <field name="view_mode">graph</field>
+        </record>
+<!--        Menus in CRM module-->
+        <menuitem id="target_achieve_menu_sales_target"
+                  name="Sales Target"
+                  parent="crm.crm_menu_root"
+                  sequence="6"/>
+        <menuitem id="target_achieve_menu_target_achieve_team"
+                  name="Team Target Achieved Details"
+                  parent="target_achieve_menu_sales_target"
+                  action="target_achieve_action_team"
+                  groups="base.group_user"
+                  sequence="1"/>
+        <menuitem id="target_achieve_menu_target_achieve_user"
+                  name="User Target Achieved Details"
+                  parent="target_achieve_menu_sales_target"
+                  action="target_achieve_action_user"
+                  groups="base.group_user"
+                  sequence="2"/>
+        <menuitem id="target_achieve_menu_target_achieve_analysis"
+                  name="Target and Achievement Analysis"
+                  parent="target_achieve_menu_sales_target"
+                  action="target_achieve_action_graph"
+                  groups="base.group_user"
+                  sequence="3"/>
+</odoo>
