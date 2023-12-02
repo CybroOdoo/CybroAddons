@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+<!--    Header-->
+    <template id="theme_levelup_header"
+              inherit_id="website.layout">
+        <xpath expr="//header" position="replace">
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,700 &amp; display=swap"/>
+            <header class="header_modern_light ">
+                <section class="navigation fixed-top sticker">
+                    <div class="container">
+                        <nav class="navbar navbar-expand-xl navbar-light ">
+                            <a class="navbar-brand t_color  pb-2 d-lg-block "
+                               href="/">
+                                <span t-field="website.logo"
+                                      class="navbar-brand"
+                                      t-options="{'widget': 'image', 'width': 95, 'height': 40}"
+                                      role="img"
+                                      t-att-aria-label="'Logo of %s' % website.name"
+                                      t-att-title="website.name"/>
+                            </a>
+                            <a class="navbar-toggler collapsed border-0 "
+                               type="button" data-toggle="collapse"
+                               data-target="#navbarSupportedContent"
+                               aria-controls="navbarSupportedContent"
+                               aria-expanded="false"
+                               aria-label="Toggle navigation">
+                                <span class="menu_icon m_color"> </span>
+                                <span class="menu_icon m_color"> </span>
+                                <span class="menu_icon m_color"> </span>
+                            </a>
+                            <div class="collapse navbar-collapse"
+                                 id="navbarSupportedContent">
+                                <ul class="navbar-nav ">
+                                    <li class="nav-item active">
+                                        <t t-foreach="website.menu_id.child_id"
+                                           t-as="submenu">
+                                            <t t-set="item_class"
+                                               t-valuef="nav-item"/>
+                                            <t t-set="link_class"
+                                               t-valuef="nav-link t_color"/>
+                                            <t t-set="show_dropdown"
+                                               t-value="(submenu.is_mega_menu and submenu.is_visible) or submenu.child_id.filtered(lambda menu: menu.is_visible)"/>
+                                            <li t-if="submenu.is_visible and not (submenu.child_id or submenu.is_mega_menu)"
+                                                t-attf-class="#{item_class or ''} #{'nav-link t_color'} #{''}">
+                                                <a t-att-href="submenu.clean_url()"
+                                                   t-attf-class="#{link_class or ''} #{'nav-item' if submenu.clean_url() and unslug_url(request.httprequest.path) == unslug_url(submenu.clean_url()) else ''}"
+                                                   role="menuitem"
+                                                   t-ignore="true"
+                                                   t-att-target="'_blank' if submenu.new_window else None">
+                                                    <t t-if="''">
+                                                        <span t-esc="submenu.name"/>
+                                                    </t>
+                                                </a>
+                                            </li>
+                                            <li t-elif="show_dropdown"
+                                                t-attf-class="#{item_class or ''} dropdown #{
+        (submenu.clean_url() and submenu.clean_url() != '/' and any(request.httprequest.path == child.url for child in submenu.child_id if child.url) or
+         (submenu.clean_url() and request.httprequest.path == submenu.clean_url())) and 'active'
+        } #{submenu.is_mega_menu and 'position-static'}">
+                                                <a t-attf-class="#{link_class or ''} dropdown-toggle #{'nav-link t_color'}"
+                                                   data-bs-toggle="dropdown"
+                                                   href="#">
+                                                    <span t-field="submenu.name"/>
+                                                </a>
+                                                <div t-if="submenu.is_mega_menu"
+                                                     t-attf-class="dropdown-menu o_mega_menu #{'nav-link t_color'}"
+                                                     data-name="Mega Menu"
+                                                     t-field="submenu.mega_menu_content"/>
+                                                <ul t-else=""
+                                                    class="dropdown-menu"
+                                                    role="menu">
+                                                    <t t-foreach="submenu.child_id"
+                                                       t-as="submenu">
+                                                        <t t-call="website.submenu">
+                                                            <t t-set="item_class"
+                                                               t-value="None"/>
+                                                            <t t-set="link_class"
+                                                               t-valuef="dropdown-item"/>
+                                                        </t>
+                                                    </t>
+                                                </ul>
+                                            </li>
+                                        </t>
+                                        <a href="/" role="menuitem" t-ignore="true" class="new-nav-color">
+                                            <span >Home</span>
+                                        </a>
+                                        <a href="/blog" role="menuitem" t-ignore="true" class="new-nav-color">
+                                            <span >Blog</span>
+                                        </a>
+                                        <a href="/about" role="menuitem" t-ignore="true" class="new-nav-color">
+                                            <span >About</span>
+                                        </a>
+                                        <a href="/portfolio" role="menuitem" t-ignore="true" class="new-nav-color">
+                                            <span >Portfolio</span>
+                                        </a>
+                                        <a href="/service" role="menuitem" t-ignore="true" class="new-nav-color">
+                                            <span >Service</span>
+                                        </a>
+                                        <a href="/team" role="menuitem" t-ignore="true" class="new-nav-color">
+                                            <span >Team</span>
+                                        </a>
+                                        <a href="/contactus" role="menuitem" t-ignore="true" class="new-nav-color">
+                                            <span >Contact Us</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </nav>
+                    </div>
+                </section>
+            </header>
+        </xpath>
+    </template>
+</odoo>
