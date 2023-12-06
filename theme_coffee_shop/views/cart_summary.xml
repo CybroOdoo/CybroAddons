@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- This XML template customizes the appearance of the short cart summary in the website -->
+    <template id="coffee_short_cart_summary"
+              inherit_id="website_sale.short_cart_summary"
+              name="Coffee Cart Summary">
+        <xpath expr="//div[hasclass('js_cart_summary')]" position="replace">
+            <div class="cart-right"
+                 t-if="website_sale_order and website_sale_order.website_order_line">
+                <div>
+                    <t t-call="website_sale.total">
+                        <t t-set="no_rowspan" t-value="1"/>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <!--    Cart total-->
+    <template id="coffee_shop_total" inherit_id="website_sale.total"
+              name="Coffee Total">
+        <xpath expr="." position="replace">
+            <div id="cart_total" t-att-class="extra_class or ''"
+                 t-if="website_sale_order and website_sale_order.website_order_line">
+                <table class="table mb-0">
+                    <tr id="order_total_untaxed">
+                        <td class="list border-0">Subtotal:</td>
+                        <td class="amount text-xl-end border-0">
+                            <span t-field="website_sale_order.amount_untaxed"
+                                  class="monetary_field text-nowrap"
+                                  t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                        </td>
+                    </tr>
+                    <tr/>
+                    <tr id="order_total_taxes">
+                        <td class="list border-0">Sales tax:</td>
+                        <td class="amount text-xl-end border-0">
+                            <span t-field="website_sale_order.amount_tax"
+                                  class="monetary_field text-nowrap"
+                                  t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                        </td>
+                    </tr>
+                    <tr/>
+                    <tr id="order_total">
+                        <td class="list border-bottom-0">Grand Total:</td>
+                        <td class="amount text-xl-end border-bottom-0">
+                            <span t-field="website_sale_order.amount_total"
+                                  class="monetary_field"
+                                  t-options='{"widget": "monetary", "display_currency": website_sale_order.pricelist_id.currency_id}'/>
+                        </td>
+                    </tr>
+                    <tr/>
+                    <tr t-if="not hide_promotions">
+                        <td colspan="3"
+                            class="text-center text-xl-right border-0">
+                            <span class=''>
+                                <t t-set='force_coupon'
+                                   t-value="website_sale_order.pricelist_id.code or request.params.get('code_not_available')"/>
+                                <t t-if="not force_coupon">
+                                    <a href="#" class="show_coupon">I have a
+                                        promo
+                                        code
+                                    </a>
+                                </t>
+                                <div t-attf-class="coupon_form #{not force_coupon and 'd-none'}">
+                                    <t t-call="website_sale.coupon_form"/>
+                                </div>
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </xpath>
+    </template>
+</odoo>

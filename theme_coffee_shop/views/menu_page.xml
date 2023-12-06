@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- This XML record defines a custom website page for the "Menu" section -->
+    <record id="coffee_menu" model="website.page">
+        <field name="name">Menu</field>
+        <field name="type">qweb</field>
+        <field name="key">theme_coffee_shop.coffee_menu</field>
+        <field name="url">/menu</field>
+        <field name="is_published">True</field>
+        <field name="arch" type="xml">
+            <t name="Menu" t-name="theme_coffee_shop.coffee_menu">
+                <t t-call="website.layout">
+                    <t t-set="opt_wsale_categories_top"
+                       t-value="is_view_active('website_sale.products_categories_top')"/>
+                    <div id="wrap">
+                        <section id="banner" class="banner-img">
+                            <div class="container wrapper ">
+                                <div class="banner-content">
+                                    <div class="banner-text">
+                                        <p class="banner-head">Better Beans</p>
+                                        <p class="banner-head">Better Coffee</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <div class="oe_structure oe_empty oe_structure_not_nearest"/>
+                        <div class="container oe_website_sale pt-2">
+                            <div class="row o_wsale_products_main_row align-items-start flex-nowrap">
+                                <div id="products_grid" style="width:1200px;">
+                                    <t t-call="theme_coffee_shop.coffee_products_breadcrumb">
+                                        <t t-set="_classes"
+                                           t-valuef="d-none d-lg-flex w-100 p-0 small"/>
+                                    </t>
+                                    <div class="products_header btn-toolbar flex-nowrap align-items-center justify-content-between mb-3">
+                                        <t t-call="theme_coffee_shop.coffee_menu_category"/>
+                                        <div t-if="category"
+                                             class="d-flex align-items-center d-lg-none me-auto">
+                                            <t t-if="not category.parent_id"
+                                               t-set="backUrl"
+                                               t-valuef="/menu"/>
+                                            <t t-else="" t-set="backUrl"
+                                               t-value="keep('/menu/category/' + slug(category.parent_id), category=0)"/>
+                                            <a t-attf-class="btn btn-{{navClass}} me-2"
+                                               t-att-href="category.parent_id and keep('/menu/category/' + slug(category.parent_id), category=0) or '/menu'">
+                                                <i class="fa fa-angle-left"/>
+                                            </a>
+                                            <h4 t-out="category.name"
+                                                class="mb-0 me-auto"/>
+                                        </div>
+                                        <button t-if="opt_wsale_categories"
+                                                t-attf-class="btn btn-{{navClass}} position-relative ms-3 {{not opt_wsale_attributes_top and 'd-lg-none'}}"
+                                                data-bs-toggle="offcanvas"
+                                                data-bs-target="#o_wsale_offcanvas">
+                                            <i class="fa fa-sliders"/>
+                                            <span t-if="isFilteringByPrice or attrib_set"
+                                                  t-attf-class="position-absolute top-0 start-100 translate-middle badge border border-{{navClass}} rounded-circle bg-danger p-1">
+                                                <span class="visually-hidden">
+                                                    filters active
+                                                </span>
+                                            </span>
+                                        </button>
+                                    </div>
+                                    <div t-if="original_search and products"
+                                         class="alert alert-warning mt8">
+                                        No results found for '<span
+                                            t-esc="original_search"/>'. Showing
+                                        results for '<span t-esc="search"/>'.
+                                    </div>
+                                    <t t-if="category">
+                                        <t t-set='editor_msg'>Drag building
+                                            blocks here to customize the header
+                                            for "<t t-esc='category.name'/>"
+                                            category.
+                                        </t>
+                                        <div class="mb16" id="category_header"
+                                             t-att-data-editor-message="editor_msg"
+                                             t-field="category.website_description"/>
+                                    </t>
+                                    <div t-cache="pricelist,products"
+                                         t-if="products"
+                                         class="o_wsale_products_grid_table_wrapper pt-3 pt-lg-0">
+                                        <table class="table table-borderless h-100 m-0"
+                                               t-att-data-ppg="ppg"
+                                               t-att-data-ppr="ppr"
+                                               t-att-data-name="grid_block_name">
+                                            <colgroup t-ignore="true">
+                                                <col t-foreach="ppr" t-as="p"/>
+                                            </colgroup>
+                                            <tbody>
+                                                <tr t-foreach="bins"
+                                                    t-as="tr_product">
+                                                    <t t-foreach="tr_product"
+                                                       t-as="td_product">
+                                                        <t t-if="td_product">
+                                                            <td t-att-colspan="td_product['x'] != 1 and td_product['x']"
+                                                                t-att-rowspan="td_product['y'] != 1 and td_product['y']"
+                                                                t-attf-class="oe_product"
+                                                                t-att-data-ribbon-id="td_product['ribbon'].id"
+                                                                t-att-data-name="product_block_name">
+                                                                <div t-attf-class="o_wsale_product_grid_wrapper position-relative h-100 o_wsale_product_grid_wrapper_#{td_product['x']}_#{td_product['y']}">
+                                                                    <t t-call="website_sale.products_item">
+                                                                        <t t-set="product"
+                                                                           t-value="td_product['product']"/>
+                                                                    </t>
+                                                                </div>
+                                                            </td>
+                                                        </t>
+                                                        <td t-else=""/>
+                                                    </t>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div t-else=""
+                                         class="text-center text-muted mt128 mb256">
+                                        <t t-if="not search">
+                                            <h3 class="mt8">No product defined
+                                            </h3>
+                                            <p t-if="category">No product
+                                                defined in category "
+                                                <strong
+                                                        t-esc="category.display_name"/>
+                                                ".
+                                            </p>
+                                        </t>
+                                        <t t-else="">
+                                            <h3 class="mt8">No results</h3>
+                                            <p>No results for "<strong
+                                                    t-esc='search'/>"
+                                                <t t-if="category">in category "
+                                                    <strong t-esc="category.display_name"/>
+                                                    "
+                                                </t>
+                                                .
+                                            </p>
+                                        </t>
+                                        <p t-ignore="true"
+                                           groups="sales_team.group_sale_manager">
+                                            Click <i>'New'</i> in the top-right
+                                            corner to create your first product.
+                                        </p>
+                                    </div>
+                                    <div class="products_pager d-flex justify-content-center pt-5 pb-3">
+                                        <t t-call="website.pager"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="oe_structure oe_empty oe_structure_not_nearest"/>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+    <!--    Categories-->
+    <template id="coffee_menu_category" name=" Coffee Menu Categories ">
+        <t t-if="category.id">
+            <t t-set="entries"
+               t-value="not search and category.child_id or category.child_id.filtered(lambda c: category.id in search_categories_ids)"/>
+            <t t-if="not entries">
+                <t t-set="parent" t-value="category.parent_id"/>
+                <t t-set="entries"
+                   t-value="not search and parent.child_id or parent.child_id.filtered(lambda c: parent.id in search_categories_ids)"/>
+            </t>
+        </t>
+        <t t-else="">
+            <t t-set="entries" t-value="categories"/>
+        </t>
+        <div t-if="entries"
+             class="o_wsale_filmstip_container d-flex align-items-stretch mb-2 overflow-hidden">
+            <div class="o_wsale_filmstip_wrapper pb-1 mb-2 overflow-auto">
+                <ul class="o_wsale_filmstip d-flex align-items-stretch mb-0 list-unstyled overflow-visible">
+                    <t t-foreach="entries" t-as="c" t-if="c.image_128"
+                       t-set="atLeastOneImage" t-value="True"/>
+                    <t t-if="category.parent_id" t-set="backUrl"
+                       t-value="keep('/menu/category/' + slug(category.parent_id), category=0)"/>
+                    <t t-else="" t-set="backUrl" t-value="'/menu'"/>
+                    <a t-foreach="entries" t-as="c"
+                       t-attf-class="d-flex {{'pe-3' if not c_last else ''}} btn filter-box"
+                       t-att-href="keep('/menu/category/' + slug(c), category=0)">
+                        <input type="radio"
+                               t-attf-name="wsale_categories_top_radios_{{parentCategoryId}}"
+                               class="btn-check pe-none opacity" t-att-id="c.id"
+                               t-att-value="c.id"
+                               t-att-checked="'true' if c.id == category.id else None"/>
+                        <div t-attf-class=" btn btn-{{navClass}} d-flex align-items-center {{'ps-2 pe-3' if c.image_128 else 'px-4'}} fs-6 fw-normal filter-tex"
+                             t-att-for="c.id">
+                            <span t-field="c.name"/>
+                        </div>
+                    </a>
+                </ul>
+            </div>
+        </div>
+    </template>
+    <!-- This XML template defines the breadcrumb for product categories in the "Menu" section -->
+    <template id="coffee_products_breadcrumb"
+              name=" Coffee Products Breadcrumb">
+        <ol t-if="category" t-attf-class="breadcrumb #{_classes}">
+            <li class="breadcrumb-item">
+                <a t-attf-href="/menu">Products</a>
+            </li>
+            <t t-foreach="category.parents_and_self" t-as="cat">
+                <li t-if="cat == category" class="breadcrumb-item">
+                    <span class="d-inline-block" t-field="cat.name"/>
+                </li>
+                <li t-else="" class="breadcrumb-item">
+                    <a t-att-href="keep('/menu/category/%s' % slug(cat), category=0)"
+                       t-field="cat.name"/>
+                </li>
+            </t>
+        </ol>
+    </template>
+</odoo>
