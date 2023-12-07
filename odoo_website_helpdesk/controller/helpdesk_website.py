@@ -25,7 +25,6 @@ class HelpDeskDashboard(http.Controller):
         new_id_ls = []
         for data in new_id:
             new_id_ls.append(data.id)
-
         in_progress = request.env["help.ticket"].search_count([('stage_id', '=', stage_inprogress)])
         in_progress_id = request.env["help.ticket"].search([('stage_id', '=', stage_inprogress)])
         in_progress_ls = []

@@ -75,12 +75,13 @@ class Helpdesk(models.TransientModel):
     @api.onchange('closed_stage')
     def closed_stage_a(self):
         """Closing stage function"""
-        stage = self.closed_stage.id
-        in_stage = self.env['ticket.stage'].search([('id', '=', stage)])
-        not_in_stage = self.env['ticket.stage'].search([('id', '!=', stage)])
-        in_stage.closing_stage = True
-        for each in not_in_stage:
-            each.closing_stage = False
+        if self.closed_stage:
+            stage = self.closed_stage.id
+            in_stage = self.env['ticket.stage'].search([('id', '=', stage)])
+            not_in_stage = self.env['ticket.stage'].search([('id', '!=', stage)])
+            in_stage.closing_stage = True
+            for each in not_in_stage:
+                each.closing_stage = False
 
     @api.constrains('show_category')
     def show_category_subcategory(self):
