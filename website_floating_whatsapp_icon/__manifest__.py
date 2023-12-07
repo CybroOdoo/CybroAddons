@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2020-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Noorjahan N A (<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -22,7 +22,7 @@
 
 {
     'name': 'Whatsapp Floating Icon in Website',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Extra Tools',
     'summary': """Whatsapp Floating Icon in Website""",
     'description': """Whatsapp Floating Icon in Website, Website Floating WhatsApp Icon, Whatsapp Odoo Website,Whatsapp Odoo Coonector, Whatsapp website, Whatsapp""",
@@ -30,10 +30,10 @@
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'depends': ['base','website'],
+    'depends': ['base', 'website'],
     'data': [
         'views/portal_whatsapp_view.xml',
-        'views/website_inherited.xml',
+        'views/website_views.xml',
     ],
     'images': ['static/description/banner.png'],
     'assets': {

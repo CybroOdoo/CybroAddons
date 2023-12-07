@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2020-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Noorjahan N A (<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -26,4 +26,5 @@ from odoo import fields, models
 class Website(models.Model):
     _inherit = 'website'
 
-    mobile_number = fields.Char(string='Mobile Number')
+    mobile_number = fields.Char(string='Mobile Number',
+                                help="Your WhatsApp number")
