@@ -27,19 +27,40 @@ from odoo.exceptions import UserError
 class StockPickingInherit(models.Model):
     _inherit = 'stock.picking'
 
-    auto_generated = fields.Boolean(string='Auto Generated Transfer', copy=False,
-                                    help="Field helps to check the picking is created from an another picking or not")
+    auto_generated = fields.Boolean(string='Auto Generated Transfer',
+                                    copy=False,
+                                    help="Field helps to check the picking is "
+                                         "created from an another picking "
+                                         "or not")
+    is_backorder_button_clicked = fields.Boolean(default=False,
+                                                 string='Backorder Button Clicked')
 
     def button_validate(self):
-        """Creating the internal transfer if it is not created from another picking"""
-        res = super(StockPickingInherit, self).button_validate()
-        if not self.auto_generated:
-            self.create_intercompany_transfer()
-        return res
+        """Creating the internal transfer if it is not created
+        from another picking"""
+        active_move = []
+        greater_quantity = []
+        for move in self.move_ids:
+            if move.quantity_done != 0.0:
+                if move.quantity_done < move.product_uom_qty or move.quantity_done > move.product_uom_qty:
+                    active_move.append(move.id)
+            if move.quantity_done > move.product_uom_qty:
+                greater_quantity.append(move.id)
+        if len(greater_quantity) == self.move_ids.search_count([('picking_id', '=', self.id)]):
+            if not self.auto_generated:
+                self.create_intercompany_transfer()
+        if not self.move_ids.search(
+                [('picking_id', '=', self.id), ('quantity_done', '=', 0.0)]):
+            if not active_move:
+                if not self.auto_generated:
+                    self.create_intercompany_transfer()
+        return super(StockPickingInherit, self).button_validate()
 
     def create_intercompany_transfer(self):
-        """Creating the transfer if the selected company is enabled the internal transfer option"""
-        company_id = self.env['res.company'].sudo().search([('partner_id', '=', self.partner_id.id)], limit=1)
+        """Creating the transfer if the selected company is enabled the
+        internal transfer option"""
+        company_id = self.env['res.company'].sudo().search(
+            [('partner_id', '=', self.partner_id.id)], limit=1)
         operation_type_id = False
         location_id = False
         location_dest_id = False
@@ -47,18 +68,23 @@ class StockPickingInherit(models.Model):
         if company_id and company_id.enable_inter_company_transfer:
             create_transfer = False
             if self.picking_type_id.code == company_id.apply_transfer_type or company_id.apply_transfer_type == 'all':
-                 create_transfer = True
+                create_transfer = True
             if create_transfer:
                 warehouse_ids = company_id.destination_warehouse_id.sudo()
                 if self.picking_type_id.code == 'incoming':
-                    operation_type_id = self.env['stock.picking.type'].sudo().search(
-                        [('warehouse_id', 'in', warehouse_ids.ids), ('code', '=', 'outgoing')], limit=1)
+                    operation_type_id = self.env[
+                        'stock.picking.type'].sudo().search(
+                        [('warehouse_id', 'in', warehouse_ids.ids),
+                         ('code', '=', 'outgoing')], limit=1)
 
                 elif self.picking_type_id.code == 'outgoing':
-                    operation_type_id = self.env['stock.picking.type'].sudo().search(
-                        [('warehouse_id', 'in', warehouse_ids.ids), ('code', '=', 'incoming')], limit=1)
+                    operation_type_id = self.env[
+                        'stock.picking.type'].sudo().search(
+                        [('warehouse_id', 'in', warehouse_ids.ids),
+                         ('code', '=', 'incoming')], limit=1)
                 else:
-                    raise UserError(_('Internal transfer between companies are not allowed'))
+                    raise UserError(
+                        _('Internal transfer between companies are not allowed'))
 
                 if operation_type_id:
                     if operation_type_id.default_location_src_id:
@@ -80,15 +106,18 @@ class StockPickingInherit(models.Model):
                         'auto_generated': True,
                         'origin': self.name
                     }
-                    picking_id = self.env['stock.picking'].sudo().create(picking_vals)
+                    picking_id = self.env['stock.picking'].sudo().create(
+                        picking_vals)
                 else:
-                    raise UserError(_('Please configure appropriate locations on Operation type/Partner'))
+                    raise UserError(
+                        _('Please configure appropriate locations on Operation type/Partner'))
 
                 for move in self.move_ids:
-                    lines = self.move_line_ids.filtered(lambda x: x.product_id == move.product_id)
+                    lines = self.move_line_ids.filtered(
+                        lambda x: x.product_id == move.product_id)
                     done_qty = sum(lines.mapped('qty_done'))
                     if not done_qty:
-                        done_qty = sum(lines.mapped('product_uom_qty'))
+                        done_qty = sum(lines.move_id.mapped('product_uom_qty'))
                     move_vals = {
                         'picking_id': picking_id.id,
                         'picking_type_id': operation_type_id.id,
@@ -98,7 +127,7 @@ class StockPickingInherit(models.Model):
                         'product_uom_qty': done_qty,
                         'location_id': location_id,
                         'location_dest_id': location_dest_id,
-                        'company_id': company_id.id
+                        'company_id': company_id.id,
                     }
                     self.env['stock.move'].sudo().create(move_vals)
                 if picking_id:
