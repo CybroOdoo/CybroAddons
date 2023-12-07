@@ -101,8 +101,28 @@ class ImportBankStatement(models.TransientModel):
                                 raise ValidationError(
                                     _("Amount is not set"))
                             elif not file_item.split(',')[4]:
-                                raise ValidationError(
-                                    _("Partner name is not set"))
+                                date_obj = str(fields.date.today()) if not \
+                                    file_item.split(',')[3] else \
+                                    file_item.split(',')[
+                                        3]
+                                transaction_date = datetime.strptime(date_obj,
+                                                                     "%Y-%m-%d")
+                                # Creating a record in account.bank.statement model
+                                statement = self.env[
+                                    'account.bank.statement'].create({
+                                    'name': file_item.split(',')[0],
+                                    'line_ids': [
+                                        (0, 0, {
+                                            'date': transaction_date,
+                                            'payment_ref': 'csv file',
+                                            'journal_id': self.journal_id.id,
+                                            'amount': file_item.split(',')[
+                                                1],
+                                            'amount_currency':
+                                                file_item.split(',')[2],
+                                        }),
+                                    ],
+                                })
                 return {
                     'type': 'ir.actions.act_window',
                     'name': 'Statements',
@@ -154,8 +174,21 @@ class ImportBankStatement(models.TransientModel):
                             raise ValidationError(
                                 _("Amount is not set"))
                         elif not line[3]:
-                            raise ValidationError(
-                                _("Partner name is not set"))
+                            date_obj = fields.date.today() if not line[2] else \
+                                line[2].date()
+                            # Creating record
+                            statement = self.env[
+                                'account.bank.statement'].create({
+                                'name': line[0],
+                                'line_ids': [
+                                    (0, 0, {
+                                        'date': date_obj,
+                                        'payment_ref': 'xlsx file',
+                                        'journal_id': self.journal_id.id,
+                                        'amount': line[1],
+                                    }),
+                                ],
+                            })
                 return {
                     'type': 'ir.actions.act_window',
                     'name': 'Statements',
