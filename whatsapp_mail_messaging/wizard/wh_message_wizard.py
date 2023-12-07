@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import models, fields, api
 
 
@@ -29,6 +28,8 @@ class WhatsappSendMessage(models.TransientModel):
     partner_id = fields.Many2one('res.partner', string="Recipient")
     mobile = fields.Char(required=True, string="Contact Number")
     message = fields.Text(string="Message", required=True)
+    message_name_id = fields.Many2one('selection.messages', string="Message Template")
+    type_message = fields.Selection([('custom', 'Custom'), ('default', 'Default')], 'Message Type', default='custom')
     image_1920 = fields.Binary(readonly=1)
 
     @api.onchange('partner_id')
@@ -37,6 +38,18 @@ class WhatsappSendMessage(models.TransientModel):
         in Odoo"""
         self.mobile = self.partner_id.mobile
         self.image_1920 = self.partner_id.image_1920
+
+    @api.onchange('message_name_id')
+    def _onchange_type_message(self):
+        """Function to set the default message based on type_message"""
+        if self.message_name_id:
+            self.message = self.message_name_id.message
+
+    @api.onchange('type_message')
+    def _onchange_type_message_type(self):
+        """Function to set the default message based on type_message"""
+        if self.type_message == 'default':
+            self.message = self.message_name_id.message
 
     def send_message(self):
         """In this function we are redirecting to the whatsapp web

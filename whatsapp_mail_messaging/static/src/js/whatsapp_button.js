@@ -12,6 +12,7 @@ var ActionMenu = Widget.extend({
     },
     onclick_whatsapp_icon: function() {
         var self = this;
+        console.log(this,"TEST")
         self.do_action({
             name: 'Compose Whatsapp Message',
             res_model: 'whatsapp.message.wizard',

@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from . import website
 from . import sale_order
 from . import account_move
+from . import selection_messages

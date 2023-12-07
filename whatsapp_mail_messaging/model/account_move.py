@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from itertools import groupby
 
 from odoo import models, _
