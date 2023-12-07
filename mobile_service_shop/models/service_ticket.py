@@ -27,7 +27,7 @@ class MobileServiceTicket(models.AbstractModel):
     _name = 'report.mobile_service_shop.mobile_service_ticket_template'
 
     @api.model
-    def _get_report_values(self, data):
+    def _get_report_values(self, docids, data):
         """Returns the data file for the report"""
         terms = self.env['terms.conditions'].search([])
         return {

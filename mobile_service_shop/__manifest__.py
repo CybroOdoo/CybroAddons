@@ -39,6 +39,7 @@
              'views/brand_models_views.xml',
              'views/mobile_brand_views.xml',
              'wizard/mobile_create_invoice_views.xml',
+             'reports/mobile_service_email_template.xml',
              'reports/mobile_service_ticket.xml',
              'data/mobile_service_data.xml',
              'data/mobile_service_email_template.xml'],

@@ -26,6 +26,7 @@ import pytz
 
 
 class MobileService(models.Model):
+    """Creates the model mobile.service"""
     _name = 'mobile.service'
     _rec_name = 'name'
     _description = "Mobile Service"
@@ -135,12 +136,13 @@ class MobileService(models.Model):
                                        string="Picking Id",
                                        help='Stock picking ID information.')
     picking_transfer_id = fields.Many2one('stock.picking.type',
-                                          'Deliver To',
+                                          string='Deliver To',
                                           required=True,
                                           default=_default_picking_transfer,
                                           help="This will determine picking "
                                                "type of outgoing shipment.")
-    picking_count = fields.Integer()
+    picking_count = fields.Integer(string="Picking Count",
+                                   help='Number of outgoing shipment')
 
     @api.onchange('return_date')
     def check_date(self):
@@ -283,7 +285,8 @@ class MobileService(models.Model):
                 self.picking_count = len(picking)
                 moves = order.filtered(
                     lambda r: r.product_id.type in ['product',
-                    'consu'])._create_stock_moves_transfer(picking)
+                                                    'consu'])._create_stock_moves_transfer(
+                    picking)
                 move_ids = moves._action_confirm()
                 move_ids._action_assign()
             if order.product_uom_qty < order.qty_stock_move:
@@ -359,5 +362,4 @@ class MobileService(models.Model):
             'complaint_description': description_text,
             'mobile_brand': self.brand_name.brand_name,
             'model_name': self.model_name.mobile_brand_models}
-        return (self.env.ref('mobile_service_shop.mobile_service_ticket').
-                report_action(self, data=data))
+        return self.env.ref('mobile_service_shop.mobile_service_ticket').report_action(self, data=data)
