@@ -36,7 +36,8 @@ class VenueBooking(models.Model):
                                help="Venue for the Event", required=True)
     venue_type_id = fields.Many2one('venue.type',
                                     'Venue Type',
-                                    related='venue_id.venue_type_id', readonly=True,
+                                    related='venue_id.venue_type_id',
+                                    readonly=True,
                                     help='Used to choose the type of the particular venue')
     image = fields.Binary("Image", attachment=True,
                           related='venue_type_id.image',
@@ -78,8 +79,8 @@ class VenueBooking(models.Model):
                                      compute='_compute_pending_invoice',
                                      help='Find out is there any pending invoice')
     total = fields.Monetary(string="Total Amount", store=True,
-                         compute='_compute_total_amount',
-                         help='Total amount for the Venue Booking')
+                            compute='_compute_total_amount',
+                            help='Total amount for the Venue Booking')
     booking_charge_per_day = fields.Float(string="Booking Charge Per Day",
                                           related='venue_id.venue_charge_day',
                                           help='Field for adding Booking Charge Per Day')
@@ -100,7 +101,6 @@ class VenueBooking(models.Model):
     amenity_line_ids = fields.One2many('venue.booking.line',
                                        'venue_booking_id',
                                        string="Included Amenities",
-                                       compute='_compute_amenity_line_ids',
                                        help='Booking Line for the given venue')
 
     @api.constrains('venue_booking_line_ids')
@@ -131,25 +131,19 @@ class VenueBooking(models.Model):
         if start_date >= end_date:
             raise UserError(_('Start date must be less than End date'))
         values['name'] = '%s- %s' % (partner_name, date)
-        values['ref'] = self.env['ir.sequence'].next_by_code('venue.booking.sequence')
+        values['ref'] = self.env['ir.sequence'].next_by_code(
+            'venue.booking.sequence')
         res = super().create(values)
         return res
-
-    @api.depends('amenity_line_ids')
-    def _compute_amenity_line_ids(self):
-        """Compute function to add Already added amenities into the one2many field"""
-        for rec in self:
-            if rec.venue_id.venue_line_ids:
-                rec.amenity_line_ids = rec.venue_id.venue_line_ids.ids
-            else:
-                rec.amenity_line_ids = False
 
     @api.onchange('start_date', 'end_date')
     def _onchange_booking_dates(self):
         """Checking dates while Booking the Venues based on the changes of the Dates"""
         if self.venue_id:
-            booking = self.env['venue.booking'].search([('start_date', '<', self.end_date),
-                ('end_date', '>', self.start_date), ('venue_id', '=', self.venue_id.id)])
+            booking = self.env['venue.booking'].search(
+                [('start_date', '<', self.end_date),
+                 ('end_date', '>', self.start_date),
+                 ('venue_id', '=', self.venue_id.id)])
             if booking:
                 raise ValidationError(
                     "Venue is not available for the selected time range.")
@@ -240,12 +234,14 @@ class VenueBooking(models.Model):
         invoice_id = self.env['account.move'].search(
             [('invoice_origin', '=', self.ref), ('state', '=', 'draft')])
         amenity_lists = []
+
         def add_charge(name, price_unit, quantity=1):
             amenity_lists.append({
                 'name': name,
                 'price_unit': price_unit,
                 'quantity': quantity,
             })
+
         if self.booking_type == 'day':
             total = self.booking_charge_per_day + self.venue_id.additional_charge_day
         elif self.booking_type == 'hour':
@@ -314,12 +310,12 @@ class VenueBooking(models.Model):
     def _compute_invoice_count(self):
         """Function to count invoice"""
         for record in self:
-            record.invoice_count = self.env['account.move'].\
+            record.invoice_count = self.env['account.move']. \
                 search_count([('invoice_origin', '=', self.ref)])
 
     def action_booking_cancel(self):
-            """Button action to move the cancel state"""
-            self.state = "cancel"
+        """Button action to move the cancel state"""
+        self.state = "cancel"
 
     def action_booking_close(self):
         """Button action to close the records"""
@@ -333,7 +329,8 @@ class VenueBooking(models.Model):
     def get_total_booking(self):
         """Function to get total booking, distance and invoice amount details"""
         total_booking = self.env['venue.booking'].search_count([])
-        booking_ids = self.env['venue.booking'].search([('state', 'not in', ['draft', 'cancel', 'close'])])
+        booking_ids = self.env['venue.booking'].search(
+            [('state', 'not in', ['draft', 'cancel', 'close'])])
         invoice_ids = self.env['venue.booking']. \
             search([('state', '=', 'invoice')]).mapped('total')
         venue_ids = self.env['venue'].search_count([])

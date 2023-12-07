@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Venue / Event Booking Management',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': """Core Module for Managing Different Types of Venue/ Event Booking.""",
     'description': """Core Module for Managing Different Types of Venue/ Event Booking, Event Booking, Venue Booking, 
     Space Booking, Booking, Event, Venue, Wedding, Birthday, Party, Hall Booking, Room Booking""",
@@ -59,10 +59,10 @@
         'web.assets_backend': [
             'venue_booking_management/static/src/css/venue_dashboard.css',
             'venue_booking_management/static/src/scss/venue_booking.scss',
+            'venue_booking_management/static/src/xml/dashboard_templates.xml',
             'venue_booking_management/static/src/js/action_manager.js',
             'venue_booking_management/static/src/js/lib/chart_bundle.js',
             'venue_booking_management/static/src/js/dashboard_action.js',
-            'venue_booking_management/static/src/xml/dashboard_templates.xml'
         ]
     },
     'images': ['static/description/banner.png'],
