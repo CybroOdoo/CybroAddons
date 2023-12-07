@@ -152,14 +152,14 @@ class AccountInvoiceLine(models.Model):
         self.onchange_asset_category_id()
         return result
 
-    @api.depends('product_id')
+    @api.onchange('product_id')
     def _onchange_product_id(self):
         vals = super(AccountInvoiceLine, self)._compute_price_unit()
         if self.product_id:
             if self.move_id.move_type == 'out_invoice':
                 self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id
             elif self.move_id.move_type == 'in_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id
+                self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id.id
         return vals
 
     def _set_additional_fields(self, invoice):
@@ -215,32 +215,39 @@ class AccountInvoiceLine(models.Model):
 
         if context.get('reconcile_date'):
             domain += ['|', ('reconciled', '=', False), '|',
-                       ('matched_debit_ids.max_date', '>', context['reconcile_date']),
-                       ('matched_credit_ids.max_date', '>', context['reconcile_date'])]
+                       ('matched_debit_ids.max_date', '>',
+                        context['reconcile_date']),
+                       ('matched_credit_ids.max_date', '>',
+                        context['reconcile_date'])]
 
         if context.get('account_tag_ids'):
-            domain += [('account_id.tag_ids', 'in', context['account_tag_ids'].ids)]
+            domain += [
+                ('account_id.tag_ids', 'in', context['account_tag_ids'].ids)]
 
         if context.get('account_ids'):
             domain += [('account_id', 'in', context['account_ids'].ids)]
 
         if context.get('analytic_tag_ids'):
-            domain += [('analytic_tag_ids', 'in', context['analytic_tag_ids'].ids)]
+            domain += [
+                ('analytic_tag_ids', 'in', context['analytic_tag_ids'].ids)]
 
         if context.get('analytic_account_ids'):
-            domain += [('analytic_account_id', 'in', context['analytic_account_ids'].ids)]
+            domain += [('analytic_account_id', 'in',
+                        context['analytic_account_ids'].ids)]
 
         if context.get('partner_ids'):
             domain += [('partner_id', 'in', context['partner_ids'].ids)]
 
         if context.get('partner_categories'):
-            domain += [('partner_id.category_id', 'in', context['partner_categories'].ids)]
+            domain += [('partner_id.category_id', 'in',
+                        context['partner_categories'].ids)]
 
         where_clause = ""
         where_clause_params = []
         tables = ''
         if domain:
-            domain.append(('display_type', 'not in', ('line_section', 'line_note')))
+            domain.append(
+                ('display_type', 'not in', ('line_section', 'line_note')))
             domain.append(('parent_state', '!=', 'cancel'))
 
             query = self._where_calc(domain)
@@ -250,3 +257,12 @@ class AccountInvoiceLine(models.Model):
 
             tables, where_clause, where_clause_params = query.get_sql()
         return tables, where_clause, where_clause_params
+
+    @api.model
+    def create(self, vals):
+        if vals.get('product_id'):
+            product = self.env['product.product'].browse(vals['product_id'])
+            template = self.env['product.template'].search(
+                [('id', '=', product.product_tmpl_id.id)])
+            vals['asset_category_id'] = template.asset_category_id.id
+        return super().create(vals)

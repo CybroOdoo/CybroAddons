@@ -63,3 +63,11 @@
 ### UPDT
 
 - Payment Receipt  Bank and Cheque reference Report Bug Fix
+
+### 30.11.2023
+
+### Version 16.0.2.0.12
+
+### UPDT
+
+- Automatic Asset Creation Bug Fix
