@@ -5,6 +5,7 @@
 import { SearchModel} from "@web/search/search_model";
 import {patch} from "@web/core/utils/patch";
 import {toTree} from "@advanced_search_widget/js/domain_tree"
+import rpc from 'web.rpc';
 
 patch(SearchModel.prototype, 'advanced_search_widget', {
     setup() {
@@ -35,24 +36,41 @@ patch(SearchModel.prototype, 'advanced_search_widget', {
         return description;
     },
 
-    DomainDescription(tree) {
+     async DomainDescription(tree) {
         // Returns a description for the domain to show in the search bar.
-        const getFieldString = (path) => {
+        const getFieldString = async (path) => {
             if (path.includes(".")) {
-                const [mainField, subField] = path.split(".");
-                return `${this.searchViewFields[mainField].string} ${this.searchViewFields[subField].string}`;
+                var paths = path.split(".");
+                var mainField = paths[0];
+                var subFields    = paths.slice(1);
+                var validTypes = ['one2many','many2one','many2many']
+                if(validTypes.includes(this.searchViewFields[mainField].type)){
+                    var model = this.searchViewFields[mainField].relation;
+                    var firstString = this.searchViewFields[mainField].string;
+                    for (const subField of subFields) {
+                        const result = await rpc.query({
+                            model: model,
+                            method: "fields_get",
+                            args: [[subField]],
+                        });
+                        model = result[subField].relation;
+                        firstString += ` > ${result[subField].string}`;
+                    }
+                }
+                return firstString;
             } else {
                 return this.searchViewFields[path].string;
             }
         };
         let description;
+        let value;
         switch (tree.type) {
             case 'condition':
-                description = this.FieldType(tree, getFieldString(tree.path));
+                description = this.FieldType(tree, await Promise.resolve(getFieldString(tree.path)));
                 break;
             case 'connector':
                 const childDescriptions = tree.children.map((childTree) =>
-                    this.FieldType(childTree, getFieldString(childTree.path)));
+                    this.FieldType(childTree, Promise.resolve(getFieldString(tree.path))));
                 description = childDescriptions.join(" or ");
                 break;
         }

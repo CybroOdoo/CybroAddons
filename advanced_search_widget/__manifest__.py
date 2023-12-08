@@ -41,7 +41,7 @@
             'advanced_search_widget/static/src/js/search_bar.js',
             'advanced_search_widget/static/src/js/search_model.js',
             'advanced_search_widget/static/src/xml/custom_favorite_item.xml',
-            'advanced_search_widget/static/src/xml/custom_filter_item.xml',
+            'advanced_search_widget/static/src/xml/custom_groupby_item.xml',
             'advanced_search_widget/static/src/xml/SearchWidget.xml',
             'advanced_search_widget/static/src/xml/search_bar.xml',
         ],
