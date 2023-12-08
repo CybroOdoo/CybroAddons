@@ -22,14 +22,14 @@
 {
     'name': "Automatic Database Backup To Local Server, Remote Server,"
             "Google Drive, Dropbox, Onedrive, Nextcloud and Amazon S3",
-    'version': '16.0.2.0.1',
+    'version': '16.0.3.0.2',
     'category': 'Extra Tools',
     'summary': 'Generate automatic backup of databases and store to local, '
                'google drive, dropbox, nextcloud, amazon S3, onedrive or '
                'remote server',
     'description': 'This module has been developed for creating database '
                    'backups automatically and store it to the different '
-                   'locations.',
+                   'locations,database backup, backup, Google Drive, Dropbox, Onedrive, Nextcloud, Amazon S3, automatic backup',
     'author': "Cybrosys Techno Solutions",
     'maintainer': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',

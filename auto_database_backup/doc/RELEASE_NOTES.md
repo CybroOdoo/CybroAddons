@@ -13,3 +13,11 @@
 #### ADD
 
 - Next Cloud Integration and Amazon S3 are added and added active field customization if connection is successful only then active field will be able to edit.
+
+## Module <auto_database_backup>
+
+#### 07.12.2023
+#### Version 16.0.3.0.2
+#### UPDT
+
+- Updated the database name check function which got access denied when list_db=False.
