@@ -538,7 +538,7 @@ class DbBackupConfigure(models.Model):
     @api.constrains('db_name')
     def _check_db_credentials(self):
         """Validate entered database name and master password"""
-        database_list = db.list_dbs()
+        database_list = db.list_dbs(force=True)
         if self.db_name not in database_list:
             raise ValidationError(_("Invalid Database Name!"))
         try:
