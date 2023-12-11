@@ -113,20 +113,26 @@ class GeneralView(models.TransientModel):
         for item in records['Accounts']:
             if isinstance(item['name'], dict):
                 item['new_name'] = item['name'][
-                            user_language] if user_language in item['name'] else \
-                            item['name']['en_US']
+                    user_language] if user_language in item['name'] else \
+                    item['name']['en_US']
             else:
-                item['new_name']=item['name']
-            # if user_language in item['name']:
-            #     item['new_name'] = item['name'][user_language]
-            # else:
-            #     item['new_name'] = item['name'][default_lg]
+                item['new_name'] = item['name']
+        merged_data = {}
+        for line in records['Accounts']:
+            account_id = line['account_id']
+            if account_id not in merged_data:
+                merged_data[account_id] = line
+            else:
+                merged_data[account_id]['debit'] += line['debit']
+                merged_data[account_id]['credit'] += line['credit']
+                merged_data[account_id]['balance'] += line['balance']
+        report_list = list(merged_data.values())
         return {
             'name': title,
             'type': 'ir.actions.client',
             'tag': 'g_l',
             'filters': filters,
-            'report_lines': records['Accounts'],
+            'report_lines': report_list,
             'debit_total': records['debit_total'],
             'credit_total': records['credit_total'],
             'debit_balance': records['debit_balance'],
@@ -256,7 +262,8 @@ class GeneralView(models.TransientModel):
                     rec['name'] = localized_name
                 else:
                     # If the translation for the current language is not available, use a default language or handle it as needed.
-                    rec['name'] = rec['name'].get(default_lg, '')  # Replace 'en_US' with your desired default language.
+                    rec['name'] = rec['name'].get(default_lg,
+                                                  '')  # Replace 'en_US' with your desired default language.
             else:
                 # Handle the case where 'name' is not present in the dictionary.
                 rec['name'] = ''  # You can use an
@@ -312,7 +319,7 @@ class GeneralView(models.TransientModel):
         # Account Tag filter
         if vals.get('account_tag_ids'):
             vals.update({'account_tag_ids': [(6, 0,
-                                             vals.get('account_tag_ids'))]})
+                                              vals.get('account_tag_ids'))]})
         if vals.get('account_tag_ids') == []:
             vals.update({'account_tag_ids': [(5,)]})
         # Analytic filter
@@ -421,9 +428,10 @@ class GeneralView(models.TransientModel):
             WHERE += ' AND an.id IN %s' % str(
                 tuple(data.get('analytics').ids) + tuple([0]))
         if data.get('account_tags'):
-            WHERE += ' AND act.id IN %s' % str(tuple(data.get('account_tags').ids)+ tuple([0]))
+            WHERE += ' AND act.id IN %s' % str(
+                tuple(data.get('account_tags').ids) + tuple([0]))
 
-    # Get move lines base on sql query and Calculate the total balance
+        # Get move lines base on sql query and Calculate the total balance
         # of move lines
         sql = ('''SELECT l.account_id AS account_id, a.code AS code, 
                     a.id AS id, a.name AS name, 
@@ -446,7 +454,7 @@ class GeneralView(models.TransientModel):
                     AS keys) anl ON true
                     LEFT JOIN account_analytic_account an 
                     ON (anl.keys = an.id)'''
-                   + WHERE + new_final_filter + ''' GROUP BY l.account_id, 
+               + WHERE + new_final_filter + ''' GROUP BY l.account_id, 
                    a.code,a.id,a.name,anl.keys, act.name''')
         if data.get('accounts'):
             params = tuple(where_params)

@@ -35,3 +35,8 @@
 ### version 16.0.1.0.9,
 ### BUGFIX
 - Profit And Loss:  multiple lines of the same account in the financial reports.
+
+### 11.12.2023
+### version 16.0.1.0.10,
+### BUGFIX
+- Profit And Loss:  multiple lines of the same account in the financial reports.
