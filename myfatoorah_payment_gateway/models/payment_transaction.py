@@ -62,13 +62,18 @@ class PaymentTransaction(models.Model):
         ]
         MobileCountryCode = self.partner_id.country_id.phone_code
         phone_number = self.partner_phone
-        phone_number = phone_number.replace(str(MobileCountryCode), '')
-        if phone_number.startswith('+'):
-            phone_number = phone_number[1:]
+        if not phone_number:
+            raise ValueError("Please provide the phone number.")
+        if phone_number:
+            phone_number = phone_number.replace(str(MobileCountryCode), '')
+            if phone_number.startswith('+'):
+                phone_number = phone_number[1:]
+        currency = self.partner_id.company_id.currency_id.name
+
         payment_details = {
             "PaymentMethodId": 6,
             "CustomerName": self.partner_name,
-            "DisplayCurrencyIso": self.currency_id.name,
+            "DisplayCurrencyIso": currency,
             "MobileCountryCode": MobileCountryCode,
             "CustomerMobile": phone_number,
             "CustomerEmail": self.partner_email,
@@ -89,8 +94,10 @@ class PaymentTransaction(models.Model):
             'Authorization': f'Bearer {api_key}',
         }
         payload = json.dumps(payment_details)
+        print(payload,'payload')
         response = requests.request("POST", api_url, headers=headers,
                                     data=payload)
+        print(response,'response...')
         response_data = response.json()
         if not response_data.get('IsSuccess'):
             raise ValidationError(f"{response_data.get('Message')}")
