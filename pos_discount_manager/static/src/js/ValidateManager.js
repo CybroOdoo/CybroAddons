@@ -17,33 +17,38 @@ odoo.define('pos_discount_manager.ValidateManager', function(require) {
                 var employee_name = this.env.pos.get_cashier()['name']
                 var flag = 1;
                  orderlines.forEach((order) => {
-                   if(order.discount > employee_dis)
-                   flag = 0;
+                   if (employee_dis >= 1) {
+                       if(order.discount > employee_dis)
+                       flag = 0;
+                   }
                  });
                  if (flag != 1) {
-                 const {confirmed,payload} = await this.showPopup('NumberPopup', {
-                            title: this.env._t(employee_name + ', your discount is over the limit. \n Manager pin for Approval'),
-                            isPassword: true
-                        });
-                        if(confirmed){
-                         var output = this.env.pos.employees.filter((obj) => obj.role == 'manager' && obj.user_id == session.uid);
-                         var pin = output[0].pin
-                         if (Sha1.hash(payload) == pin) {
+                    const {confirmed,payload} = await this.showPopup('NumberPopup', {
+                        title: this.env._t(employee_name + ', your discount is over the limit. \n Manager pin for Approval'),
+                        isPassword: true
+                    });
+                    if(confirmed){
+                        var output = this.env.pos.employees.filter((obj) => obj.role == 'manager');
+                        var pins = [];
+                        for (var i = 0; i < output.length; i++) {
+                            pins.push(output[i].pin);
+                        }
+                        if (pins.includes(Sha1.hash(payload))) {
                             this.showScreen(this.nextScreen);
-                            }
-                            else {
-                                this.showPopup('ErrorPopup', {
-                                    title: this.env._t(" Manager Restricted your discount"),
-                                    body: this.env._t(employee_name + ", Your Manager pin is incorrect."),
-
-                                });
-                                return false;
-                            }
                         }
                         else {
+                            this.showPopup('ErrorPopup', {
+                            title: this.env._t(" Manager Restricted your discount"),
+                            body: this.env._t(employee_name + ", Your Manager pin is incorrect."),
+
+                            });
                             return false;
                         }
-                        }
+                    }
+                    else {
+                        return false;
+                    }
+                 }
                         this.currentOrder.finalized = true;
                         this.showScreen(this.nextScreen);
                         super._finalizeValidation();
