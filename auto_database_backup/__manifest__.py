@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#############################################################################
+###############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -18,29 +18,39 @@
 #    (LGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
-
+###############################################################################
 {
-    'name': "Automatic Database Backup To Local Server, Remote Server, Google Drive And Dropbox",
-    'version': '15.0.3.1.2',
-    'summary': """Generate automatic backup of databases and store to local, google drive, dropbox, onedrive or remote server""",
-    'description': """This module has been developed for creating database backups automatically 
-                    and store it to the different locations.""",
+    'name': "Automatic Database Backup To Local Server, Remote Server, Google "
+            "Drive, Dropbox, Onedrive, Nextcloud and Amazon S3",
+    'version': '15.0.4.1.2',
+    'category': 'Discuss,Extra Tools',
+    'summary': """Generate automatic backup of databases and store to local,
+     google drive, dropbox, nextcloud, amazon S3, onedrive or 
+     remote server""",
+    'description': """This module helps to generate backups of your databases 
+     automatically on regular interval of times. The generated backups can be 
+     stored into local storage, ftp server, sftp server, dropbox, Google Drive, 
+     Onedrive Nextcloud and Amazon S3. User can enable auto remove option to 
+     automatically delete old backups. User can enable email notification to 
+     be notified about the success and failure of the backup generation and 
+     storage.""",
     'author': "Cybrosys Techno Solutions",
-    'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'category': 'Tools',
+    'website': "https://www.cybrosys.com",
     'depends': ['base', 'mail'],
     'data': [
         'security/ir.model.access.csv',
-        'data/data.xml',
+        'data/ir_cron_data.xml',
+        'data/mail_data.xml',
         'views/db_backup_configure_views.xml',
-        'wizard/dropbox_authcode_wizard_views.xml',
+        'wizard/dropbox_auth_code_views.xml',
     ],
-    'external_dependencies': {'python': ['dropbox']},
-    'license': 'LGPL-3',
+    'external_dependencies': {
+        'python': ['dropbox', 'pyncclient', 'boto3', 'nextcloud-api-wrapper','paramiko'],
+    },
     'images': ['static/description/banner.gif'],
+    'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
     'application': False,

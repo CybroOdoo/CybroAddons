@@ -20,3 +20,7 @@
 #### ADD
 - Google Drive authentication updated.
 
+#### 16.10.2023
+#### Version 15.0.4.1.2
+#### ADD
+- Nextcloud and Amazon S3 integration added. Backup can be stored into Nextcloud and Amazon S3.
