@@ -1,4 +1,5 @@
 import time
+from collections import defaultdict
 from odoo import fields, models, api, _
 
 import io
@@ -492,11 +493,11 @@ class BalanceSheetView(models.TransientModel):
 
         cr.execute(sql, params)
 
+        balance_dict = defaultdict(float)
         for row in cr.dictfetchall():
-            balance = 0
-            for line in move_lines.get(row['account_id']):
-                balance += round(line['debit'], 2) - round(line['credit'], 2)
+            balance = balance_dict[row['account_id']]
             row['balance'] += (round(balance, 2))
+            balance_dict[row['account_id']] += round(row['debit'], 2) - round(row['credit'], 2)
             row['m_id'] = row['account_id']
             move_lines[row.pop('account_id')].append(row)
         # Calculate the debit, credit and balance for Accounts

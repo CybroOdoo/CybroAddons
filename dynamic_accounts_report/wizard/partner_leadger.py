@@ -1,4 +1,5 @@
 import time
+from collections import defaultdict
 from odoo import fields, models, api, _
 
 import io
@@ -320,12 +321,12 @@ class PartnerView(models.TransientModel):
 
         account_list = {x.id: {'name': x.name, 'code': x.code} for x in accounts}
 
+        balance_dict = defaultdict(float)
         for row in cr.dictfetchall():
-            balance = 0
             if row['partner_id'] in move_lines:
-                for line in move_lines.get(row['partner_id']):
-                    balance += round(line['debit'],2) - round(line['credit'],2)
+                balance = balance_dict[row['partner_id']]
                 row['balance'] += (round(balance, 2))
+                balance_dict[row['partner_id']] += round(row['debit'], 2) - round(row['credit'], 2)
                 row['m_id'] = row['account_id']
                 row['account_name'] = account_list[row['account_id']]['name'] + "(" +account_list[row['account_id']]['code'] + ")"
                 move_lines[row.pop('partner_id')].append(row)

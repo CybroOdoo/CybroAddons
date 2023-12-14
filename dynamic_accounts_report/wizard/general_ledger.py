@@ -371,11 +371,16 @@ class GeneralView(models.TransientModel):
             params = (tuple(accounts.ids),) + tuple(where_params)
         cr.execute(sql, params)
 
+        balance_dict = {}
         for row in cr.dictfetchall():
-            balance = 0
-            for line in move_lines.get(row['account_id']):
-                balance += round(line['debit'],2) - round(line['credit'],2)
+            if row['account_id'] in balance_dict:
+                balance = balance_dict[row['account_id']]
+            else:
+                balance = balance_dict[row['account_id']] = 0
+                for line in move_lines.get(row['account_id']):
+                    balance += round(line['debit'], 2) - round(line['credit'], 2)
             row['balance'] += round(balance,2)
+            balance_dict[row['account_id']] += round(row['debit'], 2) - round(row['credit'], 2)
             row['m_id'] = row['account_id']
             move_lines[row.pop('account_id')].append(row)
 
