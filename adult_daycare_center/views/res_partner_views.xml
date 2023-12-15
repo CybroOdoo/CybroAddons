@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--        Action for customer-->
+    <record id="res_partner_daycare_customers_action"
+            model="ir.actions.act_window">
+        <field name="name">Customers</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form,activity</field>
+        <field name="context">{"search_default_is_customers":1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a Customer!
+            </p>
+        </field>
+    </record>
+<!--    Action for adult member-->
+    <record id="res_partner_daycare_adult_members_action"
+            model="ir.actions.act_window">
+        <field name="name">Adult Members</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('is_adult_member','=',True)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create an Adult Member!
+            </p>
+        </field>
+    </record>
+<!--    Daycare search view inherit-->
+    <record id="view_res_partner_filter" model="ir.ui.view">
+       <field name="name">res.partner.view.search.inherit.adult.daycare.center</field>
+       <field name="model">res.partner</field>
+       <field name="inherit_id" ref="base.view_res_partner_filter"/>
+       <field name="arch" type="xml">
+           <xpath expr="//search" position="inside">
+               <filter string="Customers" name="is_customers"
+                       domain="[('is_customer', '=', True)]"/>
+           </xpath>
+       </field>
+    </record>
+<!--    Daycare res partner inherit form view-->
+    <record id="view_partner_form" model="ir.ui.view">
+        <field name="name">res.partner.view.form.inherit.adult.daycare.center</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="is_customer"/>
+                <field name="is_adult_member"/>
+            </xpath>
+            <xpath expr="//page[@name='internal_notes']" position="after">
+                <page name="applicant_info" string="Applicant Information"
+                      attrs="{'invisible': [('is_adult_member','=',False)]}">
+                    <group>
+                        <group string="Personal Information">
+                            <field name="social_security_no"/>
+                            <field name="medicare_no"/>
+                            <field name="birth_date"/>
+                            <field name="age"/>
+                            <field name="referred_by_id"/>
+                            <field name="marital_status"/>
+                            <field name="place_birth"/>
+                        </group>
+                        <group/>
+                        <group string="Responsible Party/Guardian">
+                            <field name="responsible_id"/>
+                            <field name="responsible_address"/>
+                            <field name="responsible_telephone"/>
+                        </group>
+                        <group string="Primary Care Taker">
+                            <field name="care_provider_id"/>
+                            <field name="care_provider_address"/>
+                            <field name="care_provider_telephone"/>
+                        </group>
+                    </group>
+                </page>
+                <page name="medical_details" string="Medical Details"
+                      attrs="{'invisible': [('is_adult_member','=',False)]}">
+                    <group>
+                        <group string="Physician Detail">
+                            <field name="physician"/>
+                            <field name="physician_address"/>
+                            <field name="physician_phone"/>
+                        </group>
+                        <group string="Transportation Detail">
+                            <field name="travel_by"/>
+                            <field name="travel_assistance"/>
+                        </group>
+                        <group string="Medical History">
+                            <field name="present_medical"/>
+                            <field name="other_disability"/>
+                            <field name="weight"/>
+                            <field name="height"/>
+                        </group>
+                        <group string="Dentist Information">
+                            <field name="dentist"/>
+                            <field name="dentist_address"/>
+                            <field name="dentist_phone"/>
+                            <field name="dentist_last_visit"/>
+                        </group>
+                    </group>
+                </page>
+                <page name="daycare_activities" string="Day Care Activities"
+                      attrs="{'invisible': [('is_adult_member','=',False)]}">
+                    <field name="daycare_activities_ids">
+                        <tree editable="bottom">
+                            <field name="activity_type_id"/>
+                            <field name="product_id"/>
+                            <field name="notes"/>
+                            <field name="time_in"/>
+                            <field name="time_out"/>
+                            <field name="responsible_id"/>
+                        </tree>
+                    </field>
+                </page>
+                <page name="lead_detail" string="Lead Detail"
+                      attrs="{'invisible': [('is_adult_member','=',False)]}">
+                    <group>
+                        <group string="Service">
+                            <field name="transportation"/>
+                            <field name="arrival_time"/>
+                            <field name="departure_time"/>
+                            <field name="special_diet"/>
+                            <field name="diet_detail"
+                                   attrs="{'invisible': [('special_diet','=',True)]}"/>
+                            <field name="allergies"/>
+                            <field name="time_request"/>
+                        </group>
+                        <group string="Emergency">
+                            <field name="emergency_name"/>
+                            <field name="applicant_relationship"/>
+                            <field name="emergency_address"/>
+                            <field name="emergency_phone"/>
+                        </group>
+                        <group string="Emergency 1">
+                            <field name="first_emergency_name"/>
+                            <field name="second_applicant_relationship"/>
+                            <field name="first_emergency_address"/>
+                            <field name="first_emergency_phone"/>
+                        </group>
+                        <group string="Contract and Commitment">
+                            <field name="responsible_id"/>
+                            <field name="paid_by"/>
+                            <field name="paid_by_name"/>
+                            <field name="paid_by_phone"/>
+                            <field name="your_email"/>
+                            <field name="hospital_name"/>
+                            <field name="today_date"/>
+                        </group>
+                        <group string="Other Information">
+                            <field name="interest_program"/>
+                            <field name="where_when"/>
+                            <field name="living_with_whom"/>
+                            <field name="relationship_responsible_relative"/>
+                            <field name="nearest_relative_relation"/>
+                            <field name="employed_at"/>
+                        </group>
+                        <group>
+                            <field name="previous_experience"/>
+                            <field name="present_living"/>
+                            <field name="living_with"/>
+                            <field name="nearest_relative"/>
+                            <field name="business_phone"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
