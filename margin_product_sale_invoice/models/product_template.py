@@ -19,7 +19,22 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import product_product
-from . import product_template
-from . import sale_order
-from . import account_move
+from odoo import api, fields, models
+
+
+class ProductTemplate(models.Model):
+    """This class represents margin on products"""
+    _inherit = 'product.template'
+
+    margin_percent_product = fields.Float(string='Margin %',
+                                          compute='compute_margin', store=True,
+                                          help='Field to store the margin in'
+                                               ' percentage of the product')
+
+    @api.depends('list_price', 'standard_price')
+    def compute_margin(self):
+        """Method to compute the margin of the product."""
+        self.margin_percent_product = 0
+        for record in self:
+            if record.list_price and record.standard_price:
+                record.margin_percent_product = ( record.list_price - record.standard_price) / record.list_price
