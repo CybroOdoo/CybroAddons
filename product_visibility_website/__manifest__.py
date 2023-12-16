@@ -22,7 +22,7 @@
 ################################################################################
 {
     'name': 'Website Product Visibility',
-    'version': '16.0.1.1.2',
+    'version': '16.0.1.1.3',
     'category': 'Website',
     'summary': 'Website Product visibility for Users',
     'description': """Website Product visibility for Users""",

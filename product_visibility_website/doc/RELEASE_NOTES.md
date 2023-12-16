@@ -18,3 +18,8 @@
 #### Version 16.0.1.1.2
 ##### FIX
 - The issue with the product/product-category search functionality has been fixed
+
+#### 12.12.2023
+#### Version 16.0.1.1.3
+##### FIX
+- The issue with the category in some cases has been fixed

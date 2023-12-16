@@ -97,6 +97,16 @@ class ProductVisibilityCon(WebsiteSale):
                     'False'))
             available_categ = request.env['product.public.category'].search(
                 [('id', 'in', cat)])
+            Category_avail = []
+            Category = request.env['product.public.category']
+            for ids in available_categ:
+                if not ids.parent_id.id in available_categ.ids:
+                    Category_avail.append(ids.id)
+            categ = request.env['product.public.category'].search(
+                [('id', 'in', Category_avail)])
+            if mode == 'product_only':
+                categ = Category.search([(
+                    'product_tmpl_ids', 'in', available_products.ids)])
         else:
             partner = request.env['res.partner'].sudo().search(
                 [('id', '=', user.partner_id.id)])
@@ -104,17 +114,16 @@ class ProductVisibilityCon(WebsiteSale):
             if mode == 'product_only':
                 available_products = self.available_products()
             available_categ = partner.website_available_cat_ids
-        Category_avail = []
-        Category = request.env['product.public.category']
-        for ids in available_categ:
-            if not ids.parent_id.id in available_categ.ids:
-                Category_avail.append(ids.id)
-        categ = request.env['product.public.category'].search(
-            [('id', 'in', Category_avail)])
-        if mode == 'product_only':
-            categ = Category.search([('parent_id', '=', False), (
-                'product_tmpl_ids', 'in', available_products.ids)])
-        # supering shop***
+            Category_avail = []
+            Category = request.env['product.public.category']
+            for ids in available_categ:
+                if not ids.parent_id.id in available_categ.ids:
+                    Category_avail.append(ids.id)
+            categ = request.env['product.public.category'].search(
+                [('id', 'in', Category_avail)])
+            if mode == 'product_only':
+                categ = Category.search([(
+                    'product_tmpl_ids', 'in', available_products.ids)])
         if not available_categ and not available_products and \
                 request.env.user.has_group(
                     'base.group_portal'):
@@ -133,10 +142,17 @@ class ProductVisibilityCon(WebsiteSale):
                     'False'))
             available_categ = request.env['product.public.category'].search(
                 [('id', 'in', cat)])
-
-        if not available_categ and not available_products and \
-                not request.env.user.has_group(
-                    'base.group_user'):
+            Category_avail = []
+            Category = request.env['product.public.category']
+            for ids in available_categ:
+                if not ids.parent_id.id in available_categ.ids:
+                    Category_avail.append(ids.id)
+            categ = request.env['product.public.category'].search(
+                [('id', 'in', Category_avail)])
+            if mode == 'product_only':
+                categ = Category.search([(
+                    'product_tmpl_ids', 'in', available_products.ids)])
+        if not available_categ and not available_products:
             return super(ProductVisibilityCon, self).shop(page, category,
                                                           search, ppg, **post)
         add_qty = int(post.get('add_qty', 1))
