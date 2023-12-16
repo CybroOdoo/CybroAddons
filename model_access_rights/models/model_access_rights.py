@@ -21,7 +21,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import models, fields, api, _
+from odoo import api, fields, models, _
 
 
 class ModelAccessRights(models.Model):
@@ -30,6 +30,7 @@ class ModelAccessRights(models.Model):
     _name = 'access.right'
     _inherit = 'mail.thread'
     _description = 'Manage Modules Access Control'
+    _rec_name = 'model_id'
 
     model_id = fields.Many2one('ir.model', ondelete='cascade', required=True,
                                help="select the model")
@@ -44,17 +45,6 @@ class ModelAccessRights(models.Model):
                                               " as well as form view")
     is_archive = fields.Boolean(string="Archive/UnArchive",
                                 help="hide the archive option")
-    name = fields.Char(string='Order Reference', readonly=True,
-                       default=lambda self: _('New'))
-
-    @api.model
-    def create(self, vals):
-        """This function is used to create the sequence number for this model"""
-        if vals.get('name', _('New')) == _('New'):
-            vals['name'] = self.env['ir.sequence'].next_by_code(
-                'access.right') or _('New')
-        res = super(ModelAccessRights, self).create(vals)
-        return res
 
     @api.model
     def hide_buttons(self):

@@ -20,3 +20,4 @@
 #
 #############################################################################
 from . import model_access_rights
+from . import models
