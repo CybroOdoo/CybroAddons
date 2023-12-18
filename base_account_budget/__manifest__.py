@@ -30,7 +30,7 @@
     The accountant has the possibility to see the total of amount planned for
     each Budget in order to ensure the total planned is not greater/lower 
     than what he planned for this Budget. Each list of record can also be 
-    switched to a graphical view of it.""",
+    switched to a graphical view of it, odoo17, accounting, odoo17 accounting, odoo17 budget, odoo17""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

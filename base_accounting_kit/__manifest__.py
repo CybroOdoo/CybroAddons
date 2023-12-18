@@ -28,7 +28,7 @@
     'description': """ The module used to manage the Full Account Features.
     that can manage the Account Reports,Journals Asset and Budget Management, 
     Accounting Reports, PDC, Lock dates, Credit Limit, Follow Ups, 
-    Day-Bank-Cash book reports.""",
+    Day-Bank-Cash book report, odoo17, odoo17 accounting, odoo accounting, v17 accounting,Odoo 17 Accounting, odoo apps""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
