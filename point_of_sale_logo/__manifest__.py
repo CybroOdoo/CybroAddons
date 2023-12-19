@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 {
     'name': 'Point of Sale Logo',
     'version': '16.0.1.0.0',
@@ -47,4 +46,3 @@
     'application': True,
     'Sequence': 1
 }
-
