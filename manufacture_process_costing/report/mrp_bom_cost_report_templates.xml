@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Bom cost report template -->
+    <template id="report_bom_cost">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <t t-foreach="docs" t-as="data">
+                        <span style="font-size:30px;">
+                            <strong>Bill Of Materials</strong>
+                        </span>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td>
+                                    <p>
+                                        <strong>Product :</strong>
+                                        <t t-esc="data['product_tmpl_id'].name"/>
+                                    </p>
+                                </td>
+                                <td>
+                                    <p>
+                                        <strong>Reference :</strong>
+                                        <t t-esc="data['code']"/>
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p>
+                                        <strong>Product Variant :</strong>
+                                        <t t-esc="data['product_id'].name"/>
+                                    </p>
+                                </td>
+                                <td>
+                                    <p>
+                                        <strong>Bom Type :</strong>
+                                        <t t-esc="data['type']"/>
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p>
+                                        <strong>Quantity :</strong>
+                                        <t t-esc="data['product_qty']"/>
+                                    </p>
+                                </td>
+                                <td>
+                                    <p>
+                                        <strong>Company :</strong>
+                                        <t t-esc="data['company_id'].name"/>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                        <br/>
+                        <span style="font-size:25px;">
+                            <strong>Components</strong>
+                        </span>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Product Qunatity</th>
+                                    <th>Product UOM</th>
+                                    <th>Variants</th>
+                                    <th>Consumed In Operation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="data['bom_line_ids']" t-as="rec">
+                                    <td>
+                                        <t t-esc="rec.product_id.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.product_qty"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.product_uom_id.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.product_tmpl_id.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.operation_id.name"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <br/>
+                        <span style="font-size:25px;">
+                            <strong>Direct Material Cost</strong>
+                        </span>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Planned Qunatity</th>
+                                    <th>UOM</th>
+                                    <th>Cost/Unit</th>
+                                    <th>Total Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="data['material_cost_ids']"
+                                    t-as="rec">
+                                    <td>
+                                        <t t-esc="rec.product_id.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.planned_qty"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.uom_id.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.cost_unit"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.total_cost"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h6 class="oe_subtotal_footer oe_right">Total Material
+                            Cost :
+                            <strong>
+                                <t t-esc="data['total_material_cost']"/>
+                            </strong>
+                        </h6>
+                        <br/>
+                        <span style="font-size:25px;">
+                            <strong>Direct Labour Cost</strong>
+                        </span>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Operation</th>
+                                    <th>Work Center</th>
+                                    <th>Planned Minute</th>
+                                    <th>Cost/Minute</th>
+                                    <th>Total Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="data['labour_cost_ids']"
+                                    t-as="rec">
+                                    <td>
+                                        <t t-esc="rec.operation"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.work_center_id.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.planned_minute"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.cost_minute"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.total_cost"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h6 class="oe_subtotal_footer oe_right">Total Labour
+                            Cost :
+                            <strong>
+                                <t t-esc="data['total_labour_cost']"/>
+                            </strong>
+                        </h6>
+                        <br/>
+                        <span style="font-size:25px;">
+                            <strong>Direct Overhead Cost</strong>
+                        </span>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Operation</th>
+                                    <th>Work Center</th>
+                                    <th>Planned Minute</th>
+                                    <th>Cost/Minute</th>
+                                    <th>Total Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="data['overhead_cost_ids']"
+                                    t-as="rec">
+                                    <td>
+                                        <t t-esc="rec.operation"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.work_center_id.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.planned_minute"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.cost_minute"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.total_cost"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h6 class="oe_subtotal_footer oe_right">Total Overhead
+                            Cost :
+                            <strong>
+                                <t t-esc="data['total_overhead_cost']"/>
+                            </strong>
+                        </h6>
+                        <br/>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
