@@ -18,14 +18,14 @@ const viewRegistry = registry.category("views");
 odoo.__DEBUG__ && console.log("Console log inside the patch function", FormController.prototype, "form_controller");
 var data = false;
 
-patch(FormController.prototype, "save",{
+patch(FormController.prototype, "save", {
     setup() {
         data = false;
         this.props.preventEdit = !data
         this._super();
     },
 
-    async edit(){
+    async edit() {
         this._super();
         data = true;
         await this.model.root.switchMode("edit");
@@ -35,20 +35,20 @@ patch(FormController.prototype, "save",{
         data = false;
         await this.model.root.switchMode("readonly");
     },
-    async discard(){
+    async discard() {
         this._super();
         data = false;
         await this.model.root.switchMode("readonly");
     },
-     async beforeLeave() {
+    async beforeLeave() {
         if (this.model.root.isDirty) {
             if (confirm("The changes you have made will save Automatically!")) {
-                return this.model.root.save({noReload: true, stayInEdition: true});
+                return this.model.root.save({ noReload: true, stayInEdition: true });
             } else {
                 this.model.root.discard();
                 return true;
             }
         }
-     }
+    }
 })
 
