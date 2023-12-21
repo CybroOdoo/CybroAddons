@@ -20,10 +20,10 @@
 #
 #############################################################################
 {
-    'name': 'Invoice Format Editor',
+    'name': 'Odoo17 Invoice Format Editor',
     'version': '17.0.1.0.0',
     'category': 'Accounting',
-    'summary': 'Invoice Format Editor',
+    'summary': 'Odoo17 Invoice Format Editor,Invoice Format Editor',
     'description': """Invoice Format Editor For Configuring the Invoice Templates""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',

@@ -20,7 +20,7 @@
 #
 #############################################################################
 {
-    'name': 'Send Whatsapp Message',
+    'name': 'Send Whatsapp Message Odoo17',
     'version': '17.0.1.0.0',
     'category': 'Extra Tools',
     'summary': 'Send Message to partner via Whatsapp web',

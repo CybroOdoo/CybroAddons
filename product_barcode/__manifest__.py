@@ -20,10 +20,10 @@
 #
 ###############################################################################
 {
-    'name': 'Product Barcode Generator',
+    'name': 'Odoo17 Product Barcode Generator',
     'version': '17.0.1.0.0',
     'category': 'Warehouse',
-    'summary': 'Generates EAN13 Standard Barcode for Product.',
+    'summary': 'Odoo17 Product Barcode Generator, Generates EAN13 Standard Barcode for Product.',
     'description': 'Generates EAN13 Standard Barcode' 
                    'for Product when create a new product.',
     'author': 'Cybrosys Techno Solutions',

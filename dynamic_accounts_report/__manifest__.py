@@ -20,10 +20,10 @@
 #
 ################################################################################
 {
-    'name': 'Dynamic Accounts  Reports',
+    'name': 'Odoo17 Dynamic Accounts  Reports',
     'version': '17.0.1.0.0',
     'category': 'Accounting',
-    'summary': "Dynamic Financial Reports with drill down and filters–"
+    'summary': "Odoo17 Dynamic Accounts  Reports, Dynamic Financial Reports with drill down and filters–"
                "Community Edition",
     'description': "This module creates dynamic Accounting General Ledger, Trial"
                    "Balance, Balance Sheet, Proft and Loss, Cash Book, Partner"

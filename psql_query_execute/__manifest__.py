@@ -19,10 +19,10 @@
 #
 #############################################################################
 {
-    'name': "PSQL Query Execute",
+    'name': "Odoo17 PSQL Query Execute",
     'version': '17.0.1.0.0',
     'category': 'Extra Tools',
-    'summary': """Run the PSQL query in the Odoo user interface.""",
+    'summary': """Odoo17 PSQL Query Execute, Run the PSQL query in the Odoo user interface.""",
     'description': """PSQL Query Execute, SQL, PSQL, psql, query, odoo query, query run, database,""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
