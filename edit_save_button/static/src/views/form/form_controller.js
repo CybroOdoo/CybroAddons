@@ -30,10 +30,12 @@ patch(FormController.prototype, "save", {
         data = true;
         await this.model.root.switchMode("edit");
     },
-    async saveButtonClicked(params = {}){
-        this._super();
+    async saveButtonClicked(params = {}) {
+        let saved = await this._super();
         data = false;
-        await this.model.root.switchMode("readonly");
+        if (saved) {
+            await this.model.root.switchMode("readonly");
+        }
     },
     async discard() {
         this._super();
