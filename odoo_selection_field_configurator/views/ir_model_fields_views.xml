@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Tree view for ir.model.fields-->
+    <record id="ir_model_fields_view_tree" model="ir.ui.view">
+        <field name="name">ir.model.fields.view.tree</field>
+        <field name="model">ir.model.fields</field>
+        <field name="arch" type="xml">
+            <tree string="Selection Fields Tree View">
+                <field name="name"/>
+                <field name="model_id"/>
+            </tree>
+        </field>
+    </record>
+    <!--Form view for ir.model.fields with tree view inside for one2many of ir.model.fields.selection-->
+    <record id="ir_model_fields_view_form" model="ir.ui.view">
+        <field name="name">ir.model.fields.view.form</field>
+        <field name="model">ir.model.fields</field>
+        <field name="arch" type="xml">
+            <form string="Selection Fields Form View">
+                <field name="selection_ids">
+                    <tree string="Selections One2Many Tree View"
+                          editable="bottom">
+                        <field name="sequence" widget="handle"/>
+                        <field name="value"/>
+                        <field name="name"/>
+                    </tree>
+                </field>
+            </form>
+        </field>
+    </record>
+    <!--ir.model.fields view with only selection fields. View ids for specific tree and form view-->
+    <record id="ir_model_fields_action" model="ir.actions.act_window">
+        <field name="name">Selection Fields</field>
+        <field name="res_model">ir.model.fields</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="base.view_model_fields_search"/>
+        <field name="domain">[('ttype','=','selection')]</field>
+        <field name="view_ids"
+               eval="[(5, 0, 0),(0, 0, {'view_mode': 'tree', 'view_id': ref('ir_model_fields_view_tree')}),(0, 0, {'view_mode': 'form', 'view_id': ref('ir_model_fields_view_form')})]"/>
+    </record>
+    <!--Menu Action-->
+    <menuitem id="ir_model_fields_menu_root"
+              name="Selection Field Configurator"
+              web_icon="odoo_selection_field_configurator,static/description/icon.png"
+              action="ir_model_fields_action"/>
+</odoo>
