@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template">
+    <!--Star icon is added to chat systray-->
+    <t t-inherit="mail.ChannelPreviewView" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_NotificationListItem_header')]/span[1]"
+               position="after">
+            <span style="padding-left: 1rem;"/>
+            <t t-set="thread" t-value="this.channelPreviewView.thread"/>
+            <t t-if="!thread.favour_btn">
+                <span class="o_NotificationGroup_favourites fa fa-star"
+                      t-att-class="{'text-danger': thread.is_favour}"
+                      t-att-id="'star_icon_' + thread.id"
+                      title="favourite" t-on-click="_onClickMarkFavourite"/>
+            </t>
+        </xpath>
+    </t>
+    <!--    Added the Favourite button to the header and added the
+    click to open the chat functionality to it.-->
+    <t t-inherit="mail.MessagingMenu" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_MessagingMenu_dropdownMenuHeader')]"
+               position="replace">
+        <!-- The chat systray now shows a star icon and default chat icon,
+        When clicked on the chat icon it shows 'all' tab as default and can select
+        other tabs within the chat tab and when click on star icon it shows 'favourite'
+        tab as default and can select other tabs as well -->
+            <div class="o_MessagingMenu_dropdownMenuHeader"
+                 t-att-class="{ 'o-mobile': messaging.device.isMobileDevice }">
+                <t t-if="!messaging.device.isMobileDevice">
+                    <t t-foreach="['all','chat','channel','favourite']"
+                       t-as="tabId"
+                       t-key="tabId">
+                        <button class="o_MessagingMenu_tabButton o-desktop btn btn-link"
+                                t-att-class="{ 'o-active': messagingMenu.activeTabId === tabId,
+                                 'text-dark' : messagingMenu.activeTabId !== tabId}"
+                                t-on-click="_onClickDesktopTabButton"
+                                type="button" role="tab"
+                                t-att-data-tab-id="tabId">
+                            <t t-if="tabId === 'all'">All</t>
+                            <t t-elif="tabId === 'chat'">Chat</t>
+                            <t t-elif="tabId === 'channel'">Channels</t>
+                            <t t-elif="tabId === 'favourite'">Favourite</t>
+                        </button>
+                    </t>
+                </t>
+                <t t-else="">
+                    <t t-call="mail.MessagingMenu.newMessageButton"/>
+                </t>
+                <div class="o-autogrow"/>
+                <t t-if="!favourite_button">
+                    <t t-if="!messaging.device.isMobile and !messaging.discuss.isOpen">
+                        <t t-call="mail.MessagingMenu.newMessageButton"/>
+                    </t>
+                </t>
+            </div>
+        </xpath>
+    </t>
+</templates>
