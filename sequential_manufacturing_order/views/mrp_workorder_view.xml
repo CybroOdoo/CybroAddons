@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--    Used this records to hide the start button with the condition-->
+    <record id="mrp_production_workorder_tree_editable_view" model="ir.ui.view">
+        <field name="name">mrp.workorder.view.form.inherit.sequential.manufacturing.order</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id"
+               ref="mrp.mrp_production_workorder_tree_editable_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree/field[@name='state']" position="after">
+                <field name="enable_start" invisible="1"/>
+            </xpath>
+            <xpath expr="//tree/button[@name='button_start']"
+                   position="replace">
+                <button name="button_start" type="object" string="Start"
+                        class="btn-success"
+                        attrs="{'invisible': ['|', '|', '|', '&amp;',
+                        ('production_state','in', ('draft', 'done', 'cancel')),
+                         ('working_state', '=', 'blocked'),
+                         ('state', 'in', ('done', 'cancel')),
+                         ('is_user_working', '!=', False),
+                         ('state', 'in', ('waiting', 'pending')),
+                         ('enable_start', '=', True)]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
