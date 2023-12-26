@@ -1,5 +1,5 @@
-.. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
-    :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
+.. image:: https://img.shields.io/badge/license-AGPL--3-blue.svg
+    :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
 Manufacturing Reports
@@ -8,10 +8,6 @@ This module allow to manage manufacturing reports.
 
 Configuration
 =============
-* No additional configurations needed
-
-Installation
-============
 - www.odoo.com/documentation/15.0/setup/install.html
 - Install our custom addon
 

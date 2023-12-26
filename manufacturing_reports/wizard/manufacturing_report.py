@@ -148,9 +148,6 @@ class ManufacturingReport(models.TransientModel):
         if data['date_from']:
             sheet.write('B6', 'From:', cell_format)
             sheet.merge_range('C6:D6', data['date_from'], txt_head)
-        if data['state']:
-            sheet.write('B7', 'State:', cell_format)
-            sheet.merge_range('C7:D7', data['state'], txt_head)
         row = 9
         col = 2
         sheet.write(row, col, 'Reference', cell_format)
