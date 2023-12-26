@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add delivery date on website products screen-->
+    <template id="ecommerce_delivery_date_template"
+              inherit_id="website_sale.products_item">
+        <xpath expr="//div[hasclass('oe_product_image')]" position="inside">
+            <t t-if="product.sale_delay">
+                <t t-set="enabled"
+                   t-value="request.env['ir.config_parameter'].sudo().get_param('delivery_date_ecommerce.is_delivery')"/>
+                <t t-if="enabled">
+                    <div class="show_delivery_date" id="show_delivery_date">
+                        <b>Delivery with in
+                            <t t-esc="product.sale_delay"/>
+                            days
+                        </b>
+                    </div>
+                </t>
+            </t>
+        </xpath>
+    </template>
+    <!--    Add delivery date on website product details-->
+    <template id="ecommerce_delivery_date_product_template"
+              inherit_id="website_sale.product">
+        <xpath expr="//div[@id='o_wsale_cta_wrapper']" position="after">
+            <t t-if="product.sale_delay">
+                <t t-set="enabled"
+                   t-value="request.env['ir.config_parameter'].sudo().get_param('delivery_date_ecommerce.is_delivery')"/>
+                <t t-if="enabled">
+                    <div class="show_delivery_date">
+                        <b>Delivery with in
+                            <t t-esc="product.sale_delay"/>
+                            days
+                        </b>
+                    </div>
+                </t>
+            </t>
+        </xpath>
+    </template>
+    <!--    Add delivery date on website cart screen-->
+    <template id="cart_delivery_date_template"
+              inherit_id="website_sale.cart_lines">
+        <xpath expr="//td[hasclass('td-product_name')]" position="inside">
+            <t t-if="line.product_template_id.sale_delay">
+                <t t-set="enabled"
+                   t-value="request.env['ir.config_parameter'].sudo().get_param('delivery_date_ecommerce.is_delivery')"/>
+                <t t-if="enabled">
+                    <div class="show_delivery_date">
+                        <b>Delivery with in
+                            <t t-esc="line.product_template_id.sale_delay"/>
+                            days
+                        </b>
+                    </div>
+                </t>
+            </t>
+        </xpath>
+    </template>
+</odoo>
