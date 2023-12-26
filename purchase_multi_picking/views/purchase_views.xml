@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Adding smart button and deliver to in order line -->
+    <record id="purchase_order_form" model="ir.ui.view">
+        <field name="name">purchase.order.form.inherit.purchase.multi.picking</field>
+        <field name="model">purchase.order</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Added picking type in the purchase order line -->
+            <xpath expr="//page[@name='products']//field[@name='name']"
+                   position="after">
+                <field name="picking_type_id"/>
+                <field name="company_id" invisible="1"/>
+            </xpath>
+            <!-- Added smart button to view the pickings -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <field name="picking_count" invisible="1"/>
+                <button class="oe_stat_button" name="action_picking_view"
+                        icon="fa-truck"
+                        attrs="{'invisible': ['|',('state','not in', ('purchase','done')),('picking_count','=', 0)]}"
+                        type="object" string="Receipt">
+                    <field name="picking_count" widget="statinfo"
+                           string="Receipt"/>
+                </button>
+            </xpath>
+             <!--Added button to receive the pickings -->
+            <xpath expr="//header/button[@name='action_view_picking']"
+                   position="replace">
+                <field name="is_picked" invisible="1"/>
+                <button name="action_view_multi_picking"
+                        string="Receive Products" class="oe_highlight"
+                        type="object"
+                        attrs="{'invisible': ['|', ('state','not in', ('purchase','done')),('is_picked','=', True)]}"
+                        groups="stock.group_stock_user"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
