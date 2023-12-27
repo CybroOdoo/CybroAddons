@@ -1,6 +1,6 @@
-.. image:: https://img.shields.io/badge/licence-LGPL--3-green.svg
-    :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
-    :alt: License: LGPL-3
+.. image:: https://img.shields.io/badge/license-AGPL--3-blue.svg
+    :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
+    :alt: License: AGPL-3
 
 HR WEBSITE PORTAL
 =================
@@ -14,8 +14,8 @@ Configuration
 
 License
 -------
-General Public License, Version 3 (LGPL-3).
-(https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
+General Public License, Version 3 (AGPL-3).
+(https://www.gnu.org/licenses/agpl-3.0-standalone.html)
 
 Company
 -------
