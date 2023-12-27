@@ -3,7 +3,7 @@
     :alt: License: LGPL-3
 
 Code Backend Theme Enterprise
-=============================
+==================
 * Code Backend Theme module for Odoo 17 enterprise editions. This is a Minimalist and Elegant Backend Theme for Odoo 17. This theme will change your Old Experience to a New Experience with Odoo.
 
 Configuration
