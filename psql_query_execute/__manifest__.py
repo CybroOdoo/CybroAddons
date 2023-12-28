@@ -19,7 +19,7 @@
 #
 #############################################################################
 {
-    'name': "Odoo17 PSQL Query Execute",
+    'name': "PostgreSQL Query Execute Odoo17",
     'version': '17.0.1.0.0',
     'category': 'Extra Tools',
     'summary': """Odoo17 PSQL Query Execute, Run the PSQL query in the Odoo user interface.""",
