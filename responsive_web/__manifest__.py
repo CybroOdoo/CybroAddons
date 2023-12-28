@@ -20,7 +20,7 @@
 #
 ##############################################################################
 {
-    'name': "Web Responsive",
+    'name': "Web Responsive Odoo16",
     'version': '16.0.1.0.0',
     'category': 'Extra Tools',
     'summary': 'This module helps to create enterprise like app drawer,Responsiveness and sticky headers included.',
