@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+<!--    Inherit User Model to add the allowed pos for particular user-->
+    <record id="view_users_form" model="ir.ui.view">
+        <field name="name">res.users.view.form.inherit.pos.restrict</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='access_rights']" position="after">
+                <page string="POS Users" groups="point_of_sale.group_pos_user">
+                    <group>
+                        <field name="allowed_pos" widget="many2many_tags"/>
+                        <field name="show_users" groups="point_of_sale.group_pos_manager"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+<!--   Inherit configuration to add the pos access -->
+    <record id="view_pos_config_kanban" model="ir.ui.view">
+        <field name="name">pos.config.view.kanban.inherit.pos.restrict</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_config_kanban"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="users_allowed"/>
+            </field>
+            <t t-esc="record.name.value" position="after">
+                <field name="users_allowed" groups="point_of_sale.group_pos_manager"/>
+            </t>
+        </field>
+    </record>
+</odoo>
