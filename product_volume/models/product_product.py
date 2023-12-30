@@ -19,24 +19,16 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-{
-    'name': 'Product Volume Calculation',
-    'version': '17.0.1.0.1',
-    'category': "Inventory",
-    'summary': """This module will helps you to give dimensions of the product.""",
-    'description': "Module helps you to manage the length, breadth and height "
-                   "of the product and calculates its volume accordingly.",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
-    'depends': ['stock'],
-    'data': [
-        'views/product_template_views.xml'
-    ],
-    'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+from odoo import api, models, fields
+
+
+class ProductProduct(models.Model):
+    """Inheriting product_template to add new fields"""
+    _inherit = 'product.product'
+
+    @api.onchange('length', 'breadth', 'height')
+    def _onchange_product_measures(self):
+        """Onchange function to calculate volume of the product"""
+        self.volume = (float(self.length if self.length else 0) *
+                       float(self.breadth if self.breadth else 0) * float(
+            self.height if self.height else 0))
