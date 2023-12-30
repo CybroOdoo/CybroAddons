@@ -37,6 +37,7 @@ class PaymentMyFatoorahController(http.Controller):
                 website=True, methods=['POST'], csrf=False, save_session=False)
     def myfatoorah_payment_response(self, **data):
         """Function to get the payment response"""
+
         payment_data = ast.literal_eval(data["data"])
         vals = {
             'customer': payment_data["CustomerName"],
@@ -44,7 +45,7 @@ class PaymentMyFatoorahController(http.Controller):
             'mobile': payment_data["CustomerMobile"],
             'invoice_amount': payment_data["InvoiceValue"],
             'address': payment_data["CustomerAddress"]["Address"],
-            'payment_url': payment_data["PaymentURL"],
+            'payment_url': payment_data["InvoiceURL"],
         }
         return request.render(
             "myfatoorah_payment_gateway.myfatoorah_payment_gateway_form", vals)

@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 {
     'name': 'MyFatoorah Payment Gateway',
     'category': 'Accounting/Payment Acquirers',
@@ -37,7 +36,6 @@
         'views/payment_myfatoorah_templates.xml',
         'views/myfatoorah_payment_template.xml',
         'data/payment_provider_data.xml',
-
     ],
     'post_init_hook': 'post_init_hook',
     'uninstall_hook': 'uninstall_hook',

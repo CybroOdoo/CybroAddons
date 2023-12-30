@@ -20,7 +20,7 @@
 #############################################################################
 # Import required libraries (make sure it is installed!)
 import logging
-from odoo import _, api, fields, models
+from odoo import _, models
 from odoo.exceptions import ValidationError
 import requests
 import json
@@ -36,42 +36,34 @@ class PaymentTransaction(models.Model):
         res = super()._get_specific_rendering_values(processing_values)
         if self.provider_code != 'myfatoorah':
             return res
-        return self.execute_payment()
+        return self.send_payment()
 
-    def execute_payment(self):
-        """Fetching data and Executing Payment"""
+    def send_payment(self):
         base_api_url = self.env['payment.provider'].search(
             [('code', '=', 'myfatoorah')])._myfatoorah_get_api_url()
-        api_url = f"{base_api_url}v2/ExecutePayment"
+        api_url = f"{base_api_url}v2/SendPayment"
         api_key = self.env['payment.provider'].search([('code', '=',
                                                         'myfatoorah')]).myfatoorah_token
         odoo_base_url = self.env['ir.config_parameter'].get_param(
             'web.base.url')
+
         sale_order = self.env['payment.transaction'].search(
             [('id', '=', self.id)]).sale_order_ids
-
-        order_line = self.env['payment.transaction'].search(
-            [('id', '=', self.id)]).sale_order_ids.order_line
-        invoice_items = [
-            {
-                'ItemName': rec.product_id.name,
-                'Quantity': int(rec.product_uom_qty),
-                'UnitPrice': rec.price_unit,
-            }
-            for rec in order_line
-        ]
         MobileCountryCode = self.partner_id.country_id.phone_code
         phone_number = self.partner_phone
         if not phone_number:
             raise ValueError("Please provide the phone number.")
-        if phone_number:
+        else:
             phone_number = phone_number.replace(str(MobileCountryCode), '')
             if phone_number.startswith('+'):
                 phone_number = phone_number[1:]
-        currency = self.partner_id.company_id.currency_id.name
+            elif not phone_number:
+                raise ValueError(
+                    "Please provide the phone number in proper format")
+        currency = self.env.company.currency_id.name
 
-        payment_details = {
-            "PaymentMethodId": 6,
+        sendpay_data = {
+            "NotificationOption": "ALL",
             "CustomerName": self.partner_name,
             "DisplayCurrencyIso": currency,
             "MobileCountryCode": MobileCountryCode,
@@ -85,28 +77,27 @@ class PaymentTransaction(models.Model):
             "CustomerAddress": {
                 "Address": f'{self.partner_address} ,{self.partner_city} {self.partner_zip} ,{self.partner_state_id.name} ,{self.partner_country_id.name}',
             },
-            "InvoiceItems":
-                invoice_items
         }
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': f'Bearer {api_key}',
         }
-        payload = json.dumps(payment_details)
-        print(payload,'payload')
+        payload = json.dumps(sendpay_data)
         response = requests.request("POST", api_url, headers=headers,
                                     data=payload)
-        print(response,'response...')
         response_data = response.json()
         if not response_data.get('IsSuccess'):
-            raise ValidationError(f"{response_data.get('Message')}")
-        if response_data.get('Data')['PaymentURL']:
-            payment_url = response_data.get('Data')['PaymentURL']
-            payment_details['PaymentURL'] = payment_url
+            validation_errors = response_data.get('ValidationErrors')
+            if validation_errors:
+                error_message = validation_errors[0].get('Error')
+                raise ValidationError(f"{error_message}")
+        if response_data.get('Data')['InvoiceURL']:
+            payment_url = response_data.get('Data')['InvoiceURL']
+            sendpay_data['InvoiceURL'] = payment_url
         return {
             'api_url': f"{odoo_base_url}/payment/myfatoorah/response",
-            'data': payment_details,
+            'data': sendpay_data,
         }
 
     def _get_tx_from_notification_data(self, provider_code, notification_data):
