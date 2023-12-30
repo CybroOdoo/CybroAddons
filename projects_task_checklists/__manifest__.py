@@ -4,7 +4,6 @@
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: LINTO C T(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
@@ -22,8 +21,8 @@
     'name': 'Project Task Checklist',
     'version': '15.0.1.0.1',
     'category': 'Project/Project',
-    'summary': "To Manage the Project's tasks, subtasks checklists",
-    'description': "To Manage the Project's tasks, subtasks checklists",
+    'summary': "To Manage the Task and Subtask Checklists",
+    'description': "To Manage the Task and Subtask Checklists",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
