@@ -19,12 +19,12 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import account_move
-from . import account_move_line
-from . import car_rental
-from . import car_rental_checklist
-from . import car_tools
-from . import fleet
-from . import fleet_rental_line
-from . import fleet_vehicle
-from . import res_config_settings
+from odoo import fields, models
+
+
+class CarTools(models.Model):
+    """Model to add the tools for the car"""
+    _name = 'car.tools'
+
+    name = fields.Char(string="Name")
+    price = fields.Float(string="Price")

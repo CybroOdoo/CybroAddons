@@ -19,12 +19,22 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import account_move
-from . import account_move_line
-from . import car_rental
-from . import car_rental_checklist
-from . import car_tools
-from . import fleet
-from . import fleet_rental_line
-from . import fleet_vehicle
-from . import res_config_settings
+from odoo import api, fields, models
+
+
+class CarRentalChecklist(models.Model):
+    """Model to add the checklist of rental"""
+    _name = 'car.rental.checklist'
+
+    name = fields.Many2one('car.tools', string="Name")
+    checklist_active = fields.Boolean(string="Available", default=True)
+    checklist_number = fields.Many2one('car.rental.contract',
+                                       string="Checklist Number")
+    price = fields.Float(string="Price")
+
+    @api.onchange('name')
+    def onchange_name(self):
+        """
+           Update the price based on the selected name.
+        """
+        self.price = self.name.price

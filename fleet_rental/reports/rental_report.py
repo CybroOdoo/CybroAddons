@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Cybrosys Technogies @cybrosys(odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -36,10 +36,13 @@ class FleetRentalReport(models.Model):
     cost = fields.Float(string="Rent Cost")
     rent_start_date = fields.Date(string="Rent Start Date")
     rent_end_date = fields.Date(string="Rent End Date")
-    state = fields.Selection([('draft', 'Draft'), ('running', 'Running'), ('cancel', 'Cancel'),
-                              ('checking', 'Checking'), ('done', 'Done')], string="State")
-    cost_frequency = fields.Selection([('no', 'No'), ('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly'),
-                                       ('yearly', 'Yearly')], string="Recurring Cost Frequency")
+    state = fields.Selection(
+        [('draft', 'Draft'), ('running', 'Running'), ('cancel', 'Cancel'),
+         ('checking', 'Checking'), ('done', 'Done')], string="State")
+    cost_frequency = fields.Selection(
+        [('no', 'No'), ('daily', 'Daily'), ('weekly', 'Weekly'),
+         ('monthly', 'Monthly'),
+         ('yearly', 'Yearly')], string="Recurring Cost Frequency")
     total = fields.Float(string="Total(Tools)")
     tools_missing_cost = fields.Float(string="Tools missing cost")
     damage_cost = fields.Float(string="Damage cost")
@@ -49,6 +52,9 @@ class FleetRentalReport(models.Model):
     _order = 'name desc'
 
     def _select(self):
+        """
+            Construct a SQL select query string with specific fields.
+        """
         select_str = """
              SELECT
                     (select 1 ) AS nbr,
@@ -72,6 +78,9 @@ class FleetRentalReport(models.Model):
         return select_str
 
     def _group_by(self):
+        """
+            Construct a SQL GROUP BY query string with specific fields.
+        """
         group_by_str = """
                 GROUP BY
                     t.id,
@@ -94,6 +103,12 @@ class FleetRentalReport(models.Model):
         return group_by_str
 
     def init(self):
+        """
+            Initialize the module and create a database view for reporting
+            fleet rentals.
+            Drop the existing 'report_fleet_rental' view if it already exists.
+            Create a new view with the SQL select and group by queries.
+        """
         tools.sql.drop_view_if_exists(self._cr, 'report_fleet_rental')
         self._cr.execute("""
             CREATE view report_fleet_rental as

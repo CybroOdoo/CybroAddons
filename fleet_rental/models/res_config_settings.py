@@ -19,12 +19,21 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import account_move
-from . import account_move_line
-from . import car_rental
-from . import car_rental_checklist
-from . import car_tools
-from . import fleet
-from . import fleet_rental_line
-from . import fleet_vehicle
-from . import res_config_settings
+from odoo import api, fields, models
+
+
+class ResConfigSettings(models.TransientModel):
+    """Inherit configuration settings"""
+    _inherit = 'res.config.settings'
+
+    def _get_default_product(self):
+        """
+            Retrieve the default product ID for fleet services.
+        """
+        return self.env.ref('fleet_rental.fleet_service_product').id
+
+    fleet_service_product_id = fields.Many2one(
+        'product.template',
+        string="Product",
+        config_parameter='fleet_service_product_id',
+        default=_get_default_product)

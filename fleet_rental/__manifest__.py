@@ -38,8 +38,16 @@
         'views/car_rental_view.xml',
         'views/checklist_view.xml',
         'views/car_tools_view.xml',
+        'views/res_config_settings_views.xml',
         'reports/rental_report.xml'
     ],
+    "assets": {
+        'web.assets_backend': [
+            'fleet_rental/static/src/js/time_widget.js',
+            'fleet_rental/static/src/xml/timepicker.xml',
+            'fleet_rental/static/src/scss/timepicker.scss'
+        ],
+    },
     'demo': [
     ],
     'images': ['static/description/banner.png'],
