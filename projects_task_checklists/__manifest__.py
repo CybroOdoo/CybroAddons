@@ -19,7 +19,7 @@
 ##############################################################################
 {
     'name': 'Project Task Checklist',
-    'version': '14.0.1.0.0',
+    'version': '14.0.1.0.1',
     'category': 'Project/Project',
     'summary': "To Manage the Task and Subtask Checklists",
     'description': "To Manage the Task and Subtask Checklists",
