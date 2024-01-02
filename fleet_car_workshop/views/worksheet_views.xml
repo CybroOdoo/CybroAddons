@@ -1,0 +1,319 @@
+<odoo>
+    <data>
+        <record id="ir_cron_scheduler_demo_action" model="ir.cron">
+            <field name="name">Demo scheduler</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall"/>
+            <field name="model_id" ref="fleet_car_workshop.model_car_workshop"/>
+            <field name="state">code</field>
+            <field name="code">model.process_demo_scheduler_queue()</field>
+        </record>
+
+        <record model="ir.ui.view" id="worksheet_form_view">
+            <field name="name">worksheet.form.view</field>
+            <field name="model">car.workshop</field>
+            <field name="arch" type="xml">
+                <form string="Worksheet">
+                    <header>
+                        <button name="workshop_create_invoices" string="Create Invoices" type="object"
+                                class="btn-primary" states="waiting"/>
+                        <button class="btn-primary" name="cancel" string="Cancel" type="object" states="waiting"/>
+                        <field name="state" widget="statusbar" statusbar_visible="workshop_create_invoices,cancel"/>
+                    </header>
+                    <header>
+                        <field name="stage_id" widget="statusbar" clickable="True"
+                               options="{'fold_field': 'fold'}"/>
+                    </header>
+
+                    <sheet string="Worksheet">
+                        <div class="oe_button_box" name="button_box">
+                            <button class="oe_stat_button" type="object" name="get_invoices"
+                                    icon="fa-pencil-square-o">
+                                <field string="Invoices" name="invoice_count" widget="statinfo"/>
+                            </button>
+                        </div>
+                        <field name="kanban_state" widget="kanban_state_selection"/>
+                        <div class="oe_title">
+                            <h1 class="o_row">
+                                <field name="company_id" invisible="1"/>
+                                <field name="priority" widget="priority"/>
+                                <field name="name" placeholder="Title..."/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="vehicle_id"/>
+                                <field name="user_id"/>
+                            </group>
+                            <group>
+                                <field name="date_deadline"/>
+                                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                                <field name="progress" widget="progressbar"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="description_page" string="Description">
+                                <field name="description" type="html"/>
+                                <div class="oe_clear"/>
+                            </page>
+                            <page name="timesheet_page" string="Timesheets">
+                                <group string="Planned/Ordered Work">
+                                    <field name="planned_works">
+                                        <tree string="Planned Work" editable="bottom">
+                                            <field name="planned_work"/>
+                                            <field name="time_spent" sum="Estimated Time" widget="float_time"/>
+                                            <field name="work_date"/>
+                                            <field name="responsible"/>
+                                            <field name="work_cost"/>
+                                            <field name="completed"/>
+                                        </tree>
+                                    </field>
+                                </group>
+                                <group string="Work Done">
+                                    <field name="works_done">
+                                        <tree string="Planned Work" editable="bottom">
+                                            <field name="planned_work" string="Work Done"/>
+                                            <field name="duration" sum="Estimated Time" widget="float_time"/>
+                                            <field name="work_date2"/>
+                                            <field name="responsible" string="User"/>
+                                            <field name="work_cost"/>
+                                        </tree>
+                                    </field>
+                                </group>
+                                <group string="Materials Used">
+                                    <field name="materials_used"/>
+                                </group>
+                                <group>
+                                    <field name="amount_total"/>
+                                </group>
+                                <group class="oe_subtotal_footer oe_right" name="project_hours">
+                                    <field name="effective_hour" widget="float_time"/>
+                                    <field name="remaining_hour" class="oe_subtotal_footer_separator"
+                                           widget="float_time"/>
+                                </group>
+                            </page>
+                            <page string="Extra Info">
+
+                                <group col="4">
+                                    <field name="sequence"/>
+                                    <field name="partner_id"/>
+
+                                    <field name="displayed_image_id"/>
+                                </group>
+                                <group col="4">
+                                    <field name="date_assign"/>
+                                    <field name="date_last_stage_update"/>
+                                </group>
+
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="car_workshop_view_kanban">
+            <field name="name">car workshop kanban</field>
+            <field name="model">car.workshop</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="stage_id" class="o_kanban_small_column" records_draggable="1">
+                    <field name="color"/>
+                    <field name="priority"/>
+                    <field name="stage_id" options='{"group_by_tooltip": {"description": "Stage Description"}}'/>
+                    <field name="user_id"/>
+                    <field name="description"/>
+                    <field name="sequence"/>
+                    <field name="date_deadline"/>
+                    <field name="tag_ids" options="{'color_field': 'color'}"/>
+                    <field name="attachment_ids"/>
+                    <field name="displayed_image_id"/>
+                    <field name="active"/>
+                    <progressbar field="kanban_state"
+                                 colors='{"done": "success", "blocked": "danger", "normal": "muted"}'/>
+
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)} oe_kanban_card oe_kanban_global_click">
+
+                                <div class="o_dropdown_kanban dropdown" t-if="!selection_mode" groups="base.group_user">
+                                    <a role="button" class="dropdown-toggle o-no-caret btn" data-toggle="dropdown"
+                                       data-display="static" href="#" aria-label="Dropdown menu" title="Dropdown menu">
+                                        <span class="fa fa-ellipsis-v"/>
+                                    </a>
+                                    <div class="dropdown-menu" role="menu">
+                                        <a t-if="widget.editable" role="menuitem" type="edit" class="dropdown-item">Edit
+                                            Task
+                                        </a>
+                                        <a t-if="widget.deletable" role="menuitem" type="delete" class="dropdown-item">
+                                            Delete
+                                        </a>
+                                        <div role="separator" class="dropdown-divider"></div>
+                                        <ul class="oe_kanban_colorpicker" data-field="color"/>
+                                    </div>
+                                </div>
+
+                                <div class="oe_kanban_content">
+                                    <div>
+                                        <field name="tag_ids" options="{'color_field': 'color'}"/>
+                                    </div>
+                                    <div>
+                                        <strong>
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                    <div class="text-muted">
+                                        <field name="vehicle_id" invisible="context.get('default_vehicle_id', False)"/>
+                                        <t t-if="record.date_deadline.raw_value and record.date_deadline.raw_value lt (new Date())"
+                                           t-set="red">oe_kanban_text_red
+                                        </t>
+                                        <span t-attf-class="#{red || ''}">
+                                            <i>
+                                                <field name="date_deadline"/>
+                                            </i>
+                                        </span>
+                                    </div>
+                                    <div class="oe_kanban_bottom_left">
+                                        <field name="priority" widget="priority"/>
+
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <img t-att-src="kanban_image('res.users', 'image_128', record.user_id.raw_value)"
+                                             t-att-title="record.user_id.value" width="24" height="24"
+                                             class="oe_kanban_avatar pull-right" alt="img"/>
+                                        <div class="pull-left">
+                                            <field name="kanban_state" widget="kanban_state_selection"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div t-if="record.displayed_image_id.value">
+                                    <field name="displayed_image_id" widget="attachment_image"/>
+                                </div>
+                                <div class="oe_clear"></div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+
+        <record model="ir.ui.view" id="worksheet_tree_view">
+            <field name="name">worksheet.tree.view</field>
+            <field name="model">car.workshop</field>
+            <field name="arch" type="xml">
+                <tree string="Worksheet">
+                    <field name="name"/>
+                    <field name="vehicle_id" invisible="context.get('user_invisible', False)"/>
+                    <field name="user_id" invisible="context.get('user_invisible', False)"/>
+                    <field name="date_deadline" invisible="context.get('deadline_visible',True)"/>
+                    <field name="amount_total"/>
+                    <field name="stage_id" invisible="context.get('set_visible',False)"/>
+                    <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="worksheet_calender_view" model="ir.ui.view">
+            <field name="name">worksheet.calender.view</field>
+            <field name="model">car.workshop</field>
+            <field eval="2" name="priority"/>
+            <field name="arch" type="xml">
+                <calendar color="user_id" date_start="date_deadline" string="Tasks">
+                    <field name="name"/>
+                    <field name="vehicle_id"/>
+                </calendar>
+            </field>
+        </record>
+
+        <record id="view_car_workshop_pivot" model="ir.ui.view">
+            <field name="name">car.workshop.pivot</field>
+            <field name="model">car.workshop</field>
+            <field name="arch" type="xml">
+                <pivot string="Project Tasks">
+                    <field name="vehicle_id" type="row"/>
+                    <field name="stage_id" type="col"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="view_car_workshop_graph" model="ir.ui.view">
+            <field name="name">car.workshop.graph</field>
+            <field name="model">car.workshop</field>
+            <field name="arch" type="xml">
+                <graph string="Project Tasks">
+                    <field name="vehicle_id"/>
+                    <field name="stage_id"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id="view_vehicle_search_form" model="ir.ui.view">
+            <field name="name">car.workshop.search.form</field>
+            <field name="model">car.workshop</field>
+            <field name="arch" type="xml">
+                <search string="Worksheet">
+                    <field name="name" string="Tasks"/>
+                    <field name="tag_ids" options="{'color_field': 'color'}"/>
+                    <field name="partner_id"/>
+                    <field name="vehicle_id"/>
+                    <field name="user_id"/>
+                    <field name="stage_id"/>
+                    <filter string="My worksheets" name="my_worksheets" domain="[('user_id', '=', uid)]"/>
+                    <filter string="Unassigned" name="unassigned" domain="[('user_id', '=', False)]"/>
+                    <separator/>
+                    <filter string="New" name="draft" domain="[('stage_id.sequence', '&lt;=', 1)]"/>
+                    <separator/>
+                    <filter string="Archived" name="inactive" domain="[('active','=',False)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Vehicle" name="vehicle" context="{'group_by':'vehicle_id'}"/>
+                        <filter string="Worksheets" name="name" context="{'group_by':'name'}"/>
+                        <filter string="Assigned to" name="User" context="{'group_by':'user_id'}"/>
+                        <filter string="Stage" name="Stage" context="{'group_by':'stage_id'}"/>
+                        <separator/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="worksheet_action_super_button">
+            <field name="name">Worksheets</field>
+            <field name="res_model">car.workshop</field>
+            <field name="view_mode">kanban,tree,form,calendar,pivot,graph</field>
+            <field name="context">{'search_default_vehicle_id': [active_id],
+                'default_vehicle_id':active_id}
+            </field>
+            <field name="search_view_id" ref="view_vehicle_search_form"/>
+            <field name="help" type="html">
+                <p>
+                    Odoo's car workshop management allows you to manage the pipeline of your work efficiently. You can
+                    track progress, discuss on works, attach documents, etc.
+                </p>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_car_workshop_filtered">
+            <field name="name">Worksheets</field>
+            <field name="res_model">car.workshop</field>
+            <field name="view_mode">kanban,tree,form,calendar,pivot,graph</field>
+            <field name="help" type="html">
+                <p>
+                    Odoo's car workshop management allows you to manage the pipeline of your work efficiently. You can
+                    track progress, discuss on works, attach documents, etc.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="main_workshop_menu" name="Car Workshop"/>
+        <menuitem name="Worksheets" id="search_worksheet" parent="main_workshop_menu" sequence="2"/>
+        <menuitem name="Worksheet" id="vehicle_works" parent="search_worksheet" action="action_car_workshop_filtered"/>
+        <menuitem id="menu_worksheet_config" name="Configuration" parent="main_workshop_menu" sequence="4"/>
+    </data>
+</odoo>

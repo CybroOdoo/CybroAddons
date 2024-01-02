@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Actions for Inspection request-->
+    <record id="inspection_request_action" model="ir.actions.act_window">
+        <field name="name">Inspection Requests</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">inspection.request</field>
+        <field name="view_mode">tree,form,kanban,calendar</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new record!
+            </p>
+        </field>
+    </record>
+    <record id="inspection_request_to_start_action"
+            model="ir.actions.act_window">
+        <field name="name">Started Inspections</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">inspection.request</field>
+        <field name="view_mode">tree,form,kanban,calendar</field>
+        <field name="domain">[('state','=','inspection_started')]</field>
+        <field name="context">{'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new record!
+            </p>
+        </field>
+    </record>
+    <!--Actions for Inspection request when inspection started-->
+    <record id="inspection_request_to_finish_action"
+            model="ir.actions.act_window">
+        <field name="name">Finished Inspections</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">inspection.request</field>
+        <field name="view_mode">tree,form,kanban,calendar</field>
+        <field name="domain">[('state','=','inspection_finished')]</field>
+        <field name="context">{'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new record!
+            </p>
+        </field>
+    </record>
+    <!--    Inspection Request menus-->
+    <menuitem id="inspection_request_menu"
+              name="Inspection"
+              parent="fleet.menu_root"/>
+    <menuitem id="inspection_request_details_menu"
+              name="Inspection Request"
+              parent="inspection_request_menu"
+              action="inspection_request_action"/>
+    <menuitem id="inspection_request_to_start_menu"
+              name="Inspection Started"
+              parent="inspection_request_menu"
+              action="inspection_request_to_start_action"/>
+    <menuitem id="inspection_request_to_finish_menu"
+              name="Inspection Finished"
+              parent="inspection_request_menu"
+              action="inspection_request_to_finish_action"/>
+    <!--Inspection Request form view-->
+    <record id="inspection_requests_view_form" model="ir.ui.view">
+        <field name="name">inspection.request.view.form</field>
+        <field name="model">inspection.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget='statusbar'
+                           statusbar_visible='draft,new,inspection_started,inspection_finished'/>
+                    <button name="action_start_inspection"
+                            class="oe_highlight"
+                            states="new" string="Start Inspection"
+                            type="object"
+                            help="Start Vehicle Inspection"/>
+                    <button name="action_confirm_inspection"
+                            class="oe_highlight"
+                            states="draft" string="Confirm"
+                            type="object"
+                            help="Confirm Inspection Request"/>
+                    <button name="action_finish_inspection"
+                            class="oe_highlight"
+                            states="inspection_started"
+                            string="Finish Inspection" type="object"
+                            help="Finish Vehicle Inspection"
+                    />
+                    <button name="action_create_service"
+                            class="oe_highlight"
+                            states="inspection_started"
+                            string="Create Service" type="object"
+                            help="Create Service"
+                    />
+                    <button name="action_print_report"
+                            class="oe_highlight"
+                            states="inspection_finished"
+                            string="PDF Report"
+                            type="object"
+                            help="Print PDF Report"
+                    />
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object"
+                                name="get_vehicle_service"
+                                icon="fa-wrench"
+                                string="Service"
+                                attrs="{'invisible':[('service_active','=',False)]}"
+                        >
+                        </button>
+                        <button class="oe_stat_button" type="object"
+                                name="get_fleet_vehicle"
+                                icon="fa-car"
+                                string="Fleet Vehicle"
+                                attrs="{'invisible':[('fleet_active','=',False)]}"
+                        >
+                        </button>
+                    </div>
+                    <field name="image_128" widget="image" class="oe_avatar"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="New"/>
+                            <field name="inspection_id"
+                                   placeholder="Vehicle Inspection" attrs="{'readonly': [('state', 'not in', ['draft', 'new'])]}"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="vehicle_id"/>
+                            <field name="vehicle_model_id"/>
+                            <field name="license_plate"/>
+                            <field name="service_active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="date_create"/>
+                            <field name="inspection_date"/>
+                            <field name="user_id"/>
+                            <field name="company_id"/>
+                            <field name="fleet_active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Inspection Information"
+                              attrs="{'invisible':[('state','!=','inspection_started'),('state','!=','inspection_finished')]}">
+                            <group>
+                                <group>
+                                    <field name="inspection_result"/>
+                                </group>
+                                <group>
+                                    <field name="internal_note"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Inspection Images"
+                              attrs="{'invisible':[('state','!=','inspection_started')]}">
+                            <field name="inspection_image_ids">
+                                <kanban>
+                                    <field name="id"/>
+                                    <field name="name"/>
+                                    <field name="image" widget="image"/>
+                                    <templates>
+                                        <t t-name="kanban-box">
+                                            <div t-attf-class="oe_kanban_global_click">
+                                                <div class="o_kanban_image">
+                                                    <field name="image"
+                                                           widget="image"
+                                                           class="oe_avatar"/>
+                                                </div>
+                                                <div class="oe_kanban_details">
+                                                    <t class="o_kanban_record_title">
+                                                        <strong>
+                                                            <field name="name"/>
+                                                        </strong>
+                                                        <br/>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <field name="name"/>
+                                            <field name="image"/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--Inspection Request tree view-->
+    <record id="inspection_requests_view_tree" model="ir.ui.view">
+        <field name="name">inspection.request.view.tree</field>
+        <field name="model">inspection.request</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="inspection_id"/>
+                <field name="vehicle_id"/>
+                <field name="vehicle_model_id"/>
+                <field name="license_plate"/>
+                <field name="date_create"/>
+                <field name="inspection_date"/>
+                <field name="user_id"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'inspection_finished'"
+                       decoration-warning="state == 'inspection_started'"
+                       decoration-info="state =='new'"
+                />
+            </tree>
+        </field>
+    </record>
+    <!--Inspection Request kanban view-->
+    <record id="inspection_request_view_kanban" model="ir.ui.view">
+        <field name="name">inspection.request.view.kanban</field>
+        <field name="model">inspection.request</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="oe_kanban_card">
+                                    <div>
+                                        <b>
+                                            <field name="inspection_id"
+                                                   style="color:red;"/>
+                                        </b>
+                                    </div>
+                                    <div>
+                                        <b>
+                                            Vehicle:
+                                            <field name="vehicle_id"/>
+                                        </b>
+                                    </div>
+                                    <div>
+                                        <b>
+                                            Model:
+                                            <field name="vehicle_model_id"/>
+                                        </b>
+                                    </div>
+                                    <div>
+                                        <b>
+                                            Inspection Supervisor:
+                                            <field name="user_id"/>
+                                        </b>
+                                    </div>
+                                    <div>
+                                        <b>
+                                            Inspection Date:
+                                            <field name="inspection_date"/>
+                                        </b>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!--Inspection Request calender view-->
+    <record id="inspection_request_view_calendar" model="ir.ui.view">
+        <field name="name">inspection.request.view.calendar</field>
+        <field name="model">inspection.request</field>
+        <field eval="2" name="priority"/>
+        <field name="arch" type="xml">
+            <calendar date_start="inspection_date" string="Inspection Request"
+                      mode="month" quick_add="False">
+                <field name="inspection_id"/>
+                <field name="vehicle_id"/>
+                <field name="vehicle_model_id"/>
+                <field name="user_id"/>
+                <field name="inspection_date"/>
+            </calendar>
+        </field>
+    </record>
+    <!--Inspection Request search view-->
+    <record id="inspection_request_view_search" model="ir.ui.view">
+        <field name="name">inspection.request.view.search</field>
+        <field name="model">inspection.request</field>
+        <field name="arch" type="xml">
+            <search string="Search">
+                <group expand="1" string="Group By">
+                    <filter string="Model" name="vehicle_model_id"
+                            context="{'group_by':'vehicle_model_id', 'residual_visible':True}"/>
+                    <filter string="Vehicle" name="vehicle_id"
+                            context="{'group_by':'vehicle_id', 'residual_visible':True}"/>
+                    <filter string="Status" name="state"
+                            context="{'group_by':'state', 'residual_visible':True}"/>
+                    <filter string="Inspection Date" name="inspection_date"
+                            context="{'group_by':'inspection_date', 'residual_visible':True}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

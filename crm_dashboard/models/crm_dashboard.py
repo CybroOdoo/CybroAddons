@@ -120,7 +120,7 @@ class CRMLead(models.Model):
         """Sales Activity Pie"""
         self._cr.execute('''select mail_activity_type.name,COUNT(*) from mail_activity
         inner join mail_activity_type on mail_activity.activity_type_id = mail_activity_type.id
-        where res_model = 'crm.lead' GROUP BY mail_activity_type.name''')
+        where mail_activity.res_model = 'crm.lead' GROUP BY mail_activity_type.name''')
         data = self._cr.dictfetchall()
 
         name = []
@@ -151,6 +151,8 @@ class CRMLead(models.Model):
         for rec in data2:
             sales.append(rec['sales'])
             inv_target.append(rec['invoiced_target'])
+            if inv_target == [None]:
+                inv_target = [0]
             team_id = rec['sale_team_id']
         target_annual = (sum(sales) + sum(inv_target))
 
@@ -166,6 +168,8 @@ class CRMLead(models.Model):
             for rec in data3:
                 sales.append(rec['sales'])
                 inv_target.append(rec['invoiced_target'])
+                if inv_target == [None]:
+                    inv_target = [0]
             ytd_target = (sum(sales) + sum(inv_target))
 
             self._cr.execute('''select sum(expected_revenue) from crm_lead where stage_id=4
@@ -537,7 +541,6 @@ class CRMLead(models.Model):
             if len(data) != 3:
                 del data
             else:
-                data[1] = 0
                 if data[2] == 0:
                     ratio = 0
                 else:
@@ -583,7 +586,10 @@ class CRMLead(models.Model):
             if len(data) != 3:
                 del data
             else:
-                ratio = round(data[1] / data[2], 2)
+                if data[2] == 0:
+                    ratio = 0
+                else:
+                    ratio = round(data[1] / data[2], 2)
                 data.append(str(ratio))
                 salesperson_wise_ratio.append(data)
 
@@ -621,7 +627,10 @@ class CRMLead(models.Model):
             if len(data) != 3:
                 del data
             else:
-                ratio = round(data[1] / data[2], 2)
+                if data[2] == 0:
+                    ratio = 0
+                else:
+                    ratio = round(data[1] / data[2], 2)
                 data.append(str(ratio))
                 sales_team_wise_ratio.append(data)
 
@@ -753,6 +762,8 @@ class CRMLead(models.Model):
         for rec in data2:
             sales.append(rec['sales'])
             inv_target.append(rec['invoiced_target'])
+            if inv_target == [None]:
+                inv_target = [0]
             team_id = rec['sale_team_id']
         target_annual = (sum(sales) + sum(inv_target))
 
@@ -768,6 +779,8 @@ class CRMLead(models.Model):
             for rec in data3:
                 sales.append(rec['sales'])
                 inv_target.append(rec['invoiced_target'])
+                if inv_target == [None]:
+                    inv_target = [0]
             ytd_target = (sum(sales) + sum(inv_target))
 
             self._cr.execute('''select sum(expected_revenue) from crm_lead where stage_id=4

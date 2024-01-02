@@ -25,11 +25,11 @@
     'summary': 'Theme Boec is a new kind of Theme. '
                'The theme is a very user-friendly and is suitable for your eCommerce website with blog.',
     'category': 'Theme/eCommerce',
-    'version': '14.0.1.1.1',
-    'author': 'Frontware, Cybrosys Techno Solutions',
-    'company': 'Frontware, Cybrosys Techno Solutions',
-    'maintainer': 'Frontware, Cybrosys Techno Solutions',
-    'website': "https://github.com/Frontware/CybroAddons",
+    'version': '14.0.1.1.2',
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
+    'website': "https://www.cybrosys.com",
     'depends': ['website_blog', 'website_sale_wishlist', 'website_sale_comparison'],
     'data': [
         'data/boec_config.xml',

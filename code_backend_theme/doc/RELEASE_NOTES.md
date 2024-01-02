@@ -14,3 +14,8 @@ Made Responsive
 #### Version 14.0.1.1.1
 #### FIX
 Template not found issue fixed
+
+#### 23.09.2022
+#### Version 14.0.1.1.3
+#### FIX
+List view style issue fixed

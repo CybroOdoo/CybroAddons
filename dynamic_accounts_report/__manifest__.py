@@ -27,15 +27,18 @@
     'live_test_url': 'https://www.youtube.com/watch?v=gVQi9q9Rs-E&t=5s',
     'summary': """Dynamic Financial Reports with drill 
                 down and filters– Community Edition""",
-    'description': "Dynamic Financial Reports, DynamicFinancialReports, FinancialReport, Accountingreports, odoo reports, odoo"
-                   "This module creates dynamic Accounting General Ledger, Trial Balance, Balance Sheet "
+    'description': "Dynamic Financial Reports, DynamicFinancialReports, "
+                   "FinancialReport, Accountingreports, odoo reports, odoo"
+                   "This module creates dynamic Accounting General Ledger, "
+                   "Trial Balance, Balance Sheet "
                    "Proft and Loss, Cash Flow Statements, Partner Ledger,"
                    "Partner Ageing, Day book"
-                   "Bank book and Cash book reports in Odoo 14 community edition.",
-    'author': 'Frontware, Cybrosys Techno Solutions',
-    'website': "https://github.com/Frontware/CybroAddons",
-    'company': 'Frontware, Cybrosys Techno Solutions',
-    'maintainer': 'Frontware, Cybrosys Techno Solutions',
+                   "Bank book and Cash book reports in Odoo 14"
+                   "community edition.",
+    'author': 'Cybrosys Techno Solutions',
+    'website': "https://www.cybrosys.com",
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
     'depends': ['base', 'base_accounting_kit'],
     'data': [
         'security/ir.model.access.csv',

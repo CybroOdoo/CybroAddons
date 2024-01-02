@@ -27,7 +27,8 @@ from odoo.http import request
 class PosProductCreation(http.Controller):
 
     @http.route('/create_product', type="json", auth="none")
-    def create_product(self, category, name, price, product_reference, unit_measure, product_categories, **kwargs):
+    def create_product(self, category, image, name, price, product_reference,
+                       unit_measure, product_categories, barcode, **kwargs):
         product_category = ''
         if category == 'Consumable':
             product_category = 'consu'
@@ -39,6 +40,7 @@ class PosProductCreation(http.Controller):
             product_category = ''
         request.env['product.template'].sudo().create({
             'name': name,
+            'image_1920': image,
             'type': product_category,
             'default_code': product_reference,
             'list_price': float(price),
@@ -46,4 +48,5 @@ class PosProductCreation(http.Controller):
             'uom_po_id': int(unit_measure),
             'categ_id': int(product_categories),
             'available_in_pos': True,
+            'barcode': barcode,
         })

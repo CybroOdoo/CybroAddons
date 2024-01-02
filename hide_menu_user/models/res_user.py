@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -24,6 +24,7 @@ from odoo import models, fields, api
 
 
 class HideMenuUser(models.Model):
+    """ Inherited Users"""
     _inherit = 'res.users'
 
     @api.model
@@ -61,8 +62,17 @@ class HideMenuUser(models.Model):
                                           'hidden to this user ')
     is_admin = fields.Boolean(compute=_get_is_admin)
 
-
-class RestrictMenu(models.Model):
-    _inherit = 'ir.ui.menu'
-
-    restrict_user_ids = fields.Many2many('res.users')
+    def action_import(self):
+        """This function will open a wizard where you can select the file which want to be import"""
+        wizard = self.env['import.menu.list.wizard'].create({
+            'name': self.name,
+            'user_id': self.id
+        })
+        return {
+            'name': 'Wizard',
+            'type': 'ir.actions.act_window',
+            'res_model': 'import.menu.list.wizard',
+            'view_mode': 'form',
+            'res_id': wizard.id,
+            'target': 'new'
+        }

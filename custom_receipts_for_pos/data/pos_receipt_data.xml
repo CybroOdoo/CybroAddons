@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--        Sample code for POS receipt-->
+    <record id="pos_receipt_design" model="pos.receipt">
+        <field name="name">Design</field>
+        <field name="design_receipt" type="html">
+            <div class="pos-receipt">
+                <t t-if="receipt.company.logo">
+                    <img class="pos-receipt-logo"
+                         t-att-src="receipt.company.logo" alt="Logo"/>
+                    <br/>
+                </t>
+                <t t-if="!receipt.company.logo">
+                    <h2 class="pos-receipt-center-align">
+                        <t t-esc="receipt.company.name"/>
+                    </h2>
+                    <br/>
+                </t>
+                <div class="pos-receipt-contact">
+                    <t t-if="receipt.company.contact_address">
+                        <div>
+                            <t t-esc="receipt.company.contact_address"/>
+                        </div>
+                    </t>
+                    <t t-if="receipt.company.phone">
+                        <div>Tel:
+                            <t t-esc="receipt.company.phone"/>
+                        </div>
+                    </t>
+                    <t t-if="receipt.company.vat">
+                        <div><t t-esc="receipt.company.vat_label"/>:
+                            <t t-esc="receipt.company.vat"/>
+                        </div>
+                    </t>
+                    <t t-if="receipt.company.email">
+                        <div>
+                            <t t-esc="receipt.company.email"/>
+                        </div>
+                    </t>
+                    <t t-if="receipt.company.website">
+                        <div>
+                            <t t-esc="receipt.company.website"/>
+                        </div>
+                    </t>
+                    <t t-if="receipt.header_html">
+                        <t t-out="receipt.header_html"/>
+                    </t>
+                    <t t-if="!receipt.header_html and receipt.header">
+                        <div style="white-space:pre-line">
+                            <t t-esc="receipt.header"/>
+                        </div>
+                    </t>
+                    <div>--------------------------------</div>
+                    <div>
+                        <span style="font-weight: bold;">
+                            <t t-esc="receipt.name"/>
+                        </span>
+                    </div>
+                    <br/>
+                    <table>
+                        <thead>
+                            <tr style="border-bottom: 1px solid black;">
+                                <th style="text-align: left; padding: 4px;">
+                                    Product
+                                </th>
+                                <th style="padding: 4px;">Qty</th>
+                                <th style="text-align: right; padding: 4px;">
+                                    Unit Price
+                                </th>
+                                <th style="text-align: right; padding: 4px;">
+                                    Amount
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="orderlines" t-as="order">
+                                <tr>
+                                    <td style="text-align: left; padding: 2px; width: 30%;">
+                                        <t t-esc="order.get_product().display_name"/>
+                                    </td>
+                                    <td style="padding: 2px;">
+                                        <t t-esc="order.quantity"/>
+                                    </td>
+                                    <td style="text-align: right; padding: 2px;">
+                                        <t t-esc="(order.get_product().lst_price).toFixed(2)"/>
+                                    </td>
+                                    <td style="text-align: right; padding: 2px;">
+                                        <t t-esc="(order.get_product().lst_price * order.quantity).toFixed(2)"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <div>
+                        <div style="text-align: right;padding: 8px;font-size: 15px; border-top: 1px solid black;">
+                            Total :
+                            <span t-esc="receipt.currency.symbol"/>
+                            <span t-esc="receipt.subtotal"/>
+                        </div>
+                    </div>
+                    <t t-foreach="receipt.paymentlines" t-as="line"
+                       t-key="line.cid">
+                        <div style="text-align: left;padding: 8px;font-size: 15px;">
+                            <t t-esc="line.name"/>
+                            <span style="float: right;"
+                                  t-esc="line.amount"/>
+                        </div>
+                    </t>
+                    <div>
+                        <div style="text-align: left;padding: 8px;font-size: 15px;">
+                            <span style="text-align: left;">Change</span>
+                            <span style="float: right;"
+                                  t-esc="receipt.change"/>
+                        </div>
+                    </div>
+                    <t t-if="receipt.total_discount">
+                        <div style="text-align: left;padding: 8px;font-size: 15px;">
+                            Discounts
+                            <span style="float: right;"
+                                  t-esc="receipt.total_discount"/>
+                        </div>
+                    </t>
+                    <div style="text-align: left;padding: 8px;font-size: 15px;">
+                        Total Taxes
+                        <span style="float: right;"
+                              t-esc="receipt.total_tax"/>
+                    </div>
+                    <br/>
+                    <t t-if="receipt.date.localestring">
+                        <div>Date :
+                            <t t-esc="receipt.date.localestring"/>
+                        </div>
+                    </t>
+                    <t t-if="receipt.cashier">
+                        <div>--------------------------------</div>
+                        <div class="cashier" style="text-align: center;">
+                            <div>Served by
+                                <t t-esc="receipt.cashier"/>
+                            </div>
+                        </div>
+                    </t>
+                    <br/>
+                    <span style="font-size: 15px;">Thank you. Please visit
+                        again!!
+                    </span>
+                </div>
+            </div>
+        </field>
+    </record>
+</odoo>

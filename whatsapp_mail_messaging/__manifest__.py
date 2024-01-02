@@ -22,17 +22,17 @@
 
 {
     'name': 'Odoo Whatsapp Connector',
-    'version': '14.0.2.1.1',
+    'version': '14.0.2.1.2',
     'category': 'Extra Tools',
     'summary': """Odoo Whatsapp Connector For Sales, Invoice, and Floating button in Website""",
     'description': """Added options for sending Whatsapp messages and Mails in systray bar,sale order, invoices, 
     website portal view and share the access url of documents using share option available in each records through 
     Whatsapp web..""",
-    'author': 'Frontware, Cybrosys Techno Solutions',
-    'website': "https://github.com/Frontware/CybroAddons",
-    'company': 'Frontware, Cybrosys Techno Solutions',
-    'maintainer': 'Frontware, Cybrosys Techno Solutions',
-    'depends': ['sale', 'account', 'website'],
+    'author': 'Cybrosys Techno Solutions',
+    'website': "https://www.cybrosys.com",
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
+    'depends': ['sale_management', 'account', 'website'],
     'data': [
         'views/assets.xml',
         'views/portal_whatsapp_view.xml',
