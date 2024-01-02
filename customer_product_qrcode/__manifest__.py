@@ -36,7 +36,7 @@
         'views/res_partner_view.xml',
         'views/product_product_view.xml',
         'views/product_template_view.xml',
-        'report/customer_product_qrcode_template.xml.xml',
+        'report/customer_product_qrcode_template.xml',
         'report/paperformat.xml',
         'report/report_action.xml',
     ],
