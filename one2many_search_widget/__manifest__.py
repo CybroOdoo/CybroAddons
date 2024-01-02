@@ -1,0 +1,47 @@
+# -*- coding: utf-8 -*-
+###############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Aysha Shalin (odoo@cybrosys.com)
+#
+#    You can modify it under the terms of the GNU AFFERO
+#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU AFFERO PUBLIC LICENSE (AGPL v3) for more details.
+#
+#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
+#    (AGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+###############################################################################
+{
+    'name': 'One2many Search Widget',
+    'version': '17.0.1.0.0',
+    'category': 'Extra Tools',
+    'summary': 'Quick Search Feature For One2many Fields In Odoo',
+    'description': """This module enables users to search for text within
+    One2many fields. The rows that match the search criteria will be displayed,
+    while others will be hidden.""",
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
+    'website': "https://www.cybrosys.com",
+    'depends': ['web'],
+    'assets': {
+        'web.assets_backend': [
+            'one2many_search_widget/static/src/css/header.css',
+            'one2many_search_widget/static/src/fields/one2manysearch/one2manysearch.js',
+            'one2many_search_widget/static/src/fields/one2manysearch/one2manysearch_template.xml',
+        ],
+    },
+    'images': ['static/description/banner.png'],
+    'license': 'AGPL-3',
+    'installable': True,
+    'auto_install': False,
+    "application": False,
+}
