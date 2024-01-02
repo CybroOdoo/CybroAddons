@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+   <!-- Template for Create Payment Popup -->
+   <t t-name="CreatePaymentPopup" owl="1">
+       <!-- Popup container -->
+       <div role="dialog" class="modal-dialog">
+           <div class="popup" style="background-color: #7bcedb">
+               <!-- Popup title -->
+               <p class="title">
+                   Create Payment
+               </p>
+               <!-- Amount input field -->
+               <div class="field_div" style="display:flex; margin-bottom: 15px;">
+                   <label for="amount" class="field_label" style="margin-right:10px; margin-top: 10px; width: 120px; display: inline-block; text-align: left;">Amount</label>
+                   <input type="number" name="amount" class="field_input" id="amount"/>
+               </div>
+               <!-- Journal selection field -->
+               <div class="field_div" style="display:flex; margin-bottom: 15px;">
+                   <label for="Journal" class="field_label" style="margin-right:10px; margin-top: 10px; width: 120px; display: inline-block; text-align: left;">Journal</label>
+                   <select name="Journal" class="form-select" id="journal">
+                       <!-- Iterate over journal options -->
+                       <t t-foreach="props.journal_length" t-as="journal_length" t-key="journal_length">
+                           <t t-set="index" t-value="journal_length | int"/>
+                           <!-- Option for each journal -->
+                           <option t-att-value="props.journals[index]['id']" t-att-title="props.journals[index]['name']">
+                               <t t-esc="props.journals[index]['name']"/>
+                           </option>
+                       </t>
+                   </select>
+               </div>
+               <!-- Set currency and partner ID variables -->
+               <t t-set="currency_id" t-value="env.pos.company.currency_id[0] | int"/>
+               <t t-set="id" t-value="props.partner_id | int"/>
+               <!-- Create ID dictionary for confirmation -->
+               <t t-set="id_dict" t-value="{'partner_id':id,'currency_id':currency_id}"/>
+               <!-- Popup footer -->
+               <div class="footer">
+                   <!-- Confirm button -->
+                   <div class="button highlight confirm" t-on-click="() => this.confirm(id_dict)">
+                       Confirm
+                   </div>
+                   <!-- Cancel button -->
+                   <div class="button cancel" t-on-click="cancel">
+                       Cancel
+                   </div>
+               </div>
+           </div>
+       </div>
+   </t>
+</templates>

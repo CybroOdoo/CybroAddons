@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+   <!-- Template for Invoicing Screen -->
+   <t t-name="InvoicingScreen" owl="1">
+       <!-- Invoicing screen container -->
+       <div class="clientlist-screen screen">
+           <div class="screen-content">
+               <!-- Top content section -->
+               <div class="top-content">
+                   <!-- Back button -->
+                   <div class="button back" t-on-click="back">
+                       Back
+                   </div>
+               </div>
+               <!-- Full content section -->
+               <section class="full-content">
+                   <!-- Client window -->
+                   <div class="client-window">
+                       <section>
+                           <div>
+                               <!-- Scrollable invoice list -->
+                               <div class="scrollable-y" style="overflow-y: scroll;height: 100vh;">
+                                   <!-- Invoice table -->
+                                   <table class="table table-striped invoice-list">
+                                       <!-- Table header -->
+                                       <thead>
+                                           <tr>
+                                               <th> Invoice </th>
+                                               <th> Customer Ref </th>
+                                               <th> Total Amount </th>
+                                               <th> Due Amount </th>
+                                               <th> State </th>
+                                               <th> Payment State </th>
+                                           </tr>
+                                       </thead>
+                                       <!-- Table body -->
+                                       <tbody>
+                                           <!-- Iterate over invoices -->
+                                           <t t-foreach="props.invoices" t-as="invoice" t-key="invoice.invoice_id">
+                                               <tr>
+                                                   <!-- Display payment reference if available -->
+                                                   <t t-if="invoice.payment_reference != false">
+                                                       <td><t t-esc="invoice.payment_reference"/></td>
+                                                   </t>
+                                                   <!-- Display empty div if payment reference not available -->
+                                                   <t t-else="">
+                                                       <div> </div>
+                                                   </t>
+                                                   <!-- Display invoice partner ID -->
+                                                   <td><t t-esc="invoice.partner_id"/></td>
+                                                   <!-- Display invoice total amount -->
+                                                   <td><t t-esc="invoice.amount_total"/></td>
+                                                   <!-- Display invoice due amount -->
+                                                   <td><t t-esc="invoice.amount_residual"/></td>
+                                                   <!-- Display invoice state -->
+                                                   <td><t t-esc="invoice.state"/></td>
+                                                   <!-- Display invoice payment state -->
+                                                   <td><t t-esc="invoice.payment_state"/></td>
+                                                   <!-- Set data_id variable to invoice ID -->
+                                                   <t t-set="data_id" t-value="invoice.invoice_id"/>
+                                                   <!-- Show confirm button if invoice state is 'draft' -->
+                                                   <t t-if="invoice.state == 'draft'">
+                                                       <td>
+                                                           <div class="control-button" t-on-click="() => this.Confirm(data_id)">
+                                                               <i class="fa fa-money" role="img" aria-label="Listview" title="Listview"/>
+                                                               Confirm
+                                                           </div>
+                                                       </td>
+                                                   </t>
+                                                   <!-- Show register payment button if invoice state is 'posted' and payment state is not 'paid' -->
+                                                   <t t-if="invoice.payment_state != 'paid' and invoice.state == 'posted'">
+                                                       <td>
+                                                           <div class="control-button" t-on-click="() => this.registerPayment(data_id)">
+                                                               <i class="fa fa-money" role="img" aria-label="Listview" title="Listview"/>
+                                                               Register Payment
+                                                           </div>
+                                                       </td>
+                                                   </t>
+                                                   <!-- Show empty div if none of the conditions are met -->
+                                                   <t t-else="">
+                                                       <div> </div>
+                                                   </t>
+                                               </tr>
+                                           </t>
+                                       </tbody>
+                                   </table>
+                               </div>
+                           </div>
+                       </section>
+                   </div>
+               </section>
+           </div>
+       </div>
+   </t>
+</templates>
