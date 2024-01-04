@@ -16,29 +16,34 @@ const viewRegistry = registry.category("views");
 
 
 odoo.__DEBUG__ && console.log("Console log inside the patch function", FormController.prototype, "form_controller");
-var data = false;
 
 patch(FormController.prototype, "save",{
     setup() {
-        data = false;
-        this.props.preventEdit = !data
+        this.props.preventEdit = this.env.inDialog ? false :true;
         this._super();
     },
 
     async edit(){
         this._super();
-        data = true;
         await this.model.root.switchMode("edit");
     },
     async saveButtonClicked(params = {}){
         this._super();
-        data = false;
-        await this.model.root.switchMode("readonly");
+        if (this.env.inDialog == false){
+            await this.model.root.switchMode("readonly");
+        }
+        else {
+           this.model.actionService.doAction({type: 'ir.actions.act_window_close'});
+        }
     },
     async discard(){
         this._super();
-        data = false;
-        await this.model.root.switchMode("readonly");
+        if (this.env.inDialog == false){
+            await this.model.root.switchMode("readonly");
+        }
+        else {
+           this.model.actionService.doAction({type: 'ir.actions.act_window_close'});
+        }
     },
      async beforeLeave() {
         if (this.model.root.isDirty) {
