@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Template for printing reports-->
+    <template id="report_product_stock_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <div>
+                        <div class="text-left ml-auto">
+                            <strong>Date:
+                                <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')"/>
+                            </strong>
+                            <br/>
+                            <b>
+                                Product :
+                                <t t-esc="data.name"/>
+                            </b>
+                            <br/>
+                            <br/>
+                        </div>
+                        <!--Creating table in report-->
+                        <table style="border:2px solid black;"
+                               class="table table-sm o_main_table">
+                            <t t-set="qty_available" t-value="0"/>
+                            <t t-set="qty_forecasted" t-value="0"/>
+                            <t t-set="qty_incoming" t-value="0"/>
+                            <t t-set="qty_outgoing" t-value="0"/>
+                            <tbody style="border:2px solid black;">
+                                <tr style="border:2px solid black;"
+                                    align="center">
+                                    <th style="border:2px solid black;">
+                                        Location
+                                    </th>
+                                    <th style="border:2px solid black;">
+                                        Available Qty
+                                    </th>
+                                    <th style="border:2px solid black;">
+                                        Forecasted Qty
+                                    </th>
+                                    <th style="border:2px solid black;">Incoming
+                                        Qty
+                                    </th>
+                                    <th style="border:2px solid black;">Outgoing
+                                        Qty
+                                    </th>
+                                </tr>
+                                <t t-foreach="data.product_stock_location_ids"
+                                   t-as="t">
+                                    <tr style="border:2px solid black;">
+                                        <td style="border:2px solid black;"
+                                            align="left">
+                                            <span t-esc="t.location_id.display_name"/>
+                                        </td>
+                                        <td style="border:2px solid black;"
+                                            align="right">
+                                            <span t-field="t.available_quantity"/>
+                                        </td>
+                                        <td style="border:2px solid black;"
+                                            align="right">
+                                            <span t-field="t.virtual_available"/>
+                                        </td>
+                                        <td style="border:2px solid black;"
+                                            align="right">
+                                            <span t-field="t.incoming_qty"/>
+                                        </td>
+                                        <td style="border:2px solid black;"
+                                            align="right">
+                                            <span t-field="t.outgoing_qty"/>
+                                        </td>
+                                    </tr>
+                                    <t t-set="qty_available"
+                                       t-value="qty_available+t.available_quantity"/>
+                                    <t t-set="qty_forecasted"
+                                       t-value="qty_forecasted+t.virtual_available"/>
+                                    <t t-set="qty_incoming"
+                                       t-value="qty_incoming+t.incoming_qty"/>
+                                    <t t-set="qty_outgoing"
+                                       t-value="qty_outgoing+t.outgoing_qty"/>
+                                </t>
+                                <tr>
+                                    <td style="border:2px solid black;"
+                                        align="right">
+                                        <strong>Total:</strong>
+                                    </td>
+                                    <td style="border:2px solid black;"
+                                        align="right">
+                                        <span>
+                                            <t t-esc="qty_available"/>
+                                        </span>
+                                    </td>
+
+                                    <td style="border:2px solid black;"
+                                        align="right">
+                                        <span>
+                                            <t t-esc="qty_forecasted"/>
+                                        </span>
+                                    </td>
+                                    <td style="border:2px solid black;"
+                                        align="right">
+                                        <span>
+                                            <t t-esc="qty_incoming"/>
+                                        </span>
+                                    </td>
+
+                                    <td style="border:2px solid black;"
+                                        align="right">
+                                        <span>
+                                            <t t-esc="qty_outgoing"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
