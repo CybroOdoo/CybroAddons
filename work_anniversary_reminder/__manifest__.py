@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Work Anniversary Reminder",
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Human Resources/Employees',
     'summary': """Automatically send work anniversary emails to 
     employees on their joining date.""",
