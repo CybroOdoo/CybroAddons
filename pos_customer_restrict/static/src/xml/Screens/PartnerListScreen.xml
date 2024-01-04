@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_customer_restrict.PartnerListScreen" t-inherit="point_of_sale.PartnerListScreen" t-inherit-mode="extension">
+            <xpath expr="//section[hasclass('overflow-auto')]" position="replace">
+                <section class="overflow-auto">
+                    <t t-if="state.detailIsShown">
+                        <PartnerDetailsEdit
+                            t-props="state.editModeProps"
+                            saveChanges.bind="saveChanges"
+                            imperativeHandle="partnerEditor" />
+                    </t>
+                    <t t-else="">
+                        <table class="partner-list table table-striped w-100">
+                            <thead>
+                                <tr>
+                                    <th class="py-2">Name</th>
+                                    <th class="py-2">Address</th>
+                                    <th class="partner-line-email py-2">Contact</th>
+                                    <th class="pos-right-align py-2" t-if="isBalanceDisplayed">Balance</th>
+                                    <th class="partner-line-details py-2"></th>
+                                    <th class="partner-line-last-column-placeholder oe_invisible py-2"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="partner-list-contents">
+                                <t t-foreach="partners" t-as="partner"
+                                    t-key="partner.id">
+                                    <t t-if="partner.is_available_in_pos">
+                                        <PartnerLine partner="partner"
+                                                    selectedPartner="state.selectedPartner"
+                                                    detailIsShown="state.detailIsShown"
+                                                    isBalanceDisplayed="isBalanceDisplayed"
+                                                    onClickEdit.bind="editPartner"
+                                                    onClickPartner.bind="clickPartner"/>
+                                    </t>
+                                </t>
+                            </tbody>
+                        </table>
+                        <div t-if="state.query" class="search-more-button d-flex justify-content-center my-2">
+                            <button class="btn btn-lg btn-primary" t-on-click="_onPressEnterKey">Search more</button>
+                        </div>
+                </t>
+            </section>
+        </xpath>
+    </t>
+</templates>
