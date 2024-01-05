@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  Extending the order receipt to add the Dine-in or Takeaway label on it.
+  If it is a takeaway and the generate token is enabled, it will add the
+  token to the receipt. -->
+<templates id="template" xml:space="preserve">
+    <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('pos-receipt-contact')]" position="inside">
+            <t t-if="env.pos.config.module_pos_restaurant">
+            <t t-if='env.pos.selectedOrder.is_take_way'>
+
+                <div>--------------------------------</div>
+                <div>
+                    <span style="font-weight:bold;font-size: 13px;">
+                        Take Away
+                    </span>
+                </div>
+            </t>
+                <t t-elif="!env.pos.selectedOrder.is_take_way">
+                <div>--------------------------------</div>
+                    <div>
+                    <span style="font-weight:bold;font-size: 13px;">
+                        Dine-In
+                    </span>
+                </div>
+            </t>
+                <t t-if='env.pos.selectedOrder.is_take_way and env.pos.selectedOrder.token_generated != 0'>
+                <div>--------------------------------</div>
+                    <div>
+                    <span style="font-weight:bold;font-size: 13px;">
+                        Token Number:
+                    </span>
+                        <span t-esc='env.pos.selectedOrder.token_generated'
+                              style="font-weight:bold;font-size: 22px;"/>
+                </div>
+            </t>
+            </t>
+        </xpath>
+    </t>
+</templates>
