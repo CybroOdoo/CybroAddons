@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Inherited view of the mailing list form view-->
+    <record id="mailing_list_view_form" model="ir.ui.view">
+        <field name="name">
+            mailing.list.view.form.inherit.odoo.drip.email.marketing
+        </field>
+        <field name="model">mailing.list</field>
+        <field name="inherit_id" ref="mass_mailing.mailing_list_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@class='oe_button_box']" position="inside">
+                <button class="oe_stat_button" type="object"
+                        name="get_drip_history"
+                        icon="fa-history">
+                    <field string="Drip History" name="drip_count"
+                           widget="statinfo"/>
+                </button>
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <notebook>
+                    <page string="Drip Mailing Configuration">
+                        <group>
+                            <field name="mail_contact"/>
+                            <field name="mass_mailing_enable"/>
+                            <field name="server_id"
+                                   attrs="{'required': ['|', ('mail_contact', '=', True), ('mass_mailing_enable','=',True)]}"/>
+                        </group>
+                    </page>
+                    <page string="Mail on Subscription Configuration"
+                          attrs="{'invisible':[('mail_contact','!=',True)]}">
+                        <group>
+                            <field name="template_id"
+                                   attrs="{'required': [('mail_contact', '=', True)]}"/>
+                        </group>
+                    </page>
+                    <page string="Drip Mass Mail Configuration"
+                          attrs="{'invisible':[('mass_mailing_enable','!=',True)]}">
+                        <group>
+                            <group>
+                                <field name="start_date"
+                                       attrs="{'required': [('mass_mailing_enable', '=', True)]}"/>
+                            </group>
+                            <group>
+                                <field name="end_date" attrs="{'required': [('mass_mailing_enable', '=', True)]}"/>
+                            </group>
+                            <field name="template_ids"/>
+                        </group>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+</odoo>
