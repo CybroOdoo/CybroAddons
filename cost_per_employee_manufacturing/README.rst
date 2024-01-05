@@ -1,6 +1,6 @@
-.. image:: https://img.shields.io/badge/license-AGPL--3-blue.svg
-    :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
-    :alt: License: AGPL-3
+.. image:: https://img.shields.io/badge/license-OPL--1-red.svg
+    :target: https://www.odoo.com/documentation/16.0/legal/licenses.html#odoo-apps
+    :alt: License: OPL-1
 
 Cost per Employees in Manufacturing
 ===================================
@@ -16,8 +16,8 @@ Company
 
 License
 -------
-General Public License, Version 3 (AGPL-3).
-(http://www.gnu.org/licenses/lgpl-3.0-standalone.html)
+Odoo Proprietary License v1.0 (OPL-1)
+(https://www.odoo.com/documentation/16.0/legal/licenses.html#odoo-apps)
 
 Credits
 -------
