@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Template For Case registration in Portal View-->
+    <template id="portal_my_home_legal_case" name="Legal Cases"
+              customize_show="True" inherit_id="portal.portal_my_home">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Legal Case</t>
+                <t t-set="url" t-value="'/my/legal/case'"/>
+                <t t-set="placeholder_count" t-value="'case_count'"/>
+            </t>
+        </xpath>
+    </template>
+    <template id="portal_my_legal_case_requests"
+              name="Portal My Cse Details">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">My Cases</t>
+            </t>
+            <t t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Case #</th>
+                        <th>Date</th>
+                        <th class='d-none d-md-table-cell'>Details</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="records" t-as="case">
+                        <tr>
+                            <td>
+                                <a t-attf-href="/my/cases/#{case.id}?{{ keep_query() }}"
+                                   t-att-title="case.name">
+                                    <t t-esc="case.name"/>
+                                </a>
+                            </td>
+                            <td>
+                                <t t-esc="case.register_date"/>
+                            </td>
+                            <td>
+                                <t t-esc="case.description"/>
+                            </td>
+                            <td>
+                                <t t-if="case.state=='draft'">
+                                    <span class="badge rounded-pill text-bg-info">
+                                        <i class="fa fa-fw fa-clock-o"
+                                           aria-label="Opened" title="Opened"
+                                           role="img"/>
+                                        <span class="d-none d-md-inline">Draft
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="case.state=='in_progress'">
+                                    <span class="badge rounded-pill text-bg-success">
+                                        <i class="fa fa-fw fa-check"
+                                           aria-label="In Progress" title="Paid"
+                                           role="img"/>
+                                        <span class="d-none d-md-inline">In
+                                            Progress
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="case.state=='invoiced'">
+                                    <span class="badge rounded-pill text-bg-success">
+                                        <i class="fa fa-fw fa-check"
+                                           aria-label="Reversed"
+                                           title="Invoiced" role="img"/>
+                                        <span class="d-none d-md-inline">
+                                            Invoiced
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="case.state=='reject'">
+                                    <span class="badge rounded-pill text-bg-success">
+                                        <i class="fa fa-fw fa-check"
+                                           aria-label="Reversed"
+                                           title="Invoiced" role="img"/>
+                                        <span class="d-none d-md-inline">
+                                            Invoiced
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="case.state=='won'">
+                                    <span class="badge rounded-pill text-bg-success">
+                                        <i class="fa fa-fw fa-check"
+                                           aria-label="Reversed"
+                                           title="Invoiced" role="img"/>
+                                        <span class="d-none d-md-inline">
+                                            Won
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="case.state=='lost'">
+                                    <span class="badge rounded-pill text-bg-danger">
+                                        <i class="fa fa-fw fa-check"
+                                           aria-label="Reversed"
+                                           title="Lost" role="img"/>
+                                        <span class="d-none d-md-inline">
+                                            Lost
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="case.state=='cancel'">
+                                    <span class="badge rounded-pill text-bg-warning">
+                                        <i class="fa fa-fw fa-remove"
+                                           aria-label="Cancelled"
+                                           title="Cancelled" role="img"/>
+                                        <span class="d-none d-md-inline">
+                                            Cancelled
+                                        </span>
+                                    </span>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </t>
+        </t>
+    </template>
+    <template id="portal_my_home_menu_legal_case"
+              name="Portal layout : Legal menu entries"
+              inherit_id="portal.portal_breadcrumbs">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'case'" class="breadcrumb-item">
+                <a t-attf-href="/my/legal/case?{{ keep_query() }}">Legal Cases
+                </a>
+            </li>
+        </xpath>
+    </template>
+</odoo>

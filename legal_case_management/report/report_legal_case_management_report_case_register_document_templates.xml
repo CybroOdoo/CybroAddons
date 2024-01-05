@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--  Report Template For Case registration form -->
+    <template id="report_case_register_document">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div>
+                    <t t-set="address">
+                        <span class="fw-bold">Client Details</span>
+                        <br/>
+                        <div t-field="case_record.client_id"
+                             t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                        <p t-if="case_record.client_id.vat">
+                            <t
+                                    t-out="case_record.company_id.account_fiscal_country_id.vat_label or 'Tax ID'"/>
+                            :
+                            <span t-field="case_record.client_id.vat"/>
+                        </p>
+                    </t>
+                </div>
+                <br/>
+                <div class="page">
+                    <div class="oe_structure"/>
+                    <div class="text-center">
+                        <h2>Legal Case Report</h2>
+                    </div>
+                    <h2 class="mt-16">
+                        <span>Case :</span>
+                        <span t-field="case_record.name"/>
+                    </h2>
+                    <table class="table table-bordered"
+                           style="table-layout: fixed;">
+                        <thead>
+                            <tr style="font-size: 22px;font-weight:bold;">
+                                <th t-if="case_record.case_category_id">Case
+                                    Category
+                                </th>
+                                <th t-if="case_record.lawyer_id">Lawyer</th>
+                                <th t-if="evidence">Evidence</th>
+                                <th t-if="trial">Trial</th>
+                                <th t-if="case_record.evidence_count">Evidence
+                                    Count
+                                </th>
+                                <th t-if="case_record.trial_count">Trial Count
+                                </th>
+                                <th t-if="case_record.state">State</th>
+                            </tr>
+                        </thead>
+                        <tr style="font-size: 20px;">
+                            <td t-if="case_record.case_category_id">
+                                <span t-field="case_record.case_category_id"/>
+                            </td>
+                            <td t-if="case_record.lawyer_id">
+                                <span t-field="case_record.lawyer_id.name"/>
+                            </td>
+                            <td t-if="evidence">
+                                <t t-foreach="evidence" t-as="evidence">
+                                    <span t-field="evidence.name"/>
+                                </t>
+                            </td>
+                            <td t-if="trial">
+                                <t t-foreach="trial" t-as="trial">
+                                    <span t-field="trial.name"/>
+                                </t>
+                            </td>
+                            <td t-if="case_record.evidence_count">
+                                <span t-field="case_record.evidence_count"/>
+                            </td>
+                            <td t-if="case_record.trial_count">
+                                <span t-field="case_record.trial_count"/>
+                            </td>
+                            <td t-if="case_record.state">
+                                <t t-esc="dict (case_record.fields_get
+                                    (allfields = ['state']) ['state']
+                                    ['selection']) [case_record.state]"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
