@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Add limit for a div when there is limit applied-->
+    <template id="website_purchase_limit_template"
+              inherit_id="website_sale.total">
+        <xpath expr="//div[@id='cart_total']" position="inside">
+            <t t-if="request.env['ir.config_parameter'].sudo().get_param('website_purchase_limit.enabled_limit')">
+                <t t-set="limit"
+                   t-value="request.env['ir.config_parameter'].sudo().get_param('website_purchase_limit.purchase_limit')"/>
+                <t t-if="website_sale_order and website_sale_order.amount_total &lt; float(limit)">
+                    <div id="website_purchase_limit_value"
+                         t-att-limit="float(limit)"/>
+                </t>
+            </t>
+        </xpath>
+    </template>
+</odoo>
