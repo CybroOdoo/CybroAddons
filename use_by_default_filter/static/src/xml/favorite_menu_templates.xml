@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+<!--    FavoriteMenu template is inherited to add the checkbox near filters listed under favorites in search view-->
+    <t t-name="use_by_default_filter.FavoriteMenu" t-inherit="web.FavoriteMenu"
+       t-inherit-mode="primary" owl="1">
+        <xpath expr="//t[@t-esc='item.description']" position="before">
+            <input type="checkbox" id="checkbox_split_view" title="Make Filter Default"
+                   t-att-checked="item.isActive" t-on-click.stop="onClickCheckBox(item)"/>
+        </xpath>
+
+        <!--The below code is the template of delete button which is given to link the delete function also with our template-->
+        <xpath expr="//t[@t-set-slot='toggler']" position="inside">
+            <Dialog t-if="state.deletedFavorite"
+                    title="'Warning'"
+                    size="'medium'"
+                    t-on-dialog-closed="state.deletedFavorite = false">
+                <t t-if="state.deletedFavorite.userId">Are you sure that you want to remove this filter?</t>
+                <t t-else="">This filter is global and will be removed for everybody if you continue.</t>
+                <t t-set="buttons">
+                    <button type="button" class="btn btn-primary"
+                            t-on-click="_onRemoveFavorite">
+                        <t>Ok</t>
+                    </button>
+                    <button type="button" class="btn btn-secondary"
+                            t-on-click.stop="state.deletedFavorite = false">
+                        <t>Cancel</t>
+                    </button>
+                </t>
+            </Dialog>
+        </xpath>
+    </t>
+</templates>
