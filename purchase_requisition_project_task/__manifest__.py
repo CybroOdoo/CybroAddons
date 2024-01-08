@@ -43,7 +43,7 @@
         'views/project_task_views.xml',
         'views/purchase_requisition_views.xml'
     ],
-    'images': 'static/description/banner.jpg',
+    'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
     'application': False,
