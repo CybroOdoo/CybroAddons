@@ -42,7 +42,7 @@
             'web_events_calendar_view/static/src/xml/templates.xml',
         ],
     },
-    'images': ['web_events_calendar_view/static/description/banner.png'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
