@@ -24,17 +24,16 @@ import json
 
 from psycopg2 import IntegrityError
 
-from odoo import _,http
+from odoo import _, http
 from odoo.addons.website.controllers.form import WebsiteForm
 from odoo.exceptions import ValidationError
 from odoo.http import request
 
 
-
 class helpdesk_product(http.Controller):
     @http.route('/product', auth='public', type='json')
     def product(self):
-        prols = [ ]
+        prols = []
         acc = request.env['product.template'].sudo().search([])
         for i in acc:
             dic = {'name': i['name'],
@@ -42,12 +41,13 @@ class helpdesk_product(http.Controller):
             prols.append(dic)
         return prols
 
+
 class WebsiteFormInherit(WebsiteForm):
 
     def _handle_website_form(self, model_name, **kwargs):
-        customer=request.env.user.partner_id
+        customer = request.env.user.partner_id
         if model_name == 'help.ticket':
-            tickets = request.env['ticket.stage'].search(
+            tickets = request.env['ticket.stage'].sudo().search(
                 [])
             for rec in tickets:
                 sequence = tickets.mapped('sequence')
@@ -107,9 +107,9 @@ class WebsiteFormInherit(WebsiteForm):
                     'phone': kwargs.get('phone'),
                     'priority': kwargs.get('priority'),
                     'stage_id': lowest_stage_id.id,
-                    'customer_id':customer.id,
-                    'ticket_type':kwargs.get('ticket_type'),
-                    'category_id':kwargs.get('category'),
+                    'customer_id': customer.id,
+                    'ticket_type': kwargs.get('ticket_type'),
+                    'category_id': kwargs.get('category'),
                 }
                 ticket_id = request.env['help.ticket'].sudo().create(rec_val)
                 request.session['ticket_number'] = ticket_id.name

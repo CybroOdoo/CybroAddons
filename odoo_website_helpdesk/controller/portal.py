@@ -44,7 +44,7 @@ class TicketPortal(portal.CustomerPortal):
     @http.route(['/my/tickets'], type='http', auth="user", website=True)
     def portal_my_tickets(self):
         domain = self._get_tickets_domain()
-        tickets = request.env['help.ticket'].search(domain)
+        tickets = request.env['help.ticket'].sudo().search(domain)
         values = {
             'default_url': "/my/tickets",
             'tickets': tickets,
