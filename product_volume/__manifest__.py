@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Product Volume Calculation',
-    'version': '17.0.1.0.1',
+    'version': '17.0.1.1.0',
     'category': "Inventory",
     'summary': """This module will helps you to give dimensions of the product.""",
     'description': "Module helps you to manage the length, breadth and height "
