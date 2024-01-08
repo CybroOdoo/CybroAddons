@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Template header for watchhut-->
+    <template id="watchhut_header" inherit_id="website.template_header_default">
+        <!--            The template modifies the product view page on the WatchHut website. It replaces -->
+        <!--            cart with new cart and also aligned navbar items -->
+        <xpath expr="//t[@t-call='website.navbar']" position="replace">
+            <t t-call="website.navbar">
+                <t t-set="_navbar_classes" t-valuef="d-none d-lg-block shadow-sm"/>
+
+                <div id="o_main_nav" class="container">
+                    <!-- Brand -->
+                    <div id="brand_icon">
+                        <t t-call="website.placeholder_header_brand">
+                            <t t-set="_link_class" t-valuef="me-4"/>
+                        </t>
+                    </div>
+                    <!-- Navbar -->
+                    <div id="nav_menu">
+                        <t t-call="website.navbar_nav">
+                            <t t-set="_nav_class" t-valuef="me-auto"/>
+                            <!-- Menu -->
+                            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                <t t-call="website.submenu">
+                                    <t t-set="item_class" t-valuef="nav-item"/>
+                                    <t t-set="link_class" t-valuef="nav-link"/>
+                                </t>
+                            </t>
+                        </t>
+                    </div>
+                    <!-- Extra elements -->
+                    <div id="extra_elements">
+                        <ul class="navbar-nav align-items-center gap-2 flex-shrink-0 justify-content-end ps-3">
+                            <!-- Search Bar -->
+                            <t t-call="website.placeholder_header_search_box">
+                                <t t-set="_layout" t-valuef="modal"/>
+                                <t t-set="_input_classes" t-valuef="border border-end-0 p-3"/>
+                                <t t-set="_submit_classes" t-valuef="border border-start-0 px-4 bg-o-color-4"/>
+                                <t t-set="_button_classes" t-valuef="o_navlink_background text-reset"/>
+                            </t>
+                            <!-- Text element -->
+                            <t t-call="website.placeholder_header_text_element"/>
+                            <!-- Social -->
+                            <t t-call="website.placeholder_header_social_links"/>
+                            <!-- Language Selector -->
+                            <t t-call="website.placeholder_header_language_selector">
+                                <t t-set="_btn_class" t-valuef="btn-outline-secondary border-0"/>
+                                <t t-set="_txt_class" t-valuef="small"/>
+                                <t t-set="_dropdown_menu_class" t-valuef="dropdown-menu-end"/>
+                            </t>
+                            <!-- Sign In -->
+                            <t t-call="portal.placeholder_user_sign_in">
+                                <t t-set="_link_class" t-valuef="btn btn-outline-secondary"/>
+                            </t>
+                            <!-- User Dropdown -->
+                             <t t-call="portal.user_dropdown">
+                                <t t-set="_icon" t-value="true"/>
+                                <t t-set="_item_class" t-value="'nav-item dropdown'"/>
+                                <t t-set="_link_class" t-value="'nav-link'"/>
+                              </t>
+                            <!-- Call To Action -->
+                            <t t-call="website.placeholder_header_call_to_action"/>
+                        </ul>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+    <!--Cart link in the header of website-->
+    <template id="watchhut_cart" inherit_id="website_sale.header_cart_link">
+        <!--            The template customizes the cart link in the header section of the WatchHut website.-->
+        <!--            It replaces the existing cart link element with a modified version that includes a shopping -->
+        <!--            cart icon, the text "My Cart" (if specified), and a badge displaying the quantity of items -->
+        <!--            in the cart. The link directs users to the cart page ("/shop/cart").-->
+        <xpath expr="//li[contains(@t-attf-class, 'o_wsale_my_cart')]"
+               position="replace">
+            <t t-nocache="The number of products is dynamic, this rendering cannot be cached."
+               t-nocache-_icon="_icon"
+               t-nocache-_text="_text"
+               t-nocache-_badge="_badge"
+               t-nocache-_badge_class="_badge_class"
+               t-nocache-_icon_wrap_class="_icon_wrap_class"
+               t-nocache-_text_class="_text_class"
+               t-nocache-_item_class="_item_class"
+               t-nocache-_link_class="_link_class">
+                <t t-set="website_sale_cart_quantity" t-value="request.session['website_sale_cart_quantity'] if 'website_sale_cart_quantity' in request.session else website.sale_get_order().cart_quantity or 0"/>
+                <t t-set="show_cart" t-value="true"/>
+                <li t-attf-class="#{_item_class} divider d-none"/> <!-- Make sure the cart and related menus are not folded (see autohideMenu) -->
+                <li t-attf-class="o_wsale_my_cart #{not show_cart and 'd-none'} #{_item_class}">
+                    <a href="/shop/cart" t-attf-class="#{_link_class}">
+                        <div t-attf-class="#{_icon_wrap_class}">
+                            <img src="/theme_watchhut/static/src/images/icon/shopping-cart.svg" style="width: 20px; height: 43px; margin-left: 12px;"/>
+                            <sup t-attf-class="my_cart_quantity badge text-bg-primary #{_badge_class} #{'d-none' if (website_sale_cart_quantity == 0) else ''}" t-esc="website_sale_cart_quantity" t-att-data-order-id="request.session.get('sale_order_id', '')"/>
+                        </div>
+                        <span t-if="_text" t-attf-class="#{_text_class}">My Cart</span>
+                    </a>
+                </li>
+            </t>
+        </xpath>
+    </template>
+</odoo>
