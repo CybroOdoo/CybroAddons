@@ -58,8 +58,17 @@
                                 attrs="{'invisible': [('state', 'not in', ('draft', 'reserved'))]}"
                                 class="oe_highlight"/>
                         <button name="action_invoice_create" string="Create Invoice"
-                                attrs="{'invisible': ['|',('state', '!=', 'running'),
-                                ('first_invoice_created','=',True)]}" type="object"
+                                attrs="{'invisible': ['|','|',('state', '!=', 'running'),
+                                ('first_invoice_created','=',True),('read_only','=',True)]}" type="object"
+                                class="oe_highlight"/>
+                        <button name="action_extend_rent" string="Extend Rent"
+                                attrs="{'invisible': ['|','|',('state', '!=', 'running'),('read_only','=',True),('first_invoice_created','=',False)]}" type="object"
+                                class="oe_highlight"/>
+                        <button name="action_confirm_extend_rent" string="Confirm Extend"
+                                attrs="{'invisible': ['|',('state', '!=', 'running'),('read_only','=',False)]}" type="object"
+                                class="oe_highlight"/>
+                        <button name="action_discard_extend" string="Discard Extend"
+                                attrs="{'invisible': ['|',('state', '!=', 'running'),('read_only','=',False)]}" type="object"
                                 class="oe_highlight"/>
                         <button name="force_checking" string="Force Checking"
                                 attrs="{'invisible': ['|',('state','!=','running'),
@@ -89,10 +98,16 @@
                             <group>
                                 <field name="customer_id" string="Customer"
                                        attrs="{'readonly': [('state','!=','draft')]}"/>
+                                <field name="rent_by_hour" attrs="{'readonly': [('state','!=','draft')]}"/>
+                                <field name="read_only" invisible="1"/>
                                 <field name="rent_start_date"
                                        attrs="{'readonly': [('state','!=','draft')]}"/>
+                                <field name="start_time" widget="timepicker_time" attrs="{'invisible': [('rent_by_hour','=',False)],
+                                'readonly': [('state','!=','draft')],'required':[('rent_by_hour','=',True)]}"/>
                                 <field name="rent_end_date"
-                                       attrs="{'readonly': [('state','!=','draft')]}"/>
+                                       attrs="{'readonly': [('state','!=','draft'),('read_only','=',False)]}"/>
+                                <field name="end_time" widget="timepicker_time" attrs="{'invisible': [('rent_by_hour','=',False)],
+                                'readonly': [('state','!=','draft'),('read_only','=',False)],'required':[('rent_by_hour','=',True)]}"/>
                                 <field name="vehicle_id" domain="[('rental_check_availability','=',True),
                                 ('state_id.name','!=','Inactive')]"
                                        options="{'no_create': True}"/>

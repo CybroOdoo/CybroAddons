@@ -21,38 +21,13 @@
 #############################################################################
 from datetime import datetime, date, timedelta
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError, Warning
+from odoo.exceptions import UserError, Warning, ValidationError
 
 
 class CarRentalContract(models.Model):
     _name = 'car.rental.contract'
     _description = 'Fleet Rental Management'
     _inherit = 'mail.thread'
-
-    @api.onchange('rent_start_date', 'rent_end_date')
-    def check_availability(self):
-        """
-            Check the availability of rental vehicles based on the provided
-            'rent_start_date' and 'rent_end_date'.
-        """
-        self.vehicle_id = ''
-        fleet_obj = self.env['fleet.vehicle'].search([])
-        for i in fleet_obj:
-            for each in i.rental_reserved_time:
-
-                if str(each.date_from) <= str(self.rent_start_date) <= str(
-                        each.date_to):
-                    i.write({'rental_check_availability': False})
-                elif str(self.rent_start_date) < str(each.date_from):
-                    if str(each.date_from) <= str(self.rent_end_date) <= str(
-                            each.date_to):
-                        i.write({'rental_check_availability': False})
-                    elif str(self.rent_end_date) > str(each.date_to):
-                        i.write({'rental_check_availability': False})
-                    else:
-                        i.write({'rental_check_availability': True})
-                else:
-                    i.write({'rental_check_availability': True})
 
     image = fields.Binary(related='vehicle_id.image_128',
                           string="Image of Vehicle")
@@ -81,6 +56,13 @@ class CarRentalContract(models.Model):
                                   default=str(date.today()),
                                   help="Start date of contract",
                                   track_visibility='onchange')
+    start_time = fields.Char(string="Start By",
+                             help="Enter the contract starting hour")
+    end_time = fields.Char(string="End By",
+                           help="Enter the contract Ending hour")
+    rent_by_hour = fields.Boolean(string="Rent By Hour",
+                                  help="Enable to start contract on "
+                                       "hour basis")
     rent_end_date = fields.Date(string="Rent End Date", required=True,
                                 help="End date of contract",
                                 track_visibility='onchange')
@@ -138,8 +120,10 @@ class CarRentalContract(models.Model):
                                       copy=False,
                                       help='This is the total amount of '
                                            'missing tools/accessories')
-    damage_cost = fields.Float(string="Damage Cost", copy=False)
-    damage_cost_sub = fields.Float(string="Damage Cost", readonly=True,
+    damage_cost = fields.Float(string="Damage Cost / Balance Amount",
+                               copy=False)
+    damage_cost_sub = fields.Float(string="Damage Cost / Balance Amount",
+                                   readonly=True,
                                    copy=False)
     total_cost = fields.Float(string="Total", readonly=True, copy=False)
     invoice_count = fields.Integer(compute='_invoice_count',
@@ -148,6 +132,8 @@ class CarRentalContract(models.Model):
     sales_person = fields.Many2one('res.users', string='Sales Person',
                                    default=lambda self: self.env.uid,
                                    track_visibility='always')
+    read_only = fields.Boolean(string="Read Only", help="To make field read "
+                                                        "only")
 
     def action_run(self):
         """
@@ -182,7 +168,7 @@ class CarRentalContract(models.Model):
             'rent_start_date'.
         """
         if self.rent_end_date < self.rent_start_date:
-            raise Warning("Please select the valid end date.")
+            raise UserError("Please select the valid end date.")
 
     def set_to_done(self):
         """
@@ -193,7 +179,6 @@ class CarRentalContract(models.Model):
             [('fleet_rent_id', '=', self.id),
              ('amount_total_signed', '=', self.total_cost),('invoice_line_ids.name','=','Damage/Tools missing cost')])
         if any(each.payment_state == 'paid' for each in invoice_ids) or self.total_cost == 0:
-            print('kkkk')
             self.state = 'done'
         else:
             raise UserError("Some Invoices are pending")
@@ -413,6 +398,7 @@ class CarRentalContract(models.Model):
         self.state = "invoice"
         self.reserved_fleet_id.unlink()
         self.rent_end_date = fields.Date.today()
+        self.vehicle_id.rental_check_availability = True
         product_id = self.env['product.product'].search(
             [("name", "=", "Fleet Rental Service")])
         if product_id.property_account_income_id.id:
@@ -467,6 +453,7 @@ class CarRentalContract(models.Model):
            state to "reserved," generate a sequence code, and send a
            confirmation email.
         """
+        self.vehicle_id.rental_check_availability = False
         check_availability = 0
         for each in self.vehicle_id.rental_reserved_time:
             if each.date_from <= self.rent_start_date <= each.date_to:
@@ -525,6 +512,7 @@ class CarRentalContract(models.Model):
            fleet ID if it exists.
        """
         self.state = "cancel"
+        self.vehicle_id.rental_check_availability = True
         if self.reserved_fleet_id:
             self.reserved_fleet_id.unlink()
 
@@ -539,7 +527,6 @@ class CarRentalContract(models.Model):
             [('fleet_rent_id', '=', self.id),
              ('amount_total_signed', '=', self.first_payment)])
         if any(each.payment_state == 'paid' for each in invoice_ids):
-            print('kkkk')
             self.state = "checking"
         else:
             raise UserError("Some Invoices are pending")
@@ -670,8 +657,83 @@ class CarRentalContract(models.Model):
         }
         return result
 
+    def action_extend_rent(self):
+        """
+            Set the 'read_only' attribute to True, indicating that the rent
+            extension action is being performed and the corresponding fields
+            should be made read-only.
 
+            This method is typically used in the context of extending a rental
+            agreement.
+        """
+        self.read_only = True
 
+    def action_confirm_extend_rent(self):
+        """
+            Confirm the extension of a rental agreement and update the rental
+            reserved time for the associated vehicle.
 
+            This method sets the 'date_to' field of the rental reserved time
+            for the vehicle to the specified 'rent_end_date', indicating the
+            extended rental period. After confirming the extension, the
+            'read_only' attribute is set to False to allow further
+            modifications.
 
+            This method is typically called when a user confirms the extension
+            of a rental.
+        """
+        self.vehicle_id.rental_reserved_time.write(
+            {
+                'date_to': self.rent_end_date,
+            })
+        self.read_only = False
 
+    @api.constrains('start_time', 'end_time', 'rent_start_date',
+                    'rent_end_date')
+    def validate_time(self):
+        """
+            Validate the time constraints for a rental agreement.
+
+            This method is used as a constraint to ensure that the specified
+            start and end times are valid, especially when renting by the hour.
+            If renting by the hour, it checks whether the end time is greater
+            than the start time when the rental start and end
+            dates are the same.
+
+            :raises ValidationError: If the time constraints are not met, a
+                                    validation error is raised with a relevant
+                                    error message.
+        """
+        if self.rent_by_hour:
+            start_time = datetime.strptime(self.start_time, "%H:%M").time()
+            end_time = datetime.strptime(self.end_time, "%H:%M").time()
+            if (self.rent_end_date == self.rent_start_date and
+                    end_time <= start_time):
+                raise ValidationError("Please choose a different end time")
+
+    @api.constrains('rent_end_date')
+    def validate_on_read_only(self):
+        old_date = self.vehicle_id.rental_reserved_time.date_to
+        if self.read_only:
+            if self.rent_end_date <= old_date:
+                raise ValidationError(
+                    f"Please choose a date greater that {old_date}")
+
+    def action_discard_extend(self):
+        """
+            Validate the 'rent_end_date' when the rental agreement is in
+            read-only mode.
+
+            This constraint checks if the rental agreement is marked as
+            read-only, indicating that it has been extended or modified. If in
+            read-only mode, it compares the 'rent_end_date' with the existing
+            'date_to' value in the rental reserved time of the associated
+            vehicle. It ensures that the 'rent_end_date' is greater than the
+            existing date to maintain consistency.
+
+            :raises ValidationError: If the 'rent_end_date' is not greater than
+                                    the existing 'date_to', a validation error
+                                    is raised with a relevant error message.
+        """
+        self.read_only = False
+        self.rent_end_date = self.vehicle_id.rental_reserved_time.date_to

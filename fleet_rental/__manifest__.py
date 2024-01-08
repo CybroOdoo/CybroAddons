@@ -42,6 +42,15 @@
         'views/car_tools_view.xml',
         'reports/rental_report.xml'
     ],
+    "assets": {
+        'web.assets_backend': [
+            'fleet_rental/static/src/js/time_widget.js',
+            'fleet_rental/static/src/scss/timepicker.scss'
+        ],
+        'web.assets_qweb': {
+            'fleet_rental/static/src/xml/timepicker.xml',
+        },
+    },
     'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
