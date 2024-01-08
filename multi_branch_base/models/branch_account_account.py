@@ -24,7 +24,7 @@ from odoo import models, fields
 
 
 class AccountAccount(models.Model):
-    """inherited account account"""
+    """inherited account_account"""
     _inherit = "account.account"
 
     def _get_branch_domain(self):
