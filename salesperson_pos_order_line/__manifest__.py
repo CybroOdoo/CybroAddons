@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Sales Person On POS Order Line',
-    'Version': '16.0.1.0.0',
+    'version': '16.0.1.0.0',
     'category': 'Extra Tools',
     'summary': 'This module is used to set sales persons on pos order line',
     'description': 'This module allows you to assign salespersons to order'
