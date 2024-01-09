@@ -1,4 +1,4 @@
-.. image:: https://img.shields.io/badge/license-OPL--1-red.svg
+.. image:: https://img.shields.io/badge/licence-OPL--1-red.svg
     :target: https://www.odoo.com/documentation/16.0/legal/licenses.html#odoo-apps
     :alt: License: OPL-1
 
@@ -22,7 +22,7 @@ Odoo Proprietary License v1.0 (OPL-1)
 Credits
 -------
 Developer: (v16) Sruthi Pavithran @ Cybrosys
-        (v16) Arwa VV @ Cybrosys
+           (v16) Arwa VV @ Cybrosys
 Contact: odoo@cybrosys.com
 
 Contacts

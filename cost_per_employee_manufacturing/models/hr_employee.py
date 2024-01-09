@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Sruthi Pavithran (odoo@cybrosys.com)
 #
 #    This program is under the terms of the Odoo Proprietary License v1.0 (OPL-1)
@@ -24,7 +24,9 @@ from odoo import fields, models
 
 class HrEmployee(models.Model):
     """Adding field to hr employee"""
-    _inherit = 'hr.employee'
 
-    hour_per_cost = fields.Float(string='Hourly Cost',
-                                 help="Hourly cost of each employee")
+    _inherit = "hr.employee"
+
+    hour_per_cost = fields.Float(
+        string="Hourly Cost", help="Hourly cost of each employee"
+    )

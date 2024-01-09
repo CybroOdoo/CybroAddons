@@ -1,10 +1,9 @@
-
 # -*- coding: utf-8 -*-
 ###############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Sruthi Pavithran (odoo@cybrosys.com)
 #
 #    This program is under the terms of the Odoo Proprietary License v1.0 (OPL-1)

@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Sruthi Pavithran (odoo@cybrosys.com)
 #
 #    This program is under the terms of the Odoo Proprietary License v1.0 (OPL-1)
@@ -24,15 +24,20 @@ from odoo import api, fields, models
 
 class MrpProduction(models.Model):
     """Adding fields to mrp production"""
-    _inherit = 'mrp.production'
 
-    cost_per_hour = fields.Float(compute='_compute_cost_per_hour', store=True,
-                                 string="Cost per hour",
-                                 help="Cost per hour of production")
-    cost = fields.Float(related='cost_per_hour', store=True, string="Cost",
-                        help="Cost of production")
+    _inherit = "mrp.production"
 
-    @api.depends('workorder_ids', 'workorder_ids.duration')
+    cost_per_hour = fields.Float(
+        compute="_compute_cost_per_hour",
+        store=True,
+        string="Cost per hour",
+        help="Cost per hour of production",
+    )
+    cost = fields.Float(
+        related="cost_per_hour", store=True, string="Cost", help="Cost of production"
+    )
+
+    @api.depends("workorder_ids", "workorder_ids.duration")
     def _compute_cost_per_hour(self):
         """Calculate cost per hour of employee"""
         for record in self:
@@ -43,9 +48,13 @@ class MrpProduction(models.Model):
                 for work_order in record.workorder_ids:
                     work_center_employees = (
                         work_order.workcenter_id.cost_per_employee_ids.mapped(
-                            'employee_id.id'))
+                            "employee_id.id"
+                        )
+                    )
                 if logged_in_user in work_center_employees:
-                    cost_per = record.env['hr.employee'].browse(
-                        logged_in_user).hour_per_cost * work_order.duration
+                    cost_per = (
+                        record.env["hr.employee"].browse(logged_in_user).hour_per_cost
+                        * work_order.duration
+                    )
                     cost.append(cost_per)
                 record.cost_per_hour = sum(cost)

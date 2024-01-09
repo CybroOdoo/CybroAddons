@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Sruthi Pavithran (odoo@cybrosys.com)
 #
 #    This program is under the terms of the Odoo Proprietary License v1.0 (OPL-1)
@@ -23,10 +23,13 @@ from odoo import fields, models
 
 
 class MrpWorkCenter(models.Model):
-    """Adding field in mrp workcenter"""
-    _inherit = 'mrp.workcenter'
+    """Adding field in mrp work-center"""
 
-    cost_per_employee_ids = fields.One2many('cost.per.employee',
-                                            'mrp_workcenter_id',
-                                            string="Employee Cost",
-                                            help="Cost per employee")
+    _inherit = "mrp.workcenter"
+
+    cost_per_employee_ids = fields.One2many(
+        "cost.per.employee",
+        "mrp_workcenter_id",
+        string="Employee Cost",
+        help="Cost per employee",
+    )
