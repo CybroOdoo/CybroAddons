@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Introduce an interface to provide the points in website-->
+<odoo>
+    <template id="have_points" inherit_id="website_sale.total"
+              name="Referral Code">
+        <xpath expr="//div[@id='cart_total']//table/tr[last()]"
+               position="after">
+            <div class="wrap">
+                <t t-set="discount_product"
+                   t-value="request.env['product.product'].sudo().search([('default_code','=','DISCOUNT001')])"/>
+                <t t-foreach="website_sale_order.order_line" t-as="line">
+                    <t t-if="line.product_id.id==discount_product.id">
+                        <t t-set="has_point" t-value="1"/>
+                    </t>
+                </t>
+                <t t-if="website_sale_order.partner_id.points">
+                    <t t-if="not has_point">
+                        <tr t-if="not hide_promotions">
+                            <td colspan="3"
+                                class="text-center text-xl-end border-0">
+                                <span class=''>
+                                    <t t-set='force_point'
+                                       t-value="website_sale_order.partner_id.points"/>
+                                    <t t-if="force_point">
+                                        <a href="#" class="show_points">I have
+                                            points
+                                        </a>
+                                    </t>
+                                    <div t-attf-class="point_form #{ force_point and 'd-none'}">
+                                        <t t-call="refer_friend_and_earn.point_form"/>
+                                    </div>
+                                </span>
+                            </td>
+                        </tr>
+                    </t>
+                </t>
+            </div>
+        </xpath>
+    </template>
+    <!--    Template for applying the points-->
+    <template id='point_form' name='point form'>
+        <form t-att-action="'/shop/pricelist/points%s' % (redirect and '?r=' + redirect or '')"
+              method="post" name="coupon_code">
+            <input type="hidden" name="csrf_token"
+                   t-att-value="request.csrf_token()"/>
+            <div class="input-group w-100">
+                <input name="points" class="form-control" type="text"
+                       id="points" placeholder="points..."
+                       t-att-value="website_sale_order.partner_id.points"/>
+                <div class="input-group-append">
+                    <a href="#" role="button" name="apply"
+                       class="btn btn-secondary a-submit" id="points_apply">
+                        Apply
+                    </a>
+                </div>
+                <div>
+                </div>
+            </div>
+        </form>
+    </template>
+</odoo>
