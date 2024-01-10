@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree view of university documents-->
+    <record id="university_document_view_tree" model="ir.ui.view">
+        <field name="name">university.document.view.tree</field>
+        <field name="model">university.document</field>
+        <field name="arch" type="xml">
+            <tree string="Document">
+                <field name="name"/>
+                <field name="application_ref_id"/>
+                <field name="document_type_id"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Form view of university documents-->
+    <record id="university_document_view_form" model="ir.ui.view">
+        <field name="name">university.document.view.form</field>
+        <field name="model">university.document</field>
+        <field name="arch" type="xml">
+            <form string="Document">
+                <header>
+                    <button name="action_verify_document" type="object"
+                            class="oe_highlight"
+                            string="Verify"
+                            groups="education_university_management.education_university_management_group_hod"
+                            help="Click to verify the document"
+                            states="draft,correction"/>
+                    <button name="action_need_correction" type="object"
+                            class="oe_highlight"
+                            string="Need Correction"
+                            groups="education_university_management.education_university_management_group_hod"
+                            help="Need correction of the document"
+                            states="draft"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="document_type_id"/>
+                        </group>
+                        <group>
+                            <field name="application_ref_id" invisible="1"/>
+                        </group>
+                        <group name="attachment_file" string="Attachment File">
+                            <field name="attachment_ids"
+                                   widget="many2many_binary"
+                                   attrs="{'readonly': [('state', 'in', ('done','returned'))]}"
+                                   class="oe_inline"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description">
+                            <field name="description"/>
+                        </page>
+                        <page string="Verification"
+                              attrs="{'invisible': [('verified_by_id', '=',False)]}">
+                            <group attrs="{'readonly': [('state', 'in', ('done','returned'))]}">
+                                <field name="verified_date" readonly="1"/>
+                                <field name="verified_by_id" readonly="1"/>
+                                <field name="responsible_verified_id"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+</odoo>

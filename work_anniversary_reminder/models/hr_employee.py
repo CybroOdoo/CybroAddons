@@ -21,10 +21,9 @@
 ################################################################################
 from odoo import api, fields, models
 
-"""Inherited hr.employee to add field Joining Date"""
-
 
 class HrEmployee(models.Model):
+    """Inherited hr.employee to add field Joining Date"""
     _inherit = "hr.employee"
 
     joining_date = fields.Date(string='Joining Date',
@@ -38,7 +37,6 @@ class HrEmployee(models.Model):
             rec.joining_date = min(rec.contract_id.mapped('date_start')) \
                 if rec.contract_id else False
 
-    @api.model
     def _cron_anniversary_reminder(self):
         """Sending wishes email to employees"""
         for employee in self.search([]):

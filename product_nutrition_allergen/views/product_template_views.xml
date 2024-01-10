@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inheriting product view to add nutrition and allergen information -->
+    <record id="product_template_form_view" model="ir.ui.view">
+        <field name="name">
+            product.template.view.form.inherit.product.nutrition.allergen
+        </field>
+        <field name="model">product.template</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="account.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='invoicing']" position="after">
+                <page string="Nutrition &amp; Allergy"
+                      name="nutrition_details">
+                    <group>
+                        <group>
+                            <field name="nutrition_details"/>
+                            <field name="ingredients_details"/>
+                        </group>
+                        <group>
+                            <field name="allergy_details"/>
+                            <field name="nutrition_amount"/>
+                            <field name="unit_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="nutrition_details"
+                              attrs="{'invisible':[('nutrition_details', '!=', True)]}"
+                              string="Nutritional Information">
+                            <field name="nutrition_ids" nolabel="1"
+                                   colspan="2">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                    <field name="uom_id"/>
+                                    <field name="nutrition_value"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page name="ingredients_information"
+                              string="Ingredients Information"
+                              attrs="{'invisible':[('ingredients_details', '!=', True)]}">
+                            <field name="ingredients_information"/>
+                        </page>
+                        <page name="allergy_information"
+                              string="Allergy Information"
+                              attrs="{'invisible':[('allergy_details', '!=', True)]}">
+                            <field name="allergy_information"/>
+                        </page>
+                    </notebook>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

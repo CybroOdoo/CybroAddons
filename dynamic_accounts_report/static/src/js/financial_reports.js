@@ -167,6 +167,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function(require) {
 					[self.wizard_id], action_title, self.searchModel.config.context.lang
 				],
 			}).then(function(data) {
+			console.log("dddd", data)
 				var action = {
 					'type': 'ir.actions.report',
 					'report_type': 'qweb-pdf',

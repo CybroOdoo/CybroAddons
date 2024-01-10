@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Inherit portal home page for creating portal accounts-->
+    <template id="portal_layout_shifts" inherit_id="portal.portal_breadcrumbs"
+              priority="60">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name=='shifts'" class="col-lg-2"
+                t-attf-class="breadcrumb-item #{'active '}">Shifts
+            </li>
+            <li t-if="page_name=='payslip'" class="col-lg-2"
+                t-attf-class="breadcrumb-item #{'active'}">Payslips
+            </li>
+            <li t-if="page_name=='events'" class="col-lg-2"
+                t-attf-class="breadcrumb-item #{'active'}">Events
+            </li>
+        </xpath>
+    </template>
+    <template id="portal_my_home_event" name="Events"
+              inherit_id="portal.portal_my_home">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Events</t>
+                <t t-set="url" t-value="'/my/event'"/>
+                <t t-set="placeholder_count" t-value="'event_count'"/>
+            </t>
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Payslips</t>
+                <t t-set="url" t-value="'/my/payslip'"/>
+                <t t-set="placeholder_count" t-value="'payslip_count'"/>
+            </t>
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Shifts</t>
+                <t t-set="url" t-value="'/my/shift'"/>
+                <t t-set="placeholder_count" t-value="'shift_count'"/>
+            </t>
+        </xpath>
+    </template>
+    <template id="portal_employee_payslips" name="Payslips">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Payslips</t>
+            </t>
+            <t t-if="payslip_id" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Reference</th>
+                        <th class="text-center">Payslip Name</th>
+                        <th class="text-center">Structure</th>
+                    </tr>
+                </thead>
+                <t t-foreach="payslip_id" t-as="value">
+                    <tr>
+                        <td>
+                            <a t-attf-href="/payslip/details/#{value.id}">
+                                <span t-field="value.number"/>
+                            </a>
+                        </td>
+                        <td class="text-center">
+                            <span t-field="value.name"/>
+                        </td>
+                        <td class="text-center">
+                            <span t-field="value.struct_id"/>
+                        </td>
+                    </tr>
+                </t>
+            </t>
+            <p t-else="">There are currently no payslips for your account.</p>
+        </t>
+    </template>
+    <template id="portal_employee_events" name="Events">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Events</t>
+            </t>
+            <t t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th class="text-center">Event Name</th>
+                        <th class="text-center">Date</th>
+                        <th class="text-center">Event Type</th>
+                        <th class="text-center">Venue</th>
+                    </tr>
+                </thead>
+                <t t-foreach="event" t-as="events">
+                    <tr>
+                        <td>
+                            <a t-attf-href="/event/#{ slug(events) }">
+                                <span t-field="events.name"/>
+                            </a>
+                        </td>
+                        <td class="text-center">
+                            <span t-field="events.date_end"/>
+                        </td>
+                        <td class="text-center">
+                            <span t-field="events.event_type_id"/>
+                        </td>
+                        <td class="text-center">
+                            <span t-field="events.address_id"/>
+                        </td>
+                    </tr>
+                </t>
+            </t>
+        </t>
+    </template>
+    <template id="portal_employee_shifts" name="Shifts">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Shifts</t>
+            </t>
+            <t t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th class="text-start align-middle">Shift Schedule</th>
+                    </tr>
+                </thead>
+                <t t-foreach="shift_id" t-as="shift">
+                    <tr>
+                        <td class="text-start align-middle">
+                            <span t-field="shift.resource_calendar_id"/>
+                        </td>
+                    </tr>
+                </t>
+            </t>
+            <t t-call="portal.portal_table">
+                <thead>
+                    <tr>
+                        <th class="text-end">Name</th>
+                        <th class="text-end">Day Of Week</th>
+                        <th class="text-end">Day Period</th>
+                        <th class="text-end">Work From</th>
+                        <th class="text-end">Work To</th>
+                    </tr>
+                </thead>
+                <t t-foreach="attendance_list" t-as="shift_schedule">
+                    <tr>
+                        <td class="text-end">
+                            <span t-field="shift_schedule.name"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-field="shift_schedule.dayofweek"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-field="shift_schedule.day_period"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-field="shift_schedule.hour_from"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-field="shift_schedule.hour_to"/>
+                        </td>
+                    </tr>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

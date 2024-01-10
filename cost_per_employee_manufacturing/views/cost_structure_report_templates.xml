@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--    Template for cost structure report-->
+    <template id="mrp_cost_per_employee"
+              inherit_id="mrp_account_enterprise.mrp_cost_structure">
+        <xpath expr="//tr[td/strong[contains(text(), 'Total Cost of Operations')]]"
+               position="after">
+            <tr>
+                <td colspan="4" class="text-end">
+                    <strong>Total Cost per Employee</strong>
+                </td>
+                <td class="text-end">
+                    <strong>
+                        <t t-esc="line['cost_per_hour']"
+                           t-options='{"widget": "monetary", "display_currency": currency}'/>
+                    </strong>
+                </td>
+            </tr>
+        </xpath>
+        <xpath expr="//tr[td/strong[contains(text(), 'Total Cost per unit')]]"
+               position="replace">
+            <tr t-if="not line['qty_by_byproduct_w_costshare']">
+                <td class="text-end">
+                    <strong>Total Cost per unit (in<t
+                            t-esc="line['product'].uom_id.name"/>)
+                    </strong>
+                </td>
+                <td class="text-end">
+                    <span t-esc="line['total_cost'] / line['mo_qty'] + line['cost_per_hour']"
+                          t-options='{"widget": "monetary", "display_currency": currency}'/>
+                </td>
+            </tr>
+        </xpath>
+    </template>
+</odoo>

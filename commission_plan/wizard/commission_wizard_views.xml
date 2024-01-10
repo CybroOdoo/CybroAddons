@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+<!--    commission wizard view action and menu-item is defined here-->
+    <record id="commission_wizard_view_form" model="ir.ui.view">
+        <field name="name">commission.wizard.form</field>
+        <field name="model">commission.wizard</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group>
+                            <field name="is_sales_person" attrs="{'invisible':True}"/>
+                            <field name="is_sales_team" attrs="{'invisible':True}"/>
+                            <field name="sales_team_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   attrs="{'invisible':[('is_sales_person', '=', True)]}"/>
+                            <field name="salesperson_ids" widget="many2many_tags"  options="{'no_create': True}"
+                                   attrs="{'invisible': [('is_sales_team', '=', True)]}"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_print_xlsx_report" string="Print XLSX"
+                            type="object" class="oe_highlight"/>
+                    <button string="Cancel" class="btn btn_default"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="commission_wizard_action" model="ir.actions.act_window">
+        <field name="name">Commission Report</field>
+        <field name="res_model">commission.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="commission_wizard_view_form"/>
+        <field name="target">new</field>
+    </record>
+    <menuitem id="commission_excel_report_root"
+              name="Commission Report "
+              parent="crm.crm_menu_report"
+              action="commission_wizard_action"
+              sequence="4"/>
+</odoo>

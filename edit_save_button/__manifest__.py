@@ -22,7 +22,7 @@
 
 {
     'name': 'Edit Button In Odoo16',
-    'version': '16.0.1.0.2',
+    'version': '16.0.1.0.3',
     'summary': 'Edit Button Odoo16',
     'description': 'Edit Button in Odoo16',
     'author': 'Cybrosys Techno Solutions',

@@ -14,16 +14,16 @@
 
     <data>
         <record id="cron_scheduler_for_fleet" model="ir.cron">
-          <field name="name">Fleet scheduler</field>
-          <field name="model_id" ref="fleet_rental.model_car_rental_contract"/>
-          <field name="state">code</field>
-          <field name="code">model.fleet_scheduler()</field>
-          <field name="active" eval="True"/>
-          <field name="user_id" ref="base.user_root"/>
-          <field name="interval_number">1</field>
-          <field name="interval_type">days</field>
-          <field name="numbercall">-1</field>
-          <field name="doall" eval="False"/>
+            <field name="name">Fleet scheduler</field>
+            <field name="model_id" ref="fleet_rental.model_car_rental_contract"/>
+            <field name="state">code</field>
+            <field name="code">model.fleet_scheduler()</field>
+            <field name="active" eval="True"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
         </record>
 
         <record model="ir.ui.view" id="rental_fleet_vehicle_inherit_form_view">
@@ -49,25 +49,42 @@
                 <form string="car_result">
                     <header>
                         <button name="action_confirm" string="Confirm" type="object"
-                                attrs="{'invisible': [('state', '!=', 'draft')]}" class="oe_highlight"/>
+                                attrs="{'invisible': [('state', '!=', 'draft')]}"
+                                class="oe_highlight"/>
                         <button name="action_run" string="Run" type="object"
-                                attrs="{'invisible': [('state', '!=', 'reserved')]}" class="oe_highlight"/>
+                                attrs="{'invisible': [('state', '!=', 'reserved')]}"
+                                class="oe_highlight"/>
                         <button name="action_cancel" string="Cancel" type="object"
-                                attrs="{'invisible': [('state', 'not in', ('draft', 'reserved'))]}" class="oe_highlight"/>
+                                attrs="{'invisible': [('state', 'not in', ('draft', 'reserved'))]}"
+                                class="oe_highlight"/>
                         <button name="action_invoice_create" string="Create Invoice"
-                                attrs="{'invisible': ['|',('state', '!=', 'running'),
-                                ('first_invoice_created','=',True)]}" type="object" class="oe_highlight"/>
+                                attrs="{'invisible': ['|','|',('state', '!=', 'running'),
+                                ('first_invoice_created','=',True),('read_only','=',True)]}" type="object"
+                                class="oe_highlight"/>
+                        <button name="action_extend_rent" string="Extend Rent"
+                                attrs="{'invisible': ['|','|',('state', '!=', 'running'),('read_only','=',True),('first_invoice_created','=',False)]}" type="object"
+                                class="oe_highlight"/>
+                        <button name="action_confirm_extend_rent" string="Confirm Extend"
+                                attrs="{'invisible': ['|',('state', '!=', 'running'),('read_only','=',False)]}" type="object"
+                                class="oe_highlight"/>
+                        <button name="action_discard_extend" string="Discard Extend"
+                                attrs="{'invisible': ['|',('state', '!=', 'running'),('read_only','=',False)]}" type="object"
+                                class="oe_highlight"/>
                         <button name="force_checking" string="Force Checking"
                                 attrs="{'invisible': ['|',('state','!=','running'),
-                                ('first_invoice_created','=',False)]}" type="object" class="oe_highlight"/>
+                                ('first_invoice_created','=',False)]}" type="object"
+                                class="oe_highlight"/>
                         <button name="set_to_done" string="Set to Done"
                                 states="invoice" type="object" class="oe_highlight"/>
-                        <field name="state" widget="statusbar" statusbar_visible="draft,running,done"/>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,running,done"/>
                     </header>
                     <sheet>
                         <div class="oe_button_box" name="buttons">
-                            <button name='action_view_invoice' class="oe_stat_button" type="object" icon="fa-money">
-                                <field string="Invoice" name="invoice_count" widget="statinfo" />
+                            <button name='action_view_invoice' class="oe_stat_button"
+                                    type="object" icon="fa-money">
+                                <field string="Invoice" name="invoice_count"
+                                       widget="statinfo"/>
                             </button>
                         </div>
                         <field name="image" widget='image' class="oe_avatar"/>
@@ -77,17 +94,27 @@
                             </h1>
                         </div>
                         <group>
-                            <separator string="Contract Details " colspan="4" />
+                            <separator string="Contract Details " colspan="4"/>
                             <group>
-                                <field name="customer_id"  string="Customer" attrs="{'readonly': [('state','!=','draft')]}"/>
-                                <field name="rent_start_date" attrs="{'readonly': [('state','!=','draft')]}"/>
-                                <field name="rent_end_date" attrs="{'readonly': [('state','!=','draft')]}"/>
+                                <field name="customer_id" string="Customer"
+                                       attrs="{'readonly': [('state','!=','draft')]}"/>
+                                <field name="rent_by_hour" attrs="{'readonly': [('state','!=','draft')]}"/>
+                                <field name="read_only" invisible="1"/>
+                                <field name="rent_start_date"
+                                       attrs="{'readonly': [('state','!=','draft')]}"/>
+                                <field name="start_time" widget="timepicker_time" attrs="{'invisible': [('rent_by_hour','=',False)],
+                                'readonly': [('state','!=','draft')],'required':[('rent_by_hour','=',True)]}"/>
+                                <field name="rent_end_date"
+                                       attrs="{'readonly': [('state','!=','draft'),('read_only','=',False)]}"/>
+                                <field name="end_time" widget="timepicker_time" attrs="{'invisible': [('rent_by_hour','=',False)],
+                                'readonly': [('state','!=','draft'),('read_only','=',False)],'required':[('rent_by_hour','=',True)]}"/>
                                 <field name="vehicle_id" domain="[('rental_check_availability','=',True),
                                 ('state_id.name','!=','Inactive')]"
-                                   options="{'no_create': True}"/>
+                                       options="{'no_create': True}"/>
                                 <field name="journal_type" invisible="1"/>
-                                <field name="check_verify" invisible="1" />
-                                <field name="sales_person" attrs="{'readonly': [('state','!=','draft')]}"/>
+                                <field name="check_verify" invisible="1"/>
+                                <field name="sales_person"
+                                       attrs="{'readonly': [('state','!=','draft')]}"/>
                             </group>
                             <group>
                                 <field name="car_brand"/>
@@ -96,25 +123,26 @@
                                 <label for="first_payment"/>
                                 <div>
                                     <field name="first_payment" class="oe_inline"
-                                         attrs="{'readonly': ['|', ('state','not in',('draft', 'running')),
+                                           attrs="{'readonly': ['|', ('state','not in',('draft', 'running')),
                                                 ('first_invoice_created','=',True)]}"/>
                                     <field name="first_payment_inv" style="width:142px;" readonly="1"/>
                                 </div>
                                 <field name="account_type" invisible="1"/>
                                 <field name="cost" invisible="1"/>
                                 <label for="cost_generated"/>
-                                    <div>
-                                        <field name="cost_frequency" class="oe_inline"
-                                               attrs="{'readonly': [('state','!=','draft')]}"/>
-                                        <field name="cost_generated" style="width:142px;"
-                                               attrs="{'invisible': [('cost_frequency','=','no')],
+                                <div>
+                                    <field name="cost_frequency" class="oe_inline"
+                                           attrs="{'readonly': [('state','!=','draft')]}"/>
+                                    <field name="cost_generated" style="width:142px;"
+                                           attrs="{'invisible': [('cost_frequency','=','no')],
                                                        'readonly': [('state','!=','draft')],
                                                        'required': [('cost_frequency','not in',[None,False,'no'])]}"/>
-                                    </div>
+                                </div>
                             </group>
                         </group>
                         <notebook>
-                            <page string="Recurring Invoices" attrs="{'invisible': [('cost_frequency','in',[None,False,'no'])]}">
+                            <page string="Recurring Invoices"
+                                  attrs="{'invisible': [('cost_frequency','in',[None,False,'no'])]}">
                                 <field name="recurring_line" mode="tree">
                                     <tree string="Fleet Reccurring Lines"
                                           colors="#0b7a35:payment_info=='paid';#f20b07:payment_info!='paid'">
@@ -131,14 +159,18 @@
                             <page string="Checklist">
                                 <group>
                                     <group>
-                                        <field name="attachment_ids" widget="many2many_binary" class="oe_inline"/>
+                                        <field name="attachment_ids"
+                                               widget="many2many_binary"
+                                               class="oe_inline"/>
                                     </group>
                                     <group>
-                                        <field name="damage_cost" attrs="{'invisible': [('state','!=','checking')]}"/>
+                                        <field name="damage_cost"
+                                               attrs="{'invisible': [('state','!=','checking')]}"/>
                                     </group>
                                 </group>
                                 <field name="checklist_line">
-                                    <tree string="Fleet Checklist Lines" editable="bottom">
+                                    <tree string="Fleet Checklist Lines"
+                                          editable="bottom">
                                         <field name="name"/>
                                         <field name="checklist_active"/>
                                         <field name="checklist_number" invisible="True"/>
@@ -148,8 +180,10 @@
                                         <sheet>
                                             <group>
                                                 <field name="name"/>
-                                                <field name="checklist_active" invisible="1"/>
-                                                <field name="checklist_number" invisible="1"/>
+                                                <field name="checklist_active"
+                                                       invisible="1"/>
+                                                <field name="checklist_number"
+                                                       invisible="1"/>
                                             </group>
                                         </sheet>
                                     </form>
@@ -159,11 +193,13 @@
                                         <field name="total"/>
                                         <field name="tools_missing_cost"/>
                                         <field name="damage_cost_sub"/>
-                                        <field name="total_cost" class="oe_subtotal_footer_separator"/>
+                                        <field name="total_cost"
+                                               class="oe_subtotal_footer_separator"/>
                                     </group>
                                 </div>
                                 <div style="float: right;margin-left: 78%;margin-bottom: 36px;">
-                                    <button name="action_verify" string="Verify" type="object"
+                                    <button name="action_verify" string="Verify"
+                                            type="object"
                                             style="width: 100px !important;height: 40px;"
                                             attrs="{'invisible': [('state', '!=', 'checking')]}"
                                             class="oe_subtotal_footer oe_right oe_highlight"/>
@@ -171,7 +207,7 @@
                             </page>
                         </notebook>
                         <group>
-                          <field name="notes"/>
+                            <field name="notes"/>
                         </group>
                     </sheet>
                     <div class="oe_chatter">
@@ -190,10 +226,10 @@
                 <tree string="car_contract_result" decoration-info="state == 'draft'">
                     <field name="name"/>
                     <field name="customer_id" string="Customer"/>
-			        <field name="vehicle_id"/>
+                    <field name="vehicle_id"/>
                     <field name="cost"/>
                     <field name="car_brand"/>
-					<field name="car_color"/>
+                    <field name="car_color"/>
                     <field name="rent_start_date"/>
                     <field name="rent_end_date"/>
                     <field name="state"/>
@@ -207,10 +243,13 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem name="Fleet Rental" id="fleet.menu_root" sequence="115" groups="fleet.fleet_group_user"
+        <menuitem name="Fleet Rental" id="fleet.menu_root" sequence="115"
+                  groups="fleet.fleet_group_user"
                   web_icon="fleet,static/description/icon.png"/>
-        <menuitem id="menu_car_parent" sequence="1" name="Rental Management" parent="fleet.menu_root"/>
-        <menuitem id="menu_car_rental_contract" parent="menu_car_parent" name="Rental Contract"
+        <menuitem id="menu_car_parent" sequence="1" name="Rental Management"
+                  parent="fleet.menu_root"/>
+        <menuitem id="menu_car_rental_contract" parent="menu_car_parent"
+                  name="Rental Contract"
                   action="action_car_rental_contract" sequence="1"/>
     </data>
 </odoo>

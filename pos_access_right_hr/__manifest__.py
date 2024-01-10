@@ -4,7 +4,7 @@
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#    Author: Viswanth k (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -40,7 +40,8 @@
             'pos_access_right_hr/static/src/js/NumpadWidgetAccessRight.js',
             'pos_access_right_hr/static/src/js/ActionpadWidgetAccessRight.js',
             'pos_access_right_hr/static/src/xml/NumpadWidgetAccessRight.xml',
-            'pos_access_right_hr/static/src/xml/ActionpadWidgetAccessRight.xml'
+            'pos_access_right_hr/static/src/xml/ActionpadWidgetAccessRight.xml',
+            'pos_access_right_hr/static/src/js/ProductScreenAccessRight.js'
         ],
     },
     'images': ['static/description/banner.png'],

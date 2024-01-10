@@ -5,3 +5,7 @@
 #### ADD
 - Initial commit for projects_task_checklists
 
+#### 21.12.2023
+#### Version 16.0.1.0.1
+#### FIX
+- Bug fix on checklist status

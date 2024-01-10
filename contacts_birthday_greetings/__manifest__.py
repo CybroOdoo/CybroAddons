@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Contacts Birthday Greetings",
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': """Contacts Birthday Greetings""",
     "category": 'Contacts',
     'description': """Module helps to Automatically Send Happy Birthday

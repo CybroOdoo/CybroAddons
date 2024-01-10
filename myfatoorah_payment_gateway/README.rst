@@ -18,8 +18,9 @@ Company
 
 Credits
 -------
-* Developer:
+* Developers:
 (v16) Swaroop N P @ Cybrosys
+Subina P @ Cybrosys
 
 
 Contacts

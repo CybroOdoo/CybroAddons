@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Window Action to show data from document.file module-->
+    <record id="document_file_action" model="ir.actions.act_window">
+        <field name="name">Documents</field>
+        <field name="res_model">document.file</field>
+        <field name="view_mode">kanban,form,activity</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">
+                Save your documents...
+            </p>
+        </field>
+    </record>
+    <!--  Document Kanban view  -->
+    <record id="document_file_view_kanban" model="ir.ui.view">
+        <field name="name">document.file.view.kanban</field>
+        <field name="model">document.file</field>
+        <field name="arch" type="xml">
+            <kanban js_class="button_in_kanban_view">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="attachment"/>
+                <field name="attachment_id"/>
+                <field name="workspace_id"/>
+                <field name="content_url"/>
+                <field name="preview"/>
+                <field name="user_id"/>
+                <field name="id"/>
+                <field name="extension"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="o_kanban_record d-flex flex-grow-1 flex-md-shrink-1 flex-shrink-0 oe_file_request">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <field name="priority" widget="priority"/>
+                                    </td>
+                                    <td>
+                                        <div class="o-checkbox form-check check_box">
+                                            <input type="checkbox"
+                                                   style="border-radius: 50%;
+                                                cursor: pointer;"
+                                                   class="form-check-input
+                                               docs_check_box check_circle"
+                                                   t-attf-id="{{record.id.value}}"
+                                                   t-att-data-id="record.id.value"/>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div class="d-flex flex-column oe_kanban_global_area o_kanban_attachment o_documents_attachment oe_file_request"
+                                 t-att-data-id="record.id.value" style="justify-content: center; align-items: center;">
+                                <div class="o_kanban_image o_request_image">
+                                    <div class="o_kanban_image_wrapper">
+                                        <t t-value="record.extension.value"
+                                           t-set="Extension"/>
+                                        <t t-if="Extension == 'xlsx'">
+                                            <img src="enhanced_document_management/static/images/xls.png"
+                                                 class="on_preview_button"
+                                                 t-att-data-id="record.id.value" alt="xlsx file"/>
+                                        </t>
+                                        <t t-elif="Extension == 'pdf'">
+                                            <a t-att-href="record.content_url.value" data-fancybox="" data-caption="">
+                                                <img src="enhanced_document_management/static/images/pdf.png"
+                                                     class="on_preview_button"
+                                                     t-att-data-id="record.id.value" alt="pdf file"/>
+                                            </a>
+                                        </t>
+                                        <t t-elif="Extension == 'txt'">
+                                            <a t-att-href="record.content_url.value">
+                                                <img src="enhanced_document_management/static/images/text.png"
+                                                     class="on_preview_button"
+                                                     t-att-data-id="record.id.value" alt="txt file"/>
+                                            </a>
+                                        </t>
+                                        <t t-elif="Extension == 'pptx'">
+                                            <img src="enhanced_document_management/static/images/ppt.gif"
+                                                 class="on_preview_button"
+                                                 t-att-data-id="record.id.value" alt="pptx file"/>
+                                        </t>
+                                        <t t-elif="Extension == 'url'">
+                                            <a t-att-href="record.content_url.value">
+                                                <img src="enhanced_document_management/static/images/url.gif"
+                                                     class="on_preview_button"
+                                                     t-att-data-id="record.id.value" alt="url file"/>
+                                            </a>
+                                        </t>
+                                        <t t-elif="Extension == 'docx'">
+                                            <img src="enhanced_document_management/static/images/doc.png"
+                                                 class="on_preview_button"
+                                                 t-att-data-id="record.id.value" alt="docx file"/>
+                                        </t>
+                                        <t t-elif="Extension == 'jpg'">
+                                            <a t-att-href="record.content_url.value" data-fancybox="" data-caption="">
+                                                <img src="enhanced_document_management/static/images/img.gif"
+                                                     class="on_preview_button"
+                                                     t-att-data-id="record.id.value" alt="jpg file"/>
+                                            </a>
+                                        </t>
+                                        <t t-elif="Extension == 'jpeg'">
+                                            <a t-att-href="record.content_url.value" data-fancybox="" data-caption="">
+                                                <img src="enhanced_document_management/static/images/img.gif"
+                                                     class="on_preview_button"
+                                                     t-att-data-id="record.id.value" alt="jpeg file"/>
+                                            </a>
+                                        </t>
+                                        <t t-elif="Extension == 'png'">
+                                            <a t-att-href="record.content_url.value" data-fancybox="" data-caption="">
+                                                <img src="enhanced_document_management/static/images/img.gif"
+                                                     class="on_preview_button"
+                                                     t-att-data-id="record.id.value" alt="png file"/>
+                                            </a>
+                                        </t>
+                                        <t t-elif="Extension == 'csv'">
+                                            <img src="enhanced_document_management/static/images/csv.png"
+                                                 class="on_preview_button"
+                                                 t-att-data-id="record.id.value" alt="csv file"/>
+                                        </t>
+                                        <t t-else="">
+                                            <img src="enhanced_document_management/static/images/file.png"
+                                                 class="on_preview_button"
+                                                 t-att-data-id="record.id.value" alt="other file"/>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="o_kanban_details flex-grow-1 flex-shrink-1 flex-auto">
+                                <div clss="o_kanban_details_wrapper">
+                                    <div class="o_kanban_record_title">
+                                        <field name="name"/>
+                                        <field name="active" invisible="1"/>
+                                    </div>
+                                    <div class="o_kanban_record_body text-muted">
+                                        <field name="date"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_bottom flex-wrap">
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="attachment" widget="binary_widget"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="activity_ids" widget="kanban_activity"/>
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!--  Document Search view  -->
+    <record id="document_file_view_search" model="ir.ui.view">
+        <field name="name">document.file.view.search</field>
+        <field name="model">document.file</field>
+        <field name="arch" type="xml">
+            <search string="Document Search">
+                <field name="name" string="Document"/>
+                <field name="date"/>
+                <field name="workspace_id"/>
+                <filter string="Archive" name="archive"
+                        domain="[('active', '=', False), ('trash', '=', False)]"/>
+                <filter string="Favourite" name="favourite"
+                        domain="[('priority', '=', '1')]"/>
+                <filter string="PDF" name="filter_pdf" domain="[('extension', '=', 'pdf')]"/>
+                <filter string="XLSX" name="filter_xlsx" domain="[('extension', 'in', ['xlsx','xls'])]"/>
+                <filter string="Image" name="filter_xlsx" domain="[('extension', 'in', ['jpg','jpeg','png'])]"/>
+                <filter string="URL" name="filter_xlsx" domain="[('extension', '=', 'url')]"/>
+                <filter string="CSV" name="filter_xlsx" domain="[('extension', '=', 'csv')]"/>
+                <filter string="DOC" name="filter_xlsx" domain="[('extension', 'in', ['doc','docx'])]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_workspace" string="Workspace"
+                            context="{'group_by':'workspace_id'}"/>
+                    <filter name="group_extension" string="Extension"
+                            context="{'group_by':'extension'}"/>
+                    <filter name="group_user" string="Owner" context="{'group_by':'user_id'}"/>
+                </group>
+                <searchpanel>
+                    <field name="workspace_id" icon="fa-folder"
+                           hierarchize="1" expand="1" enable_counters="1" select="one"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+    <!-- Document form view   -->
+    <record id="document_file_view_form" model="ir.ui.view">
+        <field name="name">document.file.view.form</field>
+        <field name="model">document.file</field>
+        <field name="arch" type="xml">
+            <form string="Upload Document" create="0" copy="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="attachment" filename="name"/>
+                            <field name="mimetype" invisible="1"/>
+                            <field name="name" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="workspace_id" help="User can choose where to save the file"/>
+                            <field name="company_id"/>
+                        </group>
+                    </group>
+                    <group string="History" invisible="1">
+                        <group>
+                            <field name="create_uid" string="Created by"/>
+                            <field name="create_date" string="Created on"/>
+                        </group>
+                        <group>
+                            <field name="write_uid" string="Last Updated on"/>
+                            <field name="create_date" string="Last Updated by"/>
+                        </group>
+                    </group>
+                    <group string="Security" rowspan="2">
+                        <group>
+                            <field name="security" widget="radio" string="Access" help="Who can access your file"/>
+                            <field name="user_ids" widget="many2many_tags"
+                                   attrs="{'invisible':[('security','!=','specific_users')]}"/>
+                        </group>
+                        <group>
+                            <field name="partner_id" string="Related Partner"/>
+                            <field name="auto_delete"/>
+                            <field name="days" attrs="{'invisible':[('auto_delete','=',False)]}"/>
+                            <field name="delete_date" attrs="{'invisible':[('auto_delete','=',False)]}"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <group colspan="4">
+                            <field colspan="2" name="description" nolabel="1" placeholder="Your file need..."/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button class="oe_highlight" name="action_upload_document" type="object"
+                            string="Upload"/>
+                    <button special="cancel" string="Discard"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

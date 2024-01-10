@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--commission plan tree view-->
+    <record id="crm_commission_view_tree" model="ir.ui.view">
+        <field name="name">crm.commission.tree</field>
+        <field name="model">crm.commission</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="type"/>
+            </tree>
+        </field>
+    </record>
+    <!--commission plan form view-->
+    <record id="crm_commission_view_form" model="ir.ui.view">
+        <field name="name">crm.commission.form</field>
+        <field name="model">crm.commission</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                            <field name="type"/>
+                            <field name="revenue_type"
+                                   attrs="{'invisible':[('type', '=', 'product')]}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Product Wise"
+                              attrs="{'invisible':[('type', '!=', 'product')]}">
+                            <field name="product_comm_ids">
+                                <tree editable="Top" multi_edit="1">
+                                    <field name="category_id" width="23%"/>
+                                    <field name="product_id" width="20%"
+                                           domain="[('categ_id','in',category_ids)]"/>
+                                    <field name="category_ids"
+                                           invisible="1"/>
+                                    <field name="commission_amount_type"
+                                           width="18%"/>
+                                    <field name="percentage"
+                                           attrs="{'invisible' : [('commission_amount_type', '=', 'fixed')]}"
+                                           width="10"/>
+                                    <field name="fixed_amount"
+                                           attrs="{'invisible' : [('commission_amount_type', '!=', 'fixed')]}"
+                                           width="15"/>
+                                    <field name="amount"
+                                           attrs="{'invisible' : [('commission_amount_type', '=', 'fixed')]}"
+                                           width="14"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Straight Revenue Commission"
+                              attrs="{'invisible' : ['|','|',('type', '=', 'product'),('revenue_type', '=', False),('revenue_type', '=', 'graduated')]}">
+                            <group>
+                                <field name="straight_commission_type"/>
+                                <field name="straight_commission_fixed"
+                                       attrs="{'invisible' : [('straight_commission_type', '!=', 'fixed')]}"/>
+                                <field name="straight_commission_rate"
+                                       string="Commission rate (%)"
+                                       attrs="{'invisible' : ['|','|','|',('straight_commission_type', '=', 'fixed'),('type', '=', 'product'),('revenue_type', '=', False),('revenue_type', '=', 'graduated')]}"/>
+                            </group>
+                        </page>
+                        <page string="Graduated Revenue Commission"
+                              attrs="{'invisible' : ['|','|',('type', '=', 'product'),('revenue_type', '=', False),('revenue_type', '=', 'straight')]}">
+                            <field name="revenue_grd_comm_ids">
+                                <tree editable="Top" create="1" multi_edit="1">
+                                    <field name="sequence" width="10%"/>
+                                    <field name="amount_from" width="15%"/>
+                                    <field name="amount_to" width="15%"/>
+                                    <field name="graduated_amount_type"
+                                           widget="selection"
+                                           style="max-width:200px !important;"
+                                           width="20%"/>
+                                    <field name="graduated_fixed_amount"
+                                           style="min-width:200px !important;"
+                                           attrs="{'invisible' : [('graduated_amount_type', '!=', 'fixed')]}"
+                                           width="20%"/>
+                                    <field name="graduated_commission_rate"
+                                           style="min-width:200px !important;"
+                                           attrs="{'invisible' : [('graduated_amount_type', '=', 'fixed')]}"
+                                           width="20%"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--    crm commission plan action-->
+    <record id="commission_plan_action" model="ir.actions.act_window">
+        <field name="name">CRM Commission Plan</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">crm.commission</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create New Commission Plan!
+            </p>
+        </field>
+    </record>
+    <menuitem id="crm_commission_plan_menu"
+              name="Commission Plans"
+              parent="crm.crm_menu_config"
+              action="commission_plan_action"
+              sequence="13"/>
+</odoo>

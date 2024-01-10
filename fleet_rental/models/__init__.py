@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Cybrosys Technogies @cybrosys(odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -19,6 +19,12 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
+from . import account_move
+from . import account_move_line
 from . import car_rental
+from . import car_rental_checklist
+from . import car_tools
 from . import fleet
+from . import fleet_rental_line
+from . import fleet_vehicle
+from . import res_config_settings
