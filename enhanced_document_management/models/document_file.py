@@ -94,6 +94,9 @@ class Document(models.Model):
     size = fields.Char(
         string='Size', compute='_compute_size',
         help="it store size of the document")
+    company_id = fields.Many2one(
+        related='workspace_id.company_id', string='Company',
+        help="Company Name")
 
     @api.depends('attachment_id')
     def _compute_size(self):

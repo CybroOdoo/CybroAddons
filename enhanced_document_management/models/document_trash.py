@@ -100,6 +100,9 @@ class DocumentTrash(models.Model):
         string="File URL", help="""it store url while adding an url document"""
     )
     size = fields.Char(string="Size", help="it store size of the document")
+    company_id = fields.Many2one(
+        related='workspace_id.company_id', string='Company',
+        help="Company Name")
 
     def delete_doc(self):
         """Function to delete all the documents after the trash date"""

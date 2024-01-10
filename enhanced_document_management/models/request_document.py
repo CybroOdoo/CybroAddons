@@ -41,6 +41,9 @@ class RequestDocumentUser(models.Model):
         ('requested', 'Requested'),
         ('accepted', 'Accepted'),
         ('rejected', 'Rejected')], default='requested')
+    company_id = fields.Many2one(
+        related='workspace_id.company_id', string='Company',
+        help="Company Name")
 
     def action_send_document_request(self):
         """Function to send document request through email """
