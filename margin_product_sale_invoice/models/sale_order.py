@@ -27,7 +27,7 @@ class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
     cost_price_sale = fields.Float(string='Cost',
-                                   compute='compute_cost_price_amount',
+                                   compute='compute_cost_price',
                                    store=True, help='Field for cost price')
     margin_amount_sale = fields.Float(string='Margin Amount',
                                       compute='compute_margin_amount',
@@ -41,16 +41,6 @@ class SaleOrderLine(models.Model):
         for record in self:
             if record.product_id:
                 record.cost_price_sale = record.product_id.standard_price
-
-    @api.depends('product_id')
-    def compute_cost_price_amount(self):
-        for record in self:
-            converted_amount = record.product_id.currency_id._convert(
-                from_amount=record.product_id.standard_price,
-                to_currency=record.env.company.currency_id, company=record.company_id,
-                date=fields.Date.today()
-            )
-            record.cost_price_sale = converted_amount
 
     @api.depends('product_id')
     def compute_margin_amount(self):
