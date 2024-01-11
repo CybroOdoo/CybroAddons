@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Athira P S (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -43,8 +43,10 @@ class AccountMove(models.Model):
 
     qr = fields.Binary(string="QR Code", compute='generate_qrcode', store=True,
                        help="QR code")
-    qr_button = fields.Boolean(struct="Qr Button", compute="_compute_qr",
+    qr_button = fields.Boolean(string="Qr Button", compute="_compute_qr",
                                help="Is QR button is enable or not")
+    qr_page = fields.Boolean(string="Qr Page", compute="_compute_qr",
+                             help="Is QR page is enable or not")
 
     @api.depends('qr_button')
     def _compute_qr(self):
@@ -52,7 +54,15 @@ class AccountMove(models.Model):
         for record in self:
             qr_code = self.env['ir.config_parameter'].sudo().get_param(
                 'advanced_vat_invoice.is_qr')
-            record.qr_button = qr_code == 'True'
+            qr_code_generate_method = self.env[
+                'ir.config_parameter'].sudo().get_param(
+                'advanced_vat_invoice.generate_qr')
+            record.qr_button = True if qr_code and qr_code_generate_method == 'manually' else False
+            record.qr_page = True if (qr_code and record.state in ['posted',
+                                                                   'cancelled']
+                                      and qr_code_generate_method == 'manually'
+                                      or qr_code_generate_method == 'automatically') \
+                else False
 
     def timezone(self, userdate):
         """Function to convert a user's date to their timezone."""
@@ -94,10 +104,18 @@ class AccountMove(models.Model):
         vat_hex = self.hexa("02", "0f", seller_vat_no) or ""
         time_stamp = self.timezone(self.create_date)
         date_hex = self.hexa("03", "14", time_stamp)
+        amount_total = self.currency_id._convert(
+            self.amount_total,
+            self.env.ref('base.SAR'),
+            self.env.company, self.invoice_date or fields.Date.today())
         total_with_vat_hex = self.hexa("04", "0a",
-                                       str(round(self.amount_total, 2)))
+                                       str(round(amount_total, 2)))
+        amount_tax = self.currency_id._convert(
+            self.amount_tax,
+            self.env.ref('base.SAR'),
+            self.env.company, self.invoice_date or fields.Date.today())
         total_vat_hex = self.hexa("05", "09",
-                                  str(round(self.amount_tax, 2)))
+                                  str(round(amount_tax, 2)))
         qr_hex = (seller_hex + vat_hex + date_hex + total_with_vat_hex +
                   total_vat_hex)
         encoded_base64_bytes = base64.b64encode(bytes.fromhex(qr_hex)).decode()
