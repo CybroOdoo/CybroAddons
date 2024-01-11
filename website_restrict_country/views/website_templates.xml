@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--website_sale.template_header_default inherited template -->
+    <template id="template_header_default"
+              inherit_id="website_sale.template_header_default">
+        <xpath expr="//t[@t-call='website_sale.header_cart_link']"
+               position="after">
+            <t t-set="countries"
+               t-value="request.env['website'].browse(request.website.id).country_ids"/>
+            <t t-set="country"
+               t-value="request.env['website'].browse(request.website.id).default_country_id"/>
+            <div class="country_select_m">
+                <t t-call="website_restrict_country.country_selection"/>
+            </div>
+        </xpath>
+    </template>
+    <!--Templates for Country Selection menu-->
+    <template id="country_selection">
+        <t t-if="country">
+            <li class="nav-item dropdown o_no_autohide_item js_countrymenu">
+            <a href="#" role="button" data-bs-toggle="dropdown" id="a_select"
+               class="dropdown-toggle nav-link fw-bold">
+                <img id="img_code_vat" class="js_img_country_code"
+                     t-att-src="country.image_url"
+                     width="30" height="20"/>
+            </a>
+            <div id="country_selection_menu" role="menu"
+                 class="dropdown-menu  ">
+                <t t-foreach="countries" t-as="country">
+                    <a href="#" class="dropdown-item js_countries"
+                       t-att-id="country.code"
+                       t-att-data-country_id="country.id"
+                       t-att-data-country_code="country.code"
+                       t-att-data-country_image_url="country.image_url">
+                        <img t-att-data-country-id="country.id"
+                             t-att-src="country.image_url"
+                             width="30" height="20"/>
+                        <span t-esc="country.name"/>
+                    </a>
+                </t>
+            </div>
+        </li>
+        </t>
+    </template>
+    <!--website_sale.suggested_products_list inherited template -->
+    <template id="cart_summary_inherit_website_country_restriction"
+              inherit_id="website_sale.suggested_products_list">
+        <xpath expr="//td[hasclass('td-product_name')]" position="inside">
+            <t t-set="country_availability"
+               t-value="line.product_id.product_tmpl_id.country_availability"/>
+            <t t-set="product_select_country"
+               t-value="line.product_id.product_tmpl_id.country_selection_ids.mapped('country_id').ids"/>
+            <t t-set="current_select_country"
+               t-value="request.env['website'].get_current_website().default_country_id.id"/>
+            <t t-set="message_cart"
+               t-value="request.env['website'].get_current_website().cart_message"/>
+            <t t-if="current_select_country not in product_select_country and country_availability == 'selected'">
+                <div class="text-warning">
+                    <t t-esc="message_cart"/>
+                </div>
+            </t>
+        </xpath>
+    </template>
+    <!--website_sale.product_buy_now inherited template -->
+    <template id="buy_now_restriction" name="Buy Now Restriction"
+              inherit_id="website_sale.product_buy_now">
+        <xpath expr="//a[contains(@t-attf-class, 'o_we_buy_now')]"
+               position="replace">
+            <t t-set="current_select_country"
+               t-value="request.env['website'].get_current_website().default_country_id.id"/>
+            <t t-set="product_select_country"
+               t-value="product.country_selection_ids.mapped('country_id').ids"/>
+            <t t-if="current_select_country in product_select_country">
+                <a role="button"
+                   t-attf-class="btn btn-outline-primary o_we_buy_now ms-1 #{'btn-lg' if ctaSizeBig else ''}"
+                   href="#">
+                    <i class="fa fa-bolt me-2"/>
+                    <span style="font-weight:bold">BUY NOW</span>
+                </a>
+            </t>
+        </xpath>
+    </template>
+    <!-- website_sale.short_cart_summary inherited template  -->
+    <template id="checkout_process_country_restriction"
+              name="Checkout Process Restriction"
+              inherit_id="website_sale.short_cart_summary">
+        <xpath expr="//a[hasclass('d-xl-inline-block')]" position="replace">
+            <t t-set="availability"
+               t-value="website_sale_order.website_order_line.mapped('product_id.product_tmpl_id.country_availability')"/>
+            <t t-set="product_select_country"
+               t-value="website_sale_order.get_common_country_list()"/>
+            <t t-set="current_select_country"
+               t-value="request.env['website'].get_current_website().default_country_id.id"/>
+            <t t-if="all(country=='all' for country in availability) or current_select_country in product_select_country">
+                <a role="button"
+                   t-if="website_sale_order and website_sale_order.website_order_line"
+                   class="btn btn-secondary float-end d-none d-xl-inline-block"
+                   t-attf-href="{{redirect_url}}">
+                    <t t-if="redirect_to_sign_in">
+                        <span>Sign In</span>
+                        <span class="fa fa-sign-in"/>
+                    </t>
+                    <t t-else="">
+                        <span>Proceed to Checkout</span>
+                        <span class="fa fa-chevron-right"/>
+                    </t>
+                </a>
+            </t>
+        </xpath>
+    </template>
+    <!-- website_sale.cart inherited template  -->
+    <template id="proceed_to_checkout_country_restriction"
+              name="Proceed to Checkout Restriction"
+              inherit_id="website_sale.cart">
+        <xpath expr="//a[hasclass('float-end')]" position="replace">
+            <t t-set="availability"
+               t-value="website_sale_order.website_order_line.mapped('product_id.product_tmpl_id.country_availability')"/>
+            <t t-set="product_select_country"
+               t-value="website_sale_order.website_order_line.product_id.product_tmpl_id.country_selection_ids.mapped('country_id').ids"/>
+            <t t-set="current_select_country"
+               t-value="request.env['website'].get_current_website().default_country_id.id"/>
+            <t t-if="all(country=='all' for country in availability) or current_select_country in product_select_country">
+                <a class="btn btn-primary float-end"
+                   role="button"
+                   t-attf-href="{{redirect_url}}">
+                    <t t-if="redirect_to_sign_in">
+                        <span>Sign In</span>
+                        <span class="fa fa-sign-in"/>
+                    </t>
+                    <t t-else="">
+                        <span>Process
+                            Checkout
+                        </span>
+                        <span class="fa fa-chevron-right"/>
+                    </t>
+                </a>
+            </t>
+        </xpath>
+    </template>
+</odoo>
