@@ -1,3 +1,7 @@
+.. image:: https://img.shields.io/badge/license-LGPL--3-green.svg
+    :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
+    :alt: License: LGPL-3
+
 Mobile Service Management
 =========================
 Module for mobile service shop daily activities
@@ -10,12 +14,23 @@ Company
 -------
 * `Cybrosys Techno Solutions <https://cybrosys.com/>`__
 
+License
+-------
+General Public License, Version 3 (LGPL v3).
+(https://www.odoo.com/documentation/17.0/legal/licenses.html)
+
 Credits
 -------
-* Developers: 	Milind Mohan @ Cybrosys, odoo@cybrosys.com
-                Mohammed Shahil M P @cybrosys, odoo@cybrosys.com
-                Neenu Merlin Jose @cybrosys, odoo@cybrosys.com
-                Vishnu KP @ Cybrosys, odoo@cybrosys.com
+* Developers: 	Milind Mohan,
+                (V15) Mohammed Shahil M P,
+                (V16) Neenu Merlin Jose,
+                (V17) Vishnu KP,
+  Contact : odoo@cybrosys.com
+
+Contacts
+--------
+* Mail Contact : odoo@cybrosys.com
+* Website : https://cybrosys.com
 
 Bug Tracker
 -----------
@@ -33,4 +48,3 @@ For support and more information, please visit `Our Website <https://cybrosys.co
 Further information
 ===================
 HTML Description: `<static/description/index.html>`__
-
