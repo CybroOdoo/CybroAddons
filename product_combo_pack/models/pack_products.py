@@ -60,7 +60,7 @@ class PackProducts(models.Model):
                     [('product_id', '=', record.product_id.id),
                      ('location_id', '=', location_id.id)])
                 if stock_quant:
-                    record.qty_available = stock_quant.quantity
+                    record.qty_available = stock_quant[0].quantity
                 else:
                     record.qty_available = False
             else:
