@@ -56,7 +56,7 @@ class HideMenuUser(models.Model):
             if rec.id == self.env.ref('base.user_admin').id:
                 rec.is_admin = True
 
-    hide_menu_ids = fields.Many2many('ir.ui.menu', string="Menu", store=True, context={'group_by': 'module_id'},
+    hide_menu_ids = fields.Many2many('ir.ui.menu', string="Menu", store=True,
                                      help='Select menu items that needs to be '
                                           'hidden to this user ')
     is_admin = fields.Boolean(compute=_get_is_admin, string="Admin")
@@ -66,10 +66,10 @@ class RestrictMenu(models.Model):
     _inherit = 'ir.ui.menu'
 
     restrict_user_ids = fields.Many2many('res.users')
-    module_name = fields.Char('Module Name', compute='_compute_module_id', store=True)
+    module_name = fields.Char('Module Name', compute='_compute_module_name', store=True)
 
     @api.depends('complete_name')
-    def _compute_module_id(self):
+    def _compute_module_name(self):
         for menu in self:
             module_name = menu.complete_name.split('/')[0] if menu.complete_name else ''
             menu.module_name = module_name
