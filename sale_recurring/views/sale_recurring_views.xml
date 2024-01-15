@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    To show some fields in the list view-->
+    <record id="sale_recurring_view_tree" model="ir.ui.view">
+        <field name="name">sale.recurring.view.tree</field>
+        <field name="model">sale.recurring</field>
+        <field name="arch" type="xml">
+            <tree string="Channel">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+            </tree>
+        </field>
+    </record>
+    <!--Add fields to the form view for creating recurring order-->
+    <record id='sale_recurring_view_form' model='ir.ui.view'>
+        <field name="name">sale.recurring.view.form</field>
+        <field name="model">sale.recurring</field>
+        <field name="arch" type="xml">
+            <form string="Sale Recurring">
+                <header>
+                    <button name="action_create_sale_order"
+                            string="Create Sale Order"
+                            class="oe_highlight" type="object"
+                            invisible="state != 'running' or active == False"/>
+                    <button string="Cancel" type="object"
+                            class="btn-secondary"
+                            name="action_cancel_recurring_order"
+                            invisible="state == 'cancelled'"/>
+                    <button string="Archive" type="object"
+                            class="btn-secondary"
+                            name="action_archive_orders"
+                            invisible="active == False"/>
+                    <button string="Unarchive" type="object"
+                            class="btn-secondary"
+                            name="action_unarchive_orders"
+                            invisible="active == True"/>
+                    <button string="Renew" type="object"
+                            class="btn-secondary"
+                            name="action_renew"
+                            invisible="state == 'running'"/>
+                    <field name="state" widget="statusbar"
+                           class="o_field_statusbar"
+                           statusbar_visible="running,expired,cancelled"
+                           force_save="1"/>
+                </header>
+                <sheet>
+                    <div name="button_box" position="inside">
+                        <button class="oe_stat_button" type="object"
+                                name="action_get_sale_orders">
+                            <field name="total_sale_order" string="Sale Orders"
+                                   widget="statinfo"/>
+                        </button>
+                        <button class="oe_stat_button" type="object"
+                                name="action_get_sale_quotations">
+                            <field name="total_sale_quotation"
+                                   string="Quotations"
+                                   widget="statinfo"/>
+                        </button>
+                        <field name="active" widget="boolean_button"
+                               options='{"terminology": "archive"}'
+                               invisible="1"/>
+                    </div>
+                    <h1>
+                        <field name="name" readonly="1"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="title"/>
+                            <field name="partner_id"/>
+                        </group>
+                        <group>
+                            <field name="start_date"
+                                   readonly="state == 'expired'"/>
+
+                            <field name="end_date" force_save="1"/>
+                            <label for="stop_after"/>
+                            <div>
+                                <field name="stop_after" class="oe_inline"
+                                       style="vertical-align:baseline"
+                                       readonly="state == 'expired'"/>
+                                days
+                            </div>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Order Line">
+                            <field name="order_line_ids">
+                                <tree editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="name"/>
+                                    <field name="product_uom_qty"/>
+                                    <field name="price_unit"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"
+                           widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--        To search the records from the tree view, based on state and date-->
+    <record id="sale_recurring_view_search" model="ir.ui.view">
+        <field name="name">sale.recurring.view.search</field>
+        <field name="model">sale.recurring</field>
+        <field name="arch" type="xml">
+            <search string="Sale Recurring">
+                <field name="name"/>
+                <filter string="Inactive" name="active"
+                        domain="[('active', '=', False)]"/>
+                <filter string="Running" name="state"
+                        domain="[('state', '=', 'running')]"/>
+                <filter string="Expired" name="state"
+                        domain="[('state', '=', 'expired')]"/>
+                <filter string="Cancelled" name="state"
+                        domain="[('state', '=', 'cancelled')]"/>
+                <filter string="Start Date" name="start_date"
+                        date="start_date"/>
+                <filter string="End Date" name="end_date" date="end_date"/>
+                <group string="Group By">
+                    <filter string="Customer"
+                            name="partner_id"
+                            context="{'group_by':'partner_id'}"/>
+                    <filter string="Start Date"
+                            name="start_date"
+                            context="{'group_by':'start_date'}"/>
+                    <filter string="End Date" name="end_date"
+                            context="{'group_by':'end_date'}"/>
+                    <filter string="Status" name="state"
+                            context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!--    ir.actions.act_window-->
+    <record id="sale_recurring_action" model="ir.actions.act_window">
+        <field name="name">Recurring Orders</field>
+        <field name="res_model">sale.recurring</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to Create a New Record.
+            </p>
+        </field>
+    </record>
+    <!--    To show the menu under Orders-->
+    <menuitem
+            id="sale_recurring_menu"
+            name="Recurring Orders"
+            action="sale_recurring_action"
+            parent="sale.sale_order_menu"
+            sequence="25"/>
+</odoo>
