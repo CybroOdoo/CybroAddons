@@ -19,10 +19,16 @@
 #
 #############################################################################
 {
-    'name': 'Whatsapp Chat Live Order',
+    'name': 'Whatsapp Live Chat In Odoo',
     'version': '15.0.1.0.0',
-    'summary': 'Send Message to partner via Whatsapp web',
-    'description': 'Send Message to partner via Whatsapp web',
+    'summary': """The Whatsapp Live Chat In Odoo app is designed to facilitate
+     real-time communication between businesses and their customers using the 
+     popular messaging platform,WhatsApp.""",
+    'description': """This module is designed to facilitate real-time 
+     communication between businesses and their customers using the popular 
+     messaging platform,WhatsApp.With Whatsapp Live Chat In Odoo, businesses can
+     offer immediate support, answer inquiries, and provide personalized 
+     assistance to customers through the familiar WhatsApp interface.""",
     'category': 'Extra Tools',
     'author': 'Cybrosys Techno solutions',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -32,16 +38,15 @@
         'base', 'contacts', 'stock', 'website', 'website_sale'
     ],
     'data': [
-            'views/settings_whatsapp.xml',
-            'views/views.xml',
+        'views/res_config_settings_views.xml',
+        'views/integration_whatsapp_chat_live_template.xml',
     ],
     'assets': {
         'web.assets_backend': [
             'integration_whatsapp_chat_live/static/src/css/wp_msg.css',
         ]
     },
-
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'installable': True,
     'application': False,
     'auto_install': False,

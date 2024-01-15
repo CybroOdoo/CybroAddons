@@ -1,34 +1,32 @@
 .. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
-    :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
+    :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
-Whatsapp Chat Live Order
-=======================
-* Whatsapp Chat Live Order for Odoo 15
+Whatsapp Live Chat In Odoo V15
+==============================
+* The Whatsapp Live Chat In Odoo app is designed to facilitate real-time communication between businesses and their customers using the popular messaging platform,WhatsApp.
 
-Installation
-============
-    - www.odoo.com/documentation/15.0/setup/install.html
-    - Install our custom addon
+Configuration
+=============
+* No additional configurations needed
+
+Company
+-------
+* `Cybrosys Techno Solutions <https://cybrosys.com/>`__
 
 License
 =======
 GNU AFFERO GENERAL PUBLIC LICENSE, Version 3 (AGPLv3)
-(http://www.gnu.org/licenses/agpl.html)
-
-Company
--------
-* 'Cybrosys Techno Solutions <https://cybrosys.com/>`__
+(https://www.gnu.org/licenses/agpl-3.0-standalone.html)
 
 Credits
 -------
-* Developer: v15.0 Saleekha, odoo@cybrosys.com
-
-
+* Developer: (v15) Saleekha, odoo@cybrosys.com
 
 Contacts
 --------
 * Mail Contact : odoo@cybrosys.com
+* Website : https://cybrosys.com
 
 Bug Tracker
 -----------
@@ -36,9 +34,12 @@ Bugs are tracked on GitHub Issues. In case of trouble, please check there if you
 
 Maintainer
 ==========
+.. image:: https://cybrosys.com/images/logo.png
+   :target: https://cybrosys.com
+
 This module is maintained by Cybrosys Technologies.
 
-For support and more information, please visit https://www.cybrosys.com
+For support and more information, please visit `Our Website <https://cybrosys.com/>`__
 
 Further information
 ===================
