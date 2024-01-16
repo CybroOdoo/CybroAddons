@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data noupdate="1">
+<!--        Xpath expression specified to replace or remove the original shipping method template in website payment page.-->
+        <template id="payment_delivery_inherit" inherit_id="website_sale_delivery.payment_delivery">
+            <xpath expr="//div[@t-if='deliveries']" position="replace">
+            </xpath>
+        </template>
+    </data>
+
+    <data noupdate="1">
+<!--        Xpath expression to replace the template which display the shipping method near delivery address in website when only 1 shipping method is available.-->
+        <template id="payment_inherit" name="Payment Inherit" inherit_id="website_sale.payment">
+            <xpath expr="//div[@id='shipping_and_billing']" position="replace">
+                <a class='float-right no-decoration' href='/shop/checkout'><i class="fa fa-edit"/> Edit</a>
+                <t t-set="same_shipping" t-value="bool(order.partner_shipping_id==order.partner_id or only_services)" />
+                <div><b>Billing<t t-if="same_shipping and not only_services"> &amp; Shipping</t>: </b><span t-esc='order.partner_id' t-options="dict(widget='contact', fields=['address'], no_marker=True, separator=', ')" class="address-inline"/></div>
+                <div t-if="not same_shipping and not only_services" groups="sale.group_delivery_invoice_address"><b>Shipping: </b><span t-esc='order.partner_shipping_id' t-options="dict(widget='contact', fields=['address'], no_marker=True, separator=', ')"  class="address-inline"/></div>
+            </xpath>
+        </template>
+    </data>
+
+<!--    Changed the template position of shipping method in website payment page to show after payment methods-->
+    <template id="website_sale_payment_inherit" name="Delivery Costs" inherit_id="website_sale.payment">
+        <xpath expr="//div[@id='payment_method']" position="after">
+            <divt t-if="deliveries" id="delivery_carrier">
+                <t t-set="delivery_nb" t-value="len(deliveries)"/>
+                <h3 class="mb24" id="delivery_text" style="display:none">Choose a delivery method</h3>
+                <div class="card border-0" id="delivery_method">
+                    <ul class="list-group">
+                    <t t-foreach="deliveries" t-as="delivery">
+                        <li class="list-group-item o_delivery_carrier_select" style="display:none">
+                            <t t-call="website_sale_delivery.payment_delivery_methods"/>
+                        </li>
+                    </t>
+                    </ul>
+                </div>
+            </divt>
+        </xpath>
+    </template>
+</odoo>
