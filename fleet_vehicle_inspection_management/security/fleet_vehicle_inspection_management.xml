@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <!--Access rights of fleet vehicle inspection-->
+    <record id="fleet_vehicle_inspection" model="ir.module.category">
+        <field name="name">Vehicle Inspection Management</field>
+        <field name="description">User access level for Vehicle Inspection
+            module
+        </field>
+        <field name="sequence">20</field>
+    </record>
+    <!--Supervisor access-->
+    <record id="group_vehicle_inspection_supervisor" model="res.groups">
+        <field name="name">Inspection Supervisor</field>
+        <field name="category_id" ref="fleet_vehicle_inspection"/>
+    </record>
+    <!--Manager access-->
+    <record id="group_vehicle_inspection_manager" model="res.groups">
+        <field name="name">Inspection Manager</field>
+        <field name="category_id" ref="fleet_vehicle_inspection"/>
+        <field name="implied_ids"
+               eval="[(4, ref('group_vehicle_inspection_supervisor'))]"/>
+    </record>
+    <!--Record rules-->
+    <!--Model inspection.request manager rule-->
+    <record id="inspection_supervisor_rule" model="ir.rule">
+        <field name="name">Inspection Supervisor Rule</field>
+        <field name="model_id" ref="model_inspection_request"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups"
+               eval="[(4, ref('group_vehicle_inspection_supervisor'))]"/>
+    </record>
+    <!--Model inspection.request supervisor rule-->
+    <record id="inspection_manager_rule" model="ir.rule">
+        <field name="name">Inspection Manager Rule</field>
+        <field ref="model_inspection_request" name="model_id"/>
+        <field name="domain_force">[(1,'=',1)]</field>
+        <field name="groups"
+               eval="[(4, ref('group_vehicle_inspection_manager'))]"/>
+    </record>
+    <!--Model vehicle.inspection supervisor rule-->
+    <record id="vehicle_inspection_supervisor_rule" model="ir.rule">
+        <field name="name">Vehicle Inspection Supervisor Rule</field>
+        <field ref="model_vehicle_inspection" name="model_id"/>
+        <field name="domain_force">[('user_id','=',user.id)]</field>
+        <field name="groups"
+               eval="[(4, ref('group_vehicle_inspection_supervisor'))]"/>
+    </record>
+    <!--Model vehicle.inspection manager rule-->
+    <record id="vehicle_inspection_manager_rule" model="ir.rule">
+        <field name="name">Vehicle Inspection Manager Rule</field>
+        <field ref="model_vehicle_inspection" name="model_id"/>
+        <field name="domain_force">[(1,'=',1)]</field>
+        <field name="groups"
+               eval="[(4, ref('group_vehicle_inspection_manager'))]"/>
+    </record>
+    <!--    multi company rule-->
+    <record id="inspection_request_company_rule" model="ir.rule">
+        <field name="name">Inspection Request Company Rule</field>
+        <field ref="model_inspection_request" name="model_id"/>
+        <field name="domain_force">[('company_id', '=', company_id)]</field>
+    </record>
+    <record id="vehicle_inspection_company_rule" model="ir.rule">
+        <field name="name">Vehicle Inspection Company Rule</field>
+        <field ref="model_vehicle_inspection" name="model_id"/>
+        <field name="domain_force">[('company_id', '=', company_id)]</field>
+    </record>
+</odoo>
