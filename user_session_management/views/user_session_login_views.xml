@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--Session login tree view    -->
+    <record id="user_session_login_view_tree" model="ir.ui.view">
+        <field name="name">use.session.login.view.tree</field>
+        <field name="model">user.session.login</field>
+        <field name="arch" type="xml">
+            <tree name="session_login_tree" create="0">
+                <field name="status" widget="state_selection" nolabel="1"
+                       colspan="1"/>
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="login_date"/>
+                <field name="logout_date"/>
+                <field name="session_duration"
+                       attrs="{'invisible': [('logout_date', '=', False)]}"/>
+                <field name="device"/>
+                <field name="os"/>
+                <field name="browser"/>
+                <field name="state"/>
+                <button name="action_button_force_logout" type="object"
+                        icon="fa-sign-out"
+                        attrs="{'invisible': [('state', '=', 'closed')]}"/>
+            </tree>
+        </field>
+    </record>
+    <!--Session login form view-->
+    <record id="user_session_login_view_form" model="ir.ui.view">
+        <field name="name">user.session.login.view.form</field>
+        <field name="model">user.session.login</field>
+        <field name="arch" type="xml">
+            <form name="session_login_form" create="0" edit="0">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <h3>
+                        <field name="status" widget="state_selection"
+                               style="margin-right:24px;"/>
+                        <field name="name"/>
+                    </h3>
+                    <group>
+                        <group name="gp_session_left">
+                            <field name="user_id"/>
+                            <field name="login_date"/>
+                            <field name="logout_date"/>
+                            <field name="session_duration"
+                                   attrs="{'invisible': [('logout_date', '=', False)]}"/>
+                        </group>
+                        <group name="gp_session_right">
+                            <field name="device"/>
+                            <field name="os"/>
+                            <field name="browser"/>
+                            <field name="ip_address"/>
+                            <field name="sid" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook name="session-activities">
+                        <page name="session-activities" string="Activities">
+                            <field name="activity_ids"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--Search view    -->
+    <record id="user_session_login_view_search" model="ir.ui.view">
+        <field name="name">user.session.login.view.search</field>
+        <field name="model">user.session.login</field>
+        <field name="arch" type="xml">
+            <search string="Search User Session">
+                <field name="name"/>
+                <field name="user_id"/>
+                <filter string="Active" name="active"
+                        domain="[('state','=','active')]"/>
+                <filter string="Closed" name="closed"
+                        domain="[('state','=','closed')]"/>
+                <separator/>
+                <filter string="Date" name="login_date"
+                        date="login_date"/>
+            </search>
+        </field>
+    </record>
+    <!--Action    -->
+    <record id="user_session_login_action" model="ir.actions.act_window">
+        <field name="name">Sessions</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">user.session.login</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--Menus    -->
+    <menuitem name="Sessions" id="user_session_login_menu"
+              web_icon="user_session_management,static/description/icon.png"/>
+    <menuitem id="user_session_login_menu_action"
+              parent="user_session_login_menu"
+              action="user_session_login_action"/>
+</odoo>
