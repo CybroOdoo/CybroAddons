@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <!-- Form and tree view for workers details-->
+    <record id="workers_details_action" model="ir.actions.act_window">
+        <field name="name">Workers</field>
+        <field name="res_model">workers.details</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="workers_details_view_tree" model="ir.ui.view">
+        <field name="name">workers.details.view.tree</field>
+        <field name="model">workers.details</field>
+        <field name="arch" type="xml">
+            <tree string="workers details">
+                <field name="name"/>
+                <field name="phone_number"/>
+                <field name="rate"/>
+            </tree>
+        </field>
+    </record>
+    <record id="workers_details_view_form" model="ir.ui.view">
+        <field name="name">workers.details.view.form</field>
+        <field name="model">workers.details</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <h1>
+                        <field name="name"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <group>
+                                <field name="phone_number" widget="phone"/>
+                                <field name="email" widget="email"/>
+                                <field name="skill_ids"
+                                       widget="many2many_tags"/>
+                                <field name="related_partner_id"
+                                       attrs="{'invisible': [('related_partner_id', '=', False)]}"
+                                       string="Related Partner"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group>
+                                <field name="image_worker" widget="image"/>
+                            </group>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="Wage Details">
+                            <group>
+                                <group>
+                                    <field name="wage"/>
+                                </group>
+                                <group>
+                                    <field name="rate"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"
+                           groups="base.group_user"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <record id="workers_details_view_search" model="ir.ui.view">
+        <field name="name">workers.details.view.search</field>
+        <field name="model">workers.details</field>
+        <field name="arch" type="xml">
+            <search string="search">
+                <field name="name"/>
+                <separator/>
+                <filter string="Available" name="available"
+                        domain="[('state', '=', 'available')]"/>
+                <filter string="Not Available" name="not_available"
+                        domain="[('state', '=', 'available')]"/>
+                <group>
+                    <filter string="State" name="state"
+                            context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <menuitem id="labour_supply_main_menu_root"
+              name="Manpower Supply Management"
+              groups="manpower_supply_management.manpower_supply_management_manager"
+              web_icon="manpower_supply_management,static/description/icon.png">
+        <menuitem id="workers_details_menu_root" name="Configuration"
+                  sequence="6">
+            <menuitem id="workers_details_menu"
+                      action="workers_details_action"/>
+        </menuitem>
+    </menuitem>
+</odoo>
