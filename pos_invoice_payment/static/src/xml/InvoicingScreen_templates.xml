@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+   <t t-name="InvoicingScreen" owl="1">
+       <div class="clientlist-screen screen">
+           <div class="screen-content">
+               <div class="top-content">
+                   <div class="button back" t-on-click="back">
+                       Back
+                   </div>
+               </div>
+               <section class="full-content">
+                   <div class="client-window">
+                       <section>
+                           <div>
+                               <div class="scrollable-y" style="overflow-y: scroll;height: 100vh;">
+                                   <table class="table table-striped invoice-list">
+                                       <thead>
+                                           <tr>
+                                               <th> Invoice </th>
+                                               <th> Customer Ref </th>
+                                               <th> Total Amount </th>
+                                               <th> Due Amount </th>
+                                               <th> State </th>
+                                               <th> Payment State </th>
+                                               <th> </th>
+                                           </tr>
+                                       </thead>
+                                       <tbody>
+                                           <t t-foreach="props.invoices"
+                                              t-as="invoice"
+                                              t-key="invoice.invoice_id">
+                                               <tr>
+                                                   <t t-if="invoice.payment_reference != false">
+                                                       <td><t t-esc="invoice.payment_reference"/></td>
+                                                   </t>
+                                                   <t t-else="">
+                                                       <div> </div>
+                                                   </t>
+                                                   <td><t t-esc="invoice.partner_id"/></td>
+                                                   <td><t t-esc="invoice.amount_total"/></td>
+                                                   <td><t t-esc="invoice.amount_residual"/></td>
+                                                   <td><t t-esc="invoice.state"/></td>
+                                                   <td><t t-esc="invoice.payment_state"/></td>
+                                                   <t t-set="data_id" t-value="invoice.invoice_id"/>
+                                                   <t t-if="invoice.state == 'draft'">
+                                                       <td>
+                                                           <div class="control-button"  t-on-click="() => this.Confirm(data_id)">
+                                                       <i class="fa fa-money" role="img" aria-label="Listview" title="Listview"/>
+                                                               Confirm
+                                                           </div>
+                                                       </td>
+                                                   </t>
+
+                                                   <t t-if="invoice.payment_state != 'paid' and invoice.state == 'posted'">
+                                                       <td>
+                                                           <div class="control-button"  t-on-click="() => this.registerPayment(data_id)">
+                                                       <i class="fa fa-money" role="img" aria-label="Listview" title="Listview"/>
+                                                               Register Payment
+                                                           </div>
+                                                       </td>
+                                                   </t>
+                                                   <t t-else="">
+                                                       <div> </div>
+                                                   </t>
+                                               </tr>
+                                           </t>
+                                       </tbody>
+                                   </table>
+                               </div>
+                           </div>
+                       </section>
+                   </div>
+               </section>
+           </div>
+       </div>
+   </t>
+</templates>
