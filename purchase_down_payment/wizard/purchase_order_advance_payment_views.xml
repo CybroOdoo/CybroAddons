@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--    Purchase Order Advance Payment Wizard-->
+    <record id="purchase_order_advance_payment_view_form" model="ir.ui.view">
+        <field name="name">purchase.order.advance.payment.view.form</field>
+        <field name="model">purchase.order.advance.payment</field>
+        <field name="arch" type="xml">
+            <form string="Purchase Order Advance Bill">
+                <p class="oe_grey">
+                    Bills will be created in draft so that you can review them
+                    before validation.
+                </p>
+                <group>
+                    <field name="advance_payment_method" class="oe_inline"
+                           widget="radio"/>
+                    <field name="has_down_payments" invisible="1"/>
+                    <label for="deduct_down_payments" string=""
+                           invisible="has_down_payments == False or advance_payment_method != 'delivered'"/>
+                    <div invisible="has_down_payments == False or advance_payment_method != 'delivered'"
+                         id="down_payment_details">
+                        <field name="deduct_down_payments" nolabel="1"/>
+                        <label for="deduct_down_payments"/>
+                    </div>
+                    <label for="amount"
+                           invisible="advance_payment_method not in ('fixed','percentage')"/>
+                    <div invisible="advance_payment_method not in ('fixed','percentage')"
+                         id="payment_method_details">
+                        <field name="currency_id" invisible="1"/>
+                        <field name="fixed_amount"
+                               required="advance_payment_method == 'fixed'"
+                               invisible="advance_payment_method != 'fixed'"
+                               class="oe_inline"/>
+                        <field name="amount"
+                               required="advance_payment_method == 'percentage'"
+                               invisible="advance_payment_method !=  'percentage'"
+                               class="oe_inline"/>
+                        <span
+                                invisible="advance_payment_method != 'percentage'"
+                                class="oe_inline">%
+                        </span>
+                    </div>
+                    <field name="product_id"
+                           context="{'default_invoice_policy': 'order'}"
+                           class="oe_inline"
+                           invisible="advance_payment_method not in ('fixed','percentage')"/>
+                </group>
+                <footer>
+                    <button name="action_create_advance_bill"
+                            string="Create and View Bill" type="object"
+                            context="{'open_invoices': True}"
+                            class="btn-primary" data-hotkey="q"/>
+                    <button name="action_create_advance_bill" id="create_advance_bill"
+                            string="Create Bill" type="object"
+                            data-hotkey="w"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!--Purchase Order Advance Payment Wizard action-->
+    <record id="purchase_order_advance_payment_action" model="ir.actions.act_window">
+        <field name="name">Create Bill</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">purchase.order.advance.payment</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="purchase.model_purchase_order"/>
+        <field name="binding_view_types">list</field>
+    </record>
+</odoo>
