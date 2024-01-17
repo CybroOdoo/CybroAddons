@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Extend the OrderReceipt template of the point_of_sale module -->
+    <t t-name="OrderReceiptCategory" t-inherit="point_of_sale.OrderReceipt"
+       t-inherit-mode="extension" owl="1">
+        <!-- Replace the div with the 'orderlines' class -->
+        <xpath expr="//div[hasclass('orderlines')]" position="replace">
+            <div class="orderlines">
+                <!-- Iterate over categories in orderlines and display categorized order lines -->
+                <t t-foreach="orderlines.category" t-as="category"
+                   t-key="category">
+                    <table>
+                        <t t-set="sum" t-value="0"/>
+                        <tr>
+                            <p>
+                                <!-- Display the category as a heading -->
+                                <h3 class="pos_underline">
+                                    <t t-esc="category"/>
+                                </h3>
+                            </p>
+                            <tr t-foreach="orderlines.orderlines"
+                                t-as="orderline" t-key="orderline.id">
+                                <t t-if="orderline.product.pos_categ_id[1] == category">
+                                    <td>
+                                        <span class="pos-receipt-left-align">
+                                             <!-- Display product name, discount (if applicable), and quantity -->
+                                            <t t-set="sum"
+                                               t-value="sum + orderline.get_display_price()"/>
+                                            <t t-esc="orderline.get_product().display_name"/>
+                                            <t t-if="orderline.get_discount() > 0">
+                                                <div class="pos-disc-font">
+                                                    With a <t t-esc="orderline.get_discount()"/>
+                                                    % discount
+                                                </div>
+                                            </t>
+                                            <span>-</span>
+                                            <t t-esc="orderline.get_quantity_str_with_unit()"/>
+                                        </span>
+                                        <span class="pos-receipt-right-align">
+                                            <t t-esc="env.pos.format_currency(orderline.get_display_price())"/>
+                                        </span>
+                                    </td>
+                                </t>
+                            </tr>
+                        </tr>
+                        <tr class="pos-receipt-amount">
+                            <td class="pos-receipt-right-align">
+                               <t t-esc="env.pos.format_currency(sum)"/>
+                            </td>
+                        </tr>
+                    </table>
+                </t>
+            </div>
+        </xpath>
+    </t>
+</templates>

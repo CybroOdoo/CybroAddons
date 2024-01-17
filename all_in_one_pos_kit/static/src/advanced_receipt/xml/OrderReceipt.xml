@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Extend the OrderReceipt template of the point_of_sale module to add
+    customer details, barcode and invoice number in pos receipt -->
+    <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('pos-receipt-contact')]" position="inside">
+            <t t-if="this.env.pos.res_config_settings[this.env.pos.res_config_settings.length -1].customer_details">
+                <div style="font-weight:bold;">Customer Details:
+                    </div>
+                <t t-if="this.env.pos.res_config_settings[this.env.pos.res_config_settings.length -1].customer_name and this.env.pos.selectedOrder.partner.name">
+                    <div style="font-weight:bold;">Name:
+                        <t t-esc="this.env.pos.selectedOrder.partner.name"/>
+                    </div>
+                </t>
+                <t t-if="this.env.pos.res_config_settings[this.env.pos.res_config_settings.length -1].customer_address and this.env.pos.selectedOrder.partner.address">
+                    <div style="font-weight:bold;">Address:
+                        <t t-esc="this.env.pos.selectedOrder.partner.address"/>
+                    </div>
+                </t>
+                <t t-if="this.env.pos.res_config_settings[this.env.pos.res_config_settings.length -1].customer_mobile and this.env.pos.selectedOrder.partner.mobile">
+                    <div style="font-weight:bold;">Mobile:
+                        <t t-esc="this.env.pos.selectedOrder.partner.mobile"/>
+                    </div>
+                </t>
+                <t t-if="this.env.pos.res_config_settings[this.env.pos.res_config_settings.length -1].customer_phone and this.env.pos.selectedOrder.partner.phone">
+                        <div style="font-weight:bold;">Phone:
+                        <t t-esc="this.env.pos.selectedOrder.partner.phone"/>
+                    </div>
+                </t>
+                <t t-if="this.env.pos.res_config_settings[this.env.pos.res_config_settings.length -1].customer_email and this.env.pos.selectedOrder.partner.email">
+                    <div style="font-weight:bold;">Email:
+                        <t t-esc="this.env.pos.selectedOrder.partner.email"/>
+                    </div>
+                </t>
+                <t t-if="this.env.pos.res_config_settings[this.env.pos.res_config_settings.length -1].customer_vat and this.env.pos.selectedOrder.partner.vat">
+                <div style="font-weight:bold;">Vat:
+                    <t t-esc="this.env.pos.selectedOrder.partner.vat"/>
+                </div>
+            </t>
+            </t>
+            <t t-if="this.env.pos.res_config_settings[this.env.pos.res_config_settings.length -1].invoice_number and this.env.pos.invoice">
+                <div style="font-weight:bold;">Invoice Number:
+                    <t t-esc="this.env.pos.invoice"/>
+                </div>
+            </t>
+            <t t-if="this.env.pos.res_config_settings[this.env.pos.res_config_settings.length -1].barcode">
+                <t t-if="this.env.pos.res_config_settings[this.env.pos.res_config_settings.length -1].barcode_type === 'qr_code' and this.env.pos.invoice">
+                    <div style="font-weight:bold;">
+                        <img t-attf-src="{{this.env.pos.qr_image}}"
+                             style="width:50%;"/>
+                    </div>
+                </t>
+                <t t-if="this.env.pos.res_config_settings[this.env.pos.res_config_settings.length -1].barcode_type === 'barcode' and this.env.pos.barcode">
+                <div style="font-weight:bold;">
+                    <img t-attf-src="{{this.env.pos.barcode_image}}"
+                         style="width:50%;"/>
+                </div>
+            </t>
+            </t>
+        </xpath>
+    </t>
+</templates>
