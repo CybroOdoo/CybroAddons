@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="receipt_template" xml:space="preserve">
+    <!--This is used for adding some more data to pos receipt based on the booked order-->
+    <t t-name="BookOrderReceipt" t-inherit="point_of_sale.OrderReceipt"
+         t-inherit-mode="extension" owl="1">
+         <xpath expr="//div[hasclass('before-footer')]" position="after">
+             <t t-set="order" t-value="this.env.services.pos.get_order()"/>
+             <t t-if="order.is_booked">
+                 <hr/>
+                 <div>
+                     Booking Ref:
+                     <span t-esc="order.booked_data.name"
+                           class="pos-receipt-right-align"/>
+                 </div>
+                 <div>
+                     Contact No.:
+                     <span t-esc="order.booked_data.phone"
+                           class="pos-receipt-right-align"/>
+                 </div>
+                 <div>
+                     Order Note:
+                     <span t-esc="order.booked_data.note"/>
+                 </div>
+                 <t t-if="order.booked_data.pickup">
+                     <div>
+                        Pickup Date:
+                        <span t-esc="order.booked_data.pickup"
+                              class="pos-receipt-right-align"/>
+                    </div>
+                 </t>
+                 <t t-if="order.booked_data.deliver">
+                     <div>
+                        Delivery Date:
+                        <span t-esc="order.booked_data.deliver"
+                              class="pos-receipt-right-align"/>
+                     </div>
+                     <div>
+                        Delivery address:
+                        <span t-esc="order.booked_data.address"/>
+                     </div>
+                 </t>
+             </t>
+       </xpath>
+   </t>
+</template>

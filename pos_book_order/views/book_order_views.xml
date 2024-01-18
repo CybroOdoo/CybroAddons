@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- This record for creating form view for book.order-->
+    <record id="book_order_view_form" model="ir.ui.view">
+        <field name="name">book.order.view.form</field>
+        <field name="model">book.order</field>
+        <field name="arch" type="xml">
+            <form string="Point of Sale Quotations" create="false">
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="date_order"/>
+                            <field name="date_quotation"/>
+                            <field name="pickup_date"/>
+                            <field name="pricelist_id"/>
+                        </group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="phone"/>
+                            <field name="delivery_address"/>
+                            <field name="deliver_date"/>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Products">
+                                <field name="book_line_ids" colspan="4"
+                                       nolabel="1">
+                                    <tree string="Order lines"
+                                          editable="bottom">
+                                        <field name="product_id"/>
+                                        <field name="qty"/>
+                                        <field name="price_unit"
+                                               widget="monetary"/>
+                                        <field name="discount"
+                                               widget="monetary"/>
+                                        <field name="tax_after_fiscal_position_ids"
+                                               widget="many2many_tags"/>
+                                        <field name="price_subtotal"
+                                               widget="monetary"/>
+                                        <field name="price_subtotal_incl"
+                                               widget="monetary"/>
+                                    </tree>
+                                </field>
+                                <group class="oe_subtotal_footer oe_right"
+                                       colspan="2" name="order_total">
+                                    <field name="amount_tax" widget="monetary"/>
+                                    <div class="oe_subtotal_footer_separator oe_inline">
+                                        <label for="amount_total"/>
+                                    </div>
+                                    <field name="amount_total" nolabel="1"
+                                           class="oe_subtotal_footer_separator"
+                                           widget="monetary"/>
+                                </group>
+                            </page>
+                            <page string="Notes">
+                                <field name="note"/>
+                            </page>
+                        </notebook>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- this record for creating tree view for book.order-->
+    <record id="book_order_view_tree" model="ir.ui.view">
+        <field name="name">book.order.view.tree</field>
+        <field name="model">book.order</field>
+        <field name="arch" type="xml">
+            <tree string="Point of Sale Quotations" create="false"
+                  decoration-danger="state == 'draft'"
+                  decoration-success="state == 'confirmed'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="pickup_date"/>
+                <field name="deliver_date"/>
+                <field name="amount_total"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    <!-- this record for creating menu action for book.order-->
+    <record id="book_order_action" model="ir.actions.act_window">
+        <field name="name">Booking Orders</field>
+        <field name="res_model">book.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p>
+                Use this menu to browse previous booking orders and to record
+                new booking orders.
+            </p>
+        </field>
+    </record>
+    <menuitem id="book_order_menu"
+              name="Booking Orders"
+              parent="point_of_sale.menu_point_of_sale"
+              action="book_order_action"
+              sequence="0"
+              groups="point_of_sale.group_pos_manager,point_of_sale.group_pos_user"/>
+</odoo>
