@@ -30,10 +30,10 @@
                     available the option for making the validate option in sales
                     visible/invisible based on the salesperson signature""",
     'category': 'Sales',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'depends': ['base', 'sale_management'],
     'data': [
         'views/sale_signature.xml',

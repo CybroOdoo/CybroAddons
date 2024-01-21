@@ -26,9 +26,9 @@
     'description': """
        Odoo e-commerce advanced search. Autocomplete search product with category and display name
     """,
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'category': 'eCommerce',
     'depends': ['base',
                 'website',

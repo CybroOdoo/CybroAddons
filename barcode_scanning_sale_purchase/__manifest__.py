@@ -25,9 +25,9 @@
     'category': 'Sales',
     'live_test_url': 'https://www.youtube.com/watch?v=6tJZAfPu__s&feature=youtu.be',
     'summary': 'This module will help you to use barcode scanner in sales and purchase.',
-    'author': 'Cybrosys Techno solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'depends': ['purchase', 'sale_management'],
     'data': [
         'views/sale_order_line.xml',

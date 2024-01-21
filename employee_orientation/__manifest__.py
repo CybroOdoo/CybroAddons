@@ -25,9 +25,9 @@
     'category': "Generic Modules/Human Resources",
     'summary': """Employee Orientation/Training Program""",
     'description':'Complete Employee Orientation/Training Program',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'depends': ['base', 'hr'],
     'data': [
         'views/orientation_checklist_line.xml',

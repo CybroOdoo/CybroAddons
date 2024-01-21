@@ -25,9 +25,9 @@
     'summary': """POS Dashboard""",
     'description': """POS Dashboard""",
     'category': 'Point of Sale',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
     'website': "https://www.openhrms.com",
     'depends': ['hr', 'point_of_sale'],
     'external_dependencies': {

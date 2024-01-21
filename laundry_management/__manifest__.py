@@ -26,9 +26,9 @@
     'summary': """Complete Laundry Service Management""",
     'description': 'This module is very useful to manage all process of laundry service',
     "category": "Industries",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'depends': ['base', 'mail', 'sale', 'account', 'uom'],
     'data': [
         'data/data.xml',

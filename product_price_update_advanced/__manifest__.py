@@ -22,9 +22,9 @@
     'version': '14.0.1.0.0',
     'summary': """User Can Easily Update Cost Price/Sale Price of Products""",
     'description': """This module updates price of any product on single click""",
-    'author': "Cybrosys Techno Solutions",
-    'company': 'Cybrosys Techno Solutions',
-    'website': "https://www.Cybrosys.com",
+    'author': "Frontware, Cybrosys Techno Solutions",
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'category': 'Tools',
     'depends': ['base', 'sale'],
     'data': [

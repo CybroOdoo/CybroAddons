@@ -26,10 +26,10 @@
     'summary': 'Theme Classic Store is an attractive eCommerce Website theme. '
                'The theme comes with many useful and stylish snippets',
     'version': '14.0.1.0.0',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'category': 'Theme/eCommerce',
     'depends': ['website_blog', 'website_sale_wishlist', 'website_sale_comparison'],
     'data': [

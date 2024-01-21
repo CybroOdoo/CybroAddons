@@ -46,10 +46,10 @@
                     Reconciliation Widget For Odoo14,
                     Payments Matching
                     """,
-    'author': 'Cybrosys Techno Solutions, Odoo SA',
-    'website': "https://www.cybrosys.com",
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
+    'author': 'Frontware, Cybrosys Techno Solutions, Odoo SA',
+    'website': "https://github.com/Frontware/CybroAddons",
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
     'depends': ['base', 'account', 'sale', 'account_check_printing', 'base_account_budget'],
     'data': [
         'security/ir.model.access.csv',

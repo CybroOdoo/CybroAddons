@@ -22,9 +22,9 @@
 {
     'name': 'POS Serial Number Validator',
     'version': '14.0.1.0.0',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'category': 'Point of Sale',
     'summary': """Validate Serial number of a product by checking availability in stock""",
     'description': """Validate Serial number of a product by checking availability in stock""",

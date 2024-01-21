@@ -26,9 +26,9 @@
     'summary': """This module will helps you to give dimensions of the product.""",
     'description': "Module helps you to manage the length, breadth and height of the product and calculates its volume accordingily.",
     'category': "Inventory",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'depends': ['base', 'stock'],
     'data': [
         'views/volume_view.xml'

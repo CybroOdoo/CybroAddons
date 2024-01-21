@@ -25,9 +25,9 @@
     'description': """This module is used for manage vehicle requests from employee.
                    This module also checking the vehicle availability at the requested time slot.""",
     'category': "Generic Modules/Human Resources",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'depends': ['base', 'hr', 'fleet'],
     'data': [
         'data/data.xml',

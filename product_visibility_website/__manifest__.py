@@ -27,9 +27,9 @@
     'version': '14.0.1.0.1',
     'description': """Website Product visibility for Users""",
     'author': 'Cybrosys Techno Solution',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'website': "https://github.com/Frontware/CybroAddons",
     'category': 'Website',
     'depends': ['contacts', 'website_sale'],
     'data': [

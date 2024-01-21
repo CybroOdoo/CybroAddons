@@ -23,7 +23,7 @@
     "summary": "Configurable multi color backend theme for Odoo 14",
     "version": "14.0.1.0.0",
     "category": "Themes/Backend",
-    "website": "https://www.cybrosys.com",
+    "website": "https://github.com/Frontware/CybroAddons",
     "description": """
         Configurable multi color backend theme for Odoo 14
     """,
@@ -31,9 +31,9 @@
         'static/description/banner.png',
         'static/description/theme_screenshot.png',
     ],
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
+    'author': 'Frontware, Cybrosys Techno Solutions',
+    'company': 'Frontware, Cybrosys Techno Solutions',
+    'maintainer': 'Frontware, Cybrosys Techno Solutions',
     "depends": [
         'website',
         'portal',

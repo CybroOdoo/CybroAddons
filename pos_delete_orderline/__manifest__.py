@@ -26,8 +26,8 @@
     'description': """
         Remove each lines from selected order by simply clicking X button or clear all order with a single click. 
     """,
-    'author': "Cybrosys Techno Solutions",
-    'website': "https://www.cybrosys.com",
+    'author': "Frontware, Cybrosys Techno Solutions",
+    'website': "https://github.com/Frontware/CybroAddons",
     'maintainer': "Cybrosys Techno Solutions",
     'category': 'Point of Sale',
     'version': '14.0.1.0.0',
