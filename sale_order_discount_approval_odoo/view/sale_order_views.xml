@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    This is used to add new fields to sale.order-->
+    <record id="view_order_form" model="ir.ui.view">
+        <field name="name">
+            sale.order.view.form.inherit.sale.order.discount.approval.odoo
+        </field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_confirm']"
+                   position="after">
+                <button name="action_waiting_approval"
+                        id="action_waiting_approval"
+                        data-hotkey="v" string="Approve" class="btn-primary"
+                        type="object"
+                        groups="sale_order_discount_approval_odoo.sale_order_discount_approval_odoo_group_manager"
+                        invisible="state not in ['waiting_for_approval']"/>
+            </xpath>
+            <xpath expr="//header/button[@name='action_confirm']"
+                   position="replace">
+                <button name="action_confirm" id="action_confirm"
+                        data-hotkey="v" string="Confirm" class="btn-primary"
+                        type="object" context="{'validate_analytic': True}"
+                        invisible="state not in ['sent']"/>
+            </xpath>
+            <xpath expr="//header/button[@name='action_cancel']"
+                   position="replace">
+                <button name="action_cancel" type="object" string="Cancel"
+                        groups="sale_order_discount_approval_odoo.sale_order_discount_approval_odoo_group_manager"
+                        invisible="state not in ['draft', 'sent','sale','waiting_for_approval'] or id == False"
+                        data-hotkey="z"/>
+            </xpath>
+            <xpath
+                    expr="//notebook/page[@name='other_information']/group/group[@name='sales_person']/field[@name='team_id']"
+                    position="after">
+                <field name="approval_user_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
