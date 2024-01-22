@@ -33,7 +33,8 @@
     'depends': ['base', 'hr'],
     'data': [
         'security/ir.model.access.csv',
-        'views/employee_stages_view.xml',
+        'wizard/employee_stage_views.xml',
+        'views/hr_employee_views.xml',
     ],
     'images': ['static/description/banner.png'],
     'license': 'AGPL-3',

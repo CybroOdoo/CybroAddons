@@ -20,9 +20,8 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###################################################################################
-
 from datetime import date
-from odoo import models, fields, api
+from odoo import models, fields, api ,_
 
 
 class EmployeeFormInherit(models.Model):
@@ -43,6 +42,7 @@ class EmployeeFormInherit(models.Model):
                                            'state': 'grounding'})
 
     def set_as_employee(self):
+        print('Setting')
         self.state = 'employment'
         stage_obj = self.stages_history.search([('employee_id', '=', self.id),
                                                 ('state', '=', 'test_period')])
@@ -66,7 +66,8 @@ class EmployeeFormInherit(models.Model):
         self.state = 'relieved'
         self.active = False
         stage_obj = self.stages_history.search([('employee_id', '=', self.id),
-                                                ('state', '=', 'notice_period')])
+                                                (
+                                                'state', '=', 'notice_period')])
         if stage_obj:
             stage_obj.sudo().write({'end_date': date.today()})
         self.stages_history.sudo().create({'end_date': date.today(),
@@ -76,7 +77,8 @@ class EmployeeFormInherit(models.Model):
     def start_test_period(self):
         self.state = 'test_period'
         self.stages_history.search([('employee_id', '=', self.id),
-                                    ('state', '=', 'grounding')]).sudo().write({'end_date': date.today()})
+                                    ('state', '=', 'grounding')]).sudo().write(
+            {'end_date': date.today()})
         self.stages_history.sudo().create({'start_date': date.today(),
                                            'employee_id': self.id,
                                            'state': 'test_period'})
@@ -91,7 +93,9 @@ class EmployeeFormInherit(models.Model):
             stage_obj.sudo().write({'end_date': date.today()})
         else:
             self.stages_history.search([('employee_id', '=', self.id),
-                                        ('state', '=', 'grounding')]).sudo().write({'end_date': date.today()})
+                                        ('state', '=',
+                                         'grounding')]).sudo().write(
+                {'end_date': date.today()})
         self.stages_history.sudo().create({'end_date': date.today(),
                                            'employee_id': self.id,
                                            'state': 'terminate'})
@@ -102,11 +106,33 @@ class EmployeeFormInherit(models.Model):
                               ('employment', 'Employment'),
                               ('notice_period', 'Notice Period'),
                               ('relieved', 'Resigned'),
-                              ('terminate', 'Terminated')], string='Status', default='joined',
+                              ('terminate', 'Terminated')], string='Status',
+                             default='joined',
                              track_visibility='always', copy=False,
-                             help="Employee Stages.\nSlap On: Joined\nGrounding: Training\nTest period : Probation")
-    stages_history = fields.One2many('hr.employee.status.history', 'employee_id', string='Stage History',
-                                     help='It shows the duration and history of each stages')
+                             help="Employee Stages.\nSlap On: "
+                                  "Joined\nGrounding: Training\nTest period : "
+                                  "Probation")
+    stages_history = fields.One2many('hr.employee.status.history',
+                                     'employee_id', string='Stage History',
+                                     help='It shows the duration and history '
+                                          'of each stages')
+
+    @api.onchange('state')
+    def onchange_state(self):
+        if self.state == 'grounding':
+            self.start_grounding()
+        if self.state == 'test_period':
+            self.start_test_period()
+        if self.state == 'notice_period':
+            self.start_notice_period()
+        if self.state == 'relieved':
+            self.relived()
+        if self.state == 'terminate':
+            self.terminate()
+        if self.state == 'employment':
+            if not self.user_id:
+                return {'warning': {'title': _('Warning'), 'message': _(
+                    'Please set a related user for this employee')}}
 
 
 class EmployeeStageHistory(models.Model):
@@ -116,12 +142,15 @@ class EmployeeStageHistory(models.Model):
     start_date = fields.Date(string='Start Date')
     end_date = fields.Date(string='End Date')
     duration = fields.Integer(compute='get_duration', string='Duration(days)')
+    description = fields.Char(string='Description', help='Description if add '
+                                                         'anything')
 
     def get_duration(self):
         self.duration = 0
         for each in self:
             if each.end_date and each.start_date:
-                duration = fields.Date.from_string(each.end_date) - fields.Date.from_string(each.start_date)
+                duration = fields.Date.from_string(
+                    each.end_date) - fields.Date.from_string(each.start_date)
                 each.duration = duration.days
 
     state = fields.Selection([('joined', 'Slap On'),
@@ -132,19 +161,6 @@ class EmployeeStageHistory(models.Model):
                               ('relieved', 'Resigned'),
                               ('terminate', 'Terminated')], string='Stage')
     employee_id = fields.Many2one('hr.employee', invisible=1)
-
-
-class WizardEmployee(models.TransientModel):
-    _name = 'wizard.employee.stage'
-
-    def set_as_employee(self):
-        context = self._context
-        employee_obj = self.env['hr.employee'].search([('id', '=', context.get('employee_id'))])
-        if self.related_user:
-            employee_obj.user_id = self.related_user
-        employee_obj.set_as_employee()
-
-    related_user = fields.Many2one('res.users', string="Related User")
 
 
 class HrEmployeePublic(models.Model):
