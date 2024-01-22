@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <template>
     <!--Template for Kitchen order stages  -->
-    <t t-name="KitchenCustomDashBoard">
+    <t t-name="KitchenCustomDashBoard" owl="1">
         <header>
-            <div class="kitchen">
+            <div id="kitchen_screen" class="kitchen">
                 <div class="body_wrapper">
                     <div class="container">
                         <div class="top_bar">
@@ -20,9 +20,20 @@
                                                         fill="#545454"/>
                                             </svg>
                                         </div>
-                                        <span class="draft draft_stage">
+                                        <span class="draft draft_stage"
+                                              t-on-click="(e) => this.draft_stage(e)">
                                             Cooking
                                         </span>
+                                        <t t-if="state.draft_count > 0">
+                                            <span class="ms-2 px-2 fw-bold rounded kitchen_order_count">
+                                                <t t-esc="state.draft_count"/>
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="ms-2 px-2 fw-bold rounded kitchen_order_count">
+                                                0
+                                            </span>
+                                        </t>
                                     </a>
                                 </li>
                                 <li>
@@ -67,9 +78,20 @@
                                                 </defs>
                                             </svg>
                                         </div>
-                                        <span class="cooking waiting_stage">
+                                        <span class="cooking waiting_stage"
+                                              t-on-click="(e) => this.waiting_stage(e)">
                                             Ready
                                         </span>
+                                        <t t-if="state.waiting_count > 0">
+                                            <span class="ms-2 px-2 fw-bold rounded kitchen_order_count">
+                                                <t t-esc="state.waiting_count"/>
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="ms-2 px-2 fw-bold rounded kitchen_order_count">
+                                                0
+                                            </span>
+                                        </t>
                                     </a>
                                 </li>
                                 <li>
@@ -97,33 +119,48 @@
                                                 </defs>
                                             </svg>
                                         </div>
-                                        <span class="completed ready_stage">
+                                        <span class="completed ready_stage"
+                                              t-on-click="(e) => this.ready_stage(e)">
                                             Completed
                                         </span>
+                                        <t t-if="state.ready_count > 0">
+                                            <span class="ms-2 px-2 fw-bold rounded kitchen_order_count">
+                                                <t t-esc="state.ready_count"/>
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="ms-2 px-2 fw-bold rounded kitchen_order_count">
+                                                0
+                                            </span>
+                                        </t>
                                     </a>
                                 </li>
                             </ul>
                         </div>
                     </div>
-                    <div class="container o_pj_dashboard"/>
+                    <div class="container o_pj_dashboard">
+                        <t t-call="KitchenOrder"/>
+                    </div>
                 </div>
             </div>
         </header>
     </t>
     <!--Template for Kitchen Orders in the kitchen screen -->
-    <t t-name="KitchenOrder">
+    <t t-name="KitchenOrder" owl="1">
         <section class="screen_info custom_padding_top">
             <div class="wrapper">
                 <div class="container-fluid">
                     <div class="row">
-                        <t t-foreach="widget.total_room" t-as="order">
-                            <t t-if="widget.shop_id==order.config_id[0]">
-                                <t t-if="widget.stages=='ready'">
+                        <t t-foreach="state.order_details" t-as="order"
+                           t-key="order.id">
+                            <t t-if="state.shop_id==order.config_id[0]">
+                                <t t-if="state.stages=='ready'">
                                     <t t-if="order.order_status=='ready'">
                                         <div class="col-lg-4 col-md-6 col-12">
                                             <div class="card" style="">
                                                 <div class="card-header bg_green">
-                                                    <div class="left">
+                                                    <div class="left"
+                                                         style="padding-bottom: 8px">
                                                         <div class="icon">
                                                             <svg viewBox="0 0 12 12"
                                                                  fill="none"
@@ -146,10 +183,31 @@
                                                             <h4 class="c_white">
                                                                 Completed
                                                             </h4>
-                                                            <a class="btn btn-transparent mt c_white">
-                                                                <t t-esc="order.name"/>
-                                                            </a>
-                                                            <t t-esc="order.order_time"/>
+                                                            <div style="padding: 3px 7px;"
+                                                                 class="container-fluid">
+                                                                <ul style="display:contents"
+                                                                    class="c_white">
+                                                                    <li>
+                                                                        <b>
+                                                                            <span style="font-size: 13px;">
+                                                                                <t t-esc="order.name"/>
+                                                                            </span>
+                                                                        </b>
+                                                                    </li>
+                                                                    <li>
+                                                                        <b>
+                                                                            <span style="font-size: 12px;">
+                                                                                Time
+                                                                            </span>
+                                                                        </b>
+                                                                        <span style="font-size: 12px;">
+                                                                            <t t-esc="order.order_time"/>
+                                                                        </span>
+                                                                    </li>
+
+
+                                                                </ul>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div class="right">
@@ -162,9 +220,11 @@
                                                 </div>
                                                 <t t-if="order.order_status=='ready'">
                                                     <t t-foreach="order.lines"
-                                                       t-as="lines">
-                                                        <t t-foreach="widget.lines"
-                                                           t-as="line">
+                                                       t-as="lines"
+                                                       t-key="lines">
+                                                        <t t-foreach="state.lines"
+                                                           t-as="line"
+                                                           t-key="line.id">
                                                             <t t-if="lines==line.id">
                                                                 <ul class="list-group list-group-flush">
 
@@ -177,11 +237,11 @@
                                                                         <t t-esc="line.full_product_name"/>
                                                                         <br/>
                                                                         <t t-if="line.note">
-                                                                            <i class="fa fa-tag"
+                                                                            <i class="fa fa-tag fa-lg"
                                                                                role="img"
                                                                                aria-label="Note"
                                                                                title="Note"/>
-                                                                            <t t-esc="line.note"/>
+                                                                            <span style="font-size:14px"><t t-esc="line.note"/></span>
                                                                         </t>
                                                                     </button>
                                                                 </ul>
@@ -190,6 +250,7 @@
                                                                 <div class="col-12 py-3">
                                                                     <button type="button"
                                                                             class="accept_order_line btn btn-primary"
+                                                                            t-on-click="(e) => this.accept_order_line(e)"
                                                                             t-attf-id="lines_id_{{line.id}}"
                                                                             t-att-value="line.id">
                                                                         Ready
@@ -200,17 +261,17 @@
                                                         </t>
                                                     </t>
                                                 </t>
-
                                             </div>
                                         </div>
                                     </t>
                                 </t>
-                                <t t-elif="widget.stages=='waiting'">
+                                <t t-elif="state.stages=='waiting'">
                                     <t t-if="order.order_status=='waiting'">
                                         <div class="col-lg-4 col-md-6 col-12">
                                             <div class="card" style="">
                                                 <div class="card-header bg_blue">
-                                                    <div class="left">
+                                                    <div class="left"
+                                                         style="padding-bottom: 8px">
                                                         <div class="icon">
                                                             <svg viewBox="0 0 15 15"
                                                                  fill="none"
@@ -247,10 +308,30 @@
                                                             <h4 class="c_blue">
                                                                 Ready
                                                             </h4>
-                                                            <a class="btn btn-transparent mt c_blue">
-                                                                <t t-esc="order.name"/>
-                                                            </a>
-                                                            <t t-esc="order.order_time"/>
+                                                            <div style="padding: 3px 7px;"
+                                                                 class="container-fluid">
+                                                                <ul style="display:contents"
+                                                                    class="c_blue">
+                                                                    <li>
+                                                                        <b>
+                                                                            <span style="font-size: 13px;">
+                                                                                <t t-esc="order.name"/>
+                                                                            </span>
+                                                                        </b>
+                                                                    </li>
+                                                                    <li>
+                                                                        <b>
+                                                                            <span style="font-size: 12px;">
+                                                                                Time
+                                                                            </span>
+                                                                        </b>
+                                                                        <span style="font-size: 12px;">
+                                                                            <t t-esc="order.order_time"/>
+                                                                        </span>
+                                                                    </li>
+
+                                                                </ul>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div class="right">
@@ -265,23 +346,30 @@
                                                     <button class="btn accept_order btn-primary"
                                                             t-attf-id="order_id_{{order.id}}"
                                                             t-att-value="order.id"
-                                                            type="button">Accept
+                                                            t-on-click="(e) => this.accept_order(e)"
+                                                            type="button">
+                                                        Accept
                                                     </button>
                                                     <button class="btn cancel_order btn-primary"
+                                                            t-on-click="(e) => this.cancel_order(e)"
                                                             t-attf-id="cancel_order_id_{{order.id}}"
                                                             t-att-value="order.id"
-                                                            type="button">Cancel
+                                                            type="button">
+                                                        Cancel
                                                     </button>
                                                 </t>
                                                 <t t-if="order.order_status=='waiting'">
                                                     <t t-foreach="order.lines"
-                                                       t-as="lines">
-                                                        <t t-foreach="widget.lines"
-                                                           t-as="line">
+                                                       t-as="lines"
+                                                       t-key="lines">
+                                                        <t t-foreach="state.lines"
+                                                           t-as="line"
+                                                           t-key="line.id">
                                                             <t t-if="lines==line.id">
                                                                 <ul class="list-group list-group-flush">
                                                                     <t t-if="order.order_status=='waiting' and line.order_status!='ready'">
                                                                         <button class="list-group-item accept_order_line "
+                                                                                t-on-click="(e) => this.accept_order_line(e)"
                                                                                 t-attf-id="lines_id_{{line.id}}"
                                                                                 t-att-value="line.id">
 
@@ -292,16 +380,17 @@
                                                                             <t t-esc="line.full_product_name"/>
                                                                             <br/>
                                                                             <t t-if="line.note">
-                                                                                <i class="fa fa-tag"
+                                                                                <i class="fa fa-tag fa-lg"
                                                                                    role="img"
                                                                                    aria-label="Note"
                                                                                    title="Note"/>
-                                                                                <t t-esc="line.note"/>
+                                                                                <span style="font-size:14px"><t t-esc="line.note"/></span>
                                                                             </t>
                                                                         </button>
                                                                     </t>
                                                                     <t t-elif="order.order_status=='waiting' and line.order_status=='ready'">
                                                                         <button class="list-group-item accept_order_line "
+                                                                                t-on-click="(e) => this.accept_order_line(e)"
                                                                                 style="text-decoration: line-through !important;color: #bfbfbf !important;"
                                                                                 t-attf-id="lines_id_{{line.id}}"
                                                                                 t-att-value="line.id">
@@ -313,11 +402,11 @@
                                                                             <t t-esc="line.full_product_name"/>
                                                                             <br/>
                                                                             <t t-if="line.note">
-                                                                                <i class="fa fa-tag"
+                                                                                <i class="fa fa-tag fa-lg"
                                                                                    role="img"
                                                                                    aria-label="Note"
                                                                                    title="Note"/>
-                                                                                <t t-esc="line.note"/>
+                                                                                <span style="font-size:14px"><t t-esc="line.note"/></span>
                                                                             </t>
 
                                                                         </button>
@@ -331,22 +420,23 @@
                                                 <div class="card-bottom">
                                                     <button class="btn done_order btn-primary"
                                                             t-attf-id="done_order_id_{{order.id}}"
+                                                            t-on-click="(e) => this.done_order(e)"
                                                             t-att-value="order.id"
                                                             type="button">Done
                                                     </button>
-
                                                 </div>
                                             </div>
                                         </div>
                                     </t>
                                 </t>
-                                <t t-elif="widget.stages=='draft'">
+                                <t t-elif="state.stages=='draft'">
                                     <t t-if="order.order_status=='draft'">
                                         <div id="s1"
                                              class="col-lg-4 col-md-6 col-12">
                                             <div class="card">
                                                 <div class="card-header bg_grey">
-                                                    <div class="left">
+                                                    <div class="left"
+                                                         style="padding-bottom: 8px">
                                                         <div class="icon">
                                                             <svg
                                                                     viewBox="0 0 10 12"
@@ -361,10 +451,28 @@
                                                             <h4>
                                                                 Cooking
                                                             </h4>
-                                                            <a class="btn btn-transparent mt">
-                                                                <t t-esc="order.name"/>
-                                                            </a>
-                                                            <t t-esc="order.order_time"/>
+                                                            <div style="padding: 3px 7px;"
+                                                                 class="container-fluid">
+                                                                <ul style="display:contents">
+                                                                    <li>
+                                                                        <b>
+                                                                            <span style="font-size: 13px;">
+                                                                                <t t-esc="order.name"/>
+                                                                            </span>
+                                                                        </b>
+                                                                    </li>
+                                                                    <li>
+                                                                        <b>
+                                                                            <span style="font-size: 12px;">
+                                                                                Time
+                                                                            </span>
+                                                                        </b>
+                                                                        <span style="font-size: 12px;">
+                                                                            <t t-esc="order.order_time"/>
+                                                                        </span>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div class="right">
@@ -374,13 +482,14 @@
                                                         <img src="pos_kitchen_screen_odoo/static/src/assets/icons/Vector5.svg"
                                                              alt=""/>
                                                     </div>
-
                                                 </div>
                                                 <ul class="list-group list-group-flush">
                                                     <t t-foreach="order.lines"
-                                                       t-as="lines">
-                                                        <t t-foreach="widget.lines"
-                                                           t-as="line">
+                                                       t-as="lines"
+                                                       t-key="lines">
+                                                        <t t-foreach="state.lines"
+                                                           t-as="line"
+                                                           t-key="line.id">
                                                             <t t-if="lines==line.id">
                                                                 <button class="list-group-item">
                                                                     <span>
@@ -391,11 +500,11 @@
                                                                     <t t-esc="line.full_product_name"/>
                                                                     <br/>
                                                                     <t t-if="line.note">
-                                                                        <i class="fa fa-tag"
+                                                                        <i class="fa fa-tag fa-lg"
                                                                            role="img"
                                                                            aria-label="Note"
                                                                            title="Note"/>
-                                                                        <t t-esc="line.note"/>
+                                                                        <span style="font-size:14px"><t t-esc="line.note"/></span>
                                                                     </t>
 
                                                                 </button>
@@ -403,17 +512,17 @@
                                                         </t>
                                                     </t>
                                                 </ul>
-
-
                                                 <t t-if="order.order_status=='draft'">
                                                     <div class="accept_cancel">
                                                         <button class="btn accept_order btn-primary"
                                                                 t-attf-id="order_id_{{order.id}}"
                                                                 t-att-value="order.id"
+                                                                t-on-click="(e) => this.accept_order(e)"
                                                                 type="button">
                                                             Accept
                                                         </button>
                                                         <button class="btn cancel_order btn-secondary"
+                                                                t-on-click="(e) => this.cancel_order(e)"
                                                                 t-attf-id="cancel_order_id_{{order.id}}"
                                                                 t-att-value="order.id"
                                                                 type="button">
@@ -431,7 +540,8 @@
                                              class="col-lg-4 col-md-6 col-12">
                                             <div class="card">
                                                 <div class="card-header bg_grey">
-                                                    <div class="left">
+                                                    <div class="left"
+                                                         style="padding-bottom: 8px">
                                                         <div class="icon">
                                                             <svg
                                                                     viewBox="0 0 10 12"
@@ -449,7 +559,16 @@
                                                             <a class="btn btn-transparent mt">
                                                                 <t t-esc="order.name"/>
                                                             </a>
-                                                            <t t-esc="order.order_time"/>
+                                                            <a class="btn btn-transparent mt "
+                                                               style="margin-top: 20px;margin-left: -64px;">
+                                                                <span style="font-size: 12px;">
+                                                                    Time
+                                                                </span>
+                                                                <span style="font-size: 12px;margin-left: 5px;">
+                                                                    <t t-esc="order.order_time"/>
+                                                                </span>
+                                                            </a>
+
                                                         </div>
                                                     </div>
                                                     <div class="right">
@@ -459,13 +578,14 @@
                                                         <img src="pos_kitchen_screen_odoo/static/src/assets/icons/Vector5.svg"
                                                              alt=""/>
                                                     </div>
-
                                                 </div>
                                                 <ul class="list-group list-group-flush">
                                                     <t t-foreach="order.lines"
-                                                       t-as="lines">
-                                                        <t t-foreach="widget.lines"
-                                                           t-as="line">
+                                                       t-as="lines"
+                                                       t-key="lines">
+                                                        <t t-foreach="state.lines"
+                                                           t-as="line"
+                                                           t-key="line.id">
                                                             <t t-if="lines==line.id">
                                                                 <button class="list-group-item">
                                                                     <span>
@@ -476,28 +596,28 @@
                                                                     <t t-esc="line.full_product_name"/>
                                                                     <br/>
                                                                     <t t-if="line.note">
-                                                                        <i class="fa fa-tag"
+                                                                        <i class="fa fa-tag fa-lg"
                                                                            role="img"
                                                                            aria-label="Note"
                                                                            title="Note"/>
-                                                                        <t t-esc="line.note"/>
+                                                                        <span style="font-size:14px"><t t-esc="line.note"/></span>
                                                                     </t>
                                                                 </button>
                                                             </t>
                                                         </t>
                                                     </t>
                                                 </ul>
-
-
                                                 <t t-if="order.order_status=='draft'">
                                                     <div class="accept_cancel">
                                                         <button class="btn accept_order btn-primary"
                                                                 t-attf-id="order_id_{{order.id}}"
                                                                 t-att-value="order.id"
+                                                                t-on-click="(e) => this.accept_order(e)"
                                                                 type="button">
                                                             Accept
                                                         </button>
                                                         <button class="btn cancel_order btn-secondary"
+                                                                t-on-click="(e) => this.cancel_order(e)"
                                                                 t-attf-id="cancel_order_id_{{order.id}}"
                                                                 t-att-value="order.id"
                                                                 type="button">

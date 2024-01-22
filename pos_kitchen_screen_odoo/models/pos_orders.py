@@ -42,6 +42,13 @@ class PosOrder(models.Model):
 
     def write(self, vals):
         """Super the write function for adding order status in vals"""
+        message = {
+            'res_model': self._name,
+            'message': 'pos_order_created'
+        }
+        self.env["bus.bus"]._sendone('pos_order_created',
+                                     "notification",
+                                     message)
         for order in self:
             if order.order_status == "waiting" and vals.get(
                     "order_status") != "ready":
@@ -54,6 +61,14 @@ class PosOrder(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         """Override create function for the validation of the order"""
+        """Override create function for the validation of the order"""
+        message = {
+            'res_model': self._name,
+            'message': 'pos_order_created'
+        }
+        self.env["bus.bus"]._sendone('pos_order_created',
+                                     "notification",
+                                     message)
         for vals in vals_list:
             pos_orders = self.search(
                 [("pos_reference", "=", vals["pos_reference"])])
@@ -78,12 +93,18 @@ class PosOrder(models.Model):
     def get_details(self, shop_id, order=None):
         """For getting the kitchen orders for the cook"""
         dic = order
+
         if order:
-            orders = self.search([("pos_reference", "=", order)])
+            orders = self.search(
+                [("pos_reference", "=", order[0]['pos_reference'])])
             if not orders:
                 self.create(dic)
+            else:
+                orders.lines = False
+                orders.lines = dic[0]['lines']
         kitchen_screen = self.env["kitchen.screen"].sudo().search(
             [("pos_config_id", "=", shop_id)])
+
         pos_orders = self.env["pos.order.line"].search(
             ["&", ("is_cooking", "=", True),
              ("product_id.pos_categ_id", "in",
@@ -96,7 +117,6 @@ class PosOrder(models.Model):
               [rec.id for rec in kitchen_screen.pos_categ_ids])])
         values = {"orders": pos.read(), "order_lines": pos_lines.read()}
         return values
-
     def action_pos_order_paid(self):
         """Supering the action_pos_order_paid function for setting its kitchen
         order and setting the order reference"""
@@ -119,36 +139,35 @@ class PosOrder(models.Model):
         if self.order_status == "ready":
             self.is_cooking = False
 
-    def order_progress_draft(self, id):
+    def order_progress_draft(self):
         """Calling function from js to change the order status"""
-        order = self.browse(int(id))
-        order.order_status = "waiting"
-        for line in order.lines:
+        self.order_status = "waiting"
+        for line in self.lines:
             if line.order_status != "ready":
                 line.order_status = "waiting"
 
-    def order_progress_cancel(self, id):
+    def order_progress_cancel(self):
         """Calling function from js to change the order status"""
-        order = self.browse(int(id))
-        order.order_status = "cancel"
-        for line in order.lines:
+        # order = self.browse(int(id))
+        self.order_status = "cancel"
+        for line in self.lines:
             if line.order_status != "ready":
                 line.order_status = "cancel"
 
-    def order_progress_change(self, id):
+    def order_progress_change(self):
         """Calling function from js to change the order status"""
-        order = self.browse(int(id))
         kitchen_screen = self.env["kitchen.screen"].search(
-            [("pos_config_id", "=", order.config_id.id)])
+            [("pos_config_id", "=", self.config_id.id)])
         stage = []
-        for line in order.lines:
-            if line.product_id.pos_categ_id.id in \
-                    [rec.id for rec in kitchen_screen.pos_categ_ids]:
-                stage.append(line.order_status)
+        for line in self.lines:
+            for categ in line.product_id.pos_categ_id:
+                if categ.id in [rec.id for rec in
+                                kitchen_screen.pos_categ_ids]:
+                    stage.append(line.order_status)
         if "waiting" in stage or "draft" in stage:
-            order.order_status = "ready"
+            self.order_status = "ready"
         else:
-            order.order_status = "ready"
+            self.order_status = "ready"
 
     def check_order(self, order_name):
         """Calling function from js to know status of the order"""
@@ -157,6 +176,8 @@ class PosOrder(models.Model):
             [('pos_config_id', '=', pos_order.config_id.id)])
         if kitchen_order:
             if pos_order.order_status != 'ready':
+                if pos_order.order_status == 'cancel':
+                    return False
                 return True
             else:
                 return False
@@ -193,7 +214,9 @@ class PosOrderLine(models.Model):
             })
         return res
 
-    def order_progress_change(self, id):
+    def order_progress_change(self):
         """Calling function from js to change the order_line status"""
-        order_line = self.browse(int(id))
-        order_line.order_status = 'ready'
+        if self.order_status == 'ready':
+            self.order_status = 'waiting'
+        else:
+            self.order_status = 'ready'
