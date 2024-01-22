@@ -30,12 +30,16 @@ class AccountUpdateLockDate(models.TransientModel):
     company_id = fields.Many2one(comodel_name='res.company', string="Company",
                                  required=True)
     period_lock_date = fields.Date(string="Lock Date for Non-Advisers",
-                                   help="Only users with the 'Adviser' role can edit accounts prior to "
-                                        "and inclusive of this date. Use it for period locking inside an "
+                                   help="Only users with the 'Adviser' role "
+                                        "can edit accounts prior to "
+                                        "and inclusive of this date. Use it for"
+                                        " period locking inside an "
                                         "open fiscal year, for example.")
     fiscalyear_lock_date = fields.Date(string="Lock Date",
-                                       help="No users, including Advisers, can edit accounts prior to and "
-                                            "inclusive of this date. Use it for fiscal year locking for "
+                                       help="No users, including Advisers, can "
+                                            "edit accounts prior to and "
+                                            "inclusive of this date. Use it for "
+                                            "fiscal year locking for "
                                             "example.")
 
     @api.model

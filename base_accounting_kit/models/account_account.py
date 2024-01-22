@@ -30,11 +30,14 @@ class CashFlow(models.Model):
 
     def get_cash_flow_ids(self):
         """Returns a list of cashflows for the account"""
-        cash_flow_id = self.env.ref('base_accounting_kit.account_financial_report_cash_flow0')
+        cash_flow_id = self.env.ref(
+            'base_accounting_kit.account_financial_report_cash_flow0')
         if cash_flow_id:
             return [('parent_id.id', '=', cash_flow_id.id)]
 
-    cash_flow_type = fields.Many2one('account.financial.report', string="Cash Flow type", domain=get_cash_flow_ids)
+    cash_flow_type = fields.Many2one('account.financial.report',
+                                     string="Cash Flow type",
+                                     domain=get_cash_flow_ids)
 
     @api.onchange('cash_flow_type')
     def onchange_cash_flow_type(self):
@@ -63,7 +66,8 @@ class AccountCommonReport(models.Model):
         comodel_name='account.journal',
         string='Journals',
         required=True,
-        default=lambda self: self.env['account.journal'].search([('company_id', '=', self.company_id.id)]),
+        default=lambda self: self.env['account.journal'].search(
+            [('company_id', '=', self.company_id.id)]),
         domain="[('company_id', '=', company_id)]")
     date_from = fields.Date(string='Start Date')
     date_to = fields.Date(string='End Date')
@@ -84,8 +88,10 @@ class AccountCommonReport(models.Model):
     def _build_contexts(self, data):
         """Builds the context information for the given data"""
         result = {}
-        result['journal_ids'] = 'journal_ids' in data['form'] and data['form']['journal_ids'] or False
-        result['state'] = 'target_move' in data['form'] and data['form']['target_move'] or ''
+        result['journal_ids'] = 'journal_ids' in data['form'] and data['form'][
+            'journal_ids'] or False
+        result['state'] = 'target_move' in data['form'] and data['form'][
+            'target_move'] or ''
         result['date_from'] = data['form']['date_from'] or False
         result['date_to'] = data['form']['date_to'] or False
         result['strict_range'] = True if result['date_from'] else False
@@ -103,9 +109,12 @@ class AccountCommonReport(models.Model):
         data = {}
         data['ids'] = self.env.context.get('active_ids', [])
         data['model'] = self.env.context.get('active_model', 'ir.ui.menu')
-        data['form'] = self.read(['date_from', 'date_to', 'journal_ids', 'target_move', 'company_id'])[0]
+        data['form'] = self.read(
+            ['date_from', 'date_to', 'journal_ids', 'target_move',
+             'company_id'])[0]
         used_context = self._build_contexts(data)
-        data['form']['used_context'] = dict(used_context, lang=get_lang(self.env).code)
+        data['form']['used_context'] = dict(used_context,
+                                            lang=get_lang(self.env).code)
         return self.with_context(discard_logo_check=True)._print_report(data)
 
 
@@ -152,16 +161,21 @@ class AccountCommonJournalReport(models.TransientModel):
         data = {}
         data['ids'] = self.env.context.get('active_ids', [])
         data['model'] = self.env.context.get('active_model', 'ir.ui.menu')
-        data['form'] = self.read(['date_from', 'date_to', 'journal_ids', 'target_move', 'company_id'])[0]
+        data['form'] = self.read(
+            ['date_from', 'date_to', 'journal_ids', 'target_move',
+             'company_id'])[0]
         used_context = self._build_contexts(data)
-        data['form']['used_context'] = dict(used_context, lang=get_lang(self.env).code)
+        data['form']['used_context'] = dict(used_context,
+                                            lang=get_lang(self.env).code)
         return self.with_context(discard_logo_check=True)._print_report(data)
 
     def _build_contexts(self, data):
         """Builds the context information for the given data"""
         result = {}
-        result['journal_ids'] = 'journal_ids' in data['form'] and data['form']['journal_ids'] or False
-        result['state'] = 'target_move' in data['form'] and data['form']['target_move'] or ''
+        result['journal_ids'] = 'journal_ids' in data['form'] and data['form'][
+            'journal_ids'] or False
+        result['state'] = 'target_move' in data['form'] and data['form'][
+            'target_move'] or ''
         result['date_from'] = data['form']['date_from'] or False
         result['date_to'] = data['form']['date_to'] or False
         result['strict_range'] = True if result['date_from'] else False

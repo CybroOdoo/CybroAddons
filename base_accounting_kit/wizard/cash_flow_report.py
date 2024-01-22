@@ -37,18 +37,23 @@ class AccountingReport(models.TransientModel):
                                           relation="account_cash_flow_report_section_rel",
                                           column1="main_report_id",
                                           column2="sub_report_id")
-    name = fields.Char(string="Cash Flow Report", default="Cash Flow Report", required=True, translate=True)
+    name = fields.Char(string="Cash Flow Report", default="Cash Flow Report",
+                       required=True, translate=True)
     date_from = fields.Date(string='Start Date')
     date_to = fields.Date(string='End Date')
-    company_id = fields.Many2one('res.company', string='Company', required=True, readonly=True, default=lambda self: self.env.company)
+    company_id = fields.Many2one('res.company', string='Company', required=True,
+                                 readonly=True,
+                                 default=lambda self: self.env.company)
     target_move = fields.Selection([('posted', 'All Posted Entries'),
                                     ('all', 'All Entries'),
-                                    ], string='Target Moves', required=True, default='posted')
+                                    ], string='Target Moves', required=True,
+                                   default='posted')
     journal_ids = fields.Many2many(
         comodel_name='account.journal',
         string='Journals',
         required=True,
-        default=lambda self: self.env['account.journal'].search([('company_id', '=', self.company_id.id)]),
+        default=lambda self: self.env['account.journal'].search(
+            [('company_id', '=', self.company_id.id)]),
         domain="[('company_id', '=', company_id)]",
     )
 
@@ -68,7 +73,8 @@ class AccountingReport(models.TransientModel):
                                         required=True,
                                         default=_get_account_report)
     label_filter = fields.Char(string='Column Label',
-                               help="This label will be displayed on report to show the balance"
+                               help="This label will be displayed on report "
+                                    "to show the balance"
                                     " computed for the given comparison filter.")
     filter_cmp = fields.Selection(
         [('filter_no', 'No Filters'), ('filter_date', 'Date')],
@@ -76,7 +82,11 @@ class AccountingReport(models.TransientModel):
     date_from_cmp = fields.Date(string='Date Start')
     date_to_cmp = fields.Date(string='Date End')
     debit_credit = fields.Boolean(string='Display Debit/Credit Columns',
-                                  help="This option allows you to get more details about the way your balances are computed. Because it is space consuming, we do not allow to use it while doing a comparison.")
+                                  help="This option allows you to get more "
+                                       "details about the way your balances are"
+                                       " computed. Because it is space "
+                                       "consuming, we do not allow to use it "
+                                       "while doing a comparison.")
 
     def _build_comparison_context(self, data):
         result = {}
@@ -92,8 +102,10 @@ class AccountingReport(models.TransientModel):
 
     def _build_contexts(self, data):
         result = {}
-        result['journal_ids'] = 'journal_ids' in data['form'] and data['form']['journal_ids'] or False
-        result['state'] = 'target_move' in data['form'] and data['form']['target_move'] or ''
+        result['journal_ids'] = 'journal_ids' in data['form'] and data['form'][
+            'journal_ids'] or False
+        result['state'] = 'target_move' in data['form'] and data['form'][
+            'target_move'] or ''
         result['date_from'] = data['form']['date_from'] or False
         result['date_to'] = data['form']['date_to'] or False
         result['strict_range'] = True if result['date_from'] else False
@@ -123,6 +135,6 @@ class AccountingReport(models.TransientModel):
              'account_report_id', 'enable_filter', 'label_filter',
              'target_move'])[0])
         return self.env.ref(
-            'base_accounting_kit.action_report_cash_flow').report_action(self,
-                                                                         data=data,
-                                                                         config=False)
+            'base_accounting_kit.action_report_cash_flow').report_action(
+            self, data=data,
+            config=False)

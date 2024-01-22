@@ -19,16 +19,15 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from datetime import date, timedelta
-
 from odoo import fields, models
 
 
 class ResPartner(models.Model):
     _inherit = "res.partner"
 
-    invoice_list = fields.One2many('account.move', 'partner_id',
+    invoice_list = fields.One2many('account.move',
+                                   'partner_id',
                                    string="Invoice Details",
                                    readonly=True,
                                    domain=(
@@ -49,7 +48,8 @@ class ResPartner(models.Model):
 
     def _compute_for_followup(self):
         """
-        Compute the fields 'total_due', 'total_overdue' , 'next_reminder_date' and 'followup_status'
+        Compute the fields 'total_due', 'total_overdue' ,
+        'next_reminder_date' and 'followup_status'
         """
         for record in self:
             total_due = 0
@@ -60,7 +60,8 @@ class ResPartner(models.Model):
                     amount = am.amount_residual
                     total_due += amount
 
-                    is_overdue = today > am.invoice_date_due if am.invoice_date_due else today > am.date
+                    is_overdue = today > am.invoice_date_due \
+                        if am.invoice_date_due else today > am.date
                     if is_overdue:
                         total_overdue += amount or 0
             min_date = record.get_min_date()
@@ -99,14 +100,12 @@ class ResPartner(models.Model):
          order by delay limit 1"""
         self._cr.execute(delay, [self.env.company.id])
         record = self._cr.dictfetchall()
-
         return record
 
 
     def action_after(self):
         lines = self.env['followup.line'].search([(
             'followup_id.company_id', '=', self.env.company.id)])
-
         if lines:
             record = self.get_delay()
             for i in record:

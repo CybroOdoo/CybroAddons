@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import fields, models
 
 
@@ -38,7 +37,8 @@ class AccountPrintJournal(models.TransientModel):
                                           relation="account_common_print_report_section_rel",
                                           column1="main_report_id",
                                           column2="sub_report_id")
-    name = fields.Char(string="Journal Audit", default="Journal Audit", required=True, translate=True)
+    name = fields.Char(string="Journal Audit", default="Journal Audit",
+                       required=True, translate=True)
     sort_selection = fields.Selection(
         [('date', 'Date'), ('move_name', 'Journal Entry Number')],
         'Entries Sorted by', required=True, default='move_name')

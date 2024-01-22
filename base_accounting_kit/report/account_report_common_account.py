@@ -45,16 +45,21 @@ class AccountCommonAccountReport(models.TransientModel):
         string='Display Accounts', required=True, default='movement')
     target_move = fields.Selection([('posted', 'All Posted Entries'),
                                     ('all', 'All Entries'),
-                                    ], string='Target Moves', required=True, default='posted')
+                                    ], string='Target Moves', required=True,
+                                   default='posted')
     date_from = fields.Date(string='Start Date')
     date_to = fields.Date(string='End Date')
-    company_id = fields.Many2one('res.company', string='Company', required=True, readonly=True,
+    company_id = fields.Many2one('res.company', string='Company',
+                                 required=True,
+                                 readonly=True,
                                  default=lambda self: self.env.company)
 
     def _build_contexts(self, data):
         result = {}
-        result['journal_ids'] = 'journal_ids' in data['form'] and data['form']['journal_ids'] or False
-        result['state'] = 'target_move' in data['form'] and data['form']['target_move'] or ''
+        result['journal_ids'] = 'journal_ids' in data['form'] and data['form'][
+            'journal_ids'] or False
+        result['state'] = 'target_move' in data['form'] and data['form'][
+            'target_move'] or ''
         result['date_from'] = data['form']['date_from'] or False
         result['date_to'] = data['form']['date_to'] or False
         result['strict_range'] = True if result['date_from'] else False
@@ -69,9 +74,12 @@ class AccountCommonAccountReport(models.TransientModel):
         data = {}
         data['ids'] = self.env.context.get('active_ids', [])
         data['model'] = self.env.context.get('active_model', 'ir.ui.menu')
-        data['form'] = self.read(['date_from', 'date_to', 'journal_ids', 'target_move', 'company_id'])[0]
+        data['form'] = self.read(
+            ['date_from', 'date_to', 'journal_ids', 'target_move',
+             'company_id'])[0]
         used_context = self._build_contexts(data)
-        data['form']['used_context'] = dict(used_context, lang=get_lang(self.env).code)
+        data['form']['used_context'] = dict(used_context,
+                                            lang=get_lang(self.env).code)
         return self.with_context(discard_logo_check=True)._print_report(data)
 
     def pre_print_report(self, data):

@@ -30,7 +30,8 @@ class MultipleInvoice(models.Model):
 
     sequence = fields.Integer(string='Sequence No')
     copy_name = fields.Char(string='Invoice Copy Name')
-    journal_id = fields.Many2one('account.journal', string="Journal")
+    journal_id = fields.Many2one('account.journal',
+                                 string="Journal")
 
 
 class AccountJournal(models.Model):

@@ -42,9 +42,11 @@ class MultipleInvoiceLayout(models.TransientModel):
             [('id', '=', self.env.context.get('active_id'))]).id
 
     company_id = fields.Many2one(
-        'res.company', default=lambda self: self.env.company, required=True)
+        'res.company', default=lambda self: self.env.company,
+        required=True)
     layout = fields.Char(related="company_id.external_report_layout_id.key")
-    journal_id = fields.Many2one('account.journal', string='Journal',
+    journal_id = fields.Many2one('account.journal',
+                                 string='Journal',
                                  required=True, default=_get_default_journal)
     multiple_invoice_type = fields.Selection(
         related='journal_id.multiple_invoice_type', readonly=False,
@@ -67,7 +69,8 @@ class MultipleInvoiceLayout(models.TransientModel):
                           strip_style=False,
                           strip_classes=False)
 
-    @api.depends('multiple_invoice_type', 'text_position', 'body_text_position',
+    @api.depends('multiple_invoice_type', 'text_position',
+                 'body_text_position',
                  'text_align')
     def _compute_preview(self):
         """ compute a qweb based preview to display on the wizard """
@@ -123,7 +126,8 @@ class MultipleInvoiceLayout(models.TransientModel):
 
         precision = 8
         output_style = 'expanded'
-        bootstrap_path = get_resource_path('web', 'static', 'lib', 'bootstrap',
+        bootstrap_path = get_resource_path('web', 'static',
+                                           'lib', 'bootstrap',
                                            'scss')
         try:
             return libsass.compile(

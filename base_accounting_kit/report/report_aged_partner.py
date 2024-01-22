@@ -19,12 +19,9 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 import time
 from datetime import datetime
-
 from dateutil.relativedelta import relativedelta
-
 from odoo import api, models, _
 from odoo.exceptions import UserError
 from odoo.tools import float_is_zero
@@ -36,11 +33,14 @@ class ReportAgedPartnerBalance(models.AbstractModel):
 
     def _get_partner_move_lines(self, account_type, date_from, target_move,
                                 period_length):
-        # This method can receive the context key 'include_nullified_amount' {Boolean}
-        # Do an invoice and a payment and unreconcile. The amount will be nullified
+        # This method can receive the context key 'include_nullified_amount'
+        # {Boolean}
+        # Do an invoice and a payment and unreconcile. The amount will be
+        # nullified
         # By default, the partner wouldn't appear in this report.
         # The context key allow it to appear
-        # In case of a period_length of 30 days as of 2019-02-08, we want the following periods:
+        # In case of a period_length of 30 days as of 2019-02-08,
+        # we want the following periods:
         # Name       Stop         Start
         # 1 - 30   : 2019-02-07 - 2019-01-09
         # 31 - 60  : 2019-01-08 - 2018-12-10
@@ -63,7 +63,6 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                 'start': (i != 0 and stop.strftime('%Y-%m-%d') or False),
             }
             start = stop
-
         res = []
         total = []
         cr = self.env.cr
@@ -78,20 +77,20 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         # build the reconciliation clause to see what partner needs to be printed
         reconciliation_clause = '(l.reconciled IS FALSE)'
         cr.execute(
-            'SELECT debit_move_id, credit_move_id FROM account_partial_reconcile where max_date > %s',
+            'SELECT debit_move_id, credit_move_id FROM account_partial_reconcile'
+            ' where max_date > %s',
             (date_from,))
         reconciled_after_date = []
-
         for row in cr.fetchall():
             reconciled_after_date += [row[0], row[1]]
-
         if reconciled_after_date:
             reconciliation_clause = '(l.reconciled IS FALSE OR l.id IN %s)'
             arg_list += (tuple(reconciled_after_date),)
         arg_list += (date_from, tuple(company_ids))
         query = '''
             SELECT DISTINCT l.partner_id, UPPER(res_partner.name)
-            FROM account_move_line AS l left join res_partner on l.partner_id = res_partner.id, account_account, account_move am
+            FROM account_move_line AS l left join res_partner on l.partner_id =
+             res_partner.id, account_account, account_move am
             WHERE (l.account_id = account_account.id)
                 AND (l.move_id = am.id)
                 AND (am.state IN %s)
@@ -101,12 +100,10 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                 AND l.company_id IN %s
             ORDER BY UPPER(res_partner.name)'''
         cr.execute(query, arg_list)
-
         partners = cr.dictfetchall()
         # put a total of 0
         for i in range(7):
             total.append(0)
-
         # Build a string like (1,2,3) for easy use in SQL query
         partner_ids = [partner['partner_id'] for partner in partners if
                        partner['partner_id']]
@@ -114,7 +111,6 @@ class ReportAgedPartnerBalance(models.AbstractModel):
             (partner['partner_id'] or False, []) for partner in partners)
         if not partner_ids:
             return [], [], {}
-
         # This dictionary will store the not due amount of all partners
         undue_amounts = {}
         query = '''SELECT l.id
@@ -177,7 +173,8 @@ class ReportAgedPartnerBalance(models.AbstractModel):
             args_list += (date_from, tuple(company_ids))
             query = '''SELECT l.id
                     FROM account_move_line AS l, account_account, account_move am
-                    WHERE (l.account_id = account_account.id) AND (l.move_id = am.id)
+                    WHERE (l.account_id = account_account.id) AND 
+                    (l.move_id = am.id)
                         AND (am.state IN %s)
                         AND (account_account.account_type IN %s)
                         AND ((l.partner_id IN %s) OR (l.partner_id IS NULL))
@@ -192,7 +189,8 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                 partner_id = line.partner_id.id or False
                 if partner_id not in partners_amount:
                     partners_amount[partner_id] = 0.0
-                line_amount = ResCurrency._get_conversion_rate(line.company_id.currency_id,
+                line_amount = ResCurrency._get_conversion_rate(
+                    line.company_id.currency_id,
                                                    user_currency, line.balance)
                 if user_currency.is_zero(line_amount):
                     continue
@@ -206,7 +204,6 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                         line_amount -= ResCurrency._get_conversion_rate(
                             partial_line.company_id.currency_id, user_currency,
                             partial_line.amount)
-
                 if not self.env.company.currency_id.is_zero(
                         line_amount):
                     partners_amount[partner_id] += line_amount
@@ -223,15 +220,14 @@ class ReportAgedPartnerBalance(models.AbstractModel):
             values = {}
             undue_amt = 0.0
             if partner[
-                'partner_id'] in undue_amounts:  # Making sure this partner actually was found by the query
+                'partner_id'] in undue_amounts:
+                # Making sure this partner actually was found by the query
                 undue_amt = undue_amounts[partner['partner_id']]
-
             total[6] = total[6] + undue_amt
             values['direction'] = undue_amt
             if not float_is_zero(values['direction'],
                                  precision_rounding=self.env.company.currency_id.rounding):
                 at_least_one_amount = True
-
             for i in range(5):
                 during = False
                 if partner['partner_id'] in history[i]:
@@ -240,7 +236,8 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                 total[(i)] = total[(i)] + (during and during[0] or 0)
                 values[str(i)] = during and during[0] or 0.0
                 if not float_is_zero(values[str(i)],
-                                     precision_rounding=self.env.company.currency_id.rounding):
+                                     precision_rounding=
+                                     self.env.company.currency_id.rounding):
                     at_least_one_amount = True
             values['total'] = sum(
                 [values['direction']] + [values[str(i)] for i in range(5)])
@@ -257,7 +254,6 @@ class ReportAgedPartnerBalance(models.AbstractModel):
             else:
                 values['name'] = _('Unknown Partner')
                 values['trust'] = False
-
             if at_least_one_amount or (
                     self._context.get('include_nullified_amount') and lines[
                 partner['partner_id']]):
@@ -270,8 +266,6 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                 'active_model') or not self.env.context.get('active_id'):
             raise UserError(
                 _("Form content is missing, this report cannot be printed."))
-
-        total = []
         model = self.env.context.get('active_model')
         docs = self.env[model].browse(self.env.context.get('active_id'))
 
@@ -284,11 +278,12 @@ class ReportAgedPartnerBalance(models.AbstractModel):
             account_type = ['liability_payable']
         else:
             account_type = ['liability_payable', 'asset_receivable']
-
         movelines, total, dummy = self._get_partner_move_lines(account_type,
                                                                date_from,
                                                                target_move,
-                                                               data['form']['period_length'])
+                                                               data['form']
+                                                               ['period_length']
+                                                               )
         return {
             'doc_ids': self.ids,
             'doc_model': model,

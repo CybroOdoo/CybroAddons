@@ -19,9 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 import time
-
 from odoo import api, models, _
 from odoo.exceptions import UserError
 
@@ -34,8 +32,10 @@ class ReportTrialBalance(models.AbstractModel):
         """ compute the balance, debit and credit for the provided accounts
             :Arguments:
                 `accounts`: list of accounts record,
-                `display_account`: it's used to display either all accounts or those accounts which balance is > 0
-            :Returns a list of dictionary of Accounts with following key and value
+                `display_account`: it's used to display either all accounts or
+                those accounts which balance is > 0
+            :Returns a list of dictionary of Accounts with following key
+            and value
                 `name`: Account name,
                 `code`: Account code,
                 `credit`: total amount of credit,
@@ -56,8 +56,11 @@ class ReportTrialBalance(models.AbstractModel):
         filters = " AND ".join(wheres)
         # compute the balance, debit and credit for the provided accounts
         request = (
-                    "SELECT account_id AS id, SUM(debit) AS debit, SUM(credit) AS credit, (SUM(debit) - SUM(credit)) AS balance" + \
-                    " FROM " + tables + " WHERE account_id IN %s " + filters + " GROUP BY account_id")
+                    "SELECT account_id AS id, SUM(debit) AS debit, "
+                    "SUM(credit) AS credit, (SUM(debit) - SUM(credit)) "
+                    "AS balance" +
+                    " FROM " + tables + " WHERE account_id IN %s " +
+                    filters + " GROUP BY account_id")
         params = (tuple(accounts.ids),) + tuple(where_params)
         self.env.cr.execute(request, params)
         for row in self.env.cr.dictfetchall():
@@ -66,7 +69,8 @@ class ReportTrialBalance(models.AbstractModel):
         account_res = []
         for account in accounts:
             res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
-            currency = account.currency_id and account.currency_id or account.company_id.currency_id
+            currency = (account.currency_id and account.currency_id or
+                        account.company_id.currency_id)
             res['code'] = account.code
             res['name'] = account.name
             if account.id in account_result:
@@ -89,7 +93,6 @@ class ReportTrialBalance(models.AbstractModel):
         if not data.get('form') or not self.env.context.get('active_model'):
             raise UserError(
                 _("Form content is missing, this report cannot be printed."))
-
         model = self.env.context.get('active_model')
         docs = self.env[model].browse(
             self.env.context.get('active_ids', []))

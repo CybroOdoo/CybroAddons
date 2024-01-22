@@ -19,11 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 import time
-
 from dateutil.relativedelta import relativedelta
-
 from odoo import fields, models, _
 from odoo.exceptions import UserError
 
@@ -43,9 +40,11 @@ class AccountAgedTrialBalance(models.TransientModel):
                                           relation="account_aged_trail_report_section_rel",
                                           column1="main_report_id",
                                           column2="sub_report_id")
-    name = fields.Char(string="Account Aged Trial balance Report", default="Account Aged Trial balance Report", required=True, translate=True)
-
-    journal_ids = fields.Many2many('account.journal', string='Journals',
+    name = fields.Char(string="Account Aged Trial balance Report",
+                       default="Account Aged Trial balance Report",
+                       required=True, translate=True)
+    journal_ids = fields.Many2many('account.journal',
+                                   string='Journals',
                                    required=True)
     period_length = fields.Integer(string='Period Length (days)',
                                    required=True, default=30)
@@ -60,9 +59,7 @@ class AccountAgedTrialBalance(models.TransientModel):
             raise UserError(_('You must set a period length greater than 0.'))
         if not data['form']['date_from']:
             raise UserError(_('You must set a start date.'))
-
         start = data['form']['date_from']
-
         for i in range(5)[::-1]:
             stop = start - relativedelta(days=period_length - 1)
             res[str(i)] = {

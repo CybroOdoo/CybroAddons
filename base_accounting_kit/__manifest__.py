@@ -21,14 +21,16 @@
 #############################################################################
 {
     'name': 'Odoo 17 Full Accounting Kit',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Accounting',
-    'summary': """Odoo 17 Accounting, Asset and Budget Management,Accounting Reports, PDC, 
+    'summary': """Odoo 17 Accounting, Asset and Budget Management,
+    Accounting Reports, PDC, 
     Lock dates, Credit Limit, Follow Ups, Day-Bank-Cash book reports.""",
-    'description': """ Odoo 17 Accounting, The module used to manage the Full Account Features.
-    that can manage the Account Reports,Journals Asset and Budget Management, 
-    Accounting Reports, PDC, Lock dates, Credit Limit, Follow Ups, 
-    Day-Bank-Cash book report, odoo17, odoo17 accounting, odoo accounting, v17 accounting,Odoo 17 Accounting, odoo apps""",
+    'description': """ Odoo 17 Accounting, The module used to manage the Full
+     Account Features that can manage the Account Reports,Journals Asset and 
+     Budget Management, Accounting Reports, PDC, Lock dates, Credit Limit, 
+     Follow Ups,  Day-Bank-Cash book report, odoo17, odoo17 accounting,
+      odoo accounting, v17 accounting,Odoo 17 Accounting, odoo apps""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

@@ -20,8 +20,7 @@
 #
 #############################################################################
 from datetime import date
-
-from odoo import models, fields
+from odoo import fields, models
 
 
 class DayBookWizard(models.TransientModel):
@@ -36,14 +35,13 @@ class DayBookWizard(models.TransientModel):
                                    default=lambda self: self.env[
                                        'account.journal'].search([]))
     target_move = fields.Selection([('posted', 'All Posted Entries'),
-                                    ('all', 'All Entries')], string='Target Moves', required=True,
+                                    ('all', 'All Entries')],
+                                   string='Target Moves', required=True,
                                    default='posted')
-
     account_ids = fields.Many2many('account.account',
                                    'account_report_daybook_account_rel',
                                    'report_id', 'account_id',
                                    'Accounts')
-
     date_from = fields.Date(string='Start Date', default=date.today(),
                             required=True)
     date_to = fields.Date(string='End Date', default=date.today(),

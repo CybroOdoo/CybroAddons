@@ -20,8 +20,7 @@
 #
 #############################################################################
 from datetime import date
-
-from odoo import models, fields, api, _
+from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
 
@@ -33,7 +32,8 @@ class CashBookWizard(models.TransientModel):
                                  readonly=True,
                                  default=lambda self: self.env.company)
     target_move = fields.Selection([('posted', 'All Posted Entries'),
-                                    ('all', 'All Entries')], string='Target Moves', required=True,
+                                    ('all', 'All Entries')],
+                                   string='Target Moves', required=True,
                                    default='posted')
     date_from = fields.Date(string='Start Date', default=date.today(),
                             required=True)
@@ -48,13 +48,19 @@ class CashBookWizard(models.TransientModel):
         string='Sort by',
         required=True, default='sort_date')
     initial_balance = fields.Boolean(string='Include Initial Balances',
-                                     help='If you selected date, this field allow you to add a row to display the amount of debit/credit/balance that precedes the filter you\'ve set.')
+                                     help='If you selected date, this field '
+                                          'allow you to add a row to display'
+                                          ' the'
+                                          ' amount of debit/credit/balance'
+                                          ' that '
+                                          'precedes the filter you\'ve set.')
 
     def _get_default_account_ids(self):
         journals = self.env['account.journal'].search([('type', '=', 'cash')])
         accounts = []
         for journal in journals:
-            accounts.append(journal.company_id.account_journal_payment_credit_account_id.id)
+            accounts.append(
+                journal.company_id.account_journal_payment_credit_account_id.id)
         return accounts
 
     account_ids = fields.Many2many('account.account',
@@ -76,7 +82,8 @@ class CashBookWizard(models.TransientModel):
                 [('type', '=', 'cash')])
             accounts = []
             for journal in journals:
-                accounts.append(journal.company_id.account_journal_payment_credit_account_id.id)
+                accounts.append(
+                    journal.company_id.account_journal_payment_credit_account_id.id)
             domain = {'account_ids': [('id', 'in', accounts)]}
             return {'domain': domain}
 
@@ -107,5 +114,6 @@ class CashBookWizard(models.TransientModel):
                                             lang=self.env.context.get(
                                                 'lang') or 'en_US')
         return self.env.ref(
-            'base_accounting_kit.action_report_cash_book').report_action(self,
-                                                                         data=data)
+            'base_accounting_kit.action_report_cash_book').report_action(
+            self,
+            data=data)

@@ -42,19 +42,25 @@ class DayBookPdfReport(models.AbstractModel):
         else:
             target_move = ''
         sql = ('''
-                SELECT l.id AS lid, acc.name as accname, l.account_id AS account_id, l.date AS ldate, j.code AS lcode, l.currency_id, 
-                l.amount_currency, l.ref AS lref, l.name AS lname, COALESCE(l.debit,0) AS debit, COALESCE(l.credit,0) AS credit, 
-                COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit), 0) AS balance,
-                m.name AS move_name, c.symbol AS currency_code, p.name AS partner_name
+                SELECT l.id AS lid, acc.name as accname, l.account_id AS 
+                account_id, l.date AS ldate, j.code AS lcode, l.currency_id, 
+                l.amount_currency, l.ref AS lref, l.name AS lname,
+                 COALESCE(l.debit,0) AS debit, COALESCE(l.credit,0) AS credit, 
+                COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit), 0) AS 
+                balance,
+                m.name AS move_name, c.symbol AS currency_code, p.name 
+                AS partner_name
                 FROM account_move_line l
                 JOIN account_move m ON (l.move_id=m.id)
                 LEFT JOIN res_currency c ON (l.currency_id=c.id)
                 LEFT JOIN res_partner p ON (l.partner_id=p.id)
                 JOIN account_journal j ON (l.journal_id=j.id)
                 JOIN account_account acc ON (l.account_id = acc.id) 
-                WHERE l.account_id IN %s AND l.journal_id IN %s ''' + target_move + ''' AND l.date = %s
+                WHERE l.account_id IN %s AND l.journal_id IN %s '''
+               + target_move + ''' AND l.date = %s
                 GROUP BY l.id, l.account_id, l.date,
-                     j.code, l.currency_id, l.amount_currency, l.ref, l.name, m.name, c.symbol, p.name , acc.name
+                     j.code, l.currency_id, l.amount_currency, l.ref, 
+                     l.name, m.name, c.symbol, p.name , acc.name
                      ORDER BY l.date DESC
         ''')
         params = (
@@ -78,7 +84,6 @@ class DayBookPdfReport(models.AbstractModel):
         if not data.get('form') or not self.env.context.get('active_model'):
             raise UserError(
                 _("Form content is missing, this report cannot be printed."))
-
         model = self.env.context.get('active_model')
         docs = self.env[model].browse(
             self.env.context.get('active_ids', []))
@@ -95,7 +100,8 @@ class DayBookPdfReport(models.AbstractModel):
 
         date_start = datetime.strptime(form_data['date_from'],
                                        '%Y-%m-%d').date()
-        date_end = datetime.strptime(form_data['date_to'], '%Y-%m-%d').date()
+        date_end = datetime.strptime(form_data['date_to'],
+                                     '%Y-%m-%d').date()
         days = date_end - date_start
         dates = []
         record = []

@@ -32,9 +32,10 @@ class AccountMove(models.Model):
     field to the account"""
     _inherit = 'account.move'
 
-    asset_depreciation_ids = fields.One2many('account.asset.depreciation.line',
-                                             'move_id',
-                                             string='Assets Depreciation Lines')
+    asset_depreciation_ids = fields.One2many(
+        'account.asset.depreciation.line',
+        'move_id',
+        string='Assets Depreciation Lines')
 
     def button_cancel(self):
         """Button action to cancel the transfer"""
@@ -108,7 +109,8 @@ class AccountInvoiceLine(models.Model):
             if cat:
                 if cat.method_number == 0 or cat.method_period == 0:
                     raise UserError(_(
-                        'The number of depreciations or the period length of your asset category cannot be null.'))
+                        'The number of depreciations or the period length of '
+                        'your asset category cannot be null.'))
                 months = cat.method_number * cat.method_period
                 if record.move_id in ['out_invoice', 'out_refund']:
                     record.asset_mrr = record.price_subtotal_signed / months
@@ -167,9 +169,12 @@ class AccountInvoiceLine(models.Model):
         vals = super(AccountInvoiceLine, self)._compute_price_unit()
         if self.product_id:
             if self.move_id.move_type == 'out_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id
+                self.asset_category_id = (
+                    self.product_id.product_tmpl_id.
+                    deferred_revenue_category_id)
             elif self.move_id.move_type == 'in_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id
+                self.asset_category_id = (
+                    self.product_id.product_tmpl_id.asset_category_id)
         return vals
 
     def _set_additional_fields(self, invoice):
@@ -177,9 +182,12 @@ class AccountInvoiceLine(models.Model):
         move types"""
         if not self.asset_category_id:
             if invoice.type == 'out_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id.id
+                self.asset_category_id =\
+                    (self.product_id.product_tmpl_id.
+                     deferred_revenue_category_id.id)
             elif invoice.type == 'in_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id.id
+                self.asset_category_id = (
+                    self.product_id.product_tmpl_id.asset_category_id.id)
             self.onchange_asset_category_id()
         super(AccountInvoiceLine, self)._set_additional_fields(invoice)
 
@@ -193,12 +201,10 @@ class AccountInvoiceLine(models.Model):
     def _query_get(self, domain=None):
         """Used to add domain constraints to the query"""
         self.check_access_rights('read')
-
         context = dict(self._context or {})
         domain = domain or []
         if not isinstance(domain, (list, tuple)):
             domain = ast.literal_eval(domain)
-
         date_field = 'date'
         if context.get('aged_balance'):
             date_field = 'date_maturity'
@@ -212,55 +218,49 @@ class AccountInvoiceLine(models.Model):
                 domain += [(date_field, '<', context['date_from'])]
             else:
                 domain += [(date_field, '>=', context['date_from'])]
-
         if context.get('journal_ids'):
             domain += [('journal_id', 'in', context['journal_ids'])]
-
         state = context.get('state')
         if state and state.lower() != 'all':
             domain += [('parent_state', '=', state)]
-
         if context.get('company_id'):
             domain += [('company_id', '=', context['company_id'])]
         elif context.get('allowed_company_ids'):
             domain += [('company_id', 'in', self.env.companies.ids)]
         else:
             domain += [('company_id', '=', self.env.company.id)]
-
         if context.get('reconcile_date'):
             domain += ['|', ('reconciled', '=', False), '|',
-                       ('matched_debit_ids.max_date', '>', context['reconcile_date']),
-                       ('matched_credit_ids.max_date', '>', context['reconcile_date'])]
-
+                       ('matched_debit_ids.max_date', '>',
+                        context['reconcile_date']),
+                       ('matched_credit_ids.max_date', '>',
+                        context['reconcile_date'])]
         if context.get('account_tag_ids'):
-            domain += [('account_id.tag_ids', 'in', context['account_tag_ids'].ids)]
-
+            domain += [
+                ('account_id.tag_ids', 'in', context['account_tag_ids'].ids)]
         if context.get('account_ids'):
             domain += [('account_id', 'in', context['account_ids'].ids)]
-
         if context.get('analytic_tag_ids'):
-            domain += [('analytic_tag_ids', 'in', context['analytic_tag_ids'].ids)]
-
+            domain += [
+                ('analytic_tag_ids', 'in', context['analytic_tag_ids'].ids)]
         if context.get('analytic_account_ids'):
-            domain += [('analytic_account_id', 'in', context['analytic_account_ids'].ids)]
-
+            domain += [('analytic_account_id', 'in',
+                        context['analytic_account_ids'].ids)]
         if context.get('partner_ids'):
             domain += [('partner_id', 'in', context['partner_ids'].ids)]
-
         if context.get('partner_categories'):
-            domain += [('partner_id.category_id', 'in', context['partner_categories'].ids)]
-
+            domain += [('partner_id.category_id', 'in',
+                        context['partner_categories'].ids)]
         where_clause = ""
         where_clause_params = []
         tables = ''
         if domain:
-            domain.append(('display_type', 'not in', ('line_section', 'line_note')))
+            domain.append(
+                ('display_type', 'not in', ('line_section', 'line_note')))
             domain.append(('parent_state', '!=', 'cancel'))
-
             query = self._where_calc(domain)
-
-            # Wrap the query with 'company_id IN (...)' to avoid bypassing company access rights.
+            # Wrap the query with 'company_id IN (...)' to avoid bypassing
+            # company access rights.
             self._apply_ir_rules(query)
-
             tables, where_clause, where_clause_params = query.get_sql()
         return tables, where_clause, where_clause_params

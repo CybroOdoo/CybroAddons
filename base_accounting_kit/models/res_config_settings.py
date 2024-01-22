@@ -19,8 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
-from odoo import models, fields, api
+from odoo import api, fields, models
 
 
 class ResConfigSettings(models.TransientModel):
@@ -28,8 +27,9 @@ class ResConfigSettings(models.TransientModel):
 
     customer_credit_limit = fields.Boolean(string="Customer Credit Limit")
 
-    use_anglo_saxon_accounting = fields.Boolean(string="Use Anglo-Saxon accounting", readonly=False,
-                                                related='company_id.anglo_saxon_accounting')
+    use_anglo_saxon_accounting = fields.Boolean(
+        string="Use Anglo-Saxon accounting", readonly=False,
+        related='company_id.anglo_saxon_accounting')
 
     @api.model
     def get_values(self):

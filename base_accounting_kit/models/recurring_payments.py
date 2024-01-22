@@ -21,7 +21,7 @@
 #############################################################################
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
-from odoo import api, models, fields
+from odoo import api, fields, models
 
 
 class FilterRecurringEntries(models.Model):
@@ -55,19 +55,24 @@ class RecurringPayments(models.Model):
             self.next_date = start_date.date()
 
     name = fields.Char(string='Name')
-    debit_account = fields.Many2one('account.account', 'Debit Account',
+    debit_account = fields.Many2one('account.account',
+                                    'Debit Account',
                                     required=True,
                                     domain="['|', ('company_id', '=', False), "
                                            "('company_id', '=', company_id)]")
-    credit_account = fields.Many2one('account.account', 'Credit Account',
+    credit_account = fields.Many2one('account.account',
+                                     'Credit Account',
                                      required=True,
                                      domain="['|', ('company_id', '=', False), "
                                             "('company_id', '=', company_id)]")
-    journal_id = fields.Many2one('account.journal', 'Journal', required=True)
+    journal_id = fields.Many2one('account.journal',
+                                 'Journal', required=True)
     analytic_account_id = fields.Many2one('account.analytic.account',
                                           'Analytic Account')
-    date = fields.Date('Starting Date', required=True, default=date.today())
-    next_date = fields.Date('Next Schedule', compute=_get_next_schedule,
+    date = fields.Date('Starting Date', required=True,
+                       default=date.today())
+    next_date = fields.Date('Next Schedule',
+                            compute=_get_next_schedule,
                             readonly=True, copy=False)
     recurring_period = fields.Selection(selection=[('days', 'Days'),
                                                    ('weeks', 'Weeks'),
@@ -90,7 +95,8 @@ class RecurringPayments(models.Model):
                                 store=True, required=True)
     company_id = fields.Many2one('res.company',
                                  default=lambda l: l.env.company.id)
-    recurring_lines = fields.One2many('account.recurring.entries.line', 'tmpl_id')
+    recurring_lines = fields.One2many(
+        'account.recurring.entries.line', 'tmpl_id')
 
     @api.onchange('partner_id')
     def onchange_partner_id(self):
@@ -115,7 +121,8 @@ class RecurringPayments(models.Model):
         for line in data:
             if line.date:
                 recurr_dates = []
-                start_date = datetime.strptime(str(line.date), '%Y-%m-%d')
+                start_date = datetime.strptime(str(line.date),
+                                               '%Y-%m-%d')
                 while start_date <= today:
                     recurr_dates.append(str(start_date.date()))
                     if line.recurring_period == 'days':
@@ -175,6 +182,7 @@ class GetAllRecurringEntries(models.TransientModel):
     date = fields.Date('Date')
     template_name = fields.Char('Name')
     amount = fields.Float('Amount')
-    tmpl_id = fields.Many2one('account.recurring.payments', string='id')
+    tmpl_id = fields.Many2one('account.recurring.payments',
+                              string='id')
 
 

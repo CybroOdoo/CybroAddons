@@ -19,8 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
-from odoo import fields, models, api ,_
+from odoo import api, fields, models, _
 
 
 class AccountBalanceReport(models.TransientModel):
@@ -38,7 +37,8 @@ class AccountBalanceReport(models.TransientModel):
                                                relation="account_balance_report_section_rel",
                                                column1="sub_report_id",
                                                column2="main_report_id")
-    name = fields.Char(string="Trial Balance", default="Trial Balance", required=True, translate=True)
+    name = fields.Char(string="Trial Balance", default="Trial Balance",
+                       required=True, translate=True)
     journal_ids = fields.Many2many('account.journal',
                                    'account_balance_report_journal_rel',
                                    'account_id', 'journal_id',
@@ -48,7 +48,8 @@ class AccountBalanceReport(models.TransientModel):
     @api.model
     def _get_report_name(self):
         period_id = self._get_selected_period_id()
-        return self.env['consolidation.period'].browse(period_id)['display_name'] or _("Trial Balance")
+        return self.env['consolidation.period'].browse(period_id)[
+            'display_name'] or _("Trial Balance")
 
     def _print_report(self, data):
         data = self.pre_print_report(data)
