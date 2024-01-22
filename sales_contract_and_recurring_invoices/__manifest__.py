@@ -22,7 +22,7 @@
 
 {
     'name': 'Sales Contract and Recurring Invoices',
-    'version': '16.0.1.0.0',
+    'version': '16.0.2.0.0',
     'category': 'Sales,Accounting',
     'summary': """Module helps to create sale contracts and recurring 
      invoices""",
