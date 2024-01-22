@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Advanced Dynamic Dashboard",
-    'version': '16.0.1.0.1',
+    'version': '16.0.2.0.1',
     'category': 'Productivity',
     'summary': """Create Configurable Dashboards Easily""",
     'description': """Create Configurable Advanced Dynamic Dashboard to get the 
@@ -40,14 +40,12 @@
     ],
     'assets': {
         'web.assets_backend': [
-            "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css",
             'advanced_dynamic_dashboard/static/lib/css/gridstack.min.css',
             'advanced_dynamic_dashboard/static/src/css/dynamic_dashboard.css',
             'advanced_dynamic_dashboard/static/src/scss/dynamic_dashboard.scss',
             "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css",
             'https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/0.2.6/gridstack.min.js',
             'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.js',
-            "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js",
             "https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js",
             "https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js",
             'https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js',
