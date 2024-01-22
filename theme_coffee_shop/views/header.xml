@@ -1,123 +1,75 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
+    <!--    Navbar-->
     <template id="header_coffee_shop"
               inherit_id="website.template_header_default"
               name="Template Header Theme" active="True">
         <xpath expr="//t[@t-call='website.navbar']" position="replace">
-
             <t t-call="website.navbar">
-
                 <div id="top_menu_container"
                      class="container justify-content-start justify-content-lg-between">
                     <div class="logo">
                         <img src="/theme_coffee_shop/static/src/images/logo.png"
                              alt=""/>
                     </div>
-
-                    <div id="top_menu_collapse" class="collapse navbar-collapse order-last order-lg-0">
+                    <div id="top_menu_collapse"
+                         class="collapse navbar-collapse order-last order-lg-0">
                         <t t-call="website.navbar_nav">
                             <t t-set="_nav_class" t-valuef="flex-grow"/>
                             <!-- Menu -->
-                                <t t-foreach="website.menu_id.child_id" t-as="submenu">
-                                    <t t-call="website.submenu">
-                                        <t t-set="item_class" t-valuef="nav-item"/>
-                                        <t t-set="link_class" t-valuef="nav-link"/>
-                                    </t>
+                            <t t-foreach="website.menu_id.child_id"
+                               t-as="submenu">
+                                <t t-call="website.submenu">
+                                    <t t-set="item_class" t-valuef="nav-item"/>
+                                    <t t-set="link_class" t-valuef="nav-link"/>
                                 </t>
-                <!--  Cart-->
-                         <t t-call="website_sale.header_cart_link">
-                            <t t-set="_icon" t-value="True"/>
-                            <t t-set="_item_class" t-value="'mx-lg-3 '"/>
-                            <t t-set="_link_class" t-value="'nav-link'"/>
-                         </t>
-                              <!--    Wishlist-->
-                        <t t-call="website_sale_wishlist.header_wishlist_link">
-                            <t t-set="_icon" t-value="True"/>
-                            <t t-set="_item_class" t-value="'mx-lg-3'"/>
-                            <t t-set="_link_class" t-value="'nav-link'"/>
-                        </t>
-
-                        <!-- Sign In -->
-                        <t t-call="portal.placeholder_user_sign_in">
-                            <t t-set="_item_class" t-valuef="nav-item ms-lg-auto"/>
-                            <t t-set="_link_class" t-valuef="nav-link fw-bold"/>
-                        </t>
+                            </t>
+                            <!--   Cart -->
+                            <t t-call="website_sale.header_cart_link">
+                                <t t-set="_icon" t-value="True"/>
+                                <t t-set="_item_class" t-value="'mx-lg-3 '"/>
+                                <t t-set="_link_class" t-value="'nav-link'"/>
+                            </t>
+                            <!--     Wishlist -->
+                            <t t-call="website_sale_wishlist.header_wishlist_link">
+                                <t t-set="_icon" t-value="True"/>
+                                <t t-set="_item_class" t-value="'mx-lg-3'"/>
+                                <t t-set="_link_class" t-value="'nav-link'"/>
+                            </t>
+                            <!-- Sign In -->
+                            <t t-call="portal.placeholder_user_sign_in">
+                                <t t-set="_item_class"
+                                   t-valuef="nav-item ms-lg-auto"/>
+                                <t t-set="_link_class"
+                                   t-valuef="nav-link fw-bold"/>
+                            </t>
                             <!-- User Dropdown -->
                             <t t-call="portal.user_dropdown">
                                 <t t-set="_user_name" t-value="true"/>
-                                <t t-set="_item_class" t-valuef="dropdown ms-lg-auto "/>
-                                <t t-set="_link_class" t-valuef="nav-link fw-bold"/>
+                                <t t-set="_item_class"
+                                   t-valuef="dropdown ms-lg-auto "/>
+                                <t t-set="_link_class"
+                                   t-valuef="nav-link fw-bold"/>
                             </t>
                         </t>
-
                     </div>
-
-
                     <!-- Navbar Toggler -->
                     <t t-call="website.navbar_toggler">
                         <t t-set="_toggler_class" t-valuef="ms-auto"/>
                     </t>
-
                 </div>
-
-
             </t>
         </xpath>
     </template>
-
-    <!--    TEMPLATE FOR CART IN HEADER-->
-    <template id="coffee_header_cart_link" name=" Coffee Header Cart Link"
-              inherit_id="website_sale.header_cart_link">
-        <xpath expr="//t" position="replace">
-            <t t-nocache="The number of products is dynamic, this rendering cannot be cached."
-           t-nocache-_icon="_icon"
-           t-nocache-_text="_text"
-           t-nocache-_item_class="_item_class"
-           t-nocache-_link_class="_link_class">
-            <t t-set="website_sale_cart_quantity" t-value="request.session['website_sale_cart_quantity'] if 'website_sale_cart_quantity' in request.session else website.sale_get_order().cart_quantity or 0"/>
-            <t t-set="show_cart" t-value="true"/>
-            <li t-attf-class="#{_item_class} divider d-none"/>
-            <li t-attf-class="o_wsale_my_cart align-self-md-start #{not show_cart and 'd-none'} #{_item_class}">
-                    <a href="/shop/cart" t-attf-class="#{_link_class}">
-                        <img class="cart-icon"
-                             src="/theme_coffee_shop/static/src/images/cart.png"
-                             alt=""/>
-                        <span t-if="_text">Cart items</span>
-                        <sup class="my_cart_quantity badge text-bg-primary d-none" t-esc="website_sale_cart_quantity" t-att-data-order-id="request.session.get('sale_order_id', '')"/>
-                        <div class="notify"/>
-                    </a>
-
-                </li>
-            </t>
-
-        </xpath>
-    </template>
-
-    <!--    TEMPLATE FOR WISHLIST IN HEADER-->
+    <!--    TEMPLATE FOR WISHLIST AND CART IN HEADER-->
     <template id="coffee_header_wishlist_link"
               name=" Coffee Header Wishlist Link"
-              inherit_id="website_sale_wishlist.header_wishlist_link">
-        <xpath expr="//t" position="replace">
-            <t t-nocache="The wishlist may vary and depends on the user."
-               t-nocache-_icon="_icon"
-               t-nocache-_item_class="_item_class"
-               t-nocache-_link_class="_link_class"
-               t-nocache-_text="_text">
-                <t t-set="wishcount"
-                   t-value="len(request.env['product.wishlist'].current())"/>
-                <t t-set="show_wishes" t-value="True"/>
-                <li t-attf-class="o_wsale_my_wish #{not show_wishes and 'd-none'} #{_item_class}">
-                    <a href="/shop/wishlist" t-attf-class="#{_link_class}">
-                        <img src="/theme_coffee_shop/static/src/images/wishlist.png"
-                             alt=""/>
-                        <span t-if="_text">Wishlist</span>
-                        <div class="notify"/>
-                    </a>
-                </li>
-            </t>
+              inherit_id="website_sale_wishlist.template_header_default">
+        <xpath expr="//t[@t-call='website_sale.header_cart_link']"
+               position="replace">
+        </xpath>
+        <xpath expr="//t[@t-call='website_sale_wishlist.header_wishlist_link']"
+               position="replace">
         </xpath>
     </template>
-
-
-
 </odoo>
