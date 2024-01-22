@@ -76,7 +76,6 @@ class SaleReportWeekly(models.TransientModel):
             ('date_order', '>=', self.date),
             ('state', '!=', 'cancel')
         ])
-        print('saaa',sale_orders)
         if not sale_orders:
             raise ValidationError("No data available for printing.")
         for rec in sale_orders:
@@ -95,7 +94,6 @@ class SaleReportWeekly(models.TransientModel):
                         'date': rec.date_order.date()
                     }
                     result.append(res)
-                    print('res', res)
         if not result:
             raise ValidationError("No data available for printing.")
         datas = {
@@ -106,7 +104,6 @@ class SaleReportWeekly(models.TransientModel):
             'type': self.amount_type,
             'times': times
         }
-        print('datas',datas)
         return datas
 
     def _get_time_start(self, time_id):
@@ -136,6 +133,7 @@ class SaleReportWeekly(models.TransientModel):
 
     def get_xlsx_report(self, data, response):
         """ Function for generating xlsx report """
+        loaded_data = json.loads(data)
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         sheet = workbook.add_worksheet()
@@ -158,10 +156,10 @@ class SaleReportWeekly(models.TransientModel):
         count = 0
         row = 4
         row_number = 5
-        for rec in data['times']:
+        for rec in loaded_data['times']:
             col = 6
             row = row + count + 4
-            sheet.merge_range(h_row, h_col - 1, h_row, h_col + 1, rec['name'],
+            sheet.merge_range(h_row, h_col - 1, h_row, h_col + 1, rec,
                               format3)
             sheet.write(row, col, 'Order', format2)
             sheet.set_column(row, col, 15)
@@ -169,7 +167,7 @@ class SaleReportWeekly(models.TransientModel):
             sheet.write(row, col, 'Date', format2)
             sheet.set_column(row, col, 15)
             col += 1
-            if data['type'] == 'total':
+            if loaded_data['type'] == 'total':
                 sheet.write(row, col, 'Total', format2)
                 sheet.set_column(row, col, 15)
                 col += 1
@@ -181,8 +179,8 @@ class SaleReportWeekly(models.TransientModel):
             row_number = row_number + 4
             count = 0
             t_col = 7
-            for val in data['form']:
-                if val['time'] == rec['id']:
+            for val in loaded_data['form']:
+                if val['time'] == rec:
                     count += 1
                     column_number = 6
                     sheet.write(row_number, column_number, val['order'],
