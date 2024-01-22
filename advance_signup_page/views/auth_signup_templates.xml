@@ -16,15 +16,58 @@
         <xpath expr="//div[hasclass('field-confirm_password')]"
                position="after">
             <t t-foreach="configuration.signup_field_ids" t-as="field">
-                <div class="mb-3 field-test pt-2">
-                    <label>
-                        <t t-esc="field.name"/>
-                    </label>
-                    <input type="text" t-attf-name="{{field.field_id.name}}"
-                           t-attf-id="{{field.field_id.id}}"
-                           t-attf-class="form-control form-control-sm"
-                           required="required"/>
-                </div>
+                <t t-if="field.field_type in ['char', 'text']">
+                    <div class="mb-3 field-test pt-2">
+                        <label>
+                            <t t-esc="field.name"/>
+                        </label>
+                        <input type="text"
+                               t-attf-name="{{field.field_id.name}}"
+                               t-attf-id="{{field.field_id.id}}"
+                               t-attf-class="form-control form-control-sm"
+                               required="required"/>
+                    </div>
+                </t>
+                <t t-elif="field.field_type == 'boolean'">
+                    <div class="mb-3 field-test pt-2">
+                        <input type="checkbox"
+                               class="form-check-input"
+                               id="webBoolField"
+                               t-att-name="field.field_id.id"/>
+                        <span class="ms-2 text-break" t-field='field.field_id.name'/>
+                    </div>
+                </t>
+                <t t-elif="field.field_type in ['date', 'datetime']">
+                    <div class="mb-3 field-test pt-2">
+                        <label>
+                            <t t-esc="field.name"/>
+                        </label>
+                        <input type="date"
+                               t-att-name="field.field_id.name"
+                               t-attf-class="form-control form-control-sm"/>
+                    </div>
+                </t>
+                <t t-elif="field.field_type =='binary'">
+                    <div class="mb-3 field-test pt-2">
+                        <label>
+                            <t t-esc="field.name"/>
+                        </label>
+                        <input type="file" id="img_field"
+                               class="field_input"
+                               name="img_field"
+                               accept="image/*"/>
+                    </div>
+                </t>
+                <t t-elif="field.field_type in ['integer', 'float']">
+                    <div class="mb-3 field-test pt-2">
+                        <label>
+                            <t t-esc="field.name"/>
+                        </label>
+                        <input type="number"
+                               t-attf-class="form-control form-control-sm"
+                               t-att-name="field.field_id.name"/>
+                    </div>
+                </t>
             </t>
             <!-- Display terms and conditions from the configuration -->
             <t t-if="configuration.is_show_terms_conditions">
