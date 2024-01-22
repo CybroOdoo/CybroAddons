@@ -24,10 +24,11 @@
     'version': '17.0.1.0.0',
     'category': 'Manufacturing',
     'summary': """Manufacturing Orders Splitting by different methods""",
-    'description': """"Split manufacturing order from one order to another
-     manufacturing order on odoo system. this module also helps to split order
-      with the number of qty & number of split manufacturing orders and split
-      manually by numbers""",
+    'description': """"Split manufacturing order from one order to 
+                    another manufacturing order on odoo system. this module 
+                    also helps to split order with the number of qty 
+                    & number of split manufacturing orders and split
+                    manually by numbers""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -38,7 +39,7 @@
         'wizard/split_order_views.xml',
         'views/mrp_production_views.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
