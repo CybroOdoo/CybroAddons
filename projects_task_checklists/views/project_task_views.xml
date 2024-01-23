@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+<!--    Inheriting project task form view to add the necessary fields-->
+    <record id="view_task_form2" model="ir.ui.view">
+        <field name="name">project.task.view.form.inherit.projects.task.checklists</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="checklist_ids" invisible="1"/>
+                <field name="checklist_id"/>
+            </xpath>
+            <xpath expr="//form/sheet/notebook/page[last()]" position="after">
+                <page string="Checklist" invisible="checklist_id == 'False'">
+                    <field name="checklists_ids">
+                        <tree decoration-danger="state=='cancel'"
+                              decoration-success="state=='done'"
+                              decoration-info="state=='in_progress'"
+                              editable="bottom">
+                            <field name="check_list_item_id"/>
+                            <field name="description"/>
+                            <button type="object" name="action_approve_and_next"
+                                    class="text-success" icon="fa-check"/>
+                            <button type="object" name="action_mark_completed"
+                                    icon="fa-check-circle"
+                                    class="text-success"/>
+                            <button type="object" name="action_mark_canceled"
+                                    icon="fa-times" class="text-danger"/>
+                            <field name="state"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="progress" widget="progressbar" class="oe_inline"/>
+            </xpath>
+        </field>
+    </record>
+<!--    Inheriting project task tree view to add the necessary fields-->
+    <record id="view_task_tree2" model="ir.ui.view">
+        <field name="name">project.task.view.tree.inherit.projects.task.checklists</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_tree2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='activity_ids']" position="after">
+                <field name="progress" widget="progressbar"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
