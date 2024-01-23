@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -19,52 +19,52 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 {
     'name': "Website Helpdesk Support Ticket Management",
-    'version': '16.0.4.0.1',
+    'version': '16.0.3.0.0',
+    'category': 'Website',
     'summary': """Helpdesk Module for community""",
-    'description': """Can create ticket from website also and can manage it from backend.
-    Bill can be created for ticket with service cost""",
+    'description': 'Can create ticket from website also and can manage it from'
+                   ' backend.Bill can be created for ticket with service cost',
     'author': "Cybrosys Techno Solutions",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'category': 'Website',
-    'depends': ['base', 'website', 'project', 'sale_project', 'hr_timesheet',
-                'mail', 'contacts'],
+    'website': 'https://www.cybrosys.com',
+    'depends': ['base', 'website', 'project', 'sale_project',
+                'hr_timesheet', 'mail', 'contacts'],
     'data': [
-        'security/security_groups.xml',
+        'security/odoo_website_helpdesk_security.xml',
         'security/ir.model.access.csv',
-        'data/ticket_sequence.xml',
+        'data/ir_sequence_data.xml',
         'data/ticket_stage_data.xml',
-        'data/ticket_type.xml',
-        'data/ticket_auto_close.xml',
-        'data/rating_template.xml',
-        'views/team.xml',
-        'views/portal_search.xml',
-        'views/res_config_settings.xml',
+        'data/helpdesk_types_data.xml',
+        'data/ir_cron_data.xml',
+        'data/mail_template_data.xml',
+        'views/help_team_views.xml',
+        'views/portal_search_templates.xml',
+        'views/res_config_settings_views.xml',
         'views/website_form.xml',
-        'views/report.xml',
-        'views/helpdesk.xml',
-        'views/helpdesk_views.xml',
-        'views/portal.xml',
-        'views/categories.xml',
-        'views/rating_form.xml',
+        'views/report_templates.xml',
+        'views/help_ticket_views.xml',
+        'views/portal_views_templates.xml',
+        'views/helpdesk_categories_views.xml',
+        'views/rating_form_templates.xml',
         'views/merge_tickets_views.xml',
-        'templates/helpdesk_replay_template.xml',
-        'report/helpdesk_ticket_report_template.xml',
+        'views/helpdesk_tag_views.xml',
+        'views/helpdesk_types_views.xml',
+        'views/ticket_stage_views.xml',
+        'views/helpdesk_replay_template.xml',
+        'views/odoo_website_helpdesk_menus.xml',
+        'report/help_ticket_templates.xml',
     ],
     'assets': {
-        # 'web.assets_frontend': [
-        # ],
         'web.assets_backend': [
-            'odoo_website_helpdesk/static/src/xml/helpdesk_dashboard.xml',
+            'odoo_website_helpdesk/static/src/xml/help_ticket_templates.xml',
             'odoo_website_helpdesk/static/src/js/helpdesk_dashboard_action.js',
         ],
         'web.assets_frontend': [
             'odoo_website_helpdesk/static/src/js/ticket_details.js',
-            '/odoo_website_helpdesk/static/src/js/portal_search.js',
-            '/odoo_website_helpdesk/static/src/js/portal_groupby.js',
+            '/odoo_website_helpdesk/static/src/js/portal_groupby_and_search.js',
             '/odoo_website_helpdesk/static/src/js/multiple_product_choose.js',
             '/odoo_website_helpdesk/static/src/cdn/jquery.sumoselect.min.js',
             '/odoo_website_helpdesk/static/src/cdn/sumoselect.min.css',
