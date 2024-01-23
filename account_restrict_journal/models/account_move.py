@@ -40,9 +40,13 @@ class AccountMove(models.Model):
             if rec.full_reconcile_id:
                 payment = self.env['account.payment.register'].search(
                     [('id', '=', rec.full_reconcile_id.id)])
-                if payment.journal_id.id in self.env.user.journal_ids.ids:
+                if payment.journal_id.id in self.env.user.journal_ids.ids and \
+                        self.env.user.has_group(
+                            "account_restrict_journal.user_allowed_journal"):
                     raise ValidationError(_('Restricted journals found.'))
-        if self.journal_id.id in self.env.user.journal_ids.ids:
+        if self.journal_id.id in self.env.user.journal_ids.ids and \
+                self.env.user.has_group(
+                    "account_restrict_journal.user_allowed_journal"):
             raise ValidationError(_('Restricted journals found.'))
 
     @api.onchange('partner_id')

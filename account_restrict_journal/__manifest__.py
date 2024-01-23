@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Restrict Journal for Users",
-    "version": "16.0.2.1.1",
+    "version": "16.0.2.1.2",
     "category": "Accounting",
     "summary": "User can select only allowed journals",
     "description": """ Restrict account journal for the specific users to 
@@ -30,7 +30,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['base', 'base_accounting_kit'],
+    'depends': ['base', 'account'],
     'data': [
         'security/account_journal_security.xml',
         'security/ir_rule.xml',
