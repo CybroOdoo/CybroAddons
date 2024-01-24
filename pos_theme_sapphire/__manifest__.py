@@ -41,7 +41,6 @@
         ],
     },
     'images': [
-        'static/description/icon.png',
         'static/description/banner.jpg',
         'static/description/theme_screenshot.jpg',
     ],
