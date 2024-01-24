@@ -23,8 +23,8 @@
 {
     'name': 'Hide Any Menu User Wise',
     'version': '16.0.1.0.0',
-    'summary': 'Hide Any Menu Item User Wise',
-    'description': 'Hide Any Menu Item User Wise, Hide Menu Items, Hide Menu',
+    'summary': 'Hide Menu,hide menu, hide, hide menus, hide menu odoo,Hide Any Menu Item User Wise',
+    'description': 'Hide Menu,hide menu, hide, hide menus, hide menu odoo,Hide Any Menu Item User Wise, Hide Menu Items, Hide Menu',
     'category': 'Extra Tools',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
