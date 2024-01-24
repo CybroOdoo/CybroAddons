@@ -20,11 +20,13 @@
 #
 ###############################################################################
 {
-    'name': "All in one WhatsApp Integration Odoo16",
+    'name': "All in one Whatsapp",
     'version': '16.0.1.0.0',
     'category': 'Extra Tools',
-    'summary': """WhatsApp Integration In Sale Order, Purchase Order, Delivery Order with Twilio and CloudAPI""",
-    'description': """WhatsApp, WhatsApp Odoo, whatsapp, WhatsApp Integration In Sale Order, Purchase Order, Delivery Order with Twilio and CloudAPI""",
+    'summary': """Send whatsapp messages to the partner""",
+    'description': """ This module helps you to send a whatsapp message to your 
+     partners that are in sale order, purchase order, invoice and bills, and
+     deliver orders.""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

@@ -2,8 +2,8 @@
     :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
-All in one WhatsApp Integration Odoo16
-======================================
+All in one Whatsapp
+===================
 This module helps you to send a whatsapp message to your partners that are in sale order,
 purchase order, invoice and bills, and deliver orders.
 
