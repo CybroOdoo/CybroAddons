@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_venue_booking_management" name="Show Venue Bookings"
+              inherit_id="portal.portal_my_home" customize_show="True"
+              priority="40">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_client_category_enable" t-value="True"/>
+        </xpath>
+        <xpath expr="//div[@id='portal_client_category']" position="inside">
+            <div class="o_portal_index_card col-md-6 order-2">
+                <a href="/my/venue_booking" title="Venue Booking"
+                   class="d-flex justify-content-start gap-2 gap-md-3 align-items-center py-3 pe-2 px-md-3 h-100 rounded text-decoration-none text-reset text-bg-light">
+                    <div class="o_portal_icon align-self-start">
+                        <img data-oe-model="ir.ui.view" data-oe-id="540"
+                             data-oe-field="arch"
+                             data-oe-xpath="/t[1]/div[1]/a[1]/div[1]/img[1]"
+                             src="/purchase/static/src/img/calculator.svg"
+                             loading="lazy" style=""/>
+                    </div>
+                    <div>
+                        <h5 class="mt-0 mb-1 d-flex gap-2">
+                            <span data-oe-model="ir.ui.view" data-oe-id="540"
+                                  data-oe-field="arch"
+                                  data-oe-xpath="/t[1]/div[1]/a[1]/div[2]/h5[1]/span[1]"
+                                  class="d-none"
+                                  data-placeholder_count="venue_booking_count">0
+                            </span>
+                            <span>Venue Booking</span>
+                        </h5>
+                        <p class="m-0 text-600">
+                            Follow and View your Venue Booking
+                            Orders
+                        </p>
+                    </div>
+                </a>
+            </div>
+        </xpath>
+    </template>
+    <!--    Template for showing all corresponding venue in the portal-->
+    <template id="portal_my_home_menu_venue_booking"
+              name="Portal layout : venue menu entries"
+              inherit_id="portal.portal_breadcrumbs" priority="45">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'venue_booking'"
+                t-attf-class="breadcrumb-item #{'active ' if not venue else ''}">
+                <a t-if="venue"
+                   t-attf-href="/my/venue_booking?{{ keep_query() }}">
+                    Venue Booking
+                </a>
+                <t t-else="">Venue Booking</t>
+            </li>
+        </xpath>
+    </template>
+    <!--  Template for list view of visitors record -->
+    <template id="portal_my_venue_booking_documents" name="Venue Booking">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Venue Booking Records</t>
+            </t>
+            <t t-if="not venue">
+                <p>There are currently no Venue Booking for your
+                    account.
+                </p>
+            </t>
+            <div class="view_booking_records">
+                <t t-if="venue" t-call="portal.portal_table">
+                    <thead>
+                        <tr class="active">
+                            <th>
+                                <span class='d-none d-md-inline'>Ref No.
+                                </span>
+                            </th>
+                            <th>
+                                <span class='d-none d-md-inline'>Venue Booking
+                                </span>
+                            </th>
+                            <th>
+                                <span class='d-none d-md-inline'>Venue
+                                </span>
+                            </th>
+                            <th>
+                                <span class='d-none d-md-inline'>Venue Type
+                                </span>
+                            </th>
+                            <th>
+                                <span class='d-none d-md-inline'>Booking Type
+                                </span>
+                            </th>
+                            <th>
+                                <span class='d-none d-md-inline'>State
+                                </span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <t t-foreach="venues" t-as="rec">
+                        <tr>
+                            <td>
+                                <a t-attf-href="/my/booking_data/#{rec.id}?{{ keep_query() }}">
+                                    <span t-field="rec.ref"/>
+                                </a>
+                            </td>
+                            <td>
+                                <span t-field="rec.name"/>
+                            </td>
+                            <td>
+                                <span t-field="rec.venue_id.name"/>
+                            </td>
+                            <td>
+                                <span t-field="rec.venue_type_id.name"/>
+                            </td>
+                            <td>
+                                <span t-field="rec.booking_type"/>
+                            </td>
+                            <td>
+                                <span t-field="rec.state"/>
+                            </td>
+
+                        </tr>
+                    </t>
+                </t>
+            </div>
+        </t>
+    </template>
+    <!--    Booking views-->
+    <template id="booking_portal_form" name="venue_booking_details">
+        <t t-call="portal.portal_layout">
+            <div class="card pb-5">
+                <div>
+                    <t t-foreach="booking_record" t-as="record">
+                        <!-- Intro -->
+                        <div class="pb-2 pt-3 card-header bg-white">
+                            <h2 class="my-0">
+                                <em t-out="record.ref"/>
+                            </h2>
+                        </div>
+                        <!-- Information -->
+                        <div id="informations">
+                            <div class="pb-2 pt-3 card-header bg-white">
+                                <div class="row" id="booking_details"
+                                     string="Venue Booking Details">
+                                    <div class="mb-2 col-8">
+                                        <strong>Venue Booking:</strong>
+                                        <span t-field="record.name"/>
+                                    </div>
+                                    <div class="mb-2 col-8">
+                                        <t t-if="record.venue_id">
+                                            <strong>Venue:</strong>
+                                            <span t-field="record.venue_id.name"/>
+                                        </t>
+                                    </div>
+                                    <div class="mb-2 col-8">
+                                        <t t-if="record.booking_type">
+                                            <strong>Booking Type:</strong>
+                                            <span t-field="record.booking_type"/>
+                                        </t>
+                                    </div>
+                                </div>
+                                <br/>
+                                <div class="row" id="booking_details"
+                                     string="Partner Details">
+                                    <div class="mb-2 col-8">
+                                        <strong>Customer:</strong>
+                                        <span t-field="record.partner_id.name"/>
+                                    </div>
+                                    <div class="mb-2 col-8">
+                                        <t t-if="record.partner_id">
+                                            <strong>Phone:</strong>
+                                            <span t-field="record.partner_id.phone"/>
+                                        </t>
+                                    </div>
+                                </div>
+                                <br/>
+                                <div class="row" id="time_of_visit"
+                                     string="Time of Booking">
+                                    <t t-if="record.start_date">
+                                        <div class="mb-3 col-6">
+                                            <strong>From Date:</strong>
+                                            <span t-field="record.start_date"/>
+                                        </div>
+                                    </t>
+                                    <t t-if="record.end_date">
+                                        <div class="mb-3 col-6">
+                                            <strong>End Time:</strong>
+                                            <span t-field="record.end_date"/>
+                                        </div>
+                                    </t>
+
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+            <div id="labour_order_communication" class="mt-4">
+                <h2>History</h2>
+                <t t-call="portal.message_thread">
+                    <t t-set="object" t-value="booking_record"/>
+                </t>
+            </div>
+        </t>
+    </template>
+</odoo>

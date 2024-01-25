@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--    Records for creating venue Form, tree and actions-->
+    <record id="venue_view_tree" model="ir.ui.view">
+        <field name="name">venue.view.tree</field>
+        <field name="model">venue</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="venue_type_id"/>
+                <field name="capacity"/>
+                <field name="seating"/>
+            </tree>
+        </field>
+    </record>
+    <record id="venue_view_form" model="ir.ui.view">
+        <field name="name">venue.view.form</field>
+        <field name="model">venue</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                            <field name="image" widget="image"
+                                   class="oe_avatar"/>
+                        </group>
+
+                    </group>
+                    <group>
+                        <group>
+                            <field name="venue_type_id"/>
+                            <field name="venue_location"/>
+                        </group>
+                        <group>
+                            <group>
+                                <span>Capacity:<field name="capacity"
+                                                      class="oe_inline"/>Units
+                                </span>
+                            </group>
+                            <group>
+                                <span>Seating:<field name="seating"
+                                                     class="oe_inline"/>Units
+                                </span>
+                            </group>
+
+                        </group>
+                    </group>
+                    <group>
+                        <group name="venue_charge" string="Venue Charges">
+                            <field name="venue_charge_hour"/>
+                            <field name="venue_charge_day"/>
+                        </group>
+                        <group name="additional_charge"
+                               string="Additional Charges">
+                            <field name="additional_charge_hour"/>
+                            <field name="additional_charge_day"/>
+                        </group>
+                    </group>
+                    <group name="hours" string="Hours">
+                        <group>
+                            <field name="open_time" widget="float_time"/>
+                            <field name="closed_time" widget="float_time"/>
+                        </group>
+
+                    </group>
+                    <notebook>
+                        <page name="Amenities">
+                            <field name="venue_line_ids">
+                                <tree string="Amenities" editable="bottom">
+                                    <field name="amenities_id"/>
+                                    <field name="quantity"/>
+                                    <field name="amount"/>
+                                    <field name="sub_total" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right"
+                                   colspan="2" name="event_total">
+                                <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                    <label for="price_subtotal"/>
+                                </div>
+                                <field name="price_subtotal" nolabel="1"
+                                       class="oe_subtotal_footer_separator"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <record id="venue_action" model="ir.actions.act_window">
+        <field name="name">Venue</field>
+        <field name="res_model">venue</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to add Venue.
+            </p>
+            <p>
+                Here you can create different Venue.
+            </p>
+        </field>
+    </record>
+    <!--    Kanban view for the Venue-->
+    <record id="venue_view_kanban" model="ir.ui.view">
+        <field name="name">venue.view.kanban</field>
+        <field name="model">venue</field>
+        <field name="type">kanban</field>
+        <field name="arch" type="xml">
+            <kanban class="oe_background_grey o_kanban_dashboard" create="0">
+                <field name="name"/>
+                <field name="venue_count"/>
+                <field name="id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="col-md-12 oe_kanban_card">
+                            <div>
+                                <button type="edit" string="Settings"
+                                        class="button_background"
+                                        groups="venue_booking_management.venue_booking_management_group_venue_manager"
+                                        style="float: right;margin-top: 2px;background: none !important;border: none !IMPORTANT;FONT-SIZE: 16px;">
+                                    <i class="fa fa-cog" title="setting"/>
+                                </button>
+                            </div>
+                            <div class="o_primary style_event_type col-md-12"
+                                 style="padding-bottom: 4%;">
+                                <div class="col-md-10">
+                                    <a type="object"
+                                       name="get_venue_type_action">
+                                        <h2 style="text-align:left;">
+                                            <field name="name"/>
+                                        </h2>
+                                    </a>
+                                </div>
+                                <div class="col-md-12">
+                                    <img t-att-src="kanban_image('venue', 'image', record.id.raw_value)"
+                                         alt="Image"
+                                         style="width:100%; border-radius: 13px;height:150px;"/>
+                                </div>
+                                <div class="col-md-12">
+                                    <span style="margin-top:  20%;margin-bottom:  2%;font-size: 18px;">
+                                        <span class=" o_primary"
+                                              style="float: left;margin-top:2px;">
+                                            Total Booking :
+                                        </span>
+                                        <field name="venue_count"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!--    Kanban view action for the Venue-->
+    <record id="venue_booking_type_action_view_kanban"
+            model="ir.actions.act_window">
+        <field name="name">Venue Booking Kanban Board</field>
+        <field name="res_model">venue</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="context">{}</field>
+    </record>
+    <menuitem id="venue_booking_management_venue_menu"
+              name="Venue"
+              parent="venue_booking_menu_root" sequence="10"
+              action="venue_action"
+              groups="venue_booking_management.venue_booking_management_group_venue_manager"/>
+</odoo>
