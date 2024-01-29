@@ -32,8 +32,10 @@ class RiskTags(models.Model):
         """ Selecting Color for Tags"""
         return randint(1, 11)
 
-    name = fields.Char('Tag Name', required=True, translate=True, help='Name of Risk tag')
-    color = fields.Integer('Color', default=_get_default_color, help='Select Color of Risk Tag')
+    name = fields.Char('Tag Name', required=True, translate=True,
+                       help='Name of Risk tag')
+    color = fields.Integer('Color', default=_get_default_color,
+                           help='Select Color of Risk Tag')
 
     _sql_constraints = [
         ('name_uniq', 'unique (name)', "Tag name already exists !"),

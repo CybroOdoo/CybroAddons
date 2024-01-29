@@ -43,4 +43,3 @@ class ProjectIncident(models.Model):
                 {'default_user_id': self.user_id.id,
                  'default_project_id': self.id})
         }
-

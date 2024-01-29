@@ -3,7 +3,7 @@
     :alt: License: LGPL-3
 
 Project Task Risk Management Odoo
-======================
+=================================
 * Project Task Risk Management Odoo.
 
 Configuration
