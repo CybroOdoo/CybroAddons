@@ -38,7 +38,7 @@
             'data/mail_template_data.xml',
             'views/ir_cron_views.xml',
             'views/failure_history_views.xml'],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
