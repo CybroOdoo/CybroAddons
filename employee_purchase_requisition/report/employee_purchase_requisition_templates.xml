@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--    purchase requisition report template-->
+    <template id="report_purchase_requisition">
+        <t t-call="web.external_layout">
+            <t t-call="web.html_container">
+                <div class="page">
+                    <t t-foreach="records" t-as="rec">
+                        <h5>Purchase Requisition :
+                            <t t-if="rec['name']">
+                            <t t-esc="rec['name']"/>
+                            </t>
+                        </h5>
+                        <table class="table table-striped">
+                            <tr>
+                                <th>Employee</th>
+                                <td>
+                                    <t t-if="rec['employee_id']">
+                                    <t t-esc="rec['employee_id'][1]"/>
+                                    </t>
+                                </td>
+                                <th>Requisition Date</th>
+                                <td>
+                                    <t t-if="rec['employee_id']">
+                                    <t t-esc="rec['requisition_date']"/>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Department</th>
+                                <td>
+                                    <t t-if="rec['dept_id']">
+                                    <t t-esc="rec['dept_id'][1]"/>
+                                    </t>
+                                </td>
+                                <th>Received Date</th>
+                                <td>
+                                    <t t-if="rec['receive_date']">
+                                    <t t-esc="rec['receive_date']"/>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Requisition Responsible</th>
+                                <td>
+                                    <t t-if="rec['user_id']">
+                                    <t t-esc="rec['user_id'][1]"/>
+                                    </t>
+                                </td>
+                                <th>Requisition Deadline</th>
+                                <td>
+                                    <t t-if="rec['requisition_deadline']">
+                                    <t t-esc="rec['requisition_deadline']"/>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Company</th>
+                                <td>
+                                    <t t-if="rec['company_id']">
+                                    <t t-esc="rec['company_id'][1]"/>
+                                    </t>
+                                </td>
+                            </tr>
+                        </table>
+                        <h5>Other Information</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Confirmed By</th>
+                                <td>
+                                    <t t-if="rec['confirm_id']">
+                                    <t t-esc="rec['confirm_id'][1]"/>
+                                    </t>
+                                </td>
+                                <th>Confirmed Date</th>
+                                <td>
+                                    <t t-if="rec['confirmed_date']">
+                                    <t t-esc="rec['confirmed_date']"/>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Department Manager</th>
+                                <td>
+                                    <t t-if="rec['manager_id']">
+                                    <t t-esc="rec['manager_id'][1]"/>
+                                    </t>
+                                </td>
+                                <th>Department Approval Date</th>
+                                <td>
+                                    <t t-if="rec['department_approval_date']">
+                                    <t t-esc="rec['department_approval_date']"/>
+                                    </t>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th>Approved By:</th>
+                                <td>
+                                    <t t-if="rec['requisition_head_id']">
+                                    <t t-esc="rec['requisition_head_id'][1]"/>
+                                    </t>
+                                </td>
+                                <th>Approved Date:</th>
+                                <td>
+                                    <t t-if="rec['approval_date']">
+                                    <t t-esc="rec['approval_date']"/>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Rejected By</th>
+                                <td>
+                                    <t t-if="rec['rejected_user_id']">
+                                        <t t-esc="rec['rejected_user_id'][1]"/>
+                                    </t>
+                                </td>
+                                <th>Rejected Date</th>
+                                <td>
+                                    <t t-if="rec['reject_date']">
+                                        <t t-esc="rec['reject_date']"/>
+                                    </t>
+                                </td>
+                            </tr>
+                        </table>
+                        <h5>Picking Details</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Source Location</th>
+                                <td>
+                                     <t t-if="rec['source_location_id']">
+                                    <t t-esc="rec['source_location_id'][1]"/>
+                                     </t>
+                                </td>
+                                <th>Destination Location</th>
+                                <td>
+                                    <t t-if="rec['source_location_id']">
+                                    <t t-esc="rec['destination_location_id'][1]"/>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <t t-if="rec['delivery_type_id']">
+                                    <th>Delivery To</th>
+                                    <td>
+                                        <t t-esc="rec['delivery_type_id'][1]"/>
+                                    </td>
+                                </t>
+                                <t t-if="rec['internal_picking_id']">
+                                    <th>Internal Transfer</th>
+                                    <td>
+                                        <t t-esc="rec['internal_picking_id'][1]"/>
+                                    </td>
+                                </t>
+                            </tr>
+                        </table>
+                    </t>
+
+                    <h5>Requisition Lines</h5>
+                    <table class='table'>
+                        <thead>
+                            <th>Requisition Action</th>
+                            <th>Product</th>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Unit Of Measure</th>
+                        </thead>
+                        <t t-foreach="order_ids" t-as="order">
+                            <tbody>
+                                <td>
+                                    <t t-if="order['requisition_type']=='internal_transfer'">
+                                        Internal Transfer
+                                    </t>
+                                    <t t-if="order['requisition_type']=='purchase_order'">
+                                        Purchase Order
+                                    </t>
+                                </td>
+                                <td>
+                                    <t t-if="order['product_id']">
+                                    <t t-esc="order['product_id'][1]"/>
+                                    </t>
+                                </td>
+                                <td>
+                                    <t t-if="order['description']">
+                                    <t t-esc="order['description']"/>
+                                    </t>
+                                </td>
+                                <td>
+                                    <t t-if="order['quantity']">
+                                    <t t-esc="order['quantity']"/>
+                                    </t>
+                                </td>
+                                <td><t t-if="order['uom']">
+                                    <t t-esc="order['uom']"/>
+                                </t>
+                                </td>
+                            </tbody>
+                        </t>
+                    </table>
+                    <h5>Employee Signature :</h5>
+                    <h5>Manager Signature :</h5>
+                    <h5>Approve Signature :</h5>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
+
