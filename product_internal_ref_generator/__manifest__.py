@@ -20,25 +20,25 @@
 #
 ###############################################################################
 {
-    'name': 'Product Internal Reference Generator',
-    'version': '16.0.1.0.0',
-    'category': 'Warehouse',
-    'summary': 'In this Module we can generate internal references',
-    'description': "Generating internal reference for the products "
-                   "based on the product details",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['sale_management'],
-    'data': [
-        'data/ir_sequence_data.xml',
-        'data/ir_actions_server_data.xml',
-        'views/res_config_settings_views.xml',
+    "name": "Product Internal Reference Generator",
+    "version": "16.0.1.0.0",
+    "category": "Warehouse",
+    "summary": "In this Module we can generate internal references",
+    "description": "Generating internal reference for the products "
+    "based on the product details",
+    "author": "Cybrosys Techno Solutions",
+    "company": "Cybrosys Techno Solutions",
+    "maintainer": "Cybrosys Techno Solutions",
+    "website": "https://www.cybrosys.com",
+    "depends": ["sale_management"],
+    "data": [
+        "data/ir_sequence_data.xml",
+        "data/ir_actions_server_data.xml",
+        "views/res_config_settings_views.xml",
     ],
-    'images': ['/static/description/banner.png'],
-    'license': 'LGPL-3',
-    'installable': True,
-    'application': False,
-    'auto_install': False,
+    "images": ["static/description/banner.png"],
+    "license": "LGPL-3",
+    "installable": True,
+    "application": False,
+    "auto_install": False,
 }
