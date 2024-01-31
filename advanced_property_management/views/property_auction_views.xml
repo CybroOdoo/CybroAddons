@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Property auction action -->
+    <record id="property_auction_action" model="ir.actions.act_window">
+        <field name="name">Property Auction</field>
+        <field name="res_model">property.auction</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Property Auction
+            </p>
+        </field>
+    </record>
+    <!-- Property auction menui tems -->
+    <menuitem id="property_auction_menu" name="Property Auction"
+              parent="property_menu"
+              action="property_auction_action" sequence="10"/>
+    <!-- Property auction form view -->
+    <record id="property_auction_view_form" model="ir.ui.view">
+        <field name="name">property.auction.view.from</field>
+        <field name="model">property.auction</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,started"/>
+                    <button name='action_confirm' string='Confirm'
+                            class='oe_highlight' type='object'
+                            attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                    <button name='action_start' string='Start'
+                            class='oe_highlight' type='object'
+                            attrs="{'invisible': [('state', '!=', 'confirmed')]}"/>
+                    <button name='action_end' string='End'
+                            class='oe_highlight' type='object'
+                            attrs="{'invisible': [('state', '!=', 'started')]}"/>
+                    <button name='action_create_sale_order'
+                            string='Create Sale Order'
+                            type='object' class='oe_highlight'
+                            attrs="{'invisible': ['|',('state', '!=', 'ended'),('sold', '=', True)]}"/>
+                    <button name='action_cancel' string='Cancel'
+                            type='object'
+                            attrs="{'invisible': [('state', 'in', ['draft','ended'])]}"/>
+                </header>
+                <sheet>
+                    <div name="button_box" class="oe_button_box">
+                        <button name="action_view_sale_order"
+                                string='Sale Order' type="object"
+                                class="oe_stat_button" icon="fa-dollar"
+                                attrs="{'invisible':[('sold','=',False)]}"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="auction_seq"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="property_id"/>
+                            <field name="responsible_id"/>
+                            <field name="start_time"/>
+                            <field name="end_time"/>
+                        </group>
+                        <group>
+                            <field name="sold" invisible="1"/>
+                            <field name="bid_start_price"/>
+                            <field name="final_price"/>
+                            <field name="auction_winner_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Participant">
+                            <field name="participant_ids"
+                                   attrs="{'readonly': [('state', '!=', 'started')]}">
+                                <tree editable="bottom">
+                                    <field name="partner_id"/>
+                                    <field name="bid_time"/>
+                                    <field name="bid_amount"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Property auction tree view -->
+    <record id="property_auction_view_tree" model="ir.ui.view">
+        <field name="name">property.auction.view.tree</field>
+        <field name="model">property.auction</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="auction_seq"/>
+                <field name="property_id"/>
+                <field name="responsible_id"/>
+                <field name="bid_start_price"/>
+                <field name="final_price"/>
+                <field name="start_time"/>
+                <field name="auction_winner_id"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

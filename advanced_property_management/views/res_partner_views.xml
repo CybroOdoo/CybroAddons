@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Partner form view inherit -->
+    <record id="view_partner_form" model="ir.ui.view">
+        <field name="name">
+            res.partner.view.form.inherit.advanced.property.management
+        </field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_add_blacklist"
+                            class="btn btn-secondary" string="Add To Blacklist"
+                            type="object"
+                            attrs="{'invisible': [('blacklisted','!=',False)]}"/>
+                    <button name="action_remove_blacklist"
+                            class="btn btn-secondary"
+                            string="Remove From Blacklist"
+                            type="object"
+                            attrs="{'invisible': [('blacklisted','!=',True)]}"/>
+                </header>
+            </xpath>
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="blacklisted" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+    <!-- Partner form view inherit -->
+    <record id="blacklist_res_partner_action" model="ir.actions.act_window">
+        <field name="name">Customers</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('blacklisted','=',True)]</field>
+    </record>
+    <!-- Partner menu items -->
+    <menuitem id="customers_menu" name="Customers" parent="property_root_menu"
+              sequence="5"/>
+    <menuitem id="property_customers_menu" name="Customers"
+              parent="customers_menu"
+              action="base.action_partner_form" sequence="3"/>
+    <menuitem id="property_customers_blacklisted_menu" name="Blacklisted"
+              parent="customers_menu"
+              action="blacklist_res_partner_action" sequence="5"/>
+</odoo>
