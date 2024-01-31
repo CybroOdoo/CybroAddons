@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Template for time and slots-->
+    <template id="table_reservation" name="Table Reservation">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <section class="s_website_form" data-vcss="001"
+                         data-snippet="s_website_form">
+                    <div class="container">
+                        <form action="/restaurant/floors" method="POST"
+                              enctype="multipart/form-data"
+                              class="oe_import">
+                            <input type="hidden" name="csrf_token"
+                                   t-att-value="request.csrf_token()"/>
+                            <center>
+                                <br/>
+                                <br/>
+                                <h1>
+                                    <b>Table Reservation</b>
+                                </h1>
+                                <br/>
+                                <br/>
+                                <div>
+                                    <div class="form-group row"
+                                         style="width:70%;padding-left:15%;">
+                                        <label for="date"
+                                               class="col-2 col-form-label">
+                                            Date
+                                        </label>
+                                        <div class="col-4">
+                                            <input type="date"
+                                                   name="date"
+                                                   class="form-control"
+                                                   id="date"
+                                                   required="1"/>
+                                        </div>
+                                    </div>
+                                    <br/>
+                                </div>
+                            </center>
+                            <center>
+                                <div class="s_website_form_rows row s_col_no_bgcolor">
+                                    <div class="row"
+                                         style="padding-left:32%;width:85%;">
+                                        <div class="col-2">
+                                            <strong>Slots:</strong>
+                                        </div>
+                                        <div class="col-2">
+                                            <label for="start_time">
+                                                Start Time
+                                            </label>
+                                        </div>
+                                        <div class="col-3">
+                                            <input id="start_time"
+                                                   name="start_time"
+                                                   type="time"
+                                                   class="form-control s_website_form_input"
+                                                   required="1"/>
+                                        </div>
+                                    </div>
+                                    <br/>
+                                    <br/>
+                                    <div class="row"
+                                         style="padding-left:40%;width:95%;">
+                                        <div class="col-2">
+                                            <label for="end_time">
+                                                End Time
+                                            </label>
+                                        </div>
+                                        <div class="col-3">
+                                            <input id="end_time"
+                                                   name="end_time"
+                                                   type="time"
+                                                   class="form-control s_website_form_input"
+                                                   required="1"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </center>
+                            <br/>
+                            <div class="row" data-name="Submit Button">
+                                <div class="col-sm-2" style="padding-left:45%;">
+                                    <button type="submit"
+                                            class="btn btn-primary">
+                                        Submit
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+    <!--    Template for floors-->
+    <template id="restaurant_floors" name="Admission Submit">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <section class="s_website_form" data-vcss="001"
+                         data-snippet="s_website_form">
+                    <div class="container">
+                        <br/>
+                        <br/>
+                        <form action="/booking/confirm" method="POST"
+                              enctype="multipart/form-data"
+                              class="oe_import">
+                            <div class="row">
+                                <div class="col-2">
+                                    <span>Select Your Floor</span>
+                                </div>
+                                <div class="col-2" id="restaurant_floors">
+                                    <select name="floors"
+                                            id="floors_rest"
+                                            class="form-control">
+                                        <option value="0">Select a
+                                            Floor</option>
+                                        <t t-foreach="floors" t-as="floor">
+                                            <option t-att-value="floor.id">
+                                                <t t-esc="floor.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+                            </div>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <div id="info" style=" display: none;">
+                                <div id="tableContainer"
+                                     style="width:100%;display:flex;">
+                                    <div class="row" id="table_container_row">
+                                    </div>
+                                    <div class="card"
+                                         style="background-color:#c8e0e0;width:1000px;height:370px;border:0;">
+                                        <div class="card-body"
+                                             style="border:1px;">
+                                            <h5 class="card-title"
+                                                style="Font-size:45px;">Booking
+                                                Info
+                                            </h5>
+                                            <table style="border:0;">
+                                                <tr>
+                                                    <td>
+                                                        Date:
+                                                    </td>
+                                                    <td style="text-align:right;">
+                                                        <t t-esc="date"/>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Start Time:</td>
+                                                    <td style="text-align:right;">
+                                                        <t t-esc="start_time"/>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>End Time:</td>
+                                                    <td style="text-align:right;">
+                                                        <t t-esc="end_time"/>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>Booking Amount
+                                                            For <span
+                                                                    id="count_table">
+                                                                0
+                                                            </span>Tables
+                                                        </b>
+                                                    </td>
+                                                    <td style="text-align:right;">
+                                                        <span id="total_amount">
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            <span hidden="hidden">
+                                                <input name="date"
+                                                       id="date_id"
+                                                       class="form-control border-0 p-0"
+                                                       type="text"
+                                                       data-allow-hotkeys="true"
+                                                       t-att-value="date"
+                                                       t-ref="autofocus"/>
+                                                <input name="start_time"
+                                                       id="start_id"
+                                                       class="form-control border-0 p-0"
+                                                       type="text"
+                                                       data-allow-hotkeys="true"
+                                                       t-att-value="start_time"
+                                                       t-ref="autofocus"/>
+                                                <input name="end_time"
+                                                       class="form-control border-0 p-0"
+                                                       type="text"
+                                                       data-allow-hotkeys="true"
+                                                       t-att-value="end_time"
+                                                       t-ref="autofocus"/>
+                                                <input name="tables"
+                                                       id="tables_input"
+                                                       class="form-control border-0 p-0"
+                                                       type="text"
+                                                       data-allow-hotkeys="true"
+                                                       t-ref="autofocus">
+                                                </input>
+                                            </span>
+                                            <button type="submit"
+                                                    class="btn btn-primary">
+                                                Booking Confirm
+                                            </button>
+                                        </div>
+                                        <div style="line-height:1px;background: #ffffff;border:0;">
+                                        </div>
+                                        <t t-if="payment">
+                                        <div style="background: #ffffff;border:0;color:#FF0000;">
+                                        <t t-esc="refund"/>
+                                    </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                            <br/>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>
