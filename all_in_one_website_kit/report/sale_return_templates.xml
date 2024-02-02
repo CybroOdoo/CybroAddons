@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Sales Return Report Template-->
+    <template id="report_salereturn">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="all_in_one_website_kit.report_sale_return_template"
+                   t-lang="doc.partner_id.lang"/>
+            </t>
+        </t>
+    </template>
+    <template id="report_sale_return_template">
+        <t t-call="web.external_layout">
+            <t t-set="doc"
+               t-value="doc.with_context(lang=doc.partner_id.lang)"/>
+            <div class="page">
+                <div class="oe_structure"/>
+                <h2 class="mt16">
+                    <span>Return Order #</span>
+                    <span t-field="doc.name"/>
+                </h2>
+                <div class="row mt32 mb32" id="informations">
+                    <div t-if="doc.partner_id"
+                         class="col-auto col-3 mw-100 mb-2">
+                        <strong>Customer:</strong>
+                        <p class="m-0" t-field="doc.partner_id"/>
+                    </div>
+                    <div t-if="doc.order_id" class="col-auto col-3 mw-100 mb-2">
+                        <strong>Sale Order:</strong>
+                        <p class="m-0" t-field="doc.order_id"/>
+                    </div>
+                    <div t-if="doc.create_date"
+                         class="col-auto col-3 mw-100 mb-2">
+                        <strong>Creation Date:</strong>
+                        <p class="m-0" t-field="doc.create_date"
+                           t-options='{"widget": "date"}'/>
+                    </div>
+                    <div t-if="doc.user_id"
+                         class="col-auto col-3 mw-100 mb-2"
+                         name="expiration_date">
+                        <strong>Responsible:</strong>
+                        <p class="m-0" t-field="doc.user_id"/>
+                    </div>
+                </div>
+                <table class="table table-sm o_main_table">
+                    <!-- In case we want to repeat the header, remove "display: table-row-group" -->
+                    <thead style="display: table-row-group">
+                        <tr>
+                            <th name="th_description" class="text-left">
+                                Product
+                            </th>
+                            <th name="th_quantity" class="text-right">Quantity
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="sale_tbody">
+                        <tr t-att-class="'bg-200 font-weight-bold'">
+                            <td name="td_product">
+                                <span t-field="doc.product_id"/>
+                            </td>
+                            <td name="td_quantity" class="text-right">
+                                <span t-field="doc.quantity"/>
+                                <span t-field="doc.product_id.uom_id"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div t-if="doc.partner_id" class="col-auto col-3 mw-100 mb-2">
+                    <strong>Reason:</strong>
+                    <p class="m-0" t-field="doc.reason"/>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

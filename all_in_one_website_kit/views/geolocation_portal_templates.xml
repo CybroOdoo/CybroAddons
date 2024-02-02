@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Template for rearranging fields from my_account page in website  -->
+    <template id="website_geolocation_fields"
+              inherit_id="portal.portal_my_details_fields">
+        <xpath expr="//input[@name='city']" position="replace">
+            <input type="text" id="cities" name="city"
+                   t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}"
+                   t-att-value="city or partner.city"/>
+        </xpath>
+        <xpath expr="//input[@name='zipcode']" position="replace">
+            <input type="text" name="zipcode" id="p_code"
+                   t-attf-class="form-control #{error.get('zip') and 'is-invalid' or ''}"
+                   t-att-value="zipcode or partner.zip"/>
+        </xpath>
+        <xpath expr="//select[@name='country_id']" position="replace">
+            <br/>
+            <input class="form-control" style="width: 100%" type="text"
+                   name="country_id" id="country_show"
+                   t-att-value=""/>
+        </xpath>
+        <xpath expr="//select[@name='state_id']" position="replace">
+            <select name="state_id" id="state_geo"
+                    t-attf-class="form-select #{error.get('state_id') and 'is-invalid' or ''}">
+                <option value="">select...</option>
+                <t t-foreach="states or []" t-as="state">
+                    <option t-att-value="state.id" style="display:none;"
+                            t-att-data-country_id="state.country_id.id"
+                            t-att-selected="state.id == int(state_id) if state_id else state.id == partner.state_id.id">
+                        <t t-esc="state.name"/>
+                    </option>
+                </t>
+            </select>
+        </xpath>
+    </template>
+    <!--    Template for adding GoogleMap to our website  -->
+    <template id="website_geolocation" inherit_id="portal.portal_my_details">
+        <xpath expr="//div[hasclass('o_portal_details')]" position="inside">
+            <div id="wrap">
+                <div class="map_containers">
+                    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+                    <script src="https://www.npmjs.com/package/@googlemaps/js-api-loader"></script>
+                    <div id="map-wrapper row">
+                        <script defer="defer" t-attf-src="https://maps.googleapis.com/maps/api/js?key={{api}}&amp;callback=_onMapLoads&amp;v=weekly&amp;sensor=false&amp;libraries=places"></script>
+                        <div class="row" style="float: right;width: 100%;height: 450px;" id="map" />
+                    </div>
+                </div>
+            </div>
+            <script type="text/javascript"
+                    src="//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"/>
+            <script>
+                <!--            Function for load map in google map router  -->
+                _onMapLoads = function () {
+                var latlong;
+                var lat_lng;
+                var lat;
+                var lng;
+                var address = document.getElementById("cities").value
+                <!--          ajax function for pass value to controller using dynamic router -->
+                $.ajax({
+                url: '/geo/location/' + address,
+                type: 'post',
+                contentType: 'Application/json',
+                dataType: 'Application/json',
+                data:JSON.stringify({main:address}),
+                success: function(data) {
+                lat_lng = JSON.parse(data);
+                lat = lat_lng.result.lat
+                lng = lat_lng.result.lng
+                var country_show = lat_lng.result.country
+                var p_code = lat_lng.result.p_code
+                $('#country_show').val(country_show);
+                $('#p_code').val(p_code);
+                const location = { lat: lat, lng: lng };
+                const map = new
+                google.maps.Map(document.getElementById("map"),
+                {
+                zoom: 12,
+                center: location,
+                });
+                const marker = new google.maps.Marker({
+                position: location,
+                map: map,
+                });
+                let InfoWindow = new google.maps.InfoWindow({
+                content: "Click in the map to get Latitude/Longitude!",
+                position: location,
+                });
+                InfoWindow.open(map);
+                // Configure the click listener.
+                map.addListener("click", (mapsMouseEvent) => {
+                // Close the current InfoWindow.
+                InfoWindow.close();
+                // Create a new InfoWindow.
+                InfoWindow = new google.maps.InfoWindow({
+                position: mapsMouseEvent.latLng,
+                });
+                InfoWindow.setContent(
+                JSON.stringify(mapsMouseEvent.latLng.toJSON(), null, 2)
+                );
+                InfoWindow.open(map);
+                var coordinates=InfoWindow.content
+                var j=InfoWindow
+                latlong = JSON.parse(coordinates);
+                $.ajax({
+                url: '/geo/change/' + coordinates,
+                type: 'post',
+                contentType: 'Application/json',
+                dataType: 'Application/json',
+                data:JSON.stringify({main:coordinates}),
+                success: function(data) {
+                }, error: function(data){
+                var addrs = JSON.parse(data.responseText);
+                <!--                                        if (addrs){-->
+                var city = addrs.result.city
+                var suburb = addrs.result.suburb
+                var state = addrs.result.state
+                var country = addrs.result.country
+                var p_code = addrs.result.p_code
+                if (suburb) {
+                $('#cities').val(suburb);
+                }
+                else {
+                $('#cities').val(city);
+                }
+                $('#p_code').val(p_code);
+                $('#country_show').val(country);
+                $('#geo_state').val("2");
+                <!--                                        }-->
+                }
+                })
+                });
+                }, error: function(data){
+                lat_lng = JSON.parse(data.responseText);
+                lat = lat_lng.result.lat
+                lng = lat_lng.result.lng
+                var country_show = lat_lng.result.country
+                var p_code = lat_lng.result.p_code
+                $('#country_show').val(country_show);
+                $('#p_code').val(p_code);
+                const location = { lat: lat, lng: lng };
+                const map = new
+                google.maps.Map(document.getElementById("map"),
+                {
+                zoom: 12,
+                center: location,
+                });
+                const marker = new google.maps.Marker({
+                position: location,
+                map: map,
+                });
+                let InfoWindow = new google.maps.InfoWindow({
+                content: "Click in the map to get Latitude/Longitude!",
+                position: location,
+                });
+                InfoWindow.open(map);
+                // Configure the click listener.
+                map.addListener("click", (mapsMouseEvent) => {
+                // Close the current InfoWindow.
+                InfoWindow.close();
+                // Create a new InfoWindow.
+                InfoWindow = new google.maps.InfoWindow({
+                position: mapsMouseEvent.latLng,
+                });
+                InfoWindow.setContent(
+                JSON.stringify(mapsMouseEvent.latLng.toJSON(), null, 2)
+                );
+                InfoWindow.open(map);
+                var coordinates =InfoWindow.content
+                var j=InfoWindow
+                latlong = JSON.parse(coordinates);
+                $.ajax({
+                url: '/geo/change/' + coordinates,
+                type: 'post',
+                contentType: 'Application/json',
+                dataType: 'Application/json',
+                data:JSON.stringify({main:coordinates}),
+                success: function(data) {
+                }, error: function(data){
+                var addrs = JSON.parse(data.responseText);
+                var city = addrs.result.city
+                var suburb = addrs.result.suburb
+                var state = addrs.result.state
+                var country = addrs.result.country
+                var p_code = addrs.result.p_code
+                if (suburb) {
+                $('#cities').val(suburb);
+                }
+                else {
+                $('#cities').val(city);
+                }
+                $('#p_code').val(p_code);
+                $('#country_show').val(country);
+                $('#geo_state').val("2");
+                }
+                })
+                });
+                }
+                })
+                }
+                document.getElementById("cities").addEventListener("change",
+                _onMapLoads);
+            </script>
+        </xpath>
+    </template>
+</odoo>
