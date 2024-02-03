@@ -63,7 +63,7 @@
         ],
     },
     'images': ['static/description/banner.png',
-               'static/src/images/thumbnail/theme_coffee.jpeg'],
+               'static/description/theme_screenshot.png'],
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
