@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Mail activity form view-->
+    <record id="mail_activity_view_form" model="ir.ui.view">
+        <field name="name">mail.activity.view.form</field>
+        <field name="model">mail.activity</field>
+        <field name="arch" type="xml">
+            <form string="Log an Activity" create="false">
+                <header>
+                    <field name="id" invisible="1"/>
+                    <button invisible="chaining_type == 'trigger' or state == 'done'"
+                            string="Mark as Done" name="action_done"
+                            type="object" class="btn-secondary" data-hotkey="w"
+                            context="{'mail_activity_quick_update': True}"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="planned,today,done"/>
+                </header>
+                <sheet string="Activity">
+                    <group>
+                        <group>
+                            <field name="activity_type_id" required="1"
+                                   readonly="state == 'done'"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="summary" readonly="state == 'done'"
+                                   placeholder="e.g. Discuss proposal"/>
+                            <field name="active" readonly="state == 'done'"/>
+                        </group>
+                        <group>
+                            <field name="chaining_type" invisible="1"/>
+                            <field name="res_model" invisible="1"/>
+                            <field name="date_deadline"
+                                   readonly="state == 'done'"/>
+                            <field name="activity_tag_ids"
+                                   readonly="state == 'done'"
+                                   widget="many2many_tags"
+                                   options="{'color_field': 'color'}"/>
+                        </group>
+                    </group>
+                    <field name="note" readonly="state == 'done'"
+                           class="oe-bordered-editor"
+                           placeholder="Log a note..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--Inherit mail activity tree view to add extra fields-->
+    <record id="mail_activity_view_tree" model="ir.ui.view">
+        <field name="name">mail.activity.view.tree.inherit.activity.dashboard
+            .mngmnt
+        </field>
+        <field name="model">mail.activity</field>
+        <field name="priority" eval="30"/>
+        <field name="inherit_id" ref="mail.mail_activity_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date_deadline']" position="after">
+                <field name="activity_tag_ids" widget="many2many_tags"
+                       options="{'color_field': 'color'}"/>
+            </xpath>
+        </field>
+    </record>
+    <!--    Activity Dashboard menu-->
+    <menuitem id="activity_menu_root" name="Activity Management" sequence="25"
+              web_icon="activity_dashboard_mngmnt,static/description/icon.png"/>
+    <!--   Mail activity Menu-->
+    <menuitem id="mail_activity_menu" name="Activity"
+              parent="activity_menu_root"
+              action="mail.mail_activity_action"
+              sequence="2"/>
+</odoo>

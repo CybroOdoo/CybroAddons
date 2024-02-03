@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <!--    Dashboard template-->
+    <t t-name="ActivityDashboard">
+        <div>
+            <div class="form-group">
+                <h1 class="head" style="margin: 20px;">Activity Dashboard</h1>
+            </div>
+            <div>
+                <div class="table_view">
+                    <t t-call="ManageActivity"/>
+                </div>
+            </div>
+        </div>
+    </t>
+    <t t-name="ManageActivity">
+        <section class="dashboard_main_section">
+            <div class="activity_dash_card row">
+                <div class="col-sm-6 col-md-4">
+                    <div
+                            class="activity-dashboard-card activity-my-activity all_activity"
+                            t-on-click="show_all_activities">
+                        <div class="activity-dashboard-card__icon-container d-flex">
+                            <i class="fa fa-clock-o text-mauve"/>
+                        </div>
+                        <div>
+                            <t t-esc="len_all"/>
+                        </div>
+                        <div class="dashboard-card__detail">
+                            <h2 class="head">All Activities</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="activity-dashboard-card planned_activity"
+                         t-on-click="show_planned_activities">
+                        <div class="activity-dashboard-card__icon-container d-flex">
+                            <i class="fa fa-clock-o text-mauve"/>
+                        </div>
+                        <div>
+                            <t t-esc="len_planned"/>
+                        </div>
+                        <div class="dashboard-card__detail">
+                            <h2 class="head">Planned Activities</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="activity-dashboard-card completed_activity"
+                         t-on-click="show_completed_activities">
+                        <div class="activity-dashboard-card__icon-container d-flex">
+                            <i class="fa fa-clock-o text-mauve"/>
+                        </div>
+                        <div>
+                            <t t-esc="len_done"/>
+                        </div>
+                        <div class="dashboard-card__detail">
+                            <h2 class="head">Completed Activities</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="activity-dashboard-card today_activity"
+                         t-on-click="show_today_activities">
+                        <div class="activity-dashboard-card__icon-container d-flex">
+                            <i class="fa fa-clock-o text-mauve"/>
+                        </div>
+                        <div>
+                            <t t-esc="len_today"/>
+                        </div>
+                        <div class="dashboard-card__detail">
+                            <h2 class="head">Today's Activities</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="activity-dashboard-card overdue_activity"
+                         t-on-click="show_overdue_activities">
+                        <div class="activity-dashboard-card__icon-container d-flex">
+                            <i class="fa fa-clock-o text-mauve"/>
+                        </div>
+                        <div>
+                            <t t-esc="len_overdue"/>
+                        </div>
+                        <div class="dashboard-card__detail">
+                            <h2 class="head">Overdue Activities</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="activity-dashboard-card activity_type"
+                         t-on-click="show_activity_types">
+                        <div class="activity-dashboard-card__icon-container d-flex">
+                            <i class="fa fa-clock-o text-mauve"/>
+                        </div>
+                        <div>
+                            <t t-esc="activity_type"/>
+                        </div>
+                        <div class="dashboard-card__detail">
+                            <h2 class="head">Activity Types</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="table_activity table_planned_activity">
+            <table id="planned-table" cellspacing="10" width="100%">
+                <thead>
+                    <tr>
+                        <th colspan="6" class="activity_head">Planned
+                            Activities
+                        </th>
+                    </tr>
+                    <t t-if="planned_activity == ''">
+                        <td>No Data Available</td>
+                    </t>
+                </thead>
+                <t t-if="planned_activity != ''">
+                    <thead class="table table-bordered mt32">
+                        <tr class="table_head">
+                            <th class="table_head_" style="width:25%">Name</th>
+                            <th class="table_head_">Activity Type</th>
+                            <th class="table_head_">Assigned to</th>
+                            <th class="table_head_">Dead Line Date</th>
+                            <th class="table_head_">View</th>
+                            <th class="table_head_">Origin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="planned_activity" t-as="line"
+                            t-key="line.id">
+                            <td>
+                                <t t-esc="line['display_name']"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['activity_type_id']['1']"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['user_id']['1']"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['date_deadline']"/>
+                            </td>
+                            <td>
+                                <button t-att-value="line['id']"
+                                        t-on-click="click_view"
+                                        class="click-view">
+                                    View
+                                </button>
+                            </td>
+                            <td>
+                                <button t-att-value="line['id']"
+                                        class="click-origin-view"
+                                        t-on-click="click_origin">
+                                    Origin
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </t>
+            </table>
+           <div id="pagination-container"/>
+        </div>
+        <div class="table_activity table_today_activity">
+            <table cellspacing="10" width="100%">
+                <thead>
+                    <tr>
+                        <th colspan="6" class="activity_head">Today's
+                            Activities
+                        </th>
+                    </tr>
+                    <t t-if="today_activity == ''">
+                        <td>No Data Available</td>
+                    </t>
+                </thead>
+                <t t-if="today_activity != ''">
+                    <thead class="table table-bordered mt32">
+                        <tr class="table_head">
+                            <th class="table_head_" style="width:25%">Name</th>
+                            <th class="table_head_">Activity Type</th>
+                            <th class="table_head_">Assigned to</th>
+                            <th class="table_head_">Dead Line Date</th>
+                            <th class="table_head_">View</th>
+                            <th class="table_head_">Origin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="today_activity" t-as="line"
+                            t-key="line.id">
+                            <td>
+                                <t t-esc="line['display_name']"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['activity_type_id']['1']"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['user_id']['1']"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['date_deadline']"/>
+                            </td>
+                            <td>
+                                <button t-att-value="line['id']"
+                                        class="click-view"
+                                        t-on-click="click_view">
+                                    View
+                                </button>
+                            </td>
+                            <td>
+                                <button t-att-value="line['id']"
+                                        class="click-origin-view"
+                                        t-on-click="click_origin">
+                                    Origin
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </t>
+            </table>
+        </div>
+        <div class="table_activity table_main_view">
+            <table cellspacing="10" width="100%">
+                <thead>
+                    <tr>
+                        <th colspan="6" class="activity_head">Completed
+                            Activities
+                        </th>
+                    </tr>
+                    <t t-if="done_activity == ''">
+                        <td>No Data Available</td>
+                    </t>
+                </thead>
+                <t t-if="done_activity != ''">
+                    <thead class="table table-bordered mt32">
+                        <tr class="table_head">
+                            <th class="table_head_">Name</th>
+                            <th class="table_head_">Activity Type</th>
+                            <th class="table_head_">Assigned to</th>
+                            <th class="table_head_">Dead Line Date</th>
+                            <th class="table_head_">View</th>
+                            <th class="table_head_">Origin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="done_activity" t-as="line"
+                            t-key="line.id">
+                            <td style="width:25%">
+                                <t t-esc="line['display_name']"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['activity_type_id']['1']"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['user_id']['1']"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['date_deadline']"/>
+                            </td>
+                            <td>
+                                <button t-att-value="line['id']"
+                                        class="click-view"
+                                        t-on-click="click_view">
+                                    View
+                                </button>
+                            </td>
+                            <td>
+                                <button t-att-value="line['id']"
+                                        t-on-click="click_origin"
+                                        class="click-origin-view">
+                                    Origin
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </t>
+            </table>
+        </div>
+        <div class="table_activity table_main_view">
+            <table cellspacing="10" width="100%">
+                <thead>
+                    <tr>
+                        <th colspan="6" class="activity_head">Overdue
+                            Activities
+                        </th>
+                    </tr>
+                    <t t-if="overdue_activity == ''">
+                        <td>No Data Available</td>
+                    </t>
+                </thead>
+                <t t-if="overdue_activity != ''">
+                    <thead class="table table-bordered mt32">
+                        <tr class="table_head">
+                            <th class="table_head_">Name</th>
+                            <th class="table_head_">Activity Type</th>
+                            <th class="table_head_">Assigned to</th>
+                            <th class="table_head_">Dead Line Date</th>
+                            <th class="table_head_">View</th>
+                            <th class="table_head_">Origin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="overdue_activity" t-as="line"
+                            t-key="line.id">
+                            <td style="width:25%">
+                                <t t-esc="line['display_name']"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['activity_type_id']['1']"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['user_id']['1']"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['date_deadline']"/>
+                            </td>
+                            <td>
+                                <button t-att-value="line['id']"
+                                        t-on-click="click_view"
+                                        class="click-view">
+                                    View
+                                </button>
+                            </td>
+                            <td>
+                                <button t-att-value="line['id']"
+                                        class="click-origin-view"
+                                        t-on-click="click_origin">
+                                    Origin
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </t>
+            </table>
+        </div>
+    </t>
+</templates>
