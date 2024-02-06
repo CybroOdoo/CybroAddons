@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Inherit ProductScreen to Modify it -->
+    <t t-name="simplified_pos.ProductScreen"
+       t-inherit="point_of_sale.ProductScreen"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('product-screen')]" position="replace">
+            <div>
+                 <div class="leftpane pane-border">
+                        <OrderWidget lines="currentOrder.orderlines"
+                                     t-slot-scope="scope"
+                                     total="env.utils.formatCurrency(currentOrder.get_total_with_tax())"
+                                     tax="!env.utils.floatIsZero(currentOrder.get_total_tax()) and env.utils.formatCurrency(currentOrder.get_total_tax()) or ''">
+                    <t t-set="line" t-value="scope.line"/>
+                            <Orderline line="line.getDisplayData()"
+                                       t-on-click="() => this.selectLine(line)"
+                                       class="{ ...line.getDisplayClasses(), 'selected' : line.selected }">
+                        <t t-set-slot="product-name">
+                            <i t-if="line.get_product().isTracked()"
+                               t-on-click.stop="() => line.editPackLotLines()"
+                               role="img"
+                               t-attf-class="{{ line.has_valid_product_lot() ? 'text-success' : 'text-danger'}} fa fa-list line-lot-icon ms-1"
+                               t-attf-title="{{ line.has_valid_product_lot() ? 'Valid product lot' : 'Invalid product lot'}}"/>
+                        </t>
+                                <ul t-if="line.pack_lot_lines">
+                            <li t-foreach="line.get_lot_lines()" t-as="lot"
+                                t-key="lot.cid">
+                                SN <t t-esc="lot.lot_name"/>
+                            </li>
+                        </ul>
+                    </Orderline>
+                            <t t-set-slot="details"/>
+                </OrderWidget>
+                     <ProductsWidget/>
+                     <div class="subpads d-flex">
+                        <Numpad buttons="getNumpadButtons()"
+                                onClick.bind="onNumpadClick" class="'w-100'"/>
+                    </div>
+                </div>
+                <div class="right"><br/><br/><br/><br/><br/><br/>
+                    <div class="head"><center><h2>CUSTOMER</h2></center></div>
+                    <br/><br/>
+                    <t t-call="CustomerDetails"/>
+                    <br/><br/>
+                    <center>
+                        <button class="customer-button"
+                                t-on-click="() => this.pos.selectPartner()">
+                            <i class="fa fa-search"/>
+                        </button>
+                    </center>
+                    <div class="button nextorder validation"
+                         t-att-class="{ highlight: !locked }"
+                         t-on-click="orderDone" style="background:#39B8B8;">
+                        <div class="pay-circle">
+                            <i class="fa fa-chevron-right" role="img"
+                               aria-label="Pay" title="Pay"/>
+                        </div>
+                        New Order
+                    </div>
+                </div>
+                <div class="center">
+                        <PaymentScreenStatus order="currentOrder"/>
+                    <div class="paymentmethods-container">
+                     <div class="paymentmethods">
+                        <p class="title-category">Payment method</p>
+                         <t t-foreach="payment_methods_from_config"
+                            t-as="paymentMethod"
+                            t-key="paymentMethod.id">
+                            <div class="button paymentmethod"
+                                 t-on-click="() => this.addNewPaymentLine(paymentMethod)">
+                                <div class="payment-name">
+                                    <t t-esc="paymentMethod.name"/>
+                                </div>
+                            </div>
+                        </t>
+                         <PaymentScreenPaymentLines paymentLines="paymentLines"
+                                                    deleteLine="deletePaymentLine"
+                                                    sendForceDone="this.sendForceDone"
+                                                    sendPaymentReverse="sendPaymentReverse"
+                                                    sendPaymentCancel="sendPaymentCancel"
+                                                    sendPaymentRequest="sendPaymentRequest"
+                                                    selectLine="selectPaymentLine"
+                                                    updateSelectedPaymentline="updateSelectedPaymentline"/>
+                     </div>
+                    </div>
+                    <div class="button next validation"
+                         t-on-click="confirmOrder">
+                        <div class="pay-circle">
+                        <i class="fa fa-chevron-right" role="img"
+                           aria-label="Pay" title="Pay"/>
+                        </div>
+                        <span class="next_text">Validate</span>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </t>
+    <t t-name="CustomerDetails" owl="1">
+        <div class="_o_customer">
+            <t t-if="this.currentOrder.get_partner()">
+               <h4>Name:</h4>
+                <t t-esc="this.currentOrder.get_partner().name"/>
+                <h4>Address:</h4>
+                <t t-esc="this.currentOrder.get_partner().address"/>
+                <h4>Email:</h4>
+                <t t-esc="this.currentOrder.get_partner().email"/>
+                <h4>Phone:</h4>
+                <t t-esc="this.currentOrder.get_partner().phone"/>
+            </t>
+        </div>
+    </t>
+</templates>
