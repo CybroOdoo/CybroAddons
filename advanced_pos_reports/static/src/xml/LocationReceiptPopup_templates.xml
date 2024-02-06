@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Template for location summary receipt screen -->
+<templates id="template" xml:space="preserve">
+    <t t-name="LocationSummaryReceiptScreen" owl="1">
+        <div>
+            <div class="pos-receipt-container" style="padding:50px;background-color: white;">
+                <div class="pos-receipt" style="background-color: white">
+                    <t t-if="props.data.company_logo">
+                        <img class="pos-receipt-logo" t-att-src="props.data.company_logo"
+                             alt="Logo"/>
+                        <br/>
+                    </t>
+                    <t t-if="!props.data.company_logo">
+                        <h2 class="pos-receipt-center-align">
+                            <t t-esc="props.data.company.name"/>
+                        </h2>
+                        <br/>
+                    </t>
+                    <div class="pos-receipt-contact">
+                        <t t-if="props.data.company.phone">
+                            <div>Tel:<t t-esc="props.data.company.phone"/></div>
+                        </t>
+                        <t t-if="props.data.company.email">
+                            <div><t t-esc="props.data.company.email" /></div>
+                        </t>
+                        <t t-if="props.data.company.website">
+                            <div><t t-esc="props.data.company.website" /></div>
+                        </t>
+                        <t t-if="props.data.pos_session.user_id">
+                            <div class="cashier">
+                                <div>--------------------------------</div>
+                                <div>Served by <t t-esc="props.data.pos_session.user_id[1]"/></div>
+                            </div>
+                        </t>
+                    </div>
+                    <br/>
+                    <h4 class="pos-receipt-center-align">
+                        Location Summary
+                    </h4>
+                    <section style="overflow:auto; height:400px;">
+                        <table style="width: 100%; margin-top:10px; font-size:14px !important;">
+                            <thead style="border-bottom: 2px solid black;">
+                                <tr>
+                                    <th>Product</th>
+                                    <th style="text-align: right;">Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody style="margin-top:5px;">
+                                <t t-set="total" t-value="0"/>
+                                <tr t-foreach="props.locations" t-as="loc"
+                                    t-key="loc.product_id">
+                                    <td>
+                                        <t t-esc="loc.product"/>
+                                    </td>
+                                    <td style="text-align:right;">
+                                            <t t-esc="loc.quantity"/>
+                                        </td>
+                                    <t t-set="total" t-value="total + loc.quantity"/>
+                                </tr>
+                                <br/>
+                                <tr style="border-top: 2px solid black;">
+                                    <td>Total:</td>
+                                    <td style="text-align: right;">
+                                        <t t-esc="total"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
+            </div>
+            <div class="button print" style="line-height:40px; font-size:20px;background-color:#71639e;color:white; text-align:center;"
+                t-on-click="printSummary">
+                <i class="fa fa-print"/> Print Location Summary
+            </div>
+            <div class="button cancel btn btn-lg btn-secondary" style="width:-webkit-fill-available;" t-on-click="props.close">
+                Cancel
+            </div>
+        </div>
+    </t>
+</templates>

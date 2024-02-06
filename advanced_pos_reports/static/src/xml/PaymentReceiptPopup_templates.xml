@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Template for payment summary receipt screen-->
+<templates id="template" xml:space="preserve">
+    <t t-name="PaymentSummaryReceiptScreen" owl="1">
+        <div>
+            <div class="pos-receipt-container"
+                 style="padding:50px;background-color: white;">
+                <div class="pos-receipt" style="background-color: white">
+                    <t t-if="props.data.company_logo">
+                        <img class="pos-receipt-logo"
+                             t-att-src="props.data.company_logo"
+                             alt="Logo"/>
+                        <br/>
+                    </t>
+                    <t t-if="!props.data.company_logo">
+                        <h2 class="pos-receipt-center-align">
+                            <t t-esc="props.data.company.name"/>
+                        </h2>
+                        <br/>
+                    </t>
+                    <div class="pos-receipt-contact">
+                        <t t-if="props.data.company.phone">
+                            <div>Tel:<t t-esc="props.data.company.phone"/></div>
+                        </t>
+                        <t t-if="props.data.company.email">
+                            <div><t t-esc="props.data.company.email" /></div>
+                        </t>
+                        <t t-if="props.data.company.website">
+                            <div><t t-esc="props.data.company.website" /></div>
+                        </t>
+                        <t t-if="props.data.pos_session.user_id">
+                            <div class="cashier">
+                                <div>--------------------------------</div>
+                                <div>Served by <t
+                                        t-esc="props.data.pos_session.user_id[1]"/></div>
+                            </div>
+                        </t>
+                    </div>
+                    <br/>
+                    <h4 class="pos-receipt-center-align">
+                        Payment Summary
+                    </h4>
+                    <t t-if="props.is_user">
+                        <h5 class="pos-receipt-center-align">
+                            <div>Salesperson: <t t-esc="props.data.user.name"/></div>
+                        </h5>
+                    </t>
+                    <table style="font-size:14px !important;margin-left: auto; margin-right: auto;"
+                           t-if="props.start_date and props.end_date">
+                        <tr>
+                            <td><strong>Start Date:</strong></td>
+                            <td><t t-esc="props.start_date"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>End Date:</strong></td>
+                            <td><t t-esc="props.end_date"/></td>
+                        </tr>
+                    </table>
+                    <section style="overflow:auto; height:400px;">
+                        <table style="margin-top:10px; font-size:14px !important; margin-left: auto; margin-right: auto;"
+                               class="receipt-orderlines">
+                            <colgroup>
+                               <col style="width: 50%;"/>
+                                <col style="width: 50%;"/>
+                            </colgroup>
+                            <thead style="border-bottom: 1px solid black;">
+                                <tr>
+                                    <th>Payment Method</th>
+                                    <th style="text-align: right;">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <t t-set="sub_total" t-value="0"/>
+                                <tr t-foreach="props.payment_summary" t-as="payment"
+                                    t-key="payment.id">
+                                <td>
+                                    <t t-esc="payment.name.en_US"/>
+                                </td>
+                                    <td style="text-align: right;">
+                                    <t t-esc="payment.total"/>
+                                </td>
+                                    <t t-set="sub_total"
+                                       t-value="sub_total + payment.total"/>
+                                    <br/>
+                                </tr>
+                                    <tr style="border-top: 2px solid black;">
+                                    <td>Total:</td>
+                                        <td style="text-align: right;">
+                                        <t t-esc="sub_total"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
+            </div>
+            <div class="button print"
+                 style="line-height:40px; font-size:20px;background-color:#71639e;color:white; text-align:center;"
+                 t-on-click="printSummary">
+                <i class="fa fa-print"/>
+                Print Payment Summary
+            </div>
+            <div class="button cancel btn btn-lg btn-secondary"
+                 style="width:-webkit-fill-available;" t-on-click="props.close">
+                Cancel
+            </div>
+        </div>
+    </t>
+</templates>
