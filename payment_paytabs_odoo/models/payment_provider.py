@@ -46,9 +46,7 @@ class PaymentProvider(models.Model):
                               help="PayTabs profile id of the user")
     api_key = fields.Char(string='Api Key', required_if_provider='paytabs',
                           groups='base.group_user', help="PayTabs Server key")
-    domain = fields.Char(string='Domain', help='Domain for the url,'
-                                               'It should not contain PORT'
-                                               'Number')
+    domain = fields.Char(string='Api endpoint', help='API endpoint of Paytabs')
 
     @api.model
     def _get_payment_method_information(self):
