@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Website Portal Events',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Website',
     'summary': 'Show event tickets in customer portal',
     'description': """Which will helps to show all events in the customer

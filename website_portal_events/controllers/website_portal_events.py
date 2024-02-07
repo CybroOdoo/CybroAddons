@@ -20,12 +20,12 @@
 #
 ###############################################################################
 from collections import OrderedDict
-from datetime import date, timedelta
+from datetime import timedelta
 from odoo import fields, http, _
 from odoo.http import request
 from odoo.exceptions import AccessError, MissingError
 from odoo.osv import expression
-from odoo.osv.expression import OR, AND
+from odoo.osv.expression import OR
 from odoo.addons.portal.controllers.portal import CustomerPortal, \
     pager as portal_pager
 
@@ -103,8 +103,7 @@ class PortalEvent(CustomerPortal):
             response = request.make_response(pdf, headers=pdfhttpheaders)
             response.mimetype = 'application/pdf'
             return response
-        else:
-            return request.redirect('/my/event_data')
+        return request.redirect('/my/event_data')
 
     def _get_event_page_view_values(self, event, access_token, **kwargs):
         """Get the page view values"""

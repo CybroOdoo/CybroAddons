@@ -1,9 +1,9 @@
-.. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
+.. image:: https://img.shields.io/badge/license-AGPL--3-blue.svg
     :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
 Website Portal Events
-================
+=====================
 This module helps to show event tickets in the portal in odoo16.
 
 Configuration
@@ -21,7 +21,7 @@ General Public License, Version 3 (AGPL v3).
 
 Credits
 -------
-* Developer: (V16): Sruthi MK@cybrosys
+* Developer: (V16): Sruthi MK, Contact : odoo@cybrosys.com
 
 Contacts
 --------
