@@ -4,3 +4,8 @@
 #### Version 16.0.1.0.0
 #### ADD
 - Initial commit for Costing Method: Last Purchase Price
+
+#### 06.02.2023
+#### Version 16.0.1.0.1
+#### Fix
+- Bug fixed

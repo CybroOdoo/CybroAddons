@@ -22,7 +22,7 @@
 
 {
     'name': 'Costing Method: Last Purchase Price',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Warehouse',
     'summary': "Introducing new costing method in Odoo 'last purchase price'",
     'description': """Introducing new costing method in Odoo 
@@ -31,7 +31,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.openhrms.com',
-    'depends': ['stock', 'stock_account', 'purchase'],
+    'depends': ['account_accountant','stock', 'stock_account', 'purchase'],
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
