@@ -36,7 +36,7 @@
     'depends': ['membership'],
     'data': [
         'report/membership_card_reports.xml',
-        'views/res_partner_views.xml',
+        'data/ir_actions_server_data.xml',
     ],
     'images': ['static/description/banner.png'],
     'license': 'AGPL-3',

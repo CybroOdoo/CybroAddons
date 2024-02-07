@@ -63,6 +63,5 @@ class ResPartner(models.Model):
             }
             return self.env.ref('membership_card_odoo.action_membership'
                                 '_card').report_action(None, data=data)
-        else:
-            raise ValidationError(
-                'Need to buy membership inorder to print membership card')
+        raise ValidationError(
+            'Need to buy membership inorder to print membership card')
