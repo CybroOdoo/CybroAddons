@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--The 'POS_multi_currency.PosMultiCurrency' class extends the `point_of_sale.PaymentScreen` class and adds-->
+    <!--multicurrency features to the Point of Sale interface.-->
+    <t t-name="POS_multi_currency.PaymentScreen"
+       t-inherit="point_of_sale.PaymentScreen" t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//div[hasclass('top-content-center')]" position="before">
+            <div class="pos_multicurrency"
+                 style="display: flex;justify-content: center;align-items: center;padding-left: 1%;"
+                 id="pos_multicurrency">
+                <h3>Multicurrency</h3>
+                <input type="checkbox" id="multi_currency_check"
+                       name="multi_currency_check" t-on-click="show_options"/>
+            </div>
+        </xpath>
+        <xpath expr="//div[hasclass('payment-buttons')]" position="after">
+            <div class="multicurrency_container" id="multicurrency_container"
+                 style="display:none;">
+                <div>
+                    <h3>Select Currency</h3>
+                    <select class="currecy_list"
+                            style="width: 100%;background: #a8a8a8;border: none;border-radius: 2px;"
+                            t-on-change="compute_currency">
+                        <option>Choose</option>
+                    </select>
+                </div>
+                <div class="conversion_container" style="display:none;">
+                    <div>
+                        <h3>Currency Conversion</h3>
+                    </div>
+                    <div>
+                        <div class="rate_string"></div>
+                        <div>Total Amount = <span class="total_amount"></span></div>
+                    </div>
+                    <br/>
+                    <div>
+                        <div>Payment Amount In</div>
+                        <input type="number" id="multicurrency_input"
+                               class="multicurrency_input"/>
+                    </div>
+                    <br/>
+                    <div class="button addpayment"
+                         style="display:flex;align-items:center;justify-content:center;"
+                         t-on-click="() => this.trigger('multi-payment-line', payment_methods_from_config[0])">
+                        <div style="border:2px solid black;padding:5px;width: 54%;">
+                            Add Cash Payment
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </t>
+    <!--    This XML code represents an extension of a PaymentLine component in a Point of Sale system.-->
+    <!--It adds a display for the converted currency amount and symbol after the payment name.-->
+    <t t-name="POS_multi_currency.PaymentScreenPaymentLines"
+       t-inherit="point_of_sale.PaymentScreenPaymentLines"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//t[@t-if='line.selected']//div[hasclass('payment-name')]"
+               position="after">
+            <div class="payment-currency"
+                 style="margin-left: 10px;margin-right: 10px;padding: 1rem;">
+                <t t-if="line.converted_currency">
+                    (<t t-esc="line.converted_currency.amount"/>
+                    <t t-esc="line.converted_currency.symbol"/>)
+                </t>
+            </div>
+        </xpath>
+        <xpath expr="//t[@t-else='']//div[hasclass('payment-name')]"
+               position="after">
+            <div class="payment-currency"
+                 style="margin-left: 10px;margin-right: 10px;padding: 1rem;">
+                <t t-if="line.converted_currency">
+                    (<t t-esc="line.converted_currency.amount"/>
+                    <t t-esc="line.converted_currency.symbol"/>)
+                </t>
+            </div>
+        </xpath>
+    </t>
+    <!--    This XML code represents an extension of a PaymentLine component in a Point of Sale system.-->
+    <!--It adds a display for the converted currency amount and symbol after the payment name.-->
+    <t t-name="POS_multi_currency.OrderReceipt"
+       t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//t[@t-foreach='receipt.paymentlines']" position="before">
+            <t t-set="count" t-value="0"/>
+        </xpath>
+        <xpath expr="//t[@t-esc='line.name']" position="after">
+
+            <t t-if="paymentlines[count].converted_currency">
+                <span style="margin-left: 30%;">(<t
+                        t-esc="paymentlines[count].converted_currency.symbol"/>
+                    <t t-esc="paymentlines[count].converted_currency.amount"/>)</span>
+            </t>
+            <t t-set="count" t-value="count+1"/>
+        </xpath>
+    </t>
+</templates>

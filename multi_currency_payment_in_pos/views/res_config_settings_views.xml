@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--    XML record definition for extending the 'res config settings' form view-->
+    <!--to include Multi Currency settings in the Point of Sale configuration.-->
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">
+            res.config.settings.view.form.inherit.pos.multi.currency.payment
+        </field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id"
+               ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='pos_interface_section']" position="after">
+                <h2>Multi Currency</h2>
+                <div class="row mt16 o_settings_container"
+                     id="pos_multi_currency_section">
+                    <div class="col-12 col-lg-6 o_setting_box"
+                         title="Employees can select the multi currencies.">
+                        <div class="o_setting_left_pane">
+                            <field name="enable_currency"
+                                   attrs="{'readonly': [('pos_has_active_session','=', False)]}"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <span class="o_form_label">Multi Currency per
+                                Session
+                            </span>
+                            <div class="text-muted">
+                                Allow to do payments in multiple currencies
+                            </div>
+                            <div class="content-group mt16">
+                                <group nolabel="1">
+                                    <field colspan="8" name="currency_ids"
+                                           attrs="{'invisible': [('enable_currency','=', False)]}" nolabel="1"/>
+                                </group>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+    <!--    Added currency amount and symbol in pos order.-->
+    <record id="view_pos_pos_form" model="ir.ui.view">
+        <field name="name">
+            pos.order.view.form.inherit.pos.multi.currency.payment
+        </field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='amount']" position="after">
+                <field name="currency_amount"/>
+                <field name="payment_currency"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
