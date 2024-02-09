@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Search Filter in Tree View of equipment.request-->
+    <record id="equipment_request_view_search" model="ir.ui.view">
+        <field name="name">equipment.request.view.search</field>
+        <field name="model">equipment.request</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter name="my_equipment_request" string="My Equipment Requests"
+                        domain="[('user_login_id', '=', uid)]"/>
+                <separator/>
+                <filter name="Draft" domain="[('status', '=', ('draft'))]"/>
+                <filter name="waiting_for_approval_of_department" string="Waiting For Approval of Department"
+                        domain="[('status', '=', ('waiting'))]"/>
+                <filter name="waiting_for_approval_of_hr" string="Waiting for Approval of HR"
+                        domain="[('status', '=', ('approval'))]"/>
+                <filter name="waiting_for_approval_of_stock" string="Waiting for Approval of Stock"
+                        domain="[('status', '=', ('approved'))]"/>
+                <group expand="1" string="Group By">
+                    <filter name="Employees" context="{'group_by':'employee_name_id', 'residual_visible':True}"/>
+                    <filter name="Department" context="{'group_by':'department_name_id', 'residual_visible':True}"/>
+                    <filter name="Job Position" context="{'group_by':'job_position_id', 'residual_visible':True}"/>
+                    <filter name="Status" context="{'group_by':'status','residual_visible':True}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!--    FORM VIEW of model equipment.request-->
+    <record id="equipment_request_view_form" model="ir.ui.view">
+        <field name="name">equipment.request.view.form</field>
+        <field name="model">equipment.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" type="object" string="Confirm" class="oe_highlight"
+                            invisible="status != 'draft'"
+                    />
+                    <button name="action_waiting_approval_dept" type="object" string="Department Approve"
+                            class="oe_highlight"
+                            groups="equipment_request_it_operations.group_equipment_department_manager"
+                            invisible="status != 'waiting'"/>
+                    <button name="action_waiting_approval_hr" type="object" string="HR Approve" class="oe_highlight"
+                            groups="equipment_request_it_operations.group_equipment_hr_officer"
+                            invisible="status != 'approval'"
+                    />
+                    <button name="action_expense" type="object" string="Generate Expense" class="oe_highlight"
+                            groups="equipment_request_it_operations.group_equipment_department_manager"
+                            invisible="status != 'waiting' or is_expensed != False or damage_check == False"
+                    />
+                    <button name="action_internal_transfer" type="object" string="Create Internal Transfer"
+                            class="oe_highlight" groups="equipment_request_it_operations.group_equipment_stock_manager"
+                            invisible="status != 'approved'"
+                    />
+                    <button name="action_view_internal_transfer" type="object" string="View Internal Transfer"
+                            class="oe_highlight" groups="equipment_request_it_operations.group_equipment_stock_manager"
+                            invisible="status != 'assigned'"
+                    />
+                    <button name="action_reject" type="object" string="Reject" class="oe_highlight"
+                            invisible="status == 'reject'"
+                    />
+
+                    <field name="status" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_smart_expense" string="Expense" type="object" icon="fa-pencil-square-o"
+                                class="oe_stat_button"
+                                invisible="status not in ['approved','assigned']"/>
+                    </div>
+                    <h1>
+                        Type of Request
+                    </h1>
+                    <br/>
+                    <group>
+                        <field name="request_for"/>
+                        <br/>
+                    </group>
+                    <h1>
+                        Employee Details
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="employee_name_id"/>
+                            <field name="department_name_id"/>
+                            <field name="job_position_id"/>
+                            <field name="user_login_id"/>
+                            <field name="damage_check"/>
+                            <field name="company_name_id"/>
+                            <field name="source_location_id"
+                                   groups="equipment_request_it_operations.group_equipment_stock_manager"
+                            />
+                            <field name="destination_location_id"
+                                   groups="equipment_request_it_operations.group_equipment_stock_manager"/>
+                            <field name="is_expensed" invisible="1"/>
+                        </group>
+                        <notebook>
+                            <page string="Request Equipments">
+                                <field name='equipment_request_ids'>
+                                    <tree editable="bottom">
+                                        <field name="product_id"/>
+                                        <field name="description"/>
+                                        <field name="quantity"/>
+                                        <field name="product_uom_id"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Damage Details" invisible="damage_check == False">
+                                <field name='equipment_damage_ids'>
+                                    <tree editable="bottom">
+                                        <field name="product_id"/>
+                                        <field name="expense_note"/>
+                                        <field name="quantity"/>
+                                        <field name="unit_price"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Expenses" invisible="damage_check == False">
+                                <field name='equipment_expense_ids'>
+                                    <tree create="false">
+                                        <field name="date"/>
+                                        <field name="name"/>
+                                        <field name="employee_id"/>
+                                        <field name="product_id"/>
+                                        <field name="company_id"/>
+                                        <field name="total_amount"/>
+                                        <field name="state"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Internal Orders">
+                                <field name='equipment_internal_ids'>
+                                    <tree create="False">
+                                        <field name="name"/>
+                                        <field name="location_id"/>
+                                        <field name="location_dest_id"/>
+                                        <field name="partner_id"/>
+                                        <field name="company_id"/>
+                                        <field name="state"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Extra Info">
+                                <group>
+                                    <group>
+                                        <field name="created_user_id"/>
+                                        <field name="validate_user_id"/>
+                                        <field name="hr_user_id"/>
+                                        <field name="stock_user_id"/>
+                                    </group>
+                                    <group>
+                                        <field name="create_date"/>
+                                        <field name="validate_date"/>
+                                        <field name="hr_date"/>
+                                        <field name="stock_date"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!--    Tree View of model equipment.request-->
+    <record id="equipment_request_view_tree" model="ir.ui.view">
+        <field name="name">equipment.request.view.tree</field>
+        <field name="model">equipment.request</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="request_for"/>
+                <field name="employee_name_id"/>
+                <field name="department_name_id"/>
+                <field name="job_position_id"/>
+                <field name="user_login_id"/>
+                <field name="company_name_id"/>
+                <field name="status"/>
+            </tree>
+        </field>
+    </record>
+
+    <!--    Actions for user-->
+    <record id="equipment_request_action" model="ir.actions.act_window">
+        <field name="name">Equipment Request</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">equipment.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{"search_default_my_equipment_request":1}</field>
+    </record>
+    <!--    Actions for department manager -->
+    <record id="equipment_request_approval_dept_action" model="ir.actions.act_window">
+        <field name="name">Equipment Request</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">equipment.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{"search_default_waiting_for_approval_of_department":1}</field>
+    </record>
+    <!--    Actions for hr manager -->
+    <record id="equipment_request_approval_hr_action" model="ir.actions.act_window">
+        <field name="name">Equipment Request</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">equipment.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{"search_default_waiting_for_approval_of_hr":1}</field>
+    </record>
+    <!--    Actions for stock manager -->
+    <record id="equipment_request_approved_stock_manager_action" model="ir.actions.act_window">
+        <field name="name">Equipment Request</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">equipment.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{"search_default_waiting_for_approval_of_stock":1}</field>
+    </record>
+
+</odoo>
