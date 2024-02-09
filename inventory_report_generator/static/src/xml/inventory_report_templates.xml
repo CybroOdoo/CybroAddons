@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <!-- Inventory Report Template -->
+    <t t-name="InventoryReport">
+        <div>
+            <div>
+                <center>
+                    <h1 style="margin: 20px;">Inventory Report</h1>
+                </center>
+            </div>
+            <div>
+                <div class="filter_view_pr">
+                    <t t-call="InventoryFilterView"/>
+                </div>
+            </div>
+            <div>
+                <div class="table_view_pr" style="width: 95%; margin: auto;"/>
+            </div>
+        </div>
+    </t>
+    <!-- Inventory Filter View Template -->
+    <t t-name="InventoryFilterView">
+        <div style="display: flex; margin-right: 10px; margin-left: 10px;justify-content:space-between">
+            <div class="sub_container_left"
+                 style="width: 285px; margin-left: 36px;">
+                <div class="row report_print">
+                    <button type="button" class="btn btn-primary"
+                            t-on-click="(e) => this.print_pdf(e)" id="pdf"
+                            style="top: 0px; height: 42px; color: white; background-color: #7c7bad; border-color: #7c7bad; width: 127px; margin-right:4px;">
+                        Print (PDF)
+                    </button>
+                    <button type="button" class="btn btn-primary" id="xlsx"
+                            t-on-click="() => this.print_xlsx()"
+                            style="top: 0px; height: 42px; color: white; background-color: #7c7bad; border-color: #7c7bad; width: 127px;">
+                        Export (XLSX)
+                    </button>
+                </div>
+            </div>
+            <div style="margin-bottom: 40px;display: flex; margin-right:10px;">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle time_range_pr"
+                            type="button" id="date_chose"
+                            data-bs-toggle="dropdown" aria-expanded="false"
+                            style="height:33px;width:150px;align-items:center;display:flex;">
+                        <span class="fa fa-calendar" title="Dates" role="img"
+                              aria-label="Dates"
+                              style="display:block;margin-right:5px;"/>
+                        Date Range
+                    </button>
+                    <div class="dropdown-menu" role="menu"
+                         aria-labelledby="date_chose">
+                        <div class="form-group"
+                             style="margin-left:10px; margin-right:10px;">
+                            <label class="" for="date_from">Start Date :
+                            </label>
+                            <input type="date" id="date_from"
+                                   class="form-control"/>
+                            <label class="" for="date_to">End Date :</label>
+                            <input type="date" id="date_to"
+                                   class="form-control"/>
+                        </div>
+                    </div>
+                    <span id="dates"/>
+                </div>
+                <div class="search-Result-Selection search"
+                     style="display:flex;">
+                    <div class="dropdown"
+                         style="border=2px;width:100%;margin-right:10px;border-radius:5px;">
+                        <a class="btn btn-secondary dropdown-togglereport-type"
+                           href="#" role="button" id="dropdownMenuLink"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="fa fa-book"/>
+                            <span class="low_case">Report Type :</span>
+                        </a>
+                        <select id="selection"
+                                class="dropdown-menu report_type"
+                                name="states[]">
+                            <div role="separator" class="dropdown-divider"/>
+                            <option value="report_by_transfers" selected="">
+                                Report By Transfers
+                            </option>
+                            <option value="report_by_categories">Report By
+                                Categories
+                            </option>
+                            <option value="report_by_warehouse">Report By
+                                Warehouse
+                            </option>
+                            <option value="report_by_location">Report By
+                                Location
+                            </option>
+                        </select>
+                        <span id="report_res"/>
+                    </div>
+                </div>
+                <div class="row report_print"
+                     style="margin-left:4px; margin-right: 4px;">
+                    <button type="button" id="apply_filter"
+                            t-on-click="() => this.apply_filter()"
+                            class="btn btn-primary">
+                        Apply
+                    </button>
+                </div>
+                <div class="row report_print" style="margin-left:4px;">
+                    <button class="btn btn-danger g-col-6 p-2"
+                            onclick="location.reload()">
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+    <!-- Inventory Report Table Template -->
+    <t t-name="InventoryReportTable">
+        <div t-if="order.report_type == 'report_by_transfers'">
+            <div class="table_main_view">
+                <table cellspacing="0" width="100%">
+                    <thead>
+                        <tr class="table_pr_head">
+                            <th>Reference</th>
+                            <th class="mon_fld">Scheduled Date</th>
+                            <th class="mon_fld">Source Document</th>
+                            <th class="mon_fld">Company</th>
+                            <th class="mon_fld">Delivery Address</th>
+                            <th class="mon_fld">State</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="report_lines"
+                           t-as="dynamic_inventory_report"
+                           t-key="dynamic_inventory_report">
+                            <tr style="border: 1.5px solid black;"
+                                class="pr-line"
+                                t-att-data-account-id="dynamic_inventory_report['id']"
+                                t-attf-data-target=".a{{dynamic_inventory_report['id']}}">
+                                <td>
+                                    <t t-if="dynamic_inventory_report['id']">
+                                        <div class="dropdown dropdown-toggle text-center">
+                                            <a data-toggle="dropdown" href="#"
+                                               id="table_toggle_btn"
+                                               data-bs-toggle="dropdown"
+                                               aria-expanded="false">
+                                                <span class="caret"/>
+                                                <span>
+                                                    <t t-esc="dynamic_inventory_report['name']"/>
+                                                </span>
+                                            </a>
+                                            <ul class="dropdown-menu"
+                                                role="menu"
+                                                aria-labelledby="table_toggle_btn">
+                                                <li>
+                                                    <a class="view_transfer_order"
+                                                       tabindex="-1" href="#"
+                                                       t-on-click="(ev) => this.button_view_order(ev)"
+                                                       t-att-id="dynamic_inventory_report['id']">
+                                                        View Transfer Order
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </t>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['scheduled_date']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['origin']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['company']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['partner']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['state']"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div t-if="order.report_type == 'report_by_categories'">
+            <div class="table_main_view">
+                <table cellspacing="0" width="100%">
+                    <thead>
+                        <tr class="table_pr_head">
+                            <th>Category</th>
+                            <th class="mon_fld">Product Name</th>
+                            <th>
+                                <span class="mon_fld">Create Date</span>
+                                <br/>
+                                <p class="tip_title">( Product creation date )
+                                </p>
+                            </th>
+                            <th class="mon_fld">Product Cost</th>
+                            <th class="mon_fld">Location</th>
+                            <th class="mon_fld">On Hand Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="report_lines"
+                           t-as="dynamic_inventory_report"
+                           t-key="dynamic_inventory_report">
+                            <tr style="border: 1.5px solid black;"
+                                class="pr-line text-center"
+                                data-toggle="collapse"
+                                t-att-data-account-id="dynamic_inventory_report['id']"
+                                t-attf-data-target=".a{{dynamic_inventory_report['id']}}">
+                                <td style="border: 0px solid black;">
+                                    <i class="fa fa-caret-down" role="img"
+                                       aria-label="Unfolded" title="Unfolded"/>
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['category']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['name']['en_US']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['create_date']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['value_float']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['location']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['quantity']"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div t-if="order.report_type == 'report_by_warehouse'">
+            <div class="table_main_view">
+                <table cellspacing="0" width="100%">
+                    <thead>
+                        <tr class="table_pr_head">
+                            <th>Warehouse</th>
+                            <th class="mon_fld">Date</th>
+                            <th class="mon_fld">Company</th>
+                            <th class="mon_fld">Location</th>
+                            <th class="mon_fld">Route</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="report_lines"
+                           t-as="dynamic_inventory_report"
+                           t-key="dynamic_inventory_report">
+                            <tr style="border: 1.5px solid black;"
+                                class="pr-line text-center"
+                                data-toggle="collapse"
+                                t-att-data-account-id="dynamic_inventory_report['id']"
+                                t-attf-data-target=".a{{dynamic_inventory_report['id']}}">
+                                <td style="border: 0px solid black;text-align:center;">
+                                    <i class="fa fa-caret-down" role="img"
+                                       aria-label="Unfolded" title="Unfolded"/>
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['name']"/>
+                                        <br/>
+                                        <t t-esc="dynamic_inventory_report['location']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['write_date']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['company']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['location']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['route']['en_US']"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div t-if="order.report_type == 'report_by_location'">
+            <div class="table_main_view">
+                <table cellspacing="0" width="100%">
+
+                    <thead>
+                        <tr class="table_pr_head">
+                            <th>Location</th>
+                            <th class="mon_fld">Location Type</th>
+                            <th class="mon_fld">Create Date</th>
+                            <th class="mon_fld">Company</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="report_lines"
+                           t-as="dynamic_inventory_report"
+                           t-key="dynamic_inventory_report">
+                            <tr style="border: 1.5px solid black;"
+                                class="pr-line text-center"
+                                data-toggle="collapse"
+                                t-att-data-account-id="dynamic_inventory_report['id']"
+                                t-attf-data-target=".a{{dynamic_inventory_report['id']}}">
+                                <td style="border: 0px solid black;">
+                                    <i class="fa fa-caret-down" role="img"
+                                       aria-label="Unfolded" title="Unfolded"/>
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['complete_name']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['location_type']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['create_date']"/>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span>
+                                        <t t-esc="dynamic_inventory_report['company']"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+</templates>
