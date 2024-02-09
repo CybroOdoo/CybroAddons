@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--  Report template  -->
+    <template id="report_lunch_order">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <t t-foreach="docs" t-as="o">
+                    <div class="page">
+                        <div style="padding-bottom:20px !important;"
+                             class="oe_structure"/>
+                        <h1 align="center">Lunch Report</h1>
+                        <br/>
+                        <p t-if="period" style="text-align: center;">
+                            <strong style="text-align: right;">Period:</strong>
+                            <span style="text-align: left;">
+                                <span t-esc="period"/>
+                            </span>
+                        </p>
+                        <t t-if="grouped_orders">
+                            <table name="orders" class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <t t-if="group_order">
+                                            <th t-if="group_order == 'user_id'">
+                                                User
+                                            </th>
+                                            <th t-if="group_order == 'supplier_id'">
+                                                Vendor
+                                            </th>
+                                            <th t-if="group_order == 'product_id'">
+                                                Product
+                                            </th>
+                                            <th t-if="group_order == 'state'">
+                                                Status
+                                            </th>
+                                            <th t-if="group_order == 'company_id'">
+                                                Company
+                                            </th>
+                                        </t>
+                                        <th>Order Date</th>
+                                        <th t-if="not group_order or group_order != 'supplier_id'">
+                                            Vendor
+                                        </th>
+                                        <th t-if="not group_order or group_order != 'product_id'">
+                                            Product
+                                        </th>
+                                        <th>Extras</th>
+                                        <th t-if="not group_order or group_order != 'user_id'">
+                                            User
+                                        </th>
+                                        <th>Lunch Location</th>
+                                        <th t-if="not group_order or group_order != 'company_id'">
+                                            Company
+                                        </th>
+                                        <th>Price</th>
+                                        <th t-if="not group_order or group_order != 'state'">
+                                            Status
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="grouped_orders"
+                                       t-as="order_list">
+                                        <t t-if="group_order">
+                                            <td>
+                                                <t t-if="group_order == 'state'">
+                                                    <span t-esc="dict(order_list[1][0].fields_get(allfields=['state'])['state']['selection'])[order_list[0]]"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <span t-esc="order_list[0]"/>
+                                                </t>
+                                            </td>
+                                        </t>
+                                        <tr t-foreach="order_list[1]"
+                                            t-as="order">
+                                            <td t-if="group_order"/>
+                                            <td>
+                                                <span t-esc="order.date"
+                                                      t-options="{'widget': 'date'}"/>
+                                            </td>
+                                            <td t-if="not group_order or group_order != 'supplier_id'">
+                                                <span t-esc="order.supplier_id.name"/>
+                                            </td>
+                                            <td t-if="not group_order or group_order != 'product_id'">
+                                                <span t-esc="order.product_id.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="order.display_toppings"/>
+                                            </td>
+                                            <td t-if="not group_order or group_order != 'user_id'">
+                                                <span t-esc="order.user_id.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="order.lunch_location_id.name"/>
+                                            </td>
+                                            <td t-if="not group_order or group_order != 'company_id'">
+                                                <span t-esc="order.company_id.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="order.price"
+                                                      t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
+                                            </td>
+                                            <td t-if="not group_order or group_order != 'state'">
+                                                <span t-esc="dict(order.fields_get(allfields=['state'])['state']['selection'])[order.state]"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
