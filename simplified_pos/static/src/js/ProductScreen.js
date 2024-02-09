@@ -80,6 +80,11 @@ odoo.define('point_of_sale.customer', function (require) {
             _selectLine(event) {
                 this.env.pos.selectedOrder.select_orderline(event.detail.orderline);
             }
+            toggleIsToInvoice() {
+                // click_invoice
+                this.currentOrder.set_to_invoice(!this.currentOrder.is_to_invoice());
+                this.render(true);
+            }
 
         }
     Registries.Component.extend(ProductScreen, CustomerButtons);

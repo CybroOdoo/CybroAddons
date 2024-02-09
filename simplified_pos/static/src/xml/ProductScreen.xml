@@ -6,9 +6,24 @@
         <xpath expr="//div[hasclass('product-screen')]" position="replace">
             <div class="leftpane pane-border">
                 <OrderWidget/>
-                <NumpadWidget activeMode="env.pos.numpadMode"/>
+                <div class="d-flex" style="display:flex">
+                    <NumpadWidget activeMode="env.pos.numpadMode"/>
+                    <div class="control-buttons">
+                    <t t-if="env.isMobile and controlButtons.length > 3">
+                        <div class="control-button"
+                             t-on-click="_displayAllControlPopup">More...</div>
+                    </t>
+                        <t t-else="">
+                        <t t-foreach="controlButtons" t-as="cb"
+                           t-key="cb.name">
+                            <t t-component="cb.component" t-key="cb.name"/>
+                        </t>
+                    </t>
+                </div>
+                </div>
             </div>
             <div class="right">
+
                 <div class="head"><center><h2>CUSTOMER</h2></center></div>
                 <br/>
                 <br/>
@@ -20,7 +35,16 @@
                             t-on-click="customerdetails">
                         <i class="fa fa-search"/>
                     </button>
+
                 </center>
+                <div class="d-flex justify-content-center align-items-center invoice-btn">
+                    <button class="button invoice_button customer-button" style="font-size:16px;"
+                     t-att-class="{ highlight: currentOrder.is_to_invoice() }"
+                     t-on-click="toggleIsToInvoice">
+                    <i class="fa fa-file-text-o"/>
+                     Invoice
+                </button>
+                </div>
                 <div class="button nextorder validation"
                      t-att-class="{ highlight: !locked }"
                      t-on-click="orderDone" style="background:#39B8B8;">
@@ -76,5 +100,6 @@
                 <t t-esc="this.get_partner().phone"/>
             </t>
         </div>
+        <!--        <PartnerListScreen/>-->
     </t>
 </templates>
