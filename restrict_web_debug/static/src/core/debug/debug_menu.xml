@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<templates xml:space="preserve">
+    <!--Inherits the debugmenu-->
+    <t t-inherit="web.DebugMenu" t-inherit-mode="extension" owl="1">
+        <xpath expr="//Dropdown" position="replace">
+            <t t-if="this.user_debug == true">
+                <Dropdown class="'o_debug_manager'" t-log="this.user_debug[0]"
+                          beforeOpen="getElements"
+                          position="'bottom-end'"
+                          togglerClass="`o-dropdown--narrow ${env.inDialog?'btn btn-link':''}`"
+                >
+                    <t t-set-slot="toggler">
+                        <i class="fa fa-bug"/>
+                    </t>
+                    <t t-foreach="elements" t-as="element"
+                       t-key="element_index">
+                    <DropdownItem
+                            t-if="element.type == 'item'"
+                            onSelected="element.callback"
+                            href="element.href"
+                    >
+                    <t t-esc="element.description"/>
+                    </DropdownItem>
+                        <div t-if="element.type == 'separator'"
+                             role="separator"
+                             class="dropdown-divider"/>
+                        <t t-if="element.type == 'component'"
+                           t-component="element.Component"
+                           t-props="element.props"/>
+                    </t>
+                </Dropdown>
+            </t>
+        </xpath>
+    </t>
+</templates>
