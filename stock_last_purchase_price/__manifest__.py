@@ -31,7 +31,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.openhrms.com',
-    'depends': ['account_accountant','stock', 'stock_account', 'purchase'],
+    'depends': ['stock', 'stock_account', 'purchase','purchase_price_diff'],
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
