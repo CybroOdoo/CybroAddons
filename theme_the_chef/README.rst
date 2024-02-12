@@ -8,7 +8,7 @@ Theme The Chef
 
 Installation
 ============
-	- www.odoo.com/documentation/16.0/setup/install.html
+	- www.odoo.com/documentation/17.0/setup/install.html
 	- Install our custom addon
 
 License
