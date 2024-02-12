@@ -1,5 +1,5 @@
 .. image:: https://img.shields.io/badge/licence-LGPL--3-blue.svg
-    :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
+    :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 
 Theme Zen Dark
@@ -14,7 +14,7 @@ Installation
 License
 -------
 General Public License, Version 3 (LGPL v3).
-(https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
+(https://www.odoo.com/documentation/17.0/legal/licenses/licenses.html)
 
 Company
 -------
@@ -22,14 +22,13 @@ Company
 
 Credits
 -------
-* Developers:   (V16) Ahammed Harshad P
-                (V17) ASWIN A K
-Contact: odoo@cybrosys.com
+* Developers: 	Cybrosys Techno Solutions odoo@cybrosys.com
+                Version 16: Ahammed Harshad P @cybrosys
+                Version 17: ASWIN A K @cybrosys
 
 Contacts
 --------
 * Mail Contact : odoo@cybrosys.com
-* Website : https://cybrosys.com
 
 Bug Tracker
 -----------
@@ -46,3 +45,4 @@ For support and more information, please visit https://www.cybrosys.com
 Further information
 ===================
 HTML Description: `<static/description/index.html>`__
+
