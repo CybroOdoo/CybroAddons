@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="bill_line_view_tree" model="ir.ui.view">
+        <!--  Tree view of bill line   -->
+        <field name="name">bill.line.view.tree</field>
+        <field name="model">account.move.line</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="move_name"/>
+                <field name="product_id"/>
+                <field name="partner_id"/>
+                <field name="name"/>
+                <field name="account_id"/>
+                <field name="quantity"/>
+                <field name="product_uom_id" optional="hide"/>
+                <field name="price_unit"/>
+                <field name="tax_ids" optional="hide"/>
+                <field name="price_subtotal"/>
+                <field name="discount" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="bill_line_view_kanban" model="ir.ui.view">
+        <!--  Kanban view of bill line   -->
+        <field name="name">bill.line.view.kanban</field>
+        <field name="model">account.move.line</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="partner_id">
+                <field name="partner_id" readonly="1"/>>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="o_kanban_image me-1">
+                                <field name="product_image"
+                                       widget="image"/>
+                            </div>
+                            <div class="oe_kanban_details">
+                                <div class="o_kanban_record_top mb-0">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="move_name"/>
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div name="product_lst_price"
+                                     class="mt-1">
+                                    Product:
+                                    <field name="product_id"/>
+                                </div>
+                                Quantity:
+                                <field name="quantity"/>
+                                <div>
+                                    Price
+                                    <field name="price_unit"/>
+                                </div>
+                                State:
+                                <field name="parent_state" widget="badge"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="bill_line_view_pivot" model="ir.ui.view">
+        <!--  Pivot view of bill line   -->
+        <field name="name">bill.line.view.pivot</field>
+        <field name="model">account.move.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Pivot View" sample="1">
+                <field name="parent_state" type="row"/>
+                <field name="move_name" type="row"/>
+                <field name="product_id" type="row"/>
+                <field name="price_subtotal" type="measure"/>
+                <field name="quantity" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="bill_line_view_graph" model="ir.ui.view">
+        <!--  Graph view of bill line   -->
+        <field name="name">bill.line.view.graph</field>
+        <field name="model">account.move.line</field>
+        <field name="arch" type="xml">
+            <graph string="Invoice Line" type="bar">
+                <field name="product_id" group="True"/>
+                <field name="partner_id" type="measure"/>
+                <field name="price_subtotal" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="bill_line_view_calender" model="ir.ui.view">
+        <!-- Calendar view of bill line   -->
+        <field name="name">bill.line.view.calender</field>
+        <field name="model">account.move.line</field>
+        <field name="arch" type="xml">
+            <calendar date_start="date" string="Tasks">
+                <field name="product_id"/>
+                <field name="partner_id"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="action_bill_line_view" model="ir.actions.act_window">
+        <!--Views of bill line   -->
+        <field name="name">bill Line</field>
+        <field name="res_model">account.move.line</field>
+        <field name="view_mode">tree,form,kanban,pivot,graph</field>
+        <field name="domain">
+            [('move_type','=','in_invoice'),('product_id','!=',False)]
+        </field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                    (0, 0, {'view_mode': 'tree', 'view_id': ref('bill_line_view_tree')}),
+                    (0, 0, {'view_mode': 'kanban', 'view_id': ref('bill_line_view_kanban')}),
+                    (0, 0, {'view_mode': 'pivot', 'view_id': ref('bill_line_view_pivot')}),
+                     (0, 0, {'view_mode': 'graph', 'view_id': ref('bill_line_view_graph')}),
+                     (0, 0, {'view_mode': 'calendar', 'view_id': ref('bill_line_view_calender')})
+                    ]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Invoice Lines Views
+            </p>
+        </field>
+    </record>
+
+    <!--  Creating menu of Bill Line under Vendor-->
+    <menuitem id="menu_bill_line_view" name="Bill Line" sequence="310"
+              parent="account.menu_finance_payables"
+              action="action_bill_line_view">
+    </menuitem>
+</odoo>
