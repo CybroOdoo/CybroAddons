@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Reconfigured cheque related action buttons views -->
+    <record id="view_account_payment_form_inherited" model="ir.ui.view">
+        <field name="name">account.payment.view.form.inherit.odoo.print.cheque</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id"
+               ref="account_check_printing.view_account_payment_form_inherited"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='print_checks']" position="attributes">
+                <attribute name="attrs">{'invisible': ['|','|',
+                    ('is_move_sent', '=', True),
+                    ('state', 'in', ['draft','cancel']),
+                    ('payment_method_code', 'not in',
+                    ['check_printing','pdc'])]}
+                </attribute>
+            </xpath>
+            <xpath expr="//button[@name='unmark_as_sent']" position="after">
+                <button name="action_unmark_sent"
+                        attrs="{'invisible': ['|', '|', ('is_move_sent', '!=', True),
+                        ('state', 'in', ['draft','cancel']),
+                        ('payment_method_code', 'not in', ['check_printing','pdc'])]}"
+                        string="Unmark Sent"
+                        type="object"
+                        data-hotkey="l"/>
+                <button name="action_void_check"
+                        attrs="{'invisible': ['|', '|', ('is_move_sent', '!=', True),
+                        ('state', 'in', ['draft','cancel']),
+                        ('payment_method_code', 'not in', ['check_printing','pdc'])]}"
+                        string="Void Check"
+                        type="object" data-hotkey="o"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
