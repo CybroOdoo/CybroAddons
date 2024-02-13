@@ -64,7 +64,7 @@
     },
     'images': [
         'static/description/banner.jpg',
-        'static/description/theme_screenshot.jpg',
+        'static/description/zen_screenshot.jpg',
     ],
     'license': 'LGPL-3',
     'installable': True,
