@@ -4,7 +4,6 @@ odoo.define('product_multi_uom_pos.multi_uom_widget',function(require) {
 var gui = require('point_of_sale.Gui');
 var core = require('web.core');
 var QWeb = core.qweb;
-
     const NumberBuffer = require('point_of_sale.NumberBuffer');
     const { onChangeOrder, useBarcodeReader } = require('point_of_sale.custom_hooks');
     const PosComponent = require('point_of_sale.PosComponent');
@@ -12,32 +11,20 @@ var QWeb = core.qweb;
     const ProductScreen = require('point_of_sale.ProductScreen');
     const { useListener } = require('web.custom_hooks');
     const { useState, useRef } = owl.hooks;
-
-
-
-
     class MultiUomWidget extends PosComponent {
-
-
         constructor() {
             super(...arguments);
-
             this.options = {};
             this.uom_list = [];
-
             }
-
         mounted(options){
-
             var current_uom = this.env.pos.units_by_id[this.props.options.uom_list[0]];
             var uom_list = this.env.pos.units_by_id;
             var uom_by_category = this.get_units_by_category(uom_list, current_uom.category_id);
             this.uom_list = uom_by_category;
             this.current_uom = this.props.options.uom_list[0];
             this.render();
-
         }
-
  get_units_by_category(uom_list, categ_id){
         var uom_by_categ = []
         for (var uom in uom_list){
@@ -74,34 +61,19 @@ var QWeb = core.qweb;
         }
         if(ref_unit){
             if(uom.uom_type == 'bigger'){
-                          console.log("bigggg");
-                          console.log("ref_price * uom.factor_inv",ref_price * uom.factor_inv);
-
                 return (ref_price * uom.factor_inv);
             }
             else if(uom.uom_type == 'smaller'){
-                          console.log("smalll");
-                          console.log("small",(ref_price / uom.factor_inv));
 
                 return (ref_price / uom.factor);
             }
             else if(uom.uom_type == 'reference'){
-                          console.log("refernce");
-                            console.log("ref_price",ref_price);
                 return ref_price;
             }
         }
         return product.lst_price;
     }
-
-//    close(){
-//        if (this.pos.barcode_reader) {
-//            this.pos.barcode_reader.restore_callbacks();
-//        }
-//    }
-
-
-    click_confirm(){
+    click_confirm(ev){
         var self = this;
         var uom = parseInt($('.uom').val());
         var order = this.env.pos.get_order();
@@ -110,25 +82,19 @@ var QWeb = core.qweb;
         orderline.uom_id = [];
         orderline.uom_id[0] = uom;
         orderline.uom_id[1] = selected_uom.display_name;
-
         /*Updating the orderlines*/
         order.remove_orderline(orderline);
         order.add_orderline(orderline);
         var latest_price = this.get_latest_price(selected_uom, orderline.product);
         order.get_selected_orderline().set_unit_price(latest_price);
         orderline.lst_price = latest_price;
-
         this.trigger('close-popup');
         return;
-
     }
     click_cancel(){
         this.trigger('close-popup');
     }
-
     }
-
-
     MultiUomWidget.template = 'MultiUomWidget';
     MultiUomWidget.defaultProps = {
         confirmText: 'Return',
@@ -139,4 +105,3 @@ var QWeb = core.qweb;
     Registries.Component.add(MultiUomWidget);
     return MultiUomWidget;
 });
-

@@ -4,7 +4,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2020-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2018-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: LINTO C T(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -19,24 +19,18 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
-{
-    'name': 'POS Product Multiple UOM',
-    'version': '14.0.1.0.0',
-    'category': 'Point of Sale',
-    'summary': 'Multiple UOM for Products',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['point_of_sale', 'stock'],
-    'data': [
-             'views/pos_template.xml',
-             'views/pos_view_extended.xml',
-            ],
-    'qweb': ['static/src/xml/pos.xml'],
-    'images': ['static/description/banner.png'],
-    'license': 'LGPL-3',
-    'installable': True,
-    'application': False,
-    'auto_install': False,
-}
+from odoo import models
+
+class PosOrderExtended(models.Model):
+    _inherit = 'pos.order'
+
+    def _prepare_invoice_line(self, order_line):
+        return {
+            'product_id': order_line.product_id.id,
+            'quantity': order_line.qty if self.amount_total >= 0 else -order_line.qty,
+            'discount': order_line.discount,
+            'price_unit': order_line.price_unit,
+            'name': order_line.product_id.display_name,
+            'tax_ids': [(6, 0, order_line.tax_ids_after_fiscal_position.ids)],
+            'product_uom_id': order_line.uom_id.id,
+        }

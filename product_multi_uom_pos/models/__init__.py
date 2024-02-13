@@ -19,5 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 ##############################################################################
-
 from . import pos_orderline
+from . import pos_order
+from . import stock_picking
