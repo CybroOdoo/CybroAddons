@@ -3,8 +3,8 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Mohamed Muzammil VP (odoo@cybrosys.com)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Anjhana A K (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
@@ -23,25 +23,28 @@
     'name': 'Login using QR Code',
     'version': '16.0.1.0.0',
     'category': 'Extra Tools',
-    'summary': """Users can login by scanning QR Code""",
-    'description': """A QR code is generated inside the users model, 
-                      a Internal user can use this QR code to login to their 
-                      account by scanning it""",
+    'summary': 'Users can login by scanning QR Code',
+    'description': 'A QR code is generate corresponding to each internal user'
+                   ' and,they can use this QR code to login to their account by'
+                   ' scanning it',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'http://www.cybrosys.com',
-    'depends': ['base', 'website'],
     'data': [
         'views/login_templates.xml',
-        'views/redirect_page_templates.xml',
         'views/res_users_views.xml',
+        'views/login_using_qr_templates.xml',
     ],
-    'external_dependencies': {
-        'python': ['pyzbar', 'cv2'],
+    'assets': {
+        'web.assets_frontend': [
+            'login_using_qr/static/src/js/login_with_qr.js',
+            'login_using_qr/static/src/css/login_with_qr.css',
+            'https://cdn.rawgit.com/cozmo/jsQR/master/dist/jsQR.js',
+           ],
     },
-    'license': 'AGPL-3',
     'images': ['static/description/banner.jpg'],
+    'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
     'application': False,
