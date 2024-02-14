@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+        <!--This code snippet adds a "CUSTOMIZE PRODUCT" button after a specific
+         div element on a website page. It also includes functionality for
+         designing a product by allowing the user to select and change designs.-->
+    <template id="website_product_customization_product"
+              inherit_id="website_sale.product"
+              name="Website Product Customization Product">
+        <xpath expr="//div[@id='o_wsale_cta_wrapper']" position="after">
+            <br></br>
+            <div id="product_customize">
+                <a role="button" id="product_customize_btn"
+                   t-attf-class="btn btn-primary">
+                    <span style="font-weight: bold">CUSTOMIZE PRODUCT</span>
+                </a>
+            </div>
+        </xpath>
+        <xpath expr="//section[@id='product_detail']" position="inside">
+            <div class="oe_structure product_design_body d-none">
+                <!-- Create the container of the tool -->
+                <br/>
+                <div id="tshirt-div">
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"/>
+                    <img  t-att-src="'/web/image/product.template/' + str(product.id) + '/image_1920'"
+                         class="img-responsive product_customisation_image mx-auto"
+                         alt=""/>
+                    <div id="drawingArea" class="drawing-area">
+                        <div class="canvas-container">
+                            <canvas id="tshirt-canvas" width="350"
+                                    height="400"/>
+                        </div>
+                    </div>
+                </div>
+                <p>To remove a loaded picture, select it and press
+                    the <kbd>DEL</kbd> key.
+                </p>
+                <!-- The select that will allow the user to pick one of the static designs -->
+                <br/>
+                <label for="product-design">Design:</label>
+                <div class="product_design">
+                    <select id="product-design">
+                        <option value="">Select one of our designs ...</option>
+                        <option t-foreach="request.env['product.design'].sudo().search([])" t-as="design"
+                                t-att-value="design.id" t-key="design.id">
+                            <t t-esc="design.name"/>
+                        </option>
+                    </select>
+                </div>
+                <br/>
+                <br/>
+                <div>
+                    <button class="design_save btn-primary">Save</button>
+                </div>
+                <br/>
+            </div>
+        </xpath>
+    </template>
+
+<!--        replace the cart images-->
+    <template id="cart_image" inherit_id="website_sale.cart_lines">
+        <xpath expr="(//td[hasclass('td-img')])[2]" position="replace">
+            <td>
+                <span>
+                    <span t-if="line._is_not_sellable_line() and line.product_id.image_128">
+                        <img t-att-src="image_data_uri(line.order_line_image)"
+                             class="img o_image_64_max rounded"
+                             t-att-alt="line.name_short"/>
+                    </span>
+                    <span t-else=""
+                          t-field="line.product_design"
+                          t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'rounded o_image_64_max'}"
+                    />
+                </span>
+            </td>
+        </xpath>
+    </template>
+        <!--    change popover image-->
+    <template id="popover_image"
+              inherit_id="website_sale.cart_popover">
+        <xpath expr="//div[hasclass('cart_line')]/div" position="replace">
+            <div class="col-3 text-center">
+                <span t-if="line._is_not_sellable_line() and line.product_id.image_128">
+                    <img t-att-src="image_data_uri(line.product_id.image_128)"
+                         class="img o_image_64_max rounded mb-2 img-fluid"
+                         t-att-alt="line.name_short"/>
+                </span>
+                <span t-else=""
+                      t-field="line.product_design"
+                      t-options="{'widget': 'image', 'qweb_img_responsive': True, 'class': 'rounded o_image_64_max mb-2'}"
+                />
+            </div>
+        </xpath>
+    </template>
+
+</odoo>
