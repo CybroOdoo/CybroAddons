@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--    Form view for the mailer cloud api sync    -->
+    <record id="mailer_cloud_api_sync_view_form" model="ir.ui.view">
+        <field name="name">mailer.cloud.api.sync.view.form</field>
+        <field name="model">mailer.cloud.api.sync</field>
+        <field name="arch" type="xml">
+            <form class="mailer_cloud">
+                <header>
+                    <button name="action_sync" string="Test Connection"
+                            type="object" class="oe_highlight"
+                            invisible = "active"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="api_key" style="max-width:50%;"
+                               readonly = "active"
+                               password="True"/>
+                        <field name="active" invisible="1"/>
+                    </group>
+                    <br/>
+                    <group name="account_details" string="Account Details"
+                           invisible = "not active">
+                        <group>
+                            <group class="details1">
+                                <field name="email" readonly="1"/>
+                                <field name="total_contacts" readonly="1"/>
+                                <field name="contact_sync_active" invisible="1"/>
+                            </group>
+                            <group class="details2">
+                                <field name="used_contacts" readonly="1"/>
+                                <field name="remaining_contacts" readonly="1"/>
+                            </group>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Contact Sync"
+                              invisible = "not active">
+                            <label for="list_id"/>
+                            <field name="list_id"
+                                   domain="[('authorization_id','=',active_id)]"/>
+                            <field name="contact_mapping_ids">
+                                <tree editable="bottom">
+                                    <field name="property_id"
+                                           context="{'default_authorization_id': parent.id}"
+                                           domain="['|', ('authorization_id','=',False), ('authorization_id','=',parent.id)]"/>
+                                    <field name="contact_fields"/>
+                                </tree>
+                            </field>
+                            <button name="action_contact_sync"
+                                    class="oe_highlight"
+                                    string="Sync Contacts" type="object"
+                                    invisible = "contact_sync_active"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!--    Tree view for the mailer cloud api sync    -->
+    <record id="mailer_cloud_api_sync_tree_view" model="ir.ui.view">
+        <field name="name">mailer.cloud.api.sync.tree.view</field>
+        <field name="model">mailer.cloud.api.sync</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="email"/>
+                <field name="used_contacts"/>
+                <field name="remaining_contacts"/>
+                <field name="total_contacts"/>
+            </tree>
+        </field>
+    </record>
+    <!--    Menu and action view for the mailer cloud api sync    -->
+    <record id="mailer_cloud_api_key_sync_action"
+            model="ir.actions.act_window">
+        <field name="name">Mailer Cloud Sync</field>
+        <field name="res_model">mailer.cloud.api.sync</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="main_mailer_cloud_menu"
+              name="Mailer Cloud Connector" web_icon="mailer_cloud_connector,static/description/icon.png"/>
+    <menuitem id="mailer_cloud_api_sync_menu"
+              name="Configuration"
+              parent="main_mailer_cloud_menu"
+              action="mailer_cloud_api_key_sync_action"
+              sequence="1"/>
+
+    <!--    Form view for the mailer cloud properties    -->
+    <record id="mailer_cloud_property_form_view" model="ir.ui.view">
+        <field name="name">mailer.cloud.property.form.view</field>
+        <field name="model">mailer.cloud.properties</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="name"/>
+                    <field name="type"/>
+                </group>
+            </form>
+        </field>
+    </record>
+</odoo>
