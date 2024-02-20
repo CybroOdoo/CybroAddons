@@ -20,6 +20,7 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###############################################################################
+import base64
 import json
 import requests
 from odoo import http, _
@@ -41,6 +42,10 @@ class SaferPayPayment(http.Controller):
             [('name', '=', sequence)])
         provider_details = request.env.ref('safer_pay.payment_acquirer_data')
         if provider_details.customer and provider_details.terminal:
+            credentials = f"{provider_details.username}:{provider_details.password}"
+            base64_credentials = base64.b64encode(
+                credentials.encode('utf-8')).decode('utf-8')
+            authorization_header = f'Basic {base64_credentials}'
             url = "https://test.saferpay.com/api/Payment/v1/PaymentPage/Initialize"
             payload = json.dumps({
                 "RequestHeader": {
@@ -67,9 +72,7 @@ class SaferPayPayment(http.Controller):
                 'Accept': 'application/json',
                 'SpecVersion': '1.33',
                 'RetryIndicator': '0',
-                'Authorization':
-                    'Basic QVBJXzI2NzkxNV8wNzM5NzUxOTpKc29uQXBpUHdk'
-                    'MV9iV3Blayw1SEIvJF0=',
+                'Authorization': authorization_header,
                 'Cookie': 'ASP.NET_SessionId=lr0an2dywf25itkugaam32pm; PREF=C=en'
             }
             response = requests.request("POST", url, headers=headers,
