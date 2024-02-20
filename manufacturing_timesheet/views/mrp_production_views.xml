@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+<!--    inherited form view of mrp production-->
+    <record id="mrp_production_form_view" model="ir.ui.view">
+        <field name="name">mrp.production.view.form.inherit.manufacturing.timesheet</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='operations']//field[@name='workorder_ids']"
+                   position="inside">
+                <tree editable="bottom" multi_edit="1">
+                    <field name="consumption" column_invisible="1"/>
+                    <field name="company_id" column_invisible="1"/>
+                    <field name="is_produced" column_invisible="1"/>
+                    <field name="is_user_working" column_invisible="1"/>
+                    <field name="product_uom_id" column_invisible="1" readonly="0"/>
+                    <field name="production_state" column_invisible="1"/>
+                    <field name="production_bom_id" column_invisible="1"/>
+                    <field name="qty_producing" column_invisible="1"/>
+                    <field name="time_ids" column_invisible="1"/>
+                    <field name="working_state" column_invisible="1"/>
+                    <field name="operation_id" column_invisible="1"
+                           domain="['|', ('bom_id', '=', production_bom_id), ('bom_id', '=', False)]"
+                           context="{'default_workcenter_id': workcenter_id, 'default_company_id': company_id}"/>
+                    <field name="name" string="Operation"/>
+                    <field name="workcenter_id"/>
+                    <field name="product_id" optional="show"/>
+                    <field name="employee_id" optional="show"/>
+                    <field name="qty_remaining" optional="show"
+                           string="Quantity"/>
+                    <field name="finished_lot_id" optional="hide"
+                           string="Lot/Serial"/>
+                    <field name="date_start" optional="hide" readonly="1"/>
+                    <field name="date_finished" optional="hide" readonly="1"/>
+                    <field name="duration_expected" widget="float_time"
+                           sum="expected duration"/>
+                    <field name="duration" widget="mrp_timer"
+                           attrs="{'invisible': [('production_state','=', 'draft')], 'readonly': [('is_user_working', '=', True)]}"
+                           sum="real duration"/>
+                    <field name="state" widget="badge"
+                           decoration-warning="state == 'progress'"
+                           decoration-success="state == 'done'"
+                           decoration-danger="state == 'cancel'"
+                           decoration-info="state not in ('progress', 'done', 'cancel')"
+                           attrs="{'invisible': [('production_state', '=', 'draft')], 'column_invisible': [('parent.state', '=', 'draft')]}"/>
+                    <button name="button_start" type="object" string="Start"
+                            class="btn-success"
+                            attrs="{'invisible': ['|', '|', '|', ('production_state','in', ('draft', 'done', 'cancel')), ('working_state', '=', 'blocked'), ('state', 'in', ('done', 'cancel')), ('is_user_working', '!=', False)]}"/>
+                    <button name="button_pending" type="object" string="Pause"
+                            class="btn-warning"
+                            attrs="{'invisible': ['|', '|', ('production_state', 'in', ('draft', 'done', 'cancel')), ('working_state', '=', 'blocked'), ('is_user_working', '=', False)]}"/>
+                    <button name="button_finish" type="object" string="Done"
+                            class="btn-success"
+                            attrs="{'invisible': ['|', '|', ('production_state', 'in', ('draft', 'done', 'cancel')), ('working_state', '=', 'blocked'), ('is_user_working', '=', False)]}"/>
+                    <button name="%(mrp.act_mrp_block_workcenter_wo)d"
+                            type="action" string="Block"
+                            context="{'default_workcenter_id': workcenter_id}"
+                            class="btn-danger"
+                            attrs="{'invisible': ['|', ('production_state', 'in', ('draft', 'done', 'cancel')), ('working_state', '=', 'blocked')]}"/>
+                    <button name="button_unblock" type="object" string="Unblock"
+                            context="{'default_workcenter_id': workcenter_id}"
+                            class="btn-danger"
+                            attrs="{'invisible': ['|', ('production_state', 'in', ('draft', 'done', 'cancel')), ('working_state', '!=', 'blocked')]}"/>
+                    <button name="action_open_wizard" type="object"
+                            icon="fa-external-link" class="oe_edit_only"
+                            title="Open Work Order"
+                            context="{'default_workcenter_id': workcenter_id}"/>
+                    <field name="show_json_popover" column_invisible="1"/>
+                    <field name="json_popover" widget="mrp_workorder_popover"
+                           string=" " width="0.1"
+                           attrs="{'invisible': [('show_json_popover', '=', False)]}"/>
+                </tree>
+            </xpath>
+        </field>
+    </record>
+</odoo>
