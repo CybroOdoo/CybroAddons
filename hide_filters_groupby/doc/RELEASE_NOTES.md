@@ -1,0 +1,6 @@
+## Module <hide_filters_groupby>
+
+#### 15.02.2024
+#### Version 17.0.1.0.0
+#### ADD
+ - Initial Commit for  Hide Filters GroupBy
