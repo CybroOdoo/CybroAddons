@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--    Tree view of orientation request-->
+    <record id="orientation_request_view_tree" model="ir.ui.view">
+        <field name="name">orientation.request.view_tree</field>
+        <field name="model">orientation.request</field>
+        <field name="arch" type="xml">
+            <tree string="Employee Orientation" create="0">
+                <field name="request_name"/>
+                <field name="request_orientation_id"/>
+                <field name="partner_id"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    <!--    Form view of orientation request-->
+    <record id="orientation_request_view_form" model="ir.ui.view">
+        <field name="name">orientation.request.view.form</field>
+        <field name="model">orientation.request</field>
+        <field name="arch" type="xml">
+            <form string="Employee Orientation" create="0">
+                <header>
+                    <button name="action_confirm_send_mail"
+                            string="Send by Email" type="object"
+                            class="oe_highlight"
+                            invisible="state not in ['draft','confirm']"/>
+                    <button name="action_confirm_request" string="Complete"
+                            type="object" invisible="state !='new'"
+                            class="btn-primary"/>
+                    <button name="action_cancel_request" string="Cancel"
+                            type="object" invisible="state !='new'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="new,complete"/>
+                </header>
+                <sheet>
+                    <group colspan="1" col="4" name="main">
+                        <field name="request_name" readonly="1"/>
+                        <field name="request_orientation_id" readonly="1"/>
+                        <field name="employee_id" readonly="1"/>
+                        <field name="partner_id" readonly="1"/>
+                        <field name="request_date" readonly="1"/>
+                        <field name="request_expected_date"
+                               readonly="state not in ['confirm','draft']"/>
+                        <field name="employee_company_id" readonly="1"/>
+                    </group>
+                    <notebook>
+                        <page name="orientation_line_attachments"
+                              string="Documents">
+                            <field name="attachment_ids"
+                                   widget="many2many_binary"
+                                   readonly="state not in ['confirm','draft']"/>
+                        </page>
+                        <page name="note_book" string="Notes">
+                            <field name="note" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"
+                           groups="base.group_user"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--    Search view of orientation request-->
+    <record id="orientation_request_view_search" model="ir.ui.view">
+        <field name="name">orientation.request.view_search</field>
+        <field name="model">orientation.request</field>
+        <field name="arch" type="xml">
+            <search string="Employee Orientation">
+                <field name="request_name"/>
+                <newline/>
+            </search>
+        </field>
+    </record>
+    <!--    Action of orientation request-->
+    <record model="ir.actions.act_window" id="orientation_request_action">
+        <field name="name">Orientation Request</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">orientation.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="orientation_request_view_search"/>
+        <field name="help" type="html">
+            <field class="oe_view_nocontent_create">
+                Create Orientation Requests.
+            </field>
+        </field>
+    </record>
+    <!--    Menu item of orientation request-->
+    <menuitem id="orientation_request_menu_action"
+              action="orientation_request_action"
+              name="Orientation Request" parent="employee_orientation_menu_root"
+              sequence="2"/>
+</odoo>
