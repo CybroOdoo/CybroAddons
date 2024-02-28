@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Action for machine repairs-->
+    <record id="action_machine_repairs" model="ir.actions.act_window">
+        <field name="name">Machine Repairs</field>
+        <field name="res_model">machine.repair</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Generate Machine Repairs
+            </p>
+        </field>
+    </record>
+    <!--Tree view for the machine repairs-->
+    <record id="machine_repair_view_tree" model="ir.ui.view">
+        <field name="name">machine.repair.view.tree</field>
+        <field name="model">machine.repair</field>
+        <field name="arch" type="xml">
+            <tree string="Repair">
+                <field name="repair_seq"/>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <!--Form view for the machine repairs-->
+    <record id="machine_repair_view_form" model="ir.ui.view">
+        <field name="name">machine.repair.view.form</field>
+        <field name="model">machine.repair</field>
+        <field name="arch" type="xml">
+            <form string="Repair">
+                <header>
+                    <button name="reopen" type="object" string="Reopen"
+                            class="btn btn-primary" states="closed"/>
+                    <button name="send_email" type="object" string="Send Email"
+                            class="btn btn-primary"
+                            states="closed"/>
+                    <button name="assign_teams" type="object"
+                            string="Assign To Teams" class="btn btn-primary"
+                            states="new"/>
+                    <button name="close_repairing" type="object" string="Close"
+                            class="btn btn-primary"
+                            states="assigned"/>
+                    <button name="create_diagnosis" type="object"
+                            string="Create Diagnosis" class="btn btn-primary"
+                            groups="base_machine_repair_management.repair_sales_users_access"/>
+                    <button name="action_create_work_order" type="object"
+                            string="Create WorkOrder" class="btn btn-primary"
+                            groups="base_machine_repair_management.repair_sales_users_access"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div>
+                        <h1>
+                            <field name="repair_seq"/>
+                        </h1>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"
+                                   placeholder="e.g. Cutter Machine repairing"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="technician_member_ids"
+                                   widget="many2many_tags" invisible="1"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group>
+                            <field name="customer_id"/>
+                            <field name="customer_email"/>
+                            <field name="phone"/>
+                        </group>
+                        <group>
+                            <field name="project"/>
+                            <field name="department"/>
+                        </group>
+                        <group>
+                            <field name="repair_team_id"/>
+                            <field name="technician_id"
+                                   domain="[('id', 'in', technician_member_ids)]"/>
+                            <field name="email"/>
+                            <field name="priority"/>
+                        </group>
+                        <group>
+                            <field name="repir_req_date"/>
+                            <field name="is_repaired"/>
+                        </group>
+                        <group>
+                            <field name="closing_date"/>
+                            <field name="repairing_duration"/>
+                        </group>
+                        <div class="oe_title">
+                            <h1>
+                                Machine Information
+                            </h1>
+                        </div>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="machine_cate"/>
+                            <field name="machine_id"/>
+                            <field name="machine_model"/>
+                            <field name="machine_brand"/>
+                            <field name="color"/>
+                            <field name="manufacturing_year"/>
+                        </group>
+                        <group>
+                            <field name="warrenty"/>
+                            <field name="damage"/>
+                            <field name="Warrenty_exp_date"
+                                   attrs="{'invisible':[('warrenty','!=',True)]}"/>
+                            <field name="authority_name"
+                                   attrs="{'invisible':[('warrenty','!=',True)]}"/>
+                            <field name="repair_detail"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="TimeSheet">
+                            <field name="timesheet_id">
+                                <tree editable="bottom">
+                                    <field name="date"/>
+                                    <field name="user_id"/>
+                                    <field name="project_id"/>
+                                    <field name="description"/>
+                                    <field name="hours"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Machine Consume Part">
+                            <field name="consume_part_id">
+                                <tree editable="bottom">
+                                    <field name="machine_id"/>
+                                    <field name="qty"/>
+                                    <field name="uom"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="General Information">
+                            <group>
+                                <group>
+                                    <field name="nature_of_service"/>
+                                    <field name="repair_type"
+                                           widget="many2many_tags"/>
+                                </group>
+                                <group>
+                                    <field name="problem"/>
+                                </group>
+
+                                <field name="note" placeholder="Extra info"/>
+                            </group>
+                        </page>
+                        <page string="Customer Rating">
+                            <group>
+                                <group>
+                                    <field name="customer_rating"/>
+                                    <field name="customer_comments"/>
+                                </group>
+                            </group>
+                            <field name="extra_info"/>
+                        </page>
+                        <page string="Machine Images">
+                            <group>
+                                <group>
+                                    <field name="image1" widget="image"
+                                           options='{"size": [50, 50]}'/>
+                                    <field name="image2" widget="image"
+                                           options='{"size": [50, 50]}'/>
+                                </group>
+                                <group>
+                                    <field name="image3" widget="image"
+                                           options='{"size": [50, 50]}'/>
+                                    <field name="image4" widget="image"
+                                           options='{"size": [50, 50]}'/>
+                                </group>
+                                <group>
+                                    <field name="image5" widget="image"
+                                           options='{"size": [50, 50]}'/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>
