@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- This XML template defines the structure for a user's wallet page. -->
+    <template id="wallet_data" name="Wallet Details">
+        <t t-call="website.layout">
+            <div class="oe_structure">
+                <div class="container">
+                    <br/>
+                    <center>
+                        <t t-set="wallet_transfer"
+                           t-value="request.env['ir.config_parameter'].sudo().get_param('website_customer_wallet.wallet_transfer')"/>
+                        <t t-set="view" t-value="points"/>
+                    </center>
+                    <br/>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card-body  pb-2 pt-3"
+                                 style=" background: #ffff; box-shadow: 0px 0px 8px rgba(0,0,0,0.2);text-align:center;">
+                                <div>
+                                    <img class="rounded-circle"
+                                         t-att-src="image_data_uri(user_id.avatar_1024)"
+                                         alt="Contact"
+                                         style="width:5rem;height:5rem;object-fit:cover;"/>
+                                </div>
+                                <div>
+                                    <div>
+                                        <p class="pt-2">
+                                            <t t-out="user_id.name"/>
+                                        </p>
+                                    </div>
+                                    <p class="p-3 m-0"
+                                       style="border-top:1px solid rgba(0,0,0,0.2);border-bottom:1px solid rgba(0,0,0,0.2);">
+                                        Wallet Balance:-
+                                        <t t-out="user_id.company_id.currency_id.symbol"/>
+                                        <t t-out="view"/>
+                                    </p>
+                                    <div style="display:flex;flex-direction:column; align-items:center;justify-content:center;margin-top:0.8rem;"
+                                         class="buttons">
+                                        <button
+                                                class="btn btn-primary passbook"
+                                                id="passbook"
+                                                style="margin:0.4rem; min-width:200px;">
+                                            PassBook
+                                        </button>
+                                        <button
+                                                class="btn btn-primary add_money "
+                                                id="add_money"
+                                                style="margin:0.4rem;min-width:200px;">
+                                            Add Money
+                                        </button>
+                                        <button
+                                                class="btn btn-primary "
+                                                id="change_pin_button"
+                                                style="margin:0.4rem;min-width:200px;">
+                                            Change PIN
+                                        </button>
+                                        <t t-if="wallet_transfer">
+                                            <button class="navbar-toggler  btn btn-primary"
+                                                    aria-expanded="false"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#staticBackdrop"
+                                                    data-toggle="tooltip"
+                                                    aria-label="Toggle filters"
+                                                    type="button"
+                                                    style="margin:0.5rem;min-width:200px;">
+                                                Wallet Transfer
+                                            </button>
+                                        </t>
+                                        <div class="modal fade"
+                                             id="staticBackdrop"
+                                             data-bs-backdrop="static"
+                                             data-bs-keyboard="false"
+                                             tabindex="-1"
+                                             aria-labelledby="staticBackdropLabel"
+                                             aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <form id="AmountTransferForm">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h1 class="modal-title fs-5"
+                                                                id="staticBackdropLabel">
+                                                                Wallet :
+                                                                Transfer
+                                                            </h1>
+                                                            <button type="button"
+                                                                    class="btn-close"
+                                                                    data-bs-dismiss="modal"
+                                                                    aria-label="Close"/>
+                                                        </div>
+                                                        <div class="modal-body m-3">
+                                                            <div class="form-group row mb-3">
+                                                                <label for="number"
+                                                                       class="col-sm-2 col-form-label">
+                                                                    Number:
+                                                                </label>
+                                                                <div class="col-sm-8 ">
+                                                                    <input type="text"
+                                                                           class="form-control"
+                                                                           id="number"
+                                                                           placeholder="Recipient phone  number."/>
+                                                                    <label for="number"
+                                                                           class="col-sm-2 col-form-label">
+                                                                        Amount:
+                                                                    </label>
+                                                                    <input type="number"
+                                                                           class="form-control"
+                                                                           id="amount"
+                                                                           placeholder="Amount to be transferred."/>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row row mb-3">
+                                                                <div class="modal-footer">
+                                                                    <button type="button"
+                                                                            class="btn btn-secondary"
+                                                                            data-bs-dismiss="modal">
+                                                                        Close
+                                                                    </button>
+                                                                    <button type="submit"
+                                                                            class="btn btn-primary"
+                                                                            id="submit_button">
+                                                                        Submit
+                                                                    </button>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="card-body "
+                                 style=" background: #ffff; box-shadow: 0px 0px 8px rgba(0,0,0,0.2);">
+                                <div class="wallet_history d-none">
+                                    <t t-call="website_customer_wallet.wallet_history_data"/>
+                                </div>
+                                <div class="wallet_money">
+                                    <t t-call="website_customer_wallet.wallet_money_add"/>
+                                </div>
+                                <div class="forgot_pin d-none">
+                                    <t t-call="website_customer_wallet.wallet_forgot_pin"/>
+                                </div>
+                                <div class="change_pin d-none">
+                                    <t t-call="website_customer_wallet.change_pin_success"/>
+                                </div>
+                                <div class="card-body d-none" id="success_info"
+                                     style=" background: #ffff; box-shadow: 0px 0px 8px rgba(0,0,0,0.2);">
+                                    Payment Successfull
+                                </div>
+                                <p class="alert alert-danger wrong_login d-none"
+                                   role="alert">
+                                    <span>Wrong/Login Password</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+        <!-- This XML template defines the structure for a user's wallet page. -->
+       <template id="website_wallet_not_found_template" name="Wallet Details">
+    <t t-call="website.layout">
+        <div class="oe_structure">
+            <div class="container">
+                <br/>
+                <center>
+                    <p class="pt-2">
+                        <t t-out="user_id.name"/>
+                    </p>
+                    You Have No Wallet
+                </center>
+            </div>
+        </div>
+    </t>
+</template>
+
+
+    </odoo>
