@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="report_inventory_valuation">
+        <t t-call="web.html_container">
+            <t t-set="company" t-value="company"/>
+            <t t-call="web.external_layout">
+                <br/>
+                <div class="page">
+                    <div class="oe_structure"/>
+                    <t t-if="not data['summary']">
+                        <!-- Template for PDF report -->
+                        <table class="table table-sm table-striped mt-4">
+                            <h4 style="text-align:center; color:skyblue; font-size:40px;">
+                                <U>
+                                    <B>Inventory Valuation Report</B>
+                                </U>
+                            </h4>
+                            <tr>
+                                <th>Company</th>
+                                <th>Warehouse</th>
+                                <t t-if="data['from_date']">
+                                    <th>Start Date</th>
+                                </t>
+                                <t t-if="data['end_date']">
+                                    <th>End Date</th>
+                                </t>
+                                <t>
+                                    <th>Amount in Currency</th>
+                                </t>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <t t-esc="data['my_company']"/>
+                                </th>
+                                <th>
+                                    <t t-set="count" t-value="1"/>
+                                    <t t-foreach="data['warehouse']"
+                                       t-as="warehouse">
+                                        <t t-if="count==1">
+                                            <t t-esc="warehouse"/>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-esc="warehouse"/>
+                                        </t>
+                                        <t t-set="count"
+                                           t-value="count+1"/>
+                                    </t>
+                                </th>
+
+                                <th t-if="data['from_date']">
+                                    <t t-esc="data['from_date']"/>
+                                </th>
+                                <th t-if="data['end_date']">
+                                    <t t-esc="data['end_date']"/>
+                                </th>
+                                <th>
+                                    <t t-esc="data['currency']"/>
+                                </th>
+                            </tr>
+                        </table>
+                        <table class="table table-sm o_main_table">
+                            <tr>
+                                <th>Default Code</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Costing Method</th>
+                                <th>Cost Price</th>
+                                <th>Beginning</th>
+                                <th>Internal</th>
+                                <th>Received</th>
+                                <th>Sales</th>
+                                <th>Adjustment</th>
+                                <th>Ending</th>
+                                <th>Valuation</th>
+                            </tr>
+                            <t t-foreach="result" t-as="res">
+                                <tr>
+                                    <th>
+                                        <t t-esc="res['default_code']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['name']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['category']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['costing_method']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['standard_price']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['received_qty'] - res['sale_qty'] "/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['internal']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['received_qty']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['sale_qty']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['adjustment']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['beginning'] + res['received_qty'] - res['sale_qty'] + res['adjustment']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['valuation']"/>
+                                    </th>
+                                </tr>
+                            </t>
+                        </table>
+                    </t>
+                    <!-- Template for Summary report -->
+                    <t t-if="data['summary']">
+                        <h4 style="text-align:center; color:skyblue; font-size:40px;">
+                            <U>
+                                <B>Summary Valuation Report</B>
+                            </U>
+                        </h4>
+                        <table class="table table-sm table-striped mt-4">
+                            <tr>
+                                <th>Company</th>
+                                <th>Warehouse</th>
+                                <t t-if="data['from_date']">
+                                    <th>Start Date</th>
+                                </t>
+                                <t t-if="data['end_date']">
+                                    <th>End Date</th>
+                                </t>
+                                <th>Amount in Currency</th>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <t t-esc="data['my_company']"/>
+                                </th>
+                                <th>
+                                    <t t-set="count" t-value="1"/>
+                                    <t t-foreach="data['warehouse']"
+                                       t-as="warehouse">
+                                        <t t-if="count==1">
+                                            <t t-esc="warehouse"/>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-esc="warehouse"/>
+                                        </t>
+                                        <t t-set="count"
+                                           t-value="count+1"/>
+                                    </t>
+                                </th>
+                                <th t-if="data['from_date']">
+                                    <t t-esc="data['from_date']"/>
+                                </th>
+                                <th t-if="data['end_date']">
+                                    <t t-esc="data['end_date']"/>
+                                </th>
+                                <th>
+                                    <t t-esc="data['currency']"/>
+                                </th>
+                            </tr>
+                        </table>
+                        <br/>
+                        <table class="table table-sm o_main_table">
+                            <tr>
+                                <th>Category</th>
+                                <th>Beginning</th>
+                                <th>Internal</th>
+                                <th>Received</th>
+                                <th>Sales</th>
+                                <th>Adjustment</th>
+                                <th>Ending</th>
+                                <th>Valuation</th>
+                            </tr>
+                            <t t-foreach="result" t-as="res">
+                                <tr>
+                                    <th>
+                                        <t t-esc="res['category']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['received_qty'] - res['sale_qty'] "/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['internal']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['received_qty']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['sale_qty']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['adjustment']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['beginning'] + res['received_qty'] - res['sale_qty'] + res['adjustment']"/>
+                                    </th>
+                                    <th>
+                                        <t t-esc="res['valuation']"/>
+                                    </th>
+                                </tr>
+                            </t>
+                        </table>
+                    </t>
+                    <div style="text-align:right;font-size:25px; width:450px; margin-left:400px;">
+                        <table class="table table-condensed"
+                               style="align:right">
+                            <tr>
+                                <th style="border-bottom:none;">Total
+                                    Value:
+                                    <t t-esc="res['valuation_sum']"/>
+                                </th>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
