@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Athira P S (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -19,5 +19,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-from . import add_to_cart_temp
-from . import snippet
+from . import website_sale
+from . import website_quotation_template

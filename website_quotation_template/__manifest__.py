@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Athira PS (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -36,6 +36,7 @@
         [
             'views/sale_order_template_views.xml',
             'views/website_quotation_snippet_templates.xml',
+            'views/product_details_templates.xml',
         ],
     'assets': {
         'web.assets_frontend': [

@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Athira PS (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -45,10 +45,10 @@ class ProductAddToCart(WebsiteSale):
                ppg (bool): Whether to paginate the results.
                **post: Additional keyword arguments.
            Returns:
-               A response object with updated context.
-           """
+               A response object with updated context."""
         response = super(ProductAddToCart, self).shop(page, category, search,
-                                                      min_price, max_price, ppg,
+                                                      min_price, max_price,
+                                                      ppg,
                                                       **post)
         response.qcontext.update(
             val=request.env['sale.order.template'].sudo().search([]))

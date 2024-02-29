@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Athira PS (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -41,3 +41,13 @@ class TemplateSnippet(http.Controller):
             for temp in request.env['sale.order.template'].sudo().search([])
         ]
         return templates
+
+    @http.route('/product/details/<int:product_id>', type='http',
+                auth="public", website=True)
+    def product_details(self, product_id, **kwargs):
+        """Render the product details template for a specific sale order
+         template."""
+        template = request.env['sale.order.template'].sudo().browse(product_id)
+        return http.request.render(
+            'website_quotation_template.product_details_template',
+            {'template': template})

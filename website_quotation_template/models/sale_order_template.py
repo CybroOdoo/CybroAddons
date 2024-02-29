@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Athira PS (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -29,9 +29,8 @@ class SaleOrderTemplate(models.Model):
     is_available_in_website = fields.Boolean(string="Is available in website",
                                              help="Specifies whether this sale"
                                                   "order template is available"
-                                                  "for purchase on the website."
-                                             )
+                                                  "for purchase on the "
+                                                  "website.")
     temp_img = fields.Image(string="Template Image",
                             help="An image representing the sale order "
-                            "template."
-                            )
+                                 "template.")

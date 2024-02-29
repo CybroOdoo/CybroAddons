@@ -22,6 +22,13 @@ var Dynamic = PublicWidget.Widget.extend({
               template:data
                 }));
             });
+            self.$el.find('.img_card, .card-title').on('click', function () {
+                        var templateId = $(this).closest('.prodcard').data('template-id');
+                        ajax.jsonRpc("/product/details/" + templateId, 'call', {})
+                            .then(function (data) {
+                                self.$el.find('.product-details-container').html(QWeb.render('ProductDetailsTemplate', { template: data.template }));
+                    });
+                });
        },
    });
    // Register the widget with the PublicWidget registry
