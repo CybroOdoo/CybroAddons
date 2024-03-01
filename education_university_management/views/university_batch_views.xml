@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Kanban view of university batch-->
+    <record model="ir.ui.view" id="university_batch_view_kanban">
+        <field name="name">university.batch.view.kanban</field>
+        <field name="model">university.batch</field>
+        <field name="arch" type="xml">
+            <kanban class="university_batch_view_kanban">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="batch_strength"/>
+                <field name="academic_year_id"/>
+                <field name="faculty_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click o_res_partner_kanban">
+                            <div class="oe_kanban_details">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings"
+                                         style="text-align:center !important;">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_tags_section oe_kanban_partner_categories"/>
+                                <ul style="text-align:center !important;">
+                                    <li t-if="record.batch_strength.raw_value">
+                                        Strength :
+                                        <field name="batch_strength"/>
+                                    </li>
+                                    <li t-if="record.academic_year_id.raw_value">
+                                        Academic Year :
+                                        <field name="academic_year_id"/>
+                                    </li>
+                                    <li t-if="record.faculty_id.raw_value">
+                                        Faculty :
+                                        <field name="faculty_id"/>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!-- Tree view of university batch-->
+    <record id="university_batch_view_tree" model="ir.ui.view">
+        <field name="name">university.batch.view.tree</field>
+        <field name="model">university.batch</field>
+        <field name="arch" type="xml">
+            <tree string="Batch">
+                <field name="name"/>
+                <field name="academic_year_id"/>
+                <field name="batch_strength"/>
+                <field name="semester_id"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Form view of university batch-->
+    <record id="university_batch_view_form" model="ir.ui.view">
+        <field name="name">university.batch.view.form</field>
+        <field name="model">university.batch</field>
+        <field name="arch" type="xml">
+            <form string="Course">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="education_university_management.view_attendance_batch_action"
+                                type="action" class="oe_stat_button"
+                                icon="fa-calendar" string="Attendance"/>
+                        <button name="education_university_management.action_university_timetable_batch_view"
+                                type="action" class="oe_stat_button"
+                                icon="fa-calendar" string="Timetable"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="batch_strength"/>
+                            <field name="semester_id"/>
+                        </group>
+                        <group>
+                            <field name="academic_year_id"/>
+                            <field name="faculty_id"/>
+                            <field name="department_id"/>
+                        </group>
+                        <notebook>
+                            <page string="Students">
+                                <field name="batch_student_ids">
+                                    <tree create="false">
+                                        <field name="admission_no"/>
+                                        <field name="name"/>
+                                        <field name="middle_name"/>
+                                        <field name="last_name"/>
+                                        <field name="gender"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"
+                           widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!-- Menu action of university batch-->
+    <record id="university_batch_action" model="ir.actions.act_window">
+        <field name="name">Batch</field>
+        <field name="res_model">university.batch</field>
+        <field name="view_mode">kanban,tree,form</field>
+    </record>
+    <menuitem action="university_batch_action"
+              parent="menu_university_admission_root"
+              id="university_batch_menu"/>
+</odoo>
