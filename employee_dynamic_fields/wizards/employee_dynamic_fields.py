@@ -21,6 +21,7 @@
 #############################################################################
 import xml.etree.ElementTree as xee
 from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 
 
 class EmployeeDynamicFields(models.TransientModel):
@@ -62,7 +63,7 @@ class EmployeeDynamicFields(models.TransientModel):
     def _set_default(self):
         """
             This method is used to set a default filter in a domain expression
-            for the 'hr.employee' model.It retrieves the ID of the
+            for the 'hr.employee' model. It retrieves the ID of the
             'hr.employee' model using a search query and sets it as a default
             filter in the domain expression.
         """
@@ -77,7 +78,7 @@ class EmployeeDynamicFields(models.TransientModel):
            the 'ir.model.fields' table, extends the 'hr.view_employee_form'
            view.
         """
-        self.env['ir.model.fields'].sudo().create(
+        self.created_menu_id = self.env['ir.model.fields'].sudo().create(
             {'name': self.name,
              'field_description': self.field_description,
              'model_id': self.model_id.id,
@@ -141,18 +142,49 @@ class EmployeeDynamicFields(models.TransientModel):
                                    index=True)
     selection_field = fields.Char(string="Selection Options")
     rel_field_id = fields.Many2one('ir.model.fields',
-                                string='Related Field')
+                                   string='Related Field')
     field_type = fields.Selection(selection='get_possible_field_types',
                                   string='Field Type', required=True)
     ttype = fields.Selection(string="Field Type", related='field_type',
                              help="Specifies the type of the field")
     widget_id = fields.Many2one('employee.field.widgets',
-                             string='Widget', help="Widget of the field")
+                                string='Widget', help="Widget of the field")
+    # Already existing field
     groups = fields.Many2many('res.groups',
-                              'employee_dynamic_fields_group_rel',
-                              'field_id', 'group_id')
+                              'fields_group_rel',
+                              'id_field', 'id_group',
+                              string='Groups', help="User groups")
     extra_features = fields.Boolean(string="Show Extra Properties",
                                     help="Add extra features for the field")
+    created_menu_id = fields.Many2one('ir.model.fields', string='Created Menu',
+                                      help="Menu created using the dynamic "
+                                           "field creation option")
+    menu_state = fields.Selection([('active', 'Active'),
+                                   ('inactive', 'Inactive')], string='State',
+                                  help="State of the created menu",
+                                  default='active')
+
+    def action_deactivate_menu(self):
+        """Method action_deactivate_menu to deactivate the created menu and the
+        created view"""
+        if self.form_view_id:
+            self.form_view_id.active = False
+            self.menu_state = 'inactive'
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
+
+    def action_activate_menu(self):
+        """Method action_activate_menu to activate the created menu and the
+        created view"""
+        if self.form_view_id:
+            self.form_view_id.active = True
+            self.menu_state = 'active'
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
 
     @api.depends('field_type')
     @api.onchange('field_type')
@@ -167,7 +199,8 @@ class EmployeeDynamicFields(models.TransientModel):
                 return {'domain': {'widget_id': [('name', '=', 'image')]}}
             elif self.field_type == 'many2many':
                 return {'domain': {
-                    'widget_id': [('name', 'in', ['many2many_tags', 'binary'])]}}
+                    'widget_id': [
+                        ('name', 'in', ['many2many_tags', 'binary'])]}}
             elif self.field_type == 'selection':
                 return {'domain': {
                     'widget_id': [('name', 'in', ['radio', 'priority'])]}}
@@ -185,21 +218,9 @@ class EmployeeDynamicFields(models.TransientModel):
             an instance of 'EmployeeDynamicFields' and deactivate the related
             form view.
         """
+        if self.menu_state == 'active':
+            raise ValidationError(_("You cannot delete a menu that is active"))
         if self.form_view_id:
-            self.form_view_id.active = False
-            for field in self:
-                query = """delete FROM ir_model_fields WHERE name = %s"""
-                self.env.cr.execute(query, [field.name])
+            self.form_view_id.unlink()
+            self.created_menu_id.unlink()
         return super(EmployeeDynamicFields, self).unlink()
-
-
-class HrEmployee(models.Model):
-    """
-       Inherit the hr.employee model for adding fields
-    """
-    _description = 'Employee'
-    _inherit = 'hr.employee'
-
-    x_currency_id = fields.Many2one('res.currency',
-                                    help="Choose currency",
-                                    string='Currency')

@@ -20,21 +20,4 @@
 #
 #############################################################################
 from . import models
-from . import wizard
-
-from odoo import api, SUPERUSER_ID
-
-
-def uninstall_hook(cr, registry):
-    """
-        It deactivates associated form views, deletes records from the
-        'ir_model_fields' table, and unlinks the 'employee.dynamic.fields'
-        records.
-    """
-    env = api.Environment(cr, SUPERUSER_ID, {})
-    fields = env['employee.dynamic.fields'].search([])
-    for field in fields:
-        field.form_view_id.active = False
-        query = """delete FROM ir_model_fields WHERE name = %s"""
-        env.cr.execute(query, [field.name])
-    fields.unlink()
+from . import wizards

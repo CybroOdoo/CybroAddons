@@ -20,4 +20,5 @@
 #
 #############################################################################
 from . import employee_field_widgets
+from . import hr_employee
 from . import ir_model_fields

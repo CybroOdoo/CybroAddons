@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<!--    Wizard view for creating new fields -->
+    <!--    Wizard view for creating new fields -->
     <record id='employee_dynamic_fields_view_form' model='ir.ui.view'>
         <field name="name">employee.dynamic.fields.view.form</field>
         <field name="model">employee.dynamic.fields</field>
@@ -59,6 +59,7 @@
             </form>
         </field>
     </record>
+    <!--Tree view of the model employee dynamic fields-->
     <record id='employee_dynamic_fields_view_tree' model='ir.ui.view'>
         <field name="name">employee.dynamic.fields.view.tree</field>
         <field name="model">employee.dynamic.fields</field>
@@ -67,17 +68,29 @@
                 <field name="name"/>
                 <field name="field_description"/>
                 <field name="ttype"/>
+                <field name="menu_state"
+                       decoration-success="menu_state == 'active'"
+                       decoration-danger="menu_state == 'inactive'"
+                       widget="badge"/>
+                <button name="action_deactivate_menu" string="Deactivate"
+                        type="object"
+                        invisible="menu_state == 'inactive'"/>
+                <button name="action_activate_menu" string="Activate"
+                        type="object"
+                        invisible="menu_state == 'active'"/>
             </tree>
         </field>
     </record>
-    <record id='action_employee_dynamic_fields' model='ir.actions.act_window'>
+    <!--Employee dynamic fields action-->
+    <record id='employee_dynamic_fields_action' model='ir.actions.act_window'>
         <field name="name">Create Custom Fields</field>
         <field name="res_model">employee.dynamic.fields</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="employee_dynamic_fields_view_form"/>
         <field name="target">new</field>
     </record>
-    <record id="action_employee_dynamic_fields_delete"
+    <!--Employee dynamic fields delete action-->
+    <record id="employee_dynamic_fields_action_delete"
             model="ir.actions.act_window">
         <field name="name">Delete Fields</field>
         <field name="res_model">employee.dynamic.fields</field>
@@ -91,15 +104,15 @@
     </record>
     <!-- Menu Item in Employee to create fields -->
     <menuitem id="employee_dynamic_fields_menu"
-            name="Create Fields"
-            parent="hr.menu_hr_employee_payroll"
-            action="employee_dynamic_fields.action_employee_dynamic_fields"
-            groups="employee_dynamic_fields.employee_dynamic_fields_group_add_employee_custom_fields"
-            sequence="10"/>
+              name="Create Fields"
+              parent="hr.menu_hr_employee_payroll"
+              action="employee_dynamic_fields.employee_dynamic_fields_action"
+              groups="employee_dynamic_fields.employee_dynamic_fields_group_add_employee_custom_fields"
+              sequence="10"/>
     <menuitem id="employee_dynamic_fields_menu_delete"
               name="Delete Fields"
               parent="hr.menu_hr_employee_payroll"
-              action="action_employee_dynamic_fields_delete"
+              action="employee_dynamic_fields_action_delete"
               groups="employee_dynamic_fields.employee_dynamic_fields_group_add_employee_custom_fields"
               sequence="12"/>
 </odoo>

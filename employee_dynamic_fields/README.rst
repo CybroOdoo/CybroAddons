@@ -12,25 +12,28 @@ Configuration
 - www.odoo.com/documentation/16.0/setup/install.html
 - Install our custom addon
 
+Company
+-------
+* `Cybrosys Techno Solutions <https://cybrosys.com/>`__
+
 License
 -------
 GNU AFFERO GENERAL PUBLIC LICENSE, Version 3 (AGPLv3)
 (https://www.gnu.org/licenses/agpl-3.0-standalone.html)
 
-Company
--------
-* `Cybrosys Techno Solutions <https://cybrosys.com/>`__
-
 Credits
 -------
-* Developers: 	V14: Minhaj T, Contact: odoo@cybrosys.com
-                V15: Musthafa C, Contact: odoo@cybrosys.com
-                V16: Viswanth K, Contact: odoo@cybrosys.com
-                V17: Sruthi Pavithran, Contact: odoo@cybrosys.com
+* Developers:
+            (V14) Minhaj T,
+            (V15) Musthafa C,
+            (V16) Viswanth K,
+            (V17) Sruthi Pavithran
+  Contact: odoo@cybrosys.com
 
 Contacts
 --------
-* Contact : odoo@cybrosys.com
+* Mail Contact : odoo@cybrosys.com
+* Website : https://cybrosys.com
 
 Bug Tracker
 -----------

@@ -22,9 +22,11 @@
 from odoo import fields, models
 
 
-class IrModelFields(models.Model):
-    """Adding a new field to understand the dynamically created fields."""
-    _inherit = 'ir.model.fields'
+class HrEmployee(models.Model):
+    """Inherit the hr.employee model for adding fields"""
+    _description = 'Employee'
+    _inherit = 'hr.employee'
 
-    is_employee_dynamic = fields.Boolean(string="Dynamic Field",
-                                         help="Is the field is dynamic or not")
+    x_currency_id = fields.Many2one('res.currency',
+                                    help="Choose currency",
+                                    string='Currency')

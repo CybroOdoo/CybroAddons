@@ -24,8 +24,8 @@
     'version': '17.0.1.0.0',
     'category': 'Extra Tools',
     'summary': """Ability To Add Custom Fields in Employee From User Level""",
-    'description': """Ability To Add Custom Fields in Employee From User Level,
-     Create/Delete Employee Custom Fields.""",
+    'description': """ Dynamic Fields module helps with easy creation of custom
+     fields in employee without any coding""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -34,14 +34,13 @@
     'data': [
         'security/employee_dynamic_fields_groups.xml',
         'security/ir.model.access.csv',
-        'data/employee_field_widgets.xml',
+        'data/employee_field_widgets_data.xml',
         'views/ir_model_fields_views.xml',
-        'wizard/employee_fields_wizard.xml'
+        'wizards/employee_dynamic_fields_views.xml'
     ],
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
     'application': False,
-    'uninstall_hook': 'uninstall_hook',
 }
