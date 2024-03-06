@@ -1,0 +1,6 @@
+## Module <menu_lock>
+
+#### 04.03.2024
+#### Version 17.0.1.0.0
+#### ADD
+- Initial commit for Menu Lock in Odoo
