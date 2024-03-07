@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!--
+        This template extends the behavior of the web.FieldTooltip component.
+        It adds extra content after the default technical tooltip.
+    -->
+    <t t-inherit="web.FieldTooltip" t-inherit-mode="extension">
+        <xpath expr="//ul" position="after">
+            <div t-if="requiredData and requiredData.length !== 0" style="color: #fff;">
+                <h6 style="color: #fff;">Field Data</h6>
+                <t t-foreach="requiredData" t-as="data" t-key="data_index">
+                    <ul class="o-tooltip--technical">
+                        <span t-if="requiredData.length > 1">--> Record - <t t-esc="data_index+1"/> </span>
+                        <t t-foreach="data" t-as="line" t-key="line.id">
+                            <li t-if="line.ttype === 'binary'">
+                                <span class="o-tooltip--technical--title" t-esc="line.field"/><span>:</span>
+                                <img t-attf-src="data:image/png;base64,#{line.value}" style="width:40px; padding:5px;" t-att-alt="line.field"/>
+                            </li>
+                            <li t-else="">
+                                <span class="o-tooltip--technical--title" t-esc="line.field"/><span>:</span>
+                                <t t-esc="line.value"/>
+                            </li>
+                        </t>
+                    </ul>
+                </t>
+            </div>
+            <div t-else="">
+                <h6 style="color: #fff;">No Data Available !!!</h6>
+            </div>
+        </xpath>
+    </t>
+</templates>

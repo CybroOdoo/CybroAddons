@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!--
+        This template extends the behavior of the web.Many2OneField component.
+        It modifies and added the data attribute required for tooltip based on certain conditions.
+    -->
+    <t t-inherit="web.Many2OneField" t-inherit-mode="extension">
+        <t t-if="!props.canOpen" position="replace">
+            <t t-if="!props.canOpen">
+                <span>
+                    <span t-esc="displayName"
+                          t-att="{'data-tooltip-template': 'dynamic_hover_on_related_fields.RelatedFieldTooltip', 'data-tooltip-info': tooltipInfo, 'data-tooltip-touch-tap-to-show': 'true'}"/>
+                    <t t-foreach="extraLines" t-as="extraLine" t-key="extraLine_index">
+                        <br />
+                        <span t-esc="extraLine" />
+                    </t>
+                </span>
+            </t>
+        </t>
+
+        <a t-if="value"
+            t-attf-class="o_form_uri #{classFromDecoration}"
+            t-att-href="value ? `#id=${value[0]}&amp;model=${relation}` : '#'"
+            t-on-click.prevent="onClick" position="replace">
+                <a
+                    t-if="value"
+                    t-attf-class="o_form_uri #{classFromDecoration}"
+                    t-att-href="value ? `#id=${value[0]}&amp;model=${relation}` : '#'"
+                    t-on-click.prevent="onClick"
+                    t-att="{'data-tooltip-template': 'dynamic_hover_on_related_fields.RelatedFieldTooltip', 'data-tooltip-info': tooltipInfo, 'data-tooltip-touch-tap-to-show': 'true'}"
+                >
+                    <span t-esc="displayName" />
+                    <t t-foreach="extraLines" t-as="extraLine" t-key="extraLine_index">
+                        <br />
+                        <span t-esc="extraLine" />
+                    </t>
+                </a>
+        </a>
+
+         <div class="o_field_many2one_selection" position="replace">
+             <div class="o_field_many2one_selection"
+                  t-att="{'data-tooltip-template': 'dynamic_hover_on_related_fields.RelatedFieldTooltip', 'data-tooltip-info': tooltipInfo, 'data-tooltip-touch-tap-to-show': 'true'}">
+                <Many2XAutocomplete t-props="Many2XAutocompleteProps"/>
+                <t t-if="hasExternalButton">
+                    <button
+                        type="button"
+                        class="btn btn-link text-action oi o_external_button"
+                        t-att-class="env.inDialog ? 'oi-launch' : 'oi-arrow-right'"
+                        tabindex="-1"
+                        draggable="false"
+                        aria-label="Internal link"
+                        data-tooltip="Internal link"
+                        t-on-click="onExternalBtnClick"
+                    />
+                </t>
+                <button
+                    t-if="hasBarcodeButton"
+                    t-on-click="onBarcodeBtnClick"
+                    type="button"
+                    class="btn ms-3 o_barcode"
+                    tabindex="-1"
+                    draggable="false"
+                    aria-label="Scan barcode"
+                    title="Scan barcode"
+                    data-tooltip="Scan barcode"
+                />
+            </div>
+         </div>
+    </t>
+</templates>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+       <!--
+        This template defines the structure of the tooltip used for displaying related field data.
+        It dynamically renders different types of data based on 'requiredData' attribute.
+    -->
+    <t t-name="dynamic_hover_on_related_fields.RelatedFieldTooltip">
+        <!-- Render if 'requiredData' is an object and has data -->
+        <div t-if="requiredData and requiredData.length > 0 and typeof requiredData === 'object'" style="color: #fff;">
+            <h6 style="color: #fff;">Field Data</h6>
+                <ul class="o-tooltip--technical">
+                    <!-- Iterate through each line of required data -->
+                    <t t-foreach="requiredData" t-as="line" t-key="line_index">
+                        <!-- Render differently based on data type -->
+                        <li t-if="line.ttype === 'binary'">
+                            <!-- Render binary data as image -->
+                            <span class="o-tooltip--technical--title" t-esc="line.field"/><span>:</span>
+                            <img t-attf-src="data:image/png;base64,#{line.value}" style="width:40px; padding:5px;" t-att-alt="line.field"/>
+                        </li>
+                        <li t-elif="line.ttype === 'html'">
+                            <!-- Render HTML data as iframe -->
+                            <span class="o-tooltip--technical--title" t-esc="line.field"/><span>:</span>
+                            <br/>
+                            <div style="background:#fff;">
+                                <iframe t-att-srcdoc="line.value" style="width: auto;; height: auto;"></iframe>
+                            </div>
+                        </li>
+                        <li t-else="">
+                            <!-- Render other types of data -->
+                            <span class="o-tooltip--technical--title" t-esc="line.field"/><span>:</span>
+                            <t t-esc="line.value"/>
+                        </li>
+                    </t>
+                </ul>
+        </div>
+        <!-- Render if 'requiredData' is not an object -->
+        <div t-elif="typeof requiredData !== 'object'">
+            <span t-esc="requiredData"/>
+        </div>
+        <!-- Render if 'requiredData' is empty -->
+        <div t-else="">
+            <h6 style="color: #fff;">No Data Available !!!</h6>
+        </div>
+    </t>
+</templates>
