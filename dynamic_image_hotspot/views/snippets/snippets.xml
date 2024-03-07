@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template for adding options for the image hotspot feature to the web editor snippet options in Odoo 16. -->
+    <!-- Includes options for adding image hotspot, horizontal and vertical movement for image hotspot, and product selection. -->
+    <template id="image_hotspot_snippet_options"
+              inherit_id="web_editor.snippet_options"
+              name="Image Hotspot Snippet Options">
+        <xpath expr="//we-button[@data-name='image_transform_opt']"
+               position="after">
+            <div data-js='ImageHotspot' data-selector="img"
+                 data-exclude="[data-oe-type='image'] > img, [data-oe-xpath]"
+                 class="o_we_image_options">
+                <we-select string="Image Hotspot"
+                           data-state-to-first-class="true"
+                           data-default="hotspot_off">
+                    <we-button data-select-class="" title="Off"
+                               data-name="hotspot_off" data-image-hotspot="off">
+                        Off
+                    </we-button>
+                    <we-button data-select-class="on" title="On"
+                               data-name="hotspot_on" data-image-hotspot="on">On
+                    </we-button>
+                </we-select>
+                <t t-set="move_horizon_label" data-dependencies="hotspot_on">
+                    Move Horizontal
+                </t>
+                <we-range id="my-range-widget" t-att-string="move_horizon_label"
+                          t-att-class="indent and 'o_we_sublevel_2'"
+                          data-dependencies="hotspot_on"
+                          data-min="5" data-step="5" data-max="95"
+                          data-set-horizontal=""/>
+                <t t-set="move_vertical_label" data-dependencies="hotspot_on">
+                    Move Vertical
+                </t>
+                <we-range id="my-range-widget2"
+                          t-att-string="move_vertical_label"
+                          t-att-class="indent and 'o_we_sublevel_2'"
+                          data-dependencies="hotspot_on"
+                          data-min="5" data-step="5" data-max="95"
+                          data-set-vertical=""/>
+                <we-many2one string="Choose Product"
+                             data-select-class=""
+                             data-dependencies="hotspot_on"
+                             data-model="product.template"
+                             data-set-product-template=""
+                             data-name="product_template_picker_opt"
+                             data-no-preview="true"
+                             data-domain='[["is_published", "=", true]]'/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

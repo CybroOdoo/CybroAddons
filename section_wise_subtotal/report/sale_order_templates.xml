@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Inherit the sale report template for adding the section wise subtotal -->
+    <template id="report_saleorder_document"
+              inherit_id="sale.report_saleorder_document">
+        <xpath expr="//td[@name='td_section_line']" position="before">
+            <t t-set="section_subtotal" t-value="0"/>
+            <t t-set="flag" t-value="0"/>
+            <t t-foreach="doc.order_line" t-as="rec">
+                <t t-if="line_index == rec_index or flag == 1">
+                    <t t-if="rec.display_type != 'line_section'">
+                        <t t-set="section_subtotal"
+                           t-value="section_subtotal + rec.price_subtotal"/>
+                        <t t-set="flag" t-value="1"/>
+                    </t>
+                    <t t-elif="line_index == rec_index">
+                        <t t-set="flag" t-value="1"/>
+                    </t>
+                    <t t-else="">
+                        <t t-set="flag" t-value="0"/>
+                    </t>
+                </t>
+            </t>
+        </xpath>
+        <xpath expr="//td[@name='td_section_line']" position="replace">
+            <td name="td_section_line" colspan="99">
+                <span t-field="line.name"/>
+                <span t-esc="section_subtotal"
+                      t-options='{"widget": "monetary", "display_currency": doc.currency_id}'
+                      style="float: right;"/>
+            </td>
+        </xpath>
+    </template>
+</odoo>

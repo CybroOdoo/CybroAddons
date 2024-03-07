@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Inherited res.users view for adding fields for custom menu lock -->
+    <record id="view_users_form" model="ir.ui.view">
+        <field name="name">res.users.view.form.inherit.menu.lock</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='access_rights']" position="inside">
+                <!--Fields of single lock for selected menus-->
+                <group>
+                    <field name="password_lock" widget="radio"/>
+                    <field name="login_password"
+                           invisible="password_lock != 'single_password'"/>
+                    <field name="menus_to_lock_ids" widget="many2many_tags"
+                           invisible="password_lock != 'single_password'"/>
+                    <field name="models_to_lock_ids" widget="many2many_tags"/>
+
+                </group>
+                <!--Fields of Multiple locks for selected menus-->
+                <group>
+                    <field name="multi_lock_ids"
+                           invisible="password_lock != 'multi_password'"
+                           string=" ">
+                        <tree editable="bottom">
+                            <field name="password_id" invisible="1"/>
+                            <field name="menus_id"/>
+                            <field name="password"/>
+                        </tree>
+                    </field>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
