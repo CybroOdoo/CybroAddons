@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Inventory Dashboard template -->
+<templates id="inventory_dashboard_template" xml:space="preserve">
+	<t t-name="Dashboard" owl="1">
+		<div class="oh_dashboards" t-ref="root" style="height:100%; overflow-y: scroll; overflow-x: hidden;">
+			<!-- Tiles -->
+			<div class="tiles">
+				<div class="container-fluid py-5">
+					<div class="row" id="set">
+						<t t-foreach="state.op_types" t-as="op_type" t-key="op_type_index">
+							<div class="col-sm-12 col-md-6 col-lg-3" t-att-id="op_type" t-on-click="onclick_tiles">
+								<div t-attf-class="dashboard-card dashboard-card--border-top dashboard-card--border-top-#{state.colors[op_type_index]}">
+									<div class="dashboard-card__details">
+										<span class="dashboard-card__title">
+											<t t-out="state.operations[op_type]"/>
+										</span>
+										<span class="count-container"><t t-out="state.op_types[op_type]"/></span>
+									</div>
+									<ul class="dashboard-card__stats">
+										<t t-if="op_type in state.late_status">
+											<li class="dashboard-card__stat_late" t-att-id="op_type" t-on-click="onclick_late_status">
+												<div class="d-flex justify-content-between align-items-center text-dark text-decoration-none">
+													<div class="dashboard-card__stat-title_late">
+														Late
+													</div>
+													<div class="dashboard-card__stat-count_late">
+														<t t-out="state.late_status[op_type]"/>
+													</div>
+												</div>
+											</li>
+										</t>
+										<t t-if="op_type in state.waiting_status">
+											<li class="dashboard-card__stat_waiting" t-att-id="op_type" t-on-click="onclick_waiting_status">
+												<div class="d-flex justify-content-between align-items-center text-dark text-decoration-none">
+													<div class="dashboard-card__stat-title_waiting">
+														Waiting
+													</div>
+													<div class="dashboard-card__stat-count_waiting">
+														<t t-out="state.waiting_status[op_type]"/>
+													</div>
+												</div>
+											</li>
+										</t>
+										<t t-if="op_type in state.backorder_status">
+											<li class="dashboard-card__stat_backorder" t-att-id="op_type" t-on-click="onclick_backorders_status">
+												<div class="d-flex justify-content-between align-items-center text-dark text-decoration-none">
+													<div class="dashboard-card__stat-title_backorder">
+														Backorder
+													</div>
+													<div class="dashboard-card__stat-count_backorder">
+														<t t-out="state.backorder_status[op_type]"/>
+													</div>
+												</div>
+											</li>
+										</t>
+									</ul>
+								</div>
+							</div>
+						</t>
+					</div>
+				</div>
+			</div>
+			<!-- Graphs -->
+			<div class="row mt-4 px-4" id="graphs" style="padding-bottom:30px;">
+				<!-- Top moving products - bar graph -->
+				<div class="year_to_date_graph_div col-sm-12 col-md-6 my-4">
+					<div class="chart-container card-shadow" id="tiles">
+						<div style="height: 20px; max-height: 20px;">
+							<h2>Top Moving Products</h2>
+							<div class="form-group col-2"
+									 id="top_product_button">
+								<select id="top_product_selection" class="btn btn-primary" t-on-change="onchange_top_product_selection">
+									<option id="top_last_10_days"
+												value="top_last_10_days"
+												selected="selected">Last 10 Days</option>
+									<option id="top_last_30_days"
+												value="top_last_30_days">Last 30 Days</option>
+									<option id="top_last_3_month"
+												value="top_last_3_month">Last 3 Month</option>
+									<option id="top_last_year"
+												value="top_last_year">Last Year</option>
+								</select>
+							</div>
+							<button class="btn_info" id="top_product_info"
+										title="Show Details" t-on-click="onclick_top_product_info">
+								<i class="fa fa-ellipsis-v"/>
+							</button>
+							<table class="graph_details_table" id="pro_info" style="display:none;">
+								<tr>
+									<th>Products</th>
+									<th>Quantity Transferred</th>
+								</tr>
+								<t t-foreach="state.countDictionary" t-as="count" t-key="count_index">
+									<tr>
+										<td><t t-out="count"/></td>
+										<td><t t-esc="state.countDictionary[count]"/></td>
+									</tr>
+	                    		</t>
+							</table>
+						</div>
+						<hr/>
+						<div class="graph_canvas" style="margin-top: 30px;">
+							<canvas id="canvaspie" height="500px"
+									width="150px"/>
+						</div>
+					</div>
+				</div>
+				<!-- Product categories - doughnut chart -->
+				<div class="year_to_date_graph_div col-sm-12 col-md-6 my-4">
+					<div class="chart-container card-shadow" id="tiles">
+						<div style="height: 20px; max-height: 20px;">
+							<h2>Product Categories</h2>
+							<button class="btn_info" id="pro_cate_info"
+									title="Show Details" t-on-click="onclick_product_category_info">
+								<i class="fa fa-ellipsis-v"/>
+							</button>
+							<table class="graph_details_table" id="category_table">
+								<tr>
+									<th>Categories</th>
+									<th>Onhand Quantity</th>
+								</tr>
+								<t t-foreach="state.categCountDict" t-as="data" t-key="data_index">
+									<tr>
+										<td><t t-out="data"/></td>
+										<td><t t-out="state.categName[data_index]"/></td>
+									</tr>
+	                    		</t>
+							</table>
+						</div>
+						<hr/>
+						<div class="graph_canvas" style="margin-top: 30px;">
+							<canvas class="canpie" id="product_category" height="500px"
+									width="150px"/>
+						</div>
+					</div>
+				</div>
+				<!-- Product moves by category graph -->
+				<div class="year_to_date_graph_div col-sm-12 col-md-6 my-4">
+					<div class="chart-container card-shadow" id="tiles">
+						<div style="height: 20px; max-height: 20px;"
+								 class="d-flex justify-content-between align-items-center">
+							<h2>Product Moves By Category</h2>
+							<div class="form-group col-2"
+									 id="product_move_select">
+								<select id="product_move_selection" t-ref="product_move_selection" class="btn btn-primary" t-on-change="onchange_product_moves_selection">
+									<t t-foreach="state.category" t-as="categ" t-key="categ_index">
+										<t t-if="categ_index == 0">
+											<option t-att-id="categ_index" t-att-value="state.categoryId[categ_index]" selected="selected">
+												<t t-out="state.category[categ_index]"/>
+											</option>
+										</t>
+										<t t-else="">
+											<option t-att-id="categ_index" t-attf-value="#{state.categoryId[categ_index]}">
+												<t t-out="state.category[categ_index]"/>
+											</option>
+										</t>
+									</t>
+								</select>
+							</div>
+							<button class="btn_info" id="product_move_info" title="Show Details" t-on-click="onclick_product_move_info">
+								<i class="fa fa-ellipsis-v"/>
+							</button>
+							<table class="graph_details_table" id="product_move_table">
+								<tr>
+									<th>Products</th>
+									<th>Quantity Done</th>
+								</tr>
+								<t t-foreach="state.monthly_stock_count" t-as="monthly_count" t-key="monthly_count_index">
+									<tr>
+										<td><t t-out="state.monthly_stock[monthly_count_index]"/></td>
+										<td><t t-esc="monthly_count"/></td>
+									</tr>
+	                    		</t>
+							</table>
+						</div>
+						<hr/>
+						<div class="graph_canvas" style="margin-top: 30px;">
+							<canvas id="product_move_graph" height="500px"
+										width="150px"/>
+						</div>
+					</div>
+				</div>
+				<!-- Stock moves by location - pie chart -->
+				<div class="year_to_date_graph_div col-sm-12 col-md-6 my-4">
+					<div class="chart-container card-shadow" id="tiles">
+						<div style="height: 20px; max-height: 20px;"
+								  class="d-flex justify-content-between align-items-center">
+							<h2>Stock Moves By Location</h2>
+							<div class="form-group col-2"
+									  id="stock_move_select">
+								<select id="stock_moves_selection" class="btn btn-primary" t-on-change="onchange_stock_moves_selection">
+									<option id="last_10_days" value="last_10_days" selected="selected">
+										Last 10 Days</option>
+									<option id="this_month" value="this_month">Last month</option>
+									<option id="last_3_month"
+												value="last_3_month">Last 3 months</option>
+									<option id="last_year" value="last_year">Last Year</option>
+								</select>
+							</div>
+							<button class="btn_info" id="stock_move_info" title="Show Details"
+									t-on-click="onclick_stock_move_info">
+								<i class="fa fa-ellipsis-v"/>
+							</button>
+							<table class="graph_details_table" id="stock_move_table" style="display:none;">
+								<tr>
+									<th>Location</th>
+									<th>Stock Moves Count</th>
+								</tr>
+								<t t-foreach="state.MoveData" t-as="move" t-key="move_index">
+									<tr>
+										<td><t t-out="move"/></td>
+										<td><t t-esc="state.MoveData[move]"/></td>
+									</tr>
+	                    		</t>
+							</table>
+						</div>
+						<hr/>
+						<div class="graph_canvas" style="margin-top: 30px;">
+							<canvas id="stock_moves" height="500px"
+										width="150px"/>
+						</div>
+					</div>
+				</div>
+				<!-- Operation types bar graph -->
+				<div class="year_to_date_graph_div col-sm-12 col-md-6 my-4">
+					<div class="chart-container card-shadow" id="tiles">
+						<div style="height: 20px; max-height: 20px;">
+							<h2>Operation Types</h2>
+							<button class="btn_info" id="operation_type_info"
+									 title="Show Details" t-on-click="onclick_operation_type_info">
+								<i class="fa fa-ellipsis-v"/>
+							</button>
+							<table class="graph_details_table"
+									id="operation_type_table">
+								<tr>
+									<th>Operation Types</th>
+									<th>Transfer Count</th>
+								</tr>
+								<t t-foreach="state.operationDict" t-as="count" t-key="count_index">
+									<tr>
+										<td><t t-out="count"/></td>
+										<td><t t-esc="state.operationDict[count]"/></td>
+									</tr>
+	                    		</t>
+							</table>
+						</div>
+						<hr/>
+						<div class="graph_canvas" style="margin-top: 30px;">
+							<canvas id="operation" height="500px" width="150px"/>
+						</div>
+					</div>
+				</div>
+				<!-- Location graph -->
+				<div class="year_to_date_graph_div col-sm-12 col-md-6 my-4">
+					<div class="chart-container card-shadow" id="tiles">
+						<div style="height: 20px; max-height: 20px">
+							<h2>Locations</h2>
+						</div>
+						<hr/>
+						<table style="margin-top: 30px;" class="table table-hover"
+							   id="location_table">
+							<thead>
+								<tr>
+									<th><h2>Location</h2></th>
+									<th><h2 style="text-align: center;">On Hand Quantity</h2></th>
+								</tr>
+							</thead>
+							<tbody class="storage">
+								<t t-foreach="state.location_data" t-as="location" t-key="location_index">
+									<tr>
+										<td>
+											<t t-out="location"/>
+										</td>
+										<td class="location_table_value">
+											<t t-esc="state.location_data[location]"/>
+										</td>
+									</tr>
+	                    		</t>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<!-- Out of stock graph -->
+				<div class="year_to_date_graph_div col-sm-12 col-md-6 my-4" id="out_of_stock" style="display: none;">
+					<div class="chart-container card-shadow" id="tiles">
+						<div style="height: 20px; max-height: 20px;">
+							<h2>Out of Stock Products</h2>
+							<button class="btn_info" id="out_of_stock_info" title="Show Details" t-on-click="onclick_out_of_stock_info">
+								<i class="fa fa-ellipsis-v"/>
+							</button>
+							<table class="graph_details_table" id="out_of_stock_table">
+								<tr>
+									<th>Products</th>
+									<th>Out of Quantity</th>
+								</tr>
+								<t t-foreach="state.out_stock" t-as="name" t-key="name_index">
+									<tr>
+										<td><t t-out="name"/></td>
+										<td><t t-esc="state.out_stock_count[name_index]"/></td>
+									</tr>
+	                    		</t>
+							</table>
+						</div><hr/>
+						<div class="graph_canvas" style="margin-top: 30px;">
+							<canvas id="out_of_stock_graph" height="500px" width="150px"/>
+						</div>
+					</div>
+				</div>
+				<!-- Dead stock graph -->
+				<div class="year_to_date_graph_div col-sm-12 col-md-6 my-4" id="dead_stock" style="display:none;">
+					<div class="chart-container card-shadow" id="tiles">
+						<div style="height: 20px; max-height: 20px">
+							<h2>Dead Stock</h2>
+							<button class="btn_info" id="dead_stock_info" title="Show Details" t-on-click="onclick_dead_stock_info">
+								<i class="fa fa-ellipsis-v"/>
+							</button>
+							<table style="margin-top: 30px;" class="graph_details_table"
+								   id="dead_stock_table">
+								<tr>
+									<th><h2>Products</h2></th>
+									<th>Dead Quantity</th>
+								</tr>
+								<t t-foreach="state.dead_stock_name" t-as="stock_name" t-key="stock_name_index">
+									<tr>
+										<td>
+											<t t-out="stock_name"/>
+										</td>
+										<td>
+											<t t-esc="state.dead_stock_count[stock_name_index]"/>
+										</td>
+									</tr>
+								</t>
+							</table>
+						</div>
+						<hr/>
+						<div class="graph_canvas" style="margin-top: 30px;">
+							<canvas id="dead_stock_graph" height="500px" width="150px"/>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</t>
+</templates>
