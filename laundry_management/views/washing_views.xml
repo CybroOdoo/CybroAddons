@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <!-- Views of washing.washing model for giving the fields in washing
+         form view -->
+        <record id="washing_form_view" model="ir.ui.view">
+            <field name="name">washing.washing.form</field>
+            <field name="model">washing.washing</field>
+            <field name="arch" type="xml">
+                <form string="Washing" create="false">
+                    <header>
+                        <button name="start_wash" class="oe_highlight"
+                                string="Start" type="object"
+                                invisible="state not in 'draft'"/>
+                        <button name="set_to_done" class="oe_highlight"
+                                string="Set to Done" type="object"
+                                invisible="state not in 'process'"/>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,process,done"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name" readonly="1"/>
+                                <field name="user_id"/>
+                            </group>
+                            <group>
+                                <field name="washing_date" readonly="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Description">
+                                <field name="description"/>
+                            </page>
+                            <page string="Additional Products">
+                                <field name="product_line"
+                                       readonly="state != 'draft'">
+                                    <tree editable="bottom">
+                                        <field name="product_id"/>
+                                        <field name="name"/>
+                                        <field name="quantity"/>
+                                        <field name="uom_id"/>
+                                        <field name="price_unit"/>
+                                        <field name="subtotal"/>
+                                        <field name="wash_obj" invisible="1"/>
+                                    </tree>
+                                </field>
+                                <group class="oe_subtotal_footer oe_right"
+                                       colspan="2" name="product_total">
+                                    <field name="total_amount"
+                                           widget='monetary'/>
+                                </group>
+                                <div class="oe_clear"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <!-- Views of washing.washing model for giving the fields in washing
+         tree view -->
+        <record id="washing_tree_view" model="ir.ui.view">
+            <field name="name">washing.washing.tree</field>
+            <field name="model">washing.washing</field>
+            <field name="arch" type="xml">
+                <tree create="false" edit="false"
+                      decoration-info="state == 'draft'">
+                    <field name="name"/>
+                    <field name="user_id"/>
+                    <field name="washing_date"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+        <record id="action_washing" model="ir.actions.act_window">
+            <field name="name">Washing</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">washing.washing</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('user_id','=', uid)]</field>
+        </record>
+        <menuitem id="laundry_washing" name="Laundry Works"
+                  parent="laundry_management_sub_menu" action="action_washing"
+                  sequence="2"/>
+    </data>
+</odoo>
