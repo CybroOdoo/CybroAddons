@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- To modify Sale order view -->
+    <record id="view_order_form" model="ir.ui.view">
+        <field name="name">sale.order.view.form.inherit.all.in.one.sales.kit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_confirm']" position="after">
+                <button name="action_create_versions"
+                        invisible="state not in ['sent']"
+                        type="object"
+                        string="Create Version"/>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_title')]" position="before">
+                <widget name="web_ribbon" title="Archived" bg_color="bg-danger"
+                        invisible="active == True"/>
+            </xpath>
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="signature" widget="signature"
+                       invisible="user_salesperson == False"/>
+                <field name="user_salesperson" invisible="1"/>
+                <field name="check_signature" invisible="1"/>
+                <field name="settings_approval" invisible="1"/>
+            </xpath>
+            <xpath expr="//button[@name='action_confirm'][2]" position="attributes">
+                <attribute name="invisible">state not in ['draft'] or check_signature == False or settings_approval == False</attribute>
+            </xpath>
+            <div class="oe_button_box" name="button_box">
+                <button name="action_view_versions"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-bars"
+                        invisible="version_count == 0">
+                    <field name="version_count" widget="statinfo"
+                           string="Versions"/>
+                </button>
+            </div>
+            <xpath expr="//field[@name='validity_date']" position="after">
+                <field name="is_version" invisible="1"/>
+                <field name="active" eval="False" invisible="1"/>
+            </xpath>
+            <xpath expr="//button[@name='action_draft']" position='attributes'>
+                <attribute name="invisible">state not in ['cancel'] or is_version == True</attribute>
+                <attribute name="states"/>
+            </xpath>
+            <xpath expr="//sheet/div/h1/field[@name='name']" position="after">
+                <field name="quotation_ref"
+                       invisible="state not in ['draft','sent']"/>
+            </xpath>
+            <xpath expr="//sheet/div/h1/field[@name='name']"
+                   position="replace">
+                <field name="name"
+                       invisible="state not in ['sale']"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']//tree//field[@name='name']"
+                   position="after">
+                <field name="product_warehouse_id"/>
+            </xpath>
+            <xpath expr="//header/button[@name='action_confirm']"
+                   position="after">
+                <button name="action_waiting_approval"
+                        id="action_waiting_approval"
+                        data-hotkey="v" string="Approve" class="btn-primary"
+                        type="object"
+                        groups="all_in_one_sales_kit.group_approval_manager"
+                        invisible="state not in ['waiting_for_approval']"/>
+            </xpath>
+            <xpath expr="//header/button[@id='action_confirm']" position="replace">
+                <button name="action_confirm" id="action_confirm"
+                        data-hotkey="v" string="Confirm" class="btn-primary"
+                        type="object" context="{'validate_analytic': True}"
+                        invisible="state not in ['sent'] or check_signature == False or settings_approval == True"/>
+            </xpath>
+            <xpath expr="//header/button[@name='action_cancel']"
+                   position="replace">
+                <button name="action_cancel" type="object" string="Cancel"
+                        groups="all_in_one_sales_kit.group_approval_manager"
+                        invisible="state not in ['draft', 'sent','sale','waiting_for_approval'] or id == False"
+                        data-hotkey="z"/>
+            </xpath>
+            <xpath expr="//notebook/page[@name='other_information']/group/group[@name='sales_person']/field[@name='team_id']"
+                    position="after">
+                <field name="approval_user_id"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree//field[@name='product_uom_qty']"
+                   position="after">
+
+                <field name="qty_available"/>
+                <field name="forecast_quantity"/>
+            </xpath>
+            <xpath expr="//field[@name='payment_term_id']"
+                   position="after">
+
+                <field name="onhand_check" invisible="1"/>
+                <field name="forecast_check" invisible="1"/>
+            </xpath>
+            <xpath expr="//header/button[@name='action_quotation_send']"
+                   position="after">
+                <field name="automate_print_invoices" invisible="1"/>
+                <button invisible="automate_print_invoices == False or invoice_count == 0"
+                        string="Print Invoice" class="oe_highlight"
+                        type="object" name="action_print_invoice"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']" position="before">
+                <button name="%(action_select_product_pack_view_form)d" type="action"
+                        string="Add Product Pack"
+                        style="margin-bottom : 16px;"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree/field[@name='product_template_id']"
+                   position="after">
+                <field name="order_line_image" widget="image"
+                       style="height:30px ;width:30px;" readonly="1"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree//field[@name='product_id']"
+                   position="before">
+                <button name="action_get_product_form" type="object"
+                        title="Sale/Purchase History"
+                        icon="fa-external-link" string=""/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree//field[@name='product_id']"
+                   position="before">
+                <button name="action_get_product_history_data" type="object"
+                        title="History"
+                        icon="fa-history"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']"
+                   position="before">
+                <field name="barcode_scan"/>
+            </xpath>
+            <xpath expr="//control"
+                   position="inside">
+                <button name="action_add_catalog_control" class="btn-link"
+                        type="object"
+                        string="Add from catalog"
+                        context="{
+                        'tree_view_ref': 'all_in_one_sales_kit.product_product_view_tree',
+                        'form_view_ref': 'all_in_one_sales_kit.product_template_form_view',
+                        'kanban_view_ref': 'all_in_one_sales_kit.product_product_view_kanban','id': parent.id,}"/>
+            </xpath>
+        </field>
+    </record>
+    <!--Domain passed for only viewing the confirmed version-->
+    <record id="sale.action_quotations_with_onboarding"
+            model="ir.actions.act_window">
+        <field name="domain">[('is_version', '=', False)]</field>
+    </record>
+    <!--   Quotation sequence field in tree view -->
+    <record id="view_quotation_tree" model="ir.ui.view">
+        <field name="name">
+            sale.order.view.tree.inherit.all.in.one.sales.kit
+        </field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree/field[@name='name']" position="after">
+                <field name="quotation_ref"/>
+            </xpath>
+            <xpath expr="//tree/field[@name='name']" position="after">
+                <field name="quotation_ref"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_sales_order_filter" model="ir.ui.view">
+        <field name="name">
+            sale.order.view.list.inherit.all.in.one.sales.kit
+        </field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='my_sale_orders_filter']"
+                   position="after">
+                <filter string="Archived" name="inactive"
+                        domain="[('active','=',False)]"/>
+            </xpath>
+        </field>
+    </record>
+    <menuitem id="menu_sale_dynamic_fields"
+              action="all_in_one_sales_kit.action_sale_dynamic_fields"
+              parent="sale.menu_sale_config"
+              groups="all_in_one_sales_kit.group_add_sale_custom_fields"
+              name="Create Fields"
+              sequence="100"/>
+</odoo>

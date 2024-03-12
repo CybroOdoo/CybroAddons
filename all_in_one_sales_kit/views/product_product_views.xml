@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Overrides product kanban view -->
+    <record id="product_product_view_kanban" model="ir.ui.view">
+        <field name="name">product.product.view.kanban</field>
+        <field name="model">product.product</field>
+        <field name="arch" type="xml">
+            <kanban sample="1">
+                <field name="id"/>
+                <field name="lst_price"/>
+                <field name="activity_state"/>
+                <field name="color"/>
+                <progressbar field="activity_state"
+                             colors='{"planned": "success", "today": "warning",
+                              "overdue": "danger"}'/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="o_kanban_image">
+                                <img t-att-src="kanban_image('product.product',
+                                    'image_128', record.id.raw_value)"
+                                     alt="Product" class="o_image_64_contain"/>
+                            </div>
+                            <div class="oe_kanban_details">
+                                <field name="priority" widget="priority"
+                                       readonly="1"/>
+                                <strong class="o_kanban_record_title">
+                                    <field name="name"/>
+                                    <small t-if="record.default_code.value">
+                                        <field name="default_code"/>
+                                    </small>
+                                </strong>
+                                <div class="o_kanban_tags_section">
+                                    <field name="product_template_variant_value_ids"
+                                           groups="product.group_product_variant"
+                                           widget="many2many_tags"
+                                           options="{'color_field': 'color'}"/>
+                                </div>
+                                <ul>
+                                    <li>
+                                        <strong>Price:
+                                            <field name="lst_price"/>
+                                        </strong>
+                                    </li>
+                                </ul>
+                                <div name="tags"/>
+                                <button name="action_add_quotation" class="btn btn-primary" type="object" string="Add to Quotation"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!-- Overrides product form view -->
+    <record id="product_template_form_view" model="ir.ui.view">
+        <field name="name">product.product.view.form.inherit.all.in.one.sales.kit</field>
+        <field name="model">product.product</field>
+        <field name="mode">primary</field>
+        <field eval="300" name="priority"/>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <form position="attributes">
+                <attribute name="string">Product Variant</attribute>
+                <attribute name="duplicate">false</attribute>
+            </form>
+            <xpath expr="//header//button[@name='action_open_label_layout']"
+                   position="after">
+                <button name="action_add_quotation" class="btn btn-secondary"
+                        type="object" string="Add Quotation"/>
+            </xpath>
+            <xpath expr="//div[@name='standard_price_uom']" position="after">
+                <field name="default_code"/>
+                <field name="barcode"/>
+            </xpath>
+            <xpath expr="//field[@name='priority']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
+            <field name="list_price" position="attributes">
+                <attribute name="readonly">product_variant_count > 1
+                </attribute>
+                <attribute name="invisible">1</attribute>
+            </field>
+            <xpath expr="//label[@for='list_price']" position="replace">
+                <label for="lst_price"/>
+            </xpath>
+            <field name="list_price" position="after">
+                <field name="lst_price" class="oe_inline" widget='monetary'
+                       options="{'currency_field': 'currency_id',
+                        'field_digits': True}"/>
+            </field>
+            <group name="packaging" position="attributes">
+                <attribute name="invisible">False</attribute>
+            </group>
+            <field name="name" position="after">
+                <field name="product_tmpl_id" class="oe_inline" readonly="1"
+                       invisible="1"
+                       required="id != False"/>
+            </field>
+            <xpath expr="//div[hasclass('oe_title')]" position="inside">
+                <field name="product_template_variant_value_ids"
+                       widget="many2many_tags" readonly="1"
+                       groups="product.group_product_variant"/>
+            </xpath>
+            <field name="product_tag_ids" position="attributes">
+                <attribute name="options">{'no_open': true}</attribute>
+            </field>
+            <field name="product_tag_ids" position="after">
+                <field name="additional_product_tag_ids"
+                       options="{'color_field': 'color', 'no_edit_color': 1}"/>
+            </field>
+        </field>
+    </record>
+    <!-- Overrides product tree view -->
+    <record id="product_product_view_tree" model="ir.ui.view">
+        <field name="name">product.product.view.tree</field>
+        <field name="model">product.product</field>
+        <field eval="300" name="priority"/>
+        <field name="arch" type="xml">
+            <tree string="Product Variants" multi_edit="1" duplicate="false"
+                  sample="1">
+                <header>
+                    <button string="Print Labels" type="object"
+                            name="action_open_label_layout"/>
+                </header>
+                <button name="action_add_quotation" class="btn btn-secondary"
+                        type="object" icon="fa-arrows" title="Add Quotation"/>
+                <field name="priority" widget="priority" nolabel="1"
+                       readonly="1"/>
+                <field name="default_code" optional="show" readonly="1"/>
+                <field name="barcode" optional="hide" readonly="1"/>
+                <field name="name" readonly="1"/>
+                <field name="product_template_variant_value_ids"
+                       widget="many2many_tags"
+                       groups="product.group_product_variant" readonly="1"/>
+                <field name="company_id" groups="base.group_multi_company"
+                       optional="hide" readonly="1"/>
+                <field name="lst_price" optional="show" string="Sales Price"/>
+                <field name="standard_price" optional="show"/>
+                <field name="categ_id" optional="hide"/>
+                <field name="product_tag_ids" widget="many2many_tags"
+                       options="{'color_field': 'color', 'no_edit_color': 1}"
+                       optional="hide"/>
+                <field name="type" optional="hide" readonly="1"/>
+                <field name="uom_id"
+                       options="{'no_open': True, 'no_create': True}"
+                       groups="uom.group_uom" optional="show" readonly="1"/>
+                <field name="product_tmpl_id" invisible="1" readonly="1"/>
+                <field name="active" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+    <!-- To modify product file -->
+    <record id="product_normal_form_view" model="ir.ui.view">
+        <field name="name">product.product.view.form.inherit.all.in.one.sales.kit
+        </field>
+        <field name="model">product.product</field>
+        <field name="priority">3</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook//page[2]" position="after">
+                <page string="Previous Price History"
+                      name="previous_sale_history">
+                    <group>
+                        <group>
+                            <field name="order_partner_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <button name="action_sale_product_prices"
+                                    string="Previous Sale Rates"
+                                    help="Last Prices" type="object"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+            <xpath expr="//div[@name='options']" position="inside">
+                <div modifiers="{}">
+                    <field name="is_pack" modifiers="{}"/>
+                    <label for="is_pack" modifiers="{}"/>
+                </div>
+            </xpath>
+            <xpath expr="//div[@name='options']" position="inside">
+                <div modifiers="{}">
+                    <field name="is_pack" modifiers="{}"/>
+                    <label for="is_pack" modifiers="{}"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
