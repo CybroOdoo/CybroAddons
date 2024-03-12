@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- View for the Manufacturing Order form -->
+    <record id="mrp_order_view_form" model="ir.ui.view">
+        <field name="name">mrp.order.view.form</field>
+        <field name="model">mrp.order</field>
+        <field name="arch" type="xml">
+            <form string="Manufacturing Order">
+                <header>
+                    <button string="Confirm" invisible="state not in ('draft')"
+                            class="oe_highlight"
+                            name="action_confirm" type="object"/>
+                    <button string="Done" invisible="state not in ('confirmed')"
+                            class="oe_highlight"
+                            name="action_done" type="object"/>
+                    <button string="Cancel"
+                            invisible="state not in ('confirmed')"
+                            name="action_cancel" type="object"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_move"
+                                type="object"
+                                class="oe_stat_button"
+                                invisible="stock_move_id == 'false'"
+                                icon="fa-stock icon">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Product</span>
+                                <span class="o_stat_text">Move</span>
+                            </div>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id"
+                                   readonly="state not in ('draft')"/>
+                            <label for="product_qty"/>
+                            <div class="o_row no-gutters d-flex">
+                                <field name="product_qty" class="oe_inline"
+                                       readonly="state not in ('draft')"/>
+                                <field name="uom_categ_id" invisible="1"/>
+                                <field name="stock_move_id" invisible="1"/>
+                                <field name="uom_id"
+                                       readonly="state not in ('draft')"/>
+                                <span class='text-bf'>To Produce</span>
+                            </div>
+                        </group>
+                        <group>
+                            <field name="company_id"
+                                   readonly="state not in ('draft')"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="bom_id"
+                                   readonly="state not in ('draft')"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Components">
+                            <field name="stock_line_ids" readonly="1"
+                                   force_save="1" style="pointer-events:none;">
+                                <tree editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="product_uom_qty"
+                                           string="Quantity"/>
+                                    <field name="product_uom"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--Tree view of the model mrp.order-->
+    <record id="mrp_order_view_tree" model="ir.ui.view">
+        <field name="name">mrp.order.view.tree</field>
+        <field name="model">mrp.order</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="product_id"/>
+                <field name="name"/>
+                <field name="product_qty"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+    <!--Windows action for the model mrp.order-->
+    <record id="mrp_order_action" model="ir.actions.act_window">
+        <field name="name">Manufacturing Orders</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">mrp.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Manufacturing Order
+            </p>
+        </field>
+    </record>
+    <!--Root menu for the module-->
+    <menuitem id="mrp_order_menu_root"
+              groups="simple_mrp_order.simple_mrp_order_group_manager"
+              name="Simple Manufacturing"/>
+    <!--Menu to show the manufacturing orders-->
+    <menuitem id="menu_mrp_order" name="Manufacturing Orders" sequence="10"
+              parent="mrp_order_menu_root"
+              action="mrp_order_action"/>
+</odoo>
