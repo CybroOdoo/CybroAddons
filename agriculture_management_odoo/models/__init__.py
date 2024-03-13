@@ -3,8 +3,8 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Vyshnav AR(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -19,16 +19,18 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import crop_requests
-from . import seed_details
-from . import animal_details
-from . import location_details
-from . import vehicle_details
-from . import fleet_inherit
-from . import farmer_details
-from . import pest_details
-from . import pest_request
-from . import damage_loss
-from . import tag_details
-from . import vehicle_rental
+from . import animal_detail
 from . import animal_rental
+from . import agriculture_tag
+from . import crop_animal
+from . import crop_machinery
+from . import crop_request
+from . import damage_loss
+from . import farmer_detail
+from . import fleet_vehicle
+from . import location_detail
+from . import pest_detail
+from . import pest_request
+from . import seed_detail
+from . import vehicle_detail
+from . import vehicle_rental
