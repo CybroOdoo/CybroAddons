@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Form view of fo property counter-->
+    <record id="fo_property_counter_view_form" model="ir.ui.view">
+        <field name="name">fo.property.counter.view.form</field>
+        <field name="model">fo.property.counter</field>
+        <field name="arch" type="xml">
+            <form string="Visits">
+                <header>
+                    <button name="action_prop_in"
+                            string="Take In"
+                            type="object"
+                            invisible="state != 'draft'"
+                            class="oe_highlight"
+                    />
+                    <button name="action_prop_out"
+                            string="Take Out"
+                            type="object"
+                            invisible="state != 'prop_in'"
+                            class="oe_highlight"
+                    />
+                    <button name="action_cancel"
+                            string="Cancel"
+                            type="object"
+                            invisible="state != 'draft' and state in ('prop_in','prop_out','cancel')"/>
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="draft,prop_in,prop_out,cancel"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Personal belongings">
+                            <field name="belonging_ids"
+                                   widget="one2many_list" nolabel="1">
+                                <tree decoration-success="permission == '0' or permission == '2'"
+                                      decoration-danger="permission == '1'"
+                                      string="Items" editable="bottom">
+                                    <field name="number"/>
+                                    <field name="property_name"/>
+                                    <field name="property_count"/>
+                                    <field name="permission"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"
+                           widget="mail_followers"
+                           groups="base.group_user"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--    Tree view of fo property country-->
+    <record id="fo_property_counter_view_tree" model="ir.ui.view">
+        <field name="name">fo.property.counter.view.tree</field>
+        <field name="model">fo.property.counter</field>
+        <field name="arch" type="xml">
+            <tree string="Visits" decoration-success="state == 'prop_in'"
+                  decoration-muted="state == 'prop_out'">
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    <!--    Action for property counter-->
+    <record id="fo_property_counter_action" model="ir.actions.act_window">
+        <field name="name">Property Counter</field>
+        <field name="res_model">fo.property.counter</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">Record Personal Belongings.</p>
+        </field>
+    </record>
+    <!--    Menu Items-->
+    <menuitem id="fo_property_counter_menu" name="Property Counter"
+              parent="front_office_menu"
+              sequence="4"/>
+    <menuitem id="fo_property_counter_menu_child" name="Property Counter"
+              parent="fo_property_counter_menu"
+              action="fo_property_counter_action"
+              groups="base.group_user" sequence="2"/>
+</odoo>
