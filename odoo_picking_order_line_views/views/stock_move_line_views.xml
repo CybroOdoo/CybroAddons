@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--    Form page record for the move line -->
+    <record id="stock_move_in_form_view" model="ir.ui.view">
+        <field name="name">move.lines.in.form</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <form string="Picking Order Lines" edit="0" create="0" duplicate="0"
+                  delete="0">
+                <sheet>
+                    <field name="move_line_image" widget="image"
+                           class="oe_avatar"/>
+                    <group>
+                        <group>
+                            <h2>
+                                <field name="picking_id"/>
+                            </h2><br/>
+                            <field name="create_date" string="Create Date"/>
+                            <field name="scheduled_date"/>
+                            <field name="date_done" string="Effective Date"/>
+                            <field name="origin" string="Source Document"/>
+                            <field name="picking_type_id"
+                                   string="Operation Type"/>
+                            <field name="code" string="Operation"/>
+                            <field name="date_deadline"
+                                   decoration-danger="has_deadline_issue == True"
+                                   string="Deadline"
+                                   invisible="has_deadline_issue == False"/>
+                        </group>
+                        <group class="mt-5">
+                            <field name="product_id"/>
+                            <field name="quantity" string="Demand"/>
+                            <field name="reserved_available" string="Reserved"/>
+
+                            <field name="location_id"
+                                   string="Source Location"/>
+                            <field name="location_dest_id"
+                                   string="Destination Location"/>
+                            <field name="state" string="Status"
+                                   decoration-success="state == 'assigned' or state == 'done'  or state == 'confirmed'"
+                                   decoration-info="state == 'draft'"
+                                   decoration-warning="state == 'waiting' or state == 'partially_available'"
+                                   widget="badge" optional="show"/>
+                            <field name="has_deadline_issue" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+<!--    Stock move line tree view-->
+    <record id="stock_move_in_tree_view" model="ir.ui.view">
+        <field name="name">move.lines.in.tree</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <tree string="Picking Order Lines" create="false" edit="true"
+                  delete="false">
+                <field name="picking_id"/>
+                <field name="product_id"/>
+                <field name="move_line_image" widget="image" class="m-0" optional="show" options="{'zoom': true}"/>
+                <field name="scheduled_date"/>
+                <field name="date_done" string="Effective Date" optional="show"/>
+                <field name="origin" string="Source Document" optional="hide"/>
+                <field name="picking_type_id" string="Operation Type"/>
+                <field name="date_deadline"
+                       decoration-danger="has_deadline_issue == True"
+                       string="Deadline" optional="hide"
+                       invisible="has_deadline_issue == False"/>
+                <field name="quantity" string="Initial Demand"/>
+                <field name="reserved_available" string="Reserved" optional="show"/>
+                <field name="location_id"
+                       string="Source Location"/>
+                <field name="location_dest_id"
+                       string="Destination Location" optional="show"/>
+                <field name="state" string="Status"
+                       widget='badge' optional="show"
+                       decoration-danger="state=='cancel'"
+                       decoration-info="state== 'assigned'"
+                       decoration-muted="state == 'draft'"
+                       decoration-success="state == 'done'"
+                       decoration-warning="state not in ('draft','cancel','done','assigned')"/>
+                <field name="has_deadline_issue" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+<!--Stock mve line kanban view-->
+    <record id="stock_move_in_kanban_view" model="ir.ui.view">
+        <field name="name">move.lines.in.kanbn</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state"
+                    class="o_kanban_small_column">
+                <field name="id"/>
+                <field name="picking_type_id"/>
+                <field name="move_line_image" class="oe_avatar"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click ">
+                            <div class="o_kanban_image me-1">
+                                <field name="move_line_image"
+                                       widget="image"/>
+                            </div>
+                            <div class="oe_kanban_details">
+                                <div class="o_kanban_record_top mb-0">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="picking_id"/>
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div name="product_lst_price"
+                                     class="mt-1">
+                                    Scheduled Date:
+                                    <field name="scheduled_date"/>
+                                </div>
+                                Effective Date:
+                                <field name="date_done"/>
+                                <div>
+                                    Initial Demand
+                                    <field name="quantity"/>
+                                </div>
+                                <div>
+                                    Quantity Done
+                                <field name="state" widget='badge'
+                                       optional="show" class="float-end"
+                                       decoration-danger="state=='cancel'"
+                                       decoration-info="state== 'assigned'"
+                                       decoration-muted="state == 'draft'"
+                                       decoration-success="state == 'done'"
+                                       decoration-warning="state not in ('draft','cancel','done','assigned')"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+<!--Pivot view for the stock move line-->
+    <record id="stock_move_in_view_pivot" model="ir.ui.view">
+        <field name="name">move.lines.in.pivot</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Pivot View Analysis" sample="1">
+                <field name="state" type="row"/>
+                <field name="picking_id" type="row"/>
+                <field name="product_id" type="row"/>
+                <field name="quantity" type="measure"
+                       string="Initial Demand"/>
+            </pivot>
+        </field>
+    </record>
+
+<!--Graph view for Stock move line-->
+    <record id="stock_move_in_view_graph_view" model="ir.ui.view">
+        <field name="name">move.lines.in.graph.view</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <graph string="Picking Orders Graph Analysis" sample="1">
+                <field name="product_id" class="font-weight-bold"/>
+                <field name="quantity" string="Initial Demand"/>
+            </graph>
+        </field>
+    </record>
+<!--Calendar view for the stock move line-->
+    <record id="stock_move_in_calender_view" model="ir.ui.view">
+        <field name="name">move.lines.in.calendar</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <calendar string="Picking Orders" mode="month"
+                      date_start="create_date"
+                      color="product_id" hide_time="true" event_limit="5">
+                <field name="product_id"/>
+                <field name="picking_id"/>
+                <field name="scheduled_date"/>
+            </calendar>
+        </field>
+    </record>
+
+<!--    Search view for the stock move line-->
+    <record id="view_stock_move_line_in_search_filter" model="ir.ui.view">
+        <field name="name">stock.move.line.in.search</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <search string="Search Picking Order Lines">
+                <field name="picking_id" string="Transfers"/>
+                <field name="product_id"/>
+                <field name="product_category_name" string="Category"/>
+                <field name="location_id" string="Location" filter_domain="['|',('location_id', 'ilike', self),('location_dest_id', 'ilike', self)]" groups="stock.group_stock_multi_locations"/>
+                <field name="reference"/>
+                <field name="lot_id" string="Lot/Serial Number" groups="stock.group_production_lot"/>
+                <field name="package_id" string="Source Package" groups="stock.group_tracking_lot"/>
+                <field name="result_package_id" string="Destination Package" groups="stock.group_tracking_lot"/>
+                <field name="owner_id" string="Owner" groups="stock.group_tracking_owner"/>
+                <separator/>
+
+                <filter string="To Do" name="todo" domain="[('state', 'not in', ['done', 'draft', 'cancel'])]"/>
+                <filter string="Ready" name="todo" domain="[('state',  '=', 'assigned')]"/>
+                <filter string="Done" name="done" domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <filter name="date" date="date" default_period="this_month"/>
+                <filter string="Last 30 Days" name="filter_last_30_days" domain="[('date','&gt;=', (context_today() - relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Last 3 Months" name="filter_last_3_months" domain="[('date','&gt;=', (context_today() - relativedelta(months=3)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Last 12 Months" name="filter_last_12_months" domain="[('date','&gt;=', (context_today() - relativedelta(years=1)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                   <filter string="Product" name="groupby_product_id" domain="[]" context="{'group_by': 'product_id'}"/>
+                    <filter string="Category" name="by_category" domain="[]" context="{'group_by': 'product_category_name'}"/>
+                    <filter string="Transfers" name="by_picking" domain="[]" context="{'group_by': 'picking_id'}"/>
+                    <filter name="origin" string="Source Document" domain="[]" context="{'group_by': 'origin'}"/>
+                    <filter name="picking_type_id" string="Operation Type" domain="[]" context="{'group_by': 'picking_type_id'}"/>
+                    <filter string="Source Location" name="by_location" domain="[]" context="{'group_by': 'location_id'}"/>
+                    <filter string="Destination Location" name="by_dest_location" domain="[]" context="{'group_by': 'location_dest_id'}"/>
+                    <filter string="Status" name="by_state" domain="[]"  context="{'group_by': 'state'}"/>
+                <separator/>
+                    <filter string="Creation Date" name="by_date" domain="[]" context="{'group_by': 'date'}"/>
+                    <filter string="Scheduled  Date" name="by_schedule_date" domain="[]" context="{'group_by': 'scheduled_date'}"/>
+                <separator/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+<!--Stock move action record-->
+    <record id="stock_move_in_views_action" model="ir.actions.act_window">
+        <field name="name">Incoming Operation Lines</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">stock.move.line</field>
+        <field name="view_mode">tree,kanban,form,pivot,graph</field>
+        <field name="domain">[
+            ('picking_id.picking_type_id.code', '=', 'incoming')]</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                            (0, 0, {'view_mode': 'tree', 'view_id': ref('stock_move_in_tree_view')}),
+                            (0, 0, {'view_mode': 'kanban', 'view_id': ref('stock_move_in_kanban_view')}),
+                            (0, 0, {'view_mode': 'pivot', 'view_id': ref('stock_move_in_view_pivot')}),
+                            (0, 0, {'view_mode': 'graph', 'view_id': ref('stock_move_in_view_graph_view')}),
+                                    (0, 0, {'view_mode': 'calendar', 'view_id': ref('stock_move_in_calender_view')})
+                            ]"/>
+        <field name="search_view_id" ref="view_stock_move_line_in_search_filter"/>
+    </record>
+
+<!--    Additional-->
+     <record id="stock_move_out_form_view" model="ir.ui.view">
+        <field name="name">move.lines.form</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <form string="Picking Order Lines" edit="0" create="0" duplicate="0"
+                  delete="0">
+                <sheet>
+                    <field name="move_line_image" widget="image"
+                           class="oe_avatar"/>
+                    <group>
+                        <group>
+                            <h2>
+                                <field name="picking_id"/>
+                            </h2><br/>
+                            <field name="create_date" string="Create Date"/>
+                            <field name="scheduled_date"/>
+                            <field name="date_done" string="Effective Date"/>
+                            <field name="origin" string="Source Document"/>
+                            <field name="picking_type_id"
+                                   string="Operation Type"/>
+                            <field name="code" string="Operation"/>
+                            <field name="date_deadline"
+                                   decoration-danger="has_deadline_issue == True"
+                                   string="Deadline"
+                                   invisible="has_deadline_issue ==False"/>
+                        </group>
+                        <group class="mt-5">
+                            <field name="product_id"/>
+                            <field name="quantity" string="Demand"/>
+                            <field name="reserved_available" string="Reserved"/>
+                            <field name="location_id"
+                                   string="Source Location"/>
+                            <field name="location_dest_id"
+                                   string="Destination Location"/>
+                            <field name="state" string="Status"
+                                   decoration-success="state == 'assigned' or state == 'done'  or state == 'confirmed'"
+                                   decoration-info="state == 'draft'"
+                                   decoration-warning="state == 'waiting' or state == 'partially_available'"
+                                   widget="badge" optional="show"/>
+                            <field name="has_deadline_issue" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+<!--    Tree view for the stock move line-->
+    <record id="stock_move_out_tree_view" model="ir.ui.view">
+        <field name="name">move.lines.tree</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <tree string="Picking Order Lines" create="false" edit="true"
+                  delete="false">
+                <field name="picking_id"/>
+                <field name="product_id"/>
+                <field name="move_line_image" widget="image" class="m-0" optional="show" options="{'zoom': true}"/>
+                <field name="scheduled_date"/>
+                <field name="date_done" string="Effective Date" optional="show"/>
+                <field name="origin" string="Source Document" optional="hide"/>
+                <field name="picking_type_id" string="Operation Type"/>
+                <field name="date_deadline"
+                       decoration-danger="has_deadline_issue == True"
+                       string="Deadline" optional="hide"
+                       invisible="has_deadline_issue == False"/>
+                <field name="quantity" string="Initial Demand"/>
+                <field name="reserved_available" string="Reserved" optional="show"/>
+                <field name="location_id"
+                       string="Source Location"/>
+                <field name="location_dest_id"
+                       string="Destination Location" optional="show"/>
+                <field name="state" string="Status"
+                       widget='badge' optional="show"
+                       decoration-danger="state=='cancel'"
+                       decoration-info="state== 'assigned'"
+                       decoration-muted="state == 'draft'"
+                       decoration-success="state == 'done'"
+                       decoration-warning="state not in ('draft','cancel','done','assigned')"/>
+                <field name="has_deadline_issue" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+<!--Stock move line kanban view-->
+    <record id="stock_move_out_kanban_view" model="ir.ui.view">
+        <field name="name">move.lines.kanban</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state"
+                    class="o_kanban_small_column">
+                <field name="id"/>
+                <field name="picking_type_id"/>
+                <field name="move_line_image" class="oe_avatar"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click ">
+                            <div class="o_kanban_image me-1">
+                                <field name="move_line_image"
+                                       widget="image"/>
+                            </div>
+                            <div class="oe_kanban_details">
+                                <div class="o_kanban_record_top mb-0">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="picking_id"/>
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div name="product_lst_price"
+                                     class="mt-1">
+                                    Scheduled Date:
+                                    <field name="scheduled_date"/>
+                                </div>
+                                Effective Date:
+                                <field name="date_done"/>
+                                <div>
+                                    Initial Demand
+                                    <field name="quantity"/>
+                                </div>
+                                <div>
+                                    Quantity Done
+                                <field name="state" widget='badge'
+                                       optional="show" class="float-end"
+                                       decoration-danger="state=='cancel'"
+                                       decoration-info="state== 'assigned'"
+                                       decoration-muted="state == 'draft'"
+                                       decoration-success="state == 'done'"
+                                       decoration-warning="state not in ('draft','cancel','done','assigned')"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+<!--Pivot view for the Stock move line-->
+    <record id="stock_move_out_view_pivot" model="ir.ui.view">
+        <field name="name">move.lines.pivot</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Pivot View Analysis" sample="1">
+                <field name="state" type="row"/>
+                <field name="picking_id" type="row"/>
+                <field name="product_id" type="row"/>
+                <field name="quantity" type="measure"
+                       string="Initial Demand"/>
+            </pivot>
+        </field>
+    </record>
+
+<!--Graph view for the Stock move line-->
+    <record id="stock_move_out_view_graph_view" model="ir.ui.view">
+        <field name="name">move.lines.graph.view</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <graph string="Picking Orders Graph Analysis" sample="1">
+                <field name="product_id" class="font-weight-bold"/>
+                <field name="quantity" string="Initial Demand"/>
+            </graph>
+        </field>
+    </record>
+
+<!--Calendar view for the Stock move line-->
+    <record id="stock_move_out_calender_view" model="ir.ui.view">
+        <field name="name">move.lines.calender</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <calendar string="Picking Orders" mode="month"
+                      date_start="create_date"
+                      color="product_id" hide_time="true" event_limit="5">
+                <field name="product_id"/>
+                <field name="picking_id"/>
+                <field name="scheduled_date"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!--Search view for the Stock move line-->
+    <record id="view_stock_move_line_search_filter" model="ir.ui.view">
+        <field name="name">stock.move.line.search</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <search string="Search Picking Order Lines">
+                <field name="picking_id" string="Transfers"/>
+                <field name="product_id"/>
+                <field name="product_category_name" string="Category"/>
+                <field name="location_id" string="Location" filter_domain="['|',('location_id', 'ilike', self),('location_dest_id', 'ilike', self)]" groups="stock.group_stock_multi_locations"/>
+                <field name="reference"/>
+                <field name="lot_id" string="Lot/Serial Number" groups="stock.group_production_lot"/>
+                <field name="package_id" string="Source Package" groups="stock.group_tracking_lot"/>
+                <field name="result_package_id" string="Destination Package" groups="stock.group_tracking_lot"/>
+                <field name="owner_id" string="Owner" groups="stock.group_tracking_owner"/>
+                <separator/>
+                <filter string="To Do" name="todo" domain="[('state', 'not in', ['done', 'draft', 'cancel'])]"/>
+                <filter string="Ready" name="todo" domain="[('state',  '=', 'assigned')]"/>
+                <filter string="Done" name="done" domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <filter name="date" date="date" default_period="this_month"/>
+                <filter string="Last 30 Days" name="filter_last_30_days" domain="[('date','&gt;=', (context_today() - relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Last 3 Months" name="filter_last_3_months" domain="[('date','&gt;=', (context_today() - relativedelta(months=3)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Last 12 Months" name="filter_last_12_months" domain="[('date','&gt;=', (context_today() - relativedelta(years=1)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                   <filter string="Product" name="groupby_product_id" domain="[]" context="{'group_by': 'product_id'}"/>
+                    <filter string="Category" name="by_category" domain="[]" context="{'group_by': 'product_category_name'}"/>
+                    <filter string="Transfers" name="by_picking" domain="[]" context="{'group_by': 'picking_id'}"/>
+                    <filter name="origin" string="Source Document" domain="[]" context="{'group_by': 'origin'}"/>
+                    <filter name="picking_type_id" string="Operation Type" domain="[]" context="{'group_by': 'picking_type_id'}"/>
+                    <filter string="Source Location" name="by_location" domain="[]" context="{'group_by': 'location_id'}"/>
+                    <filter string="Destination Location" name="by_dest_location" domain="[]" context="{'group_by': 'location_dest_id'}"/>
+                    <filter string="Status" name="by_state" domain="[]"  context="{'group_by': 'state'}"/>
+                <separator/>
+                    <filter string="Creation Date" name="by_date" domain="[]" context="{'group_by': 'date'}"/>
+                    <filter string="Scheduled  Date" name="by_schedule_date" domain="[]" context="{'group_by': 'scheduled_date'}"/>
+                <separator/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+<!--Window action for the stock move line-->
+    <record id="stock_move_out_views_action" model="ir.actions.act_window">
+        <field name="name">Outgoing Operation Lines</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">stock.move.line</field>
+        <field name="view_mode">tree,kanban,form,pivot,graph</field>
+        <field name="domain">[
+            ('picking_id.picking_type_id.code', '=', 'outgoing')]</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                            (0, 0, {'view_mode': 'tree', 'view_id': ref('stock_move_out_tree_view')}),
+                            (0, 0, {'view_mode': 'kanban', 'view_id': ref('stock_move_out_kanban_view')}),
+                            (0, 0, {'view_mode': 'pivot', 'view_id': ref('stock_move_out_view_pivot')}),
+                            (0, 0, {'view_mode': 'graph', 'view_id': ref('stock_move_out_view_graph_view')}),
+                                    (0, 0, {'view_mode': 'calendar', 'view_id': ref('stock_move_out_calender_view')})
+                            ]"/>
+        <field name="search_view_id" ref="view_stock_move_line_search_filter"/>
+
+    </record>
+<!--    Menu item for incoming operation line.-->
+    <menuitem id="menu_stock_move_in"
+              name="Incoming Operation Lines"
+              action="stock_move_in_views_action"
+              parent="stock.menu_stock_warehouse_mgmt"
+              groups="stock.group_stock_user"
+              sequence="149"/>
+</odoo>
