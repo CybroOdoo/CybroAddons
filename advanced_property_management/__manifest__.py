@@ -60,7 +60,7 @@
             'advanced_property_management/static/src/js/property_item.js',
         ],
     },
-    'images': ['/static/description/banner.jpg'],
+    'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
