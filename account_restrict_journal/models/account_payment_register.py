@@ -35,8 +35,8 @@ class AccountPaymentRegister(models.TransientModel):
         for wizard in self:
             if wizard.can_edit_wizard:
                 batch = wizard._get_batches()[0]
-                wizard.available_journal_ids = \
-                    wizard._get_batch_available_journals(batch)
+                wizard.available_journal_ids = wizard._get_batch_available_journals(
+                    batch)
             else:
                 wizard.available_journal_ids = self.env[
                     'account.journal'].search(
