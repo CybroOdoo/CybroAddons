@@ -25,6 +25,7 @@ from odoo.exceptions import ValidationError
 
 class ThemeConfig(models.Model):
     _name = 'theme.config'
+    _description = 'Theme Config'
 
     name = fields.Char(string="Name")
     sidebar_image = fields.Binary(string="Sidebar image")

@@ -8,6 +8,7 @@ class ProductBrand(models.Model):
 
 class BrandProduct(models.Model):
     _name = 'product.brand'
+    _description = 'Product Brand'
 
 
     name= fields.Char(String="Name")

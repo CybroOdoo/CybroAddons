@@ -25,6 +25,7 @@ from odoo import api, fields, models, _
 
 class OrientationForceComplete(models.TransientModel):
     _name = 'orientation.force.complete'
+    _description = "Orientation Force Complete"
 
     name = fields.Char()
     orientation_id = fields.Many2one('employee.orientation', string='Orientation')

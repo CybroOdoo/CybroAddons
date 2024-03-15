@@ -54,7 +54,7 @@ class Appointment(models.Model):
         ('to_invoice', 'To Invoice'),
         ('invoiced', 'Done'),
         ('cancel', 'Cancelled'),
-    ], string='Status', readonly=True, copy=False, index=True, track_visibility='onchange', default='draft',
+    ], string='Status', readonly=True, copy=False, index=True, tracking=True, default='draft',
     )
 
     priority = fields.Selection([
@@ -176,6 +176,7 @@ class Appointment(models.Model):
 
 class LabAppointmentLines(models.Model):
     _name = 'lab.appointment.lines'
+    _description = 'Lab Appointment Lines'
 
     lab_test = fields.Many2one('lab.test', string="Test")
     cost = fields.Float(string="Cost")

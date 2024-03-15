@@ -65,7 +65,7 @@ class MobileServiceShop(models.Model):
     service_state = fields.Selection([('draft', 'Draft'), ('assigned', 'Assigned'),
                                       ('completed', 'Completed'), ('returned', 'Returned'),
                                       ('not_solved', 'Not solved')],
-                                     string='Service Status', default='draft', track_visibility='always')
+                                     string='Service Status', default='draft', tracking=True)
 
     complaints_tree = fields.One2many('mobile.complaint.tree', 'complaint_id', string='Complaints Tree')
 

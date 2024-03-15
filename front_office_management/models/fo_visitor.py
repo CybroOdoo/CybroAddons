@@ -4,6 +4,7 @@ from odoo import models, fields, api
 
 class VisitorDetails(models.Model):
     _name = 'fo.visitor'
+    _description = 'Visitor'
 
     name = fields.Char(string="Visitor", required=True)
     visitor_image = fields.Binary(string='Image', attachment=True)
@@ -31,6 +32,7 @@ class VisitorDetails(models.Model):
 
 class VisitorProof(models.Model):
     _name = 'id.proof'
+    _description = 'Visitor Proof'
     _rec_name = 'id_proof'
 
     id_proof = fields.Char(string="Name")

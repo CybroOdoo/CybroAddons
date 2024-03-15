@@ -64,13 +64,13 @@ class CarRentalContract(models.Model):
                             default='#FFFFFF', readonly=True)
     cost = fields.Float(string="Rent Cost", help="This fields is to determine the cost of rent", required=True)
     rent_start_date = fields.Date(string="Rent Start Date", required=True, default=str(date.today()),
-                                  help="Start date of contract", track_visibility='onchange')
+                                  help="Start date of contract", tracking=True)
     rent_end_date = fields.Date(string="Rent End Date", required=True, help="End date of contract",
-                                track_visibility='onchange')
+                                tracking=True)
     state = fields.Selection(
         [('draft', 'Draft'), ('reserved', 'Reserved'), ('running', 'Running'), ('cancel', 'Cancel'),
          ('checking', 'Checking'), ('invoice', 'Invoice'), ('done', 'Done')], string="State",
-        default="draft", copy=False, track_visibility='onchange')
+        default="draft", copy=False, tracking=True)
     notes = fields.Text(string="Details & Notes")
     cost_generated = fields.Float(string='Recurring Cost',
                                   help="Costs paid at regular intervals, depending on the cost frequency")
@@ -86,7 +86,7 @@ class CarRentalContract(models.Model):
     first_payment = fields.Float(string='First Payment',
                                  help="Transaction/Office/Contract charge amount, must paid by customer side other "
                                       "than recurrent payments",
-                                 track_visibility='onchange',
+                                 tracking=True,
                                  required=True)
     first_payment_inv = fields.Many2one('account.move', copy=False)
     first_invoice_created = fields.Boolean(string="First Invoice Created", invisible=True, copy=False)
@@ -107,7 +107,7 @@ class CarRentalContract(models.Model):
     invoice_count = fields.Integer(compute='_invoice_count', string='# Invoice', copy=False)
     check_verify = fields.Boolean(compute='check_action_verify', copy=False)
     sales_person = fields.Many2one('res.users', string='Sales Person', default=lambda self: self.env.uid,
-                                   track_visibility='always')
+                                   tracking=True)
 
     def action_run(self):
         self.state = 'running'

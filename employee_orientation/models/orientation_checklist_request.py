@@ -47,7 +47,7 @@ class OrientationChecklistRequest(models.Model):
         ('new', 'New'),
         ('cancel', 'Cancel'),
         ('complete', 'Completed'),
-    ], string='Status', readonly=True, copy=False, index=True, track_visibility='onchange', default='new')
+    ], string='Status', readonly=True, copy=False, index=True, tracking=True, default='new')
 
     def confirm_send_mail(self):
         self.ensure_one()

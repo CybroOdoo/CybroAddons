@@ -19,7 +19,7 @@ class VisitDetails(models.Model):
         ('prop_in', 'Taken In'),
         ('prop_out', 'Taken out'),
         ('cancel', 'Cancelled'),
-    ], track_visibility='onchange', default='draft',
+    ], tracking=True, default='draft',
         help='If the employee taken the belongings to the company change state to ""Taken In""'
              'when he/she leave office change the state to ""Taken out""')
 

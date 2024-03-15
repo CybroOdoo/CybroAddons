@@ -187,7 +187,7 @@ class LaundryManagement(models.Model):
                                          'order': [('readonly', False)]},
                                  required=True,
                                  change_default=True, index=True,
-                                 track_visibility='always')
+                                 tracking=True)
     partner_invoice_id = fields.Many2one('res.partner',
                                          string='Invoice Address',
                                          readonly=True, required=True,
@@ -220,7 +220,7 @@ class LaundryManagement(models.Model):
         ('return', 'Returned'),
         ('cancel', 'Cancelled'),
     ], string='Status', readonly=True, copy=False, index=True,
-        track_visibility='onchange', default='draft')
+        tracking=True, default='draft')
 
 
 class LaundryManagementLine(models.Model):

@@ -29,6 +29,7 @@ from calendar import monthrange
 
 class PayrollReportView(models.Model):
     _name = 'hr.payroll.report.view'
+    _description = 'Payroll Report View'
     _auto = False
 
     now = date.today()

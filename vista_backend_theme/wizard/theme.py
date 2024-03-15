@@ -7,6 +7,7 @@ from odoo.modules import get_module_resource
 
 class Theme(models.TransientModel):
     _name = "theme.data"
+    _description = "Theme Data"
 
     def _get_current_theme(self):
         return self.env['theme.data.stored'].sudo().search([], limit=1).name
@@ -543,6 +544,7 @@ class Theme(models.TransientModel):
 
 class ThemeStored(models.Model):
     _name = "theme.data.stored"
+    _description = "Theme Data Stored"
 
     name = fields.Selection([
         ('default', 'Default'),

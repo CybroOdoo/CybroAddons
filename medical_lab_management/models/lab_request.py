@@ -47,7 +47,7 @@ class LabRequest(models.Model):
         ('completed', 'Completed'),
         ('cancel', 'Cancelled'),
 
-    ], string='Status', readonly=True, copy=False, index=True, track_visibility='onchange', default='draft')
+    ], string='Status', readonly=True, copy=False, index=True, tracking=True, default='draft')
 
     @api.model
     def create(self, vals):
