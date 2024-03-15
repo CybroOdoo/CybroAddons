@@ -438,6 +438,9 @@ class DbBackupConfigure(models.Model):
             res = requests.post(
                 "https://login.microsoftonline.com/common/oauth2/v2.0/token",
                 data=data, headers=headers)
+            if res.status_code != 200:
+                raise ValidationError(
+                    "Bad microsoft onedrive request..!")
             res.raise_for_status()
             response = res.content and res.json() or {}
             if response:
@@ -525,12 +528,16 @@ class DbBackupConfigure(models.Model):
 
     def set_dropbox_refresh_token(self, auth_code):
         """Generate and set the dropbox refresh token from authorization code"""
-        dbx_auth = dropbox.oauth.DropboxOAuth2FlowNoRedirect(
-            self.dropbox_client_key,
-            self.dropbox_client_secret,
-            token_access_type='offline')
-        outh_result = dbx_auth.finish(auth_code)
-        self.dropbox_refresh_token = outh_result.refresh_token
+        try:
+            dbx_auth = dropbox.oauth.DropboxOAuth2FlowNoRedirect(
+                self.dropbox_client_key,
+                self.dropbox_client_secret,
+                token_access_type='offline')
+            outh_result = dbx_auth.finish(auth_code)
+            self.dropbox_refresh_token = outh_result.refresh_token
+        except Exception:
+            raise ValidationError(
+                'Please Enter Valid Authentication Code')
 
     @api.constrains('db_name')
     def _check_db_credentials(self):
