@@ -25,20 +25,21 @@ from odoo import models
 class SaleOrder(models.Model):
     """Inherit sale order model for add a button to print
     subscription id card"""
-    _inherit = 'sale.order'
+
+    _inherit = "sale.order"
 
     def action_subscription_id_card(self):
         """For printing subscription id card"""
         products = [order.product_id.name for order in self.order_line]
         data = {
-            'name': self.partner_id.name,
-            'start_date': self.date_order.date(),
-            'partner_id': self.partner_id.id,
-            'end_date': self.end_date,
-            'products': products,
+            "name": self.partner_id.name,
+            "start_date": self.date_order.date(),
+            "partner_id": self.partner_id.id,
+            "end_date": self.end_date,
+            "products": products,
         }
-        action = self.env.ref('print_subscription_id_card'
-        '.action_report_subscription_card').report_action(
-            None, data=data)
-        action.update({'close_on_report_download': True})
+        action = self.env.ref(
+            "print_subscription_id_card" ".action_report_subscription_card"
+        ).report_action(None, data=data)
+        action.update({"close_on_report_download": True})
         return action
