@@ -24,3 +24,8 @@
 #### Version 15.0.4.1.2
 #### ADD
 - Nextcloud and Amazon S3 integration added. Backup can be stored into Nextcloud and Amazon S3.
+
+#### 16.02.2024
+#### Version 15.0.5.1.0
+#### UPDT
+- Fixed internal server error in Onedrive and Google Drive integration.

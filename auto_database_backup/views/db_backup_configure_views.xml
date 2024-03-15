@@ -20,6 +20,8 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
+                    <field name="gdrive_backup_error_test" invisible="1"/>
+                    <field name="onedrive_backup_error_test" invisible="1"/>
                     <div class="oe_title">
                         <h1>
                             <field name="name" placeholder="Name..."/>
@@ -128,7 +130,21 @@
                                     </button>
                                 </div>
                             </div>
-                            <div>
+                            <div class="alert alert-danger" role="alert" style="margin-bottom:0px;width: 229%;" attrs="{'invisible': [('gdrive_backup_error_test', '=', False)]}">
+                                Something went wrong during your token generation. Maybe your Authorization Code is invalid
+                            </div>
+
+                            <div attrs="{'invisible': [('backup_destination', '!=', 'onedrive')]}">
+                                <div attrs="{'invisible': ['|', ('backup_destination', '!=', 'onedrive'), ('is_onedrive_token_generated', '=', False)]}">
+                                    <i class="text-success fa fa-check"/>
+                                    Refresh token set
+                                </div>
+                                <div attrs="{'invisible': ['|', ('backup_destination', '!=', 'onedrive'), ('is_onedrive_token_generated', '=', True)]}">
+                                    <i class="fa fa-exclamation-triangle text-warning"/>
+                                    No refresh token set
+                                </div>
+                            </div>
+                            <div attrs="{'invisible': [('backup_destination', '!=', 'onedrive')]}">
                                 <div attrs="{'invisible': ['|', ('backup_destination', '!=', 'onedrive'), ('is_onedrive_token_generated', '=', True)]}">
                                     <button class="btn btn-link"
                                             name="action_get_onedrive_auth_code"
@@ -145,6 +161,9 @@
                                         Reset Token
                                     </button>
                                 </div>
+                            </div>
+                            <div class="alert alert-danger" role="alert" style="margin-bottom:0px;width: 91%%;" attrs="{'invisible': [('onedrive_backup_error_test', '=', False)]}">
+                                Bad microsoft onedrive request. Maybe your Authorization Code is invalid
                             </div>
                             <field name="dropbox_refresh_token" invisible="1"/>
                             <field name="is_dropbox_token_generated" invisible="1"/>

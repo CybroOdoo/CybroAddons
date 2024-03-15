@@ -22,7 +22,7 @@
 {
     'name': "Automatic Database Backup To Local Server, Remote Server, Google "
             "Drive, Dropbox, Onedrive, Nextcloud and Amazon S3",
-    'version': '15.0.4.1.2',
+    'version': '15.0.5.1.0',
     'category': 'Discuss,Extra Tools',
     'summary': """Generate automatic backup of databases and store to local,
      google drive, dropbox, nextcloud, amazon S3, onedrive or 
