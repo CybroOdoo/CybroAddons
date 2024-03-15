@@ -28,6 +28,7 @@ class ResUsersInherit(models.Model):
 
 class AllowedIPs(models.Model):
     _name = 'allowed.ips'
+    _description = 'Allowed IPs'
 
     users_ip = fields.Many2one('res.users', string='IP')
     ip_address = fields.Char(string='Allowed IP')
