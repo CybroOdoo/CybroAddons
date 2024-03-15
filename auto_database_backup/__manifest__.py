@@ -19,13 +19,14 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 {
     'name': "Automatic Database Backup",
-    'version': '14.0.1.0.0',
-    'summary': """Generate automatic backup of databases and store to local, google drive or remote server""",
-    'description': """This module has been developed for creating database backups automatically 
-                    and store it to the different locations.""",
+    'version': '14.0.1.0.1',
+    'summary': 'Generate automatic backup of databases and store to local, '
+               'google drive or remote server',
+    'description': 'his module has been developed for creating '
+                   'database backups automatically '
+                   'and store it to the different locations.',
     'author': "Cybrosys Techno Solutions",
     'website': "https://www.cybrosys.com",
     'company': 'Cybrosys Techno Solutions',
@@ -35,8 +36,12 @@
     'data': [
         'security/ir.model.access.csv',
         'data/data.xml',
-        'views/db_backup_configure_views.xml'
+        'views/db_backup_configure_views.xml',
+        'wizard/dropbox_auth_code_views.xml'
     ],
+    'external_dependencies': {
+        'python': ['dropbox', 'pyncclient', 'boto3', 'nextcloud-api-wrapper',
+                   'paramiko']},
     'license': 'LGPL-3',
     'images': ['static/description/banner.gif'],
     'installable': True,

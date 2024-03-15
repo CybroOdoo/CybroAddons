@@ -19,7 +19,7 @@ Company
 Credits
 -------
 * Developer:
-(v14) Midilaj @ Cybrosys
+(v14) Midilaj @ Cybrosys, Farhana Jahan PT @ Cybrosys,
 
 
 Contacts
