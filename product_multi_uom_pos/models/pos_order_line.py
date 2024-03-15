@@ -39,3 +39,14 @@ class PosOrderLine(models.Model):
         if values.get('product_uom_id'):
             values['uom_id'] = int(values['product_uom_id'])
         return super().create(values)
+
+    def _export_for_ui(self, orderline):
+        """Extends the base '_export_for_ui' method to include the
+        'product_uom_id' field in the exported data.
+        :param orderline: The POS order line.
+        :return: Dictionary with additional data for UI export."""
+        result = super()._export_for_ui(orderline)
+        result.update({
+            'product_uom_id': orderline.product_uom_id.id,
+        })
+        return result

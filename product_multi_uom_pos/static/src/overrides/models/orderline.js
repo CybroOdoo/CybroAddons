@@ -2,7 +2,6 @@
 
 import { patch } from "@web/core/utils/patch";
 import { Orderline } from "@point_of_sale/app/store/models";
-import { Order } from "@point_of_sale/app/store/models";
 
 patch(Orderline.prototype, {
     export_as_JSON(){
@@ -74,18 +73,5 @@ patch(Orderline.prototype, {
             resetUom: this.resetUom,
             onSelectionChangedUom: this.onSelectionChangedUom,
         };
-    },
-});
-
-patch(Order.prototype, {
-     /**
-     * Extends the export_for_printing method to customize the printing data.
-     * Removes the 'showPricelist' property from each order line.
-     * @returns {Object} The modified printing data.
-     */
-    export_for_printing() {
-        const result = super.export_for_printing(...arguments);
-        result['orderlines'] =  result['orderlines'].map(({ ["resetUom"]: _, ...rest }) => rest);
-        return result;
     },
 });

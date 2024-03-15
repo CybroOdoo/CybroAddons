@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "POS Product Multiple UOM",
-    'version': '17.0.1.0.1',
+    'version': '17.0.1.0.0',
     'category': 'Point of Sale',
     'summary': """A module to manage multiple UoM in POS""",
     'description': """Using this app, you can change unit of measure of 

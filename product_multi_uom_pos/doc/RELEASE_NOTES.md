@@ -4,8 +4,3 @@
 #### Version 17.0.1.0.0
 #### ADD
 - Initial commit for POS Product Multiple UOM
-
-#### 12.02.2024
-#### Version 17.0.1.0.1
-#### UPDATE
-- Removed buttons from receipt.
