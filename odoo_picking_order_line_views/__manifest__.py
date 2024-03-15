@@ -27,7 +27,7 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'category': 'Sales',
-    'licence': 'LGPL-3',
+    'license': 'LGPL-3',
     'depends': ['base', 'sale', 'stock', 'sale_management', 'purchase'],
     'data': [
         'views/in_operation_line_views.xml',
