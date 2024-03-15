@@ -183,7 +183,7 @@ class EquipmentRequest(models.Model):
                 'sequence_code': 'INT',
             })
         move_vals = {
-            'picking_type_id': picking_type_id.id,
+            'picking_type_id': picking_type_id.ids[0],
             'location_id': self.source_location_id.id,
             'location_dest_id': self.destination_location_id.id,
             'equipment_transfer_id': self.id,
