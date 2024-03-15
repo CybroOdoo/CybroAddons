@@ -17,7 +17,8 @@ Company
 
 Credits
 =======
-* Developer: (v12) Ajmunnisa @ Cybrosys , Contact : odoo@cybrosys.com
+* Developer: (v12) Ajmunnisa @ Cybrosys, Farhana Jahan PT @ Cybrosys ,
+Contact : odoo@cybrosys.com
 
 Contacts
 ========

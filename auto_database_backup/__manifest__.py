@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Auto Database Backup",
-    'version': '12.0.1.0.0',
+    'version': '12.0.1.0.1',
     'category': 'Extra Tools',
     'summary': 'Generate automatic backup of databases and store to local, '
                'google drive, dropbox, nextcloud, amazon S3, onedrive or '
@@ -39,8 +39,11 @@
         'security/ir.model.access.csv',
         'data/ir_cron_data.xml',
         'data/mail_template_data.xml',
-        'views/db_backup_configure_views.xml'
+        'views/db_backup_configure_views.xml',
+        'wizard/dropbox_auth_code_views.xml'
     ],
+    'external_dependencies': {
+        'python': ['dropbox', 'pyncclient', 'boto3', 'nextcloud-api-wrapper','paramiko']},
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
