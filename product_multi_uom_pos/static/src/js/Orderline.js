@@ -35,7 +35,6 @@ odoo.define('product_multi_uom_pos.multi_uom_pos', function(require) {
         // Reset the unit of measure to the default uom_id of the product
         resetUom(ev) {
             var lineId = this.props.line.id
-            console.log(this)
             this.el.querySelector('#change_uom').disabled = false;
             this.el.querySelector('#select_uom').value = 'change_uom';
             this.el.querySelector('#change_uom').disabled = true;
