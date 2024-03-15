@@ -17,43 +17,45 @@ const viewRegistry = registry.category("views");
 
 odoo.__DEBUG__ && console.log("Console log inside the patch function", FormController.prototype, "form_controller");
 
-patch(FormController.prototype, "save",{
+patch(FormController.prototype, "save", {
     setup() {
-        this.props.preventEdit = this.env.inDialog ? false :true;
+        this.props.preventEdit = !this.env.inDialog;
         this._super();
     },
 
-    async edit(){
+    async edit() {
         this._super();
         await this.model.root.switchMode("edit");
     },
-    async saveButtonClicked(params = {}){
+    async saveButtonClicked(params = {}) {
+        const saved = await this._super();
+        if (saved) {
+            if (!this.env.inDialog){
+                await this.model.root.switchMode("readonly");
+            }
+            else {
+                this.model.actionService.doAction({type: 'ir.actions.act_window_close'});
+            }
+        }
+    },
+    async discard() {
         this._super();
-        if (this.env.inDialog == false){
+        if (!this.env.inDialog){
             await this.model.root.switchMode("readonly");
         }
         else {
            this.model.actionService.doAction({type: 'ir.actions.act_window_close'});
         }
     },
-    async discard(){
-        this._super();
-        if (this.env.inDialog == false){
-            await this.model.root.switchMode("readonly");
-        }
-        else {
-           this.model.actionService.doAction({type: 'ir.actions.act_window_close'});
-        }
-    },
-     async beforeLeave() {
+    async beforeLeave() {
         if (this.model.root.isDirty) {
             if (confirm("The changes you have made will save Automatically!")) {
-                return this.model.root.save({noReload: true, stayInEdition: true});
+                return this.model.root.save({ noReload: true, stayInEdition: true });
             } else {
                 this.model.root.discard();
                 return true;
             }
         }
-     }
+    }
 })
 
