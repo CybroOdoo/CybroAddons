@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--    Acknowledgement template-->
+    <template inherit_id="portal.frontend_layout"
+              id="website_maintenance" name="Maintenance Page">
+        <xpath expr="//div[@id='wrapwrap']" position="attributes">
+            <attribute name="t-if">not user_id._is_public() or not
+                website.under_maintenance or
+                request.httprequest.path=='/web/login'
+            </attribute>
+        </xpath>
+        <xpath expr="//div[@id='wrapwrap']" position="before">
+            <t t-if="user_id._is_public() and website.under_maintenance == True and request.httprequest.path!='/web/login'">
+                <html>
+                    <head>
+                        <nav class="navbar navbar-expand navbar-light bg-light">
+                            <div class="container">
+                                <a href="/" class="navbar-brand logo">
+                                    <img t-att-src="'/logo.png?company=%s' % res_company.id"
+                                         t-att-alt="'Logo of %s' % res_company.name"
+                                         t-att-title="res_company.name"/>
+                                </a>
+                                <ul id="top_menu"
+                                    class="nav navbar-nav ms-auto">
+                                    <t t-call="portal.placeholder_user_sign_in">
+                                        <t t-set="_item_class"
+                                           t-value="'nav-item'"/>
+                                        <t t-set="_link_class"
+                                           t-value="'nav-link'"/>
+                                    </t>
+                                </ul>
+                            </div>
+                        </nav>
+                    </head>
+                    <body>
+                        <div class="page">
+                            <img t-att-src="image_data_uri(website.maintenance_img)"/>
+                            <div class="container"
+                                 style=" position: sticky;z-index: 9;top: ;bottom: 400px;width: 100%;text-align: center;display: flex;justify-content: center;">
+                                <div class="container">
+                                    <div class="title-item">
+                                        <h2 t-att-style="'color: %s;' % website.maintenance_hdr_color">
+                                            <t t-esc="website.maintenance_hdr"/>
+                                        </h2>
+                                        <span t-att-style="'color: %s;' % website.maintenance_cont_color">
+                                            <t t-esc="website.maintenance_msg"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </body>
+                </html>
+            </t>
+        </xpath>
+    </template>
+</odoo>
