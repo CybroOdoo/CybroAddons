@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="employee_idea_action" model="ir.actions.act_window">
+        <field name="name">Employee Ideas</field>
+        <field name="res_model">employee.idea</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <!--Tree view of the model employee.models-->
+    <record id="employee_idea_view_tree" model="ir.ui.view">
+        <field name="name">employee.idea.view.tree</field>
+        <field name="model">employee.idea</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="reference_no"/>
+                <field name="title"/>
+                <field name="employee_id"/>
+                <field name="idea_type_id"/>
+                <field name="state"/>
+                <field name="have_minimum_vote"/>
+            </tree>
+        </field>
+    </record>
+    <!--Form view of the model employee.models-->
+    <record id="employee_idea_views_form" model="ir.ui.view">
+        <field name="name">employee.idea.view.form</field>
+        <field name="model">employee.idea</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button class="oe_highlight" name="action_send_approval"
+                            string="Send for Approval" type="object"
+                            invisible="state in ['post', 'approval', 'rejected'] or is_send_approval_visibility != False"
+                            />
+                    <button class="oe_highlight" name="action_approve"
+                            string="Approve" type="object"
+                            groups="hr.group_hr_user" invisible="state != 'approval'"
+                    />
+                    <button class="oe_highlight" name="action_reject"
+                            string="Reject" type="object"
+                            groups="hr.group_hr_user" invisible="state != 'approval'"
+                    />
+                    <button class="oe_highlight" name="action_give_vote"
+                            string="Give Vote" type="object"
+                            invisible="state in ['draft','approval','rejected'] or is_vote == True or is_visible_give_vote == False"/>
+                    <button class="oe_highlight" name="action_print"
+                            string="Print" type="object"
+                    />
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                                class="oe_stat_button" type="object"
+                                name="action_get_votes_of_idea"
+                                icon="fa-pencil-square-o">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="vote_count"/>
+                                </span>
+                                <span class="o_stat_text">
+                                    Votes
+                                </span>
+                            </div>
+                        </button>
+                        <button
+                                class="oe_stat_button" type="object"
+                                name="action_get_comments_of_idea"
+                                icon="fa-pencil-square-o">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">
+                                    Comments
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+                    <h1>
+                        <field name="reference_no"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="title"/>
+                            <field name="employee_id" invisible="1"/>
+                            <field name="idea_type_id"
+                                   options="{'no_create': True, 'no_create_edit':True}"/>
+                        </group>
+                        <group>
+                            <field name="company_id"/>
+                            <field name="is_send_approval_visibility"
+                                   invisible="1"/>
+                            <field name="is_vote" invisible="1"/>
+                            <field name="is_visible_give_vote"
+                                   invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook colspan="4">
+                        <page string="Details" name="details">
+                            <group>
+                                <group>
+                                    <field name="details"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--filter the records by states and group it by employee and idea type-->
+    <record id="employee_idea_search" model="ir.ui.view">
+        <field name="name">employee.idea.search</field>
+        <field name="model">employee.idea</field>
+        <field name="arch" type="xml">
+            <search string="Employee Ideas">
+                <filter string="Draft" name="draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <separator/>
+                <filter string="Approval" name="approval"
+                        domain="[('state', '=', 'approval')]"/>
+                <separator/>
+                <filter string="Posted" name="posted"
+                        domain="[('state', '=', 'post')]"/>
+                <separator/>
+                <filter string="Rejected" name="rejected"
+                        domain="[('state', '=', 'rejected')]"/>
+                <separator/>
+                <filter string="Idea Type" name="idea_type"
+                        context="{'group_by': 'idea_type_id'}"/>
+                <filter string="Employee" name="employee"
+                        context="{'group_by': 'employee_id'}"/>
+            </search>
+        </field>
+    </record>
+    <menuitem id="employee_ideas_root_menu" name="Employee Ideas"
+              web_icon="employee_ideas,static/description/icon.png">
+        <menuitem id="test_first_level_menu" name="Employee Ideas">
+            <menuitem id="employee_idea_menu_action"
+                      action="employee_idea_action"/>
+        </menuitem>
+    </menuitem>
+</odoo>

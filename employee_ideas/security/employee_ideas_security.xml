@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Enabled multi company rule-->
+    <record id="employee_ideas_company_rule" model="ir.rule">
+        <field name="name">Employee-Idea-Multi-Company</field>
+        <field name="model_id" ref="model_employee_idea"/>
+        <field name="domain_force">['|',('company_id','=',False),('company_id',
+            'in', company_ids)]
+        </field>
+    </record>
+    <record id="idea_type_company_rule" model="ir.rule">
+        <field name="name">Idea-Type-Multi-Company</field>
+        <field name="model_id" ref="model_idea_type"/>
+        <field name="domain_force">['|',('company_id','=',False),('company_id',
+            'in', company_ids)]
+        </field>
+    </record>
+    <record id="give_vote_company_rule" model="ir.rule">
+        <field name="name">Give-Votes-Multi-Company</field>
+        <field name="model_id" ref="model_give_vote"/>
+        <field name="domain_force">['|',('company_id','=',False),('company_id',
+            'in', company_ids)]
+        </field>
+    </record>
+    <!--    Record rule for restrict the rejected,draft and approval records for the employees in employee.idea-->
+    <record id="employee_ideas_user_view_rule" model="ir.rule">
+        <field name="name">Employee Idea View</field>
+        <field ref="model_employee_idea" name="model_id"/>
+        <field name="domain_force">['|', ('state','=','post'),('employee_id.user_id', '=', user.id), ('idea_type_id.hr_department_ids', 'in', [user.department_id.id])]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+        Record rule for allowing the access of all records in employee.idea
+    <record id="employee_ideas_hr_view_rule" model="ir.rule">
+        <field name="name">Employee Idea View Hr</field>
+        <field ref="model_employee_idea" name="model_id"/>
+        <field name="domain_force">
+          [('state', 'in', ['draft', 'post', 'approval', 'rejected'])]
+        </field>
+        <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
+    </record>
+</odoo>
