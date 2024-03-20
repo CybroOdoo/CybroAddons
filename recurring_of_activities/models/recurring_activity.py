@@ -262,7 +262,7 @@ class RecurringActivity(models.Model):
         res = super().create(vals_list)
         if not vals_list['action']:
             raise ValidationError("Please choose the record for the"
-                                  " recurring activity.")
+                                  "recurring activity.")
         res.create_recurring_activities_record()
         return res
 

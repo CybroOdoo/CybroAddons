@@ -33,7 +33,7 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'depends': ['base', 'mail', 'product', 'crm', 'account',
-                'purchase', 'sale_management'],
+                'purchase', 'sale_management','project'],
     'data': [
         'security/ir.model.access.csv',
         'data/ir_cron_data.xml',
