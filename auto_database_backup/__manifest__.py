@@ -27,7 +27,7 @@
     'summary': 'Generate automatic backup of databases and store to local, '
                'google drive, dropbox, nextcloud, amazon S3, onedrive or '
                'remote server, Odoo17',
-    'description': 'automatic database backup, odoo17, odoo apps,backup, automatic backup,odoo17 automatic database backup,backup google drive,backup dropbox, backup nextcloud, backup amazon S3, backup onedrive',
+    'description': 'Odoo Database Backup, Database Backup, Automatci Backup, automatic database backup, odoo17, odoo apps,backup, automatic backup,odoo17 automatic database backup,backup google drive,backup dropbox, backup nextcloud, backup amazon S3, backup onedrive',
     'author': "Cybrosys Techno Solutions",
     'maintainer': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
