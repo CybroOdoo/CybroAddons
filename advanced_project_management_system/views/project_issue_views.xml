@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- project issue tree view -->
+    <record id="project_issue_view_tree" model="ir.ui.view">
+        <field name="name">project.issue.view.tree</field>
+        <field name="model">project.issue</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="priority" widget="priority" class="me-3"/>
+                <field name="name"/>
+                <field name="summary"/>
+                <field name="partner_id"/>
+                <field name="project_id"/>
+                <field name="create_date"/>
+                <field name="user_id"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-danger="state == 'cancel'"
+                       decoration-primary="state  == 'new'"
+                       decoration-warning="state  == 'progress'"/>
+            </tree>
+        </field>
+    </record>
+    <!-- project issue form view -->
+    <record id="project_issue_view_form" model="ir.ui.view">
+        <field name="name">project.issue.view.form</field>
+        <field name="model">project.issue</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="new,progress,done,cancel"
+                           options="{'clickable': '1','fold_field': 'fold'}"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="summary" placeholder="Issue Summary"/>
+                        <group>
+                            <field name="user_id"/>
+                            <field name="priority" widget="priority"
+                                   class="me-3"/>
+                            <field name="tag_ids" widget="many2many_tags"/>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="email"/>
+                            <field name="project_id"/>
+                            <field name="task_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="description" string="Description">
+                            <field name="description"/>
+                        </page>
+                        <page name="extra_info" string="Extra Info">
+                            <field name="extra_info"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- project issue kanban view -->
+    <record id="project_issue_view_kanban" model="ir.ui.view">
+        <field name="name">project.issue.view.kanban</field>
+        <field name="model">project.issue</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state">
+                <field name="state" readonly="1"/>>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_details">
+                                <div class="o_kanban_record_top mb-0">
+                                    <strong>
+                                        <div class="o_kanban_record_headings">
+                                            <field name="summary"/>
+                                        </div>
+                                    </strong>
+                                </div>
+                                <div>
+                                    <field name="user_id"/>
+                                </div>
+                                <div>
+                                    <field name="priority" widget="priority"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!-- project issue window action -->
+    <record id="project_issue_action" model="ir.actions.act_window">
+        <field name="name">Project Issue</field>
+        <field name="res_model">project.issue</field>
+        <field name="view_mode">tree,form,kanban</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Project Issue
+            </p>
+        </field>
+    </record>
+    <!-- project issue menu -->
+    <menuitem id="project_issue_menu" name="Project Issue"
+              sequence="650"
+              parent="project.menu_project_config"
+              action="project_issue_action">
+    </menuitem>
+</odoo>
