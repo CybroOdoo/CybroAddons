@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Tree View for Event Management Catering -->
+    <record id="event_management_catering_view_tree" model="ir.ui.view">
+        <field name="name">event.management.catering.view.tree</field>
+        <field name="model">event.management.catering</field>
+        <field name="arch" type="xml">
+            <tree create="false">
+                <field name="name"/>
+                <field name="event_type_id"/>
+                <field name="date"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Kanban View for Event Management Catering -->
+    <record id="event_management_catering_view_kanban" model="ir.ui.view">
+        <field name="name">event.management.catering.view.kanban</field>
+        <field name="model">event.management.catering</field>
+        <field name="arch" type="xml">
+            <kanban quick_create="false" create="false">
+                <field name="event_type_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click o_kanban_record_has_image_fill o_hr_kanban_record">
+                            <div class="o_kanban_image_fill_left">
+                                <img t-att-src="kanban_image('event.management.type', 'image', record.event_type_id.raw_value)"
+                                     alt="type"
+                                     style="width:90%;height:130px;"/>
+                                <div class="oe_clear"/>
+                            </div>
+                            <div class="o_kanban_details">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                        <br/>
+                                        <br/>
+                                        <field name="event_type_id"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!-- Form View Event Management Catering -->
+    <record id="event_management_catering_view_form" model="ir.ui.view">
+        <field name="name">event.management.catering.view.form</field>
+        <field name="model">event.management.catering</field>
+        <field name="arch" type="xml">
+            <form create="false">
+                <header>
+                    <button name="action_catering_done" string="Done"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'open'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="open,done"/>
+                </header>
+                <sheet>
+                    <h1>
+                        <field name="name"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="parent_event_id"/>
+                            <field name="event_type_id"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Catering Works">
+                            <field name="catering_works_ids" mode="tree"
+                                    readonly="state == 'done'">
+
+<!--                                   attrs="{'readonly': [('state', '=', 'done')]}">-->
+                                <form string="Catering Lines Form">
+                                    <group>
+                                        <group>
+                                            <field name="service_id"/>
+                                            <field name="amount"/>
+                                        </group>
+                                    </group>
+                                </form>
+                                <tree string="Catering Lines Tree"
+                                      editable="bottom">
+                                    <field name="service_id"/>
+                                    <field name="work_status" string="Status"/>
+                                    <field name="quantity"/>
+                                    <field name="amount"/>
+                                    <field name="currency_id"
+                                           invisible="1"/>
+                                    <field name="sub_total"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right"
+                                   colspan="2" name="catering_total">
+                                <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                    <label for="price_subtotal"/>
+                                </div>
+                                <field name="price_subtotal" nolabel="1"
+                                       class="oe_subtotal_footer_separator"
+                                       widget='monetary'
+                                       options="{'currency_field': 'currency_id'}"/>
+                            </group>
+                            <field name="note" class="oe_inline"
+                                   placeholder="Setup default terms and conditions in your company settings."
+                                    readonly="state == 'done'"/>
+                            <div class="oe_clear"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Search View for Event Management Catering -->
+    <record id="event_management_catering_view_search" model="ir.ui.view">
+        <field name="name">event.management.catering.view.search</field>
+        <field name="model">event.management.catering</field>
+        <field name="arch" type="xml">
+            <search string="Catering">
+                <field name="name"/>
+                <field name="event_type_id"/>
+                <field name="catering_works_ids"/>
+                <filter string="Open" name="state_open"
+                        domain="[('state','=','open')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Event Type" name="event_type_id"
+                            domain="[]"
+                            context="{'group_by':'event_type_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Action window for Event Management Catering -->
+    <record id="event_management_catering_action"
+            model="ir.actions.act_window">
+        <field name="name">Catering Service</field>
+        <field name="res_model">event.management.catering</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                You can't create a direct catering.
+            </p>
+            <p>
+                Catering service is created from event order.
+            </p>
+        </field>
+    </record>
+    <!--  Submenu for catering in event_management_service in event_management module  -->
+    <menuitem id="event_management_catering_menu" name="Catering"
+              parent="event_management.event_management_service_menu"
+              action="event_management_catering_action"
+              groups="event_catering.event_catering_group_catering_manager"/>
+</odoo>
