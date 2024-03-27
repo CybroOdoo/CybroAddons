@@ -65,8 +65,8 @@ class AccountMove(models.Model):
         return res
 
     def action_post(self):
+        print(self.line_ids, "line")
         result = super(AccountMove, self).action_post()
-
         for inv in self:
             context = dict(self.env.context)
             # Within the context of an invoice,
@@ -106,8 +106,8 @@ class AccountInvoiceLine(models.Model):
                     raise UserError(_(
                         'The number of depreciations or the period length of your asset category cannot be null.'))
                 months = cat.method_number * cat.method_period
-                if record.move_id in ['out_invoice', 'out_refund']:
-                    record.asset_mrr = record.price_subtotal_signed / months
+                if record.move_id.move_type in ['out_invoice', 'out_refund']:
+                    record.asset_mrr = record.price_subtotal / months
                 if record.move_id.invoice_date:
                     start_date = datetime.strptime(
                         str(record.move_id.invoice_date), DF).replace(day=1)
@@ -258,11 +258,13 @@ class AccountInvoiceLine(models.Model):
             tables, where_clause, where_clause_params = query.get_sql()
         return tables, where_clause, where_clause_params
 
-    @api.model
-    def create(self, vals):
-        if vals.get('product_id'):
-            product = self.env['product.product'].browse(vals['product_id'])
-            template = self.env['product.template'].search(
-                [('id', '=', product.product_tmpl_id.id)])
-            vals['asset_category_id'] = template.asset_category_id.id
-        return super().create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            product_id = vals.get('product_id')
+            if product_id:
+                product = self.env['product.product'].browse(product_id)
+                template = product.product_tmpl_id
+                vals['asset_category_id'] = template.asset_category_id.id if (
+                                            template.asset_category_id) else False
+        return super().create(vals_list)
