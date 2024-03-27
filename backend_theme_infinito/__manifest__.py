@@ -27,7 +27,7 @@
       Main Highlight Of The Theme Is You Can Dynamically Change The Colors,
        Views, Buttons, Different Types Sidebar...Etc""",
     "category": "Themes/Backend",
-    "version": "16.0.1.0.3",
+    "version": "16.0.1.0.4",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

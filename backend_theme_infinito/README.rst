@@ -19,7 +19,7 @@ Company
 Credits
 -------
 * 'Cybrosys Techno Solutions <https://cybrosys.com/>'__
-   Author : Farseen, Musthafa , Gokul @Cybrosys
+Author : Farseen, Musthafa , Gokul @Cybrosys
 
 Contacts
 --------
