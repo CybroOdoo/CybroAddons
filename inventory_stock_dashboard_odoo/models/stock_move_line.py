@@ -62,6 +62,8 @@ class StockMoveLine(models.Model):
     @api.model
     def product_move_by_category(self, option):
         """ Returns category name and quantity_done."""
+        if option is None:
+            return {}
         category_id = int(option)
         company_id = self.env.company.id
         query = ('''select product_template.name,sum(stock_move_line.quantity) from stock_move_line
