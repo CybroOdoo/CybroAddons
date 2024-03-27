@@ -21,11 +21,11 @@
 #############################################################################
 {
     'name': 'Odoo 17 Full Accounting Kit',
-    'version': '17.0.1.0.1',
+    'version': '17.0.1.0.2',
     'category': 'Accounting',
     'summary': """Odoo 17 Accounting, Asset and Budget Management,
-    Accounting Reports, PDC, 
-    Lock dates, Credit Limit, Follow Ups, Day-Bank-Cash book reports.""",
+     Accounting Reports, PDC, 
+     Lock dates, Credit Limit, Follow Ups, Day-Bank-Cash book reports.""",
     'description': """ Odoo 17 Accounting, The module used to manage the Full
      Account Features that can manage the Account Reports,Journals Asset and 
      Budget Management, Accounting Reports, PDC, Lock dates, Credit Limit, 
