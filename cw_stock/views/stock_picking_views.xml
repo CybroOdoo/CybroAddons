@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Stock Picking -->
+    <record id="view_picking_form" model="ir.ui.view">
+        <field name="name">stock.picking.view.form.inherit.cw.stock</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']" position="after">
+                <field name="cw_hide" invisible="1"/>
+                <field name="show_operations" invisible="1"/>
+                <field name="cw_demand"
+                       readonly="is_initial_demand_editable == False or show_operations == True and is_locked == True and is_initial_demand_editable == False"
+                       invisible="cw_hide == False"/>
+                <field name="cw_reserved"
+                       column_invisible="parent.state in ['draft', 'done'] or parent.picking_type_code != 'outgoing' "
+                       invisible="cw_hide == False"/>
+                <field name="cw_done"
+                       readonly="product_id == False"
+                       column_invisible="parent.state =='draft'"
+                       invisible="cw_hide == False"/>
+                <field name="category_id" invisible="1"/>
+                <field name="cw_uom_id"
+                       invisible="cw_hide == False"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
