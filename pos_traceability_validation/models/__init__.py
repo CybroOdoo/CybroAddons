@@ -18,4 +18,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from . import serial_no_validation
+from . import stock_lot

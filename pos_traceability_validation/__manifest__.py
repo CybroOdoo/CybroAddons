@@ -35,7 +35,9 @@
     'depends': ['point_of_sale', 'stock'],
     'assets': {
         'web.assets_backend': [
-            'pos_traceability_validation/static/src/js/pos_models.js',
+            'pos_traceability_validation/static/src/js/EditListPopup.js',
+            'pos_traceability_validation/static/src/js/OrderWidget.js',
+            'pos_traceability_validation/static/src/js/ProductScreen.js',
         ],
     },
     'images': ['static/description/banner.jpg'],
