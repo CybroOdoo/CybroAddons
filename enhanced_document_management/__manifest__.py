@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Document Management',
-    'version': '16.0.1.1.0',
+    'version': '16.0.1.0.1',
     'category': 'Document Management',
     'summary': 'The Document Management module to access document tools',
     'description': 'The Document Management module provides a quick access to '

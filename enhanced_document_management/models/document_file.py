@@ -102,7 +102,7 @@ class Document(models.Model):
     def _compute_size(self):
         """Function is used to fetch the file size of an attachment"""
         for rec in self:
-            rec.size = str(rec.attachment_id.file_size/1000) + ' Kb'
+            rec.size = str(rec.attachment_id.file_size / 1000) + ' Kb'
 
     @api.onchange('days')
     def _onchange_days(self):
@@ -121,12 +121,12 @@ class Document(models.Model):
         information about the file"""
         # important to maintain extension and name as different
         attachment_id = self.env['ir.attachment'].sudo().create({
-                'name': self.name,
-                'datas': self.attachment,
-                'res_model': 'document.file',
-                'res_id': self.id,
-                'public': True,
-            })
+            'name': self.name,
+            'datas': self.attachment,
+            'res_model': 'document.file',
+            'res_id': self.id,
+            'public': True,
+        })
         self.sudo().write({
             'name': self.name,
             'date': fields.Date.today(),
@@ -138,6 +138,11 @@ class Document(models.Model):
             'attachment_id': attachment_id.id,
             'brochure_url': attachment_id.local_url
         })
+        if self.env.context.get('active_model') == "request.document":
+            self.env['request.document'].search(
+                [('id', '=', self.env.context.get('active_id'))]).write({
+                    'state': 'accepted'
+                })
         return {
             'type': 'ir.actions.client',
             'tag': 'reload'
@@ -150,7 +155,7 @@ class Document(models.Model):
         for doc in self.browse(document_selected):
             zip_obj.write(doc.attachment_id._full_path(
                 doc.attachment_id.store_fname),
-                         doc.attachment_id.name)
+                doc.attachment_id.name)
         zip_obj.close()
         url = f"{request.httprequest.host_url[:-1]}/web/attachments/download"
         return {
