@@ -9,6 +9,7 @@ patch(ListController.prototype,'FormController', {
       this._super();
       useSetupView({
           beforeLeave: () => this.beforeLeave(),
+          beforeUnload: (ev) => this.beforeUnload(ev),
       });
    },
    async beforeLeave() {
@@ -19,5 +20,8 @@ patch(ListController.prototype,'FormController', {
               this.onClickDiscard();
           }
       }
+   },
+   beforeUnload: async (ev) => {
+       ev.preventDefault();
    }
 });

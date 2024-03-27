@@ -12,6 +12,7 @@ patch(FormController.prototype,'FormController', {
       this.beforeLeaveHook = false
       useSetupView({
           beforeLeave: () => this.beforeLeave(),
+          beforeUnload: (ev) => this.beforeUnload(ev),
       });
    },
    async beforeLeave() {
@@ -24,5 +25,8 @@ patch(FormController.prototype,'FormController', {
           }
           this.beforeLeaveHook = true
       }
+   },
+   beforeUnload: async (ev) => {
+       ev.preventDefault();
    }
 });

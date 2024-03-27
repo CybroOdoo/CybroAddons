@@ -23,8 +23,6 @@ Credits
 -------
 * Developers: (V17) Developer Anurudh P, (V16) Developer Anurudh P
 * Contact: odoo@cybrosys.com
-
-
 Contacts
 --------
 * Mail Contact : odoo@cybrosys.com

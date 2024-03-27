@@ -20,27 +20,27 @@
 #
 #############################################################################
 {
-    "name": "Auto Save Restrict",
-    "version": "16.0.1.0.0",
-    "category": "Extra Tools",
-    "summary": """Restrict auto save in all models""",
-    "description": "Using this module,we can restrict autosave in all models."
-    "If you want to autosave, a popup will appear,and you can"
-    " click OK to save.",
-    "author": "Cybrosys Techno Solutions",
-    "company": "Cybrosys Techno Solutions",
-    "maintainer": "Cybrosys Techno Solutions",
-    "website": "https://www.cybrosys.com",
-    "depends": ["base"],
-    "assets": {
-        "web.assets_backend": [
-            "auto_save_restrict/static/src/js/form_controller.js",
-            "auto_save_restrict/static/src/js/list_controller.js",
+    'name': 'Auto Save Restrict',
+    'version': '16.0.1.0.0',
+    'category': 'Extra Tools',
+    'summary': """Restrict auto save in all models""",
+    'description': 'Using this module,we can restrict autosave in all models.'
+                   'If you want to autosave, a popup will appear,and you can '
+                   'click OK to save.',
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
+    'website': 'https://www.cybrosys.com',
+    'depends': ['base'],
+    'assets': {
+        'web.assets_backend': [
+            'auto_save_restrict/static/src/js/form_controller.js',
+            'auto_save_restrict/static/src/js/list_controller.js'
         ],
     },
-    "images": ["static/description/banner.png"],
-    "license": "LGPL-3",
-    "installable": True,
-    "auto_install": False,
-    "application": False,
+    'images': ['static/description/banner.png'],
+    'license': 'LGPL-3',
+    'installable': True,
+    'auto_install': False,
+    'application': False,
 }
