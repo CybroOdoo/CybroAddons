@@ -16,3 +16,8 @@
 #### Fix
 - Bug fixed
 
+#### 13.02.2024
+#### Version 16.0.1.0.4
+#### Fix
+- Bug fixed
+

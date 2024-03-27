@@ -29,7 +29,7 @@ patch(FormController.prototype, "save",{
     },
     async saveButtonClicked(params = {}){
         this._super();
-        if (this.env.inDialog == false){
+        if (!this.env.inDialog){
             await this.model.root.switchMode("readonly");
         }
         else {
@@ -38,7 +38,7 @@ patch(FormController.prototype, "save",{
     },
     async discard(){
         this._super();
-        if (this.env.inDialog == false){
+        if (!this.env.inDialog){
             await this.model.root.switchMode("readonly");
         }
         else {
