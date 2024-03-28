@@ -36,7 +36,7 @@
         'report/mom_report_template.xml',
         'data/mail_data.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'installable': True,
     'application': False,
     'auto_install': False,
