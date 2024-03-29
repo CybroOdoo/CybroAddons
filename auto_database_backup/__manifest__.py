@@ -23,6 +23,7 @@
     'name': "Automatic Database Backup To Local Server, Remote Server,"
             "Google Drive, Dropbox, Onedrive, Nextcloud and Amazon S3 Odoo17",
     'version': '17.0.1.0.0',
+    'live_test_url': 'https://youtu.be/Q2yMZyYjuTI',
     'category': 'Extra Tools',
     'summary': 'Odoo Database Backup, Automatic Backup, Database Backup, Automatic Backup,Database auto-backup, odoo backup'
                'google drive, dropbox, nextcloud, amazon S3, onedrive or '
