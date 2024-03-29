@@ -23,7 +23,7 @@
     'name': 'Accounting Dashboard Odoo17',
     'version': '17.0.1.0.0',
     'category': 'Accounting ',
-    'summary': 'Odoo Accounting Dashboard, Accounting Dashboard V17, Account Dashboard, Dashboard',
+    'summary': 'Odoo Accounting Dashboard, Accounting Dashboard V17, Account Dashboard, Dashboard, Odoo17 Accounting, Odoo17 Dashboard',
     'description': """Accounting, Odoo Accounting Dashboard, Accounting Dashboard V17, Account Dashboard, Dashboard, Invoice Dashboard, Invoice Graph View, Odoo17""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',

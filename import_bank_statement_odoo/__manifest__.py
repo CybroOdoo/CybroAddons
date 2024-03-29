@@ -20,12 +20,11 @@
 #
 ###############################################################################
 {
-    'name': 'Import Bank Statement',
+    'name': 'Import Bank Statement Odoo17',
     'version': '17.0.1.0.0',
     'category': 'Accounting',
-    'summary': 'Import bank statement in CSV, XLSX, QIF and OFX format',
-    'description': """Uploading the data in CSV, XLSX, OFX and QIF format and 
-     converting it into bank statement""",
+    'summary': 'Odoo 17 Account Bank Statement Import, Import Bank Statement,CSV, XLSX, OFX, QIF Statements Import, Odoo 17 Accounting, Odoo17, Bank Statements, Import Statement Files',
+    'description': """Odoo 17 Account Bank Statement Import, CSV, XLSX, OFX, QIF Statements Import, Odoo 17 Accounting, Odoo17, Bank Statements""",
     'author': "Cybrosys Techno Solutions",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
