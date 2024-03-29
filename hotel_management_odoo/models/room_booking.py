@@ -650,89 +650,94 @@ class RoomBooking(models.Model):
     def get_details(self):
         """ Returns different counts for displaying in dashboard"""
         today = datetime.today()
-        tz_name = self.env.user.tz
+        tz_name = False
+        if self.env.user.tz:
+            tz_name = self.env.user.tz
         today_utc = pytz.timezone('UTC').localize(today,
                                                   is_dst=False)
-        context_today = today_utc.astimezone(pytz.timezone(tz_name))
-        total_room = self.env['hotel.room'].search_count([])
-        check_in = self.env['room.booking'].search_count(
-            [('state', '=', 'check_in')])
-        available_room = self.env['hotel.room'].search(
-            [('status', '=', 'available')])
-        reservation = self.env['room.booking'].search_count(
-            [('state', '=', 'reserved')])
-        check_outs = self.env['room.booking'].search([])
-        check_out = 0
-        staff = 0
-        for rec in check_outs:
-            for room in rec.room_line_ids:
-                if room.checkout_date.date() == context_today.date():
-                    check_out += 1
-            """staff"""
-            staff = self.env['res.users'].search_count(
-                [('groups_id', 'in',
-                  [self.env.ref('hotel_management_odoo.hotel_group_admin').id,
-                   self.env.ref(
-                       'hotel_management_odoo.cleaning_team_group_head').id,
-                   self.env.ref(
-                       'hotel_management_odoo.cleaning_team_group_user').id,
-                   self.env.ref(
-                       'hotel_management_odoo.hotel_group_reception').id,
-                   self.env.ref(
-                       'hotel_management_odoo.maintenance_team_group_leader').id,
-                   self.env.ref(
-                       'hotel_management_odoo.maintenance_team_group_user').id
-                   ])])
-        total_vehicle = self.env['fleet.vehicle.model'].search_count([])
-        available_vehicle = total_vehicle - self.env[
-            'fleet.booking.line'].search_count(
-            [('state', '=', 'check_in')])
-        total_event = self.env['event.event'].search_count([])
-        pending_event = self.env['event.event'].search([])
-        pending_events = 0
-        today_events = 0
-        for pending in pending_event:
-            if pending.date_end >= fields.datetime.now():
-                pending_events += 1
-            if pending.date_end.date() == fields.date.today():
-                today_events += 1
-        food_items = self.env['lunch.product'].search_count([])
-        food_order = len(self.env['food.booking.line'].search([]).filtered(
-            lambda r: r.booking_id.state not in ['check_out', 'cancel',
-                                                 'done']))
-        """total Revenue"""
-        total_revenue = 0
-        today_revenue = 0
-        pending_payment = 0
-        for rec in self.env['account.move'].search(
-                [('payment_state', '=', 'paid')]):
-            if rec.ref:
-                if 'BOOKING' in rec.ref:
-                    total_revenue += rec.amount_total
-                    if rec.date == fields.date.today():
-                        today_revenue += rec.amount_total
-        for rec in self.env['account.move'].search(
-                [('payment_state', '=', 'not_paid')]):
-            if rec.ref:
-                if 'BOOKING' in rec.ref:
-                    pending_payment += rec.amount_total
-        return {
-            'total_room': total_room,
-            'available_room': len(available_room),
-            'staff': staff,
-            'check_in': check_in,
-            'reservation': reservation,
-            'check_out': check_out,
-            'total_vehicle': total_vehicle,
-            'available_vehicle': available_vehicle,
-            'total_event': total_event,
-            'today_events': today_events,
-            'pending_events': pending_events,
-            'food_items': food_items,
-            'food_order': food_order,
-            'total_revenue': round(total_revenue, 2),
-            'today_revenue': round(today_revenue, 2),
-            'pending_payment': round(pending_payment, 2),
-            'currency_symbol': self.env.user.company_id.currency_id.symbol,
-            'currency_position': self.env.user.company_id.currency_id.position
-        }
+        if tz_name:
+            context_today = today_utc.astimezone(pytz.timezone(tz_name))
+            total_room = self.env['hotel.room'].search_count([])
+            check_in = self.env['room.booking'].search_count(
+                [('state', '=', 'check_in')])
+            available_room = self.env['hotel.room'].search(
+                [('status', '=', 'available')])
+            reservation = self.env['room.booking'].search_count(
+                [('state', '=', 'reserved')])
+            check_outs = self.env['room.booking'].search([])
+            check_out = 0
+            staff = 0
+            for rec in check_outs:
+                for room in rec.room_line_ids:
+                    if room.checkout_date.date() == context_today.date():
+                        check_out += 1
+                """staff"""
+                staff = self.env['res.users'].search_count(
+                    [('groups_id', 'in',
+                      [self.env.ref('hotel_management_odoo.hotel_group_admin').id,
+                       self.env.ref(
+                           'hotel_management_odoo.cleaning_team_group_head').id,
+                       self.env.ref(
+                           'hotel_management_odoo.cleaning_team_group_user').id,
+                       self.env.ref(
+                           'hotel_management_odoo.hotel_group_reception').id,
+                       self.env.ref(
+                           'hotel_management_odoo.maintenance_team_group_leader').id,
+                       self.env.ref(
+                           'hotel_management_odoo.maintenance_team_group_user').id
+                       ])])
+            total_vehicle = self.env['fleet.vehicle.model'].search_count([])
+            available_vehicle = total_vehicle - self.env[
+                'fleet.booking.line'].search_count(
+                [('state', '=', 'check_in')])
+            total_event = self.env['event.event'].search_count([])
+            pending_event = self.env['event.event'].search([])
+            pending_events = 0
+            today_events = 0
+            for pending in pending_event:
+                if pending.date_end >= fields.datetime.now():
+                    pending_events += 1
+                if pending.date_end.date() == fields.date.today():
+                    today_events += 1
+            food_items = self.env['lunch.product'].search_count([])
+            food_order = len(self.env['food.booking.line'].search([]).filtered(
+                lambda r: r.booking_id.state not in ['check_out', 'cancel',
+                                                     'done']))
+            """total Revenue"""
+            total_revenue = 0
+            today_revenue = 0
+            pending_payment = 0
+            for rec in self.env['account.move'].search(
+                    [('payment_state', '=', 'paid')]):
+                if rec.ref:
+                    if 'BOOKING' in rec.ref:
+                        total_revenue += rec.amount_total
+                        if rec.date == fields.date.today():
+                            today_revenue += rec.amount_total
+            for rec in self.env['account.move'].search(
+                    [('payment_state', '=', 'not_paid')]):
+                if rec.ref:
+                    if 'BOOKING' in rec.ref:
+                        pending_payment += rec.amount_total
+            return {
+                'total_room': total_room,
+                'available_room': len(available_room),
+                'staff': staff,
+                'check_in': check_in,
+                'reservation': reservation,
+                'check_out': check_out,
+                'total_vehicle': total_vehicle,
+                'available_vehicle': available_vehicle,
+                'total_event': total_event,
+                'today_events': today_events,
+                'pending_events': pending_events,
+                'food_items': food_items,
+                'food_order': food_order,
+                'total_revenue': round(total_revenue, 2),
+                'today_revenue': round(today_revenue, 2),
+                'pending_payment': round(pending_payment, 2),
+                'currency_symbol': self.env.user.company_id.currency_id.symbol,
+                'currency_position': self.env.user.company_id.currency_id.position
+            }
+        else:
+            raise ValidationError(_("Please Enter time zone in user settings."))

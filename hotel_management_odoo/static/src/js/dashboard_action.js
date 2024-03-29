@@ -33,6 +33,7 @@ async onMounted() {
 }
 fetch_data() {
        var self = this;
+       console.log("dafdaafdfadf", this)
        //RPC call for retrieving data for displaying on dashboard tiles
        var def1= jsonrpc('/web/dataset/call_kw/room.booking/get_details'
        ,{ model:'room.booking',
