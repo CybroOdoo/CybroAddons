@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+<!--    Commission report form view-->
+    <record id="commission_report_view_form" model="ir.ui.view">
+        <field name="name">commission.report.view.form</field>
+        <field name="model">commission.report</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date_from" required="1"/>
+                            <field name="date_to" required="1"/>
+                        </group>
+                        <group>
+                            <field name="is_sales_person" invisible="True"/>
+                            <field name="is_sales_team" invisible="True"/>
+                            <field name="sales_team_ids" widget="many2many_tags" options="{'no_create': True}" invisible="is_sales_person == True"/>
+                            <field name="salesperson_ids" widget="many2many_tags"  options="{'no_create': True}" invisible="is_sales_team == True"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_print_xls_report" string="Print XLS"
+                            type="object" class="oe_highlight"/>
+                    <button string="Cancel" class="btn btn_default"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+<!--    Commission Report Action-->
+    <record id="commission_reporting_action" model="ir.actions.act_window">
+        <field name="name">Commission Report</field>
+        <field name="res_model">commission.report</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="commission_report_view_form"/>
+        <field name="target">new</field>
+    </record>
+<!--    Commission Report menu-->
+    <menuitem id="commission_excel_report_root"
+              name="Commission Report "
+              parent="crm.crm_menu_report"
+              action="commission_reporting_action"
+              sequence="4"/>
+</odoo>
