@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Inherited view form of MO-->
+    <record model="ir.ui.view" id="mrp_production_form_view">
+        <field name="name">mrp.production.view.form.cw.mrp</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']"
+                   position="after">
+                <field name="toggle_cw" invisible="1"/>
+                <field name="category_id" invisible="1"/>
+                <label for="cw_qty" string="CW-Quantity"
+                       inviisible="toggle_cw == False"
+                       required="toggle_cw == True"/>
+                <div class="o_row"
+                     invisible="toggle_cw == False"
+                     required="toggle_cw == True">
+                    <field name="cw_qty"/>
+                    <field name="cw_uom_id"
+                           options="{'no_open':True,'no_create':True}"/>
+                </div>
+            </xpath>
+            <xpath expr="//field[@name='move_raw_ids']/tree/field[@name='forecast_availability']"
+                   position="after">
+                <field name="cw_hide" invisible="1"/>
+                <field name="category_id" invisible="1"/>
+                <field name="cw_demand" string="CW Qty To Consume"
+                       invisible="cw_hide == False"
+                       readonly="parent.state != 'draft' or parent.state not in ['confirmed', 'progress', 'to_close'] or parent.is_planned != True or parent.is_locked == True"/>
+                <field name="cw_uom_id"
+                       invisible="cw_hide == False"
+                       readonly="parent.state != 'draft' or parent.state not in ['confirmed', 'progress', 'to_close'] or parent.is_planned != True or parent.is_locked == True"/>
+                <field name="cw_reserved" string="CW Qty Reserved"
+                       invisible="cw_hide == False"
+                       column_invisible="parent.state in ['draft', 'done']"/>
+                <field name="cw_done" string="CW Qty Consumed"
+                       invisible="cw_hide == False"
+                       column_invisible="parent.state == 'draft'"
+                       readonly="has_tracking != 'none'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
