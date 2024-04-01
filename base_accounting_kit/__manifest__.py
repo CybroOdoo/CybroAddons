@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Odoo 17 Full Accounting Kit',
-    'version': '17.0.1.0.2',
+    'version': '17.0.1.0.3',
     'category': 'Accounting',
     'summary': """Odoo 17 Accounting, Odoo 17 Accounting Reports, Odoo Accounting, Odoo17 Financial Reports, Odoo17 Asset, Odoo17 Profit and Loss, PDC, Followups, Odo17""",
     'description': """ Odoo 17 Accounting, The module used to manage the Full

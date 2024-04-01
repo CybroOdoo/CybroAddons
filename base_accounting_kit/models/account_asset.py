@@ -723,7 +723,7 @@ class AccountAssetDepreciationLine(models.Model):
             company_currency = line.asset_id.company_id.currency_id
             current_currency = line.asset_id.currency_id
             amount = current_currency.with_context(
-                date=depreciation_date).compute(line.amount, company_currency)
+                date=depreciation_date)._convert(line.amount, company_currency)
             asset_name = line.asset_id.name + ' (%s/%s)' % (
                 line.sequence, len(line.asset_id.depreciation_line_ids))
             partner = self.env['res.partner']._find_accounting_partner(
