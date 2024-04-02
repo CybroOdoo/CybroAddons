@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-from odoo import models, fields
+from odoo import models, fields, api
 
 
 class PosConfig(models.Model):
@@ -36,3 +36,9 @@ class ResConfigSettings(models.TransientModel):
     global_refund_security = fields.Integer(
         string='Global Refund Security',
         config_parameter='pos_refund_password.global_refund_security')
+
+    @api.model
+    def get_value(self):
+        security_password = self.env['ir.config_parameter'].sudo().get_param(
+            'pos_refund_password.global_refund_security')
+        return security_password
