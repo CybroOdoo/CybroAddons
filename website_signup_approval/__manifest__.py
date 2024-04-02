@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Website Signup Approval",
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'summary': 'Approve signup request to login to the website',
     'description': """This module approve or reject signup approval request of 
      users from website.User can upload their documents for approval.""",
