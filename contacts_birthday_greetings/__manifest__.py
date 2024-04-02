@@ -37,7 +37,7 @@
         'views/res_partner_views.xml',
         'views/res_config_settings_views.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': "LGPL-3",
     'installable': True,
     'auto_install': False,
