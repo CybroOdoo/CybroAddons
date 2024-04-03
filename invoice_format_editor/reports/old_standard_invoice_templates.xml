@@ -346,51 +346,118 @@
                     <!--More details-->
                     <div t-attf-style="color:#{o.theme_id.text_color};padding-top:10%;"
                          class="col-12">
-                        <p t-if="not is_html_empty(o.narration)">
-                            <strong>Comment:</strong>
-                            <span t-field="o.narration"/>
+                        <p class="text-end lh-sm"
+                           t-if="o.company_id.display_invoice_amount_total_words">
+                            <strong>Total (In Words):</strong>
+                            <br/>
+                            <small class="text-muted lh-sm">
+                                <span t-field="o.amount_total_words">
+                                    Thirty one
+                                    dollar and Five cents
+                                </span>
+                            </small>
                         </p>
-                        <p t-if="o.fiscal_position_id.note">
+
+                        <p t-if="not is_html_empty(o.fiscal_position_id.note)"
+                           name="note" class="mb-2">
                             <strong>Fiscal Position Remark:</strong>
                             <span t-field="o.fiscal_position_id.note"/>
                         </p>
-                        <p t-if="o.move_type in ('out_invoice','in_refund')">
-                            Please use the following communication for your
-                            payment :
-                            <b>
-                                <span t-field="o.payment_reference"/>
-                            </b>
-                        </p>
-                        <p t-if="o.invoice_payment_term_id"
-                           name="payment_term">
-                            <span t-field="o.invoice_payment_term_id.note"/>
-                        </p>
-                        <p t-if="o.fiscal_position_id.note" name="note">
-                            <span t-field="o.fiscal_position_id.note"/>
-                        </p>
-                        <t t-if="o.company_id.country_id.code == 'IN'">
-                            <p id="total_in_words" class="mb16">
-                                <strong>Total (In Words):</strong>
-                                <span t-field="o.amount_total_words"/>
+                        <t t-set="payment_term_details"
+                           t-value="o.payment_term_details"/>
+                        <div class="mb-3">
+                            <span id="payment_terms_note_id"
+                                  t-if="o.invoice_payment_term_id.note"
+                                  t-field="o.invoice_payment_term_id.note"
+                                  name="payment_term">Payment within 30
+                                calendar day
+                            </span>
+                            <br/>
+                            <t t-if="o.invoice_payment_term_id.display_on_invoice and payment_term_details">
+                                <div t-if='o.show_payment_term_details'
+                                     id="total_payment_term_details_table"
+                                     class="row">
+                                    <div t-attf-class="#{'col-10' if report_type != 'html' else 'col-sm-10 col-md-9'}">
+                                        <t t-if="o._is_eligible_for_early_payment_discount(o.currency_id,o.invoice_date)">
+                                            <td>
+                                                <span t-options='{"widget": "monetary", "display_currency": o.currency_id}'
+                                                      t-out="o.invoice_payment_term_id._get_amount_due_after_discount(o.amount_total, o.amount_tax)">
+                                                    30.00
+                                                </span>
+                                                due if paid before
+                                                <span t-out="o.invoice_payment_term_id._get_last_discount_date_formatted(o.invoice_date)">
+                                                    2024-01-01
+                                                </span>
+                                            </td>
+                                        </t>
+                                        <t t-if="len(payment_term_details) > 1"
+                                           t-foreach="payment_term_details"
+                                           t-as="term">
+                                            <div>
+                                                <span t-out="term_index + 1">
+                                                    1
+                                                </span>
+                                                - Installment of
+                                                <t t-options='{"widget": "monetary", "display_currency": o.currency_id}'
+                                                   t-out="term.get('amount')"
+                                                   class="text-end">
+                                                    31.05
+                                                </t>
+                                                <span>due on</span>
+                                                <t t-out="term.get('date')"
+                                                   class="text-start">
+                                                    2024-01-01
+                                                </t>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                        <div class="mb-3"
+                             t-if="o.move_type in ('out_invoice', 'in_refund') and o.payment_reference">
+                            <p name="payment_communication">
+                                Payment Communication:
+                                <span class="fw-bold"
+                                      t-field="o.payment_reference">
+                                    INV/2023/00001
+                                </span>
                             </p>
-                        </t>
+                        </div>
+                        <t t-set="show_qr"
+                           t-value="o.display_qr_code and o.amount_residual > 0"/>
+                        <div t-if="not show_qr"
+                             name="qr_code_placeholder"
+                             class="oe_structure"></div>
                         <div id="qrcode"
-                             t-if="(o.company_id.qr_code) and (o.currency_id.name == 'EUR') and (o.invoice_partner_bank_id.acc_number != False)">
-                            <p t-if="(o.invoice_partner_bank_id.qr_code_valid)">
-                                <strong class="text-center">Scan me with your
-                                    banking app.
-                                </strong>
-                                <br/>
-                                <br/>
-                                <img class="border border-dark rounded"
-                                     t-att-src="o.invoice_partner_bank_id.build_qr_code_url(o.amount_residual,  o.ref or o.name)"/>
-                            </p>
-                            <p t-if="(o.invoice_partner_bank_id.qr_code_valid == False)">
-                                <strong class="text-center">The SEPA QR Code
-                                    information are not set correctly.
-                                </strong>
-                                <br/>
-                            </p>
+                             class="d-flex mb-3 avoid-page-break-inside"
+                             t-else="">
+                            <div class="qrcode me-3" id="qrcode_image">
+                                <t t-set="qr_code_url"
+                                   t-value="o._generate_qr_code(silent_errors=True)"/>
+                                <p t-if="qr_code_url"
+                                   class="position-relative mb-0">
+                                    <img t-att-src="qr_code_url"/>
+                                    <img src="/account/static/src/img/Odoo_logo_O.svg"
+                                         id="qrcode_odoo_logo"
+                                         class="top-50 start-50 position-absolute bg-white border border-white border-3 rounded-circle"
+                                    />
+                                </p>
+                            </div>
+                            <div class="d-inline text-muted lh-sm fst-italic"
+                                 id="qrcode_info" t-if="qr_code_url">
+                                <p>Scan this QR Code to<br/>pay with
+                                    your mobile
+                                </p>
+                            </div>
+                        </div>
+                        <!--terms and conditions-->
+                        <div class="text-muted mb-3"
+                             t-attf-style="#{'text-align:justify;text-justify:inter-word;' if o.company_id.terms_type != 'html' else ''}"
+                             t-if="not is_html_empty(o.narration)"
+                             name="comment">
+                            Terms &amp; Conditions:
+                            <span t-field="o.narration"/>
                         </div>
                     </div>
                 </div>
