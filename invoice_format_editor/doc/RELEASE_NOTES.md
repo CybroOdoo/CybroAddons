@@ -10,3 +10,8 @@
 #### UPDT AND BUGFIX
 - Invoice printing issue
 
+#### 03.04.2024
+#### Version 15.0.1.1.1
+##### UPDATE
+- Bug Fix-Resolved the attribute error, updated the report templates
+
