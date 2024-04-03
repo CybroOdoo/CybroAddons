@@ -41,28 +41,7 @@
                             <div t-attf-class=" pull-#{o.theme_id.customer_position} text-#{o.theme_id.customer_position}"
                                  style="font:15px lucida-console,sans-serif !important;">
                                 <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
-                                      t-field="o.partner_id"/>
-                                <br/>
-                                <span t-if="o.theme_id.address">
-                                <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
-                                      t-field="o.partner_id.street"/>
-                                <br/>
-                                <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
-                                      t-field="o.partner_id.street2"/>
-                                </span>
-                                <br/>
-                                <span t-if="o.theme_id.city">
-                                <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
-                                      t-field="o.partner_id.city"/>
-                                </span>
-                                <br/>
-                                <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
-                                      t-field="o.partner_id.state_id"/>
-                                <br/>
-                                <span t-if="o.theme_id.country">
-                                <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
-                                      t-field="o.partner_id.country_id"/>
-                                 </span>
+                                      t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}' />
                                 <br/>
                                 <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
                                       t-field="o.partner_id.vat"/>
@@ -258,10 +237,44 @@
                         </div>
                     </div>
                     <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
+                   <div style="padding-top:10%;" class="col-12">
+                        <p t-if="o.move_type in ('out_invoice', 'in_refund') and o.payment_reference"
+                           name="payment_communication">
+                            Please use the following communication for your
+                            payment :
+                            <b>
+                                <span t-field="o.payment_reference"/>
+                            </b>
+                        </p>
+                        <p t-if="o.invoice_payment_term_id" name="payment_term">
+                            <span t-field="o.invoice_payment_term_id.note"/>
+                        </p>
+                        <p t-if="o.narration" name="comment">
+                            <span t-field="o.narration"/>
+                        </p>
+                        <p t-if="o.fiscal_position_id.note" name="note">
+                            <span t-field="o.fiscal_position_id.note"/>
+                        </p>
+                        <p t-if="o.invoice_incoterm_id" name="incoterm">
+                            <strong>Incoterm:</strong>
+                            <span t-field="o.invoice_incoterm_id.code"/>
+                            -
+                            <span t-field="o.invoice_incoterm_id.name"/>
+                        </p>
+                        <div id="qrcode"
+                             t-if="o.display_qr_code and o.amount_residual > 0">
+                            <p t-if="qr_code_urls.get(o.id)">
+                                <strong class="text-center">Scan me with your
+                                    banking app.
+                                </strong>
+                                <br/>
+                                <br/>
+                                <img class="border border-dark rounded"
+                                     t-att-src="qr_code_urls[o.id]"/>
+                            </p>
+                        </div>
+
+                    </div>
                 </div>
             </t>
         </template>
