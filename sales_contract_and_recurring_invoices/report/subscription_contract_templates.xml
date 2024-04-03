@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Template for Subscription contracts report -->
+    <template id="report_subscription_contracts" name="Subscription contracts details">
+        <t t-call="website.layout">
+            <div class="container">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>
+                            <t t-esc='records.name'/>
+                        </h2>
+                    </div>
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Customer:</th>
+                            <td>
+                                <t t-if="records.partner_id.name">
+                                    <t t-esc="records.partner_id.name"/>
+                                </t>
+                            </td>
+                            <th>Reference:</th>
+                            <td>
+                                <t t-if="records.reference">
+                                    <t t-esc="records.reference"/>
+                                </t>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Recurring Period:</th>
+                            <td>
+                                <t t-if="records.recurring_period">
+                                    <t t-esc="records.recurring_period"/>
+                                    <t t-esc="records.recurring_period_interval"/>
+                                </t>
+                            </td>
+                            <th>Company:</th>
+                            <td>
+                                <t t-if="records.company_id">
+                                    <t t-esc="records.company_id.name"/>
+                                </t>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Start Date:</th>
+                            <td>
+                                <t t-if="records.date_start">
+                                    <t t-esc="records.date_start"/>
+                                </t>
+                            </td>
+                            <th>End Date:</th>
+                            <td>
+                                <t t-if="records.date_end">
+                                    <t t-esc="records.date_end"/>
+                                </t>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Stage:</th>
+                            <td>
+                                <t t-if="records.state">
+                                    <t t-esc="records.state"/>
+                                </t>
+                            </td>
+                            <th>Date of Next Invoice:</th>
+                            <td>
+                                <t t-if="records.next_invoice_date">
+                                    <t t-esc="records.next_invoice_date"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </table>
+                    <H2>Contract Lines</H2>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <h2>
+                                    <th scope="col">Product</th>
+                                </h2>
+                                <h2>
+                                    <th scope="col">Description</th>
+                                </h2>
+                                <h2>
+                                    <th scope="col">Ordered Qty</th>
+                                </h2>
+                                <h2>
+                                    <th scope="col">Unit Price</th>
+                                </h2>
+                                <h2>
+                                    <th scope="col">Discount (%)</th>
+                                </h2>
+                                <h2>
+                                    <th scope="col">Subtotal</th>
+                                </h2>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="records.contract_line_ids"
+                               t-as='res'>
+                                <tr>
+                                    <td>
+                                        <t t-esc="res.product_id.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="res.description"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="res.qty_ordered"/>
+                                        <t t-esc='res.product_uom_id.name'/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="res.price_unit"
+                                           t-options="{'widget': 'monetary', 'display_currency': res.currency_id}"/>
+                                    </td>
+                                    <td>
+                                        <t t-if="res.discount">
+                                            <t t-esc="res.discount"/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-esc="res.sub_total"
+                                           t-options="{'widget': 'monetary', 'display_currency': res.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <H2>Sale Order Lines</H2>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <h2>
+                                    <th scope="col">Product</th>
+                                </h2>
+                                <h2>
+                                    <th scope="col">Description</th>
+                                </h2>
+                                <h2>
+                                    <th scope="col">Ordered Qty</th>
+                                </h2>
+                                <h2>
+                                    <th scope="col">Unit Price</th>
+                                </h2>
+                                <h2>
+                                    <th scope="col">Discount (%)</th>
+                                </h2>
+                                <h2>
+                                    <th scope="col">Subtotal</th>
+                                </h2>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="records.sale_order_line_ids"
+                               t-as='rec'>
+                                <tr>
+                                    <td>
+                                        <t t-esc="rec.product_id.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.product_uom_qty"/>
+                                        <t t-esc='rec.product_uom.name'/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.price_unit"
+                                           t-options="{'widget': 'monetary', 'display_currency': rec.currency_id}"/>
+                                    </td>
+                                    <td>
+                                        <t t-if="rec.discount">
+                                            <t t-esc="rec.discount"/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-esc="rec.price_subtotal"
+                                           t-options="{'widget': 'monetary', 'display_currency': rec.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
+            </div>
+        </t>
+    </template>
+</odoo>
