@@ -24,31 +24,7 @@
                                 <div>
                                     <span t-if="o.partner_id">
                                         <span style="color:#{o.theme_id.customer_text_color} !important;"
-                                          t-field="o.partner_id"/>
-                                    </span>
-                                </div>
-                                <div>
-                                    <span t-if="o.partner_id.street">
-                                        <span style="color:#{o.theme_id.customer_text_color} !important;"
-                                          t-field="o.partner_id.street"/>
-                                    </span>
-                                </div>
-                                <div>
-                                    <span t-if="o.partner_id.street2">
-                                        <span style="color:#{o.theme_id.customer_text_color} !important;"
-                                          t-field="o.partner_id.street2"/>
-                                    </span>
-                                </div>
-                                <div t-if="o.theme_id.city">
-                                    <span t-if="o.partner_id.city">
-                                        <span style="color:#{o.theme_id.customer_text_color} !important;"
-                                          t-field="o.partner_id.city"/>
-                                    </span>
-                                </div>
-                                <div t-if="o.theme_id.country">
-                                    <span t-if="o.partner_id.country_id">
-                                        <span style="color:#{o.theme_id.customer_text_color} !important;"
-                                          t-field="o.partner_id.country_id"/>
+                                          t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}' />
                                     </span>
                                 </div>
                                 <div t-if="o.theme_id.vat">
@@ -322,53 +298,91 @@
                             </table>
                             </div>
                         </div>
-                    </div>
+
                     <!--More description-->
                     <div t-attf-style="color:#{o.theme_id.text_color};padding-top:10%;" class="col-12">
-                        <p t-if="not is_html_empty(o.narration)">
-                            <strong>Comment:</strong>
-                            <span t-field="o.narration"/>
-                        </p>
-                        <p t-if="o.fiscal_position_id.note">
-                            <strong>Fiscal Position Remark:</strong>
-                            <span t-field="o.fiscal_position_id.note"/>
-                        </p>
-                        <p t-if="o.move_type in ('out_invoice','in_refund')">
-                            Please use the following communication for your
-                            payment :
-                            <b>
-                                <span t-field="o.payment_reference"/>
-                            </b>
-                        </p>
-                        <p t-if="o.invoice_payment_term_id" name="payment_term">
-                            <span t-field="o.invoice_payment_term_id.note"/>
-                        </p>
-                        <p t-if="o.fiscal_position_id.note" name="note">
-                            <span t-field="o.fiscal_position_id.note"/>
-                        </p>
-                        <t t-if="o.company_id.country_id.code == 'IN'">
-                            <p id="total_in_words" class="mb16">
-                                <strong>Total (In Words):</strong>
-                                <span t-field="o.amount_total_words"/>
-                            </p>
-                        </t>
-                        <div id="qrcode"
-                             t-if="(o.company_id.qr_code) and (o.currency_id.name == 'EUR') and (o.invoice_partner_bank_id.acc_number != False)">
-                            <p t-if="(o.invoice_partner_bank_id.qr_code_valid)">
-                                <strong class="text-center">Scan me with your
-                                    banking app.
-                                </strong>
-                                <img class="border border-dark rounded"
-                                     t-att-src="o.invoice_partner_bank_id.build_qr_code_url(o.amount_residual, o.ref or o.name)"/>
-                            </p>
-                            <p t-if="(o.invoice_partner_bank_id.qr_code_valid == False)">
-                                <strong class="text-center">The SEPA QR Code
-                                    information are not set correctly.
-                                </strong>
-                            </p>
+                         <p t-if="o.move_type in ('out_invoice', 'in_refund') and o.payment_reference"
+                                   name="payment_communication" class="mt-4">
+                                    Please use the following communication for
+                                    your
+                                    payment :
+                                    <b>
+                                        <span t-field="o.payment_reference"/>
+                                    </b>
+                                </p>
+                                <t t-set="payment_term_details"
+                                   t-value="o.payment_term_details"/>
+                                <div t-field="o.invoice_payment_term_id.note"
+                                     name="payment_term"/>
+                                <t t-if="o.invoice_payment_term_id.display_on_invoice and payment_term_details">
+                                    <div t-if='o.show_payment_term_details'
+                                         id="total_payment_term_details_table"
+                                         class="row">
+                                        <div t-attf-class="#{'col-7' if report_type != 'html' else 'col-sm-7 col-md-6'} mt-2 mb-2">
+                                            <table class="table table-sm"
+                                                   style="page-break-inside: avoid;">
+                                                <th class="border-black text-start">
+                                                    Due Date
+                                                </th>
+                                                <th class="border-black text-end">
+                                                    Amount Due
+                                                </th>
+                                                <th t-if="o.show_discount_details"
+                                                    class="border-black text-end">
+                                                    Discount
+                                                </th>
+                                                <t t-foreach="payment_term_details"
+                                                   t-as="term">
+                                                    <tr>
+                                                        <td t-esc="term.get('date')"
+                                                            class="text-start"/>
+                                                        <td t-options='{"widget": "monetary", "display_currency": o.currency_id}'
+                                                            t-esc="term.get('amount')"
+                                                            class="text-end"/>
+                                                        <td t-if="term.get('discount_date')"
+                                                            class="text-end">
+                                                            <span t-options='{"widget": "monetary", "display_currency": o.currency_id}'
+                                                                  t-esc="term.get('discount_amount_currency')"/>
+                                                            if paid before
+                                                            <span t-esc="term.get('discount_date')"/>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </t>
+                                <div t-if="not is_html_empty(o.narration)"
+                                     name="comment">
+                                    <span t-field="o.narration"/>
+                                </div>
+                                <p t-if="not is_html_empty(o.fiscal_position_id.note)"
+                                   name="note">
+                                    <span t-field="o.fiscal_position_id.note"/>
+                                </p>
+                                <p t-if="o.invoice_incoterm_id" name="incoterm">
+                                    <strong>Incoterm:</strong>
+                                    <span t-field="o.invoice_incoterm_id.code"/>
+                                    -
+                                    <span t-field="o.invoice_incoterm_id.name"/>
+                                </p>
+                                <div id="qrcode"
+                                     t-if="o.display_qr_code and o.amount_residual > 0">
+                                    <t t-set="qr_code_url"
+                                       t-value="o._generate_qr_code(silent_errors=True)"/>
+                                    <p t-if="qr_code_url">
+                                        <strong class="text-center">Scan me with
+                                            your banking app.
+                                        </strong>
+                                        <br/>
+                                        <br/>
+                                        <img class="border border-dark rounded"
+                                             t-att-src="qr_code_url"/>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
             </t>
         </template>
     </data>
