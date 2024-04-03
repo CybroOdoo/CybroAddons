@@ -20,7 +20,7 @@
 #############################################################################
 {
     "name": "Inventory Forecast Analysis Report",
-    "version": "16.0.1.0.0",
+    "version": "16.0.1.0.1",
     "category": "Warehouse",
     "summary": "Helps to find all the stock quantities",
     "description": "This module allows the user to find all the "

@@ -18,7 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models
+from odoo import  fields, models
 
 
 class ProductTemplate(models.Model):
@@ -26,16 +26,4 @@ class ProductTemplate(models.Model):
 
     product_brand_id = fields.Many2one('product.brand', string="Product Brand",
                                        help="Brand of the Product.")
-    supplier_id = fields.Many2one(
-        'product.supplierinfo', string="Supplier",
-        compute="_compute_suppliers",
-        store=True, help="Supplier of the Product.")
 
-    @api.depends('seller_ids.partner_id')
-    def _compute_suppliers(self):
-        """This function is used to compute the main supplier
-        of the product."""
-        for rec in self:
-            rec.supplier_id = False
-            if rec.seller_ids:
-                rec.supplier_id = rec.seller_ids[0]
