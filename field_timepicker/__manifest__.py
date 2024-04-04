@@ -36,8 +36,8 @@
     'depends': ['base'],
     "assets": {
         'web.assets_backend': [
-            'field_timepicker/static/wickedpicker/dist/wickedpicker.min.css',
-            'field_timepicker/static/wickedpicker/dist/wickedpicker.min.js',
+            'field_timepicker/static/wickedpicker/stylesheets/wickedpicker.css',
+            'field_timepicker/static/wickedpicker/src/wickedpicker.js',
             'field_timepicker/static/src/js/time_widget.js',
         ],
         'web.assets_qweb': [

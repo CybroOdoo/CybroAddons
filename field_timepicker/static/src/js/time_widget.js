@@ -57,10 +57,12 @@ odoo.define('field_timepicker.timepicker', function(require) {
                     title: 'Timepicker',
                     showSeconds: true,
                 };
+
                 if (global_show_time) {
                     options['now'] = global_show_time;
                 }
-                $input.wickedpicker(options);
+
+            $input.wickedpicker('open');
             } else {
                 Dialog.alert(this, "Timepicker widget only works with 'Char' field type");
                 return false;
