@@ -186,7 +186,7 @@ class WebsiteSale(WebsiteSale):
     def cart_update_json(self, *args, set_qty=None, **kwargs):
         """This function will work when we have some updates from the cart, ie,
         add or delete the products from the cart"""
-        super().cart_update_json(*args, set_qty=set_qty, **kwargs)
+        res = super().cart_update_json(*args, set_qty=set_qty, **kwargs)
         total_price = sum(request.website.sale_get_order().order_line.mapped(
             'price_subtotal'))
         discount_order_line_id = 0
@@ -216,7 +216,7 @@ class WebsiteSale(WebsiteSale):
                     order_line.write({
                         'price_unit': order_line_discount_price,
                     })
-        return http.request.redirect(http.request.httprequest.url)
+        return res
 
     def shop_payment_confirmation(self, **post):
         """This function is used to decrease the applied points from the
