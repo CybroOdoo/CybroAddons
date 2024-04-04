@@ -28,7 +28,8 @@ from odoo.addons.web.controllers.main import home
 class PosScreen(home.Home):
     """The class PosScreen is used to log in pos session directly"""
 
-    @http.route('/web/login', type='http', auth="none")
+    @http.route('/web/login', type='http', auth="public", website=True,
+                sitemap=False)
     def web_login(self, redirect=None, **kw):
         """Override to add direct login to POS"""
         res = super().web_login(redirect=redirect, **kw)
