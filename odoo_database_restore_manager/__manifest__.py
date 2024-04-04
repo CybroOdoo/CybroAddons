@@ -23,7 +23,9 @@
     'name': "Database Restore Manager",
     'version': "17.0.1.0.0",
     'category': "Extra Tools",
-    'summary': """Efficient Database Restore Manager""",
+    'summary': """Database Restore Manager,Restore Manager,Odoo Database Backup, Automatic Backup, Database Backup, Automatic Backup,Database auto-backup, odoo backup'
+               'google drive, dropbox, nextcloud, amazon S3, onedrive or '
+               'remote server, Odoo17""",
     'description': """The Database Restore Manager allows users to easily 
      restore and download backups uploaded by the auto_database_backup module,
      providing convenient backup management within the platform""",
