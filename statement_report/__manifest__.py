@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Customer/ Supplier Payment Statement Report',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Productivity',
     'summary': """Customer/ Supplier Payment Statement Report for Odoo 16""",
     'description': """ This module help you to get Customer/ Supplier

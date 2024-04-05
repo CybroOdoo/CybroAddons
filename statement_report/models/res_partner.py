@@ -50,7 +50,7 @@ class Partner(models.Model):
         """ for computing 'invoices' of partner"""
         inv_ids = self.env['account.move'].search(
             [('partner_id', '=', self.id),
-             ('move_type', '=', 'out_invoice'),
+             ('move_type', 'in', ['out_invoice', 'out_refund']),
              ('payment_state', '!=', 'paid'),
              ('state', '=', 'posted')]).ids
         self.customer_report_ids = inv_ids
@@ -59,7 +59,7 @@ class Partner(models.Model):
         """ for computing 'bills' of partner """
         bill_ids = self.env['account.move'].search(
             [('partner_id', '=', self.id),
-             ('move_type', '=', 'in_invoice'),
+             ('move_type', '=', ['in_invoice', 'in_refund']),
              ('payment_state', '!=', 'paid'),
              ('state', '=', 'posted')]).ids
         self.vendor_statement_ids = bill_ids
