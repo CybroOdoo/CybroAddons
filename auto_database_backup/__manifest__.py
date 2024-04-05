@@ -25,9 +25,9 @@
     'version': '16.0.4.0.1',
     'live_test_url': 'https://youtu.be/Q2yMZyYjuTI',
     'category': 'Extra Tools',
-    'summary': 'Generate automatic backup of databases and store to local, '
+    'summary': 'Odoo Database Backup, Automatic Backup, Database Backup, Automatic Backup,Database auto-backup, odoo backup'
                'google drive, dropbox, nextcloud, amazon S3, onedrive or '
-               'remote server',
+               'remote server, Odoo17, Backup, Database, Odoo Apps',
     'description': 'This module has been developed for creating database '
                    'backups automatically and store it to the different '
                    'locations,database backup, backup, Google Drive, Dropbox, Onedrive, Nextcloud, Amazon S3, automatic backup',
