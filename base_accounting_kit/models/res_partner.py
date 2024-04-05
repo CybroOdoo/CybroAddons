@@ -95,9 +95,13 @@ class ResPartner(models.Model):
                 return today
 
     def get_delay(self):
-        delay = """select id,delay from followup_line where followup_id =
-        (select id from account_followup where company_id = %s)
-         order by delay limit 1"""
+        delay = """SELECT fl.id, fl.delay
+                    FROM followup_line fl
+                    JOIN account_followup af ON fl.followup_id = af.id
+                    WHERE af.company_id = %s
+                    ORDER BY fl.delay;
+
+                    """
         self._cr.execute(delay, [self.env.company.id])
         record = self._cr.dictfetchall()
         return record
