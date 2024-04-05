@@ -23,7 +23,7 @@
     'name': 'Odoo17 Dynamic Accounting Reports',
     'version': '17.0.1.0.0',
     'category': 'Accounting',
-    'summary': "Odoo 17 Accounting Financial Reports,Dynamic Accounting Reports, Dynamic Financial Reports,Dynamic Report Odoo17, Odoo17,Financial Reports, Odoo17 Accounting,",
+    'summary': "Odoo 17 Accounting Financial Reports,Dynamic Accounting Reports, Dynamic Financial Reports,Dynamic Report Odoo17, Odoo17,Financial Reports, Odoo17 Accounting,Accounting, Odoo Apps",
     'description': "This module creates dynamic Accounting General Ledger, Trial"
                    "Balance, Balance Sheet, Proft and Loss, Cash Book, Partner"
                    "Ledger, Aged Payable, Aged Receivable, Bank book and Tax"

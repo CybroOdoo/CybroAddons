@@ -23,7 +23,7 @@
     'name': "Odoo Dynamic Dashboard",
     'version': '17.0.1.0.0',
     'category': 'Extra Tools ',
-    'summary': """Create Configurable Dashboards Easily""",
+    'summary': """Odoo Dynamic Dashboard, Dynamic Dashboard, Odoo Dashboard, Dynamic Dashbaord, AI Dashboard, Odoo17 Dashboard, Dashboard, Odoo17, Configurable Dashboard""",
     'description': """Create Configurable Dashboard Dynamically to get the 
     information that are relevant to your business, department, 
     or a specific process or need, Dynamic Dashboard, Dashboard ,

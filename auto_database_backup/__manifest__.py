@@ -27,8 +27,8 @@
     'category': 'Extra Tools',
     'summary': 'Odoo Database Backup, Automatic Backup, Database Backup, Automatic Backup,Database auto-backup, odoo backup'
                'google drive, dropbox, nextcloud, amazon S3, onedrive or '
-               'remote server, Odoo17',
-    'description': 'Odoo Database Backup, Database Backup, Automatci Backup, automatic database backup, odoo17, odoo apps,backup, automatic backup,odoo17 automatic database backup,backup google drive,backup dropbox, backup nextcloud, backup amazon S3, backup onedrive',
+               'remote server, Odoo17, Backup, Database, Odoo Apps',
+    'description': 'Odoo Database Backup, Database Backup, Automatic Backup, automatic database backup, odoo17, odoo apps,backup, automatic backup,odoo17 automatic database backup,backup google drive,backup dropbox, backup nextcloud, backup amazon S3, backup onedrive',
     'author': "Cybrosys Techno Solutions",
     'maintainer': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
