@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<template xml:space="preserve">
+	<!-- Template of timesheet add view template from systray-->
+    <t t-name="TimesheetSystray" owl="1">
+		<Dropdown menuClass="`p-3 b-3`" t-if="this.state.Access">
+			<t t-set-slot="toggler">
+				<img src="easy_timesheet_add/static/src/img/stopwatch.svg"
+					 width="30px" height="18px"/>
+			</t>
+            <t t-set-slot="default">
+				<div t-ref="Timesheet"
+                     style="width: 300px;min-height: 50px;max-height: 630px">
+					<div t-esc="state.time" class="time"/>
+                    <t t-if="!this.state.WorkTime">
+						<div class="row">
+							<div class="col-2">Project</div>
+							<div class="col-8">
+								<select class="form-select Project"
+										t-on-change="(ev) => this.ChangeProject(ev.target.value)">
+									<option class="bg-secondary" value="">Select a
+										Project</option>
+									<t t-foreach="this.state.project"
+									   t-as="project"
+									   t-key="project_index">
+										<option t-att-value="project.id"
+												t-att-data="project.display_name"
+												t-esc="project.display_name"/>
+									</t>
+								</select>
+							</div>
+						</div>
+                        <div class="row mt-2">
+								<div class="col-2">Task</div>
+                            <div class="col-8">
+									<select class="form-select Task"
+                                            t-on-change="(ev) => this.ChangeTask(ev.target.value)">
+										<option class="bg-secondary" value="">Select a
+											Task</option>
+                                        <t t-foreach="this.state.Task"
+                                           t-as="task" t-key="task_index">
+											<option t-att-value="task.id"
+													t-att-data="task.display_name"
+                                                    t-esc="task.display_name"/>
+										</t>
+									</select>
+								</div>
+							</div>
+						</t>
+                    <t t-if="this.state.WorkTime">
+							<div class="row d-flex">
+								<div>
+									<small class="">Description</small>
+								</div>
+                                <div class="fs-3 text-info text-end">
+                                    <textarea class="form-control Description"
+                                              rows="3"/>
+								</div>
+							</div>
+						</t>
+					</div>
+                <div class="mt-2">
+					<button t-if="!this.state.WorkTime"
+							class="btn btn-success start"
+							t-on-click="StartTime">
+						<span>Start</span>
+					</button>
+					<button t-if="this.state.WorkTime"
+						class="btn btn-danger stop"
+						t-on-click="AddTimesheet">
+						<span>Stop</span>
+					</button>
+					<button t-if="this.state.WorkTime and !this.state.paused"
+						class="btn btn-primary pause"
+							style="margin-left: 6px"
+						t-on-click="PauseTime">
+						<span>Pause</span>
+					</button>
+                    <button t-if="this.state.WorkTime and this.state.paused"
+                            class="btn btn-primary pause"
+							style="margin-left: 6px"
+                            t-on-click="PlayTime">
+                        <span>Restart</span>
+					</button>
+					</div>
+			</t>
+		</Dropdown>
+	</t>
+</template>
