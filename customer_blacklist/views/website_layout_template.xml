@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Replacing 'Add to cart' button in the product detail page in the website-->
+    <template id="product_custom" inherit_id="website_sale.product">
+        <xpath expr="//a[@id='add_to_cart']" position="replace">
+            <t t-if="request.env.user.blacklisted_partner">
+                <span>You are not allowed to buy the product. Please contact the
+                    admin.
+                </span>
+            </t>
+            <t t-else="">
+                <a data-animation-selector=".o_wsale_product_images"
+                   role="button" id="add_to_cart"
+                   t-attf-class="btn btn-primary js_check_product a-submit flex-grow-1"
+                   href="#">
+                    <i class="fa fa-shopping-cart me-2"/>
+                    Add to cart
+                </a>
+            </t>
+        </xpath>
+    </template>
+    <!--    Replacing 'Buy Now' button in the product detail page in the website-->
+    <template id="product_buy_now_custom"
+              inherit_id="website_sale.product_buy_now">
+        <xpath expr="//a[@role='button' and contains(@t-attf-class, 'o_we_buy_now')]"
+               position="replace">
+            <t t-if="not request.env.user.blacklisted_partner">
+                <a role="button"
+                   class="btn btn-outline-primary o_we_buy_now ms-1" href="#">
+                    <i class="fa fa-bolt me-2"/>
+                    Buy now
+                </a>
+            </t>
+        </xpath>
+    </template>
+    <!--    Replacing 'Add to wishlist' button in the product detail page in the website-->
+    <template id="product_add_to_wishlist_custom"
+              inherit_id="website_sale_wishlist.product_add_to_wishlist">
+        <xpath expr="//button[hasclass('o_add_wishlist_dyn')]"
+               position="replace">
+            <t t-if="not request.env.user.blacklisted_partner">
+                <button t-if="product_variant" type="button" role="button"
+                        class="btn btn-link px-0 pe-3 o_add_wishlist_dyn"
+                        t-att-disabled='in_wish or None'
+                        t-att-data-product-template-id="product.id"
+                        t-att-data-product-product-id="product_variant.id"
+                        data-action="o_wishlist" title="Add to wishlist"><i
+                        class="fa fa-heart-o me-2" role="img"
+                        aria-label="Add to wishlist"/>Add to wishlist
+                </button>
+            </t>
+        </xpath>
+    </template>
+    <!--    Replacing 'Compare' button in the product detail page in the website-->
+    <template id="product_add_to_compare_custom"
+              inherit_id="website_sale_comparison.product_add_to_compare">
+        <xpath expr="//button[hasclass('o_add_compare_dyn')]"
+               position="replace">
+            <t t-if="not request.env.user.blacklisted_partner">
+                <button t-if="product_variant_id and categories"
+                        type="button"
+                        role="button"
+                        class="d-none d-md-block btn btn-link px-0 o_add_compare_dyn"
+                        aria-label="Compare"
+                        t-att-data-product-product-id="product_variant_id"
+                        data-action="o_comparelist">
+                    <span class="fa fa-exchange me-2"/>Compare
+                </button>
+            </t>
+        </xpath>
+    </template>
+    <!--    Replacing 'Add to wishlist' button in the product grid view-->
+    <template id="add_to_wishlist_custom"
+              inherit_id="website_sale_wishlist.add_to_wishlist">
+        <xpath expr="//button[hasclass('o_add_wishlist')]"
+               position="replace">
+            <t t-if="not request.env.user.blacklisted_partner">
+                <button t-if="product_variant_id"
+                        type="button"
+                        role="button"
+                        class="btn btn-outline-primary bg-white o_add_wishlist"
+                        t-att-disabled='in_wish or None' title="Add to Wishlist"
+                        t-att-data-product-template-id="product.id"
+                        t-att-data-product-product-id="product_variant_id"
+                        data-action="o_wishlist">
+                    <span class="fa fa-heart" role="img"
+                          aria-label="Add to wishlist"/>
+                </button>
+            </t>
+        </xpath>
+    </template>
+    <!--    Replacing 'Compare' button in the product grid view-->
+    <template id="add_to_compare_custom"
+              inherit_id="website_sale_comparison.add_to_compare">
+        <xpath expr="//button[hasclass('o_add_compare')]"
+               position="replace">
+            <t t-if="not request.env.user.blacklisted_partner">
+                <button t-if="product_variant_id and categories" type="button"
+                        role="button"
+                        class="d-none d-md-inline-block btn btn-outline-primary bg-white o_add_compare"
+                        title="Compare" aria-label="Compare"
+                        t-att-data-product-product-id="product_variant_id"
+                        data-action="o_comparelist">
+                    <span class="fa fa-exchange"/>
+                </button>
+            </t>
+        </xpath>
+    </template>
+</odoo>
