@@ -9,3 +9,8 @@
 #### Version 16.0.1.0.0
 ##### UPDATE
 - Update for Invoice From Stock Picking
+
+#### 13.02.2024
+#### Version 16.0.1.0.1
+##### BUG FIX
+- Updated the module by removing the stock move line issue
