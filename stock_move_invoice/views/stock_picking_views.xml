@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Inheriting stock.picking form view to add invoice/bill button-->
+    <record id="view_picking_form" model="ir.ui.view">
+        <field name="name">stock.picking.view.form</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='picking_type_id']" position="after">
+                <field name="operation_code" invisible="1"/>
+                <field name="is_return" invisible="1"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_picking_invoice" type="object"
+                        class="oe_stat_button" icon="fa-file-text"
+                        invisible="invoice_count == 0">
+                    <field name="invoice_count" widget="statinfo"/>
+                </button>
+            </xpath>
+            <xpath expr="//button[@name='action_cancel']"
+                   position="after">
+                <button name="action_create_invoice" class="oe_highlight"
+                        string="Create Invoice" type="object"
+                        invisible="invoice_count != 0 or state != 'done' or operation_code == 'incoming' or is_return == True"/>
+                <button name="action_create_bill" class="oe_highlight"
+                        string="Create Bill" type="object"
+                        invisible="invoice_count != 0 or state != 'done' or operation_code == 'outgoing' or is_return == True"/>
+                <button name="action_create_customer_credit" class="oe_highlight"
+                        string="Create Credit Note" type="object"
+                        invisible="invoice_count != 0 or state != 'done' or operation_code == 'outgoing' or is_return == False"/>
+                <button name="action_create_vendor_credit" class="oe_highlight"
+                        string="Create Vendor Credit" type="object"
+                        invisible="invoice_count != 0 or state != 'done' or operation_code == 'incoming' or is_return == False"/>
+            </xpath>
+        </field>
+    </record>
+    <!--    add invoice/bill create menu in tree view action-->
+    <record id="action_create_invoice_for_multi_transfer"
+            model="ir.actions.server">
+        <field name="name">Create Invoice/Bill</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="state">code</field>
+        <field name="code">
+            if records:
+            action = records.action_create_multi_invoice_for_multi_transfer()
+        </field>
+    </record>
+</odoo>
