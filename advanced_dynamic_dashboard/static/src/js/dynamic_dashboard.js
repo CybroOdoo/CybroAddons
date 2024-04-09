@@ -11,6 +11,8 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
         events: {
             'click .add_block': '_onClick_add_block',
             'click .block_setting': '_onClick_block_setting',
+            'click .dashboard_pdf': '_onClick_dashboard_pdf',
+            'click .dashboard_mail': '_onClick_create_pdf',
             'click .block_delete': '_onClick_block_delete',
             'click #search-button': 'search_chart',
             'click #searchclear': 'clear_search',
@@ -42,7 +44,6 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
             this.set("title", 'Dashboard');
             return this._super().then(function () {
                 self.render_dashboards();
-//                self.gridstack_init(self);
             });
         },
         fetch_data: function () {//Fetch data and call rpc query to create chart or tile. return block_ids
@@ -79,6 +80,7 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
             this.$el.find('.dropdown-export').toggleClass('dropdown-menu-dark', isDarkTheme);
         },
         _onchangeFilter: function() {
+        // Function for changing the filter
             this.$('#edit_layout').show();
             var start_date = $('#start-date').val();
             var end_date = $('#end-date').val();
@@ -89,24 +91,14 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
                 if (!end_date) {
                     end_date = "null";
                 }
-                console.log(start_date,"start")
-                console.log(end_date,"end")
                 this._rpc({
                     model: 'dashboard.block',
                     method: 'get_dashboard_vals',
                     args: [[], this.action_id, start_date, end_date],
                 }).then(function (result) {
-                    console.log(result,"res")
                     self.block_ids = result;
                     self.$('.o_dynamic_dashboard').empty(); // Clear existing blocks before rendering
                     self.render_dashboards(); // Re-render the dashboard with updated data
-//                    var gridstack = self.$('.grid-stack').data('gridstack');
-//                    gridstack.enableMove(true);
-//                    gridstack.enableResize(true);
-//                    console.log(gridstack,"selffffffff")
-//                    self.gridstack_init(self);
-//                    self.gridstack_on(self);
-//                    self.gridstack_init(self); // Reinitialize gridstack after rendering
                 });
         },
         get_colors: function (x_axis) {//Function fetch random color values and set chart color
@@ -206,7 +198,6 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
             return [data, options];
         },
         gridstack_init: function (self) {// Used gridstack to drag and resize chart and tile.
-            console.log(self,"selfselfselfselfself")
             self.$('.grid-stack').gridstack({
                 animate: true,
                 duration: 200,
@@ -215,22 +206,15 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
                     handle: '.grid-stack-item-content',
                     scroll: true
                 },
-                resizable:{
-                aspectRatio:20/18,
-//                autoHide: false,
-                },
                 alwaysShowResizeHandle: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
                 float: true
             });
             self.gridstack_off(self);
         },
         gridstack_on: function (self) {// Enable move and resize functionality
-            console.log(self,"---")
             var gridstack = self.$('.grid-stack').data('gridstack');
-            console.log(gridstack,"gridddddd")
             gridstack.enableMove(true);
             gridstack.enableResize(true);
-            console.log(gridstack,"selffffffff")
         },
         gridstack_off: function (self) {// Disable move and resize functionality
             var gridstack = self.$('.grid-stack').data('gridstack');
@@ -238,7 +222,6 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
             gridstack.enableResize(false);
         },
         render_dashboards: function () {
-            console.log(this.block_ids,"prefghj")
             self = this;
             self.$("#save_layout").hide();//Hide save_layout button
             _.each(this.block_ids, function (block) {//Loop all chart and tile
@@ -322,7 +305,6 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
                 var pdf = new jsPDF();
                 pdf.addImage(bgCanvas.toDataURL("image/png"), 'PNG', 0, 0);
                 pdf.save(`${dataTitle}.pdf`);
-
             }
             if (type === 'csv') {
                 var rows = [];
@@ -341,8 +323,43 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
                 var link = document.createElement("a");
                 link.setAttribute("href", encodeURI(csvContent));
                 link.setAttribute("download", `${dataTitle}.csv`);
-                document.body.appendChild(link); // Required for FF
+                document.body.appendChild(link);
                 link.click();
+            }
+            if (type === 'xlsx'){
+                var rows = [];
+                for (var obj of this.block_ids) {
+                    if (obj.id == $(e.currentTarget).attr('data-id')) {
+                        rows.push(obj.x_axis);
+                        rows.push(obj.y_axis);
+                    }
+                }
+                // Prepare the workbook
+                const workbook = new ExcelJS.Workbook();
+                const worksheet = workbook.addWorksheet('My Sheet');
+                for(let i = 0; i < rows.length; i++){
+                    worksheet.addRow(rows[i]);
+                }
+                const image = workbook.addImage({
+                  base64: imgData,
+                  extension: 'png',
+                });
+                worksheet.addImage(image, {
+                  tl: { col: 0, row: 4 },
+                  ext: { width: canvas.width, height: canvas.height }
+                });
+                // Save workbook to a file
+                workbook.xlsx.writeBuffer()
+                .then((buffer) => {
+                    // Create a Blob object from the buffer
+                    let blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+                    let link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.setAttribute("download", `${dataTitle}.xlsx`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                })
             }
         },
         dropdown_toggle: function () {//Function to toggle the button Add Items.
@@ -434,7 +451,6 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
                              location.reload()
                             self.on_reverse_breadcrumb();
                         }).catch(function (error) {
-                            console.log('Error unlinking record: ', error);
                         });
                     } else {
                         // Do nothing
@@ -465,10 +481,8 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
                         'default_text_color': '#FFFFFF',
                         'default_fa_icon': 'fa fa-bar-chart',
                         'default_client_action_id': parseInt(self.action_id)
-                    },
-                    on_close: function () {
-                        window.location.reload();
-                    }
+                    }},{
+                    on_reverse_breadcrumb: this.on_reverse_breadcrumb
                 });
             } else {
                 this.do_action({
@@ -483,26 +497,94 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
                         'default_height': 5,
                         'default_width': 4,
                         'default_graph_type': chart_type,
-                        'default_graph_size': 'col-lg-4',
                         'default_fa_icon': 'fa fa-bar-chart',
                         'default_client_action_id': parseInt(self.action_id)
-                    },
-            on_close: function(){
-                window.location.reload();
+                    }
+                },
+                {
+                    on_reverse_breadcrumb: this.on_reverse_breadcrumb
+                });
             }
-        });
-    }
             // FETCHING SAVED LAYOUT FROM LOCAL STORAGE MEMORY
         },
-        _onClick_edit_layout: function (e) {// Function to hide edit_layout button and show save_layout button. and also work the function gridstack_on(self)
-            console.log(e,"oooo")
+        _onClick_dashboard_pdf: function (e){
+        // Function for printing the pdf of the dashboard
+            var newElement = document.createElement('div');
+            newElement.className = 'pdf';
+            var parentElements = $('.grid-stack-item')
+            parentElements.each(function(index, parent){
+                var parentWidth = $(parent).width();
+                var parentHeight = $(parent).height();
+                $(parent).children().first().css('width', parentWidth);
+                $(parent).children().first().css('height', parentHeight);
+                $(parent).children().first().css('margin', '10px');
+                newElement.appendChild($(parent)[0].children[0]);
+            })
+            var opt = {
+                margin:       8,
+                filename:     'Dashboard.pdf',
+                image:        { type: 'jpeg', quality: 1 },
+                html2canvas:  { scale: 1 },
+                jsPDF:        { unit: 'mm', format: 'a3', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(newElement).save()
+            .then(()=>{
+                window.location.reload()
+            })
+        },
+        _onClick_create_pdf: function(e){
+        // Function for creating pdf in datauristring format
+            self = this;
+            var newElement = document.createElement('div');
+            newElement.className = 'pdf';
+            var parentElements = $('.grid-stack-item')
+            parentElements.each(function(index, parent){
+                var parentWidth = $(parent).width();
+                var parentHeight = $(parent).height();
+                $(parent).children().first().css('width', parentWidth);
+                $(parent).children().first().css('height', parentHeight);
+                $(parent).children().first().css('margin', '10px');
+                newElement.appendChild($(parent)[0].children[0]);
+            })
+            var opt = {
+                margin:       0.3,
+                filename:     'Dashboard.pdf',
+                image:        { type: 'jpeg', quality: 1 },
+                html2canvas:  { scale: 1 },
+                jsPDF:        { unit: 'mm', format: 'a3', orientation: 'portrait' }
+            };
+            var pdf = html2pdf().set(opt).from(newElement).toPdf().output('datauristring')
+            .then(function(pdfOutput) {
+                self.dashboard_mail(pdfOutput)
+            })
+        },
+
+        dashboard_mail: function(pdfData){
+        // Function for sending mail to the selected users
+            var base64code = pdfData.split(',')[1];
+            self.do_action({
+                type: 'ir.actions.act_window',
+                name: 'SEND MAIL',
+                res_model: 'dashboard.mail',
+                view_mode: 'form',
+                views: [[false, 'form']],
+                target: 'new',
+                context: {
+                    'default_base64code': base64code,
+                }
+            });
+        },
+
+        _onClick_edit_layout: function (e) {
+        // Function to hide edit_layout button and show save_layout button. and also work the function gridstack_on(self)
             e.stopPropagation();
             self = this;
             self.$("#edit_layout").hide();
             self.$("#save_layout").show();
             self.gridstack_on(self);
         },
-        _onClick_save_layout: function (e) {//Function to save the edited value
+        _onClick_save_layout: function (e) {
+        //Function to save the edited value
             e.stopPropagation();
             self = this;
             self.$("#edit_layout").show();
@@ -524,7 +606,8 @@ odoo.define('advanced_dynamic_dashboard.Dashboard', function (require) {
             });
             self.gridstack_off(self);
         },
-        _onClick_tile: function (e) {// Function to view the tree view of the tile.
+        _onClick_tile: function (e) {
+        // Function to view the tree view of the tile.
             e.stopPropagation();
             self = this;
             ajax.jsonRpc('/tile/details', 'call', {
