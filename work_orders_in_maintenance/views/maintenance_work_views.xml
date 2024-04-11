@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form view for the  maintenance work -->
+    <record id="maintenance_work_order_view_form" model="ir.ui.view">
+        <field name="name">maintenance.work.order.view.form</field>
+        <field name="model">maintenance.work</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button id="action_confirm" name="action_confirm" string="Confirm"
+                            type="object" class="btn-primary" data-hotkey="q" invisible="state != 'ready' "/>
+                    <button id="action_create_invoice" name="action_create_invoice" string="Create Invoice"
+                            type="object" class="btn-primary" data-hotkey="q" invisible=" state != 'done' "/>
+                    <button id="action_complete_order" name="action_complete_order" string="Order Completed"
+                            type="object" class="btn-primary" data-hotkey="q" invisible=" state != 'progress' "/>
+                    <button id="action_cancel" name="action_cancel" string="Cancel"
+                            type="object" class="btn-primary" data-hotkey="q" invisible="state not in['ready','progress','done']"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="invoice_details"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-pencil-square-o">
+                            <field string="Invoice" name="invoice_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="technician_id"/>
+                            <field name="maintenance_request_id"/>
+                            <field name="equipment_id"/>
+                            <field name="description" type="html"/>
+                        </group>
+                        <group>
+                            <field name="schedule_date_start"/>
+                            <field name="duration" widget="float_time"/>
+                            <field name="work_center_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Tree view for the  maintenance work -->
+    <record id="maintenance_work_view_tree" model="ir.ui.view">
+        <field name="name">maintenance.work.tree</field>
+        <field name="model">maintenance.work</field>
+        <field name="arch" type="xml">
+            <tree string="maintenance work" multi_edit="1" sample="1">
+                <field name="technician_id"/>
+                <field name="maintenance_request_id"/>
+                <field name="work_center_id"/>
+                <field name="schedule_date_start"/>
+                <field name="duration"/>
+            </tree>
+        </field>
+    </record>
+    <!--   Wizard view of Maintenance work order   -->
+    <record id="maintenance_work_order_wizard_view_form" model="ir.ui.view">
+        <field name="name">maintenance.work.order.wizard.form</field>
+        <field name="model">maintenance.work</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="technician_id"/>
+                            <field name="maintenance_request_id"/>
+                            <field name="equipment_id"/>
+                        </group>
+                        <group>
+                            <field name="schedule_date_start"/>
+                            <field name="duration" widget="float_time"/>
+                            <field name="work_center_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Action for the  maintenance work -->
+    <record id="action_maintenance_work_order" model="ir.actions.act_window">
+        <field name="name">Maintenance Work Orders</field>
+        <field name="res_model">maintenance.work</field>
+        <field name="view_mode">tree,form,kanban</field>
+    </record>
+    <!-- MenuItem for the  maintenance work -->
+    <menuitem
+            id="menu_maintenance_work_order"
+            name="Maintenance Work Orders"
+            parent="maintenance.menu_m_request"
+            groups="maintenance.group_equipment_manager,base.group_user"
+            action="action_maintenance_work_order"
+            sequence="3"/>
+</odoo>

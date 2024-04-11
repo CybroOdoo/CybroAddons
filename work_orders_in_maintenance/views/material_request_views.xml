@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View for the Material Request -->
+    <record id="material_request_view_tree" model="ir.ui.view">
+        <field name="name">material.request.view.tree</field>
+        <field name="model">material.request</field>
+        <field name="arch" type="xml">
+            <tree string="maintenance work" multi_edit="1" sample="1">
+                <field name="name"/>
+                <field name="maintenance_request_id"/>
+                <field name="equipment_id"/>
+                <field name="product_qty"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Form View for the Material Request -->
+    <record id="material_request_view_form" model="ir.ui.view">
+        <field name="name">material.request.form.view</field>
+        <field name="model">material.request</field>
+        <field name="arch" type="xml">
+            <form string="Material Request">
+                <header>
+                    <button id="button_receive" name="action_receive" string="Receive" invisible="state != 'in_progress'"
+                            type="object" class="btn-primary" data-hotkey="q"/>
+                    <button id="button_cancel" name="action_cancel" string="Cancel"
+                            type="object" class="btn-primary" data-hotkey="q" invisible=" state not in ['draft','in_progress','received']"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <label for="name"/>
+                    <h1>
+                        <field name="name"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="equipment_id"/>
+                            <field name="product_qty"/>
+                        </group>
+                        <group>
+                            <field name="maintenance_request_id"/>
+                            <field name="is_product_received" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--    Wizard view for material request   -->
+    <record id="material_request_wizard_view_form" model="ir.ui.view">
+        <field name="name">material.request.order.wizard.form</field>
+        <field name="model">material.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="equipment_id"/>
+                            <field name="product_qty"/>
+                        </group>
+                        <group>
+                            <field name="maintenance_request_id"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Create" special="save" class="btn btn-primary"/>
+                        <button string="Cancel" class="btn btn-secondary" special="cancel" data-hotkey="z"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Action for the Menu Material Request -->
+    <record id="action_maintenance_material_request" model="ir.actions.act_window">
+        <field name="name">Material Requests</field>
+        <field name="res_model">material.request</field>
+        <field name="view_mode">tree,form,kanban</field>
+    </record>
+    <!-- MenuItem for the Material Requests -->
+    <menuitem
+            id="menu_maintenance_material_request"
+            name="Material Requests"
+            parent="maintenance.menu_m_request"
+            groups="maintenance.group_equipment_manager,base.group_user"
+            action="action_maintenance_material_request"
+            sequence="3"/>
+</odoo>
