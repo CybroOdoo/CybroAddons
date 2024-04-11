@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Pantry order action -->
+    <record id="action_pantry_order" model="ir.actions.act_window">
+        <field name="name">Pantry Order</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">pantry.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new pantry order
+            </p>
+        </field>
+    </record>
+    <!-- Pantry order menu -->
+    <menuitem id="pantry_order_menu" name="Pantry Order"
+              action="pantry_payroll.action_pantry_order" parent="hr_pantry_menu"/>
+    <!-- Pantry order tree view -->
+    <record id="pantry_order_view_tree" model="ir.ui.view">
+        <field name="name">pantry.order.view.tree</field>
+        <field name="model">pantry.order</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="date_order"/>
+                <field name="amount_total"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'confirmed'"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Pantry order form view -->
+    <record id="pantry_order_view_form" model="ir.ui.view">
+        <field name="name">pantry.order.view.form</field>
+        <field name="model">pantry.order</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button string="Confirm" class="btn btn-primary" type="object" name="action_confirm_pantry_order" invisible="state == 'confirmed'"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                        </group>
+                        <group>
+                            <field name="date_order"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Order Lines">
+                            <field name="order_line_ids" readonly="state == 'confirmed'">
+                                <tree editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_price"/>
+                                    <field name="subtotal"/>
+                                </tree>
+                            </field>
+                            <h2 class="oe_subtotal_footer oe_right">
+                                <group>
+                                    <field name="amount_total"/>
+                                </group>
+                            </h2>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+</odoo>
