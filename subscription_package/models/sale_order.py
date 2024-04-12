@@ -87,8 +87,8 @@ class SaleOrder(models.Model):
         """Open the subscription packages associated with the sale order."""
         return {
             'name': 'Subscription',
-            'sale_order': False,
-            'domain': [('sale_order', '=', self.id)],
+            'sale_order_id': False,
+            'domain': [('sale_order_id', '=', self.id)],
             'view_type': 'form',
             'res_model': 'subscription.package',
             'view_mode': 'tree,form',
@@ -112,7 +112,7 @@ class SaleOrder(models.Model):
                         this_products_line.append(rec_list)
                         self.env['subscription.package'].create(
                             {
-                                'sale_order': self.id,
+                                'sale_order_id': self.id,
                                 'reference_code': self.env[
                                     'ir.sequence'].next_by_code(
                                     'sequence.reference.code'),

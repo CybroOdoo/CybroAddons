@@ -79,7 +79,7 @@ class SubscriptionPackage(models.Model):
                               help='Add the Sales person',
                               default=lambda self: self.env.user)
     sale_order_id = fields.Many2one('sale.order', string="Sale Order",
-                                    help='Select the sale order')
+                                    help='Select the sale order', copy=False)
     is_to_renew = fields.Boolean(string='To Renew', copy=True,
                                  help='Is subscription package is renew')
     tag_ids = fields.Many2many('account.account.tag', string='Tags',
@@ -88,7 +88,7 @@ class SubscriptionPackage(models.Model):
                                default=lambda self: self._default_stage_id(),
                                index=True,
                                group_expand='_read_group_stage_ids',
-                               help='Subscription Package stage')
+                               help='Subscription Package stage', copy=False)
     invoice_count = fields.Integer(string='Invoices',
                                    help='Subscription package invoice count',
                                    compute='_compute_invoice_count')
