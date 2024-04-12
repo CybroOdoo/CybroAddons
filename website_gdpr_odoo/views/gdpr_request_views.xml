@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Tree view for gdpr.requests-->
+    <record id="gdpr_request_view_tree" model="ir.ui.view">
+        <field name="name">gdpr.request.view.tree</field>
+        <field name="model">gdpr.request</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="template_id"/>
+                <field name="partner_id"/>
+                <field name="req_type"/>
+                <field name="state" decoration-success="state == 'done'"
+                       decoration-info="state == 'cancel'"
+                       decoration-warning="state == 'pending'" widget="badge"
+                       optional="show"/>
+            </tree>
+        </field>
+    </record>
+    <!--    Action for the sequence number-->
+    <record id="seq_gdpr_request" model="ir.sequence">
+        <field name="name">Request Sequence</field>
+        <field name="code">request.sequence</field>
+        <field name="prefix">GDPR</field>
+        <field name="padding">6</field>
+    </record>
+    <!--Gdpr requests form view-->
+    <record id="gdpr_request_view_form" model="ir.ui.view">
+        <field name="name">gdpr.request.view.form</field>
+        <field name="model">gdpr.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm_request" string="Confirm"
+                            type="object" class="btn-primary" data-hotkey="c"
+                            invisible = "state != 'pending' or req_type == 'delete'"/>
+                    <button name="action_delete_request" string="Wipe Data"
+                            type="object" class="btn-primary" data-hotkey="c"
+                            invisible="state != 'pending' or req_type == 'download'"/>
+                    <button name="action_cancel_request" string="Cancel"
+                            type="object" class="btn-secondary" data-hotkey="d"
+                            invisible = "state != 'pending'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <h1>
+                        <field name="name"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="req_name"/>
+                            <field name="partner_id"/>
+                            <field name="req_type"/>
+                            <field name="template_id"/>
+                            <field name="create_date"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--    Action for gdpr.request-->
+    <record id="gdpr_request_action" model="ir.actions.act_window">
+        <field name="name">GDPR Request</field>
+        <field name="res_model">gdpr.request</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--    Parent menu-->
+    <menuitem id="gdpr_main_root" name="GDPR Data"
+              parent="website.menu_website_global_configuration" groups="website.group_website_designer"/>
+    <!--    Menu item for gdpr.requests-->
+    <menuitem id="gdpr_main_root_request" name="GDPR Request"
+              parent="gdpr_main_root" action="gdpr_request_action"/>
+</odoo>
