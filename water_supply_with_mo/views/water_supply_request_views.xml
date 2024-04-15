@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--  Water Supply Request model action-->
+    <record id="water_supply_request_action" model="ir.actions.act_window">
+        <field name="name">Supply Request</field>
+        <field name="res_model">water.supply.request</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--Water supply request model tree view-->
+    <record id="water_supply_request_view_tree" model="ir.ui.view">
+        <field name="name">water.supply.request.view.tree</field>
+        <field name="model">water.supply.request</field>
+        <field name="arch" type="xml">
+            <tree string="Stages" multi_edit="1">
+                <field name="reference_no"/>
+                <field name="responsible_user_id"/>
+                <field name="customer_name_id"/>
+                <field name="request_date"/>
+                <field name="is_closed" invisible="1"/>
+                <field name="date_planned_start" widget="remaining_days"/>
+            </tree>
+        </field>
+    </record>
+    <!--  Water supply request model form view-->
+    <record id="water_supply_request_view_form" model="ir.ui.view">
+        <field name="name">water.supply.request.view.form</field>
+        <field name="model">water.supply.request</field>
+        <field name="arch" type="xml">
+            <form string="Test">
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,supplied"/>
+                    <button string="Apply" type="object" name="action_apply"
+                            invisible="state != 'draft'" class="oe_highlight"/>
+                    <button string="Supply" type="object"
+                            name="action_supply"
+                            invisible="state != 'created'"
+                            class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button"
+                                name="action_stock_move"
+                                type="object" icon="fa-user"
+                                string="Stock Moves"
+                                invisible="state == 'draft'">
+                            <field string="Stock Moves" name="stock_move_count"
+                                   widget="statinfo"/>
+                        </button>
+                        <button class="oe_stat_button"
+                                name="action_mrp_production"
+                                type="object"
+                                string="Manufacturing Orders"
+                                icon="fa-cog"
+                                invisible="state == 'draft'">
+                            <field string="Manufacturing Orders" name="mo_count"
+                                   widget="statinfo"/>
+                        </button>
+                    </div>
+                    <group>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="reference_no"/>
+                            </h1>
+                        </div>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="responsible_user_id"/>
+                            <field name="customer_name_id"/>
+                            <field name="customer_email"
+                                   widget="email"/>
+                            <field name="customer_address"/>
+                            <field name="create_date"/>
+                            <field name="is_closed" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="pickup_date"/>
+                            <field name="request_date"/>
+                            <field name="supply_method_ids"
+                                   widget="many2many_tags"/>
+                            <field name="usage_categories_ids"
+                                   widget="many2many_tags"/>
+                            <field name="usage_place_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Create MO">
+                            <field name="create_mo_ids" editable="bottom"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!-- This record defines a custom search view for the 'water supply request' model. -->
+    <record id="water_supply_request_view_search" model="ir.ui.view">
+        <field name="name">water.supply.request.view.search</field>
+        <field name="model">water.supply.request</field>
+        <field name="arch" type="xml">
+            <search string="Report Xml">
+                <filter string="Is closed" name="groupby_phone"
+                        domain="[('is_closed','=', True)]"/>
+            </search>
+        </field>
+    </record>
+</odoo>
