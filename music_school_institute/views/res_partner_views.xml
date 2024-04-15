@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Students filtered menu for res.partner model-->
+    <record model="ir.actions.act_window" id="res_partner_action_student">
+        <field name="name">Students</field>
+        <field name="domain">[('student','=', True)]</field>
+        <field name="context">{'default_student':True}</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form</field>
+    </record>
+    <!-- Part-time filtered menu action for res.partner model-->
+    <record id="res_partner_action_pt_student_creation" model="ir.actions.act_window">
+        <field name="name">Part Time</field>
+        <field name="domain">[('student_type','=', 'part_time')]</field>
+        <field name="context">{'default_student':True ,'default_student_type':'part_time' }</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form</field>
+    </record>
+        <!-- Full time filtered menu action for res.partner model-->
+    <record id="res_partner_action_ft_student_creation" model="ir.actions.act_window">
+        <field name="name">Full Time</field>
+        <field name="domain">[('student_type','=', 'full_time')]</field>
+        <field name="context">{'default_student':True, 'default_student_type':'full_time' }</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form</field>
+    </record>
+
+    <!--Course type menu for the model res partner-->
+    <menuitem id="contact_course_type_menu" name="Students"
+              parent="music_school_institute_menu_root"/>
+    <!--Students menu record-->
+    <menuitem
+            id="course_type_menu_student"
+            name="Students"
+            action="res_partner_action_student"
+            parent="contact_course_type_menu"/>
+
+<!-- Part-time menu record-->
+    <menuitem id="res_partner_menu_pt_student_creation" name="Part Time"
+              action="res_partner_action_pt_student_creation"
+              sequence="2"
+              parent="contact_course_type_menu"/>
+<!-- Part-time menu record-->
+    <menuitem id="res_partner_menu_ft_student_creation" name="Full Time"
+              action="res_partner_action_ft_student_creation"
+              sequence="3"
+              parent="contact_course_type_menu"/>
+<!--Event menu record-->
+    <menuitem
+            id="event_event_menu_creation"
+            name="Events"
+            action="event.action_event_view"
+            parent="music_school_institute_menu_root"/>
+<!--Res partner form view inherited for adding extra fields-->
+    <record id="view_partner_form" model="ir.ui.view">
+        <field name="name">
+            res.partner.view.form.inherit.music.school.management
+        </field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <data>
+                <xpath expr="//page[@name='contact_addresses']"
+                       position="after">
+                    <page string="Class details"
+                          invisible="student == False">
+                        <group>
+                            <group>
+                                <field name="class_id"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+                <xpath expr="//field[@name='category_id']" position="after">
+                    <field name="student"/>
+                    <field name="student_type"/>
+                </xpath>
+                <div name="button_box" position="inside">
+                    <button class="oe_stat_button" type="object"
+                            name="class_attendance_view" icon="fa-list-alt">
+                        <field string="Attendance" name="attendance_count"
+                               widget="statinfo"/>
+                    </button>
+                </div>
+            </data>
+        </field>
+    </record>
+</odoo>
