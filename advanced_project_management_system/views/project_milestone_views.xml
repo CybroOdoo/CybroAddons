@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Milestone tree view -->
+    <record id="project_milestone_view_tree" model="ir.ui.view">
+        <field name="name">project.milestone.view.tree</field>
+        <field name="model">project.milestone</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="deadline"/>
+                <field name="project_id"/>
+                <field name="is_reached"/>
+                <field name="task_count" invisible="1"/>
+                <button name="action_view_tasks" type="object"
+                        title="View Tasks" string="View Tasks"
+                        class="btn btn-link float-end"
+                        invisible="task_count == 0"
+                        groups="project.group_project_milestone"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Project milestone form view -->
+    <record id="project_milestone_view_form" model="ir.ui.view">
+        <field name="name">project.milestone.view.form</field>
+        <field name="model">project.milestone</field>
+        <field name="mode">primary</field>
+        <field name="inherit_id" ref="project.project_milestone_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='is_reached']" position="after">
+                <field name="project_id"/>
+            </xpath>
+        </field>
+    </record>
+    <!-- Project milestone search view -->
+    <record id="project_milestone_view_search" model="ir.ui.view">
+        <field name="name">project.milestone.view.search</field>
+        <field name="model">project.milestone</field>
+        <field name="arch" type="xml">
+            <search string="Search contacts">
+                <field name="name"/>
+                <field name="project_id"/>
+                <filter string="expired"
+                        domain="[('is_reached', '=', True)]"
+                        name="expired"/>
+                <filter string="Expire Today"
+                        domain="[('deadline', '=', current_date)]"
+                        name="expire_today"/>
+                <group expand="0" string="Group By">
+                    <filter string="Project" name="group_by_project"
+                            context="{'group_by': 'project_id'}"/>
+                    <filter string="Milestone" name="group_by_milestone"
+                            context="{'group_by': 'name'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Milestone window action -->
+    <record id="project_milestone_action" model="ir.actions.act_window">
+        <field name="name">Project Milestone</field>
+        <field name="res_model">project.milestone</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{"search_default_group_by_project":1}</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'tree', 'view_id': ref('project_milestone_view_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('project_milestone_view_form')})]"
+        />
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Project Milestone
+            </p>
+        </field>
+    </record>
+    <!-- Milestone menu -->
+    <menuitem id="project_milestone_menu" name="Project Milestone"
+              sequence="500"
+              parent="project.menu_project_config"
+              action="project_milestone_action">
+    </menuitem>
+</odoo>

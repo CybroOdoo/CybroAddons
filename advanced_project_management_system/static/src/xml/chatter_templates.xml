@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- ChatterTopbar Template Extension -->
+    <t t-name="ChatterTopbar" t-inherit="mail.Chatter"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('o-mail-Chatter-topbar')]/div[hasclass('flex-grow-1')]/span[hasclass('o-mail-Chatter-topbarGrow')]"
+               position="before">
+            <button class="o-mail-Chatter-activity btn btn-secondary text-nowrap" type="button"
+                    t-att-class="{
+                        'btn-primary active': state.composerType === 'comment',
+                        'btn-secondary': state.composerType !== 'comment',
+                        'my-2': !props.compactHeight
+                    }"
+                    t-on-click="() => this.toggleComposer('comment')"
+                    title="Search Knowledge Articles" style="margin-left:8px;" data-hotkey="shift+c">
+                <i class="fa fa-comment me-1"/>
+                <span>Comments</span>
+            </button>
+        </xpath>
+        <xpath expr="//div[hasclass('o-mail-Chatter-topbar')]/button[hasclass('o-mail-Chatter-sendMessage')]" position="replace">
+            <button t-if="props.hasMessageList" class="o-mail-Chatter-sendMessage btn text-nowrap me-1" t-att-class="{
+                'btn-primary': state.composerType !== 'note',
+                'btn-secondary': state.composerType === 'note' or state.composerType === 'comment',
+                'active': state.composerType === 'message',
+                'my-2': !props.compactHeight
+            }" t-att-disabled="!state.thread.hasWriteAccess and !(state.thread.hasReadAccess and state.thread.canPostOnReadonly) and props.threadId" data-hotkey="m" t-on-click="() => this.toggleComposer('message')">
+                Send message
+            </button>
+        </xpath>
+        <xpath expr="//div[hasclass('o-mail-Chatter-top')]/t[@t-if='state.composerType']" position="replace">
+<!--             <SuggestedRecipientsList t-if="props.hasFollowers and (state.composerType !== 'note' and state.composerType !== 'comment')" className="'px-3'" styleString="'margin-left:48px;'" thread="state.thread"/>-->
+            <t t-if="state.composerType">
+                <t t-if="state.composerType === 'message' and state.thread.recipients.length > 0">
+                    <div class="flex-shrink-0 px-3 pt-3 text-truncate small mb-2" style="margin-left:48px">
+                        <span class="fw-bold">To:</span> <t t-out="toRecipientsText"/>
+                        <button class="o-mail-Chatter-recipientListButton btn btn-link badge rounded-pill border-0 p-1 ms-1" title="Show all recipients" t-on-click="onClickRecipientList">
+                            <i class="fa fa-caret-down"/>
+                        </button>
+                    </div>
+                </t>
+                <t t-set="type" t-value="state.composerType === 'message' ? 'message' : 'note'"/>
+                <SuggestedRecipientsList t-if="props.hasFollowers and (state.composerType !== 'note' and state.composerType !== 'comment')" className="'px-3'" styleString="'margin-left:48px;'" thread="state.thread"/>
+                <Composer composer="state.thread.composer" autofocus="true" className="state.composerType === 'message' ? '' : 'pt-4'" mode="'extended'" onPostCallback.bind="onPostCallback" dropzoneRef="rootRef" type="state.composerType" t-key="props.threadId"/>
+            </t>
+        </xpath>
+    </t>
+</templates>

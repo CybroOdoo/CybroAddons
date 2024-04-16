@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Added project category -->
+    <record id="view_project" model="ir.ui.view">
+        <field name="name">
+            project.project.view.form.inherit.advanced.project.management.system
+        </field>
+        <field name="model">project.project</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="project.view_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='display_name']" position="after">
+                <field name="project_category_id"/>
+            </xpath>
+        </field>
+    </record>
+    <!-- Inserting additional menu items inside the Kanban view -->
+    <record id="view_project_kanban" model="ir.ui.view">
+        <field name="name">
+            project.project.view.kanban.inherit.advanced.project.management.system
+        </field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('o_kanban_manage_reporting')]"
+                   position="inside">
+                <div role="menuitem" groups="project.group_project_user">
+                    <a name="action_project_task_burnup_chart_report"
+                       type="object"
+                       t-attf-title="web,html_escape">Burnup Chart
+                    </a>
+                </div>
+                <div role="menuitem" groups="project.group_project_user">
+                    <a name="action_project_velocity_chart_report"
+                       type="object"
+                       t-attf-title="web,html_escape">Velocity Chart
+                    </a>
+                </div>
+            </xpath>
+        </field>
+    </record>
+    <!-- Added smart buttons and checklists -->
+    <record id="edit_project" model="ir.ui.view">
+        <field name="name">
+            project.project.view.form.inherit.advanced.project.management.system
+        </field>
+        <field name="model">project.project</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="project_stage_id" widget="statusbar"
+                       options="{'clickable': '1'}"/>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']"
+                   position="after">
+                <field name="is_active" invisible="1"/>
+                <field name="url_link" invisible="1"/>
+                <field name="url_name" invisible="1"/>
+            </xpath>
+            <header>
+                <button class="btn-secondary" name="action_open_shortcut"
+                        type="object"
+                        icon="fa-external-link" string="Add Shortcuts"/>
+            </header>
+            <xpath expr="//field[@name='privacy_visibility']"
+                   position="after">
+                <field name="project_category_id"/>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_button_box')]"
+                   position="inside">
+                <button class="oe_stat_button" name="button_document"
+                        type="object"
+                        icon="fa-book">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="document_count" readonly="1"/>
+                        </span>
+                        <span class="o_stat_text">
+                            Documents
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_button_box')]"
+                   position="inside">
+                <button class="oe_stat_button" name="button_issue"
+                        type="object"
+                        icon="fa-ticket">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="issue_count" readonly="1"/>
+                        </span>
+                        <span class="o_stat_text">
+                            Issue
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_button_box')]"
+                   position="inside">
+                <button class="oe_stat_button url_button" name="open_url_shortcut"
+                        type="object"
+                        icon="fa-external-link"
+                        invisible="is_active == False">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">
+                            <field name="url_name"/>
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//page[@name='settings']"
+                   position="after">
+                <page name="project_checklist" string="Checklist">
+                    <group>
+                        <group>
+                            <field name="checklist_progress"
+                                   widget="progressbar"/>
+                        </group>
+                        <group>
+                            <field name="checklist_template_ids"
+                                   widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    <field name="project_checklist_info_ids">
+                        <tree editable="bottom">
+                            <field name="checklist_id"/>
+                            <field name="description"/>
+                            <field name="date"/>
+                            <field name="state" widget="badge"/>
+                            <button name="action_set_checklist_complete"
+                                    string="completed" type="object"
+                                    class="btn text-warning"
+                                    invisible="state == 'done' or state == 'cancel'"
+                                    icon="fa-check"/>
+                            <button name="action_set_checklist_close"
+                                    string="Cancel"
+                                    class="btn text-warning"
+                                    invisible="state == 'done' or state == 'cancel'"
+                                    icon="fa-times"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <!-- Added email users -->
+    <record id="task_type_edit" model="ir.ui.view">
+        <field name="name">
+            project.task.type.view.form.inherit.advanced.project.management.system
+        </field>
+        <field name="model">project.task.type</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="project.task_type_edit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='mail_template_id']"
+                   position="after">
+                <field name="user_ids" widget="many2many_tags"/>
+            </xpath>
+        </field>
+    </record>
+    <!-- Added project stage fields in tree view -->
+    <record id="view_project" model="ir.ui.view">
+        <field name="name">
+            project.project.view.tree.inherit.advanced.project.management.system
+        </field>
+        <field name="model">project.project</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="project.view_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='last_update_status']" position="after">
+                <field name="project_stage_id" widget="badge"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
