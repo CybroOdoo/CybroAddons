@@ -3,7 +3,7 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 const { Component } = owl;
 /** @extends {Component<UserSwitchWidget>} for switching users */
-class UserSwitchWidget extends Component {
+export class UserSwitchWidget extends Component {
     setup() {
         super.setup();
         this.rpc = useService("rpc");

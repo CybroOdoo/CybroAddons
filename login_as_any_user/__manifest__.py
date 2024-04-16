@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Login As Any User',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Extra Tools',
     'summary': 'Admin can log in as any user',
     'description': 'The "Login As Any User" module allows administrators to '
