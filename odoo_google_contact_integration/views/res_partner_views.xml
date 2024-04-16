@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Inherit the Res Partner form view -->
+    <record id="view_partner_form" model="ir.ui.view">
+        <field name="name">
+            res.partner.view.form.inherit.odoo.google.contact.integration
+        </field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//span[@name='address_name']" position="before">
+                <field name='first_name'/>
+                <field name="last_name"/>
+            </xpath>
+            <xpath expr="//field[@name='industry_id']" position="after">
+                <field name="google_resource"/>
+                <field name="google_etag"/>
+            </xpath>
+        </field>
+    </record>
+    <!-- Export G-Contact Button in action menu -->
+    <record id="action_export_google_contact" model="ir.actions.server">
+        <field name="name">Export to Google</field>
+        <field name="model_id" ref="model_res_partner"/>
+        <field name="binding_model_id" ref="model_res_partner"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">
+            if records:
+            action = records.action_export_google_contacts()
+        </field>
+    </record>
+    <!--Inherit the Res Partner filter view -->
+    <record id="view_res_partner_filter" model="ir.ui.view">
+        <field name="name">
+            res.partner.view.search.inherit.odoo.google.contact.integration
+        </field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='type_company']" position="after">
+                <separator/>
+                <filter string="G-Contacts" name="g_contacts"
+                        domain="[('google_resource','!=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+    <!-- Delete G-Contact Button in action menu -->
+    <record id="action_delete_google_contact" model="ir.actions.server">
+        <field name="name">Delete G-Contact</field>
+        <field name="model_id" ref="model_res_partner"/>
+        <field name="binding_model_id" ref="model_res_partner"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">
+            if records:
+            action = records.action_delete_google_contact()
+        </field>
+    </record>
+</odoo>
