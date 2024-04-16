@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- SPRINT TREE VIEW -->
+    <record id="project_sprint_view_tree" model="ir.ui.view">
+        <field name="name">project.sprint.view.tree</field>
+        <field name="model">project.sprint</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="sprint_goal"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+            </tree>
+        </field>
+    </record>
+    <!-- SPRINT FORM VIEW -->
+    <record id="project_sprint_view_form" model="ir.ui.view">
+        <field name="name">project.sprint.view.form</field>
+        <field name="model">project.sprint</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button class="oe_highlight" name="action_reset_states"
+                            string="Reset"
+                            invisible="state == 'to_start'"
+                            type="object"/>
+                    <button class="oe_highlight" name="action_start_sprint"
+                            string="Start"
+                            invisible="state in ['ongoing','completed']"
+                            type="object"/>
+                    <button class="oe_highlight" name="action_finish_sprint"
+                            string="Finish" type="object"
+                            invisible="state != 'ongoing'"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button string="Tasks" class="oe_stat_button"
+                                type="object" name="action_get_tasks"/>
+                        <button string="Backlogs" class="oe_stat_button"
+                                type="object" name="action_get_backlogs"/>
+                        <button string="All tasks" class="oe_stat_button"
+                                type="object" name="action_get_all_tasks"/>
+                    </div>
+                    <group>
+                        <h1>
+                            <field name="name" placeholder="Sprint name...."/>
+                        </h1>
+                        <group>
+                            <field name="start_date"
+                                   readonly="state != 'to_start'"/>
+                            <field name="end_date"/>
+                            <field name="project_id"/>
+                        </group>
+                        <notebook>
+                            <page string="Goals">
+                                <field name="sprint_goal" widget="html"/>
+                            </page>
+                        </notebook>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!-- Action for the model project.sprint -->
+    <record id="action_view_project_sprint" model="ir.actions.act_window">
+        <field name="name">Sprint</field>
+        <field name="res_model">project.sprint</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
