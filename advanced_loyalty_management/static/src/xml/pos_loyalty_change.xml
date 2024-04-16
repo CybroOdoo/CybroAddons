@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" inherit_id="point_of_sale_template"
+           xml:space="preserve">
+    <!--a button is added to  convert the change to loyalty points  -->
+    <t t-inherit="point_of_sale.PaymentScreenStatus" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('payment-status-change')]" position="after">
+            <t t-set="show_button" t-value="False"/>
+            <t t-foreach="pos.get_order()?.getLoyaltyPoints()" t-as="loyalty"
+               t-key="loyalty.couponId">
+                <t t-if="loyalty.points.won,this.props.order.get_change() > 0">
+                    <t t-set="show_button" t-value="1"/>
+                </t>
+            </t>
+            <t t-if="show_button == 1">
+                <button class="btn btn-light rounded-0 fw-bolder"
+                        t-on-click="convertLoyalty">
+                    <i role="img" aria-label="Custom Button"
+                       title="Custom Button"/>
+                    Convert to Loyalty
+                </button>
+            </t>
+        </xpath>
+    </t>
+</templates>

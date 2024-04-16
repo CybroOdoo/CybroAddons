@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" inherit_id="point_of_sale_template"
+           xml:space="preserve">
+    <!-- shows deducted loyalty points on pos screen on refund   -->
+    <t t-name="loyalty_deduction.ProductScreen"
+       t-inherit="point_of_sale.ProductScreen" t-inherit-mode="extension">
+        <xpath expr="//OrderWidget/t[@t-set-slot='details']" position="inside">
+            <t t-if="pos.get_order().orderlines.length != 0 and pos.get_order().orderlines[0].refunded_orderline_id != undefined and pos.get_order().orderlines[0].quantity != 0">
+                <t t-foreach="pos.get_order()?.deductLoyaltyPoints() or []"
+                   t-as="data" t-key="data.ruleId[0]">
+                    <t t-if="data.lostPoint != 0">
+                        <strong style="text-align:center;"><span >Deducted Loyalty Points</span></strong>
+                        <div class="d-flex justify-content-around gap-2 mt-1">
+                            <div class="loyalty-points-won d-flex flex-column align-items-center justify-content-center flex-grow-1 rounded bg-300 px-3 py-2">
+                                <span class="text-muted">Points Lost</span>
+                                <span class='value text-danger '>-<t
+                                        t-esc='data.lostPoint'/></span>
+                            </div>
+                            <div class="loyalty-points-total d-flex flex-column align-items-center justify-content-center flex-grow-1 rounded bg-300 px-3 py-2">
+                                <span class="text-muted">New Total</span>
+                                <span class='value text-primary'><t t-esc='data.newPoint'/></span>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </xpath>
+    </t>
+</templates>
