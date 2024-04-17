@@ -36,7 +36,7 @@ class LateCheckIn(models.Model):
     )
     late_minutes = fields.Integer(
         string="Late Minutes",
-        help="The field indicates the number of " "minutes the worker is late.",
+        help="The field indicates the number of minutes the worker is late.",
     )
     date = fields.Date(string="Date", help="Current date")
     penalty_amount = fields.Float(
@@ -69,11 +69,11 @@ class LateCheckIn(models.Model):
         """Compute the penalty amount if the employee was late"""
         for rec in self:
             amount = float(
-                self.env["ir.config_parameter"].sudo().get_param("deduction_amount")
+                self.env["ir.config_parameter"].sudo().get_param("employee_late_check_in.deduction_amount")
             )
             rec.penalty_amount = amount
             if (
-                self.env["ir.config_parameter"].sudo().get_param("deduction_type")
+                self.env["ir.config_parameter"].sudo().get_param("employee_late_check_in.deduction_type")
                 == "minutes"
             ):
                 rec.penalty_amount = amount * rec.late_minutes

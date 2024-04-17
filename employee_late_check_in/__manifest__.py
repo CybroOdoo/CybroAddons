@@ -21,7 +21,7 @@
 ###############################################################################
 {
     "name": "Employee Late Check-in",
-    "version": "16.0.1.0.0",
+    "version": "16.0.1.0.1",
     "category": "Human Resources",
     "summary": "Employee Late Check-in module for tracking and managing late "
     "check-ins of employees and may deduct salary from payslip",
@@ -53,4 +53,5 @@
     "installable": True,
     "auto_install": False,
     "application": False,
+    "post_init_hook": "post_init_hook"
 }

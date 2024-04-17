@@ -20,3 +20,16 @@
 #
 ###############################################################################
 from . import models
+from odoo import SUPERUSER_ID
+from odoo.api import Environment
+
+def post_init_hook(cr, registry):
+    env = Environment(cr, SUPERUSER_ID, {})
+
+    cron = env.ref('employee_late_check_in.ir_cron_late_check_in',
+                   raise_if_not_found=False)
+    if cron:
+        model = env[cron.model_id.model]
+        method = getattr(model, 'late_check_in_records', None)
+        if method:
+            method()
