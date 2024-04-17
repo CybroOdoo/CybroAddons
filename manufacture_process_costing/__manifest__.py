@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Process Cost of Manufacturing Orders',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Manufacturing',
     'summary': """Manufacture Process Costing By Material Cost, Labour Cost and
      Overhead Cost""",
