@@ -499,8 +499,9 @@ class AccountAssetAsset(models.Model):
                 'target': 'current',
                 'res_id': move_ids[0],
             }
-        # Fallback, as if we just clicked on the smartbutton
-        return self.open_entries()
+        else:
+            # Fallback, as if we just clicked on the smartbutton
+            self.write({'state': 'close'})
 
     def set_to_draft(self):
         self.write({'state': 'draft'})
