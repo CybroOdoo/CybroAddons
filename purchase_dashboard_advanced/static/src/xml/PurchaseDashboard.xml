@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Purchase Dashboard view-->
+<templates id="template" xml:space="preserve">
+    <t t-name="PurchaseDashboard" owl="1">
+                <!-- This is the Purchase Dashboard template -->
+        <div class="oh_dashboards" t-ref="root">
+            <div class="container-fluid my-5 o_purchase_dashboard">
+                <section class="dashboard_main" id="main_section">
+                    <div class="col-sm-12 mb-4">
+                        <div class="row">
+                            <div class="col-12 col-sm-12 col-md-8">
+                                <h2 class="section-header">Purchase Dashboard</h2>
+                            </div>
+                            <!--   Filters for tiles -->
+                            <div class="col-12 col-sm-12 col-md-4">
+                                <form class="form-group">
+                                    <select id="select_mode"
+                                            class="form-control"
+                                            t-on-change="handleOnchangeSelect">
+                                        <option id="this_year"
+                                                value="this_year">This Year</option>
+                                        <option id="this_month"
+                                                value="this_month"
+                                                >This Month</option>
+                                        <option id="this_week"
+                                                value="this_week">This Week</option>
+                                        <option id="today"
+                                                value="today" selected="">Today</option>
+                                    </select>
+                                </form>
+                            </div>
+                            <!--      Tiles    -->
+                            <t t-set="componentVal" t-value="purchase.orders"/>
+                            <PurchaseTiles icon="'fa fa-shopping-cart'"
+                                           color="'#ff4d94'"
+                                           name="'Purchase Order'"
+                                           value="componentVal.purchase_orders"
+                                           t-on-click="goBackend"/>
+                            <PurchaseTiles icon="'fa fa-money'"
+                                           color="'#99e6ff'"
+                                           name="'Total Amount'"
+                                           value="componentVal.purchase_amount"
+                                           t-on-click="goBackend"/>
+                            <PurchaseTiles icon="'fa fa-star'"
+                                           color="'#aaff80'"
+                                           name="'Priority Orders'"
+                                           value="componentVal.priority_orders"
+                                           t-on-click="priorityOrders"/>
+                            <PurchaseTiles icon="'fa fa-users'"
+                                           color="'#bf80ff'" name="'Vendors'"
+                                           value="componentVal.vendors"
+                                           t-on-click="vendorBackend"/>
+                        </div>
+                    </div>
+                </section>
+                <div class="col-xs-12 col-sm-12 col-lg-12 col-md-12">
+                    <div class="row main-section">
+                        <div class="col-sm-6 col-lg-6 top_chart">
+                            <div class="chart_head"
+                                 style="font-size: 17px;text-align: center;padding: 12px 0;color: #fff;font-weight: 700;background: #0b3c38b0;">
+                                Top Charts
+                            </div>
+                            <div class="top_chart_pie_div half_chart chart-container card-shadow">
+                                <!--   Filters for tiles -->
+                                <div class="col-8 col-sm-8 col-md-4">
+                                    <form class="form-group">
+                                        <select id="select_chart"
+                                                class="form-control"
+                                                t-on-change="handleOnChangeTopProduct">
+                                            <option id="top_product"
+                                                    value="top_product"
+                                                    selected="">Top Product</option>
+                                            <option id="top_vendor"
+                                                    value="top_vendor">Top Vendor</option>
+                                            <option id="top_rep"
+                                                    value="top_rep">Top Purchase Rep.</option>
+                                        </select>
+                                    </form>
+                                </div>
+                                <div class="graph_canvas">
+                                    <canvas class="top_pie_chart" width="200"
+                                            height="120"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-6" id="col-graph">
+                            <div class="chart_head"
+                                 style="font-size: 17px;text-align: center;padding: 12px 0;color: #fff;font-weight: 700;background: #05102eb3;">
+                                Purchases By Month
+                            </div>
+                            <div id="chart">
+                                <canvas id="canvas" width="400" height="400"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br/>
+                <div class="col-xs-12 col-sm-12 col-lg-12 col-md-12">
+                    <div class="row main-section">
+                        <div class="col-sm-6 col-lg-6">
+                            <div class="purchase_prod_categ chart-container card-shadow">
+                                <div class="chart_head"
+                                     style="font-size: 17px;text-align: left;padding: 12px 0;color: #fff;font-weight: 700;background: #669731d4;">
+                                    Purchases Vendor Analysis
+                                </div>
+                                <div class="vendor" style="padding: 12px 0;"
+                                     id="vendor_select">
+                                    <select id="vendor_selection"
+                                            class="btn btn-primary"
+                                            t-on-change="handleOnChangeVendorAnalysis">
+                                    <t t-foreach="purchase.vendors"
+                                       t-as="vendor" t-key="vendor_index">
+                                        <option t-out="vendor.name"
+                                                t-att-value="vendor.id"/>
+                                    </t>
+                                    </select>
+                                </div>
+                                <div class="graph_canvas"
+                                     style="margin-top: 30px;">
+                                    <canvas id="purchase_vendors"
+                                            height="500px"
+                                            width="150px"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-6">
+                            <div class="purchase_prod_categ chart-container card-shadow"
+                                 id="tiles">
+                                <div class="chart_head"
+                                     style="font-size: 17px;text-align: left;padding: 12px 0;color: #fff;font-weight: 700;background: #137660c2;">
+                                    Product Category Analysis
+                                </div>
+                                <div
+                                        class="category">
+                                    <div class=""
+                                         id="product_categ_select">
+                                        <select id="product_categ_selection"
+                                                class="btn btn-primary"
+                                                t-on-change="handleOnChangeProductCategory"
+                                        >
+                                                <t t-foreach="purchase.categoryAnalysis.category_id"
+                                                   t-as="analysis"
+                                                   t-key="analysis_index">
+                                                   <option t-out="analysis[1]"
+                                                           t-att-value="analysis[0]"/>
+                                    </t>
+                                    </select>
+                                    </div>
+                                </div>
+                                <div class="graph_canvas"
+                                     style="margin-top: 30px;">
+                                    <canvas id="product_categ_purchases"
+                                            height="500px"
+                                            width="150px"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br/>
+                <div class="col-xs-12 col-sm-12 col-lg-12 col-md-12">
+                    <div class="row main-section">
+                        <div class="col-sm-6 col-lg-6">
+                            <div class="hr_notification" style="background: #fff;transition: transform 0.2s ease, box-shadow 0.2s ease;will-change: transform, box-shadow;box-shadow: 0 10px 40px 0 rgba(62,57,107,0.07), 0 2px 9px 0 rgba(62,57,107,0.06);
+                            height: 316px;overflow-y: auto;margin-bottom: 15px;">
+                                <div class="hr_notification_head"
+                                     style="font-size: 17px;text-align: center;padding: 12px 0;color: #fff;font-weight: 700;background: #044e64a3;">
+                                    Pending Arrivals
+                                </div>
+                                <div class="col-sm-12 col-lg-12"
+                                     style="padding:0;">
+                                    <div class="text-color">
+                                            <div class="media"
+                                                 id="purchase_details_orders">
+                                                <div>
+                                                    <table class="table table-sm"
+                                                           id="pending_analysis">
+                                                        <tr>
+                                                            <th>Order</th>
+                                                            <th>Vendor</th>
+                                                            <th>Amount</th>
+                                                            <th>Date Planned</th>
+                                                            <th>State</th>
+                                                        </tr>
+                                                        <t t-foreach="purchase.pending.data"
+                                                           t-as="rec"
+                                                           t-key="rec_index">
+                                                            <tr>
+                                                                <td><t t-esc="rec[0]"/></td>
+                                                                <td><t t-esc="rec[2]"/></td>
+                                                                <td><t t-esc="rec[4]"/></td>
+                                                                <td><t t-esc="rec[3]"/></td>
+                                                                <td><t t-esc="rec[5]"/></td>
+                                                            </tr>
+                                                        </t>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                    </div>
+                                </div>
+                                </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-6">
+                            <div class="pending_purchases" style="background: #fff;transition: transform 0.2s ease, box-shadow 0.2s ease;will-change: transform, box-shadow;box-shadow: 0 10px 40px 0 rgba(62,57,107,0.07), 0 2px 9px 0 rgba(62,57,107,0.06);
+                            height: 316px;overflow-y: auto;margin-bottom: 15px;">
+                                <div class="hr_notification_head"
+                                     style="font-size: 17px;text-align: center;padding: 12px 0;color: #fff;font-weight: 700;background: #214c17bf;">
+                                    Upcoming Arrivals
+                                </div>
+                                <div class="col-sm-12 col-lg-12"
+                                     style="padding:0;">
+                                    <div class="text-color">
+                                            <div class="media"
+                                                 id="upcoming_details_orders">
+                                                <div>
+                                                    <table class="table table-sm"
+                                                           id="upcoming_analysis">
+                                                        <tr>
+                                                            <th>Order</th>
+                                                            <th>Vendor</th>
+                                                            <th>Amount</th>
+                                                            <th>Date Planned</th>
+                                                            <th>State</th>
+                                                        </tr>
+                                                        <t t-foreach="purchase.upcoming.data"
+                                                           t-as="rec"
+                                                           t-key="rec_index">
+                                                            <tr>
+                                                                <td><t t-esc="rec[0]"/></td>
+                                                                <td><t t-esc="rec[2]"/></td>
+                                                                <td><t t-esc="rec[4]"/></td>
+                                                                <td><t t-esc="rec[3]"/></td>
+                                                                <td><t t-esc="rec[5]"/></td>
+                                                            </tr>
+                                                        </t>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
