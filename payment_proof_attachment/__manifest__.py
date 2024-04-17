@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Payment Proof Attachment',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'category': 'Website',
     'summary': "Allows to attach proofs in website",
     'description': "This module adds an option to your customer to attach the"
