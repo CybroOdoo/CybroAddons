@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Advanced POS Receipt",
-    "version": "17.0.1.0.0",
+    "version": "17.0.1.0.1",
     "category": "Point of Sale",
     "summary": "Advanced POS Receipt with Customer Details and Invoice Details "
                "will Allow You to Print The Customer Information in the pos receipt",

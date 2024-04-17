@@ -5,3 +5,9 @@
 #### ADD
 
 - Initial commit for Advanced Pos Receipt
+
+#### 16.04.2024
+#### Version 17.0.1.0.1
+#### BUGFIX
+- Added superuser access to res.config.settings
+
