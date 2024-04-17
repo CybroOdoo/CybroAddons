@@ -6,6 +6,7 @@ patch(FormController.prototype, {
 /* Patch FormController to restrict auto save in form views */
    setup(){
       super.setup(...arguments);
+      this.beforeLeaveHook = false
       useSetupView({
           beforeLeave: () => this.beforeLeave(),
           beforeUnload: (ev) => this.beforeUnload(ev),
@@ -13,14 +14,16 @@ patch(FormController.prototype, {
    },
    async beforeLeave() {
    /* function will work before leave the form */
-      if(this.model.root.dirty){
+      if(this.model.root.isDirty && this.beforeLeaveHook == false){
           if (confirm("Do you want to save changes before leaving?")) {
+              this.beforeLeaveHook = true
               await this.model.root.save({
                   reload: false,
                   onError: this.onSaveError.bind(this),
               });
           } else {
-              this.discard();
+              this.beforeLeaveHook = true
+              this.model.root.discard();
           }
       }
    },
