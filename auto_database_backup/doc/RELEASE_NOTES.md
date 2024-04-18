@@ -12,4 +12,12 @@
 #### Version 17.0.2.0.1
 #### UPDT
 
-- - Updated the database name check function which got access denied when list_db=False.
+- Updated the database name check function which got access denied when list_db=False.
+
+## Module <auto_database_backup>
+
+#### 18.04.2024
+#### Version 17.0.3.0.1
+#### UPDT
+
+- Fixed the errors while inputting list_db = False in odoo conf file.
