@@ -39,4 +39,4 @@ class AutoDeveloperMode(Home):
             if odoo_technician:
                 return '/web?debug=1'
             else:
-                return '/web'
+                return '/web/login/totp'

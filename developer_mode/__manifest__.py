@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Automatic Developer Mode",
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Extra Tools',
     'summary': """Helps to Automatically Activate the Developer Mode""",
     'description': """This module facilitates the automatic triggering of 
