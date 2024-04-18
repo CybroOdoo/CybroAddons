@@ -1611,13 +1611,17 @@ class DashBoard(models.Model):
 
         record = self._cr.dictfetchall()
         banks = [item['name'] for item in record]
-        # bank_name = [rec['en_US'] for rec in banks]
+        user_lang = self.env.user.lang
+        banks_list = [
+            rec.get(user_lang, rec.get('en_US', rec)) if isinstance(rec,
+                                                                    dict) else rec
+            for rec in banks]
         banking = [item['balance'] for item in record]
 
         bank_ids = [item['id'] for item in record]
 
         records = {
-            'banks': banks,
+            'banks': banks_list,
             'banking': banking,
             'bank_ids': bank_ids
         }
