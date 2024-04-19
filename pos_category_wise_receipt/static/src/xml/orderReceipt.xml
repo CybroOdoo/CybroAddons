@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension" owl="1">
+        <xpath expr="//Orderline" position="replace">
+            <h3 style="font-weight: bold; text-decoration: underline;">
+                <t t-esc="line.category_name"/>
+            </h3>
+            <table>
+                <t t-set="sum" t-value="0"/>
+                <tr t-foreach="line.lines" t-as="lines" t-key="lines">
+                    <td>
+                        <span class="pos-receipt-left-align">
+                            <span style="font-weight: bold;" t-esc="lines.full_product_name"/>
+                            <t t-if="lines.get_discount() > 0">
+                                <t t-set="sum" t-value="sum + (lines.price * lines.quantity - ((lines.price * lines.quantity)*(lines.get_discount() / 100)))"/>
+                                <span style="font-weight: bold;" class="pos-receipt-right-align">
+                                    $ <t t-esc="lines.price * lines.quantity - ((lines.price * lines.quantity)*(lines.get_discount() / 100))"
+                                         t-esc-options='{"widget": "float", "precision": 2}'/>
+                                </span>
+                            </t>
+                            <t t-else="">
+                                <t t-set="sum" t-value="sum + (lines.price * lines.quantity)"/>
+                                <span style="font-weight: bold;" class="pos-receipt-right-align">
+                                    $ <t t-esc="lines.price * lines.quantity" t-esc-options='{"widget": "float", "precision": 2}'/>
+                                </span>
+                            </t>
+                            <br/>
+                            <t t-esc="lines.get_quantity_str_with_unit()"/>
+                            <t t-if="lines.product.uom_id"/>
+                            x
+                            $ <t t-esc="lines.price" />
+                            <span t-if="lines.product.uom_id">
+                                / <t t-esc="lines.product.uom_id[1]"/>
+                            </span>
+                            <t t-if="lines.get_discount() > 0">
+                                <div class="pos-disc-font">
+                                    With a
+                                    <t t-esc="lines.get_discount()"/>
+                                    % discount
+                                </div>
+                            </t>
+                        </span>
+                    </td>
+                </tr>
+            </table>
+            <br/>
+            <div style="font-weight: bold; margin-left: auto;">
+                SUB TOTAL:
+                <span style="margin-left: 25px;">
+                    $  <t t-esc="sum" t-esc-options='{"widget": "float", "precision": 2}'/>
+                </span>
+            </div>
+        </xpath>
+    </t>
+</templates>
