@@ -66,20 +66,22 @@ class ProductProduct(models.Model):
         vals.update({'qr': qr_image})
         return super().create(vals)
 
-    @api.depends('sequence')
+    def generate_sequence(self):
+        prefix = self.env['ir.config_parameter'].sudo().get_param(
+            'customer_product_qr.config.product_prefix')
+        if not prefix:
+            raise UserError(
+                _('Set A Customer Prefix In General Settings'))
+        prefix = str(prefix)
+        self.sequence = prefix + self.env['ir.sequence'].next_by_code(
+            'product.product') or '/'
+
     def generate_qr(self):
         """Generate a QR code based on the product's sequence and store it in
         the 'qr' field of the product."""
         if qrcode and base64:
             if not self.sequence:
-                prefix = self.env['ir.config_parameter'].sudo().get_param(
-                    'customer_product_qr.config.product_prefix')
-                if not prefix:
-                    raise UserError(
-                        _('Set A Customer Prefix In General Settings'))
-                prefix = str(prefix)
-                self.sequence = prefix + self.env['ir.sequence'].next_by_code(
-                    'product.product') or '/'
+                self.generate_sequence()
             qr = qrcode.QRCode(
                 version=1,
                 error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -94,7 +96,7 @@ class ProductProduct(models.Model):
             qr_image = base64.b64encode(temp.getvalue())
             self.write({'qr': qr_image})
             return self.env.ref(
-                'customer_product_qrcode.print_qr2').report_action(self, data={
+                'customer_product_qrcode.print_qr1').report_action(self, data={
                  'data': self.id, 'type': 'prod'})
         else:
             raise UserError(

@@ -66,20 +66,22 @@ class ResPartners(models.Model):
         """ this fn is to write vals"""
         return super().write(vals)
 
-    @api.depends('sequence')
+    def generate_sequence(self):
+        prefix = self.env['ir.config_parameter'].sudo().get_param(
+            'customer_product_qr.config.customer_prefix')
+        if not prefix:
+            raise UserError(
+                _('Set A Customer Prefix In General Settings'))
+        prefix = str(prefix)
+        self.sequence = prefix + self.env['ir.sequence'].next_by_code(
+            'res.partner') or '/'
+
     def generate_qr(self):
         """Generate a QR code based on the partner's sequence and store it in
         the 'qr' field of the partner record."""
         if qrcode and base64:
             if not self.sequence:
-                prefix = self.env['ir.config_parameter'].sudo().get_param(
-                    'customer_product_qr.config.customer_prefix')
-                if not prefix:
-                    raise UserError(
-                        _('Set A Customer Prefix In General Settings'))
-                prefix = str(prefix)
-                self.sequence = prefix + self.env['ir.sequence'].next_by_code(
-                    'res.partner') or '/'
+                self.generate_sequence()
             qr = qrcode.QRCode(
                 version=1,
                 error_correction=qrcode.constants.ERROR_CORRECT_L,
