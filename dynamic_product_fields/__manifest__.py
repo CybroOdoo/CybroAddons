@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Product Custom Fields',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Sales',
     'summary': """Custom fields in Products from user level""",
     'description': """This module enables to generate custom fields in Products
@@ -34,7 +34,7 @@
     'data': [
         'security/dynamic_product_fields_groups.xml',
         'security/ir.model.access.csv',
-        'data/field_widget_data.xml',
+        'data/widget_data.xml',
         'wizard/product_dynamic_field_views.xml',
         'views/product_template_views.xml',
         'views/ir_model_fields_views.xml',

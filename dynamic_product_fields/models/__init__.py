@@ -19,5 +19,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import ir_model_fields
 from . import field_widget
+from . import ir_model_fields

@@ -20,13 +20,13 @@
 #
 ###############################################################################
 import xml.etree.ElementTree as xee
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
 class ProductDynamicField(models.TransientModel):
     """ For adding custom fields in product form."""
-    _name = 'product.dynamic.field'
+    _name = 'product.dynamic.fields'
     _description = 'Dynamic Fields'
     _inherit = 'ir.model.fields'
 
@@ -92,7 +92,7 @@ class ProductDynamicField(models.TransientModel):
                           '</data>') % (self.position_field.name, self.position,
                                         self.name, self.widget.name)
         self.env['ir.ui.view'].sudo().create({
-            'name': 'product.dynamic.field',
+            'name': 'product.dynamic.fields',
             'type': 'form',
             'model': 'product.template',
             'mode': 'extension',
