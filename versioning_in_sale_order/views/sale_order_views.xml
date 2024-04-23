@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<odoo>
+<!--    view of inheriting sale order for adding fields, button and smart button for versions-->
+    <record id="view_order_form" model="ir.ui.view">
+        <field name="name">sale.order.view.form.inherit.versioning.in.sale.order</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_confirm']" position="after">
+                <button name="action_create_versions" invisible="state in ['draft','sale', 'cancel'] or is_version"
+                        type="object"
+                        string="Create Version"/>
+            </xpath>
+            <div class="oe_button_box" name="button_box">
+                <button name="action_view_versions"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-bars"
+                        invisible="version_count == 0">
+                    <field name="version_count" widget="statinfo"
+                           string="Versions"/>
+                </button>
+            </div>
+            <xpath expr="//field[@name='validity_date']" position="after">
+                <field name="is_version" invisible="1"/>
+            </xpath>
+            <xpath expr="//button[@name='action_draft']" position='attributes'>
+                <attribute name="invisible">state not in ['cancel'] or is_version
+                </attribute>
+                <attribute name="states"/>
+            </xpath>
+        </field>
+    </record>
+
+<!--Domain passed for only viewing the confirmed version-->
+    <record id="sale.action_quotations_with_onboarding" model="ir.actions.act_window">
+        <field name="domain">[('is_version', '=', False)]</field>
+    </record>
+</odoo>
