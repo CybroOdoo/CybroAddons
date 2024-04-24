@@ -738,8 +738,9 @@ odoo.define('base_hospital_management.lab_dashboard_action', function (require){
         _vaccination: function(){
             var self = this
             self.state = 'hospital.vaccination'
-            self.$('#create-button').html('<button class="btn btn-outline-info" id="create" style="margin-left:10px;
-            ">Create</button>')
+            self.$('#create-button').html
+            ('<button class="btn btn-outline-info" 
+            id="create" style="margin-left:10px;">Create</button>')
             rpc.query({
                 model: 'hospital.vaccination',
                 method: 'fetch_vaccination_data',
