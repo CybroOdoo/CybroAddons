@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+<!--    product data feed action-->
+    <record id="product_data_feed_action" model="ir.actions.act_window">
+        <field name="name">Data Feed</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.data.feed</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to add the data feed details.
+            </p>
+        </field>
+    </record>
+<!--   Product data feed form view-->
+    <record id="product_data_feed_view_form" model="ir.ui.view">
+        <field name="name">product.data.feed.view.form</field>
+        <field name="model">product.data.feed</field>
+        <field name="arch" type="xml">
+            <form name="product_data_feed">
+                <header>
+                    <button name="action_download_doc" type="object"
+                            string="Download" class="btn-secondary"
+                            invisible="feed_columns_line_ids == []"
+                            widget="statusbar"/>
+                </header>
+                <sheet name="product_data_feed">
+                    <!--smart button action-->
+                    <div name="button_box" class="oe_button_box">
+                       <button name="action_product_items" string="Items"
+                               class="oe_stat_button"
+                               icon="fa-cubes" type="object"/>
+                        <button name="action_columns_creation" type="object"
+                                class="oe_stat_button" string="Columns"
+                                icon="fa-list">
+                                <field name="columns_count" readonly="True"/>
+                                <span class="o_stat_text">Columns</span>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" required="1"
+                                   placeholder="Feed Name...."/>
+                        </h1>
+                    </div>
+                    <field name="url_link"
+                           widget="CopyClipboardChar"
+                           class="w-100 pb-2"/>
+                    <group>
+                        <group>
+                            <field name="is_token" widget="boolean_toggle"/>
+                            <label for="access_token" invisible="is_token == False"/>
+                            <div class="o_row" invisible="is_token == False">
+                                <field name="access_token"/>
+                                <button class="btn-secondary" name="action_refresh_token" icon="fa-refresh" type="object" title="Refresh Token"/>
+                            </div>
+                            <field name="website_id"/>
+                            <label for="name_show"/>
+                            <div class="o_row">
+                                <field name="is_file_name" widget="boolean_toggle"/>
+                                <field name="name_show" invisible="is_file_name == False" nolabel="1"/>
+                            </div>
+                        </group>
+                        <group>
+                            <field name="use_model" widget="radio"/>
+                            <field name="used_model" invisible="1"/>
+                            <field name="item_filter" widget="domain" options="{'model': 'product.template', 'in_dialog': true}"
+                                   invisible="use_model != 'Product'"/>
+                            <field name="item_filter" widget="domain" options="{'model': 'product.product', 'in_dialog': true}"
+                                   invisible="use_model != 'Product Variant'"/>
+                            <field name="format"/>
+                        </group>
+                         <notebook>
+                             <page string="Columns" name="Columns">
+                                 <field name="feed_columns_line_ids" readonly="1">
+                                     <tree>
+                                         <field name="name"/>
+                                     </tree>
+                                 </field>
+                             </page>
+                         </notebook>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+<!--    Product data feed tree view-->
+    <record id="product_data_feed_view_tree" model="ir.ui.view">
+        <field name="name">product.data.feed.view.tree</field>
+        <field name="model">product.data.feed</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="used_model"/>
+                <field name="is_token"/>
+                <field name="columns_count"/>
+            </tree>
+        </field>
+    </record>
+<!--    product data feed menu-->
+    <menuitem id="product_data_feed_menu"
+              name="Product Data Feed"
+              parent="website_sale.menu_catalog"
+              action="product_data_feed_action"
+              sequence="6"/>
+</odoo>

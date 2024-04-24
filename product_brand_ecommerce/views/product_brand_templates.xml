@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- This template generates a list item for a brand in a recursive manner. -->
+ <template id="brands_recursive" name="Category list">
+        <li class="nav-item mb-1">
+            <a t-att-href="keep('/shop/brand/' + slug(c), brand=0)" t-attf-class="nav-link #{'active' if c.id==brand.id else ''}">
+                <span t-field="c.name"/>
+            </a>
+        </li>
+ </template>
+    <!-- This template inherits and extends the 'website_sale.products' template to add a product brand filter. -->
+    <template id="products_attributes" inherit_id="website_sale.products" active="True" name="Product Brand Filter">
+        <xpath expr="//div[hasclass('products_attributes_filters')]" position="inside">
+            <div class=" position-relative" id="wsale_products_brands_collapse">
+                <ul class="nav nav-pills flex-column mb-2">
+                    <li class="nav-item">
+                       <a t-att-href="keep('/shop', brand=0)" t-attf-class="nav-link #{'' if brand else 'active'} o_not_editable">All Brands</a>
+                    </li>
+                    <t t-foreach="brands" t-as="c">
+                        <div class="accordion-item nav-item mb-1">
+                         <t t-call="product_brand_ecommerce.brands_recursive" />
+                        </div>
+                    </t>
+                </ul>
+            </div>
+        </xpath>
+    </template>
+</odoo>
