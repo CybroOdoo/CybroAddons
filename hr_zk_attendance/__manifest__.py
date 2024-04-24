@@ -23,8 +23,7 @@
     'name': 'Biometric Device Integration',
     'version': '17.0.1.0.0',
     'category': 'Human Resources',
-    'summary': "Integrating Biometric Device (Model: ZKteco uFace 202) With HR"
-               "Attendance (Face + Thumb)",
+    'summary': "Integrating Biometric Device, Biometric Device, ZKteco, uFace 202, HR Attendance, Odoo Biometric Device, Device Integration, Odoo17, Odoo Apps",
     'description': "This module integrates Odoo with the biometric"
                    "device(Model: ZKteco uFace 202),odoo17,odoo,hr,attendance",
     'author': 'Cybrosys Techno Solutions',

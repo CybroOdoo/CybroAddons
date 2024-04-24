@@ -23,7 +23,7 @@
     'name': 'Odoo Whatsapp Connector',
     'version': '17.0.1.0.0',
     'category': 'Extra Tools',
-    'summary': """Whatsapp Odoo Integration, Odoo Whatsapp Connector, Odoo Whatsapp, Whatsapp Connector, Whatsapp Integration, Odoo17, Whatsapp""",
+    'summary': """Whatsapp Odoo Integration, Odoo Whatsapp Connector, Odoo Whatsapp, Whatsapp Connector, Whatsapp Integration, Odoo17, Whatsapp, Odoo Apps""",
     'description': """Added options for sending Whatsapp messages and emails in 
     the systray bar, sale order, invoices, website portal view and ability to 
     share access URLs for documents through the share option available in each

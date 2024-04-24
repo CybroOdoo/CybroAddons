@@ -23,7 +23,7 @@
     'name': 'Send Whatsapp Message Odoo17',
     'version': '17.0.1.0.0',
     'category': 'Extra Tools',
-    'summary': 'Send Message to partner via Whatsapp web',
+    'summary': 'Whatspp Web,Whatsapp Odoo Integration, Odoo Whatsapp Connector, Odoo Whatsapp, Whatsapp Connector, Whatsapp Integration, Odoo17, Whatsapp, Odoo Apps',
     'description': 'This module helps you to directly send messages to your '
                    'contacts through WhatsApp web.',
     'author': 'Cybrosys Techno solutions',
