@@ -35,7 +35,9 @@ class AccountMove(models.Model):
         self._cr.execute(""" select sum(debit) as debit, sum(credit) as credit from account_account, account_move_line where                           
                              account_move_line.account_id = account_account.id AND account_account.internal_group = 'income' """)
         debit_credit = self._cr.dictfetchall()
-        income = [i['debit'] - i['credit'] for i in debit_credit]
+        income = [i['debit'] - i['credit'] if (
+                    i['debit'] is not None and i['credit'] is not None) else 0
+                  for i in debit_credit]
         income = income[0] * -1
         qry_reconcile = """ select count(*) FROM account_move_line l,account_account a
                                       where L.account_id=a.id AND l.full_reconcile_id IS NULL 
