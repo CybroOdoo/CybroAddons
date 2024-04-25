@@ -436,6 +436,8 @@ class AccountAssetAsset(models.Model):
                                                                  fields))
             asset.message_post(subject=_('Asset created'),
                                tracking_value_ids=tracking_value_ids)
+        if self.value_residual == 0.0:
+            self.write({'state': 'close'})
 
     def _get_disposal_moves(self):
         move_ids = []
@@ -532,6 +534,13 @@ class AccountAssetAsset(models.Model):
         if self.prorata and self.method_time != 'number':
             raise ValidationError(_(
                 'Prorata temporis can be applied only for time method "number of depreciations".'))
+
+    @api.constrains('active', 'state')
+    def _check_active(self):
+        for record in self:
+            if record.active == False and record.state != 'close':
+                raise UserError("You Cannot Archive a record in Running State")
+
 
     @api.onchange('category_id')
     def onchange_category_id(self):
