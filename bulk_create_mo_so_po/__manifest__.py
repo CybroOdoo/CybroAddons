@@ -30,6 +30,7 @@
     saving time and reducing complexity.""",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
+    'author': 'Cybrosys Techno solutions',
     'website': 'https://cybrosys.com',
     'depends': ['sale_management', 'purchase', 'mrp'],
     'data': [
