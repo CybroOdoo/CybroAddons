@@ -30,12 +30,15 @@ class ResUsers(models.Model):
 
     def write(self, vals):
         """
-        Write method for the ResUsers model.
-        Ensure the menu will not remain hidden after removing it from the list.
-        """
-        for menu in self.hide_menu_ids:
-            menu.restrict_user_ids = [fields.Command.link(self.id)]
+         Write method for the ResUsers model.
+         Ensure the menu will not remain hidden after removing it from the list.
+           """
         res = super(ResUsers, self).write(vals)
+        for record in self:
+            for menu in record.hide_menu_ids:
+                menu.write({
+                    'restrict_user_ids': [fields.Command.link(record.id)]
+                })
         return res
 
     def _get_is_admin(self):
@@ -65,4 +68,3 @@ class IrUiMenu(models.Model):
     restrict_user_ids = fields.Many2many(
         'res.users', string="Restricted Users",
         help='Users restricted from accessing this menu.')
-
