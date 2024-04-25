@@ -49,7 +49,7 @@
     'external_dependencies': {
         'python': ['PIL', 'pytesseract']
     },
-    'images': ['static/description/1.jpg'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
