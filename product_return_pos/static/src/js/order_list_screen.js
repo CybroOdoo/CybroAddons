@@ -3,51 +3,67 @@ odoo.define('product_return_pos.order_list_screen',function(require) {
 
 
 var models = require('point_of_sale.models');
-
 var gui = require('point_of_sale.Gui');
 var core = require('web.core');
 var QWeb = core.qweb;
 var rpc = require('web.rpc');
 var _t  = require('web.core')._t;
 var session = require('web.session');
-    const ControlButtonsMixin = require('point_of_sale.ControlButtonsMixin');
-    const NumberBuffer = require('point_of_sale.NumberBuffer');
-    const { onChangeOrder, useBarcodeReader } = require('point_of_sale.custom_hooks');
-    const { useState , useRef} = owl.hooks;
-    const PosComponent = require('point_of_sale.PosComponent');
-    const Registries = require('point_of_sale.Registries');
-    const ProductScreen = require('point_of_sale.ProductScreen');
-    const { useListener } = require('web.custom_hooks');
-    const OrderManagementScreen = require('point_of_sale.OrderManagementScreen');
-    const AbstractAwaitablePopup = require('point_of_sale.AbstractAwaitablePopup');
-    const IndependentToOrderScreen = require('point_of_sale.IndependentToOrderScreen');
-    const { posbus } = require('point_of_sale.utils');
-    const { Gui } = require('point_of_sale.Gui');
-
-
-
-
+const ControlButtonsMixin = require('point_of_sale.ControlButtonsMixin');
+const NumberBuffer = require('point_of_sale.NumberBuffer');
+const { onChangeOrder, useBarcodeReader } = require('point_of_sale.custom_hooks');
+const { useState , useRef} = owl.hooks;
+const PosComponent = require('point_of_sale.PosComponent');
+const Registries = require('point_of_sale.Registries');
+const ProductScreen = require('point_of_sale.ProductScreen');
+const { useListener } = require('web.custom_hooks');
+const OrderManagementScreen = require('point_of_sale.OrderManagementScreen');
+const AbstractAwaitablePopup = require('point_of_sale.AbstractAwaitablePopup');
+const IndependentToOrderScreen = require('point_of_sale.IndependentToOrderScreen');
+const { posbus } = require('point_of_sale.utils');
+const { Gui } = require('point_of_sale.Gui');
 
 class OrderListScreenWidget extends IndependentToOrderScreen {
-
-
     constructor() {
-            super(...arguments);
-            useListener('filter-selected', this._onFilterSelected);
-
-            useListener('search', this._onSearch);
-            this.searchDetails = {};
-            this.filter = null;
-            this._initializeSearchFieldConstants();
-
-
-            }
+        super(...arguments);
+        useListener('filter-selected', this._onFilterSelected);
+        useListener('search', this._onSearch);
+        this.searchDetails = {};
+        this.filter = null;
+        this._initializeSearchFieldConstants();
+        this.state = useState({
+            pagedOrders: [],
+        });
+        this.ordersPerPage = 12;
+        this.currentPage = 1;
+        this.orders = this.env.pos.orders;
+    }
 
     mounted() {
-        var self = this;
+        this.updatePagedOrders();
         this.render();
-        var orders = this.env.pos.orders;
-        var search_timeout = null;
+    }
+
+    updatePagedOrders(orders=this.orders) {
+        const startIndex = (this.currentPage - 1) * this.ordersPerPage;
+        const endIndex = startIndex + this.ordersPerPage;
+        this.currentOrders = orders;
+        this.state.pagedOrders = [...orders.slice(startIndex, endIndex)];
+    }
+
+    button_prev() {
+        if (this.currentPage > 1) {
+            this.currentPage -= 1;
+            this.updatePagedOrders();
+        }
+    }
+
+    button_next() {
+        const maxPage = Math.ceil(this.currentOrders.length / this.ordersPerPage);
+        if (this.currentPage < maxPage) {
+            this.currentPage += 1;
+            this.updatePagedOrders();
+        }
     }
 
     back() {
@@ -62,35 +78,14 @@ class OrderListScreenWidget extends IndependentToOrderScreen {
         this.return_order(order);
     }
 
-    get ordersList() {
-            const filterCheck = (order) => {
-                return true;
-            };
-            const { fieldValue, searchTerm } = this.searchDetails;
-            const fieldAccessor = this._searchFields[fieldValue];
-            const searchCheck = (order) => {
-                if (!fieldAccessor) return true;
-                const fieldValue = fieldAccessor(order);
-                if (fieldValue === null) return true;
-                if (!searchTerm) return true;
-                return fieldValue && fieldValue.toString().toLowerCase().includes(searchTerm.toLowerCase());
-            };
-            const predicate = (order) => {
-                return searchCheck(order);
-            };
-
-            return this.orderList.filter(predicate);
+    _onFilterSelected(event) {
+        this.filter = event.detail.filter;
+        this.render();
     }
 
-    _onFilterSelected(event) {
-            this.filter = event.detail.filter;
-            this.render();
-        }
-
     get orderList() {
-            return this.env.pos.orders;
-        }
-
+        return this.env.pos.orders;
+    }
 
     get _searchFields() {
             var fields = {
@@ -103,10 +98,30 @@ class OrderListScreenWidget extends IndependentToOrderScreen {
         }
 
     _onSearch(event) {
-            const searchDetails = event.detail;
-            Object.assign(this.searchDetails, searchDetails);
-            this.render();
+        this.currentPage = 1;
+        const searchDetails = event.detail;
+        const { fieldValue, searchTerm } = searchDetails;
+        if (fieldValue === 'Receipt Number') {
+            const filteredOrders = this.orders.filter(order => {
+                return order.pos_reference && order.pos_reference.includes(searchTerm);
+            });
+            this.updatePagedOrders(filteredOrders);
+        } else {
+            const fieldAccessor = this._searchFields[fieldValue];
+            const searchCheck = (order) => {
+                if (!fieldAccessor) return true;
+                const fieldValue = fieldAccessor(order);
+                if (fieldValue === null) return true;
+                if (!searchTerm) return true;
+                return fieldValue && fieldValue.toString().toLowerCase().includes(searchTerm.toLowerCase());
+            };
+            const predicate = (order) => {
+                return searchCheck(order);
+            };
+            this.updatePagedOrders(this.orders.filter(predicate));
         }
+        this.render();
+    }
 
     get searchBarConfig() {
             return {
@@ -114,6 +129,7 @@ class OrderListScreenWidget extends IndependentToOrderScreen {
                 filter: { show: true, options: this.filterOptions },
             };
         }
+
     get filterOptions() {
             return ['All Orders'];
         }
@@ -125,7 +141,6 @@ class OrderListScreenWidget extends IndependentToOrderScreen {
                 ReceiptScreen: 'Receipt',
             };
         }
-
     _initializeSearchFieldConstants() {
             this.constants = {};
             Object.assign(this.constants, {
@@ -133,8 +148,6 @@ class OrderListScreenWidget extends IndependentToOrderScreen {
                 screenToStatusMap: this._screenToStatusMap,
             });
         }
-
-
 
     render_list(orders){
         var contents = this.el.querySelector('.order-list-contents');
@@ -149,7 +162,6 @@ class OrderListScreenWidget extends IndependentToOrderScreen {
         }
     }
 
-
     return_order(order_id){
         var self = this;
         var client = ''
@@ -162,24 +174,17 @@ class OrderListScreenWidget extends IndependentToOrderScreen {
             'body': "This is a fully returned order",});
         }
         else if (order_id && order_id.return_ref) {
-
         Gui.showPopup('ErrorPopup',{
             'title': "ERROR",
             'body': "This is a returned order",});
         }
         else{
             Gui.showPopup('ReturnWidget',{ref: order_id.pos_reference,client:client});
-
         }
-
     }
-
-
 }
+
     OrderListScreenWidget.template = 'OrderListScreenWidget';
-
     Registries.Component.add(OrderListScreenWidget);
-
     return OrderListScreenWidget;
-
 });

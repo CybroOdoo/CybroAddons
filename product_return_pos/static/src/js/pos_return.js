@@ -152,7 +152,4 @@ class ReturnWidget extends AbstractAwaitablePopup {
     Registries.Component.add(ReturnWidget);
 
     return ReturnWidget;
-
-
-
 });

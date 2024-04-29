@@ -51,6 +51,4 @@ ProductScreen.addControlButton({
     Registries.Component.add(ReturnButton);
     return ReturnButton;
 
-
-
 });

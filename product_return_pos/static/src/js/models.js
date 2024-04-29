@@ -18,7 +18,9 @@ models.load_models({
     fields: ['name', 'partner_id','date_order','amount_total', 'amount_tax',
         'pos_reference','lines','state','session_id','company_id','return_ref','return_status'],
     loaded: function(self, orders){
-
+        orders.forEach(function(order) {
+                order.date_order = moment.utc(order.date_order).local().format('YYYY-MM-DD HH:mm:ss');
+            });
         self.orders = orders;
         }
     },
@@ -33,13 +35,6 @@ models.load_models({
     }
     }
 });
-
-
-
-
-
-
-
 
 var _super_orderline = models.Orderline;
 models.Orderline = models.Orderline.extend({
@@ -62,7 +57,6 @@ var _super = models.Order;
 models.Order = models.Order.extend({
 
     add_product: function (product, options) {
-
 
         var order    = this.pos.get_order();
         _super.prototype.add_product.call(this, product, options);
@@ -170,9 +164,4 @@ models.PosModel.extend({
             });
     },
 });
-
-
-
-
-
 });
