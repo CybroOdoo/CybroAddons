@@ -54,7 +54,7 @@ class UserAudit(models.Model):
     @api.model
     def create_audit_log_for_create(self, res_model):
         """ Used to create user audit log based on the create operation """
-        model_id = self.env['ir.model'].search([('model', '=', res_model)]).id
+        model_id = self.env['ir.model'].sudo().search([('model', '=', res_model)]).id
         audit = self.search([('model_ids', 'in', model_id)])
         if audit and audit.is_create:
             self.env['user.audit.log'].create({
@@ -68,7 +68,7 @@ class UserAudit(models.Model):
     @api.model
     def create_audit_log_for_read(self, res_model, record_id):
         """ Used to create user audit log based on the read operation """
-        model_id = self.env['ir.model'].search([('model', '=', res_model)]).id
+        model_id = self.env['ir.model'].sudo().search([('model', '=', res_model)]).id
         audit = self.search([('model_ids', 'in', model_id)])
         if audit and audit.is_read:
             self.env['user.audit.log'].create({
@@ -83,7 +83,7 @@ class UserAudit(models.Model):
     @api.model
     def create_audit_log_for_delete(self, res_model, record_id):
         """ Used to create user audit log based on the delete operation """
-        model = self.env['ir.model'].search([('model', '=', res_model)])
+        model = self.env['ir.model'].sudo().search([('model', '=', res_model)])
         model_id = self.env[res_model].browse(record_id)
         audit = self.search([('model_ids', 'in', model.id)])
         if audit and audit.is_delete and record_id and model_id:
@@ -99,7 +99,7 @@ class UserAudit(models.Model):
     @api.model
     def create_audit_log_for_write(self, res_model, record_id):
         """ Used to create user audit log based on the write operation """
-        model_id = self.env['ir.model'].search([('model', '=', res_model)]).id
+        model_id = self.env['ir.model'].sudo().search([('model', '=', res_model)]).id
         audit = self.search([('model_ids', 'in', model_id)])
         if audit and audit.is_write:
             self.env['user.audit.log'].create({
