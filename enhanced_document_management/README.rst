@@ -1,6 +1,6 @@
-.. image:: https://img.shields.io/badge/licence-LGPL--3-blue.svg
-    :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
-    :alt: License: LGPL-3
+.. image:: https://img.shields.io/badge/license-OPL--1-red.svg
+    :target: https://www.odoo.com/documentation/16.0/legal/licenses.html#odoo-apps
+    :alt: License: OPL-1
 
 Document Management
 ===================
@@ -9,7 +9,7 @@ The module requires beautiful Soup python library
 
 License
 -------
-General Public License, Version 3 (LGPL v3).
+Odoo Proprietary License v1.0 (OPL-1)
 (https://www.odoo.com/documentation/user/16.0/legal/licenses/licenses.html)
 
 Company
@@ -18,7 +18,7 @@ Company
 
 Credits
 -------
-* Developers: V16 Mohamed Savad, Gokul PI, Megha AP, Javid, Nisiya, Farhana Jahan PT
+* Developers: V16 Mohamed Savad, Gokul PI, Megha AP, Javid, Nisiya
 * Contact: odoo@cybrosys.com
 
 Contacts

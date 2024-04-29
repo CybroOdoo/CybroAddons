@@ -1,30 +1,25 @@
 # -*- coding: utf-8 -*-
-#############################################################################
+###############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#    Author: Cybrosys Paid App Development Team (odoo@cybrosys.com)
 #
-#    You can modify it under the terms of the GNU LESSER
-#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#    This program is under the terms of the Odoo Proprietary License v1.0 (OPL-1)
+#    It is forbidden to publish, distribute, sublicense, or sell copies of the
+#    Software or modified copies of the Software.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#    THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#    FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL
+#    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,DAMAGES OR OTHER
+#    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,ARISING
+#    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#    DEALINGS IN THE SOFTWARE.
 #
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
-#############################################################################
-import base64
-from io import BytesIO
-import re
-
+###############################################################################
 from odoo import api, fields, models, _
-from odoo.tools import mimetypes
 
 
 class RequestDocumentUser(models.Model):
@@ -49,19 +44,6 @@ class RequestDocumentUser(models.Model):
     company_id = fields.Many2one(
         related='workspace_id.company_id', string='Company',
         help="Company Name")
-    hide_accept_button = fields.Boolean(string="Accept Upload",
-                                        help='Boolean for checking the request '
-                                             'is accepted or not')
-    hide_accept_for_user_button = fields.Boolean(string="Accept",
-                                                 compute="_compute_hide_accept_for_user_button",
-                                                 help='Boolean for checking '
-                                                      'the accept button only '
-                                                      'visible for '
-                                                      'corresponding users',
-                                                 store=True)
-    boolean_user_default = fields.Boolean(string="User Default",
-                                          help='Boolean for compute '
-                                               'accept button')
 
     def action_send_document_request(self):
         """Function to send document request through email """
@@ -75,20 +57,6 @@ class RequestDocumentUser(models.Model):
             'email_to': self.user_id.partner_id.email,
         }
         self.env['mail.mail'].sudo().create(main_content).send()
-        self.write({
-            'hide_accept_button': True,
-        })
-
-    def read(self, values):
-        res = super(RequestDocumentUser, self).read(values)
-        self.boolean_user_default = True
-        return res
-
-    @api.depends('boolean_user_default')
-    def _compute_hide_accept_for_user_button(self):
-        for rec in self:
-            if rec.env.uid == rec.user_id.id:
-                rec.hide_accept_for_user_button = True
 
     @api.model
     def get_request(self):
@@ -104,14 +72,3 @@ class RequestDocumentUser(models.Model):
             'workspace_id': rec.workspace.id,
         } for rec in request_ids]
         return context
-
-    def action_accept_request(self):
-        return {
-            'name': _("Upload Document"),
-            'view_mode': 'form',
-            'view_type': 'form',
-            'res_model': 'document.file',
-            'type': 'ir.actions.act_window',
-            'target': 'new',
-            'context': {'default_workspace_id': self.workspace_id.id}
-        }
