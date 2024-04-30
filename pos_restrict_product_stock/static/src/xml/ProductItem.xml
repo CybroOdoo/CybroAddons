@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--inherited to add quantity in  each product card-->
+<templates id="template" xml:space="preserve">
+    <t t-name="point_of_sale.ProductCard" t-inherit="point_of_sale.ProductCard"
+       t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('product-information-tag')]"
+               position="after">
+
+                      <t t-if="this.env.services.pos.config.is_display_stock">
+                          <t t-if="this.env.services.pos.config.stock_type == 'qty_on_hand'">
+                 <div id="qty_display" t-attf-class="display_qty #{this.env.services.pos.db.product_by_id[props.productId].qty_available lte 0 ? 'not-available' : ''}">
+                     <t t-esc="this.env.services.pos.db.product_by_id[props.productId].qty_available"/>
+                 </div>
+
+                </t>
+                          <t t-if="this.env.services.pos.config.stock_type == 'virtual_qty'">
+                    <div t-attf-class="display_virtual #{this.env.services.pos.db.product_by_id[props.productId].virtual_available lte 0 ? 'not-available':''}">
+                        <t t-esc="this.env.services.pos.db.product_by_id[props.productId].virtual_available"/>
+                    </div>
+                </t>
+                          <t t-if="this.env.services.pos.config.stock_type == 'both'">
+                    <div id="qty_display" t-attf-class="display_qty #{this.env.services.pos.db.product_by_id[props.productId].qty_available lte 0 ? 'not-available' : ''}">
+                        <t t-esc="this.env.services.pos.db.product_by_id[props.productId].qty_available"/>
+                    </div>
+                              <div t-attf-class="display_virtual #{this.env.services.pos.db.product_by_id[props.productId].virtual_available 0 ? 'not-available':''}">
+                 <t t-esc="this.env.services.pos.db.product_by_id[props.productId].virtual_available"/>
+                    </div>
+                </t>
+            </t>
+        </xpath>
+    </t>
+</templates>
