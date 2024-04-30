@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<template>
+    <!-- Custom Dashboard Template -->
+    <t t-name="CustomDashBoard">
+        <div class="oh_dashboards" style="margin-top: 20px;">
+            <div class="container-fluid o_pj_dashboard">
+                <hr/>
+                <div class="form-group col-2">
+                    <div style="display:flex;">
+                        <input type="date" id="start_date" name="start_date"
+                               t-ref="start_date"/>
+                        <i class="fa fa-duotone fa-arrow-right"/>
+                        <input type="date" id="end_date" name="end_date"
+                               t-ref="end_date"/>
+                    </div>
+                    <button class="btn btn-primary"
+                            t-on-click="onApplyFilter">Filter
+                    </button>
+                </div>
+                <div class="modal" id="modal_warning" tableindex="-1"
+                     role="dialog" t-ref="modal_warning">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title">Warning!</h4>
+                            </div>
+                            <div class="modal-body">
+                                <p class="message">
+                                    'Start date should be smaller than end date
+                                    for
+                                    filtration'
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" t-on-click="closeModal"
+                                        class="btn btn-default"
+                                        data-dismiss="modal">Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Top Customers -->
+                <div class="row">
+                    <h3 style="text-align:center;">Top Customers</h3>
+                    <div class="col-md-12"
+                         style="display:flex;overflow:scroll;">
+                        <t t-foreach="state.top_customers" t-as="customer"
+                           t-key="customer">
+                            <div class="dashboard-card card-shadow my_lead"
+                                 style="display:flex; align-items:center; width: 25%;">
+                                <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center">
+                                    <t t-if="customer.image">
+                                        <img t-att-src="'data:image/png;base64,'+customer.image"
+                                             alt="Image"
+                                             class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center"/>
+                                    </t>
+                                    <t t-else="">
+                                        <i class="fa fa-user text-mauve dashboard-card__icon-container bg-mauve-light d-flex justify-content-center
+                                    align-items-center"/>
+                                    </t>
+                                </div>
+                                <div class="dashboard-card__details">
+                                    <div>
+                                        <h4 t-esc="customer.name"/>
+                                    </div>
+                                    <div style="cursor: pointer;">
+                                        <h5 t-esc="customer.email"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+                <!-- Available Cars -->
+                <div class="col-xs-12 col-sm-12 col-lg-12 col-md-12">
+                    <div class="row" style="margin:0px;">
+                        <div class="col-6 col-sm-6 helpdesk inbox_tickets">
+                            <div class="leads_month_pie_div half_chart chart-container card-shadow"
+                                 style="height: 528px;">
+                                <h2>
+                                    <center>
+                                        Most Rented Cars
+                                    </center>
+                                </h2>
+                                <div class="graph_canvas bar_canvas"
+                                     style="height:90%;">
+                                    <canvas class="most_rented_cars"
+                                            t-ref="most_rented_cars_bar"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-2 helpdesk inbox_tickets ">
+                            <div class="leads_month_pie_div half_chart chart-container card-shadow available_cars"
+                                 style="height: 528px;">
+                                <h2>
+                                    <center>
+                                        Available Cars
+                                    </center>
+                                </h2>
+                                <hr/>
+                                <div class="text-color">
+                                    <div class="crm_dash_cards row">
+                                        <div class="col-sm-12 col-md-12">
+                                            <div class="dashboard-card card-shadow my_lead"
+                                                 style="display:flex;height: auto;">
+                                                <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center
+                                                                align-items-center">
+                                                    <i class="fa fa-car text-mauve"/>
+                                                </div>
+                                                <div class="dashboard-card__details">
+                                                    <h3>
+                                                        <span t-esc="state.available_cars"/>
+                                                    </h3>
+                                                    <h4>Cars Available
+                                                    </h4>
+                                                </div>
+                                                <div class="dashboard-card__details">
+                                                    <h3>
+                                                        <span t-esc="state.running_cars"/>
+                                                    </h3>
+                                                    <h4>Cars Running
+                                                    </h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th rowspan="14">
+                                                    <center>Car Name</center>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="state.available_vehicle_details"
+                                               t-as="available_car"
+                                               t-key="available_car['available_car']">
+                                                <tr>
+                                                    <td>
+                                                        <center>
+                                                            <t t-esc="available_car['available_car']"/>
+                                                        </center>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-4 helpdesk inbox_tickets ">
+                            <div class="leads_month_pie_div half_chart chart-container card-shadow running_vehicle_contact"
+                                 style="height: 528px;">
+                                <h2>
+                                    <center>
+                                        Running vehicle and contact detail
+                                    </center>
+                                </h2>
+                                <hr/>
+                                <div class="text-color">
+                                    <table class="table table-sm"
+                                           style="table-layout:fixed;">
+                                        <thead>
+                                            <tr>
+                                                <th rowspan="14">Car Name</th>
+                                            </tr>
+                                            <tr>
+                                                <th rowspan="14">Start Date</th>
+                                            </tr>
+                                            <tr>
+                                                <th rowspan="14">End Date</th>
+                                            </tr>
+                                            <tr>
+                                                <th rowspan="14">Customer Name
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th rowspan="14">Customer
+                                                    Contact
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="state.running_vehicle_details"
+                                               t-as="data" t-key="data">
+                                                <tr>
+                                                    <td>
+                                                        <t t-esc="data['vehicle']"/>
+                                                    </td>
+                                                    <td>
+                                                        <t t-esc="data['start_date']"/>
+                                                    </td>
+                                                    <td>
+                                                        <t t-esc="data['end_date']"/>
+                                                    </td>
+                                                    <td>
+                                                        <t t-esc="data['customer']"/>
+                                                    </td>
+                                                    <td>
+                                                        <t t-if="data['phone']">
+                                                            <t t-esc="data['phone']"/>
+                                                        </t>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-12" style="display:flex;">
+                    <div class="col-6 col-sm-6 helpdesk inbox_tickets">
+                        <div class="leads_month_pie_div half_chart chart-container card-shadow"
+                             style="height: 528px;">
+                            <h2>
+                                <center>
+                                    Most Rented Cars
+                                </center>
+                            </h2>
+                            <div class="graph_canvas pie_canvas"
+                                 style="height:90%;">
+                                <canvas class="most_rented_cars_pie"
+                                        t-ref="most_rented_cars_pie"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-6 helpdesk inbox_tickets">
+                        <div class="leads_month_pie_div half_chart chart-container card-shadow"
+                             style="height: 528px;">
+                            <h2>
+                                <center>
+                                    Most Rented Cars
+                                </center>
+                            </h2>
+                            <div class="graph_canvas line_canvas"
+                                 style="height:90%;">
+                                <canvas class="most_rented_cars_line"
+                                        t-ref="most_rented_cars_line"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</template>
