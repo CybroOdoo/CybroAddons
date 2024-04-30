@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="bidders_information" name="Website bidders">
+        <!-- Template extending website.layout -->
+        <t t-call="website.layout">
+            <div id="wrap" class="o_portal_wrap">
+                <div class="container mv64">
+                    <!-- Bootstrap table to show bidders information -->
+                    <div class="table-responsive border rounded border-top-0 ">
+                        <!-- Title of the table -->
+                        <h2 class="text-center">Bid for
+                            <t t-esc="product_id.name"/>
+                        </h2>
+                        <!-- Table headers -->
+                        <table id="bidder_information">
+                            <thead>
+                                <tr class="active">
+                                    <th class="text-center">Name</th>
+                                    <th class="text-center">Bid Amount</th>
+                                    <th class="text-center">Bid Status</th>
+                                    <th class="text-center">Phone</th>
+                                    <th class="text-center">Email</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Looping over the bidders_information to show the bid details -->
+                                <t t-foreach="bidders_information"
+                                   t-as="bidders">
+                                    <tr>
+                                        <!-- Bidder's name -->
+                                        <td class="text-center"
+                                            t-esc="bidders.bidder_id.name"/>
+                                        <!-- Bid amount -->
+                                        <td class="text-center"
+                                            t-esc="bidders.bid_offer"/>
+                                        <!-- Bid status -->
+                                        <td class="text-center"
+                                            t-esc="bidders.status"/>
+                                        <!-- Bidder's phone number -->
+                                        <td class="text-center"
+                                            t-esc="bidders.bidder_id.phone"/>
+                                        <!-- Bidder's email -->
+                                        <td class="text-center"
+                                            t-esc="bidders.bidder_id.email"/>
+                                        <!-- Checking if the bidder is the current user and the bid status is 'Bid Placed', then show cancel bid link -->
+                                        <t t-set="partner"
+                                           t-value="request.env.user.partner_id"/>
+                                        <t t-if="(bidders.status=='Bid Placed') and (partner==bidders.bidder_id)">
+                                            <td>
+                                                <a t-attf-href="/bid/cancel/{{ slug(bidders) }}">
+                                                    cancel bid
+                                                </a>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

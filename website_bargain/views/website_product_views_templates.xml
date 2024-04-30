@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="website_product_view" inherit_id="website_sale.product">
+        <xpath expr="//div[@id='product_details']" position="replace">
+            <t t-if="product.is_auction"> <!-- Conditionally render elements based on the "is_auction" attribute of the product object -->
+                <!-- Create hidden input fields with values from the product and auction objects -->
+                <t t-if="request.env.user.is_public">
+                    <t t-log="request.env.user.is_public"/>
+                    <div t-attf-class="col-lg-#{image_cols[1]} mt-md-4"
+                         id="product_details">
+                        <h1 itemprop="name" t-field="product.name">
+                            Product
+                            Name
+                        </h1>
+                        Please <a href="/web/login">sign in</a> to participate
+                    </div>
+                </t>
+                <t t-else="">
+                    <input type="hidden" class="product_id"
+                           name="product_product_id"
+                           t-att-value="product_variant.id"/>
+                    <input type="hidden" name="auction_product_id"
+                           t-att-value="product.id"/>
+                    <!-- Iterate over the auction objects -->
+                    <t t-foreach="auction" t-as="bid">
+                        <!-- Check if the auction is running, matches the current product, and matches the current website -->
+                        <t t-if="(bid['state']=='running') and (bid['product_id'][0]==product.id) and (website.id == bid['website_id'][0])">
+                            <input type="hidden" class="auction"
+                                   name="auction_id" t-att-value="bid['id']"/>
+                            <!-- Create a div to display details about the product and auction -->
+                            <div t-attf-class="col-lg-#{image_cols[1]} mt-md-4"
+                                 id="product_details">
+                                <h1 itemprop="name" t-field="product.name">
+                                    Product
+                                    Name
+                                </h1>
+                                <span id="auction_messages"
+                                      class="alert alert-info"/>
+                                <div class="auction_timer">
+                                    Auction will end in
+                                    <h3 id="timer">---</h3>
+                                    Till
+                                    <!-- Display either the extended time or the end time of the auction -->
+                                    <t t-if="bid['extend_time']">
+                                        <t t-esc="bid['extend_time']"/>
+                                    </t>
+                                    <t t-else="">
+                                        <t t-esc="bid['end_time']"/>
+                                    </t>
+                                </div>
+                                <div class="auction_min_amount">
+                                    Min bid amount
+                                    <t t-esc="bid['currency_id'][1] "/>
+                                    <strong id="min_amount"
+                                            t-esc="bid['initial_price']"/>
+                                </div>
+                                <input type="number" id="bid_amount" step="any"
+                                       required="1"/>
+                                <button type="button" class="btn btn-primary"
+                                        id="place_bid_button">Place bid
+                                </button>
+                                <p class="subscribe">
+                                    <i class="fa fa-bell-o o_notification_icon"
+                                       id="subscribe_bid">Subscribe
+                                    </i>
+                                    <i class="fa fa-users" id="auction_bidders">
+                                        <a t-attf-href="/bidders/{{ slug(product) }}">
+                                            Bidders
+                                        </a>
+                                    </i>
+                                </p>
+                                <!-- Create a modal to display warnings or messages about the auction -->
+                                <div class="modal fade"
+                                     id="modal_product_warning"
+                                     tableindex="-1" role="dialog">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h4 class="modal-title"
+                                                    id="modal_title"/>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p class="message"
+                                                   id="modal_message"/>
+
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button"
+                                                        id="hide_modal"
+                                                        class="btn btn-default"
+                                                        data-dismiss="modal">
+                                                    Close
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Display a "buy now" option if the auction allows it -->
+                                <t t-if="bid['is_buy_now']">
+                                    <div>
+                                        or
+                                        <br/>
+                                        <a class="btn btn-primary js_add_cart"
+                                           data-productiid="1">Buy Now
+                                        </a>
+                                        For just
+                                        <t t-esc="bid['currency_id'][1]"/>
+                                        <t t-esc="bid['price_buy_now']"/>
+                                    </div>
+                                </t>
+                            </div>
+                            <div id="o_product_terms_and_share"
+                                 class="d-flex justify-content-between flex-column flex-md-row align-items-md-end mb-3">
+                            </div>
+                        </t>
+                    </t>
+                </t>
+            </t>
+            <t t-else=""> <!-- start of else block -->
+                <div t-attf-class="col-lg-#{image_cols[1]} mt-md-4" id="product_details">
+                    <t t-set="base_url" t-value="product.get_base_url()"/>
+                    <h1 itemprop="name" t-field="product.name">Product Name</h1>
+                    <span itemprop="url" style="display:none;" t-esc="base_url + product.website_url"/>
+                    <span itemprop="image" style="display:none;"
+                          t-esc="base_url + website.image_url(product, 'image_1920')"/>
+                    <t t-if="is_view_active('website_sale.product_comment')">
+                        <a href="#o_product_page_reviews" class="o_product_page_reviews_link text-decoration-none">
+                            <t t-call="portal_rating.rating_widget_stars_static">
+                                <t t-set="rating_avg" t-value="product.rating_avg"/>
+                                <t t-set="trans_text_plural">%s reviews</t>
+                                <t t-set="trans_text_singular">%s review</t>
+                                <t t-set="rating_count"
+                                   t-value="(trans_text_plural if product.rating_count > 1 else trans_text_singular) % product.rating_count"/>
+                            </t>
+                        </a>
+                    </t>
+                    <p t-field="product.description_sale" class="text-muted my-2"
+                       placeholder="A short description that will also appear on documents."/>
+                    <div t-field="product.description_ecommerce" class="oe_structure"
+                         placeholder="A detailed, formatted description to promote your product on this page. Use '/' to discover more features."/>
+                    <form t-if="product._is_add_to_cart_possible()" action="/shop/cart/update" method="POST">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"
+                               t-nocache="The csrf token must always be up to date."/>
+                        <div class="js_product js_main_product mb-3">
+                            <div>
+                                <t t-call="website_sale.product_price"/>
+                                <small t-if="combination_info['base_unit_price']"
+                                       class="ms-1 text-muted o_base_unit_price_wrapper d-none"
+                                       groups="website_sale.group_show_uom_price">
+                                    <t t-call='website_sale.base_unit_price'/>
+                                </small>
+                            </div>
+                            <t t-placeholder="select">
+                                <input type="hidden" class="product_id" name="product_id"
+                                       t-att-value="product_variant.id"/>
+                                <input type="hidden" class="product_template_id" name="product_template_id"
+                                       t-att-value="product.id"/>
+                                <input t-if="product.public_categ_ids.ids" type="hidden" class="product_category_id"
+                                       name="product_category_id" t-att-value="product.public_categ_ids.ids[0]"/>
+                                <t t-call="website_sale.variants">
+                                    <t t-set="ul_class" t-valuef="flex-column"/>
+                                    <t t-set="parent_combination" t-value="None"/>
+                                </t>
+                            </t>
+                            <p t-if="True" class="css_not_available_msg alert alert-warning">This combination does not
+                                exist.
+                            </p>
+                            <div id="o_wsale_cta_wrapper" class="d-flex flex-wrap align-items-center">
+                                <t t-set="hasQuantities" t-value="false"/>
+                                <t t-set="hasBuyNow" t-value="false"/>
+                                <t t-set="ctaSizeBig" t-value="not hasQuantities or not hasBuyNow"/>
+
+                                <div id="add_to_cart_wrap"
+                                     t-attf-class="{{'d-none' if combination_info['prevent_zero_price_sale'] else 'd-inline-flex'}} align-items-center mb-2 me-auto">
+                                    <a data-animation-selector=".o_wsale_product_images" role="button" id="add_to_cart"
+                                       t-attf-class="btn btn-primary js_check_product a-submit flex-grow-1" href="#">
+                                        <i class="fa fa-shopping-cart me-2"/>
+                                        Add to cart
+                                    </a>
+                                </div>
+                                <div id="product_option_block" class="d-flex flex-wrap w-100"/>
+                            </div>
+                            <div id="contact_us_wrapper"
+                                 t-attf-class="{{'d-flex' if combination_info['prevent_zero_price_sale'] else 'd-none'}} oe_structure oe_structure_solo #{_div_classes}">
+                                <section class="s_text_block" data-snippet="s_text_block" data-name="Text">
+                                    <div class="container">
+                                        <a t-att-href="website.contact_us_button_url"
+                                           class="btn btn-primary btn_cta">Contact Us
+                                        </a>
+                                    </div>
+                                </section>
+                            </div>
+                            <t t-if="is_view_active('website_sale.product_tags')" t-call="website_sale.product_tags">
+                                <t t-set="all_product_tags" t-value="product_variant.all_product_tag_ids"/>
+                            </t>
+                        </div>
+                    </form>
+                    <p t-elif="not product.active" class="alert alert-warning">This product is no longer available.</p>
+                    <p t-else="" class="alert alert-warning">This product has no valid combination.</p>
+                    <div id="product_attributes_simple">
+                        <t t-set="single_value_attributes"
+                           t-value="product.valid_product_template_attribute_line_ids._prepare_single_value_for_display()"/>
+                        <table t-attf-class="table table-sm text-muted {{'' if single_value_attributes else 'd-none'}}">
+                            <t t-foreach="single_value_attributes" t-as="attribute">
+                                <tr>
+                                    <td>
+                                        <span t-field="attribute.name"/>:
+                                        <t t-foreach="single_value_attributes[attribute]" t-as="ptal">
+                                            <span t-field="ptal.product_template_value_ids._only_active().name"/>
+                                            <t t-if="not ptal_last">,</t>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </t>
+                        </table>
+                    </div>
+                    <t t-set="product_documents"
+                       t-value="product.sudo().product_document_ids.filtered(lambda doc: doc.shown_on_product_page)"/>
+                    <div id="product_documents" class="my-2" t-if="product_documents">
+                        <h5>Documents</h5>
+                        <t t-foreach="product_documents" t-as="document_sudo">
+                            <t t-set="attachment_sudo" t-value="document_sudo.ir_attachment_id"/>
+                            <t t-set="target" t-value="attachment_sudo.type == 'url' and '_blank' or '_self'"/>
+                            <t t-set="icon" t-value="attachment_sudo.type == 'url' and 'fa-link' or 'fa-download'"/>
+                            <div>
+                                <a t-att-href="'/shop/' + slug(product) + '/document/' + str(document_sudo.id)"
+                                   t-att-target="target">
+                                    <i t-att-class="'fa ' + icon"/>
+                                    <t t-out="attachment_sudo.name"/>
+                                </a>
+                            </div>
+                        </t>
+                    </div>
+                    <div id="o_product_terms_and_share"
+                         class="d-flex justify-content-between flex-column flex-md-row align-items-md-end mb-3">
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

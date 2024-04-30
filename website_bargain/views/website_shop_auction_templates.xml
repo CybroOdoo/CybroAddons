@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- This template is used to modify the product page on the Odoo e-commerce website. -->
+    <template id="website_shop_auction" inherit_id="website_sale.products_item">
+        <!-- Replace the existing div with class "product_price" -->
+        <xpath expr="//div[hasclass('product_price')]" position="replace">
+            <!-- If the product is an auction, display "AUCTION ON" -->
+            <t t-if="product.is_auction">
+                <span id="auction_on">AUCTION ON</span>
+            </t>
+            <!-- If the product is not an auction, display the regular price -->
+            <t t-else="">
+                <div class="product_price" itemprop="offers"
+                     itemscope="itemscope" itemtype="http://schema.org/Offer">
+                    <t t-if="'base_price' in template_price_vals">
+                        <del t-attf-class="text-muted me-1 h6 mb-0"
+                             style="white-space: nowrap;">
+                            <!-- Display the original price with a strikethrough -->
+                            <em class="small"
+                                t-esc="template_price_vals['base_price']"
+                                t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        </del>
+                    </t>
+                    <!-- Display the reduced price, or the text "Contact us for price" if the price is zero -->
+                    <span class="h6 mb-0"
+                          t-if="template_price_vals['price_reduce'] or not website.prevent_zero_price_sale"
+                          t-esc="template_price_vals['price_reduce']"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    <span class="h6 mb-0" t-else=""
+                          t-field="website.prevent_zero_price_sale_text"/>
+                    <!-- Set the price and currency information for the schema.org metadata -->
+                    <span itemprop="price" style="display:none;"
+                          t-esc="template_price_vals['price_reduce']"/>
+                    <span itemprop="priceCurrency" style="display:none;"
+                          t-esc="website.currency_id.name"/>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

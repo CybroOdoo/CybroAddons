@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Form view for website.bargain model -->
+    <record id="website_bargain_view_form" model="ir.ui.view">
+        <field name="name">website.bargain.view.form</field>
+        <field name="model">website.bargain</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" type="object"
+                            string="Confirm" class="oe_highlight"
+                            invisible="state == True or state not in ('draft')"/>
+                    <button name="action_reset_to_draft" type="object"
+                            string="Reset to draft" class="oe_highlight"
+                            invisible="state == True or state in ('draft', 'finished','closed') "/>
+                    <button name="action_run_auction" type="object"
+                            string="Run Auction" class="oe_highlight"
+                            invisible="state == True or state not in ('confirmed')"/>
+                    <button name="action_complete" type="object"
+                            string="Completed" class="oe_highlight"
+                            invisible="state == True or state not in ('running', 'extended')"/>
+                    <button name="action_close" type="object" string="Closed"
+                            class="oe_highlight"
+                            invisible="state == True or state not in ('running', 'extended','finished')"
+                            />
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group class="mt-4">
+                        <field name="website_id"
+                               readonly="state not in ['draft']"/>
+                        <field name="auction_manager_id"
+                               readonly="state not in ['draft']"/>
+                        <field name="template_id"
+                               readonly="state not in ['draft']"/>
+                        <field name="product_id"
+                               readonly="state not in ['draft']"/>
+                        <field name="name"
+                               readonly="state not in ['draft']"/>
+                    </group>
+                    <group>
+                        <group name="price_configuration"
+                               string="Price Configuration">
+                            <field name="currency_id" position="attributes"
+                                   readonly="state not in ['draft']"/>
+                            <field name="initial_price" widget="monetary"
+                                   readonly="state not in ['draft']"
+                                   force_save="1"/>
+                            <field name="is_buy_now"
+                                   readonly="state not in ['draft']"/>
+                            <field name="price_buy_now" widget="monetary"
+                                   force_save="1"
+                                   invisible="is_buy_now == False"
+                                   />
+                        </group>
+                        <group name="time_configuration"
+                               string="TIME CONFIGURATION">
+                            <field name="start_time"
+                                   readonly="state not in ['draft']"/>
+                            <field name="end_time"
+                                   readonly="state not in ['draft']"/>
+                            <field name="extend_time"
+                                   readonly="state in ['finished', 'closed']"
+                                   />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="bidder_information"
+                              string="Bidder Information" sequence="2">
+                            <div>
+                                <h4>Bidder Information</h4>
+                            </div>
+                            <field name="bargain_information_ids"/>
+                        </page>
+                        <page name="subscribers" string="Subscribers"
+                              sequence="3">
+                            <div>
+                                <h4>Subscribers</h4>
+                            </div>
+                            <field name="bargain_subscribers_ids"/>
+                        </page>
+                        <page name="notification" string="Notification"
+                              sequence="4">
+                            <group>
+                                <group string="Notification to admin">
+                                    <field name="is_activate"/>
+                                    <label for="notify_on"
+                                           string="Notify before"
+                                           invisible="is_activate == False"/>
+                                    <div class="o_checkbox_optional_field"
+                                         invisible="is_activate == False">
+                                        <field name="notify_on"
+                                               class="oe_inline"/>
+                                        <div class="oe_inline">
+                                            <field name="notify_selection"/>
+                                        </div>
+                                    </div>
+                                    <field name="is_notification_send"
+                                           invisible="is_activate == False"
+                                           />
+                                </group>
+                                <group string="Miscellaneous Notification Settings">
+                                    <field name="is_winner_notification"/>
+                                    <field name="is_loser_notification"/>
+                                </group>
+                                <group string="Subscriber Notification">
+                                    <field name="is_subscriber_start_notification"/>
+                                    <field name="is_extend_auction_notification"/>
+                                    <field name="is_new_bid_notification"/>
+                                    <field name="is_bid_end_notification"/>
+                                    <field name="is_send_mail" invisible="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page name="product_info" string="Product Info">
+                            <group string="Product Information">
+                                <field name="product_img" widget="image"
+                                       style="padding: 0px;" nolabel="1"/>
+                            </group>
+                            <group>
+                                <field name="product_id"
+                                       string="Auction Product Name"/>
+                                <field name="product_description"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"
+                           options="{'post_refres':'recipients'}"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!-- Tree view for website.bargain model -->
+    <record id="website_bargain_view_tree" model="ir.ui.view">
+        <field name="name">website.bargain.view.tree</field>
+        <field name="model">website.bargain</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="start_time"/>
+                <field name="end_time"/>
+                <field name="extend_time" optional="hide"/>
+                <field name="state"/>
+                <field name="website_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+    <record id="website_bargain_action" model="ir.actions.act_window">
+        <field name="name">Website Bargain</field>
+        <field name="res_model">website.bargain</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
