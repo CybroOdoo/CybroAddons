@@ -20,7 +20,7 @@
 #
 ################################################################################
 import datetime
-from odoo import api, models, _
+from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
 
@@ -44,22 +44,30 @@ class ProductProfitReport(models.AbstractModel):
                   ('move_id.move_type', 'in', ['out_invoice', 'out_refund'])]
         if data['from_date'] > data['to_date']:
             raise ValidationError(_('From date must be less than To date'))
-        if data['product_id'] and data['product_id'] in data['product_product_ids']:
+        if data['product_id'] and data['product_id'][0] in data['product_product_ids']:
             domain += [('product_id.id', '=', data['product_id'][0])]
         else:
             domain += [('product_id', 'in', data['product_product_ids'])]
-        orders = self.env['account.move.line'].search(domain, order='name')
+        items = self.env['account.move.line'].search(domain, order='name')
         groups = {}
-        for order in orders:
-            dic_name = order.product_id.id
-            quantity = order.quantity
-            price = quantity * (order.price_unit - order.discount)
-            expense = order.product_id.get_history_price(
-                order.company_id.id,
-                date=order.move_id.invoice_date) * quantity
+        for item in items:
+
+            dic_name = item.product_id.id
+            quantity = item.quantity
+            price = quantity * (item.price_unit - item.discount)
+            if item.currency_id != item.company_currency_id:
+                currency_rate = self.env['res.currency']._get_conversion_rate(
+                    from_currency=item.currency_id,
+                    to_currency=item.company_currency_id,
+                    company=item.company_id,
+                    date=item.move_id.invoice_date or item.move_id.date or fields.Date.context_today(item))
+                price = item.company_currency_id.round(price * currency_rate)
+            expense = item.product_id.get_history_price(
+                item.company_id.id,
+                date=item.move_id.invoice_date) * quantity
             if expense == 0.0:
-                expense = order.product_id.standard_price * quantity
-            if order.move_id.move_type == 'out_refund':
+                expense = item.product_id.standard_price * quantity
+            if item.move_id.move_type == 'out_refund':
                 quantity = -quantity
                 price = -price
                 expense = -expense
@@ -68,11 +76,11 @@ class ProductProfitReport(models.AbstractModel):
                 groups[dic_name] = {}
                 groups[dic_name].update({
                     'qty': quantity,
-                    'unit': order.product_id.uom_id.name,
+                    'unit': item.product_id.uom_id.name,
                     'sales': price,
                     'expense': expense,
                     'profit': profit,
-                    'name': order.product_id.name
+                    'name': item.product_id.name
                 })
             else:
                 groups[dic_name].update({

@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Product Profit Report',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Productivity',
     'summary': """User can print profit report for each product""",
     'description': """The report provides a breakdown of profit and loss for
