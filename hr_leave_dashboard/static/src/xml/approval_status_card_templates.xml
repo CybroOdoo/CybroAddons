@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+<!--    Component for displaying approval status of employee leave requests. -->
+    <!--    It includes conditional rendering of approval status based on the -->
+    <!--    user role and a dropdown menu and button for generating a PDF report.-->
+    <div t-name="hr_leave_dashboard.ApprovalStatusCard" owl='1'
+         class="o_timeoff_card approval_status_card py-3 text-odoo"
+         style="height: 475px;overflow-y: scroll; flex:auto;">
+        <t t-set="approval_status_count"
+           t-value="props.approval_status_count"/>
+        <t t-set="children" t-value="props.children"/>
+        <t t-if="!manager">
+            <div class="hr_holiday_user">
+                <span class="o_timeoff_duration">
+                    <t t-esc="approval_status_count.validate_count"/>
+                </span>
+                <div class="text-uppercase">
+                    <span>Approved</span>
+                </div>
+                <span class="o_timeoff_duration">
+                    <t t-esc="approval_status_count.confirm_count"/>
+                </span>
+                <div class="text-uppercase">
+                    <span>To Approve</span>
+                </div>
+                <span class="o_timeoff_duration">
+                    <t t-esc="approval_status_count.refuse_count"/>
+                </span>
+                <div class="text-uppercase">
+                    <span>Refused</span>
+                </div>
+            </div>
+        </t>
+        <t t-else="">
+            <div class="hr_holiday_manager">
+                <div class="pdf_report">
+                    <select id="duration" class="duration">
+                        <option value="today">Today</option>
+                        <option value="this_week">This week</option>
+                        <option value="this_month">This month</option>
+                        <option value="this_year">This Year</option>
+                    </select>
+                    <button t-on-click="printPdfReport" type="button"
+                            class="btn btn-primary">Print PDF</button>
+                </div>
+                <table class="table table-hover time_off_dashboard_table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Approved</th>
+                            <th>To Approve</th>
+                            <th>Refused</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="children" t-as="child"
+                           t-key="child.id">
+                            <tr>
+                                <td><t t-esc="child.name"/></td>
+                                <td><t t-esc="child.approval_status_count.validate_count"/></td>
+                                <td><t t-esc="child.approval_status_count.confirm_count"/></td>
+                                <td><t t-esc="child.approval_status_count.refuse_count"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </div>
+</templates>
