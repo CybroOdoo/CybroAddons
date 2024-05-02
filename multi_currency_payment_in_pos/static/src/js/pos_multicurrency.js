@@ -12,6 +12,9 @@ odoo.define('POS_multi_currency.MultiCurrency', function(require) {
     const PaymentScreenMultiCurrency = PaymentScreen => class extends PaymentScreen {
         setup() {
             super.setup();
+            current_currency = {
+                rate: 1,
+            };
             useListener('multi-payment-line', this.multi_currency_payment_line);
             var currency = []
             onMounted(this.enable_multi_currency)
@@ -68,6 +71,7 @@ odoo.define('POS_multi_currency.MultiCurrency', function(require) {
         }
         //Adding entered currency amount in payment line.
         async multi_currency_payment_line(ev){
+        if(this.env.pos.config.enable_multicurrency ==  true){
             var amount_val = parseFloat($('.multicurrency_input').val())
             var total_val
             var remaining_val
@@ -99,6 +103,7 @@ odoo.define('POS_multi_currency.MultiCurrency', function(require) {
                     $('.multicurrency_input').css({'border':'1.5px solid red'})
                 }
             }
+            }
         }
         //For deleting payment line.
         deletePaymentLine(event) {
@@ -108,13 +113,17 @@ odoo.define('POS_multi_currency.MultiCurrency', function(require) {
         }
         //Function for updating the payment line dynamically
         _updateSelectedPaymentline(){
-                       super._updateSelectedPaymentline(...arguments);
-                       var  change_amount=this.selectedPaymentLine.amount*current_currency.rate
-                       this.selectedPaymentLine.converted_currency = {
-                            'name': current_currency.display_name,
-                            'symbol': current_currency.symbol,
-                            'amount': change_amount
-                    }
+            super._updateSelectedPaymentline(...arguments);
+            if(this.env.pos.config.enable_multicurrency ==  true){
+                if (this.selectedPaymentLine) {
+                    var change_amount = this.selectedPaymentLine.amount * current_currency.rate;
+                    this.selectedPaymentLine.converted_currency = {
+                        'name': current_currency.display_name,
+                        'symbol': current_currency.symbol,
+                        'amount': change_amount
+                    };
+                }
+            }
         }
     };
     Registries.Component.extend(PaymentScreen, PaymentScreenMultiCurrency);

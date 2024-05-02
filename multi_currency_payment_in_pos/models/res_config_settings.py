@@ -30,13 +30,10 @@ class ResConfigSettings(models.TransientModel):
                                     string="Currencies",
                                     related="pos_config_id.currency_ids",
                                     readonly=False,
-                                    help="The list of currencies supported by"
-                                         " this Point of Sale "
-                                         "configuration.")
+                                    help="The list of currencies supported by this Point of Sale configuration.")
     enable_currency = fields.Boolean(string="Enable Currency",
                                      config_parameter="pos.enable_currency",
-                                     help="Enable or disable currency"
-                                          " for this POS configuration.")
+                                     help="Enable or disable currency for this POS configuration.")
 
     @api.onchange('enable_currency')
     def _onchange_value(self):

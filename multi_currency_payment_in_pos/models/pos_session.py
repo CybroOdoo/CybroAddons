@@ -43,8 +43,7 @@ class PosSession(models.Model):
         """Retrieve currency information for the POS session's user interface.
         """
         result = super()._get_pos_ui_res_currency(params)
-        pp_search_params = params.get('params', {}).get('search_params', {})
-        currency_params = self.env['res.currency'].search_read(
-            **pp_search_params)
+        currencies = self.config_id.currency_ids
+        currency_params = self.env['res.currency'].search_read([('id', 'in', currencies.ids)])
         result['currency_params'] = currency_params
         return result
