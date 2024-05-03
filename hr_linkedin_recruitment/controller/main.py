@@ -30,11 +30,13 @@ try:
     from urllib.request import HTTPRedirectHandler as MechanizeRedirectHandler
 
 except ImportError:
-    _logger.error('Odoo module hr_linkedin_recruitment depends on the several external python package'
-                  'Please read the doc/requirement.txt file inside the module.')
+    _logger.error('Odoo module hr_linkedin_recruitment depends on the several '
+                  'external python package Please read the doc/requirement.txt '
+                  'file inside the module.')
 
 
 import json
+from bs4 import BeautifulSoup
 from odoo.exceptions import ValidationError, Warning
 import requests
 from odoo import http, _
@@ -58,7 +60,6 @@ class LinkedinSocial(http.Controller):
         linked_in_url = request.env['hr.job'].browse(int(state))
 
         recruitment = request.env['hr.job']
-
         access_token = requests.post(
             'https://www.linkedin.com/oauth/v2/accessToken',
             params={
@@ -91,15 +92,13 @@ class LinkedinSocial(http.Controller):
             li_credential['pw'] = request.env['ir.config_parameter'].sudo().get_param('recruitment.li_password')
         else:
             raise ValidationError(_('Please fill up password in LinkedIn Credential settings.'))
-
         url = 'https://api.linkedin.com/v2/ugcPosts'
-
         li_suit_credent = {}
         li_suit_credent['access_token'] = access_token
-        member_url = 'https://api.linkedin.com/v2/me'
+        member_url = 'https://api.linkedin.com/v2/userinfo'
         response = recruitment.get_urn('GET', member_url, li_suit_credent['access_token'])
         urn_response_text = response.json()
-        li_credential['profile_urn'] = urn_response_text['id']
+        li_credential['profile_urn'] = urn_response_text['sub']
         li_suit_credent['li_credential'] = li_credential
         payload = json.dumps({
             "author": "urn:li:person:" + li_credential['profile_urn'],
@@ -107,7 +106,7 @@ class LinkedinSocial(http.Controller):
             "specificContent": {
                 "com.linkedin.ugc.ShareContent": {
                     "shareCommentary": {
-                        "text": linked_in_url.description
+                        "text": linked_in_url.name + "\n" + BeautifulSoup(linked_in_url.description, 'html.parser').get_text()
                     },
                     "shareMediaCategory": "NONE"
                 }
@@ -117,20 +116,17 @@ class LinkedinSocial(http.Controller):
             }
         })
         headers = {
-            'Authorization': 'Bearer   ' + access_token,
+            'Authorization': 'Bearer ' + access_token,
+            'X-Restli-Protocol-Version': '2.0.0',
             'Content-Type': 'application/json',
         }
-
         if linked_in_url.description:
-
-            response = requests.request("POST", url, headers=headers, data=payload)
+            response = requests.request("POST", url, data=payload, headers=headers)
             share_response_text = response.json()
             linked_in_url.write({
                 'access_token': access_token + '+' + share_response_text['id']
             })
-
             share_response_code = response.status_code
-
             if share_response_code == 201:
                 linked_in_url.update_key = True
             elif share_response_code == 404:
@@ -141,20 +137,19 @@ class LinkedinSocial(http.Controller):
                 raise Warning("Error!! Check your connection...")
         else:
             raise Warning("Provide a Job description....")
-
         return_uri = 'https://www.linkedin.com/oauth/v2/authorization'
-        li_permissions = ['r_liteprofile', 'r_member_social', 'r_organization_social', ' r_ads ',
-                          'r_compliance', 'r_emailaddress', 'w_member_social']
+        li_permissions = ['r_liteprofile', 'r_member_social',
+                          'r_organization_social_feed', ' r_ads ',
+                          'r_compliance', 'r_emailaddress',
+                          'w_member_social_feed']
 
         auth = linkedin.LinkedInAuthentication(li_credential['api_key'],
                                                li_credential['secret_key'],
                                                return_uri,
                                                li_permissions)
-
         li_suit_credent = {}
         li_suit_credent['access_token'] = access_token
         page_share_url = 'https://api.linkedin.com/v2/ugcPosts'
-
         response = recruitment.get_urn('GET', page_share_url, li_suit_credent['access_token'])
         urn_response_text = response.json()
         li_credential['profile_urn'] = share_response_text['id']

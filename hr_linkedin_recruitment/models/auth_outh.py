@@ -28,4 +28,6 @@ class OAuthProviderLinkedin(models.Model):
        linkedIn are using this value for its API operations """
     _inherit = 'auth.oauth.provider'
 
-    client_secret = fields.Char(string='Client Secret', help="Only need LinkedIn, Twitter etc..")
+    client_secret = fields.Char(string='Client Secret', help="Only need "
+                                                             "LinkedIn,"
+                                                             " Twitter etc..")
