@@ -57,7 +57,8 @@ class WebsitePaymentProof(http.Controller):
             sale_id = request.session.sale_order_id
         sale = request.env['sale.order'].sudo().browse(sale_id)
         for attachment in kw['attachments']:
-            payment_proof_attachment = request.env['ir.attachment'].sudo().create({
+            payment_proof_attachment = request.env[
+                'ir.attachment'].sudo().create({
                 'name': attachment['name'],
                 'res_model': 'sale.order',
                 'res_id': sale_id,
@@ -66,14 +67,18 @@ class WebsitePaymentProof(http.Controller):
                 'datas': attachment['content'],
             })
             body = _("%s document is added by %s" % (
-            attachment['name'], request.env.user.name))
+                attachment['name'], request.env.user.name))
             sale.message_post(body=body)
-            mail_template = request.env.ref('payment_proof_attachment.payment_proof_attachment_email_template').id
+            copied_attachment = payment_proof_attachment.copy()
+
+            mail_template = request.env.ref(
+                'payment_proof_attachment'
+                '.payment_proof_attachment_email_template').id
             template = request.env['mail.template'].browse(mail_template)
-            template.attachment_ids = [(6, 0, [payment_proof_attachment.id])]
+            template.attachment_ids = [(6, 0, [copied_attachment.id])]
             template.send_mail(sale_id, force_send=True)
-            template.attachment_ids = [(3, payment_proof_attachment.id)]
-        return
+            template.attachment_ids = [(3, copied_attachment.id)]
+        return True
 
     @http.route(['/my_account_screen/show_updated'], type='json', auth="public")
     def payment_show_receipt(self, **kw):

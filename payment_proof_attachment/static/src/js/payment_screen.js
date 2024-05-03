@@ -73,7 +73,7 @@ odoo.define('payment_proof_attachment.payment_screen', function(require) {
                     $(attachment_ids).each(function(attachment_id) {
                         var id = "/web/content/" + attachment_ids[attachment_id]['id']
                         var name = attachment_ids[attachment_id]['name']
-                        self.$el.find('#showing_updated_receipt').append("<a class='btn btn-outline-info' href='" + id + "'>" + name + " <i class='fa fa-download'/></a><br/>");
+                        self.$el.find('#showing_updated_receipt').append("<a style='margin-bottom: 10px;' class='btn btn-outline-info' href='" + id + "'>" + name + " <i class='fa fa-download'/></a><br/>");
                     });
                 } else {
                     self.$el.find("#showing_updated_receipt").empty();
