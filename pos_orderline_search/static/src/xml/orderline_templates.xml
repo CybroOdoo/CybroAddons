@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <!-- Extends the OrderWidget template to add a "Clear Cart" button -->
+    <t t-name="OrderlineSearch"
+       t-inherit="point_of_sale.OrderWidget" t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//div[hasclass('order-summary')]" position="inside">
+            <Dropdown togglerClass="'btn btn-secondary m-6 p-6'">
+                <t t-set-slot="toggler">
+                    <div class="pos-search-bar"
+                         style="display:flex;margin-top: auto; width: 435px;">
+                <input type="text" autofocus="autofocus" t-model="state.search"
+                       placeholder="Search for a product in the order line..."
+                       class="search-product"
+                       style="padding: 0.6rem;width: 100%;border-radius: 4px;"
+                       t-on-keyup="_keyup"/>
+                        <div class="button cancel"
+                             t-on-click="_OnclickCancelSearch">
+                    <i class="fa fa-times search-clear-partner"
+                       style="font-size: 23px;margin-top: 7px;"/>
+                </div>
+            </div>
+                </t>
+                <t t-foreach="state.search_line" t-as="line" t-key="line_index">
+                    <DropdownItem onSelected="() => _keyPress(line)"
+                                  class="'btn rounded-0 d-flex align-items-center px-2'">
+                        <span class="mx-2" t-out="line.full_product_name"/>
+                    </DropdownItem>
+                </t>
+                <div t-if="state.productInLine" class="mx-2 text-danger">
+                    <span>No products available.</span>
+                </div>
+            </Dropdown>
+        </xpath>
+    </t>
+  </templates>
