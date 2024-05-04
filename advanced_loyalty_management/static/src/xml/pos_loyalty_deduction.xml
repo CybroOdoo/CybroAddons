@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="OrderSummary" t-inherit="point_of_sale.OrderSummary"
+       t-inherit-mode="extension" owl="1">
+        <!--    to show the deducted loyalty points in the pos screen   -->
+        <xpath expr="//div[hasclass('summary')]" position="after">
+            <div class="summary clearfix">
+                <t t-if="this.env.pos.get_order().length != 0 and this.env.pos.get_order().orderlines[0].refunded_orderline_id != undefined and this.env.pos.get_order().orderlines[0].quantity != 0">
+                <t t-set="_loyaltyDeducts" t-value="deductLoyaltyPoints()"/>
+                    <t t-foreach="_loyaltyDeducts" t-as="_loyaltyDeduct"
+                       t-key="_loyaltyDeduct.ruleId">
+                        <t t-if="_loyaltyDeduct.lostPoint != 0">
+                    <div class='loyalty-points'>
+                            <t t-if='_loyaltyDeduct.lostPoint'>
+                        <div class='loyalty-points-title'>
+                            <span>Deducted Loyalty Points</span>
+                        </div>
+                                <div class="loyalty-points-won"
+                                     style="text-align:center;color:red;">
+                                <span class='value'>-<t
+                                        t-esc='_loyaltyDeduct.lostPoint'/></span>
+                            </div>
+                                <div class='loyalty-points-total'>
+                                <span class='value'><t
+                                        t-esc='_loyaltyDeduct.newPoint'/></span>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+                </t>
+                </t>
+            </div>
+        </xpath>
+    </t>
+</templates>
