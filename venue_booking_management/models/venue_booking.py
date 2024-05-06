@@ -157,8 +157,11 @@ class VenueBooking(models.Model):
             booking = self.env['venue.booking'].search(
                 [('start_date', '<', self.end_date),
                  ('end_date', '>', self.start_date),
-                 ('venue_id', '=', self.venue_id.id)])
+                 ('venue_id', '=', self.venue_id.id),
+                 ('state', 'in', ['confirm', 'invoice'])
+                 ])
             if booking:
+                print(booking.state)
                 raise ValidationError(
                     "Venue is not available for the selected time range.")
 
@@ -212,6 +215,7 @@ class VenueBooking(models.Model):
                 ('venue_id', '=', booking.venue_id.id),
                 ('start_date', '<', booking.end_date),
                 ('end_date', '>', booking.start_date),
+                ('state', 'in', ['confirm', 'invoice']),
                 ('id', '!=', booking.id),  # Exclude the current record itself
             ])
             if overlapping_bookings:
@@ -225,6 +229,7 @@ class VenueBooking(models.Model):
                 ('venue_id', '=', booking.venue_id.id),
                 ('start_date', '<', booking.end_date),
                 ('end_date', '>', booking.start_date),
+                ('state', 'in', ['confirm', 'invoice']),
                 ('id', '!=', booking.id),  # Exclude the current record itself
             ])
             if bookings:

@@ -52,6 +52,7 @@ class VenueAvailable(models.TransientModel):
             ('venue_id', '=', self.venue_id.id),
             ('start_date', '<', self.end_date),
             ('end_date', '>', self.start_date),
+            ('state', 'in', ['confirm', 'invoice'])
         ])
         if booking:
             raise ValidationError(
