@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Custom Receipts for POS',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'summary': "Add Custom Receipt for each POS",
     'description': "It helps to create and select customised receipts for "
                    "each POS",
