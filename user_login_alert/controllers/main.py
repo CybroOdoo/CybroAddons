@@ -35,7 +35,7 @@ from odoo import http
 
 class Home(main.Home):
 
-    @http.route('/web/login', type='http', auth="public")
+    @http.route('/web/login', type='http', auth="none") #changed auth="public" to none
     def web_login(self, redirect=None, **kw):
         main.ensure_db()
         request.params['login_success'] = False
@@ -44,7 +44,6 @@ class Home(main.Home):
 
         if not request.uid:
             request.uid = odoo.SUPERUSER_ID
-
         values = request.params.copy()
         try:
             values['databases'] = http.db_list()
@@ -103,9 +102,7 @@ class Home(main.Home):
                         template_id = template_obj.create(template_data)
                         template_obj.send(template_id)
                 request.params['login_success'] = True
-                if not redirect:
-                    redirect = '/web'
-                return http.redirect_with_hash(redirect)
+                return http.redirect_with_hash(self._login_redirect(uid, redirect=redirect))
             request.uid = old_uid
             values['error'] = _("Wrong login/password")
         return request.render('web.login', values)
