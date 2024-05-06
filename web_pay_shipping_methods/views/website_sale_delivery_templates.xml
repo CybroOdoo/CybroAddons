@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Xpath expression specified to replace or remove the original shipping
+     method template in website payment page.-->
+    <template id="payment_delivery" name="Shipping Methods"
+              inherit_id="website_sale.payment_delivery">
+        <xpath expr="//div[@id='delivery_carrier']" position="replace">
+            <t t-set="delivery_nb" t-value="len(deliveries)"/>
+            <h4>Choose a delivery method</h4>
+            <div class="alert alert-danger d-none" role="alert" id="NoShippingMethod">
+                <h4>
+                    Sorry, we are unable to ship your order
+                </h4>
+                No shipping method is available for the selected payment
+                method, kindly choose any other, or please contact us for more
+                information.
+            </div>
+            <div class="card border-0 ShippingMethod" id="delivery_method">
+                <ul class="list-group">
+                    <t t-foreach="deliveries" t-as="delivery">
+                        <li class="list-group-item o_delivery_carrier_select d-none"
+                            t-att-id="'delivery_method_%i' % delivery.id">
+                            <t t-call="website_sale.payment_delivery_methods"/>
+                        </li>
+                    </t>
+                </ul>
+            </div>
+        </xpath>
+    </template>
+</odoo>
