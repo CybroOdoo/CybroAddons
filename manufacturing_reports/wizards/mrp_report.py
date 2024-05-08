@@ -27,7 +27,7 @@ from odoo.tools.safe_eval import json
 
 
 class MrpReport(models.TransientModel):
-    _name = 'mrp.report'
+    _name = 'mrp.report.wizard'
     _description = 'MRP Report'
 
     filter = fields.Boolean(string='Enable filter by date')
@@ -91,7 +91,7 @@ class MrpReport(models.TransientModel):
         return {
             'type': 'ir.actions.report',
             'data': {
-                'model': 'mrp.report',
+                'model': 'mrp.report.wizard',
                 'options': json.dumps(data, default=date_utils.json_default),
                 'output_format': 'xlsx',
                 'report_name': 'Manufacturing Report', },

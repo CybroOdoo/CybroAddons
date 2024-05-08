@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Manufacturing Reports',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Manufacturing',
     'summary': 'PDF & XLS Reports For Manufacturing Module',
     'description': 'PDF & XLS reports for manufacturing module with '
