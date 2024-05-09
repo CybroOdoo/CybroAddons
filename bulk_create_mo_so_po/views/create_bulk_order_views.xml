@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--        Form view for the Bulk order management-->
+    <record id="create_bulk_order_view_form" model="ir.ui.view">
+        <field name="name">create.bulk.order.view.form</field>
+        <field name="model">create.bulk.order</field>
+        <field name="arch" type="xml">
+            <form string="Create Bulk Order">
+                <header>
+                    <button name="action_confirm" type="object"
+                            string="Confirm" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_create_sale_order" type="object"
+                            string="Create Sale Order"
+                            invisible="state != 'confirm' or order_type != 'sale'"/>
+                    <button name="action_create_purchase_order" type="object"
+                            string="Create Purchase Order"
+                            invisible="state != 'confirm' or order_type != 'purchase'"/>
+                    <button name="action_create_manufacturing_order"
+                            type="object"
+                            string="Create Manufacturing Order"
+                            invisible="state != 'confirm' or order_type != 'manufacturing'"/>
+                    <button name="action_reset_to_draft" type="object"
+                            string="Reset to Draft"
+                            invisible="state != 'confirm'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirm,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="get_sale_order" type="object"
+                                class="oe_stat_button" icon="fa-shopping-cart"
+                                invisible="state != 'done' or sale_order_count == 0 ">
+                            <field name="sale_order_count" widget="statinfo"
+                                   string="Sale Orders"/>
+                        </button>
+                        <button name="get_purchase_order" type="object"
+                                class="oe_stat_button" icon="fa-truck"
+                                invisible="state != 'done' or purchase_order_count == 0">
+                            <field name="purchase_order_count" widget="statinfo"
+                                   string="Purchase Orders"/>
+                        </button>
+                        <button name="get_manufacturing_order" type="object"
+                                class="oe_stat_button" icon="fa-cogs"
+                                invisible="state != 'done' or manufacturing_order_count == 0">
+                            <field name="manufacturing_order_count"
+                                   widget="statinfo"
+                                   string="Manufacturing Orders"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group readonly="state != 'draft'">
+                        <field name="partner_id"
+                               readonly="state != 'draft'"/>
+                        <field name="date"
+                               readonly="state != 'draft'"/>
+                        <field name="order_type"
+                               readonly="state != 'draft'"/>
+                    </group>
+                    <notebook>
+                        <page string="Order Lines">
+                            <field name="bulk_order_line_ids"
+                                   readonly="state != 'draft'">
+                                <tree editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="bom_id"
+                                           column_invisible="parent.order_type != 'manufacturing'"/>
+                                    <field name="list_price"
+                                           column_invisible="parent.order_type != 'sale'"/>
+                                    <field name="product_cost"
+                                           column_invisible="parent.order_type != 'purchase'"/>
+                                    <field name="qty"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"
+                           widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--        Tree view for the Bulk order management-->
+    <record id="create_bulk_order_view_tree" model="ir.ui.view">
+        <field name="name">create.bulk.order.view.tree</field>
+        <field name="model">create.bulk.order</field>
+        <field name="arch" type="xml">
+            <tree string="Create Bulk Order" sample="1">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="order_type"/>
+                <field name="date"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    <!--        Action for the Bulk order management-->
+    <record id="bulk_order_create_action" model="ir.actions.act_window">
+        <field name="name">Create Bulk Order</field>
+        <field name="res_model">create.bulk.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="create_bulk_order_view_tree"/>
+    </record>
+    <!--        Menu for the Bulk order management-->
+    <menuitem id="bulk_order_create_menu" name="Bulk Order Management"
+              web_icon="bulk_create_mo_so_po,static/description/icon.png"/>
+    <!--        Menu for the Bulk order management Orders-->
+    <menuitem id="bulk_order_create_menu_orders" name="Orders"
+              parent="bulk_order_create_menu"/>
+    <!--        Menu for the Bulk order management All Orders-->
+    <menuitem id="bulk_order_create_menu_all_orders" name="All Orders"
+              parent="bulk_order_create_menu_orders"
+              action="bulk_order_create_action"/>
+</odoo>
