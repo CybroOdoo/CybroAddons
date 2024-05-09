@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <!-- Custom Login Template -->
+        <template id="custom_login_template" name="WebLogin" inherit_id="web.login">
+            <!-- Inserting content after the redirect input field -->
+            <xpath expr="//form[@class='oe_login_form']/input[@name='redirect']"
+                   position="after">
+                <br/>
+                <span>
+                    <table class="table table-hover" id="loginDetailsTable"
+                           t-if="login_data"
+                           style="min-width:300px">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col ">USERS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Iterating over login_data -->
+                            <t t-foreach="login_data" t-as="tes">
+                                <tr t-att-id="tes[0]" class="cursor-pointer">
+                                    <th scope="row">
+                                        <img t-attf-src='{{tes[1]}}'
+                                             style="max-height: 45px;"/>
+                                    </th>
+                                    <td><t t-esc="tes[2]"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </span>
+                <br/>
+            </xpath>
+        </template>
+
+        <!-- Frontend Layout3 -->
+        <template id="frontend_layout3" name="Frontend Layout3"
+                  inherit_id="web.layout">
+            <!-- Adding script before web.layout.odooscript -->
+            <xpath expr="//head/script[@id='web.layout.odooscript']"
+                   position="after">
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+                        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+                        crossorigin="anonymous"/>
+                <script type="text/javascript">
+                    $( document ).ready(function() {
+                    // JS function to add the clicked username in the login input field
+                    $('#loginDetailsTable').on('click', function(e){
+                    e.preventDefault();
+                    var id = $(e.target).closest('tr').get(0).id;
+                    $('input[name="login"]').val(id);
+                    })
+                    });
+                </script>
+            </xpath>
+        </template>
+
+        <!-- User Dropdown -->
+        <template id="user_dropdown" inherit_id="portal.user_dropdown">
+            <!-- Replacing the logout link -->
+            <xpath expr="//a[@id='o_logout']" position="replace">
+                <a href="/web/session/logout_popup" id="o_logout"
+                   class="dropdown-item ps-3">
+                    <i class="fa fa-fw fa-sign-out me-1 small text-muted"/>
+                    Logout
+                </a>
+            </xpath>
+        </template>
+
+        <!-- Logout Popup Template -->
+        <template id="logout_popup_template">
+            <t t-call="website.layout">
+                <div class="row h-75 mt-2">
+                    <div class="d-flex justify-content-center align-items-center">
+                        <!-- Form -->
+                        <div class="card shadow-lg p-3 mb-5 bg-white rounded">
+                            <div class="card-body">
+                                <form id="cusForm"
+                                      action="/web/session/save_logout"
+                                      method="post" data-success_page="/web">
+                                    <input type="hidden" name="csrf_token"
+                                           t-att-value="request.csrf_token()"/>
+                                    <h4 class="description">Logout
+                                        Confirmation</h4>
+                                    <br/><br/>
+                                    <t t-if="login_details"></t>
+                                    <div class="container" id="detailBox">
+                                        <div class="d-flex">
+                                            <label class="form-check-label"
+                                                   for="saveDetails">Save login
+                                                details</label>
+                                            <div class="form-switch form-check ms-2">
+                                                <input class="form-check-input"
+                                                       t-att-checked="True if login_details else False"
+                                                       name="rememberMeCheckbox"
+                                                       type="checkbox"
+                                                       role="switch"
+                                                       id="saveDetails"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" value="Submit"
+                                            class="btn btn-primary mt-4">
+                                        Save &amp; Logout
+                                    </button>
+                                    <a class="btn btn-secondary mt-4 ms-4"
+                                       href="/">
+                                        Go Home!
+                                    </a>
+                                </form>
+                                <br/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+</odoo>
