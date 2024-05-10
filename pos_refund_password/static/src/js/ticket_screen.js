@@ -11,7 +11,7 @@ patch(TicketScreen.prototype, {
  async onDoRefund() {
         var refund="";
             var session_refund= false;
-            var data = await this.orm.call("ir.config_parameter", "get_param", ["pos_refund_password.global_refund_security"])
+            var data = await this.orm.call("pos.config", "fetch_global_refund_security", [])
             refund = data;
             if (!refund){
                 session_refund = this.pos.config.refund_security;

@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Restrict POS Refund with Password',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'summary': """Restrict POS Refund with Password In Odoo 17""",
     'description': """POS Restrict Refund helps to set password protection for 
     refunds, ensuring authorized access""",
