@@ -57,7 +57,8 @@ class AccountAssetCategory(models.Model):
     journal_id = fields.Many2one('account.journal', string='Journal',
                                  required=True)
     company_id = fields.Many2one('res.company', string='Company',
-                                 required=True, default=lambda self: self.env.company)
+                                 required=True,
+                                 default=lambda self: self.env.company)
     method = fields.Selection(
         [('linear', 'Linear'), ('degressive', 'Degressive')],
         string='Computation Method', required=True, default='linear',
@@ -200,7 +201,7 @@ class AccountAssetAsset(models.Model):
             if asset.state in ['open', 'close']:
                 raise UserError(
                     _('You cannot delete a document is in %s state.') % (
-                    asset.state,))
+                        asset.state,))
             for depreciation_line in asset.depreciation_line_ids:
                 if depreciation_line.move_id:
                     raise UserError(_(
@@ -266,16 +267,16 @@ class AccountAssetAsset(models.Model):
                         if self.method_period % 12 != 0:
                             date = datetime.strptime(str(self.date), '%Y-%m-%d')
                             month_days = \
-                            calendar.monthrange(date.year, date.month)[1]
+                                calendar.monthrange(date.year, date.month)[1]
                             days = month_days - date.day + 1
                             amount = (
-                                                 amount_to_depr / self.method_number) / month_days * days
+                                             amount_to_depr / self.method_number) / month_days * days
                         else:
                             days = (self.company_id.compute_fiscalyear_dates(
                                 depreciation_date)[
                                         'date_to'] - depreciation_date).days + 1
                             amount = (
-                                                 amount_to_depr / self.method_number) / total_days * days
+                                             amount_to_depr / self.method_number) / total_days * days
             elif self.method == 'degressive':
                 amount = residual_amount * self.method_progress_factor
                 if self.prorata:
@@ -283,16 +284,16 @@ class AccountAssetAsset(models.Model):
                         if self.method_period % 12 != 0:
                             date = datetime.strptime(str(self.date), '%Y-%m-%d')
                             month_days = \
-                            calendar.monthrange(date.year, date.month)[1]
+                                calendar.monthrange(date.year, date.month)[1]
                             days = month_days - date.day + 1
                             amount = (
-                                                 residual_amount * self.method_progress_factor) / month_days * days
+                                             residual_amount * self.method_progress_factor) / month_days * days
                         else:
                             days = (self.company_id.compute_fiscalyear_dates(
                                 depreciation_date)[
                                         'date_to'] - depreciation_date).days + 1
                             amount = (
-                                                 residual_amount * self.method_progress_factor) / total_days * days
+                                             residual_amount * self.method_progress_factor) / total_days * days
         return amount
 
     def _compute_board_undone_dotation_nb(self, depreciation_date, total_days):
@@ -395,7 +396,7 @@ class AccountAssetAsset(models.Model):
                     'name': (self.code or '') + '/' + str(sequence),
                     'remaining_value': residual_amount,
                     'depreciated_value': self.value - (
-                                self.salvage_value + residual_amount),
+                            self.salvage_value + residual_amount),
                     'depreciation_date': depreciation_date.strftime(DF),
                 }
                 commands.append((0, False, vals))
@@ -478,8 +479,9 @@ class AccountAssetAsset(models.Model):
                     tracked_fields, old_values)
                 if changes:
                     asset.message_post(subject=_(
-                        'Asset sold or disposed. Accounting entry awaiting for validation.'),
-                                       tracking_value_ids=tracking_value_ids)
+                        'Asset sold or disposed. Accounting entry awaiting '
+                        'for validation.'),
+                        tracking_value_ids=tracking_value_ids)
                 move_ids += asset.depreciation_line_ids[-1].create_move(
                     post_move=False)
 
@@ -487,6 +489,7 @@ class AccountAssetAsset(models.Model):
 
     def set_to_close(self):
         move_ids = self._get_disposal_moves()
+        self.write({'state': 'close'})
         if move_ids:
             name = _('Disposal Move')
             view_mode = 'form'
@@ -501,9 +504,6 @@ class AccountAssetAsset(models.Model):
                 'target': 'current',
                 'res_id': move_ids[0],
             }
-        else:
-            # Fallback, as if we just clicked on the smartbutton
-            self.write({'state': 'close'})
 
     def set_to_draft(self):
         self.write({'state': 'draft'})
@@ -533,14 +533,15 @@ class AccountAssetAsset(models.Model):
     def _check_prorata(self):
         if self.prorata and self.method_time != 'number':
             raise ValidationError(_(
-                'Prorata temporis can be applied only for time method "number of depreciations".'))
+                'Prorata temporis can be applied only for time method "number '
+                'of depreciations".'))
 
     @api.constrains('active', 'state')
     def _check_active(self):
         for record in self:
-            if record.active == False and record.state != 'close':
-                raise UserError("You Cannot Archive a record in Running State")
-
+            if not record.active and record.state not in ['draft', 'close']:
+                raise UserError(
+                    "You cannot archive a record in a running state.")
 
     @api.onchange('category_id')
     def onchange_category_id(self):
@@ -632,7 +633,8 @@ class AccountAssetDepreciationLine(models.Model):
                                      required=True)
     depreciation_date = fields.Date('Depreciation Date', index=True)
     move_id = fields.Many2one('account.move', string='Depreciation Entry')
-    move_check = fields.Boolean(compute='_get_move_check', string='Linked', store=True)
+    move_check = fields.Boolean(compute='_get_move_check', string='Linked',
+                                store=True)
     move_posted_check = fields.Boolean(compute='_get_move_posted_check',
                                        string='Posted', store=True)
 
@@ -662,7 +664,7 @@ class AccountAssetDepreciationLine(models.Model):
             amount = current_currency.with_context(
                 date=depreciation_date).compute(line.amount, company_currency)
             asset_name = line.asset_id.name + ' (%s/%s)' % (
-            line.sequence, len(line.asset_id.depreciation_line_ids))
+                line.sequence, len(line.asset_id.depreciation_line_ids))
             partner = self.env['res.partner']._find_accounting_partner(
                 line.asset_id.partner_id)
             move_line_1 = {
