@@ -2,7 +2,7 @@
 ################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2024-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
+#    Copyright (C) 2023-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
 #    Author: Mruthul Raj(<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
@@ -33,9 +33,9 @@
     'depends': ['web'],
     "assets": {
         'web.assets_backend': [
-            'field_timepicker/static/wickedpicker/stylesheets/wickedpicker.css',
-            'field_timepicker/static/wickedpicker/src/wickedpicker.js',
-            'field_timepicker/static/src/xml/timepicker.xml',
+            'field_timepicker/static/wickedpicker/dist/wickedpicker.min.css',
+            'field_timepicker/static/wickedpicker/dist/wickedpicker.min.js',
+            'field_timepicker/static/src/xml/timepicker_templates.xml',
             'field_timepicker/static/src/js/time_widget.js',
         ],
     },
