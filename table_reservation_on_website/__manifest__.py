@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Table Reservation on Website',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'eCommerce,Point of Sale',
     'summary': 'We can reserve table through website',
     'description': 'We can reserve table through website. And also user can '
