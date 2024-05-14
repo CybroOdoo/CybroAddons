@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Customizing the website sale products breadcrumb template -->
+    <template id="website_sale_products_breadcrumb"
+              inherit_id="website_sale.products_breadcrumb">
+        <xpath expr="//a[@href='/shop']" position="replace">
+            <t t-set="from_view_all"
+               t-value="request.params.get('from_view_all')"/>
+            <t t-set="previous_path"
+               t-value="request.httprequest.headers.get('referer')"/>
+            <a href="javascript: window.history.back()" id="breadcrumb-link"
+               t-if="from_view_all == 'true' and previous_path"
+               t-esc="previous_path.split('/')[-1].capitalize() if previous_path.split('/') else 'Products'"/>
+            <a href="/" t-if="previous_path.split('/')[-1] == ''">Home</a>
+            <a href="/shop" id="breadcrumb-link"
+               t-if="not (from_view_all == 'true' and previous_path)">Products
+            </a>
+        </xpath>
+    </template>
+</odoo>
