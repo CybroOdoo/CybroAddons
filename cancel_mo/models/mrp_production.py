@@ -20,23 +20,29 @@
 #
 #############################################################################
 from collections import defaultdict
-from odoo import models
+from odoo import fields, models
 
 
 class MrpProduction(models.Model):
     """inheriting mrp.production to add more functionality"""
     _inherit = 'mrp.production'
 
+    cancel_inventory_moves = fields.Boolean(string="Cancel Inventory Moves",
+                                            help="Whether to cancel "
+                                                 "the inventory moves")
+    cancel_workorder = fields.Boolean(string="Cancel WorkOrder",
+                                      help="Whether to cancel "
+                                           "the work order")
+
     def action_cancel_mo(self):
         """Cancels the mo"""
-        self.action_cancel()
-        self.state = 'cancel'
         inventory_move_status = self.env[
             'ir.config_parameter'].sudo().get_param(
             'cancel_mo.is_cancel_inventory_moves')
         work_order_status = self.env['ir.config_parameter'].sudo().get_param(
             'cancel_mo.is_cancel_workorder')
         if inventory_move_status:
+            self.state = 'cancel'
             move_lines_ids = self.env['stock.move.line'].search(
                 [('reference', '=', self.name)])
             for rec in move_lines_ids:
@@ -49,7 +55,7 @@ class MrpProduction(models.Model):
                 rec.action_cancel()
 
     def _action_cancel(self):
-        """Overriding the cancel methode"""
+        """Overriding the cancel method"""
         documents_by_production = {}
         for production in self:
             documents = defaultdict(list)

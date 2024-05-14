@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Cancel Manufacturing Order',
-    'version': '17.0.1.0.0',
+    'version': '17.0.2.1.1',
     'summary': 'You can cancell the manufcturing order',
     'category': 'Manufcturing',
     'description': 'This is used to cancel the manufcatring order and also '
@@ -39,7 +39,7 @@
     ],
     'license': 'LGPL-3',
     'installable': True,
-    'application': False,
     'auto_install': False,
+    'application': False,
 }
 
