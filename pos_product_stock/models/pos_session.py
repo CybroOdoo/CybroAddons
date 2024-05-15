@@ -82,7 +82,7 @@ class PosSession(models.Model):
     def _get_pos_ui_res_config_settings(self, params):
         """this function should use the search_read
         method to search and read records from the base setting"""
-        config_settings = self.env['res.config.settings'].search_read(**params['search_params'])
+        config_settings = self.env['res.config.settings'].sudo().search_read(**params['search_params'])
         if config_settings:
             last_config_setting = config_settings[-1]
             return last_config_setting
