@@ -372,11 +372,14 @@ class CRMLead(models.Model):
             group by extract(month from create_date) order by extract(
             month from create_date);''' % month_string)
             data = self._cr.dictfetchall()
+            print("data", data)
             for rec in data:
-                datetime_object = datetime.strptime(
-                    str(int(rec['date_part'])), "%m")
-                month_name = datetime_object.strftime("%B")
-                month_dict[month_name] = rec['count']
+                print("RECCCCCCC", rec)
+                if rec.get("date_part"):
+                    datetime_object = datetime.strptime(
+                        str(int(rec['date_part'])), "%m")
+                    month_name = datetime_object.strftime("%B")
+                    month_dict[month_name] = rec['count']
             test = {'month': list(month_dict.keys()),
                     'count': list(month_dict.values())}
         return test
@@ -398,7 +401,8 @@ class CRMLead(models.Model):
                             ORDER BY COUNT(country_id) DESC''')
         data_lost = self._cr.fetchall()
         country_wise_ratio = [[won[0], won[1], str(round(won[1] / next(
-            (lost[1] for lost in data_lost if lost[0] == won[0]), 1),
+            (lost[1] for lost in data_lost if
+             lost[0] == won[0] and lost[0] != 0 and won[1] != 0), 1),
                                                          2))] for won in
                               data_won[:5]]
         return {'country_wise_ratio': country_wise_ratio}
@@ -506,7 +510,6 @@ class CRMLead(models.Model):
             [('user_id', '=', False), ('type', '=', 'lead')])
         return {'count_unassigned': count_unassigned}
 
-    @api.model
     @api.model
     def get_top_sp_by_invoice(self, kwargs):
         """Top 10 Sales Person by Invoice Table"""

@@ -819,7 +819,6 @@ export class CRMDashboard extends Component {
     render_lost_leads_graph() {
         var self = this;
         var ctx = $(".lost_leads_graph");
-        console.log(ctx)
         jsonrpc('/web/dataset/call_kw/crm.lead/get_lost_lead_by_reason_pie', {
             model: "crm.lead",
             method: "get_lost_lead_by_reason_pie",
