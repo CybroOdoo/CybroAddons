@@ -20,7 +20,8 @@ static template = 'pos_book_order.BookedOrdersButton';
             "book.order", "all_orders", [], {}
         ).then(function(result) {
             self.pos.showScreen('BookedOrdersScreen', {
-                data: result
+                data: result,
+                new_order:false
             });
         })
     }

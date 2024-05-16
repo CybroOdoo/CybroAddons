@@ -27,7 +27,7 @@ patch(Order.prototype, {
         super.init_from_JSON(...arguments);
             // this function is overrided for assigning json value to this
         super.init_from_JSON(...arguments);
-                this.booking_ref_id= json.booking_ref_id;
+        this.booking_ref_id= json.booking_ref_id;
         this.is_booked = json.is_booked;
         this.booked_data = json.booked_data
     },

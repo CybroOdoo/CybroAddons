@@ -86,6 +86,8 @@ class BookOrder(models.Model):
                                          help="Fiscal position account "
                                               "for order",
                                          string='Fiscal Position')
+    pos_order_uid = fields.Char(help="Related Pos order",
+                                         string='Related Pos order')
     pickup_date = fields.Datetime(string='Pickup Date', readonly=True,
                                   help="Picking date of the order")
     deliver_date = fields.Datetime(string='Deliver Date', readonly=True,
@@ -127,10 +129,12 @@ class BookOrder(models.Model):
         self.write({
             'state': 'confirmed',
         })
+        return self.pos_order_uid
+
 
     @api.model
     def create_booked_order(self, partner, phone, address, date, price_list,
-                            product, note, pickup_date, delivery_date):
+                            product, note, pickup_date, delivery_date,pos_order):
         """ It creates a booked order based on the value in the booking popup
              in PoS ui.
              partner(int): id of partner
@@ -149,6 +153,7 @@ class BookOrder(models.Model):
             'delivery_address': address,
             'pricelist_id': price_list if price_list else False,
             'date_quotation': fields.Date.today(),
+            'pos_order_uid':pos_order,
             'book_line_ids': [Command.create({
                 'product_id': product['product_id'][i],
                 'qty': product['qty'][i],
@@ -160,6 +165,7 @@ class BookOrder(models.Model):
             order.write({'pickup_date': pickup_date + ' 00:00:00'})
         if delivery_date:
             order.write({'deliver_date': delivery_date + ' 00:00:00'})
+        return order.name
 
     @api.model
     def all_orders(self):

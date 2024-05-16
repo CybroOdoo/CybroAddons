@@ -47,6 +47,7 @@
             'pos_book_order/static/src/xml/OrderReceipt.xml',
             'pos_book_order/static/src/js/BookOrderPopup.js',
             'pos_book_order/static/src/js/BookOrderButton.js',
+            'pos_book_order/static/src/js/TicketScreen.js',
             'pos_book_order/static/src/js/BookedOrdersButton.js',
             'pos_book_order/static/src/js/BookedOrdersScreen.js',
             'pos_book_order/static/src/js/models.js',

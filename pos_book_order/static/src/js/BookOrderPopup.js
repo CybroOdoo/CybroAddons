@@ -42,11 +42,9 @@ export class BookOrderPopup extends AbstractAwaitablePopup {
     this.Method_pickup.el.style.display='none'
     this.Method_deliver.el.style.display='block'
     }
-    console.log(this.delivery.el.checked)
-    console.log(this.pickup.el.checked)
     }
 
-        async confirm() {
+    async confirm() {
         // on clicking confirm button of popup a new book order with draft stage will created from the backend
         var pickup_date = this.pickup_date.el.value;
         var delivery_date = this.delivery_date.el.value;
@@ -56,6 +54,7 @@ export class BookOrderPopup extends AbstractAwaitablePopup {
         var phone = this.order.partner.phone;
         var date = this.order.date_order;
         var line = this.order.orderlines;
+        var pos_order = this.order.uid;
         if(this.order.pricelist){
                 var price_list = this.order.pricelist.id;
         }
@@ -72,9 +71,20 @@ export class BookOrderPopup extends AbstractAwaitablePopup {
             product['qty'].push(line[i].quantity)
             product['price'].push(line[i].price)
         };
-       await this.orm.call(
-            "book.order", "create_booked_order", [partner, phone, address, date, price_list,product, order_note, pickup_date, delivery_date], {}
-        )
+                var self = this
+        await this.orm.call(
+            "book.order", "create_booked_order", [partner, phone, address, date, price_list,product, order_note, pickup_date, delivery_date,pos_order], {}
+        ).then(function(book_order) {
+                    self.order.booking_ref_id=book_order
+        })
+        await this.orm.call(
+        "book.order", "all_orders", [], {}
+        ).then(function(result) {
+            self.pos.showScreen('BookedOrdersScreen', {
+                data: result,
+                new_order:true
+            });
+        })
         this.cancel();
     }
 

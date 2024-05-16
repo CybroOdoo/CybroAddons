@@ -1,8 +1,4 @@
 /** @odoo-module **/
-/*
- * This file is used to register the a new button for booking orders with selected partner and products.
- */
- /** @odoo-module **/
 
 import { _t } from "@web/core/l10n/translation";
 import { ProductScreen } from "@point_of_sale/app/screens/product_screen/product_screen";
@@ -13,10 +9,8 @@ import { BookOrderPopup } from "./BookOrderPopup";
 import { ErrorPopup } from "@point_of_sale/app/errors/popups/error_popup";
 
 
-
 export class BookOrderButton extends Component {
     static template = "pos_book_order.BookOrderButton";
-
     setup() {
         this.pos = usePos();
         this.popup = useService("popup");
