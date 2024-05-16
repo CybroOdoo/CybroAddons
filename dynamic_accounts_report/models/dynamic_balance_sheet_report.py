@@ -303,13 +303,13 @@ class ProfitLossReport(models.TransientModel):
                     amount = sum(filtered_lines.mapped('debit')) - sum(
                         filtered_lines.mapped('credit'))
                 entries.append({
-                    'name': "{} - {}".format(account.root_id.id, account.name),
+                    'name': "{} - {}".format(account.code, account.name),
                     'amount': "{:,.2f}".format(amount),
                 })
                 total += amount
             else:
                 entries.append({
-                    'name': "{} - {}".format(account.root_id.id, account.name),
+                    'name': "{} - {}".format(account.code, account.name),
                     'amount': "{:,.2f}".format(0),
                 })
         return entries, "{:,.2f}".format(total)
