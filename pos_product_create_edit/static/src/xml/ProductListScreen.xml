@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+<t t-name="pos_product_create_edit.ProductListScreen" owl="1">
+    <div class="partnerlist-screen screen d-flex flex-column bg-100">
+        <div class="top-content d-flex align-items-center p-2 border-bottom text-center">
+            <div class="button highlight btn btn-lg btn-primary" role="img"
+                 aria-label="Create"
+                 t-on-click="createProduct"
+                 title="Create">
+                <t t-if="!env.isMobile">Create</t>
+            </div>
+            <div class="button back btn btn-lg btn-secondary mx-2"
+                 t-on-click="back">
+                <i t-if="env.isMobile" class="fa fa-angle-double-left"/>
+                <t t-if="!env.isMobile">Discard</t>
+            </div>
+            <div class="top-right-buttons d-flex gap-2 w-100 justify-content-end">
+                <div class="search-bar-container sb-partner d-flex align-items-center w-100 w-md-70 w-lg-50 h-100 h-100">
+                    <div class="pos-search-bar form-control d-flex align-items-center bg-view">
+                        <i class="fa fa-search" t-on-click="_onPressEnterKey"/>
+                        <input class="flex-grow-1 w-auto h-100 border-0 p-2 me-4"
+                               type="text" autofocus="autofocus"
+                               t-ref="search-word-input-product"
+                               placeholder="Search Products..." size="1"
+                               t-on-keyup="updateProductList"/>
+                        <i class="fa fa-times end-0 me-2 pe-1 cursor-pointer"
+                           t-on-click="_clearSearch"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <section class="full-content">
+            <div class="partner-window">
+                <section class="subwindow list">
+                    <div class="subwindow-container">
+                        <div class="subwindow-container-fix scrollable-y">
+                            <table class="partner-list table table-striped w-100">
+                                <thead>
+                                    <tr class="partner-line gap-2 gap-lg-0 align-top undefined" style="background-color:#FFFFFF !important;">
+                                        <th> </th>
+                                        <th>Name</th>
+                                        <th t-if="!env.isMobile">Internal Reference
+                                        </th>
+                                        <th t-if="!env.isMobile"
+                                            class="partner-line-category">
+                                            Category
+                                        </th>
+                                        <th t-if="!env.isMobile"
+                                            class="partner-line-price">List
+                                            Price
+                                        </th>
+                                        <th t-if="!env.isMobile"
+                                            class="partner-line-price">Barcode
+                                        </th>
+                                        <th>Edit</th>
+                                    </tr>
+                                </thead>
+                                <tbody t-if="state.products" class="partner-list-contents">
+                                    <t t-foreach="state.products" t-as="product"
+                                       t-key="product.id">
+                                        <ProductLine product="product"/>
+                                    </t>
+                                </tbody>
+                            </table>
+                            <div t-if="!state.products.length"
+                                 class="no-results-message">
+                                <p t-if="env.pos.isEveryProductLoaded and state.search">
+                                    No Product found for
+                                    <b>"<t t-esc="state.search"/>"
+                                    </b>
+                                    .
+                                </p>
+                                <p t-elif="env.pos.isEveryProductLoaded and !state.search">
+                                    There are no products.
+                                </p>
+                                <p t-elif="!env.pos.isEveryProductLoaded and !state.search">
+                                    There are no loaded products.
+                                </p>
+                                <t t-elif="!env.pos.isEveryProductLoaded and state.search">
+                                    <p>No product found for
+                                        <b>"<t t-esc="state.query"/>"
+                                        </b>
+                                        .
+                                    </p>
+                                    <div class="button highlight"
+                                         t-on-click="_onPressEnterKey">
+                                        <i class="fa fa-search"/>
+                                        Search database
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </div>
+</t>
+</templates>
