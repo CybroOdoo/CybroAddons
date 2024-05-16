@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<!-- Customization of the sale.order form view -->
+	<record id="view_order_form" model="ir.ui.view">
+		<field name="name">sale.order.view.form.inherit.website.product.reservation</field>
+		<field name="inherit_id" ref="sale.view_order_form"/>
+		<field name="model">sale.order</field>
+		<field name="arch" type="xml">
+			<!-- Adding buttons for custom actions inside the form header -->
+			<xpath expr="//form/header" position="inside">
+				<!-- Button to create a quotation -->
+				<button name="action_make_draft" string="Create Quotation"
+						type="object" class="oe_highlight"
+						invisible="state != 'reserve'"/>
+				<!-- Button to cancel reservation -->
+				<button name="action_cancel_reservation" string="Cancel Reservation" type="object" invisible="state != 'reserve'"/>
+			</xpath>
+		</field>
+	</record>
+	<!-- Action for viewing reservation orders -->
+	<record id="action_view_reservation_orders" model="ir.actions.act_window">
+		<field name="name">Reservation Orders</field>
+		<field name="res_model">sale.order</field>
+		<field name="view_mode">tree,kanban,form,activity</field>
+		<field name="domain">[('state', '=', 'reserve'), ('website_id', '!=', False)]</field>
+		<field name="context" eval="{'show_sale': True, 'create': False}"/>
+		<field name="help" type="html">
+			<p class="o_view_nocontent_empty_folder">
+                There is no reservation order from the website yet
+            </p>
+		</field>
+	</record>
+	<!-- Menu item for the Reservation Orders -->
+	<menuitem id="menu_orders_reservation_orders" name="Reservation Orders"
+        action="action_view_reservation_orders"
+        parent="website_sale.menu_orders"/>
+</odoo>

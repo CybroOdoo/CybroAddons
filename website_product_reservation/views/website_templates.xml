@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<!-- Template for Reservation -->
+	<template id="reservation_page" name="Reservation">
+		<t t-call="website.layout">
+			<!-- Main structure for the reservation page -->
+			<div id="wrap" class="js_sale o_wsale_products_page">
+				<div class="oe_structure oe_empty oe_structure_not_nearest"
+                     id="oe_structure_website_sale_products_1"/>
+				<div class="container oe_website_sale pt-2">
+					<h3 style="text-align: center;">
+                        Reserve Products
+                    </h3>
+					<!-- Product display section -->
+					<div class="row">
+						<t t-foreach="products" t-as="product">
+							<div class="col-md-3"
+                                 style="border: 1px solid rgba(100, 100, 100, 0.2);padding: 0 15px 10px 32px;">
+								<div class="card-body p-1 oe_product_image">
+									<input type="hidden" name="csrf_token"
+                                           t-att-value="request.csrf_token()"/>
+									<a t-att-href="product_href"
+                                       class="d-block h-100"
+                                       itemprop="url">
+										<t t-set="image_holder"
+                                           t-value="product._get_image_holder()"/>
+										<span t-field="image_holder.image_1920"
+                                              t-options="{'widget': 'image', 'preview_image': 'image_1920'}"
+                                              class="d-flex h-100 justify-content-center align-items-center"/>
+									</a>
+								</div>
+								<!-- Product details section -->
+								<div class="product details product-item-details">
+									<h6 class="o_wsale_products_item_title mb-2">
+										<a class="product-item-link"
+                                           t-attf-href="/shop/product/#{slug(product)}">
+											<span t-field="product.name"/>
+										</a>
+									</h6>
+									<!-- Reservation button -->
+									<div class="actions-primary"
+                                         style="text-align: center;">
+										<form t-attf-action="/reservation/reserve?type_name=Reservation"
+                                              method="post">
+											<input name="product_id"
+                                                   t-att-value="product.product_variant_ids[0].id"
+                                                   type="hidden"/>
+											<input type="hidden"
+                                                   name="csrf_token"
+                                                   t-att-value="request.csrf_token()"/>
+											<!-- Reservation button -->
+											<button type="submit"
+                                                    title="Add to Reserve Cart"
+                                                    class="btn btn-primary"
+                                                    onclick="submit();"
+                                                    style="background-color: #337ab7 !important; border: 1px solid white !important;">
+												<span>Reserve</span>
+											</button>
+										</form>
+									</div>
+									<a href="#"
+                                       class="action actions-secondary"
+                                       title="Compare"
+                                       aria-label="Compare"
+                                       role="button"
+                                       style="visibility: visible;
+														position: static;
+														opacity: 1;
+														height: 40px;
+														line-height: 40px;
+														top: 0;
+														width: 40px;
+														border: 0;
+														background-color: #e6e6e6;
+														color: #000; display: none;">
+										<i class="fa fa-signal"
+                                           aria-hidden="true"/>
+										<span>Compare</span>
+									</a>
+								</div>
+							</div>
+						</t>
+						<t t-if="not products">
+							<div class="text-center text-muted oe_product">
+								<h3 class="css_editable_display">No reserve product
+									defined.
+								</h3>
+								<p groups="sales_team.group_sale_manager">Click
+									<i>
+									'New'
+								</i> in the top-right corner to create your first
+									product.
+
+								</p>
+							</div>
+		</t>
+					</div>
+				</div>
+			</div>
+			<div class="products_pager o_portal_pager d-flex justify-content-center pt-5 pb-3">
+				<t t-call="website.pager"/>
+			</div>
+		</t>
+	</template>
+	<!-- Inherited Template to Add Reservation Link -->
+	<template id="inherit_product_reservation"
+              inherit_id="website_sale.product">
+		<xpath expr="//form" position="inside">
+			<t t-if="product.reserve_products and product.website_published">
+				<a href="/reservation" id="reservation_page" role="button">
+                    RESERVE THIS PRODUCT
+                </a>
+			</t>
+		</xpath>
+	</template>
+	<!-- Template for Reserve From Cart -->
+	<template id="reserve_from_cart" inherit_id="website_sale.checkout_layout">
+		<xpath expr="//t[@t-call='website_sale.navigation_buttons']"
+               position="after">
+			<br/>
+			<div t-if="website_sale_order and website_sale_order.is_reservation_order">
+				<a class="btn btn-primary float-end" role="button"
+                   href="/reservation/confirm_reserve_order">
+					<span>Reserve</span>
+					<span class="fa fa-chevron-right"/>
+				</a>
+			</div>
+		</xpath>
+	</template>
+	<!-- Template for Reserve Thankyou -->
+	<template id="reservation_thankyou" name="Reservation Thank You">
+		<t t-call="website.layout">
+			<div id="wrap">
+				<div class="oe_structure"/>
+				<div class="container">
+					<h1>Thank you!
+						<span>Order
+							<em t-field="order.name"/>
+                            Reserved
+						</span>
+					</h1>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="alert alert-success">
+                                    Thanks for your reservation request. Your
+                                    reservation has been confirmed.
+
+                                </div>
+						</div>
+					</div>
+				</div>
+				<div class="oe_structure"/></div>
+		</t>
+	</template>
+	<!-- Template for Not Allowed Page-->
+	<template id="not_allowed_to_reserve_page" name="not_allowed_popup">
+		<t t-call="website.layout">
+			<div id="wrap">
+				<div class="oe_structure"/>
+				<div class="container">
+					<h1 class="modal-title">Reservation Not
+                        Allowed
+                    </h1>
+					<div class="row">
+						<div class="col-md-12">
+							<p>You cannot reserve this Order
+                            </p>
+						</div>
+						<a href="/shop/cart">Back to Cart</a>
+					</div>
+				</div>
+			</div>
+		</t>
+	</template>
+</odoo>

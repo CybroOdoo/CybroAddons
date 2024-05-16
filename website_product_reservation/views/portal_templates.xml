@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<template id="website_product_reservation" name="product_reservation"
+              inherit_id="portal.portal_my_home"
+              customize_show="True"
+              priority="32">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/website_product_reservation/static/src/img/bag.svg'"/>
+                <t t-set="title">Reservation</t>
+                <t t-set="url" t-value="'/my/reservation/requests'"/>
+                <t t-set="text">Check all the Reservation</t>
+                <t t-set="placeholder_count" t-value="'reservation_count'"/>
+            </t>
+        </xpath>
+    </template>
+    <template id="portal_my_reservation_requests_tree">
+        <t t-call="portal.portal_layout">
+            <div class="groupby_courier">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <h8 style="margin-left: -1250px;color: darkslategray;">/ My
+                   Reservation Order
+                </h8>
+            </t>
+            <t
+                    t-call="website_product_reservation.portal_my_reservation_search"/>
+            </div>
+        </t>
+    </template>
+    <template id="portal_my_reservation_search">
+        <div id="search_courier_requests_group" class="search_courier_requests">
+            <t t-if="not reservation_request">
+                <h5>There are currently no Reservation requests for your
+                    account.
+                </h5>
+            </t>
+            <t t-if="reservation_request" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Reservation Order #</th>
+                        <th class="text-right">Order date</th>
+                        <th class="text-right">Total</th>
+                    </tr>
+                </thead>
+                <t t-foreach="reservation_request" t-as="reservation">
+                    <tr>
+                        <td id="my_selector">
+                            <a class="my_reservation_request_link"
+                               t-attf-data-id="{{reservation.id}}"
+                               t-attf-href="/my/reservation/requests/form/{{reservation.id}}">
+                                <t t-esc="reservation.name"/>
+                            </a>
+                        </td>
+                        <td class="text-right">
+                            <span t-field="reservation.create_date"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-field="reservation.amount_total"/>
+                        </td>
+                    </tr>
+                </t>
+            </t>
+        </div>
+    </template>
+
+    <template id="portal_my_reservation_requests_form"
+              name="Reservation Request Form">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <a href="/my/reservation/requests">
+                    <h8 style="margin-left: -1231px;color: darkslategray;"
+                       class="breadcrumb-item active">/ My Reservation
+                        Order
+                    </h8>
+                </a>
+                <h8 style="margin-left: -1064px;color: darkgray;">/ Reservation
+                    Order
+                    <t t-esc="record_reservation_requests['name']"/>
+                </h8>
+            </t>
+            <!--            Slidebar-->
+            <div class="row mt16 o_portal_sale_sidebar">
+                <t t-call="portal.portal_record_sidebar">
+                    <t t-set="classes" t-value="'col-lg-auto d-print-none'"/>
+                    <t t-set="title">
+                        <h4 class="mb-0">
+                            <t t-esc="record_reservation_requests['name']"/>
+                        </h4>
+                    </t>
+                    <t t-set="entries">
+                        <ul class="list-group list-group-flush flex-wrap flex-row flex-lg-column">
+                            <li class="list-group-item d-grid align-content-start">
+                                <div class="small mb-1">
+                                    <strong class="text-muted">Your Contact
+                                    </strong>
+                                </div>
+                                <div class="row flex-nowrap">
+                                    <div class="col flex-grow-0 pe-2">
+                                        <img class="rounded-circle mr4 float-start o_portal_contact_img"
+                                             t-att-src="image_data_uri(record_reservation_requests['partner_id'].avatar_1024)"
+                                             alt="Contact" style="width: 150px"/>
+                                    </div>
+                                    <div class="col ps-0"
+                                         style="min-width: 150px">
+                                        <span
+                                                t-esc="record_reservation_requests['partner_id']"
+                                              t-options='{"widget": "contact", "fields": ["name", "phone"], "no_marker": True}'/>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </t>
+                </t>
+                <div id="reservation_requests_call_page_details"
+                     class="col-12 col-lg justify-content-end">
+                    <div t-attf-class="card #{'pb-5' if report_type == 'html' else ''}"
+                         id="cer_portal_doc_content">
+                        <div class="card pb-5" style="padding: 1rem 1rem;">
+                            <div class="container">
+                                <h4 class="mb-0" style="margin-left:15px;">
+                                    <br/>
+                                    <b>
+                                        <span><strong>Reservation
+                                            Order  :  </strong> <t
+                                            t-esc="record_reservation_requests['name']"/></span>
+                                        <span
+                                                t-if="record_reservation_requests['state'] == 'reserve'">
+<a
+        t-att-href="'/my/reservation/requests/form/id=%s' % (record_reservation_requests.id)">
+                                            <button type="button"
+                                                    t-att-id="record_reservation_requests.id"
+                                                    class="btn btn-primary">
+                                                <i class="fa fa-caret-left">
+                                                </i>
+                                               Cancel
+                                            </button>
+                                        </a>
+                                        </span>
+                                        <span
+                                                t-if="record_reservation_requests['state'] == 'reserve'">
+<a
+        t-att-href="'/my/reservation/requests/form/confirm=%s' % (record_reservation_requests.id)">
+                                            <button type="button"
+                                                    t-att-id="record_reservation_requests.id"
+                                                    class="btn btn-primary">
+                                                <i class="fa fa-caret-left">
+                                                </i>
+                                               Create A Sale
+                                            </button>
+                                        </a>
+                                        </span>
+                                    </b>
+                                </h4>
+                                <hr style="width:100%"/>
+                            </div>
+                            <!--                        Page Content-->
+                            <table class="table-responsive">
+                                <tr>
+                                    <th>Reserve Date : <t
+                                                t-esc="record_reservation_requests['date_order']"/></th>
+                                </tr>
+                                <tr>
+                                    <th>Expiration Date: <t
+                                                t-esc="record_reservation_requests['validity_date']"/></th>
+                                </tr>
+                                <tr>
+                                    <th>Status:
+                                        <t
+                                                t-esc="{'draft': 'Quotation','sent':'Quotation sent','reserve': 'Reserved', 'sale': 'Sale Order', 'cancel': 'Cancelled'} [record_reservation_requests['state']]"/>
+                                    </th>
+                                </tr>
+                            </table>
+                            <br/>
+                            <table class="table table-sm o_main_table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Unit Price</th>
+                                        <th>Taxes</th>
+                                        <th>Sub Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t
+                                            t-foreach="record_reservation_requests['order_line']"
+                                       t-as="line">
+                                        <tr>
+                                            <td>
+                                                <t
+                                                        t-esc="line.product_id.name"/>
+                                            </td>
+                                            <td>
+                                                <t
+                                                        t-esc="line.product_uom_qty"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="line.price_unit"/>
+                                            </td><td>
+                                                <t t-esc="line.tax_id.name"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="line.price_subtotal"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                            <div>
+                                <div class="col-sm-7 col-md-6 ms-auto">
+                                    <table class="table table-sm">
+                                        <tr class="border-black o_total">
+                                            <th>Total</th>
+                                            <td class="text-end">
+                                                <t
+                                                        t-esc="record_reservation_requests['amount_total']"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
