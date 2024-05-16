@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Inherit OrderReceipt to Modify it -->
+    <t t-name="total_quantity_pos.OrderReceipt"
+       t-inherit="point_of_sale.OrderReceipt"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('pos-receipt-amount')]" position="before">
+            <t t-set="order" t-value="this.env.services.pos.get_order()"/>
+            <t t-if="this.env.services.pos.config.pos_total_quantity">
+              <div class="total_qty" style="margin-left:150px">
+                  <div class="values" style="font-weight: bold;">
+                      <span class="badge" style="font-size: 16px;">Total Items:
+                          <t t-esc="order.orderlines.length"/></span>
+                      <br/>
+                      <span class="badge" style="font-size: 16px;">Total Quantity:
+                          <t t-set="total_qty" t-value="0"/>
+                          <t t-foreach="order.orderlines" t-as="line"
+                             t-key="line">
+                               <t t-esc=""/>
+                              <t t-set="total_qty"
+                                 t-value="total_qty + line.quantity"/>
+                          </t>
+                          <t t-esc="total_qty"/>
+                      </span>
+                      <br/>
+                      <br/>
+                  </div>
+              </div>
+          </t>
+        </xpath>
+    </t>
+</templates>
