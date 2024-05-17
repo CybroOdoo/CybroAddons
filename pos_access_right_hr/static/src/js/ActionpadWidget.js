@@ -8,14 +8,15 @@ patch(ActionpadWidget.prototype, {
         super.setup();
     },
     disable_customer() {
-        if (this.pos.cashier.disable_customer) {
+        if (this.pos.cashier?.disable_customer) {
             return true;
         } else {
             return false;
         }
     },
     disable_payment() {
-        if (this.pos.cashier.disable_payment) {
+        console.log(this.pos.cashier?.disable_customer)
+        if (this.pos.cashier?.disable_payment) {
             return true;
         } else {
             return false;
