@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Inherit view of purchase  -->
+    <record id="purchase_order_form" model="ir.ui.view">
+        <field name="name">purchase.order.inherit.view.form.all.in.one.purchase.kit</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id"
+               ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <header>
+                <button
+                    name="recommendation_wizard"
+                    invisible="state not in ('draft','sent')"
+                    string="Recommended Products"
+                    type="object"/>
+            </header>
+            <xpath expr="//field[@name='currency_id']" position="after">
+                <field name="requisition_order"/>
+            </xpath>
+            <!--Amount in words field in po-->
+            <xpath expr="//field[@name='notes']" position="before">
+                <group colspan="8">
+                    <div style="width: 600%;">
+                        <b>
+                            <label for="number_to_words"/>
+                        </b>
+                        <field name="number_to_words"/>
+                    </div>
+                </group>
+            </xpath>
+            <!--Icon in purchase order line-->
+            <xpath expr="//field[@name='order_line']/tree//field[@name='product_id']"
+                   position="before">
+                <button name="get_product_form" type="object"
+                        title="Sale/Purchase History"
+                        icon="fa-external-link" string=""/>
+            </xpath>
+            <!--Field in purchase order line-->
+            <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']"
+                   position="before">
+                <field name="barcode_scan"/>
+            </xpath>
+            <!--Adding image in purchase order line-->
+            <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']"
+                   position="after">
+                <field name="product_image" widget="image"
+                       style="height:30px;width:30px ;" readonly="1"/>
+            </xpath>
+            <!--Add discount in purchase order line-->
+            <xpath expr="//field[@name='order_line']/tree/field[@name='taxes_id']"
+                   position="before">
+                <field name="discount"/>
+            </xpath>
+            <!--Add button catalog-->
+    <xpath expr="//control"
+           position="inside">
+        <button name="add_catalog_control" class="btn-link"
+                type="object"
+                string="Add from catalog"
+                context="{
+            'tree_view_ref': 'all_in_one_purchase_kit.product_product_view_tree',
+            'form_view_ref': 'all_in_one_purchase_kit.product_product_form_view',
+            'kanban_view_ref': 'all_in_one_purchase_kit.product_product_view_kanban','id': parent.id,}"/>
+    </xpath>
+        </field>
+    </record>
+    <!--Total amount in company currency in purchase order tree view-->
+    <record id="purchase_order_kpis_tree" model="ir.ui.view">
+        <field name="name">purchase.order.inherit.view.tree.all.in.one.purchase.kit</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='amount_total']" position="after">
+                <field name="company_currency_amount"
+                       string="Company Currency Total"/>
+            </xpath>
+            <!--Multiple order confirm or cancel button view-->
+            <xpath expr="//tree" position="inside">
+                <header>
+                    <button class="btn-primary" name="action_multi_confirm"
+                            type="object"
+                            string="Confirm Orders"/>
+                    <button class="btn-secondary" name="action_multi_cancel"
+                            type="object"
+                            string="Cancel Orders"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+</odoo>
