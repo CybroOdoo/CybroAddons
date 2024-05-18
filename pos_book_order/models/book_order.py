@@ -74,7 +74,8 @@ class BookOrder(models.Model):
                                    help='Address of customer for delivery')
     pricelist_id = fields.Many2one('product.pricelist', string='Pricelist',
                                    help="Pricelist of order from session")
-
+    pos_order_uid = fields.Char(help="Related Pos order",
+                                string='Related Pos order')
     @api.model
     def _amount_line_tax(self, line, fiscal_position_id):
         """ Calculates the tax amount of the order line"""
@@ -102,6 +103,13 @@ class BookOrder(models.Model):
                 sum(line.price_subtotal for line in order.book_line_ids))
             order.amount_total = order.amount_tax + amount_untaxed
 
+    def action_confirm(self):
+        """ Function to confirm the book order"""
+        self.write({
+            'state': 'confirmed',
+        })
+        return self.pos_order_uid
+
     @api.model
     def create(self, vals):
         """ Inherited create function to generate sequence number
@@ -115,7 +123,7 @@ class BookOrder(models.Model):
 
     @api.model
     def create_booked_order(self, partner, phone, address, date, price_list,
-                            product, note, pickup, delivery):
+                            product, note, pickup, delivery, pos_order_uid):
         """ It creates a booked order based on the value in the booking popup
              in PoS ui.
              partner(int): id of partner
@@ -136,6 +144,7 @@ class BookOrder(models.Model):
             'delivery_address': address,
             'pricelist_id': price_list,
             'date_quotation': book_date,
+            'pos_order_uid': pos_order_uid,
             'book_line_ids': [(0, 0, {
                 'product_id': product['product_id'][i],
                 'qty': product['qty'][i],
@@ -147,6 +156,7 @@ class BookOrder(models.Model):
             order.write({'pickup_date': pickup + ' 00:00:00'})
         if delivery:
             order.write({'deliver_date': delivery + ' 00:00:00'})
+        return order.name
 
     @api.model
     def all_orders(self):

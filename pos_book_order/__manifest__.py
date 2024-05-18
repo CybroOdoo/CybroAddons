@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'POS Booking Order',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'summary': """Users can now book pickup or delivery orders directly 
      from the Point of Sale (POS) session, later can confirm as POS order.""",
     'description': """The module helps you to book orders from Shop,
@@ -43,6 +43,7 @@
     'assets': {
         'point_of_sale.assets': [
             '/pos_book_order/static/src/js/BookOrderPopup.js',
+            '/pos_book_order/static/src/js/Ticketscreen.js',
             '/pos_book_order/static/src/js/BookOrderButton.js',
             '/pos_book_order/static/src/js/BookedOrdersButton.js',
             '/pos_book_order/static/src/js/BookedOrdersScreen.js',

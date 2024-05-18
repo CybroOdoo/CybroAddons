@@ -12,28 +12,32 @@ class BookedOrdersScreen extends TicketScreen {
         useListener('click-confirm', this._Confirm);
     }
     back() {
+        this.showScreen('ProductScreen');
+    }
+    orderDone() {
      // on clicking the back button it will redirected Product screen
-        this.showScreen('ProductScreen');
+    const newOrder = this.env.pos.add_new_order();
+    this.env.pos.set_order(newOrder);
+    this.showScreen('ProductScreen');
     }
-    _Confirm(ev) {
-        // On clicking confirm button on  each order a order will create with corresponding partner and products,user can do the payment
-        var self = this
-        var data = ev.detail
-        this.env.pos.add_new_order();
-        for (var i of data.products) {
-            var product = self.env.pos.db.get_product_by_id(i['id'])
-            var qty = i['qty']
-            this.env.pos.get_order().add_product(product, {
-                quantity: qty,
-                 price: i['price']
-            })
-        }
-        var partner_id = data.partner_id
-        this.env.pos.get_order().set_client(this.env.pos.db.get_partner_by_id(partner_id));
-        this.env.pos.get_order().is_booked = true
-        this.env.pos.get_order().booked_data = data
-        this.showScreen('ProductScreen');
-    }
+    async _Confirm(ev) {
+    // On clicking confirm button on  each order a order will create with corresponding partner and products,user can do the payment
+    var self = this
+    var data = ev.detail
+    var uid = await this.rpc({
+                    model: 'book.order',
+                    method: 'action_confirm',
+                    args: [data.id]
+                })
+    var order = this.env.pos.get('orders').models.find((order) => order.uid == uid);
+    var partner_id = data.partner_id
+    order.is_booked = true
+    order.booked_data = data
+    order.booking_ref_id = data.id
+    this.env.pos.set_order(order);
+
+    this.showScreen('ProductScreen');
+}
 }
 BookedOrdersScreen.template = 'BookedOrdersScreen';
 Registries.Component.add(BookedOrdersScreen);
