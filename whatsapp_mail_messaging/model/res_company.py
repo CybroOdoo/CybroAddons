@@ -19,8 +19,14 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import website
-from . import sale_order
-from . import account_move
-from . import res_company
-from . import res_config_settings
+from odoo import fields, models
+
+
+class ResCompany(models.Model):
+    """
+    Extends the 'res.company' model to include WhatsApp message template.
+    """
+    _inherit = 'res.company'
+
+    whatsapp_message = fields.Text(string="Message Template",
+                                   help="whatsapp message template")

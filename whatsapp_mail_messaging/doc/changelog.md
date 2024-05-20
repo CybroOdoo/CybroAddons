@@ -10,6 +10,11 @@
 #### UPDT
 - New Features added
 
+#### 20.05.2024
+#### Version 14.0.2.2.1
+#### UPDT
+- New Message template Features added.
+
 
 
 
