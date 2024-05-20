@@ -19,6 +19,14 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+from odoo import fields, models
 
-from . import wh_message_wizard
-from . import portal_share
+
+class ResCompany(models.Model):
+    """
+    Extends the 'res.company' model to include WhatsApp message template.
+    """
+    _inherit = 'res.company'
+
+    whatsapp_message = fields.Text(string="Message Template",
+                                   help="whatsapp message template")

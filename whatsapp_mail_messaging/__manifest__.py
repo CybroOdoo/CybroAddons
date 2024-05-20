@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -22,7 +22,7 @@
 
 {
     'name': 'Odoo Whatsapp Connector',
-    'version': '15.0.1.0.1',
+    'version': '15.0.1.1.1',
     'category': 'Extra Tools',
     'summary': """Odoo Whatsapp Connector For Sales, Invoice, and Floating button in Website""",
     'description': """Added options for sending Whatsapp messages and Mails in systray bar,sale order, invoices, 
@@ -38,6 +38,8 @@
         'views/sale_order_inherited.xml',
         'views/account_move_inherited.xml',
         'views/website_inherited.xml',
+        'views/res_company_views.xml',
+        'views/res_config_settings_views.xml',
         'wizard/wh_message_wizard.xml',
         'wizard/portal_share_inherited.xml',
         'security/ir.model.access.csv',
