@@ -3,8 +3,8 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2020-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Sayooj A O(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -19,8 +19,15 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import website
-from . import sale_order
-from . import account_move
-from . import res_company
-from . import res_config_settings
+from odoo import fields, models
+
+
+class ResConfigSettings(models.TransientModel):
+    """
+    Extends the 'res.config.settings' model to include additional configuration settings.
+    """
+    _inherit = 'res.config.settings'
+
+    whatsapp_message = fields.Text(string="Message Template",
+                                   related='company_id.whatsapp_message',
+                                   readonly=False)
