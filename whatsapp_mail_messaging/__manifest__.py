@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Odoo Whatsapp Connector',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'category': 'Extra Tools',
     'summary': """Whatsapp Odoo Integration, Odoo Whatsapp Connector, Odoo Whatsapp, Whatsapp Connector, Whatsapp Integration, Odoo17, Whatsapp, Odoo Apps""",
     'description': """Added options for sending Whatsapp messages and emails in 
@@ -40,6 +40,7 @@
         'views/account_move_views.xml',
         'views/website_views.xml',
         'views/selection_message_views.xml',
+        'views/res_config_settings_views.xml',
         'wizard/whatsapp_send_message_views.xml',
         'wizard/portal_share_views.xml',
     ],

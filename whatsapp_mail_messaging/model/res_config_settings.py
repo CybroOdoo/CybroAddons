@@ -19,9 +19,15 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import account_move
-from . import sale_order
-from . import selection_message
-from . import website
-from . import res_config_settings
-from . import res_company
+from odoo import fields, models
+
+
+class ResConfigSettings(models.TransientModel):
+    """
+    Extends the 'res.config.settings' model to include additional configuration settings.
+    """
+    _inherit = 'res.config.settings'
+
+    whatsapp_message = fields.Text(string="Message Template",
+                                   related='company_id.whatsapp_message',
+                                   readonly=False)
