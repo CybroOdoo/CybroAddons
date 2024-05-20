@@ -78,10 +78,7 @@ class CustomerPortal(portal.CustomerPortal):
          values event, page, pager, filter, sort, and search"""
         values = self._prepare_portal_layout_values()
         Venue = request.env['venue.booking']
-        domain = expression.AND([
-            domain or [],
-            self._get_booking_domain(),
-        ])
+        domain = []
         searchbar_sortings = self._get_venue_booking_searchbar_sortings()
         # default sort by order
         if not sortby:
@@ -135,10 +132,6 @@ class CustomerPortal(portal.CustomerPortal):
         return self._get_page_view_values(venue, access_token, values,
                                           'my_venue_booking_history', False,
                                           **kwargs)
-
-    def _get_booking_domain(self):
-        """Returns the booking that are in stage 'cancel' and 'draft'"""
-        return [('state', 'not in', ('cancel', 'closed'))]
 
     def _get_venue_booking_searchbar_sortings(self):
         """Sort the booking based on the date and name"""

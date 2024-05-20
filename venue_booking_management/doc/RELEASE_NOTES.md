@@ -7,5 +7,9 @@
 #### 06.05.2024
 #### Version 17.0.1.0.1
 ##### UPDT
-- Bug Fix-Revised the validations for venue booking.
+- Bug Fix-Revised the validations for venue booking
 
+#### 20.05.2024
+#### Version 17.0.1.0.2
+##### UPDT
+- Bug Fix-Updated the workflow of venue booking and cancellation 

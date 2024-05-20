@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Venue / Event Booking Management',
-    'version': '17.0.1.0.1',
+    'version': '17.0.1.0.2',
     'summary': 'Core Module for Managing Different Types of '
                'Venue/ Event Booking.',
     'description': 'Core Module for Managing Different Types of '
@@ -36,8 +36,10 @@
     'website': "https://www.cybrosys.com",
     'data': [
         'security/venue_booking_management_groups.xml',
+        'security/venue_booking_secruity.xml',
         'security/ir.model.access.csv',
         'data/venue_type_data.xml',
+        'data/cancellation_email_template_data.xml',
         'data/confirmation_email_template_data.xml',
         'views/venue_booking_views.xml',
         'views/venue_type_views.xml',

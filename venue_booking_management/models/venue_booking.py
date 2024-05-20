@@ -161,7 +161,6 @@ class VenueBooking(models.Model):
                  ('state', 'in', ['confirm', 'invoice'])
                  ])
             if booking:
-                print(booking.state)
                 raise ValidationError(
                     "Venue is not available for the selected time range.")
 
@@ -172,7 +171,7 @@ class VenueBooking(models.Model):
         for record in self:
             if record.start_date and record.end_date:
                 delta = record.end_date - record.start_date
-                record.days_difference = delta.days
+                record.days_difference = delta.days + 1
             else:
                 record.days_difference = 0
 
@@ -235,8 +234,17 @@ class VenueBooking(models.Model):
             if bookings:
                 raise ValidationError(
                     "Booking dates overlap with existing bookings.")
-            else:
-                self.state = "confirm"
+            draft_bookings = self.env['venue.booking'].search([
+                ('venue_id', '=', booking.venue_id.id),
+                ('start_date', '<', booking.end_date),
+                ('end_date', '>', booking.start_date),
+                ('state', '=', 'draft'),
+                ('id', '!=', booking.id),  # Exclude the current record itself
+            ])
+            if draft_bookings:
+                for draft in draft_bookings:
+                    draft.action_booking_cancel()
+            self.state = "confirm"
 
     def action_reset_to_draft(self):
         """Button action to reset"""
@@ -346,7 +354,23 @@ class VenueBooking(models.Model):
                 search_count([('invoice_origin', '=', self.ref)])
 
     def action_booking_cancel(self):
-        """Button action to move the cancel state"""
+        """Button action to move the cancel state and send email"""
+        template = self.env.ref(
+            'venue_booking_management.mail_template_cancel_venue_booking').sudo()
+        template.send_mail(self._origin.id, force_send=True,
+                           email_values={
+                               'email_to': self.partner_id.email})
+        for rec in self:
+            body = Markup(
+                "<p>%(greeting)s<br/><br/>%(content)s<br/><br/>%(conclude)s<p>") % {
+                       'greeting': _("Dear %s", rec.partner_id.name),
+                       'content': _(
+                           "Your booking for the venue %s has been cancelled. Please log in to "
+                           "your portal for further details.",
+                           rec.venue_id.name),
+                       'conclude': _('Thank You'),
+                   }
+            rec.message_post(body=body)
         self.state = "cancel"
 
     def action_booking_close(self):
