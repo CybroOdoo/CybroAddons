@@ -22,11 +22,13 @@
 {
     'name': "MRP Substitutes Products",
     'version': '16.0.1.0.0',
-    'summary': """ We can substitute the product in manufacturing module while
-     unavailable the component.In odoo 16 """,
-    'description': """We can substitute the product in manufacturing module 
-    while unavailable the component.Already chosen substitute product will 
-    assign there automatically.""",
+    'summary': """
+        We can substitute the product in manufacturing module while unavailable
+         the component.In odoo 16 """,
+    'description': """
+        We can substitute the product in manufacturing module while unavailable
+         the component.Already chosen substitute product will assign there 
+         automatically.""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
@@ -43,4 +45,3 @@
     'application': False,
     'auto_install': True
 }
-
