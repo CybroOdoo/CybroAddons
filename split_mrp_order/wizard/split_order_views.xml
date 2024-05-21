@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Action for form split_order-->
+    <record id="split_order_action" model="ir.actions.act_window">
+        <field name="name">Split Order</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">split.order</field>
+        <field name="binding_model_id"
+               ref="split_mrp_order.model_split_order"/>
+        <field name="binding_view_types">form</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <!--Create a split_order form view-->
+    <record id="split_order_view_form" model="ir.ui.view">
+        <field name="name">split.order.view.form</field>
+        <field name="model">split.order</field>
+        <field name="arch" type="xml">
+            <form string="split">
+                <group>
+                    <group>
+                        <field name="splitting_method"/>
+                        <field name="no_of_quantity"
+                               attrs="{'invisible': [('splitting_method', 'in',
+                               ['by_no_of_split', 'split_manually', False])]}"
+                        />
+                        <field name="no_of_split"
+                               attrs="{'invisible': [('splitting_method', 'in',
+                               ['by_no_of_quantity', 'split_manually', False])]}"
+                        />
+                        <field name="split_manually"
+                               placeholder="2,5,8,10,12.........."
+                               attrs="{'invisible': [('splitting_method', 'in',
+                               ['by_no_of_quantity', 'by_no_of_split', False])],
+                               'required': [('splitting_method', '=',
+                               'split_manually')]}"/>
+                    </group>
+                    <group>
+                        <field name="works" invisible="1"/>
+                        <field name="work_center_id"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_split_done" string="Split"
+                            type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
