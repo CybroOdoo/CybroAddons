@@ -30,7 +30,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'depends': ['payment', 'account', 'website_sale'],
     'data': [
         'views/payment_provider_views.xml',
