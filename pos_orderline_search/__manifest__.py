@@ -40,7 +40,7 @@
             'pos_orderline_search/static/src/css/search_product.css',
         ],
     },
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
