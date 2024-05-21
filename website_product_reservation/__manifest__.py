@@ -43,7 +43,7 @@
         'views/website_templates.xml',
         'views/portal_templates.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
