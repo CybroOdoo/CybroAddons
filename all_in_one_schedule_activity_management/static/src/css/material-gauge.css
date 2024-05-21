@@ -1,0 +1,194 @@
+/*
+ * #### Gauge Component
+ *
+ * The standard markup for the component is:
+ *
+ *      <div class="gauge">
+ *          <div class="gauge__container">
+ *              <div class="gauge__marker"></div>
+ *              <div class="gauge__background"></div>
+ *              <div class="gauge__center"></div>
+ *              <div class="gauge__data"></div>
+ *              <div class="gauge__needle"></div>
+ *          </div>
+ *          <div class="gauge__labels">
+ *              <span class="gauge__label--low">No</span>
+ *              <span class="gauge__label--spacer"></span>
+ *              <span class="gauge__label--high">Yes</span>
+ *          </div>
+ *      </div>
+ */
+
+/*
+ * First define all of the relevant rules that aren't dependent
+ * on the size of the gauge. We want to collect the size-depenent
+ * rules in one place to make it easier to adjust the size.
+ */
+
+.gauge {
+    position: relative;
+}
+
+.gauge__container {
+	margin: 0;
+	padding: 0;
+	position: absolute;
+	left: 50%;
+	overflow: hidden;
+	text-align: center;
+	-webkit-transform: translateX(-50%);
+	   -moz-transform: translateX(-50%);
+	    -ms-transform: translateX(-50%);
+	     -o-transform: translateX(-50%);
+	        transform: translateX(-50%);
+}
+
+.gauge__background {
+	z-index: 0;
+	position: absolute;
+	background-color: #d8f0de;
+	top: 0;
+	border-radius: 300px 300px 0 0;
+}
+
+.gauge__data {
+	z-index: 1;
+	position: absolute;
+	background-color: #00c29d;
+	margin-left: auto;
+	margin-right: auto;
+	border-radius: 300px 300px 0 0;
+    -webkit-transform-origin: center bottom;
+       -moz-transform-origin: center bottom;
+        -ms-transform-origin: center bottom;
+         -o-transform-origin: center bottom;
+            transform-origin: center bottom;
+}
+
+.gauge__center {
+	z-index: 2;
+	position: absolute;
+	background-color: #f9f9f9;
+	margin-right: auto;
+	border-radius: 300px 300px 0 0;
+}
+
+.gauge__marker {
+    z-index: 3;
+    background-color: #fff;
+    position: absolute;
+    width: 1px;
+}
+
+.gauge__needle {
+    z-index: 4;
+    background-color: #21242c;
+    height: 3px;
+    position: absolute;
+    -webkit-transform-origin: left center;
+       -moz-transform-origin: left center;
+        -ms-transform-origin: left center;
+         -o-transform-origin: left center;
+            transform-origin: left center;
+}
+
+.gauge__labels {
+    display: table;
+    margin: 0 auto;
+    position: relative;
+}
+
+.gauge__label--low {
+    display: table-cell;
+    text-align: center;
+    color: #00c29d;
+}
+
+.gauge__label--spacer {
+    display: table-cell;
+}
+
+.gauge__label--high {
+    display: table-cell;
+    text-align: center;
+    color: #979f99;
+}
+
+/*
+ * Now define the rules that depend on the size of
+ * the gauge. We start with sizing for a small mobile
+ * device.
+ */
+
+.gauge { height: calc(120px + 3em); }
+.gauge__container { width: 240px; height: 120px; }
+.gauge__marker { height: 120px; left: 119.5px; }
+.gauge__background { width: 240px; height: 120px; }
+.gauge__center { width: 144px; height: 72px; top: 48px; margin-left: 48px; }
+.gauge__data { width: 240px; height: 120px; }
+.gauge__needle { left: 120px; top: 117px; width: 120px; }
+.gauge__labels { top: 120px; width: 240px; }
+.gauge__label--low { width: 48px; }
+.gauge__label--spacer { width: 144px; }
+.gauge__label--high { width: 48px; }
+
+/*
+ * Increase the gauge size slightly on larger viewports.
+ */
+
+ @media only screen and (min-width: 400px) {
+    .gauge { height: calc(150px + 3em); }
+    .gauge__container { width: 300px; height: 150px; }
+    .gauge__marker { height: 150px; left: 149.5px; }
+    .gauge__background { width: 300px; height: 150px; }
+    .gauge__center { width: 180px; height: 90px; top: 60px; margin-left: 60px; }
+    .gauge__data { width: 300px; height: 150px; }
+    .gauge__needle { left: 150px; top: 147px; width: 150px; }
+    .gauge__labels { top: 160px; width: 300px; font-size: 20px;}
+    .gauge__label--low { width: 60px; }
+    .gauge__label--spacer { width: 180px; }
+    .gauge__label--high { width: 60px; }
+}
+
+/*
+ * As an option, the `gauge--liveupdate` class can be added
+ * to the main gauge element. When this class is present,
+ * we add a transition that animates any changes to the gauge
+ * value. Currently, the app does not use this option because
+ * all the inputs that can change gauge values are present
+ * on tab panels that are different from the gauge itself.
+ * Therefore, users won't be able to see any gauge changes
+ * when they make input changes. The code is available, though,
+ * should this change.
+ */
+
+.gauge--liveupdate .gauge__data,
+.gauge--liveupdate .gauge__needle {
+    -webkit-transition: all 1s ease-in-out;
+       -moz-transition: all 1s ease-in-out;
+        -ms-transition: all 1s ease-in-out;
+         -o-transition: all 1s ease-in-out;
+            transition: all 1s ease-in-out;
+}
+
+/*
+ * For a given gauge value, x, ranging from 0.0 to 1.0, set
+ * the `transform: rotate()` property according to the
+ * following equation: `-0.5 + 0.5x turns` The default
+ * properties below represent an x value of 0.
+ */
+
+.gauge__data {
+    -webkit-transform: rotate(-.50turn);
+       -moz-transform: rotate(-.50turn);
+        -ms-transform: rotate(-.50turn);
+         -o-transform: rotate(-.50turn);
+            transform: rotate(-.50turn);
+}
+.gauge__needle {
+    -webkit-transform: rotate(-.50turn);
+       -moz-transform: rotate(-.50turn);
+        -ms-transform: rotate(-.50turn);
+         -o-transform: rotate(-.50turn);
+            transform: rotate(-.50turn);
+}
