@@ -29,14 +29,17 @@ import nextcloud_client
 import os
 import paramiko
 import requests
+import shutil
+import subprocess
 import tempfile
 import odoo
 from datetime import timedelta
 from nextcloud import NextCloud
 from requests.auth import HTTPBasicAuth
 from werkzeug import urls
-from odoo import _, api, fields, models
+from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
+from odoo.tools import find_pg_tool, exec_pg_environ
 from odoo.http import request
 from odoo.service import db
 
@@ -622,7 +625,7 @@ class DbBackupConfigure(models.Model):
     @api.constrains('db_name')
     def _check_db_credentials(self):
         """Validate entered database name and master password"""
-        database_list = db.list_dbs()
+        database_list = db.list_dbs(force=True)
         if self.db_name not in database_list:
             raise ValidationError(_("Invalid Database Name!"))
         try:
@@ -698,7 +701,7 @@ class DbBackupConfigure(models.Model):
                         os.makedirs(rec.backup_path)
                     backup_file = os.path.join(rec.backup_path, backup_filename)
                     fds = open(backup_file, "wb")
-                    odoo.service.db.dump_db(rec.db_name, fds, rec.backup_format)
+                    self.dump_data(rec.db_name, fds, rec.backup_format)
                     fds.close()
                     # remove older backups
                     if rec.auto_remove:
@@ -732,8 +735,8 @@ class DbBackupConfigure(models.Model):
                         ftp_server.mkd(rec.ftp_path)
                         ftp_server.cwd(rec.ftp_path)
                     with open(temp.name, "wb+") as tmp:
-                        odoo.service.db.dump_db(rec.db_name, tmp,
-                                                rec.backup_format)
+                        self.dump_data(rec.db_name, tmp,
+                                       rec.backup_format)
                     ftp_server.storbinary('STOR %s' % backup_filename,
                                           open(temp.name, "rb"))
                     if rec.auto_remove:
@@ -767,8 +770,7 @@ class DbBackupConfigure(models.Model):
                     temp = tempfile.NamedTemporaryFile(
                         suffix='.%s' % rec.backup_format)
                     with open(temp.name, "wb+") as tmp:
-                        odoo.service.db.dump_db(rec.db_name, tmp,
-                                                rec.backup_format)
+                        self.dump_data(rec.db_name, tmp, rec.backup_format)
                     try:
                         sftp.chdir(rec.sftp_path)
                     except IOError as e:
@@ -804,7 +806,8 @@ class DbBackupConfigure(models.Model):
                     temp = tempfile.NamedTemporaryFile(
                         suffix='.%s' % rec.backup_format)
                     with open(temp.name, "wb+") as tmp:
-                        odoo.service.db.dump_db(rec.db_name, tmp, rec.backup_format)
+                        self.dump_data(rec.db_name, tmp,
+                                       rec.backup_format)
                     try:
                         headers = {
                             "Authorization": "Bearer %s" % rec.gdrive_access_token}
@@ -862,7 +865,8 @@ class DbBackupConfigure(models.Model):
                     temp = tempfile.NamedTemporaryFile(
                         suffix='.%s' % rec.backup_format)
                     with open(temp.name, "wb+") as tmp:
-                        odoo.service.db.dump_db(rec.db_name, tmp, rec.backup_format)
+                        self.dump_data(rec.db_name, tmp,
+                                       rec.backup_format)
                     try:
                         drop_connection = dropbox.Dropbox(
                             app_key=rec.dropbox_client_key,
@@ -905,7 +909,7 @@ class DbBackupConfigure(models.Model):
                     temp = tempfile.NamedTemporaryFile(
                         suffix='.%s' % rec.backup_format)
                     with open(temp.name, "wb+") as tmp:
-                        odoo.service.db.dump_db(rec.db_name, tmp, rec.backup_format)
+                        self.dump_data(rec.db_name, tmp, rec.backup_format)
                     headers = {
                         'Authorization': 'Bearer %s' % rec.onedrive_access_token,
                         'Content-Type': 'application/json'}
@@ -979,8 +983,8 @@ class DbBackupConfigure(models.Model):
                             temp = tempfile.NamedTemporaryFile(
                                 suffix='.%s' % rec.backup_format)
                             with open(temp.name, "wb+") as tmp:
-                                odoo.service.db.dump_db(rec.db_name, tmp,
-                                                        rec.backup_format)
+                                self.dump_data(rec.db_name, tmp,
+                                               rec.backup_format)
                             backup_file_path = temp.name
                             remote_file_path = \
                                 f"{rec.aws_folder_name}/{rec.db_name}_" \
@@ -1080,8 +1084,8 @@ class DbBackupConfigure(models.Model):
                             temp = tempfile.NamedTemporaryFile(
                                 suffix='.%s' % rec.backup_format)
                             with open(temp.name, "wb+") as tmp:
-                                odoo.service.db.dump_db(rec.db_name, tmp,
-                                                        rec.backup_format)
+                                self.dump_data(rec.db_name, tmp,
+                                               rec.backup_format)
                             backup_file_path = temp.name
                             remote_file_path = f"/{folder_name}/{rec.db_name}_" \
                                                f"{backup_time}.{rec.backup_format}"
@@ -1091,8 +1095,8 @@ class DbBackupConfigure(models.Model):
                             temp = tempfile.NamedTemporaryFile(
                                 suffix='.%s' % rec.backup_format)
                             with open(temp.name, "wb+") as tmp:
-                                odoo.service.db.dump_db(rec.db_name, tmp,
-                                                        rec.backup_format)
+                                self.dump_data(rec.db_name, tmp,
+                                               rec.backup_format)
                             backup_file_path = temp.name
                             remote_file_path = f"/{folder_name}/{rec.db_name}_" \
                                                f"{backup_time}.{rec.backup_format}"
@@ -1104,3 +1108,67 @@ class DbBackupConfigure(models.Model):
                             'Please check the credentials before activation')
                     else:
                         raise ValidationError('Please check connection')
+
+    def dump_data(self, db_name, stream, backup_format):
+        """Dump database `db` into file-like object `stream` if stream is None
+        return a file object with the dump. """
+        cron_user_id = self.env.ref('auto_database_backup.ir_cron_auto_db_backup').user_id.id
+        if cron_user_id != self.env.user.id:
+            _logger.error(
+                'Unauthorized database operation. Backups should only be available from the cron job.')
+            raise ValidationError(
+                "Unauthorized database operation. Backups should only be available from the cron job.")
+
+        _logger.info('DUMP DB: %s format %s', db_name, backup_format)
+        cmd = [find_pg_tool('pg_dump'), '--no-owner', db_name]
+        env = exec_pg_environ()
+        if backup_format == 'zip':
+            with tempfile.TemporaryDirectory() as dump_dir:
+                filestore = odoo.tools.config.filestore(db_name)
+                cmd.append('--file=' + os.path.join(dump_dir, 'dump.sql'))
+                subprocess.run(cmd, env=env, stdout=subprocess.DEVNULL,
+                               stderr=subprocess.STDOUT, check=True)
+                if os.path.exists(filestore):
+                    shutil.copytree(filestore,
+                                    os.path.join(dump_dir, 'filestore'))
+                with open(os.path.join(dump_dir, 'manifest.json'), 'w') as fh:
+                    db = odoo.sql_db.db_connect(db_name)
+                    with db.cursor() as cr:
+                        json.dump(self._dump_db_manifest(cr), fh, indent=4)
+                if stream:
+                    odoo.tools.osutil.zip_dir(dump_dir, stream,
+                                              include_dir=False,
+                                              fnct_sort=lambda
+                                                  file_name: file_name != 'dump.sql')
+                else:
+                    t = tempfile.TemporaryFile()
+                    odoo.tools.osutil.zip_dir(dump_dir, t, include_dir=False,
+                                              fnct_sort=lambda
+                                                  file_name: file_name != 'dump.sql')
+                    t.seek(0)
+                    return t
+        else:
+            cmd.append('--format=c')
+            process = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE)
+            stdout, _ = process.communicate()
+            if stream:
+                stream.write(stdout)
+            else:
+                return stdout
+
+    def _dump_db_manifest(self, cr):
+        """ This function generates a manifest dictionary for database dump."""
+        pg_version = "%d.%d" % divmod(cr._obj.connection.server_version / 100, 100)
+        cr.execute(
+            "SELECT name, latest_version FROM ir_module_module WHERE state = 'installed'")
+        modules = dict(cr.fetchall())
+        manifest = {
+            'odoo_dump': '1',
+            'db_name': cr.dbname,
+            'version': odoo.release.version,
+            'version_info': odoo.release.version_info,
+            'major_version': odoo.release.major_version,
+            'pg_version': pg_version,
+            'modules': modules,
+        }
+        return manifest

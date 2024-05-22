@@ -29,3 +29,9 @@
 #### Version 15.0.5.1.0
 #### UPDT
 - Fixed internal server error in Onedrive and Google Drive integration.
+
+#### 24.04.2024
+#### Version 15.0.6.1.0
+#### UPDT
+
+- Fixed the errors while inputting list_db = False in odoo conf file.
