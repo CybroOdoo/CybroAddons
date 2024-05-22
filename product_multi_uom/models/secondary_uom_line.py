@@ -34,7 +34,7 @@ class SecondaryUomLine(models.Model):
     secondary_uom_id = fields.Many2one('uom.uom', string='Secondary UoM',
                                        help="Select the Secondary UoM",
                                        required=True)
-    product_id = fields.Many2one('product.template', readonly=True,
+    product_id = fields.Many2one('product.product', readonly=True,
                                  string="Product",
                                  help="Product having the Secondary UOM")
     secondary_uom_ratio = fields.Float(string='Secondary UoM Ratio',

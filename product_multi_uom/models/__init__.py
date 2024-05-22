@@ -19,6 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import product_template
+from . import product_product
 from . import sale_order_line
 from . import secondary_uom_line

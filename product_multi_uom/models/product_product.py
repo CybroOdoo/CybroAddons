@@ -22,9 +22,9 @@
 from odoo import api, fields, models
 
 
-class ProductTemplate(models.Model):
+class ProductProduct(models.Model):
     """Inherits the 'product.template' for adding the secondary uom"""
-    _inherit = "product.template"
+    _inherit = "product.product"
 
     is_need_secondary_uom = fields.Boolean(string="Need Secondary UoM's",
                                            help="Enable this field for "

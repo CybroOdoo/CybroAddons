@@ -50,16 +50,16 @@ class SaleOrderLine(models.Model):
         """Function that update the product_uom_qty as the value in the
          secondary uom quantity"""
         all_uom = []
-        if self.product_template_id.is_need_secondary_uom:
+        if self.product_id.is_need_secondary_uom:
             self.is_secondary_readonly = True
-            for uom in self.product_template_id.secondary_uom_ids:
+            for uom in self.product_id.secondary_uom_ids:
                 all_uom.append(uom.secondary_uom_id.id)
         if self.is_secondary_readonly:
             self.product_uom_readonly = True
             if self.secondary_product_uom_id.id in all_uom:
                 primary_uom_ratio = self.env['secondary.uom.line'].search(
                     [('secondary_uom_id', '=', self.secondary_product_uom_id.id),
-                     ('product_id', '=', self.product_template_id.id)]).mapped(
+                     ('product_id', '=', self.product_id.id)]).mapped(
                     'secondary_uom_ratio')
                 converted_uom_qty = primary_uom_ratio[
                                         0] * self.secondary_product_uom_qty
