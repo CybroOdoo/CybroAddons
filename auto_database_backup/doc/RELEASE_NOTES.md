@@ -21,3 +21,11 @@
 #### UPDT
 
 - Fixed the errors while inputting list_db = False in odoo conf file.
+
+## Module <auto_database_backup>
+
+#### 21.05.2024
+#### Version 17.0.4.0.1
+#### UPDT
+
+- Changed response.list_buckets() function to head_bucket().

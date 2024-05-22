@@ -208,26 +208,26 @@ class DbBackupConfigure(models.Model):
          operations for connection test"""
         if self.aws_access_key and self.aws_secret_access_key:
             try:
-                bo3 = boto3.client(
+                s3_client = boto3.client(
                     's3',
                     aws_access_key_id=self.aws_access_key,
-                    aws_secret_access_key=self.aws_secret_access_key)
-                response = bo3.list_buckets()
-                for bucket in response['Buckets']:
-                    if self.bucket_file_name == bucket['Name']:
-                        self.active = True
-                        self.hide_active = True
-                        return {
-                            'type': 'ir.actions.client',
-                            'tag': 'display_notification',
-                            'params': {
-                                'type': 'success',
-                                'title': _("Connection Test Succeeded!"),
-                                'message': _(
-                                    "Everything seems properly set up!"),
-                                'sticky': False,
-                            }
+                    aws_secret_access_key=self.aws_secret_access_key
+                )
+                response = s3_client.head_bucket(Bucket=self.bucket_file_name)
+                if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                    self.active = True
+                    self.hide_active = True
+                    return {
+                        'type': 'ir.actions.client',
+                        'tag': 'display_notification',
+                        'params': {
+                            'type': 'success',
+                            'title': _("Connection Test Succeeded!"),
+                            'message': _(
+                                "Everything seems properly set up!"),
+                            'sticky': False,
                         }
+                    }
                 raise UserError(
                     _("Bucket not found. Please check the bucket name and"
                       " try again."))
