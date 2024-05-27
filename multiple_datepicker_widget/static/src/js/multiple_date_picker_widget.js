@@ -1,6 +1,5 @@
 /** @odoo-module **/
 import { registry } from "@web/core/registry";
-import { useInputField } from "@web/views/fields/input_field_hook";
 import time from 'web.time';
 var translation = require('web.translation');
 var _t = translation._t;
@@ -13,7 +12,6 @@ export class DomainSelectorTextField extends Component {
     setup(){
         super.setup();
         this.input = useRef('inputdate')
-        useInputField({ getValue: () => this.props.value || "", refName: "inputdate" });
     }
     _onSelectDateField(ev){
         var dateFormat = time.getLangDateFormat();
