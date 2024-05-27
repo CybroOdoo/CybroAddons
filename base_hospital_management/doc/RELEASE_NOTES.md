@@ -5,3 +5,9 @@
 #### ADD
 
 - Initial commit for Hospital Management Odoo 16
+
+#### 24.05.2024
+#### Version 16.0.1.0.1
+#### UPDT
+
+- Updated laboratory dashboard, menu items and vaccination creation
