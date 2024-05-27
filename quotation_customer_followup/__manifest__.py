@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Quotation Customer Followup',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Sales',
     'summary': """Followup mail for late quotations and quotation expiry""",
     'description': """Sending automated followup mail to customers after the 

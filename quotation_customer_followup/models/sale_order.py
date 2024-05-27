@@ -54,7 +54,7 @@ class SaleOrder(models.Model):
                                 ('validity_date', '=', fields.date.today())]):
             email_template.send_mail(self.id, email_values={
                 'email_to': rec.partner_id.email,
-                'email_from': rec.user_id.login}, force_send=True)
+                'email_from': rec.user_id.partner_id.email}, force_send=True)
 
     def followup_scheduler_queue(self):
         """Function to send  mail to customer based on if state does not
@@ -73,4 +73,4 @@ class SaleOrder(models.Model):
                     'date_order', '<', end_date)]):
             email_template.send_mail(self.id, email_values={
                 'email_to': rec.partner_id.email,
-                'email_from': rec.user_id.login}, force_send=True)
+                'email_from': rec.user_id.partner_id.email}, force_send=True)
