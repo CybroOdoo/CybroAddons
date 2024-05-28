@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Template layout for printing the labels-->
+    <template id="report_dynamic">
+        <t t-call="web.basic_layout">
+            <div class="page">
+                <t t-call="dynamic_product_label_print.report_productlabel_dynamic">
+                    <t t-set="products" t-value="products"/>
+                </t>
+            </div>
+        </t>
+    </template>
+    <!--Passing dynamic fields to the template-->
+    <template id="report_dynamic_label">
+        <div class="text-center o_label_small_barcode"
+             style="border: 1px solid black; padding: 1.5rem; display: inline-block; margin: 10px;">
+            <t t-foreach="dynamic_field_ids" t-as="fields">
+                <t t-foreach="fields" t-as="field">
+                    <t t-set="size" t-value="field.get('size')"/>
+                    <t t-set="color" t-value="field.get('color')"/>
+                    <div t-attf-style="font-size:{{size}}px !important; color: #{color};">
+                        <t t-value="field.get('fields')" t-set="value"/>
+                        <t t-if="value[0].get('name')">
+                            <t t-esc="product[2]"/>
+                        </t>
+                        <t t-if="value[0].get('categ_id')">
+                            <t t-esc="product[3]"/>
+                        </t>
+                        <t t-if="value[0].get('detailed_type')">
+                            <t t-value="product[4]"
+                               t-set="type"/>
+                            <t t-if="type == 'consu'">
+                                <span>Consumable</span>
+                            </t>
+                            <t t-if="type == 'product'">
+                                <span>Storable Product</span>
+                            </t>
+                            <t t-if="type == 'service'">
+                                <span>Service</span>
+                            </t>
+                        </t>
+                        <t t-if="value[0].get('list_price')">
+                            <t t-esc="product[5]"/>
+                        </t>
+                    </div>
+                </t>
+                <t t-if="barcode">
+                    <div t-out="barcode" style="padding:0"
+                         t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': barcode_size}"/>
+                    <div class="o_label_name"
+                         style="height:1.7em;background-color: transparent;">
+                        <span t-out="barcode"/>
+                    </div>
+                </t>
+            </t>
+        </div>
+    </template>
+    <!--Calling the template report_dynamic_label-->
+    <template id="report_productlabel_dynamic">
+        <t t-call="web.html_container">
+            <t t-set="barcode_size"
+               t-att-value="'width:{bc_width}mm;height:{bc_height}mm'"/>
+            <t t-set="barcode_size"
+               t-value="'width:%smm;height: %smm' % (bc_width, bc_height)"/>
+            <t t-set="padding_page" t-value="'padding: 2mm'"/>
+            <t t-foreach="quantity.items()" t-as="barcode_and_qty_by_product">
+                <t t-set="product" t-value="barcode_and_qty_by_product[0]"/>
+                <t t-foreach="barcode_and_qty_by_product[1]"
+                   t-as="barcode_and_qty">
+                    <t t-set="barcode" t-value="barcode_and_qty[0]"/>
+                    <t t-set="product" t-value="barcode_and_qty"/>
+                    <t t-foreach="range(barcode_and_qty[1])" t-as="qty">
+                        <t t-call="dynamic_product_label_print.report_dynamic_label"/>
+                    </t>
+                </t>
+            </t>
+        </t>
+    </template>
+    <!--Defined report action-->
+    <record id="dynamic_product_label_print.product_label_layout_form_dynamic"
+            model="ir.actions.report">
+        <field name="name">Product Label (PDF)</field>
+        <field name="model">product.template</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dynamic_product_label_print.report_dynamic</field>
+        <field name="report_file">dynamic_product_label_print.report_dynamic</field>
+        <field name="paperformat_id" ref="product.paperformat_label_sheet"/>
+        <field name="print_report_name">'Products Labels - %s' %
+            (object.name)
+        </field>
+        <field name="binding_model_id" eval="False"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
