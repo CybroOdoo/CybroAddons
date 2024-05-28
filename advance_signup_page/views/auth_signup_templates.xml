@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Frontend Layout Extension -->
+    <template id="frontend_layout_extension" name="Frontend Layout"
+              inherit_id="web.frontend_layout">
+        <xpath expr="//div[@id='wrapwrap']/main" position="attributes">
+            <!-- Add a background image style based on the signup configuration -->
+            <attribute name="t-attf-style"
+                       add="background-image: url('data:image/*;base64,{{request.env['signup.configuration'].sudo().search([('website_id', '=', request.website.id)],limit=1).background_image}}'); background-size: 100% 100%;"/>
+        </xpath>
+    </template>
+    <!-- Auth Signup/ResetPassword Form Fields -->
+    <template id="advance_signup_portal_fields"
+              inherit_id="auth_signup.fields"
+              name="Auth Signup/ResetPassword form fields">
+        <xpath expr="//div[hasclass('field-confirm_password')]"
+               position="after">
+            <t t-foreach="configuration.signup_field_ids" t-as="field">
+                <t t-if="field.field_type in ['char', 'text']">
+                    <div class="mb-3 field-test pt-2">
+                        <label>
+                            <t t-esc="field.name"/>
+                        </label>
+                        <input type="text"
+                               t-attf-name="{{field.field_id.name}}"
+                               t-attf-id="{{field.field_id.id}}"
+                               t-attf-class="form-control form-control-sm"
+                               required="required"/>
+                    </div>
+                </t>
+                <t t-elif="field.field_type == 'boolean'">
+                    <div class="mb-3 field-test pt-2">
+                        <input type="checkbox"
+                               class="form-check-input"
+                               id="webBoolField"
+                               t-att-name="field.field_id.id"/>
+                        <span class="ms-2 text-break"
+                              t-field='field.field_id.name'/>
+                    </div>
+                </t>
+                <t t-elif="field.field_type in ['date', 'datetime']">
+                    <div class="mb-3 field-test pt-2">
+                        <label>
+                            <t t-esc="field.name"/>
+                        </label>
+                        <input type="date"
+                               t-att-name="field.field_id.name"
+                               t-attf-class="form-control form-control-sm"/>
+                    </div>
+                </t>
+                <t t-elif="field.field_type =='binary'">
+                    <div class="mb-3 field-test pt-2">
+                        <label>
+                            <t t-esc="field.name"/>
+                        </label>
+                        <input type="file" id="img_field"
+                               class="field_input"
+                               name="img_field"
+                               accept="image/*"/>
+                    </div>
+                </t>
+                <t t-elif="field.field_type in ['integer', 'float']">
+                    <div class="mb-3 field-test pt-2">
+                        <label>
+                            <t t-esc="field.name"/>
+                        </label>
+                        <input type="number"
+                               t-attf-class="form-control form-control-sm"
+                               t-att-name="field.field_id.name"/>
+                    </div>
+                </t>
+            </t>
+            <!-- Display terms and conditions from the configuration -->
+            <t t-if="configuration.is_show_terms_conditions">
+                <div class="form-group">
+                    <input type="checkbox" name="accept_terms">I Agree to the
+                        <t t-out="configuration.terms_and_conditions"/>
+                    </input>
+                </div>
+            </t>
+        </xpath>
+    </template>
+    <!-- Template for the Login Form -->
+    <template id="advance_signup_portal_login"
+              inherit_id="auth_signup.login" name="Login Form">
+        <form class="oe_login_form" position="attributes">
+            <attribute name="style"
+                       add="z-index: 99;background: #f0f8ff70;padding: 20px;border-radius: 5px;max-width:350px;"/>
+        </form>
+        <div class="mb-3 field-login" position="before">
+            <t t-set="configuration"
+               t-value="request.env['signup.configuration'].sudo().search([('website_id', '=', request.website.id)],limit=1)"/>
+            <div class="mb-3">
+                <span style="font-size: 19px;font-family: sans serif;">
+                    <b>ALREADY REGISTERED ?</b>
+                </span>
+            </div>
+            <div class="mb-4">
+                <span style="font-size: 15px;font-family: cursive;font-weight: bold;">
+                    <t t-esc="configuration.login_page_content"/>
+                </span>
+            </div>
+        </div>
+    </template>
+    <!-- Template for Sign Up Form -->
+    <template id="auth_signup_signup" name="Sign up login">
+        <t t-call="web.login_layout">
+            <form class="oe_signup_form" role="form" method="post"
+                  t-if="not message">
+                <input type="hidden" name="csrf_token"
+                       t-att-value="request.csrf_token()"/>
+                <t t-call="auth_signup.fields">
+                    <t t-set="only_passwords"
+                       t-value="bool(token and not invalid_token)"/>
+                </t>
+                <p class="alert alert-danger" t-if="error" role="alert">
+                    <t t-esc="error"/>
+                </p>
+                <input type="hidden" name="redirect" t-att-value="redirect"/>
+                <input type="hidden" name="token" t-att-value="token"/>
+                <div class="text-center oe_login_buttons d-grid pt-3">
+                    <button type="submit" class="btn btn-primary">Sign up
+                    </button>
+                    <a t-attf-href="/web/login?{{ keep_query() }}"
+                       class="btn btn-link btn-sm" role="button">Already
+                        have an account?
+                    </a>
+                    <div class="o_login_auth"/>
+                </div>
+            </form>
+        </t>
+    </template>
+    <!-- Template for Sign Up Form -->
+    <template id="advance_signup_portal_signup"
+              inherit_id="auth_signup.signup" name="Signup Form">
+        <form class="oe_signup_form" position="attributes">
+            <attribute name="style"
+                       add="z-index: 99;background: #f0f8ff70;padding: 20px;border-radius: 5px;max-width:350px;"/>
+        </form>
+        <xpath expr="//input[@name='csrf_token']" position="before">
+            <t t-set="configuration"
+               t-value="request.env['signup.configuration'].sudo().search([('website_id', '=', request.website.id)],limit=1)"/>
+            <div class="mb-3">
+                <span style="font-size: 19px;font-family: sans serif;">
+                    <b>CREATE YOUR ACCOUNT</b>
+                </span>
+            </div>
+            <div class="mb-4">
+                <span style="font-size: 15px;font-family: cursive;font-weight: bold;">
+                    <t t-esc="configuration.signup_page_content"/>
+                </span>
+            </div>
+        </xpath>
+        <xpath expr="//form[@class='oe_signup_form']" position="inside">
+            <div class="text-center small mt-4 pt-3 border-top"
+                 t-if="not disable_footer">
+                <t t-if="not disable_database_manager">
+                    <a class="border-end pe-2 me-1"
+                       href="/web/database/manager">Manage Databases
+                    </a>
+                </t>
+                <a href="https://www.odoo.com?utm_source=db&amp;utm_medium=auth"
+                   target="_blank">Powered by
+                    <span>Odoo</span>
+                </a>
+            </div>
+        </xpath>
+    </template>
+    <!-- Template for Reset Password Form -->
+    <template id="advance_signup_portal_reset_password"
+              inherit_id="auth_signup.reset_password"
+              name="Reset Password Form">
+        <xpath expr="//input[@name='csrf_token']" position="before">
+            <t t-set="configuration"
+               t-value="request.env['signup.configuration'].sudo().search([('website_id', '=', request.website.id)],limit=1)"/>
+            <div class="mb-3">
+                <span style="font-size: 19px;font-family: sans serif;">
+                    <b>FORGOT YOUR PASSWORD ?</b>
+                </span>
+            </div>
+            <div class="mb-4">
+                <span style="font-size: 15px;font-family: cursive;font-weight: bold;">
+                    <t t-esc="configuration.reset_password_content"/>
+                </span>
+            </div>
+        </xpath>
+        <form class="oe_reset_password_form" position="attributes">
+            <attribute name="style"
+                       add="z-index: 99;background: #f0f8ff70;padding: 20px;border-radius: 5px;max-width:350px;"/>
+        </form>
+    </template>
+    <!-- Template for the Home Page Layout -->
+    <template id="advance_signup_portal_layout" name="Home"
+              inherit_id="website.layout">
+        <xpath expr="//header" position="attributes">
+            <attribute name="t-if">not hide_header</attribute>
+        </xpath>
+        <xpath expr="//footer" position="attributes">
+            <attribute name="t-if">not hide_footer</attribute>
+        </xpath>
+    </template>
+</odoo>
