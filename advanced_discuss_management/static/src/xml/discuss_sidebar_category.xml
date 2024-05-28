@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Rearranged the DiscussSidebarCategories template-->
+<templates id="template" xml:space="preserve">
+        <t name="mail.DiscussSidebarCategoriesAdvanced"
+           t-inherit="mail.DiscussSidebarCategories"
+           t-inherit-mode="extension"
+           owl="1">
+            <xpath expr="//t[@t-call='mail.DiscussSidebarCategory']"
+                   position="replace">
+                <t t-if="categoryData.predicate?.(store) ?? true"
+                   t-call="mail.DiscussionSidebarCategoryAdvanced">
+                    <t t-set="category" t-value="categoryData.value(store)"/>
+                </t>
+            </xpath>
+        </t>
+<!--    New discuss sidebar categories template-->
+    <t t-name="mail.DiscussionSidebarCategoryAdvanced">
+        <t t-set="hover_class"
+           t-value="'btn p-0 text-start text-700 opacity-100-hover opacity-75'"/>
+        <t t-if="category.id == this.props.sidebar">
+            <div class="search">
+                    <div class="o-mail-DiscussSidebarCategory d-flex align-items-center my-1"
+                         t-att-class="category.extraClass">
+                        <div/>
+                        <div>
+                            <i t-if="category.canView"
+                               t-attf-class="fa fa-cog {{ hover_class }}"
+                               title="View or join channels"
+                               t-on-click="() => this.openCategory(category)"
+                               role="img"/>
+                            <i t-if="category.canAdd and category.isOpen"
+                               class="o-mail-DiscussSidebarCategory-add"
+                               t-attf-class="fa fa-plus {{ hover_class }} ms-1"
+                               t-on-click="() => this.addToCategory(category)"
+                               t-att-title="category.addTitle" role="img"
+                               t-att-data-hotkey="category.addHotkey"/>
+                        </div>
+                        <div t-if="!category.isOpen and threadService.getDiscussSidebarCategoryCounter(category.id) > 0"
+                             class="o-mail-DiscussSidebar-badge badge rounded-pill me-3 o-discuss-badge fw-bold">
+                            <t t-esc="threadService.getDiscussSidebarCategoryCounter(category.id)"/>
+                        </div>
+                    </div>
+                </div>
+            <t t-if="category.isOpen">
+                    <div t-if="state.editing === category.id" class="p-2"
+                         t-ref="selector">
+                        <ChannelSelector category="category"
+                                         onValidate.bind="stopEditing"
+                                         autofocus="true"
+                                         close.bind="stopEditing"/>
+                    </div>
+                <t t-foreach="filteredThreads(category).slice(0, 10)" t-as="thread"
+                   t-key="thread.localId" t-call="mail.DiscussSidebarChannel">
+                        <t t-set="thread" t-value="thread"/>
+                    </t>
+                </t>
+            <t t-elif="store.discuss.thread.in(category.threads)"
+               t-call="mail.DiscussSidebarChannel">
+                    <t t-set="thread" t-value="store.discuss.thread"/>
+                </t>
+            </t>
+        </t>
+</templates>
