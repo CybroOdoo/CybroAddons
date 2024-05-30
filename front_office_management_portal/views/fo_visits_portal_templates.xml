@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--  Template for breadcrumbs of visit record -->
+    <template id="portal_my_home_menu_visit_management"
+              name="Portal layout : visits  menu entries"
+              inherit_id="portal.portal_breadcrumbs" priority="60">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'employee_visits_management_rec'"
+                class="breadcrumb-item active">
+                <a t-attf-href="/visit_management" aria-label="Home"
+                   title="VisitManagement">
+                    <span>Visits Management</span>
+                </a>
+                <span>/
+                    <em t-out="record.name"/>
+                </span>
+            </li>
+            <li t-if="page_name == 'employee_visits_management'"
+                class="breadcrumb-item active">
+                <span>Visits Management</span>
+            </li>
+        </xpath>
+    </template>
+    <!--  Template for website portal document of visit record -->
+    <template id="portal_my_home_visit_management"
+              name="Show Visits" customize_show="True"
+              inherit_id="portal.portal_my_home"
+              priority="110">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/front_office_management_portal/static/src/img/visitor.png'"/>
+                <t t-set="title">Visits</t>
+                <t t-set="url" t-value="'/visit_management'"/>
+                <t t-set="placeholder_count" t-value="'visits_count'"/>
+            </t>
+        </xpath>
+    </template>
+        <!--  Template for list view of visits record -->
+    <template id="portal_visit_management" name="My Visits">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Visits</t>
+            </t>
+            <t t-if="visit_management" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Record Number</th>
+                        <th class="text-center">Visitor Name</th>
+                        <th class="text-center">Meeting With</th>
+                        <th class="text-center">State</th>
+                        <th class="text-center">Operation</th>
+                        <input type="hidden" name="csrf_token"
+                               t-att-value="request.csrf_token()"/>
+                    </tr>
+                </thead>
+                <t t-foreach="visit_management" t-as="record">
+                    <tr>
+                        <td>
+                            <a t-attf-href="/visit_management/#{record.id}">
+                                <t t-out="record.name"/>
+                            </a>
+                        </td>
+                        <td class="text-center">
+                            <span t-field="record.visitor_id.name"/>
+                        </td>
+                        <td class="text-center">
+                            <span t-field="record.employee_id"/>
+                        </td>
+                        <td class="text-center">
+                            <span t-field="record.state"/>
+                        </td>
+                        <td align="center">
+                            <t t-if="record.state=='draft'">
+                                <a t-attf-href="/visit_management/check_in/#{record.id}">
+                                    Check In
+                                </a>
+                            </t>
+                            <t t-if="record.state=='check_in'">
+                                <a t-attf-href="/visit_management/check_out/#{record.id}">
+                                    Check Out
+                                </a>
+                            </t>
+                            <t t-if="record.state =='draft'">
+                                <a t-attf-href="/web#id={{record.id}}&amp;model=fo.visit&amp;view_type=form">
+                                    <i class="fa fa-pencil" role="img"
+                                       style="margin-left: 15px;"/>
+                                </a>
+                            </t>
+                        </td>
+                    </tr>
+                </t>
+            </t>
+        </t>
+    </template>
+        <!--  Template for detailed view of visits record -->
+    <template id="portal_visit_record_details" name="visitor_number_details">
+        <t t-call="portal.portal_layout">
+            <div class="card pb-5">
+                <div>
+                    <t t-foreach="visit_management_rec" t-as="record">
+                        <!-- Intro -->
+                        <div class="pb-2 pt-3 card-header bg-white">
+                            <h2 class="my-0">
+                                <em t-out="record.name"/>
+                            </h2>
+                        </div>
+                        <!-- Informations -->
+                        <div id="informations">
+                            <div class="pb-2 pt-3 card-header bg-white">
+                                <div class="row" id="visitor_details"
+                                     string="Visitor Details">
+                                    <div class="mb-2 col-8">
+                                        <strong>Visitor Name:</strong>
+                                        <span t-field="record.visitor_id.name"/>
+                                    </div>
+                                    <div class="mb-2 col-8">
+                                        <t t-if="record.phone">
+                                            <strong>Phone:</strong>
+                                            <span t-field="record.phone"/>
+                                        </t>
+                                    </div>
+                                    <div class="mb-2 col-8">
+                                        <t t-if="record.email">
+                                            <strong>Email:</strong>
+                                            <span t-field="record.email"/>
+                                        </t>
+                                    </div>
+                                </div>
+                                <br/>
+                                <div class="row" id="visit_details"
+                                     string="Visit Details">
+                                    <div class="mb-2 col-8">
+                                        <strong>Meeting with:</strong>
+                                        <span t-field="record.employee_id.name"/>
+                                    </div>
+                                    <div class="mb-2 col-8">
+                                        <t t-if="record.department_id">
+                                            <strong>Department:</strong>
+                                            <span t-field="record.department_id.name"/>
+                                        </t>
+                                    </div>
+                                </div>
+                                <br/>
+                                <div class="row" id="time_of_visit"
+                                     string="Time of Visit">
+                                    <t t-if="record.check_in_date">
+                                        <div class="mb-3 col-6">
+                                            <strong>Check In Time:</strong>
+                                            <span t-field="record.check_in_date"/>
+                                        </div>
+                                    </t>
+                                    <t t-if="record.check_out_date">
+                                        <div class="mb-3 col-6">
+                                            <strong>Check Out Time:</strong>
+                                            <span t-field="record.check_out_date"/>
+                                        </div>
+                                    </t>
+                                    <section id="details"
+                                             style="page-break-inside: auto;"
+                                             class="mt32">
+                                        <h5 id="details">Personal belongings
+                                        </h5>
+                                        <table t-att-data-order-id="record.id"
+                                               class="table table-sm"
+                                               id="fo_visit_table">
+                                            <thead class="bg-100">
+                                                <th class="text-center">Sl</th>
+                                                <th class="text-center">
+                                                    Property
+                                                </th>
+                                                <th class="text-center">Count
+                                                </th>
+                                                <th class="text-center">
+                                                    Permission
+                                                </th>
+                                            </thead>
+                                            <t t-foreach="visit_management_line_rec"
+                                               t-as="line">
+                                                <tr>
+                                                    <td class="text-center"
+                                                        id="property_name">
+                                                        <span t-field="line.number"/>
+                                                    </td>
+                                                    <td class="text-center"
+                                                        id="property_name">
+                                                        <span t-field="line.property_name"/>
+                                                    </td>
+                                                    <td class="text-center"
+                                                        id="property_count">
+                                                        <span t-field="line.property_count"/>
+                                                    </td>
+                                                    <td class="text-center"
+                                                        id="permission">
+                                                        <span t-field="line.permission"/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </table>
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+            <div id="labour_order_communication" class="mt-4">
+                <h2>History</h2>
+                <t t-call="portal.message_thread">
+                    <t t-set="object" t-value="visit_management_rec"/>
+                </t>
+            </div>
+        </t>
+    </template>
+</odoo>
