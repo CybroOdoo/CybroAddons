@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- To add attribute discount for product on second subscription-->
+    <record id="product_product_view_tree" model="ir.ui.view">
+        <field name="name">product.product.view.tree.inherit.website.subscription.management</field>
+        <field name="model">product.product</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree string="Attributes" create="0" delete="0" editable="bottom">
+                <field name="name" readonly="true"/>
+                <field name="product_template_variant_value_ids"
+                       widget="many2many_tags"
+                       groups="product.group_product_variant" readonly="1"/>
+                <field name="subscription_discount" />
+            </tree>
+        </field>
+    </record>
+     <!-- New field to select subscription periods for product   -->
+    <record id="product_normal_form_view" model="ir.ui.view">
+        <field name="name">product.product.view.form.inherit.website.subscription.management</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="priority">25</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='subscription_plan_id']" position="after">
+                <field name="subscription_recurrence_period_ids" widget="many2many_tags"
+                       required="is_subscription"
+                       invisible="not is_subscription"/>
+            </xpath>
+            <xpath expr="//page[@name='subscription']" position="inside">
+               <button string = "Update Discount on Variants" class="btn btn-link"
+                       required="is_subscription"
+                       invisible="not is_subscription"
+                       type="object" name="action_open_attribute_values_discount"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

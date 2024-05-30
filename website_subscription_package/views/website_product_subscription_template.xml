@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Subscription product details in product page   -->
+    <template id="product_subscription" inherit_id="website_sale.product"
+              name="product Subscription">
+        <xpath expr="//div[@id='o_wsale_cta_wrapper']/div" position="after">
+            <br/>
+            <hr/>
+            <div t-if="product.is_subscription"
+                 class="subs position-relative mb-2">
+                <div>
+                    <hr/>
+                    <div id="check_id" name="select_card">
+                        <span>The plan for this product is&amp;nbsp;
+                            <strong t-esc="subscription_plan.name"/>
+                            <br/>
+                            Chose how often it's delivered.We'll send you a
+                            reminder before each delivery
+                        </span>
+                        <select name="recurrence_period"
+                                id="recurrence_period"
+                                style="width:160px; height:42px"
+                                class="form-control"
+                                required="True">
+                            <t t-foreach='recurrence_period'
+                               t-as="period">
+                                <option t-esc='period.name'
+                                        t-att-value="period.id"/>
+                            </t>
+                        </select>
+                        <t t-if="product.product_variant_ids.product_template_variant_value_ids">
+                            <t t-foreach='product.product_variant_ids'
+                               t-as="info">
+                                <t t-if="info.subscription_discount != 0">
+                                    <t t-foreach='info.product_template_variant_value_ids'
+                                       t-as="var">
+                                        For&amp;nbsp;
+                                        <t t-esc="var.name"/>
+                                    </t>
+                                    <t t-esc="info.subscription_discount"/>%
+                                    discount for second subscription.
+                                    <br/>
+                                </t>
+                            </t>
+                        </t>
+                    </div>
+                    <br/>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <!--  Subscription interval on cart  -->
+    <template id="cart_lines_subscription_prod"
+              inherit_id="website_sale.cart_lines">
+        <xpath expr="//button[hasclass('js_delete_product')]" position="after">
+            <t t-if="line.is_product_subscription">
+                <div class="subs_cart">
+                    <strong>Subscription Interval:</strong>
+                    <strong t-field="line.subscription_interval_id"/>
+                </div>
+            </t>
+        </xpath>
+    </template>
+    <!-- Subscription interval on cart summary   -->
+    <template id="cart_summary_subscription_prod"
+              inherit_id="website_sale.checkout_layout">
+        <xpath expr="//td[@name='website_sale_cart_summary_product_name']" position="inside">
+            <t t-if="line.is_product_subscription">
+                <div class="subs_cart" >
+                    <strong>Subscription Interval:</strong>
+                    <strong t-field="line.subscription_interval_id"/>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>
