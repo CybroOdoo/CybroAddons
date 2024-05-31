@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Tree view for vehicle rental model-->
+    <record id="vehicle_rental_view_tree" model="ir.ui.view">
+        <field name="name">vehicle.rental.view.tree</field>
+        <field name="model">vehicle.rental</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="vehicle_id"/>
+                <field name="no_of_days"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </tree>
+        </field>
+    </record>
+    <!--    Form view for vehicle rental model-->
+    <record id="vehicles_rental_view_form" model="ir.ui.view">
+        <field name="name">vehicle.rental.view.form</field>
+        <field name="model">vehicle.rental</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button id="button_draft" name="action_draft" string="Draft"
+                            type="object" class="oe_highlight"
+                            invisible="state!='cancel'"/>
+                    <button id="button_confirm" name="action_confirm"
+                            string="Submit" type="object" class="btn-primary"
+                            invisible="state!='draft'"/>
+                    <button id="button_return" name="action_return"
+                            string="Return"
+                            class="btn-primary"
+                            type="object" invisible="state!='confirm'"/>
+                    <button id="action_register_payment"
+                            name="action_register_payment"
+                            string="Register Payment" class="btn-primary"
+                            type="object" invisible="state!='return'"/>
+                    <button id="button_cancel" name="action_cancel"
+                            string="Cancel" class="btn-primary"
+                            type="object" invisible="state!='confirm'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirm,return,paid"/>
+
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Paid" invisible="state != 'paid'"/>
+                     <h1>
+                        <field name="name"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="farmer_id"/>
+                            <field name="vehicle_id"/>
+                            <field name="no_of_days"/>
+                            <field name="currency_id" invisible="1"/>
+                            <label for="amount" string="Amount"/>
+                            <div>
+                                <field name="amount" class="oe_inline"/>
+                                Per Day
+                            </div>
+                            <field name="total_amount"/>
+                        </group>
+                        <group>
+                            <field name="company_id"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                        </group>
+                    </group>
+                    <field name="note"
+                           placeholder="Vehicle Description........."/>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--   Action Menu under rental-->
+    <record id="vehicle_rental_action" model="ir.actions.act_window">
+        <field name="name">Vehicle Rental</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">vehicle.rental</field>
+        <field name="view_mode">tree,form,kanban</field>
+        <field name="context">{'search_default_available':1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create Your First Vehicle Rental Request
+            </p>
+        </field>
+    </record>
+</odoo>
