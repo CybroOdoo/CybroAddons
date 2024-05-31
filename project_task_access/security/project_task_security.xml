@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- User security group "View Limited Projects and Tasks" -->
+    <record id="group_view_limited_projects_and_tasks" model="res.groups">
+        <field name="name">View Limited Projects and Tasks</field>
+        <field name="category_id" ref="base.module_category_usability"/>
+    </record>
+    <!-- Record rule "Project Task Visible Users" -->
+    <record id="project_task_rule_user" model="ir.rule">
+        <field name="name">Project Task Visible Users</field>
+        <field name="model_id" ref="model_project_task"/>
+        <field name="domain_force">['|', ('task_access_user_ids', 'in', user.id), ('task_access_user_ids', '=', False)]</field>
+        <field name="groups" eval="[(4, ref('group_view_limited_projects_and_tasks'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+    <!-- Record rule "Project Visible Users" -->
+    <record id="project_project_rule_user" model="ir.rule">
+        <field name="name">Project Project Visible Users</field>
+        <field name="model_id" ref="model_project_project"/>
+        <field name="domain_force">['|', ('project_access_user_ids', 'in', user.id), ('project_access_user_ids', '=', False)]</field>
+        <field name="groups" eval="[(4, ref('group_view_limited_projects_and_tasks'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+    <!-- Changing "noupdate': False" to update the records -->
+    <function name="write" model="ir.model.data">
+    <function name="search" model="ir.model.data">
+        <value eval="[('module', '=', 'project'), ('name', '=', 'task_visibility_rule')]"/>
+    </function>
+    <value eval="{'noupdate': False}"/>
+    </function>
+    <function name="write" model="ir.model.data">
+    <function name="search" model="ir.model.data">
+        <value eval="[('module', '=', 'project'), ('name', '=', 'project_manager_all_project_tasks_rule')]"/>
+    </function>
+    <value eval="{'noupdate': False}"/>
+    </function>
+    <function name="write" model="ir.model.data">
+    <function name="search" model="ir.model.data">
+        <value eval="[('module', '=', 'project'), ('name', '=', 'ir_rule_private_task')]"/>
+    </function>
+    <value eval="{'noupdate': False}"/>
+    </function>
+    <function name="write" model="ir.model.data">
+    <function name="search" model="ir.model.data">
+        <value eval="[('module', '=', 'project'), ('name', '=', 'project_public_members_rule')]"/>
+    </function>
+    <value eval="{'noupdate': False}"/>
+    </function>
+    <!-- Updating the already existing records rules which create contradiction for this module's record rules -->
+    <record model="ir.rule" id="project.task_visibility_rule">
+        <field name="name">Project/Task: employees: follow required for follower-only projects</field>
+        <field name="model_id" ref="project.model_project_task"/>
+        <field name="domain_force">[]</field>
+        <field name="groups" eval="None"/>
+    </record>
+    <record model="ir.rule" id="project.project_manager_all_project_tasks_rule">
+        <field name="name">Project/Task: project manager: see all</field>
+        <field name="model_id" ref="project.model_project_task"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4,ref('project.group_project_manager'))]"/>
+    </record>
+    <record id="project.ir_rule_private_task" model="ir.rule">
+        <field name="name">Project: See private tasks</field>
+        <field name="model_id" ref="project.model_project_task"/>
+        <field name="domain_force">[]</field>
+        <field name="groups" eval="None"/>
+    </record>
+    <record model="ir.rule" id="project.project_public_members_rule">
+        <field name="name">Project: employees: following required for follower-only projects</field>
+        <field name="model_id" ref="project.model_project_project"/>
+        <field name="domain_force">[]</field>
+        <field name="groups" eval="None"/>
+    </record>
+</odoo>
