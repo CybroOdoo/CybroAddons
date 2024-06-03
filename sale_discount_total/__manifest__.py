@@ -22,7 +22,7 @@
 
 {
     'name': 'Sale Discount on Total Amount',
-    'version': '14.0.1.1.0',
+    'version': '14.0.1.2.0',
     'category': 'Sales Management',
     'live_test_url': 'https://www.youtube.com/watch?v=CigmHe9iC4s&feature=youtu.be',
     'summary': "Discount on Total in Sale and Invoice With Discount Limit and Approval",
@@ -32,20 +32,22 @@
     'description': """
 
 Sale Discount for Total Amount
-=======================
+==============================
 Module to manage discount on total amount in Sale.
         as an specific amount or percentage
 """,
-    'depends': ['sale',
-                'account', 'delivery'
-                ],
+    'depends': [
+        'sale',
+        'account',
+        'delivery'
+    ],
     'data': [
-        'views/sale_view.xml',
-        'views/account_invoice_view.xml',
+        'views/sale_order_view.xml',
+        'views/account_invoice_views.xml',
         'views/invoice_report.xml',
         'views/sale_order_report.xml',
-        'views/res_config_view.xml',
-
+        'views/res_config_views.xml',
+        'views/sale_order_templates.xml',
     ],
     'images': ['static/description/banner.png'],
     'license': 'AGPL-3',

@@ -87,7 +87,6 @@ class SaleOrder(models.Model):
         return invoice_vals
 
     def button_dummy(self):
-
         self.supply_rate()
         return True
 

@@ -29,7 +29,5 @@ class AccountInvoiceReport(models.Model):
     discount = fields.Float('Discount', readonly=True)
 
     def _select(self):
-        res = super(AccountInvoiceReport,self)._select()
-        select_str = res + """, line.discount AS discount """
-        return select_str
-
+        res = super(AccountInvoiceReport, self)._select()
+        return res + """, line.discount AS discount """
