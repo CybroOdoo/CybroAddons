@@ -33,18 +33,16 @@ setup() {
     async submitOrder() {
     var line = []
     var self = this;
-
-
         if (!this.clicked) {
             this.clicked = true;
             try {
-                var order_name=this.pos.selectedOrder.uid
+                var order_name=this.currentOrder.name
                 await this.orm.call("pos.order", "check_order_status", ["", order_name]).then(function(result){
                     if (result==false){
                     self.kitchen_order_status=false
                          self.popup.add(ErrorPopup, {
                         title: _t("Order is Completed"),
-                        body: _t("There Order is Completed please create a new Order"),
+                        body: _t("This Order is Completed please create a new Order"),
                     });
                     }
                     else{
@@ -74,7 +72,7 @@ setup() {
                         }])
                     }
                     var orders = [{
-                        'pos_reference': this.pos.get_order().uid,
+                        'pos_reference': this.pos.get_order().name,
                         'session_id':1,
                         'amount_total': 0,
                         'amount_paid': 0,

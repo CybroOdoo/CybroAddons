@@ -23,7 +23,10 @@
     'name': 'POS Kitchen Screen',
     'version': '17.0.1.0.0',
     'category': 'Point Of Sale',
-    'summary': 'Kitchen Screen, POS Kitchen, Odoo Kitchen Screen, POS Screen, Customer Screen, Odoo Apps, Odoo17, POS Dashboard, Kitchen',
+    'summary': 'POS Kitchen Screen facilitates sending certain orders '
+               'automatically to the kitchen.The POS Kitchen Screen allows for'
+               'the customization of order views, so that staff can see the '
+               'information that is most important to them.',
     'description': 'The POS Kitchen Screen in Odoo 17 is a feature that '
                    'allows restaurant staff to view and manage orders in '
                    'real-time from the kitchen. This screen provides a clear '
@@ -51,9 +54,8 @@
     ],
     'assets': {
         'point_of_sale._assets_pos': [
-            'pos_kitchen_screen_odoo/static/src/js/fields_load.js',
-            'pos_kitchen_screen_odoo/static/src/js/order_payment.js',
             'pos_kitchen_screen_odoo/static/src/js/order_button.js',
+            'pos_kitchen_screen_odoo/static/src/js/order_payment.js',
         ],
         'web.assets_backend': [
             'pos_kitchen_screen_odoo/static/src/css/kitchen_screen.css',

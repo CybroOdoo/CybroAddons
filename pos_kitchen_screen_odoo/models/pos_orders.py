@@ -31,6 +31,7 @@ class PosOrder(models.Model):
                                                ("waiting", "Cooking"),
                                                ("ready", "Ready"),
                                                ("cancel", "Cancel")],
+                                    default='draft',
                                     help='To know the status of order')
     order_ref = fields.Char(string="Order Reference",
                             help='Reference of the order')
@@ -59,6 +60,27 @@ class PosOrder(models.Model):
                 vals["name"] = self._compute_order_name()
         return super(PosOrder, self).write(vals)
 
+    # @api.model_create_multi
+    # def create(self, vals_list):
+    #     """Override create function with notification (replace 'your_model.name' with your actual model name)"""
+    #
+    #     # 1. Notification on creation
+    #     message = {
+    #         'res_model': self._name,
+    #         'message': 'pos_order_created'
+    #     }
+    #     self.env["bus.bus"]._sendone('pos_order_created', "notification",
+    #                                  message)
+    #
+    #     for vals in vals_list:
+    #         for order in self:
+    #             if order.name == '/':
+    #                 vals['name'] = self._compute_order_name()
+    #         session = self.env['pos.session'].browse(vals['session_id'])
+    #         vals = self._complete_values_from_session(session, vals)
+    #
+    #     return super().create(vals_list)
+
     @api.model_create_multi
     def create(self, vals_list):
         """Override create function for the validation of the order"""
@@ -66,6 +88,7 @@ class PosOrder(models.Model):
             'res_model': self._name,
             'message': 'pos_order_created'
         }
+
         self.env["bus.bus"]._sendone('pos_order_created',
                                      "notification",
                                      message)
@@ -107,7 +130,7 @@ class PosOrder(models.Model):
         kitchen_screen = self.env["kitchen.screen"].sudo().search(
             [("pos_config_id", "=", shop_id)])
         pos_orders = self.env["pos.order.line"].search(
-            ["&", ("is_cooking", "=", True),
+            [("is_cooking", "=", True),
              ("product_id.pos_categ_ids", "in",
               [rec.id for rec in kitchen_screen.pos_categ_ids])])
         pos = self.env["pos.order"].search(
@@ -245,3 +268,37 @@ class PosOrderLine(models.Model):
             self.order_status = 'waiting'
         else:
             self.order_status = 'ready'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override create function for the validation of the order"""
+        message = {
+            'res_model': self._name,
+            'message': 'pos_order_created'
+        }
+        self.env["bus.bus"]._sendone('pos_order_created',
+                                     "notification",
+                                     message)
+        for vals in vals_list:
+            pos_orders = self.search(
+                [("order_id", "=", vals["order_id"])])
+            if pos_orders:
+                for rec in pos_orders.lines:
+                    for lin in vals_list[0]["lines"]:
+                        if lin[2]["product_id"] == rec.product_id.id:
+                            lin[2]["order_status"] = rec.order_status
+                vals_list[0]["order_status"] = pos_orders.order_status
+                return super().create(vals_list)
+
+            else:
+                if vals.get('order_id') and not vals.get('name'):
+                    # set name based on the sequence specified on the config
+                    config = self.env['pos.order'].browse(
+                        vals['order_id']).session_id.config_id
+                    if config.sequence_line_id:
+                        vals['name'] = config.sequence_line_id._next()
+                if not vals.get('name'):
+                    # fallback on any pos.order sequence
+                    vals['name'] = self.env['ir.sequence'].next_by_code(
+                        'pos.order.line')
+                return super().create(vals_list)
