@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Pharmacy dashboard template -->
+<template>
+    <t t-name="PharmacyOrderLines">
+        <tr class="tbl_row">
+            <td>
+                <Dropdown togglerClass="'btn dropdown-toggle'">
+                    <t t-set-slot="toggler">
+                        <span class="fa fa-book"/>
+                        <span class="mx-2" t-out="lineState.product ? state.medicines.filter(med => med.id === lineState.product)[0]?.name : 'Select Medicine'"/>
+                        <span class="target"/>
+                    </t>
+                    <t t-foreach="state.medicines" t-as="med" t-key="med.id">
+                        <DropdownItem
+                              class="'btn d-flex align-items-center px-2 py-2 m-0'"
+                              onSelected="() => this._onChange_prod_price(med.id)">
+                            <span class="mx-2" t-out="med['name']"/>
+                        </DropdownItem>
+                    </t>
+                </Dropdown>
+            </td>
+            <td>
+                <input t-model="lineState.qty" type="number" id="qty" class="form-control qty"
+                       t-on-change="_onChange_prod_qty"/>
+            </td>
+            <td>
+                <select name="uom_sl" class="form-control select_uom">
+                    <t t-foreach="state.units" t-as="unit" t-key="unit.id">
+                        <option t-att-value="unit.id">
+                            <t t-esc="unit['name']"/>
+                        </option>
+                    </t>
+                </select>
+            </td>
+            <td>
+                $<span t-out="lineState.price" style="margin-left: 3px;"/>
+            </td>
+            <td style="display: flex;">
+                $<span t-out="lineState.sub_total" style="margin-left: 3px;"/>
+            </td>
+            <td>
+                <button class="delete-row-btn" t-on-click="remove_line">
+                    Remove
+                </button>
+            </td>
+        </tr>
+    </t>
+</template>
