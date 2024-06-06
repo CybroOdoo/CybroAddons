@@ -97,11 +97,19 @@ class PosOrder(models.Model):
                 [("pos_reference", "=", vals["pos_reference"])])
             if pos_orders:
                 for rec in pos_orders.lines:
-                    for lin in vals_list[0]["lines"]:
-                        if lin[2]["product_id"] == rec.product_id.id:
-                            lin[2]["order_status"] = rec.order_status
-                vals_list[0]["order_status"] = pos_orders.order_status
-                return super().create(vals_list)
+                    print("L", rec)
+                    if "lines" in vals_list[0] and isinstance(vals_list[0]["lines"], list):
+                        for lin in vals_list[0]["lines"]:
+                            print("P", lin)
+                            if lin[2]["product_id"] == rec.product_id.id:
+                                lin[2]["order_status"] = rec.order_status
+                    else:
+                        # Handle the case where "lines" is not a list
+                        print("Error: vals_list[0]['lines'] is not a list")
+                        vals_list[0]["order_status"] = pos_orders.order_status
+                        print("Val_list", vals_list)
+                        return super().create(vals_list)
+
 
             else:
                 if vals.get('order_id') and not vals.get('name'):
@@ -283,22 +291,24 @@ class PosOrderLine(models.Model):
             pos_orders = self.search(
                 [("order_id", "=", vals["order_id"])])
             if pos_orders:
-                for rec in pos_orders.lines:
-                    for lin in vals_list[0]["lines"]:
-                        if lin[2]["product_id"] == rec.product_id.id:
-                            lin[2]["order_status"] = rec.order_status
-                vals_list[0]["order_status"] = pos_orders.order_status
-                return super().create(vals_list)
+                for vals in vals_list:
+                    pos_orders = self.env['pos.order'].search([('order_id', '=', vals['order_id'])])
+                    if pos_orders:
+                        for pos_order in pos_orders:
+                            for rec in pos_order.lines:
+                                for lin in vals.get('lines', []):
+                                    if lin[2]["product_id"] == rec.product_id.id:
+                                        lin[2]["order_status"] = rec.order_status
+                        vals['order_status'] = pos_orders[0].order_status
+                        return super().create(vals_list)
+                    else:
+                        if vals.get('order_id') and not vals.get('name'):
+                            # set name based on the sequence specified on the config
+                            config = self.env['pos.order'].browse(vals['order_id']).session_id.config_id
+                            if config.sequence_line_id:
+                                vals['name'] = config.sequence_line_id._next()
+                        if not vals.get('name'):
+                            # fallback on any pos.order sequence
+                            vals['name'] = self.env['ir.sequence'].next_by_code('pos.order.line')
+                        return super().create(vals_list)
 
-            else:
-                if vals.get('order_id') and not vals.get('name'):
-                    # set name based on the sequence specified on the config
-                    config = self.env['pos.order'].browse(
-                        vals['order_id']).session_id.config_id
-                    if config.sequence_line_id:
-                        vals['name'] = config.sequence_line_id._next()
-                if not vals.get('name'):
-                    # fallback on any pos.order sequence
-                    vals['name'] = self.env['ir.sequence'].next_by_code(
-                        'pos.order.line')
-                return super().create(vals_list)
