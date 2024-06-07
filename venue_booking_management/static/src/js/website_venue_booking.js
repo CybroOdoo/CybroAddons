@@ -44,7 +44,7 @@ publicWidget.registry.websiteLimit = publicWidget.Widget.extend({
         ];
         this.orm.call('venue.booking', 'search', [domain])
             .then(function(result) {
-                if (result) {
+                if (result.length>0) {
                     const open_deactivate_modal = true;
                     const modalHTML = `
                             <div class="modal ${open_deactivate_modal ? 'show d-block' : ''}" id="popup_error_message" tabindex="-1" role="dialog">
@@ -65,7 +65,7 @@ publicWidget.registry.websiteLimit = publicWidget.Widget.extend({
                         $("body").find("#popup_error_message").remove();
                     });
                 } else {
-                    this.el.querySelector('#customer').classList.remove("d-none");
+                    self.el.querySelector('#customer').classList.remove("d-none");
                 }
             });
     },

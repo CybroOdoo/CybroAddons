@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Venue / Event Booking Management',
-    'version': '17.0.1.0.2',
+    'version': '17.0.1.0.3',
     'summary': 'Core Module for Managing Different Types of '
                'Venue/ Event Booking.',
     'description': 'Core Module for Managing Different Types of '
