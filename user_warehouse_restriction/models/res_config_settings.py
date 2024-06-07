@@ -19,7 +19,11 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
+import logging
 from odoo import api, fields, models
+from odoo.exceptions import AccessError
+
+_logger = logging.getLogger(__name__)
 
 
 class ResConfigSettings(models.TransientModel):
@@ -38,11 +42,21 @@ class ResConfigSettings(models.TransientModel):
         """This method is triggered when the 'group_user_warehouse_restriction'
         field is changed. if it's true, assigns the current user as the
         allowed user of all existing warehouses."""
-        warehouses = self.env['stock.warehouse'].search([])
-        for warehouse in warehouses:
-            if self.group_user_warehouse_restriction:
-                # Assign the current user to each warehouse
-                warehouse.user_ids = [(6, 0, [self.env.user.id])]
-            else:
-                # Clear the allowed users for each warehouse
-                warehouse.user_ids = [(5, 0, 0)]
+        rule = self.env.ref('user_warehouse_restriction.operation_type_rule_users', raise_if_not_found=False)
+        if rule:
+            rule.active = False
+        try:
+            warehouses = self.env['stock.warehouse'].search([])
+            for warehouse in warehouses:
+                if self.group_user_warehouse_restriction:
+                    # Assign the current user to each warehouse
+                    if not warehouse.user_ids:
+                        warehouse.user_ids = [(6, 0, [self.env.user.id])]
+                else:
+                    # Clear the allowed users for each warehouse
+                    warehouse.user_ids = [(5, 0, 0)]
+        except AccessError as e:
+            _logger.warning(f"Access error occurred: {e}")
+        finally:
+            if rule:
+                rule.active = True

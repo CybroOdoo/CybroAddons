@@ -31,7 +31,7 @@ class StockWarehouse(models.Model):
         comodel_name='res.users', string='Allowed Users',
         domain=lambda self: [
             ('groups_id', 'in', self.env.ref('stock.group_stock_user').id)],
-        default=lambda self: self.env.user,
+        # default=lambda self: self.env.user,
         help='Allowed users to this Warehouse.')
     restrict_location = fields.Boolean(
         string='Restrict Stock Location for this Warehouse',

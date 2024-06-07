@@ -10,3 +10,8 @@
 #### Version 17.0.2.0.0
 #### UPDT
 - Added Condition for stock picking
+
+#### 23.04.2024
+#### Version 17.0.2.0.1
+#### UPDT
+- Incorporated condition when modifying Warehouse Restriction.
