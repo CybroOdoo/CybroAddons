@@ -52,10 +52,6 @@ class Dashboard extends owl.Component{
     }
     // Fetch data operation type tiles and graphs
     render_operation_tile(){
-        let chartStatus = Chart.getChart('operation');
-        if (chartStatus != undefined) {
-            chartStatus.destroy();
-        }
         var result =  this.orm.call('stock.picking', 'get_operation_types', []
         ).then( (result) => {
             op_type = result[3];
@@ -117,10 +113,6 @@ class Dashboard extends owl.Component{
     }
     // Top moving products bar graph
     async render_top_product_bar_graph(){
-        let chartStatus = Chart.getChart('canvaspie');
-        if (chartStatus != undefined) {
-            chartStatus.destroy();
-        }
         const ctx = this.rootRef.el.querySelector("#canvaspie");
         await this.orm.call("stock.move", "get_the_top_products", []
         ).then( (result) => {
@@ -174,10 +166,6 @@ class Dashboard extends owl.Component{
     }
     // Stock moves pie graph
     async render_stock_moves(){
-        let chartStatus = Chart.getChart('stock_moves');
-        if (chartStatus != undefined) {
-            chartStatus.destroy();
-        }
         this.orm.call("stock.move", "get_stock_moves", []
         ).then( (result) => {
             var name = result.name
@@ -231,10 +219,6 @@ class Dashboard extends owl.Component{
     }
     // Product move line graph
     render_product_move_graph_this_month(){
-        let chartStatus = Chart.getChart('product_move_graph');
-        if (chartStatus != undefined) {
-            chartStatus.destroy();
-        }
         this.orm.call("stock.move.line", "get_product_moves", []
         ).then((result) => {
             var ctx = this.rootRef.el.querySelector("#product_move_graph");
@@ -287,10 +271,6 @@ class Dashboard extends owl.Component{
     }
     // Product categories doughnut graph
     render_product_category(){
-        let chartStatus = Chart.getChart('product_category');
-        if (chartStatus != undefined) {
-            chartStatus.destroy();
-        }
         this.orm.call("stock.picking", "get_product_category", []).
         then((result) => {
             var ctx = this.rootRef.el.querySelector("#product_category");
@@ -345,10 +325,6 @@ class Dashboard extends owl.Component{
     }
     // Dead stock graph
     render_dead_of_stock_graph(){
-        let chartStatus = Chart.getChart('');
-        if (chartStatus != undefined) {
-            chartStatus.destroy();
-        }
         this.orm.call("stock.move", "get_dead_of_stock",[]
         ).then( (result) => {
             if (result) {
@@ -395,10 +371,6 @@ class Dashboard extends owl.Component{
     }
     // Out of stock graph
     render_out_of_stock_graph(){
-        let chartStatus = Chart.getChart('');
-        if (chartStatus != undefined) {
-            chartStatus.destroy();
-        }
         this.orm.call("stock.quant", "get_out_of_stock",[]
         ).then( (result) => {
             if (result) {
@@ -511,10 +483,6 @@ class Dashboard extends owl.Component{
         var option = $(events.target).val();
         // Top product moves in 10 days
         if (option == 'top_last_10_days'){
-            let chartStatus = Chart.getChart('canvaspie');
-            if (chartStatus != undefined) {
-                chartStatus.destroy();
-            }
             this.orm.call("stock.move", "top_products_last_ten", []
             ).then((result) => {
                 var ctx = this.rootRef.el.querySelector("#canvaspie");
@@ -568,10 +536,6 @@ class Dashboard extends owl.Component{
         }
         // Top product moves in 30 days
         if (option == 'top_last_30_days'){
-            let chartStatus = Chart.getChart('canvaspie');
-            if (chartStatus != undefined) {
-                chartStatus.destroy();
-            }
             this.orm.call("stock.move", "top_products_last_thirty", []
             ).then( (result) => {
                 var ctx = this.rootRef.el.querySelector("#canvaspie");
@@ -625,10 +589,6 @@ class Dashboard extends owl.Component{
         }
         // Top product moves in 3 months
         if (option == 'top_last_3_month'){
-            let chartStatus = Chart.getChart('canvaspie');
-            if (chartStatus != undefined) {
-                chartStatus.destroy();
-            }
             this.orm.call("stock.move", "top_products_last_three_months", []
             ).then( (result) => {
                 var ctx = this.rootRef.el.querySelector("#canvaspie");
@@ -682,10 +642,6 @@ class Dashboard extends owl.Component{
         }
         // Top product moves in last year
         if (option == 'top_last_year'){
-            let chartStatus = Chart.getChart('canvaspie');
-            if (chartStatus != undefined) {
-                chartStatus.destroy();
-            }
             this.orm.call("stock.move", "top_products_last_year",[]
             ).then( (result) => {
                 var ctx = this.rootRef.el.querySelector("#canvaspie");
@@ -740,10 +696,6 @@ class Dashboard extends owl.Component{
     }
     // Stock moves filter
     async onchange_stock_moves_selection(events){
-        let chartStatus = Chart.getChart('stock_moves');
-        if (chartStatus != undefined) {
-            chartStatus.destroy();
-        }
         var option = $(events.target).val();
         // Stock moves in 10 days
         if (option == 'last_10_days'){
@@ -799,10 +751,6 @@ class Dashboard extends owl.Component{
         }
         // Stock moves in current month
         if (option == 'this_month'){
-            let chartStatus = Chart.getChart('stock_moves');
-            if (chartStatus != undefined) {
-                chartStatus.destroy();
-            }
             this.orm.call("stock.move", "this_month",[option]
             ).then( (result) => {
                 var ctx = this.rootRef.el.querySelector("#stock_moves");
@@ -856,10 +804,6 @@ class Dashboard extends owl.Component{
         }
         // Stock moves in last 3 months
         if (option == 'last_3_month'){
-            let chartStatus = Chart.getChart('stock_moves');
-            if (chartStatus != undefined) {
-                chartStatus.destroy();
-            }
             this.orm.call("stock.move", "last_three_month", [option]
             ).then( (result) => {
                 var ctx = this.rootRef.el.querySelector("#stock_moves");
@@ -913,10 +857,6 @@ class Dashboard extends owl.Component{
         }
         // Stock moves in last year
         else if (option == 'last_year'){
-            let chartStatus = Chart.getChart('stock_moves');
-            if (chartStatus != undefined) {
-                chartStatus.destroy();
-            }
             this.orm.call("stock.move", "last_year", [option]
             ).then( (result) => {
                 var ctx = this.rootRef.el.querySelector("#stock_moves");
@@ -971,10 +911,6 @@ class Dashboard extends owl.Component{
     }
     // Product move selection
     onchange_product_moves_selection(events){
-        let chartStatus = Chart.getChart('product_move_graph');
-        if (chartStatus != undefined) {
-            chartStatus.destroy();
-        }
         var option = $(events.target).val();
         this.orm.call("stock.move.line", "product_move_by_category", [option]
         ).then( (result) => {
