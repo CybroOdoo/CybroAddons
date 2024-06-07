@@ -40,7 +40,7 @@
             'purchase_dashboard_advanced/static/src/xml/*.xml',
             'purchase_dashboard_advanced/static/src/js/*.js',
             'purchase_dashboard_advanced/static/src/css/style.css',
-            'https://cdn.jsdelivr.net/npm/chart.js'
+            'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.js'
         ],
     },
     'images': ['static/description/banner.jpg'],
