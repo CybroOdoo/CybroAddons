@@ -1,27 +1,27 @@
 # -*- coding: utf-8 -*-
-###############################################################################
+#############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Cybrosys Paid App Development Team (odoo@cybrosys.com)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
-#    This program is under the terms of the Odoo Proprietary License v1.0 (OPL-1)
-#    It is forbidden to publish, distribute, sublicense, or sell copies of the
-#    Software or modified copies of the Software.
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
-#    THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#    FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL
-#    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,DAMAGES OR OTHER
-#    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,ARISING
-#    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#    DEALINGS IN THE SOFTWARE.
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
-###############################################################################
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
 {
     'name': 'Document Management',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Document Management',
     'summary': 'The Document Management module to access document tools',
     'description': 'The Document Management module provides a quick access to '
@@ -71,7 +71,7 @@
         'python': ['bs4']
     },
     'images': ['static/description/banner.jpg'],
-    'license': 'OPL-1',
+    'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
     'application': True,

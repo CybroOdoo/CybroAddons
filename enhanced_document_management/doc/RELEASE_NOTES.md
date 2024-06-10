@@ -1,17 +1,13 @@
 ## Module <enhanced_document_management>
 
-#### 26.12.2023
+#### 10.01.2024
 #### Version 16.0.1.0.0
 #### ADD
 
 - Initial commit for Document Management
 
-## Module <enhanced_document_management>
-
-#### 19.05.2024
+#### 15.03.2024
 #### Version 16.0.1.0.1
-#### BUG FIX
+#### ADD
 
-- fixed the issue of contact name overrides the outline and unaligned delete 
-  button in export page.
-
+- Updates have been made to the incoming request menu.

@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
-###############################################################################
+#############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Cybrosys Paid App Development Team (odoo@cybrosys.com)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
-#    This program is under the terms of the Odoo Proprietary License v1.0 (OPL-1)
-#    It is forbidden to publish, distribute, sublicense, or sell copies of the
-#    Software or modified copies of the Software.
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
-#    THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#    FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL
-#    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,DAMAGES OR OTHER
-#    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,ARISING
-#    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#    DEALINGS IN THE SOFTWARE.
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
-###############################################################################
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
 from zipfile import ZipFile
 from odoo import api, fields, models
 from odoo.http import request
@@ -102,7 +102,7 @@ class Document(models.Model):
     def _compute_size(self):
         """Function is used to fetch the file size of an attachment"""
         for rec in self:
-            rec.size = str(rec.attachment_id.file_size/1000) + ' Kb'
+            rec.size = str(rec.attachment_id.file_size / 1000) + ' Kb'
 
     @api.onchange('days')
     def _onchange_days(self):
@@ -121,12 +121,12 @@ class Document(models.Model):
         information about the file"""
         # important to maintain extension and name as different
         attachment_id = self.env['ir.attachment'].sudo().create({
-                'name': self.name,
-                'datas': self.attachment,
-                'res_model': 'document.file',
-                'res_id': self.id,
-                'public': True,
-            })
+            'name': self.name,
+            'datas': self.attachment,
+            'res_model': 'document.file',
+            'res_id': self.id,
+            'public': True,
+        })
         self.sudo().write({
             'name': self.name,
             'date': fields.Date.today(),
@@ -138,6 +138,11 @@ class Document(models.Model):
             'attachment_id': attachment_id.id,
             'brochure_url': attachment_id.local_url
         })
+        if self.env.context.get('active_model') == "request.document":
+            self.env['request.document'].search(
+                [('id', '=', self.env.context.get('active_id'))]).write({
+                    'state': 'accepted'
+                })
         return {
             'type': 'ir.actions.client',
             'tag': 'reload'
@@ -150,7 +155,7 @@ class Document(models.Model):
         for doc in self.browse(document_selected):
             zip_obj.write(doc.attachment_id._full_path(
                 doc.attachment_id.store_fname),
-                         doc.attachment_id.name)
+                doc.attachment_id.name)
         zip_obj.close()
         url = f"{request.httprequest.host_url[:-1]}/web/attachments/download"
         return {
