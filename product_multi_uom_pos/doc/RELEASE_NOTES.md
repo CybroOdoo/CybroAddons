@@ -9,3 +9,8 @@
 #### Version 17.0.1.0.1
 ##### UPDT
 - Bug Fix-Resolved the issue in the refund page.
+
+#### 13.06.2024
+#### Version 17.0.1.0.1
+##### UPDT
+- Bug Fix-Resolved the issue in the picking 

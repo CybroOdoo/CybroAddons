@@ -43,7 +43,6 @@ class ProductTemplate(models.Model):
         """
         status = self.env['ir.config_parameter'].sudo().get_param(
             'product_multi_uom_pos.pos_multi_uom')
-        print(status,'status')
         self.write({
             'multi_uom': status
         })

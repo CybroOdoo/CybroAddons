@@ -51,7 +51,7 @@ patch(Orderline.prototype, {
             const currentOrder = this.env.services.pos.get_order();
             currentOrder.selected_orderline.set_uom({0:uomId,1:uomName})
           // Set the price_manually_set flag to indicate that the price was manually set
-            currentOrder.selected_orderline.price_manually_set = true;
+            currentOrder.selected_orderline.price_type = "manual";
            // Set the unit price of selected UoM on the order line
             currentOrder.selected_orderline.set_unit_price(price);
     },

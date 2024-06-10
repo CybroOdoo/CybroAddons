@@ -45,15 +45,3 @@ class StockPicking(models.Model):
                 'location_dest_id': self.location_dest_id.id,
                 'company_id': self.company_id.id,
             }
-
-    def _create_move_from_pos_order_lines(self, lines):
-        """Creates individual stock move lines for each sale order line"""
-        self.ensure_one()
-        move_vals = []
-        for line in lines:
-            order_lines = self.env['pos.order.line'].concat(line)
-            move_vals.append(
-                self._prepare_stock_move_vals(order_lines[0], order_lines))
-        moves = self.env['stock.move'].create(move_vals)
-        confirmed_moves = moves._action_confirm()
-        confirmed_moves._add_mls_related_to_order(lines, are_qties_done=True)
