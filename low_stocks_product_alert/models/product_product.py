@@ -43,6 +43,7 @@ class ProductProduct(models.Model):
              'stock alert will be triggered.When the product quantity falls '
              'below this value, the background color for the product will be '
              'changed based on the alert state.',
+        compute="_compute_is_low_stock_alert"
     )
     min_low_stock_alert = fields.Integer(
         string='Alert Quantity',
@@ -66,3 +67,12 @@ class ProductProduct(models.Model):
                 is_low_stock_single = rec.detailed_type == 'product' and rec.qty_available <= int(
                     rec.min_low_stock_alert)
                 rec.alert_tag = rec.qty_available if is_low_stock_single else False
+
+    @api.depends_context('is_low_stock_alert_individual')
+    def _compute_is_low_stock_alert(self):
+        config_param = self.env['ir.config_parameter'].sudo()
+        is_low_stock_alert_individual = config_param.get_param(
+            'low_stocks_product_alert.is_low_stock_alert_individual')
+        for product in self:
+            product.is_low_stock_alert = bool(
+                is_low_stock_alert_individual)
