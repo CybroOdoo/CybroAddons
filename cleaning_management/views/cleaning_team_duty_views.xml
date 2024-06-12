@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Allows users to view the cleaning team duty as a tree and
+    provides a form for inputting cleaning team duty-->
+    <record id="cleaning_team_duty_action" model="ir.actions.act_window">
+        <field name="name">Cleaning Team Duty</field>
+        <field name="res_model">cleaning.team.duty</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+               Create a New Cleaning Team Duty
+            </p>
+        </field>
+    </record>
+    <!--Cleaning team duty form view-->
+    <record id="cleaning_team_duty_view_form" model="ir.ui.view">
+        <field name="name">cleaning.team.duty.view.form</field>
+        <field name="model">cleaning.team.duty</field>
+        <field name="arch" type="xml">
+            <form create="0">
+                <header>
+                    <button name="action_start" type="object" string="Start"
+                            class="btn-success"  attrs="{'invisible':
+                            ['|',('start_cleaning', '=', True),('state', '=', 'cancelled')]}"/>
+                    <button name="action_finish" type="object" string="Done"
+                            class="btn-success"  attrs="{'invisible':
+                            ['|',('end_cleaning', '=', True),('state', '=', 'cancelled')]}"/>
+                    <button name="action_inspection" type="object"
+                            string="Inspection" class="oe_highlight"
+                            attrs="{'invisible':
+                            [('inspection_boolean', '=', True)]}"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft"/>
+
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" name="action_view_inspection"
+                                class="oe_stat_button"
+                                icon="fa-pencil-square-o">
+                            <field name="inspection_count" widget="statinfo"
+                                   string="Inspection"/>
+                        </button>
+                    </div>
+                    <group>
+                        <field name="team_id"/>
+                        <field name="team_leader_id"/>
+                        <field name="cleaning_date"/>
+                        <field name="cleaning_time"/>
+                        <field name="members_ids" widget="many2many_tags"/>
+                        <field name="customer_id"/>
+                        <field name="location_state_id"/>
+                        <field name="place"/>
+                        <field name="inspection_boolean" invisible="1"/>
+                        <field name="start_cleaning" invisible="1"/>
+                        <field name="end_cleaning" invisible="1"/>
+                        <field name="start_time"/>
+                        <field name="end_time"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--Cleaning team duty tree view-->
+    <record id="cleaning_team_duty_view_tree" model="ir.ui.view">
+        <field name="name">cleaning.team.duty.view.tree</field>
+        <field name="model">cleaning.team.duty</field>
+        <field name="arch" type="xml">
+            <tree create="0">
+                <field name="team_id"/>
+                <field name="team_leader_id"/>
+                <field name="members_ids" widget="many2many_tags"/>
+                <field name="cleaning_date"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'cleaned'"
+                       decoration-danger="state == 'dirty'" optional="show"/>
+            </tree>
+        </field>
+    </record>
+</odoo>
