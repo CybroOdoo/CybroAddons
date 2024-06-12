@@ -45,7 +45,7 @@
             '/barcode_for_work_centers/static/src/css/barcode_for_work_centers.scss',
         ],
     },
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'OPL-1',
     'installable': True,
     'application': False,
