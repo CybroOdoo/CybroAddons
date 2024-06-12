@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="pos_receipt_invoice_send_whatsapp.ReceiptScreen"
+       t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension"
+       owl="1">
+        <!--Inherit point_of_sale.ReceiptScreen to integrate the "Send Invoice"
+        and "Send Receipt" buttons, along with success and error messages.
+        Additionally, set conditions for displaying these buttons.-->
+        <xpath expr="//div[hasclass('buttons')]" position="after">
+            <t t-if="pos.user.whatsapp_groups_checks">
+                <t t-if="pos.config.pos_whatsapp_enabled">
+                    <t t-if="pos.config.apply_send_receipt_or_invoice == 'send_invoice' or pos.config.apply_send_receipt_or_invoice == false">
+                        <div class="buttons my-3">
+                            <button class="button print btn btn-lg btn-secondary w-100 py-3"
+                                    t-on-click="sendInvoiceOnWhatsapp">
+                                <i class="fa fa-whatsapp me-2"
+                                   t-ref="order-print-receipt-button"
+                                   t-if="!orderUiState.isInvoiceSending"/>
+                                <i class="fa fa-spinner fa-spin me-2"
+                                   t-if="orderUiState.isInvoiceSending"/>
+                                Send Invoice
+                            </button>
+                            <div class="notice mt-2">
+                                <div t-if="orderUiState.whatsappInvoiceSuccessful !== null"
+                                     t-attf-class="{{ orderUiState.whatsappInvoiceSuccessful ? 'successful text-success' : 'failed text-danger' }}">
+                                    <t t-esc="orderUiState.whatsappInvoiceNotice"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-if="pos.config.apply_send_receipt_or_invoice == 'send_receipt' or pos.config.apply_send_receipt_or_invoice == false">
+                        <div class="buttons my-3">
+                            <button class="button print btn btn-lg btn-secondary w-100 py-3"
+                                    t-on-click="sendReceiptOnWhatsapp">
+                                <i class="fa fa-whatsapp ms-2"
+                                   t-ref="order-print-receipt-button"
+                                   t-if="!orderUiState.isReceiptSending"/>
+                                <i class="fa fa-spinner fa-spin me-2"
+                                   t-if="orderUiState.isReceiptSending"/>
+                                Send Receipt
+                            </button>
+                            <div class="notice mt-2">
+                                <div t-if="orderUiState.whatsappReceiptSuccessful !== null"
+                                     t-attf-class="{{ orderUiState.whatsappReceiptSuccessful ? 'successful text-success' : 'failed text-danger' }}">
+                                    <t t-esc="orderUiState.whatsappReceiptNotice"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </xpath>
+    </t>
+</templates>
