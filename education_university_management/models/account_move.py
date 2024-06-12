@@ -67,9 +67,9 @@ class AccountMove(models.Model):
                                 new invoice record.
             :returns class:`~account.move`: The created invoice record.
         """
-        partner = self.env['res.partner'].browse(vals.get('partner_id'))
-        if vals.get('fee_category_id'):
-            vals.update({
+        partner = self.env['res.partner'].browse(vals[0].get('partner_id'))
+        if vals[0].get('fee_category_id'):
+            vals[0].update({
                 'is_fee': True,
                 'student_name': partner.name
             })
