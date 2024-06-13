@@ -20,5 +20,5 @@
 #
 ################################################################################
 from . import dynamic_fields
-from . import field_widgets
+from . import dynamic_field_widgets
 from . import ir_model_fields

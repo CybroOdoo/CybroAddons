@@ -22,7 +22,7 @@
 from odoo import fields, models
 
 
-class FieldWidgets(models.Model):
+class DynamicFieldWidgets(models.Model):
     """We can't filter a selection field dynamically
        so when we select a field its widgets also need to change according to
        the selected field type, we can't do it by a 'selection' field,

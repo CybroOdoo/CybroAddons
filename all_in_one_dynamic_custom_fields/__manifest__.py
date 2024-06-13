@@ -21,13 +21,13 @@
 ################################################################################
 {
     'name': 'All in One Dynamic Fields',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.1',
     'category': 'Extra Tools',
     'summary': 'Create Custom Fields As Per Your Need Without Any Coding.',
     'description': "The features of module facilitates the addition of fields"
-                    "to any view within a model, allowing users to specify"
-                    "attributes and properties at their preferred "
-                    "location.",
+                   "to any view within a model, allowing users to specify"
+                   "attributes and properties at their preferred "
+                   "location.",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
