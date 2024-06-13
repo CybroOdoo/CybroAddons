@@ -39,6 +39,7 @@ class AccountMove(models.Model):
             so_id = self.env['sale.order'].search(
                 [('name', '=', rec.get('invoice_origin'))])
             if so_id.is_subscription is True:
+                so_id.subscription_id.start_date = so_id.subscription_id.next_invoice_date
                 new_vals_list = [{'is_subscription': True,
                                   'subscription_id': so_id.subscription_id.id}]
                 vals_list[0].update(new_vals_list[0])

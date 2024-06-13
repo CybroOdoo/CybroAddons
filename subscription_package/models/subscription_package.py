@@ -20,7 +20,7 @@
 #
 #############################################################################
 from dateutil.relativedelta import relativedelta
-from odoo import api, fields, models, _, SUPERUSER_ID
+from odoo import api, fields, models, SUPERUSER_ID, _
 from odoo.exceptions import UserError
 
 
@@ -49,7 +49,8 @@ class SubscriptionPackage(models.Model):
                        store=True, required=True,
                        help='Choose the name for the subscription package.')
     partner_id = fields.Many2one('res.partner', string='Customer',
-                                 help='Select the customer associated with this record.')
+                                 help='Select the customer associated with '
+                                      'this record.')
     partner_invoice_id = fields.Many2one('res.partner',
                                          help='Select the invoice address '
                                               'associated with this record.',
@@ -70,7 +71,8 @@ class SubscriptionPackage(models.Model):
                                ondelete='restrict', readonly=True)
     next_invoice_date = fields.Date(string='Next Invoice Date',
                                     store=True, help='Add next invoice date',
-                                    compute="_compute_next_invoice_date")
+                                    compute="_compute_next_invoice_date",
+                                    inverse="_inverse_next_invoice_date")
     company_id = fields.Many2one('res.company', string='Company',
                                  help='Select the company',
                                  default=lambda self: self.env.company,
@@ -187,7 +189,7 @@ class SubscriptionPackage(models.Model):
             rec.current_stage = rec.env['subscription.package.stage'].search(
                 [('id', '=', rec.stage_id.id)]).category
 
-    @api.constrains('start_date')
+    @api.depends('start_date')
     def _compute_next_invoice_date(self):
         """The compute function is the next invoice date for subscription
         packages based on the start date and renewal time."""
@@ -195,6 +197,12 @@ class SubscriptionPackage(models.Model):
             if sub.start_date:
                 sub.next_invoice_date = sub.start_date + relativedelta(
                     days=sub.plan_id.renewal_time)
+
+    def _inverse_next_invoice_date(self):
+        """Inverse function for next invoice date"""
+        for sub in self.env['subscription.package'].search([]):
+            if sub.start_date:
+                return
 
     def button_invoice_count(self):
         """ It displays invoice based on subscription package """
@@ -251,6 +259,12 @@ class SubscriptionPackage(models.Model):
                     raise UserError("Empty order lines !! Please add the "
                                     "subscription product.")
                 else:
+                    if rec.sale_order_id:
+                        rec.sale_order_id.write({'subscription_id': rec.id,
+                                                 'is_subscription': True})
+                        for line in rec.sale_order_id.order_line.filtered(
+                                lambda x: x.product_template_id.is_subscription == True):
+                            line.qty_to_invoice = line.product_uom_qty
                     rec.write(
                         {'stage_id': stage_id,
                          'date_started': fields.Date.today(),
@@ -362,12 +376,11 @@ class SubscriptionPackage(models.Model):
 
     def close_limit_cron(self):
         """ It Checks renew date, close date. It will send mail when renew
-        date and also generates invoices based on the plan.
-        It wil close the subscription automatically if renewal limit is exceeded """
+        date and also generates invoices based on the plan. It wil close the
+        subscription automatically if renewal limit is exceeded"""
         pending_subscriptions = self.env['subscription.package'].search(
             [('stage_category', '=', 'progress')])
         today_date = fields.Date.today()
-        # today_date = datetime.datetime.strptime('05102023', '%d%m%Y').date()
         pending_subscription = False
         for pending_subscription in pending_subscriptions:
             get_dates = self.find_renew_date(
@@ -400,9 +413,9 @@ class SubscriptionPackage(models.Model):
                             'currency_id': pending_subscription.partner_invoice_id.currency_id.id,
                             'invoice_line_ids': this_products_line
                         })
-
-                    pending_subscription.write({'is_to_renew': False,
-                                                'start_date': pending_subscription.next_invoice_date})
+                    pending_subscription.write({
+                        'is_to_renew': False,
+                        'start_date': pending_subscription.next_invoice_date})
                     new_date = self.find_renew_date(
                         pending_subscription.next_invoice_date,
                         pending_subscription.date_started,

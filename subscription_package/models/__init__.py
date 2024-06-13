@@ -29,3 +29,4 @@ from . import subscription_package_plan
 from . import subscription_package_product_line
 from . import subscription_package_stage
 from . import subscription_package_stop
+from . import sale_order_line

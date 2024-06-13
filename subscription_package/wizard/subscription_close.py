@@ -52,3 +52,7 @@ class SubscriptionClose(models.TransientModel):
             ('category', '=', 'closed')]).id)
         values = {'stage_id': stage, 'is_to_renew': False}
         sub.write(values)
+        for lines in sub.sale_order_id.order_line.filtered(
+                lambda x: x.product_template_id.is_subscription == True):
+            lines.qty_invoiced = lines.product_uom_qty
+            lines.qty_to_invoice = 0

@@ -21,7 +21,8 @@
 #############################################################################
 {
     'name': 'Subscription Management',
-    'version': '17.0.1.0.1',
+    'version': '17.0.1.1.2',
+    'category': 'Sales',
     'summary': 'Subscription Package Management Module For Odoo17 Community',
     'description': 'Subscription Package Management Module specifically '
                    'designed for Odoo 17 Community edition. '
@@ -30,7 +31,6 @@
                    'providing users with advanced features and '
                    'functionalities for efficiently handling subscription '
                    'packages in the community version of Odoo 17.',
-    'category': 'Sales',
     'author': 'Cybrosys Techno solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -39,14 +39,12 @@
     'data': [
         'security/subscription_package_groups.xml',
         'security/ir.model.access.csv',
-
         'data/uom_demo_data.xml',
         'data/subscription_package_stop_data.xml',
         'data/subscription_stage_data.xml',
         'data/mail_subscription_renew_data.xml',
         'data/ir_cron_data.xml',
         'data/ir_sequence.xml',
-
         'views/subscription_package_views.xml',
         'views/product_template_views.xml',
         'views/subscription_package_plan_views.xml',
@@ -57,14 +55,12 @@
         'views/recurrence_period_views.xml',
         'views/sale_order_views.xml',
         'views/product_product_views.xml',
-
         'report/subscription_report_view.xml',
-
         'wizard/subscription_close_views.xml',
     ],
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
-    'application': True,
     'auto_install': False,
+    'application': True,
 }

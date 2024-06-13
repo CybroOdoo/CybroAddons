@@ -55,7 +55,7 @@ class SubscriptionPackageProductLine(models.Model):
     unit_price = fields.Float(string='Unit Price', store=True, readonly=False,
                               related='product_id.list_price',
                               help='Add Product Unit Price')
-    discount = fields.Float(string="Discount (%)", helo='Add Discount')
+    discount = fields.Float(string="Discount (%)", help='Add Discount')
     tax_ids = fields.Many2many('account.tax', string="Taxes",
                                ondelete='restrict',
                                related='product_id.taxes_id', readonly=False,
@@ -65,14 +65,15 @@ class SubscriptionPackageProductLine(models.Model):
     price_tax = fields.Monetary(store=True, readonly=True, string='Price Tax',
                                 help='Add Price Tax')
     currency_id = fields.Many2one('res.currency', string='Currency',
-                                  store=True,help='Add Subscription Currency',
+                                  store=True, help='Add Subscription Currency',
                                   related='subscription_id.currency_id')
-    total_amount = fields.Monetary(string='Subtotal', store=True,help='Add Total Amount',
+    total_amount = fields.Monetary(string='Subtotal', store=True,
+                                   help='Add Total Amount',
                                    compute='_compute_total_amount')
     sequence = fields.Integer('Sequence', help="Determine the display order",
                               index=True)
     res_partner_id = fields.Many2one('res.partner', string='Partner',
-                                     store=True,help='Choose the  Partner',
+                                     store=True, help='Choose the  Partner',
                                      related='subscription_id.partner_id')
 
     @api.depends('product_qty', 'unit_price', 'discount', 'tax_ids',
