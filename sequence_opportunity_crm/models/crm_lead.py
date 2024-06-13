@@ -25,7 +25,7 @@ from odoo import api, fields, models
 class CrmLead(models.Model):
     """
     CRM Lead
-    This class extends the base `crm.lead` model to add opportunity functionaly
+    This class extends the base `crm.lead` model to add opportunity functionally
     """
     _inherit = 'crm.lead'
     _description = 'CRM Lead'
@@ -40,13 +40,13 @@ class CrmLead(models.Model):
 
     def _compute_sequence_create(self):
         """ This method is used to compute the value of sequence_create field
-                """
+        """
         for rec in self:
             rec.sequence_create = (
                 self.env["ir.config_parameter"].sudo().get_param(
                     "sequence_opportunity_crm.sequence_create"))
 
-    @api.model
+    @api.model_create_multi
     def create(self, vals):
         """ This method is used to create sequence for each opportunity """
         oppo = super().create(vals)
