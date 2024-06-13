@@ -8,3 +8,8 @@
 #### Version 16.0.1.0.1
 #### FIX
 - Fixed the issue in Save Function
+
+#### 13.06.2024
+#### Version 16.0.2.0.1
+#### FIX
+- Fixed the issue in Sequence Creation

@@ -28,5 +28,5 @@ def _set_qr(cr, registry):
     env = api.Environment(cr, SUPERUSER_ID, {})
     for record in env['product.product'].search([]):
         name = record.name.replace(" ", "")
-        record.sequence = 'DEF' + name.upper()+str(record.id)
+        record.sequences= 'DEF' + name.upper()+str(record.id)
         record.generate_qr()
