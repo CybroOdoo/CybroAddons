@@ -22,11 +22,16 @@
 from odoo import models, fields
 
 
-class IrModelFields(models.Model):
-    """Adding a new field to understand the dynamically created fields."""
+class DynamicFieldWidgets(models.Model):
+    """We can't filter a selection field dynamically so when we select a
+    field its widgets also need to change according to the selected field
+    type, we can't do it by a 'selection' field, need a 'Many2one' field.
+    """
 
-    _inherit = 'ir.model.fields'
+    _name = 'dynamic.field.widgets'
+    _rec_name = 'description'
+    _description = 'Field Widgets'
 
-    is_dynamic_field = fields.Boolean(string="Dynamic Field",
-                                      help='weather the field is a '
-                                           'dynamically created field')
+    name = fields.Char(string="Name", help="Name given to the record")
+    description = fields.Char(string="Description",
+                              help="Description of the record")
