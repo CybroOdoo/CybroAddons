@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--DASHBOARD VIEW WITH NAVIGATION-BAR, INTERACTJS TEMPLATE-->
+    <t t-name="owl.AdvancedDynamicDashboard" owl="1">
+        <div class="container" style="min-height:-webkit-fill-available;">
+            <div class="navbar navbar-expand-md navbar-light mb-4 navbar-style border-bottom"
+                 role="navigation">
+                <button class="navbar-toggler" id="dropdownNavbar" type="button"
+                        data-toggle="collapse"
+                        data-target="#navbarCollapse"
+                        aria-controls="navbarCollapse" aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"/>
+                </button>
+                <div class="collapse navbar-collapse"
+                     aria-labelledby="dropdownNavbar">
+                    <ul class="navbar-nav mr-auto">
+                        <label class="navbar-items dropdown drop-down-add">
+                            <button class="btn btn-align-items dropdown-add-items dropdown-toggle"
+                                    style="margin-top:-4px;"
+                                    type="selection" id="dropdownMenuButton"
+                                    data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false"
+                                    t-on-click="onClickAdd">
+                                <i class="fa fa-plus-circle"/>
+                                <span id="text_add">⠀Add Items</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-addblock"
+                                 aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item add_block"
+                                   data-type="tile"
+                                   t-on-click="(ev) => this.onClickAddItem(ev)">Tile</a>
+                                <a class="dropdown-item add_block"
+                                   data-type="graph" data-chart_type="bar"
+                                   t-on-click="(ev) => this.onClickAddItem(ev)">Bar Chart</a>
+                                <a class="dropdown-item add_block"
+                                   data-type="graph" data-chart_type="doughnut"
+                                   t-on-click="(ev) => this.onClickAddItem(ev)">Doughnut Chart</a>
+                                <a class="dropdown-item add_block"
+                                   data-type="graph"
+                                   data-chart_type="line"
+                                   t-on-click="(ev) => this.onClickAddItem(ev)">Line Chart</a>
+                                <a class="dropdown-item add_block"
+                                   data-type="graph" data-chart_type="pie"
+                                   t-on-click="(ev) => this.onClickAddItem(ev)">Pie Chart</a>
+                                <a class="dropdown-item add_block"
+                                   data-type="graph"
+                                   data-chart_type="polarArea"
+                                   t-on-click="(ev) => this.onClickAddItem(ev)">Polar Area Chart</a>
+                                <a class="dropdown-item add_block"
+                                   data-type="graph"
+                                   data-chart_type="radar"
+                                   t-on-click="(ev) => this.onClickAddItem(ev)">Radar Chart</a>
+                            </div>
+                        </label>
+                    </ul>
+                </div>
+                <label class="navbar-items layout-switch"
+                       style="padding-top:20px;"
+                       id="edit-layout-label">
+                    <button class="navbar-items btn-search_edit btn-align-items btn btn-primary my-2 mx-2 my-sm-0"
+                            type="button"
+                            id="edit_layout"
+                            t-on-click="(ev) => this.editLayout(ev)">Edit Layout</button>
+                    <button class="navbar-items btn-search_edit btn btn-primary my-2 mx-2 my-sm-0"
+                            type="button"
+                            id="save_layout"
+                            t-on-click="(ev) => this.saveLayout(ev)">Save Layout</button>
+                    <label for="view_mode"
+                           t-on-mouseover="(ev) => this.showViewMode(ev)"
+                           t-on-mouseout="(ev) => this.hideViewMode(ev)"
+                           t-on-click="(ev) => this.changeViewMode(ev)"
+                           style="margin-left: 6px;">
+                        <input type="checkbox" id="view_mode"/>
+                        <span><i class="bi bi-moon-stars-fill view-mode-icon" style="margin-left:10px"/></span>
+                    </label>
+                    <span class="mode" mode="light">Dark mode</span>
+                </label>
+
+                <div class="search-group" style="margin-right: 30px;padding-top:20px;">
+                    <!-- Search Bar -->
+                    <div class="navbar-items btn-group search-box">
+                        <input class="form-control mr-sm-2" type="text" placeholder="Search" id="search-input-chart" aria-label="Search"/>
+                        <span id="searchclear" t-on-click="clearSearch">
+                            <i class="fa fa-times search-clear"
+                              style="margin-left:-25px;margin-top:9px;"/>
+                        </span>
+                    </div>
+                    <button class="btn btn-outline-success my-2 my-sm-0"
+                            t-on-click="clickSearch"
+                            style="margin-left:10px;"
+                            type="button">Search
+                    </button>
+                </div>
+                        <!-- Date Inputs -->
+                <div class="date-inputs"
+                     style="position: absolute; right: 34.5em; font-size: smaller;font-family: monospace; padding-top:inherit; ">
+                    <label for="start-date" class="date-label"
+                           style="color: black;">Start Date:</label>
+                            <input type="date" id="start-date" name="start-date"
+                                   t-on-change="dateFilter"
+                                   style="color: black; border: 1px solid #4e4e4e; background-color: white; padding: 5px 10px; border-radius: 5px;"/>
+                            <label for="end-date" class="date-label"
+                                   style="color: black;">End Date:</label>
+                            <input type="date" id="end-date" name="end-date"
+                                   t-on-change="dateFilter"
+                                   style="color: black; border: 1px solid #4e4e4e; background-color: white; padding: 5px 10px; border-radius: 5px;"/>
+                </div>
+                <div class="o-dropdown dropdown theme">
+                    <select class="form-select"
+                            t-ref="ThemeSelector"
+                            t-on-change="onChangeTheme">
+                        <option value="0">Select Theme</option>
+                    </select>
+                </div>
+                <div class="dashboard_pdf" t-on-click="printPdf">
+                    <i class="bi bi-filetype-pdf" style="font-size:24px;"/>
+                </div>
+                <div class="dashboard_mail" t-on-click="sendMail">
+                    <i class="bi bi-envelope-fill" style="font-size:24px;"/>
+                </div>
+            </div>
+            <div class="all_items" style="display:grid;">
+                <div class="items"/>
+            </div>
+                <!--CONTAINER FOR CONTENT GENERATION :TILE & CHART(FROM DynamicDashboardTile & DynamicDashboardChart-->
+        </div>
+    </t>
+</templates>
