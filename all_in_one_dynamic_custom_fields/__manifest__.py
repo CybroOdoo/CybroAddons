@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-###############################################################################
+################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2024-TODAY Cybrosys Technologies (<https://www.cybrosys.com>)
 #    Author: Ruksana P (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
@@ -19,10 +19,10 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-###############################################################################
+################################################################################
 {
     'name': 'All In One Dynamic Fields',
-    'version': '14.0.1.0.0',
+    'version': '14.0.1.1.1',
     'category': 'Extra Tools',
     'summary': 'Create Custom Fields As Per Your Need Without Any Coding.',
     'description': """This module is used to add dynamic field of any type  to 

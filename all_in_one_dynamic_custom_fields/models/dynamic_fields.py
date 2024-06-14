@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-###############################################################################
+################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2024-TODAY Cybrosys Technologies (<https://www.cybrosys.com>)
 #    Author: Ruksana P (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
@@ -19,7 +19,9 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-###############################################################################
+################################################################################
+from xlrd.xlsx import ET
+
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
@@ -39,18 +41,22 @@ class DynamicFields(models.Model):
         field_list.remove(('reference', 'reference'))
         return field_list
 
-    dynamic_field_id = fields.Many2one('ir.model.fields', string='Field Name',
+    dynamic_field_id = fields.Many2one('ir.model.fields',
+                                       string='Field Name',
                                        required=True, ondelete='cascade',
                                        help='Please Enter the name of field')
-    position = fields.Selection([('before', 'Before'), ('after', 'After')],
+    position = fields.Selection([('before', 'Before'),
+                                 ('after', 'After')],
                                 string='Position', required=True,
                                 help='Select the position of dynamic field '
                                      'relative to reference field')
-    model_id = fields.Many2one('ir.model', string='Model', required=True,
+    model_id = fields.Many2one('ir.model', string='Model',
+                               required=True,
                                index=True, ondelete='cascade',
                                help="Mention the model name for this field "
                                     "to be added")
-    ref_model_id = fields.Many2one('ir.model', string='Reference Model',
+    ref_model_id = fields.Many2one('ir.model',
+                                   string='Reference Model',
                                    help='Choose the model id for which we want '
                                         'to add field', index=True, )
     selection_field = fields.Char(string="Selection Options",
@@ -60,36 +66,65 @@ class DynamicFields(models.Model):
                                   help='Select the field type here')
     ttype = fields.Selection(string="Field Type", related='field_type',
                              help='Select the field type here')
-    widget_id = fields.Many2one('dynamic.field.widgets', string='Widget',
+    widget_id = fields.Many2one('dynamic.field.widgets',
+                                string='Widget',
                                 help='Choose the field widget')
-    groups = fields.Many2many('res.groups', 'employee_dynamic_fields_group_rel',
-                              'field_id', 'group_id', string='Group',
+    groups = fields.Many2many('res.groups',
+                              'employee_dynamic_fields_group_rel',
+                              'field_id', 'group_id',
+                              string='Group',
                               help='Enter the group for which this field is'
                                    ' visible')
     is_extra_features = fields.Boolean(string="Show Extra Properties",
                                        help='Please enable this field for extra'
                                             ' attributes')
-    status = fields.Selection([('draft', 'Draft'), ('form', 'Field Created'),
-                               ('tree', 'Added in Tree View')], string='Status',
+    status = fields.Selection([('draft', 'Draft'),
+                               ('form', 'Field Created'),
+                               ('tree', 'Added in Tree View')],
+                              string='Status',
                               index=True, readonly=True, tracking=True,
                               copy=False, default='draft',
                               help='The status of dynamic field creation')
-    form_view_id = fields.Many2one('ir.ui.view', string="Form View ID",
-                                   required=True, help='Enter the form view id')
+    form_view_id = fields.Many2one('ir.ui.view',
+                                   string="Form View ID",
+                                   required=True,
+                                   help='Enter the form view id')
     form_view_inherit = fields.Char(string="Form View Inherit Id",
                                     related='form_view_id.xml_id',
                                     help='Enter the inherited form view id')
-    custom_form_view_id = fields.Many2one('ir.ui.view', string="Form View ID",
+    custom_form_view_id = fields.Many2one('ir.ui.view',
+                                          string="Form View ID",
                                           help='Enter the custom form view id')
     is_field_in_tree = fields.Boolean(string="Add Field to the Tree View",
                                       help='Enable for tree view')
-    tree_view_id = fields.Many2one('ir.ui.view', string="Tree View ID",
+    tree_view_id = fields.Many2one('ir.ui.view',
+                                   string="Tree View ID",
                                    help='Enter the tree view id', )
     tree_view_inherit = fields.Char(string="Tree View Inherit Id",
                                     related='tree_view_id.xml_id',
                                     help='Enter the inherited tree view id')
-    custom_tree_view_id = fields.Many2one('ir.ui.view', string="Tree View ID",
+    custom_tree_view_id = fields.Many2one('ir.ui.view',
+                                          string="Tree View ID",
                                           help='Enter the custom tree view id')
+    tree_field_ids = fields.Many2many('ir.model.fields',
+                                      string='Tree field domain field',
+                                      compute='_compute_tree_field_ids',
+                                      help='Tree fields domain')
+    tree_field_id = fields.Many2one('ir.model.fields',
+                                    string='Tree Field',
+                                    domain="[('id', 'in', "
+                                           "tree_field_ids)]",
+                                    help='Tree field')
+    tree_field_position = fields.Selection([('before', 'Before'),
+                                            ('after', 'After')],
+                                           string='Position',
+                                           help='Select the position of '
+                                                'dynamic field relative to '
+                                                'reference field in tree view')
+    is_visible_in_tree_view = fields.Boolean(string='Visible in tree view',
+                                             help='Weather toggle visible the '
+                                                  'newly created field in '
+                                                  'tree view')
 
     @api.onchange('model_id')
     def _onchange_model_id(self):
@@ -107,6 +142,34 @@ class DynamicFields(models.Model):
             'dynamic_field_id': [('id', 'in', field_list)]
         }}
 
+    @api.depends('tree_view_id')
+    def _compute_tree_field_ids(self):
+        """Compute function to find the tree view fields of selected tree view
+               in field tree_view_id"""
+        for rec in self:
+            if rec.tree_view_id:
+                field_list = []
+                if rec.tree_view_id.xml_id:
+                    tree_fields = ET.fromstring(self.env.ref(
+                        rec.tree_view_id.xml_id).arch).findall(".//field")
+                    for field in tree_fields:
+                        field_list.append(field.get('name'))
+                inherit_id = rec.tree_view_id.inherit_id \
+                    if rec.tree_view_id.inherit_id else False
+                while inherit_id:
+                    if inherit_id.xml_id:
+                        tree_fields = ET.fromstring(self.env.ref(
+                            inherit_id.xml_id).arch).findall(".//field")
+                        for field in tree_fields:
+                            field_list.append(field.get('name'))
+                    inherit_id = inherit_id.inherit_id \
+                        if inherit_id.inherit_id else False
+                self.tree_field_ids = self.env['ir.model.fields'].search(
+                    [('model_id', '=', self.model_id.id),
+                     ('name', 'in', field_list)])
+            else:
+                rec.tree_field_ids = False
+
     @api.onchange('field_type')
     def _onchange_field_type(self):
         """When changing field type, this method returns widget of
@@ -118,7 +181,7 @@ class DynamicFields(models.Model):
             'float': [('name', '=', 'monetary')],
             'many2one': [('name', '=', 'selection')],
         }
-        return {'domain': {'widget': widget_mapping.get(self.field_type,
+        return {'domain': {'widget_id': widget_mapping.get(self.field_type,
                                                         [('id', '=', False)])}}
 
     def action_create_dynamic_fields(self):
@@ -197,13 +260,13 @@ class DynamicFields(models.Model):
                 inherit_tree_view_name = str(
                     self.tree_view_id.name) + ".inherit.dynamic.custom" + \
                                          str(self.field_description) + ".field"
-                tree_view_arch_base = _(
-                    '<?xml version="1.0"?>'
-                    '<data>'
-                    '''<xpath expr="//tree" position="inside">'''
-                    '''<field name="%s" optional="show"/>'''
-                    '''</xpath>'''
-                    '''</data>''') % self.name
+                optional = "show" if self.is_visible_in_tree_view else "hide"
+                tree_view_arch_base = (_(f'''
+                                    <data>
+                                        <xpath expr="//field[@name='{self.tree_field_id.name}']" position="{self.tree_field_position}">
+                                            <field name="{self.name}" optional="{optional}"/>
+                                        </xpath>
+                                    </data>'''))
                 self.custom_tree_view_id = self.env['ir.ui.view'].sudo().create(
                     {'name': inherit_tree_view_name,
                      'type': 'tree',
@@ -222,14 +285,13 @@ class DynamicFields(models.Model):
                 _('Error! Selected Model You cannot add a custom field to the '
                   'tree view.'))
 
-    @api.depends('model_id')
-    @api.onchange('model_id')
+    @api.onchange('model_id', 'is_field_in_tree')
     def onchange_domain(self):
         """Return the fields that currently present in the form"""
         form_view_ids = self.model_id.view_ids.filtered(
-            lambda l: l.type == 'form' and l.mode == 'primary')
+            lambda x: x.type == 'form' and x.mode == 'primary')
         tree_view_ids = self.model_id.view_ids.filtered(
-            lambda l: l.type == 'tree' and l.mode == 'primary')
+            lambda x: x.type == 'tree' and x.mode == 'primary')
         field_records = self.env['ir.model.fields'].sudo().search([
             ('model', '=', self.model_id.model)])
         field_list = [field.id for record in field_records for field in record]
@@ -239,7 +301,6 @@ class DynamicFields(models.Model):
             'position_field': [('id', 'in', field_list)]
         }}
 
-    @api.depends('field_type')
     @api.onchange('field_type')
     def onchange_field_type(self):
         """"Onchange method of field_type, when changing field type it will
@@ -257,8 +318,8 @@ class DynamicFields(models.Model):
     def unlink(self):
         """ Unlinking method of dynamic field"""
         if self.form_view_id:
-            self.form_view_id.active = False
+            self.custom_form_view_id.active = False
         if self.tree_view_id:
-            self.tree_view_id.active = False
+            self.custom_tree_view_id.active = False
         result = super().unlink()
         return result

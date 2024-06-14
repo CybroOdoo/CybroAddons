@@ -35,60 +35,66 @@
                 <sheet>
                     <group>
                         <group string="Field Info">
-                            <field name="name"/>
-                            <field name="field_description"/>
+                            <field name="name" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                            <field name="field_description" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
                             <field name="state" readonly="1"
                                    groups="base.group_no_one"/>
-                            <field name="model_id"
+                            <field name="model_id" attrs="{'readonly': [('status', '!=', 'draft')]}"
                                    options='{"no_open": True, "no_create": True}'/>
-                            <field name="field_type"/>
+                            <field name="field_type" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
                             <field name="selection_field"
                                    placeholder="[('blue', 'Blue'),('yellow', 'Yellow')]"
                                    attrs="{'required': [('field_type','in',['selection','reference'])],
-                                                    'readonly': [('field_type','not in',['selection','reference'])],
+                                                    'readonly': ['|',('field_type','not in',['selection','reference']),('status', '!=', 'draft')],
                                                     'invisible': [('field_type','not in',['selection','reference'])]}"/>
                             <field name="ref_model_id"
                                    options='{"no_open": True, "no_create": True}'
                                    attrs="{'required': [('field_type','in',['many2one','many2many'])],
                                                                 'readonly': [('field_type','not in',['many2one','many2many'])],
-                                                                'invisible': [('field_type','not in',['many2one','many2many'])]}"/>
+                                                                'invisible': [('field_type','not in',['many2one','many2many'])],
+                                                                'readonly': [('status', '!=', 'draft')]}"/>
                             <field name="widget_id" widget="selection"
-                                   attrs="{'invisible': [('field_type','not in',['binary', 'many2many', 'selection', 'float', 'many2one'])]}"/>
-                            <field name="required"/>
-                            <field name="form_view_id"
-                                   attrs="{'invisible': [('status', 'in', ['form','tree'])]}"/>
-                            <field name="custom_form_view_id"
-                                   attrs="{'invisible': [('status', '=', 'draft')]}"/>
+                                   attrs="{'invisible': [('field_type','not in',['binary', 'many2many', 'selection', 'float', 'many2one'])],'readonly': [('status', '!=', 'draft')]}"/>                            <field name="required" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                            <field name="form_view_id" options='{"no_open": True, "no_create": True}' attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                            <field name="custom_form_view_id" options='{"no_open": True, "no_create": True}'
+                                  invisible="1"/>
                             <field name="form_view_inherit"/>
                         </group>
                         <group string="Tree View"
                                attrs="{'invisible': [('status', '=', 'draft')]}">
-                            <field name="is_field_in_tree"/>
-                            <field name="tree_view_id" attrs="{'invisible': ['|',('is_field_in_tree', '=', False) ,('status','in',['tree','draft'])],
-                                'required': [('is_field_in_tree', '=', True)]}"/>
-                            <field name="custom_tree_view_id" attrs="{'invisible': [('status','in',['form','draft'])],
+                            <field name="is_field_in_tree" attrs="{'readonly': [('status', 'not in', ['draft', 'form'])]}"/>
+                            <field name="tree_view_id" options='{"no_open": True, "no_create": True}' attrs="{'invisible': [('is_field_in_tree', '=', False)],
+                                'required': [('is_field_in_tree', '=', True)], 'readonly': [('status', 'not in', ['draft', 'form'])]}"/>
+                            <field name="custom_tree_view_id" options='{"no_open": True, "no_create": True}' attrs="{'invisible': [('status','in',['form','draft', 'tree'])],
                                 'required': [('status', '=', 'tree')]}"/>
                             <field name="tree_view_inherit"
                                    attrs="{'invisible': [('is_field_in_tree', '=', False)]}"/>
+                            <field name="tree_field_id" options='{"no_open": True, "no_create": True}' attrs="{'invisible': [('is_field_in_tree', '=', False)],
+                                'required': [('is_field_in_tree', '=', True)], 'readonly': [('status', 'not in', ['draft', 'form'])]}"/>
+                            <field name="tree_field_ids" invisible="1"/>
+                            <field name="tree_field_position" attrs="{'invisible': [('is_field_in_tree', '=', False)],
+                                'required': [('is_field_in_tree', '=', True)], 'readonly': [('status', 'not in', ['draft', 'form'])]}"/>
+                            <field name="is_visible_in_tree_view" attrs="{'invisible': [('is_field_in_tree', '=', False)],
+                                'required': [('is_field_in_tree', '=', True)], 'readonly': [('status', 'not in', ['draft', 'form'])]}"/>
                         </group>
                         <group string="Position">
                             <field name="dynamic_field_id"
-                                   options='{"no_open": True, "no_create": True}'/>
-                            <field name="position"/>
+                                   options='{"no_open": True, "no_create": True}' attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                            <field name="position" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
                         </group>
                     </group>
                     <group string="Extra Properties">
                         <group>
-                            <field name="is_extra_features"/>
+                            <field name="is_extra_features" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                        </group>
+                        <group attrs="{'invisible': [('is_extra_features', '=', False)],'readonly': [('status', '!=', 'draft')]}">
+                            <field name="help" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
                         </group>
                         <group attrs="{'invisible': [('is_extra_features', '=', False)]}">
-                            <field name="help"/>
-                        </group>
-                        <group attrs="{'invisible': [('is_extra_features', '=', False)]}">
-                            <field name="readonly"/>
-                            <field name="store"/>
-                            <field name="index"/>
-                            <field name="copied"/>
+                            <field name="readonly" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                            <field name="store" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                            <field name="index" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
+                            <field name="copied" attrs="{'readonly': [('status', '!=', 'draft')]}"/>
                         </group>
                     </group>
                 </sheet>
