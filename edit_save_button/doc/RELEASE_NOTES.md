@@ -21,3 +21,9 @@
 #### Fix
 - Bug fixed
 
+#### 15.06.2024
+#### Version 16.0.1.0.5
+#### Fix
+- Save button failure in email templates form view fixed.
+- Switching to readonly mode while data evaluation failed is fixed.
+

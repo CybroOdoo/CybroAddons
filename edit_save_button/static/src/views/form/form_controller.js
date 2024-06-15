@@ -24,20 +24,22 @@ patch(FormController.prototype, "save",{
     },
 
     async edit(){
-        this._super();
+        await this._super();
         await this.model.root.switchMode("edit");
     },
     async saveButtonClicked(params = {}){
-        this._super();
-        if (!this.env.inDialog){
+        let saved = await this._super();
+        if (saved) {
+        if (!this.env.inDialog) {
             await this.model.root.switchMode("readonly");
+        } else {
+            await this.model.actionService.doAction({ type: 'ir.actions.act_window_close' });
         }
-        else {
-           this.model.actionService.doAction({type: 'ir.actions.act_window_close'});
-        }
+    }
+        return saved;
     },
     async discard(){
-        this._super();
+        await this._super();
         if (!this.env.inDialog){
             await this.model.root.switchMode("readonly");
         }
