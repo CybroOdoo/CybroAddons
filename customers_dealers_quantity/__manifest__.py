@@ -32,7 +32,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['sale_management', 'stock', 'account_accountant'],
+    'depends': ['sale_management', 'stock', 'account'],
     'data': [
             'views/product_product_views.xml',
             'views/res_partner_views.xml',
