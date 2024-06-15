@@ -2,10 +2,9 @@
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
-POS Receipt Designs
-===================
 POS Receipt Design
-
+===================
+Option to select the customised Receipts for each POS
 
 Company
 -------
@@ -13,7 +12,10 @@ Company
 
 Credits
 -------
-Developer: Sadique Kottekkat @cybrosys, Contact: odoo@cybrosys.com
+Developer:  (V14) Syamili K,
+            (V15) Sajna Sherin T,
+            (V16 & V17) Sadique Kottekkat, Abhishek E T @cybrosys
+Contact: odoo@cybrosys.com
 
 Contacts
 --------

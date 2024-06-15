@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-###############################################################################
+################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Sadique Kottekkat (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
@@ -19,22 +19,23 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-###############################################################################
+################################################################################
 from odoo import fields, models
 
 
 class PosConfig(models.Model):
     """
         This is an Odoo model for Point of Sale (POS).
-        It inherits from the 'pos.config' model and extends its functionality.
+        It inherits the 'pos.config' model to add new fields.
     """
-    _inherit = "pos.config"
+    _inherit = 'pos.config'
 
-    receipt_design = fields.Many2one('pos.receipt',
-                                     string="Receipt Design",
-                                     help="Choose any receipt design")
+    receipt_design = fields.Many2one('pos.receipt', string='Receipt Design',
+                                     help='Choose any receipt design',
+                                     default=lambda self: self.env[
+                                         'pos.receipt'].search([], limit=1))
     design_receipt = fields.Text(related='receipt_design.design_receipt',
                                  string='Receipt XML')
     is_custom_receipt = fields.Boolean(string='Is Custom Receipt',
-                                       help='Boolean indicating the receipt'
-                                            ' design is custom or not')
+                                       help='Indicates the receipt  design is '
+                                            'custom or not')

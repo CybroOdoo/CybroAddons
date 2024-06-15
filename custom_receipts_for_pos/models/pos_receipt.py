@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-###############################################################################
+################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Sadique Kottekkat (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
@@ -19,7 +19,7 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-###############################################################################
+################################################################################
 from odoo import fields, models
 
 
@@ -30,6 +30,7 @@ class PosReceipt(models.Model):
         receipt design.
     """
     _name = 'pos.receipt'
+    _description = 'POS Receipts'
 
     name = fields.Char(string='Name', help='Name of the pos receipt')
     design_receipt = fields.Text(string='Receipt XML',
