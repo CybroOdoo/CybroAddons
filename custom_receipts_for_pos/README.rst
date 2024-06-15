@@ -14,7 +14,7 @@ Credits
 -------
 Developer:  (V14) Syamili K,
             (V15) Sajna Sherin T,
-            (V16 & V17) Sadique Kottekkat, Abhishek E T @cybrosys
+            (V16 & V17) Sadique Kottekkat
 Contact: odoo@cybrosys.com
 
 Contacts

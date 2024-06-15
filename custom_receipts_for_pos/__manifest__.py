@@ -22,7 +22,7 @@
 ################################################################################
 {
     'name': 'POS Receipt Design',
-    'version': '17.0.1.0.2',
+    'version': '17.0.1.0.3',
     'category': 'Point of Sale',
     'summary': "POS Receipt, Receipt Design, POS Receipt Template, Design "
                "Report, Custom Receipt, POS Report, Customise Receipt, Odoo17, "
@@ -38,7 +38,7 @@
         'security/ir.model.access.csv',
         'data/pos_receipt_data.xml',
         'views/pos_receipt_views.xml',
-        'views/res_config_settings_views.xml',
+        'views/pos_config_views.xml'
     ],
     'assets': {
         'point_of_sale._assets_pos': [
@@ -50,5 +50,5 @@
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
-    'application': False,
+    'application': False
 }
