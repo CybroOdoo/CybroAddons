@@ -6,35 +6,41 @@ import { ConfirmPopup } from "@point_of_sale/app/utils/confirm_popup/confirm_pop
 patch(PaymentScreen.prototype, {
     async validateOrder(isForceValidate) {
                 var self = this
-                var condition = true
-                var flag = true
-                var number = 1
+                var product_list = [];
                 var orderlines = this.pos.selectedOrder.orderlines
                 // Checking condition for each orderlines
-                orderlines.forEach(async function (lines) {
-                     if (lines.product.lst_price < lines.product.standard_price || lines.price < lines.product.standard_price){
-                     condition = false
-                        const { confirmed } = await self.popup.add(ConfirmPopup,{
-                           title:'Alert',
-                           body: 'The Sales Price of ' + lines.product.display_name +
-                            ' is less than the Cost Price.Do you want to continue validation?',
-                           });
-                           if (confirmed) {
-                           if (orderlines.length==number) {
-                          self.pos.showScreen(self.nextScreen)
-                           }
-                           }
-                           }
-                           number = number + 1
-                })
-                if (flag==false && condition== false){
-                super.validateOrder(isForceValidate);
+                for (const line of orderlines) {
+                    if (line.product.lst_price < line.product.standard_price || line.price < line.product.standard_price) {
+                        product_list.push("'" + line.product.display_name + "'");
+                    }
                 }
-                orderlines.forEach(async function (lines) {
-                     if ((lines.product.lst_price > lines.product.standard_price || lines.price < lines.product.standard_price)  && condition==true ){
-                        self.pos.showScreen(self.nextScreen)
-                           }
-                })
+
+                if (product_list.length > 0) {
+                    var content = '';
+
+                    if (product_list.length === 1) {
+                        content = 'The Sales Price of ' + product_list.join(' ') +
+                            ' is less than the Cost Price. Do you want to continue validation?';
+                    } else {
+                        var lastIndex = product_list.length - 1;
+                        product_list[lastIndex] = "and " + product_list[lastIndex];
+                        content = 'The Sales Prices of ' + product_list.join(', ') +
+                            ' are less than the Cost Price. Do you want to continue validation?';
+                    }
+
+                    const { confirmed } = await self.popup.add(ConfirmPopup,{
+                           title:'Alert',
+                           body: content,
+                           });
+
+                    if (confirmed) {
+                        super.validateOrder(isForceValidate);
+                    }
+                } else {
+                    super.validateOrder(isForceValidate);
+                }
+
+
                 }
     });
           export default PaymentScreen;
