@@ -41,7 +41,7 @@
             'age_verification_odoo/static/src/js/age_verification.js',
         ],
     },
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
