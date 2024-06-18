@@ -13,3 +13,12 @@
 #### UPDT
 
 - Remove useInputField function from setup.
+
+
+## Module <multiple_datepicker_widget>
+
+#### 18.06.2024
+#### Version 16.0.1.0.2
+#### UPDT
+
+- Add new function onSelectDate for storing value.

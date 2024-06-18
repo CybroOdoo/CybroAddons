@@ -21,7 +21,7 @@
 
 {
     'name': 'Multiple DatePicker Widget',
-    'version': '16.0.1.0.1',
+    'version': '16.0.1.0.2',
     'summary': 'Widget for picking multiple dates',
     'description': 'Widget for picking multiple dates',
     'category': 'Tools',
@@ -32,6 +32,7 @@
     'depends': ['base'],
     'assets': {
         'web.assets_backend': {
+            'https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment.min.js',
             '/multiple_datepicker_widget/static/src/css/datepicker_widget.css',
             '/multiple_datepicker_widget/static/src/js/lib/bootstrap-datepicker.min.js',
             '/multiple_datepicker_widget/static/src/js/multiple_date_picker_widget.js',
