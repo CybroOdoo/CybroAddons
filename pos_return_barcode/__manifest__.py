@@ -49,7 +49,7 @@
             'pos_return_barcode/static/src/xml/success_popup.xml',
         ],
     },
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': "AGPL-3",
     'installable': True,
     'application': False,
