@@ -87,6 +87,7 @@ class ProfitAndLoss extends owl.Component {
                 'model': 'dynamic.balance.sheet.report',
                 'data': JSON.stringify(self.state),
                 'output_format': 'xlsx',
+                'report_action': self.props.action.xml_id,
                 'report_name': self.props.action.display_name,
             },
         };

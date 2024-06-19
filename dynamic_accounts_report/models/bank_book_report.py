@@ -179,7 +179,7 @@ class BankBookReport(models.TransientModel):
         return data
 
     @api.model
-    def get_xlsx_report(self, data, response, report_name):
+    def get_xlsx_report(self, data, response, report_name, report_action):
         """
         Generate an Excel report based on the provided data.
         :param data: The data used to generate the report.
@@ -243,7 +243,7 @@ class BankBookReport(models.TransientModel):
             option_keys_str = ', '.join(option_keys)
             sheet.merge_range('C6:G6', option_keys_str, filter_body)
         if data:
-            if report_name == 'Bank Book':
+            if report_action == 'dynamic_accounts_report.action_bank_book':
                 sheet.write(8, col, ' ', sub_heading)
                 sheet.merge_range('B9:C9', 'Journal', sub_heading)
                 sheet.merge_range('D9:E9', 'Partner', sub_heading)

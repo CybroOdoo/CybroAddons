@@ -205,6 +205,7 @@ class CashBook extends owl.Component {
                 'model': 'cash.book.report',
                 'data': JSON.stringify(datas),
                 'output_format': 'xlsx',
+                'report_action': self.props.action.xml_id,
                 'report_name': action_title,
             },
         };

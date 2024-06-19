@@ -198,7 +198,7 @@ class AccountGeneralLedger(models.TransientModel):
         return account_dict
 
     @api.model
-    def get_xlsx_report(self, data, response, report_name):
+    def get_xlsx_report(self, data, response, report_name, report_action):
         """
         Generate an XLSX report based on the provided data and write it to the
         response stream.
@@ -267,7 +267,7 @@ class AccountGeneralLedger(models.TransientModel):
             option_keys_str = ', '.join(option_keys)
             sheet.merge_range('C6:G6', option_keys_str, filter_body)
         if data:
-            if report_name == 'General Ledger':
+            if report_action == 'dynamic_accounts_report.action_general_ledger':
                 sheet.write(8, col, ' ', sub_heading)
                 sheet.write(8, col + 1, 'Date', sub_heading)
                 sheet.merge_range('C9:E9', 'Communication', sub_heading)

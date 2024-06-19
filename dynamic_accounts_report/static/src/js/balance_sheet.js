@@ -99,6 +99,7 @@ class BalanceSheet extends owl.Component {
                 'data': JSON.stringify(self.state),
                 'output_format': 'xlsx',
                 'report_name': self.props.action.display_name,
+                'report_action': self.props.action.xml_id,
             },
         };
         BlockUI;

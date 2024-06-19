@@ -129,6 +129,7 @@ class GeneralLedger extends owl.Component {
                 'model': 'account.general.ledger',
                 'data': JSON.stringify(datas),
                 'output_format': 'xlsx',
+                'report_action': self.props.action.xml_id,
                 'report_name': action_title,
             },
         };

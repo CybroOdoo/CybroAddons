@@ -335,6 +335,7 @@ class TaxReport extends owl.Component {
                 'model': 'tax.report',
                 'data': JSON.stringify(datas),
                 'output_format': 'xlsx',
+                'report_action': self.props.action.id,
                 'report_name': action_title,
             },
         };

@@ -325,7 +325,7 @@ class AccountTrialBalance(models.TransientModel):
         return month_names[date.month]
 
     @api.model
-    def get_xlsx_report(self, data, response, report_name):
+    def get_xlsx_report(self, data, response, report_name, report_action):
         """
         Generate an XLSX report based on provided data and response stream.
         Generates an Excel workbook with specified report format, including
@@ -416,7 +416,7 @@ class AccountTrialBalance(models.TransientModel):
         sheet.write(10, col + i, 'Debit', sub_heading)
         sheet.write(10, col + (i + 1), 'Credit', sub_heading)
         if data:
-            if report_name == 'Trial Balance':
+            if report_action == 'dynamic_accounts_report.action_trial_balance':
                 row = 11
                 for move_line in data['data']:
                     sheet.write(row, col, move_line['account'],

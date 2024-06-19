@@ -448,7 +448,7 @@ class ProfitLossReport(models.TransientModel):
         return last_year_date_list
 
     @api.model
-    def get_xlsx_report(self, data, response, report_name):
+    def get_xlsx_report(self, data, response, report_name, report_action):
         """Generate and return an XLSX report based on the provided data.
             :param data: The report data in JSON format.
             :param report_name: Name of the report.
@@ -484,7 +484,7 @@ class ProfitLossReport(models.TransientModel):
             col += 1
         col = 0
         if data:
-            if report_name == 'Profit and Loss':
+            if report_action == 'dynamic_accounts_report.action_dynamic_profit_and_loss':
                 sheet.write(6, col, 'Net Profit', sub_heading)
                 for datas in data['datas']:
                     sheet.write(6, col + 1, datas['total'], side_heading_sub)

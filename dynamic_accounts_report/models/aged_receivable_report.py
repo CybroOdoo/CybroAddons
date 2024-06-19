@@ -163,7 +163,7 @@ class AgeReceivableReport(models.TransientModel):
         return move_line_list
 
     @api.model
-    def get_xlsx_report(self, data, response, report_name):
+    def get_xlsx_report(self, data, response, report_name, report_action):
         """
         Generate an Excel report based on the provided data.
 
@@ -219,7 +219,7 @@ class AgeReceivableReport(models.TransientModel):
             display_names_str = ', '.join(display_names)
             sheet.merge_range('C4:G4', display_names_str, filter_body)
         if data:
-            if report_name == 'Aged Receivable':
+            if report_action == 'dynamic_accounts_report.action_aged_receivable':
                 sheet.write(6, col, ' ', sub_heading)
                 sheet.write(6, col + 1, 'Invoice Date', sub_heading)
                 sheet.write(6, col + 2, 'Amount Currency', sub_heading)

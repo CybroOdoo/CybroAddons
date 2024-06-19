@@ -609,7 +609,7 @@ class TaxReport(models.TransientModel):
         return month_names[date.month]
 
     @api.model
-    def get_xlsx_report(self, data, response, report_name):
+    def get_xlsx_report(self, data, response, report_name, report_action):
         """
         Generate an XLSX report based on provided data and response stream.
 

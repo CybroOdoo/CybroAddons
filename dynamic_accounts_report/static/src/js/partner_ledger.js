@@ -171,6 +171,7 @@ class PartnerLedger extends owl.Component {
          * Generates and downloads an XLSX report for the partner ledger.
          */
         var self = this;
+
         let partner_list = []
         let partner_value = []
         let partner_totals = ''
@@ -193,6 +194,7 @@ class PartnerLedger extends owl.Component {
                 'model': 'account.partner.ledger',
                 'data': JSON.stringify(datas),
                 'output_format': 'xlsx',
+                'report_action': self.props.action.xml_id,
                 'report_name': action_title,
             },
         };

@@ -237,7 +237,7 @@ class AccountPartnerLedger(models.TransientModel):
         return partner_dict
 
     @api.model
-    def get_xlsx_report(self, data, response, report_name):
+    def get_xlsx_report(self, data, response, report_name, report_action):
         """
         Generate an Excel report based on the provided data.
 
@@ -306,7 +306,7 @@ class AccountPartnerLedger(models.TransientModel):
             option_keys_str = ', '.join(option_keys)
             sheet.merge_range('C6:G6', option_keys_str, filter_body)
         if data:
-            if report_name == 'Partner Ledger':
+            if report_action == 'dynamic_accounts_report.action_partner_ledger':
                 sheet.write(8, col, ' ', sub_heading)
                 sheet.write(8, col + 1, 'JNRL', sub_heading)
                 sheet.write(8, col + 2, 'Account', sub_heading)

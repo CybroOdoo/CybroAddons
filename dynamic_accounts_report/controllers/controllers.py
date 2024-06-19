@@ -28,7 +28,8 @@ from odoo.tools import html_escape
 class XLSXReportController(http.Controller):
     @http.route('/xlsx_report', type='http', auth='user', methods=['POST'],
                 csrf=False)
-    def get_report_xlsx(self, model, data, output_format, report_name):
+    def get_report_xlsx(self, model, data, output_format, report_name,
+                        report_action):
         """Generate an XLSX report based on the provided data and return it as
         a response.
             Args:
@@ -56,7 +57,8 @@ class XLSXReportController(http.Controller):
                          content_disposition(report_name + '.xlsx'))
                     ]
                 )
-                report_obj.get_xlsx_report(data, response, report_name)
+                report_obj.get_xlsx_report(data, response, report_name,
+                                           report_action)
             response.set_cookie('fileToken', token)
             return response
         except Exception as e:
