@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': "PoS Analytic Tag",
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Point of Sale',
     'summary': 'To manage analytic tags in POS',
     'description': "This module assists in managing analytic tags in the "
@@ -31,7 +31,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['base', 'point_of_sale', 'analytic', 'account'],
+    'depends': ['point_of_sale', 'analytic', 'account'],
     'data': [
         'views/res_config_settings_views.xml',
         'views/pos_config_views.xml',
@@ -40,9 +40,9 @@
         'views/pos_payment_views.xml',
     ],
     'assets': {
-        'point_of_sale.assets': [
+        'point_of_sale._assets_pos': [
             'pos_analytic_tag/static/src/js/PosSession.js',
-        ]
+        ],
     },
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',

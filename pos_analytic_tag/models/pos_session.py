@@ -41,28 +41,18 @@ class PosSession(models.Model):
                                            amount_to_balance,
                                            bank_payment_method_diffs)
         self.pos_analytic_account_id = self.config_id.analytic_account_id
-        for rec in self.move_id.line_ids:
-            rec.write({
-                'analytic_distribution': {
-                    self.config_id.analytic_account_id.id: 100}
-            })
         if self.pos_analytic_account_id:
-            self.env['account.analytic.distribution.model'].create([{
-                'analytic_distribution': {
-                    self.config_id.analytic_account_id.id: 100}
-            }])
+            for move in self._get_related_account_moves():
+                for rec in move.line_ids:
+                    rec.write({
+                        'analytic_distribution': {
+                            self.config_id.analytic_account_id.id: 100
+                        }
+                    })
         else:
-            return False
-        return res
-
-    def _validate_session(self, balancing_account=False, amount_to_balance=0,
-                          bank_payment_method_diffs=None):
-        res = super()._validate_session(balancing_account, amount_to_balance,
-                                        bank_payment_method_diffs)
-        ids = self.move_id.line_ids.open_reconcile_view()
-        for rec in self.env['account.move.line'].search(ids['domain']):
-            rec.write({
-                'analytic_distribution': {
-                    self.config_id.analytic_account_id.id: 100}
-            })
+            for move in self._get_related_account_moves():
+                for rec in move.line_ids:
+                    rec.write({
+                        'analytic_distribution': {}
+                    })
         return res

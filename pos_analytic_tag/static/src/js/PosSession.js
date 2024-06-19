@@ -1,15 +1,13 @@
 /** @odoo-module **/
 /**
- * Extends PosGlobalState and it extends Registries
+ * Extends PosStore and it extends Registries
  * Override the _processData method to process loaded data
  **/
-import { PosGlobalState} from 'point_of_sale.models';
-import Registries from 'point_of_sale.Registries';
-
-const AnalyticAccount = (PosGlobalState) => class AnalyticAccount extends PosGlobalState {
+import {patch} from "@web/core/utils/patch";
+import {PosStore} from "@point_of_sale/app/store/pos_store";
+patch(PosStore.prototype, {
     async _processData(loadedData) {
         await super._processData(...arguments);
         this.res_config_settings = loadedData['res.config.settings'];
-        }
     }
-Registries.Model.extend(PosGlobalState, AnalyticAccount);
+});
