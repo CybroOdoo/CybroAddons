@@ -11,6 +11,7 @@ patch(FollowerList.prototype, {
         });
     },
     async check(ev, follower){
+    //-----To include the newly selected followers into recipients list
         var index = this.state.id.indexOf(follower.partner.id)
         if (this.state.id.includes(follower.partner.id)){
             this.state.id.splice(index, 1)

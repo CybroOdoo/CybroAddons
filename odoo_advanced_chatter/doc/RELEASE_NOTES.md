@@ -4,3 +4,8 @@
 #### Version 17.0.1.0.0
 #### ADD
 - Initial Commit  Odoo Advanced Chatter
+
+#### 19.06.2024
+#### Version 17.0.2.0.0
+#### UPDATE
+- UPDATE

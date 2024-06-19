@@ -4,7 +4,7 @@
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: NIHALA KP(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -19,5 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import mail_thread
-from . import schedule_log
+from . import mail_wizard_recipient

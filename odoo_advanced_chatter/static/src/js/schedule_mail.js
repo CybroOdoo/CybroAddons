@@ -86,5 +86,4 @@ setup() {
         this.clear()
         }
     }
-
 })

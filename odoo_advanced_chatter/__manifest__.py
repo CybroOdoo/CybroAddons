@@ -21,13 +21,13 @@
 #############################################################################
 {
     'name': 'Odoo Advanced Chatter',
-    'version': '17.0.1.0.0',
+    'version': '17.0.2.0.0',
     'category': 'Discuss',
     'summary': 'Schedule Log note and Send Message in Chatter',
     'description': """We have the capability to schedule log notes and send 
-                        messages within Chatter.Additionally, followers can be 
-                        managed both from the followers list
-                        and directly within the Schedule form.""",
+     messages within Chatter.Additionally, followers can be managed both from 
+     the followers list and directly within the Schedule form. We can manage the
+     users in the reply-to options.""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -37,6 +37,7 @@
         'security/ir.model.access.csv',
         'data/ir_cron_data.xml',
         'views/schedule_log_views.xml',
+        'wizard/mail_wizard_recipients_views.xml'
     ],
     "assets": {
         "web.assets_backend":
@@ -45,6 +46,8 @@
                 'odoo_advanced_chatter/static/src/js/schedule_mail.js',
                 'odoo_advanced_chatter/static/src/xml/followers_check.xml',
                 'odoo_advanced_chatter/static/src/js/recipient_list.js',
+                'odoo_advanced_chatter/static/src/xml/chatter.xml',
+                'odoo_advanced_chatter/static/src/js/chatter.js'
             ]
         },
     'images': ['static/description/banner.jpg'],

@@ -19,6 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+from email.utils import formataddr
 
 from odoo import models, fields
 import datetime
@@ -74,7 +75,7 @@ class ScheduleLog(models.Model):
                         body=self.body,
                         attachment_ids=self.attachment_ids.ids,
                         message_type='comment',
-                        subtype_xmlid='mail.mt_comment'
+                        subtype_xmlid='mail.mt_comment',
                     )
                     for mail in message.mail_ids:
                         mail.send()
@@ -91,6 +92,7 @@ class ScheduleLog(models.Model):
                         body=self.body,
                         partner_ids=partner_ids,
                         attachment_ids=self.attachment_ids.ids,
+                        reply_to=formataddr((self.create_uid.partner_id.name, 'email.from.1@test.example.com'))
                     )
 
                 message.notification_ids = [fields.Command.clear()]
