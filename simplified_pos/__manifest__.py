@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Simplified POS',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Point of Sale',
     'summary': 'All aspects of POS on a single page.',
     'description': 'A straightforward point-of-sale system that enables '
@@ -39,7 +39,6 @@
             'simplified_pos/static/src/js/ConfirmationPopup.js',
             'simplified_pos/static/src/js/PrintPopup.js',
             'simplified_pos/static/src/js/ProductScreenPaymentLine.js',
-            'simplified_pos/static/src/js/ProductWidgetSimple.js',
             'simplified_pos/static/src/scss/pos.scss',
             'simplified_pos/static/src/xml/ProductScreen.xml',
             'simplified_pos/static/src/xml/OrderWidget.xml',

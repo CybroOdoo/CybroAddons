@@ -18,7 +18,7 @@ Company
 
 Credits
 -------
-* Developers: V16 Mohamed Savad, Gokul PI, Megha AP, Javid, Nisiya
+* Developers: V16 Mohamed Savad, Gokul PI, Megha AP, Javid, Nisiya, Farhana Jahan PT
 * Contact: odoo@cybrosys.com
 
 Contacts

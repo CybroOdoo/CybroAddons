@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Website view for invoice in subscription-->
+    <template id="portal_my_home_subscribe" name="Subscription Order"
+              customize_show="True"
+              inherit_id="portal.portal_my_home" priority="1">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Subscription Order</t>
+                <t t-set="url" t-value="'/my/subscription/invoice'"/>
+                <t t-set="placeholder_count" t-value="'subscription_count'"/>
+            </t>
+        </xpath>
+    </template>
+<!--    Portal view of the invoice-->
+    <template id="portal_my_invoices_subscription"
+              name="My Invoices and Payments">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-if="not invoices">
+                <p>There are currently no invoices and payments for your
+                    account.
+                </p>
+            </t>
+            <t t-if="invoices" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Invoice #</th>
+                        <th>Invoice Date</th>
+                        <th class='d-none d-md-table-cell'>Due Date</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end">Amount Due</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="invoices" t-as="invoice">
+                        <tr>
+                            <td>
+                                <a t-att-href="invoice.get_portal_url()"
+                                   t-att-title="invoice.name">
+                                    <t t-esc="invoice.name"
+                                       t-if="invoice.name != '/'"/>
+                                    <em t-else="">Draft Invoice</em>
+                                </a>
+                            </td>
+                            <td>
+                                <span t-field="invoice.invoice_date"/>
+                            </td>
+                            <td class='d-none d-md-table-cell'>
+                                <span t-field="invoice.invoice_date_due"/>
+                            </td>
+                            <td class="tx_status text-center">
+                                <t t-if="invoice.state == 'posted' and invoice.payment_state not in ('in_payment', 'paid', 'reversed')">
+                                    <span class="badge rounded-pill text-bg-info">
+                                        <i class="fa fa-fw fa-clock-o"
+                                           aria-label="Opened" title="Opened"
+                                           role="img"/>
+                                        <span class="d-none d-md-inline">
+                                            Waiting for Payment
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="invoice.state == 'posted' and invoice.payment_state in ('paid', 'in_payment')">
+                                    <span class="badge rounded-pill text-bg-success">
+                                        <i class="fa fa-fw fa-check"
+                                           aria-label="Paid" title="Paid"
+                                           role="img"/>
+                                        <span class="d-none d-md-inline">Paid
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="invoice.state == 'posted' and invoice.payment_state == 'reversed'">
+                                    <span class="badge rounded-pill text-bg-success">
+                                        <i class="fa fa-fw fa-check"
+                                           aria-label="Reversed"
+                                           title="Reversed"
+                                           role="img"/>
+                                        <span class="d-none d-md-inline">
+                                            Reversed
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="invoice.state == 'cancel'">
+                                    <span class="badge rounded-pill text-bg-warning">
+                                        <i class="fa fa-fw fa-remove"
+                                           aria-label="Cancelled"
+                                           title="Cancelled"
+                                           role="img"/>
+                                        <span class="d-none d-md-inline">
+                                            Cancelled
+                                        </span>
+                                    </span>
+                                </t>
+                            </td>
+                            <td class="text-end">
+                                <span t-esc="-invoice.amount_residual if invoice.move_type == 'out_refund' else invoice.amount_residual"
+                                      t-options='{"widget": "monetary", "display_currency": invoice.currency_id}'/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </t>
+        </t>
+    </template>
+    <!--Template for subscription cancel and change-->
+    <template id="subscription_order_portal_id"
+              name="subscription_order_portal"
+              inherit_id="account.portal_invoice_page">
+        <xpath expr="//div[hasclass('o_download_pdf')]" position="after">
+            <t t-if="invoice.is_subscription">
+                <a href="/online/subscription/cancel" id="my_link"
+                   class="btn btn-secondary btn-block o_download_btn">
+                    Subscription Cancel
+                </a>
+                <a href="/online/subscription/change" id="my_link_data"
+                   class="btn btn-secondary btn-block o_download_btn">
+                    Subscription Change
+                </a>
+            </t>
+        </xpath>
+    </template>
+</odoo>

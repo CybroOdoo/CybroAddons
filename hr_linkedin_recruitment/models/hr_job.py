@@ -30,25 +30,34 @@ from odoo.exceptions import ValidationError
 
 _logger = logging.getLogger(__name__)
 
+
 class HrJobShare(models.Model):
     """recruitment of different job positions"""
     _inherit = 'hr.job'
 
     update_key = fields.Char(string='Update Key', readonly=True)
-    access_token = fields.Char(string='Access Token',help='Access token for your linkedin app')
-    comments = fields.Boolean(default=False,string='Likes Comments',help='Which is used to visible the like comment retrieving button')
-    like_comment = fields.Boolean(default=False,string='Likes comment',help='Which is used to visible the smart buttons of likes and comments')
-    post_likes = fields.Integer(string='Likes Count', help="Total Number of likes in the shared post")
-    post_commands = fields.Integer(string='Comments Count', help="Total Number of Comments in the shared post")
+    access_token = fields.Char(string='Access Token',
+                               help='Access token for your linkedin app')
+    comments = fields.Boolean(default=False, string='Likes Comments',
+                              help='Which is used to visible the like comment retrieving button')
+    like_comment = fields.Boolean(default=False, string='Likes comment',
+                                  help='Which is used to visible the smart buttons of likes and comments')
+    post_likes = fields.Integer(string='Likes Count',
+                                help="Total Number of likes in the shared post")
+    post_commands = fields.Integer(string='Comments Count',
+                                   help="Total Number of Comments in the shared post")
 
     def _get_linkedin_post_redirect_uri(self):
         """finding redirecting url"""
-        return url_join(self.get_base_url(), '/linkedin/redirect')
+        if self.get_base_url():
+            https_url = self.get_base_url().replace("http://", "https://")
+        return f"{https_url}/linkedin/redirect"
 
     def share_linkedin(self):
         """ Button function for sharing post """
         self.comments = True
-        linkedin_auth_provider = self.env.ref('hr_linkedin_recruitment.provider_linkedin')
+        linkedin_auth_provider = self.env.ref(
+            'hr_linkedin_recruitment.provider_linkedin')
         if linkedin_auth_provider.client_id and linkedin_auth_provider.client_secret:
 
             linkedin_client_id = linkedin_auth_provider.client_id
@@ -57,9 +66,7 @@ class HrJobShare(models.Model):
                 'client_id': linkedin_client_id,
                 'redirect_uri': self._get_linkedin_post_redirect_uri(),
                 'state': self.id,
-                'scope': 'r_liteprofile r_emailaddress w_member_social r_1st_connections_size r_ads r_ads_reporting '
-                         'r_basicprofile r_organization_admin r_organization_social rw_ads rw_organization_admin '
-                         'w_member_social w_organization_social',
+                'scope': 'w_member_social email profile openid',
             }
         else:
             raise ValidationError(_('LinkedIn Access Credentials are empty.!\n'
@@ -67,7 +74,8 @@ class HrJobShare(models.Model):
 
         return {
             'type': 'ir.actions.act_url',
-            'url': 'https://www.linkedin.com/oauth/v2/authorization?%s' % url_encode(params),
+            'url': 'https://www.linkedin.com/oauth/v2/authorization?%s' % url_encode(
+                params),
             'target': 'self'
         }
 
@@ -81,7 +89,8 @@ class HrJobShare(models.Model):
         return req_response
 
     def get_urn(self, method, has_access_url, access_token):
-        """ Function will return TRUE if credentials user has the access to update """
+        """ Function will return TRUE if credentials user has the access to
+        update """
         headers = {'x-li-format': 'json', 'Content-Type': 'application/json'}
         params = {}
         params.update({'oauth2_access_token': access_token})
@@ -100,14 +109,14 @@ class HrJobShare(models.Model):
         url = "https://api.linkedin.com/rest/socialActions/" + urn
         payload = {}
         headers = {
-            'LinkedIn-Version': '202208',
+            'LinkedIn-Version': '202308',
             'Authorization': 'Bearer ' + self.access_token.split('+')[0],
         }
         response = requests.request("GET", url, headers=headers, data=payload)
         response_comm_like = response.json()
-
         self.post_likes = response_comm_like['likesSummary']['totalLikes']
-        self.post_commands = response_comm_like["commentsSummary"]['aggregatedTotalComments']
+        self.post_commands = response_comm_like["commentsSummary"][
+            'aggregatedTotalComments']
         comment_url = "https://api.linkedin.com/v2/socialActions/" + urn + "/comments"
 
         headers = {
@@ -116,11 +125,13 @@ class HrJobShare(models.Model):
 
         }
 
-        response = requests.request("GET", comment_url, headers=headers, data=payload)
+        response = requests.request("GET", comment_url, headers=headers,
+                                    data=payload)
         response_commets = response.json()
         if response_commets["elements"]:
             self.env['linkedin.comments'].create({
-                'linkedin_comments': response_commets["elements"][0]['message']['text'],
+                'linkedin_comments': response_commets["elements"][0]['message'][
+                    'text'],
             })
         else:
             pass

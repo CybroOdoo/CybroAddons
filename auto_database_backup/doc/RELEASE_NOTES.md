@@ -21,3 +21,19 @@
 #### UPDT
 
 - Updated the database name check function which got access denied when list_db=False.
+
+## Module <auto_database_backup>
+
+#### 16.02.2024
+#### Version 16.0.4.0.1
+#### UPDT
+
+- Fixed internal server error in Onedrive and Google Drive integration.
+
+## Module <auto_database_backup>
+
+#### 18.04.2024
+#### Version 16.0.5.0.1
+#### UPDT
+
+- Fixed the error while inputting list_db = False in odoo conf file.

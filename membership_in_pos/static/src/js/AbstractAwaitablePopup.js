@@ -63,6 +63,7 @@ odoo.define('membership_in_pos.MembershipPopup', function (require) {
                 // We add the price as manually set to avoid re computation when changing customer.
                 let discount = - parseFloat(this.env.pos.card.discount) / 100.0 * baseToDiscount;
                 if (discount < 0) {
+                    console.log("fffffffffffff")
                     order.add_product(product, {
                         price: discount,
                         lst_price: discount,

@@ -3,8 +3,8 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Mohamed Muzammil VP (odoo@cybrosys.com)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Anjhana A K (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-
 try:
     import qrcode
 except ImportError:
@@ -34,28 +33,26 @@ from odoo.exceptions import UserError
 
 
 class ResUsers(models.Model):
-    """ inherit res.users to add a field in users """
+    """ Inherit the model to add a field and methods"""
     _inherit = "res.users"
-    qr_code = fields.Binary('QRcode', compute="_compute_generate_qr",
+
+    qr_code = fields.Binary(string='QRcode', compute="_compute_qr_code",
                             help="Use this to login (only for internal users)")
 
-    def _compute_generate_qr(self):
-        """method to generate QR code"""
+    def _compute_qr_code(self):
+        """Method to generate QR code"""
         for detail in self:
             if qrcode and base64:
-                qr = qrcode.QRCode(
+                qr_code = qrcode.QRCode(
                     version=1,
                     error_correction=qrcode.constants.ERROR_CORRECT_L,
-                    box_size=10,
-                    border=1,
-                )
-                qr.add_data(detail.login)
-                qr.make(fit=True)
-                img = qr.make_image()
+                    box_size=3,
+                    border=4,)
+                qr_code.add_data(detail.login)
+                qr_code.make(fit=True)
                 temp = BytesIO()
-                img.save(temp, format="PNG",optimise=True)
-                qr_image = base64.b64encode(temp.getvalue())
-                detail.update({'qr_code': qr_image})
+                qr_code.make_image().save(temp, format="PNG")
+                detail.update({'qr_code': base64.b64encode(temp.getvalue())})
             else:
                 raise UserError(
                     _('Necessary Requirements To Run This Operation Is '

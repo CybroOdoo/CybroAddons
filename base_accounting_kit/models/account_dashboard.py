@@ -35,21 +35,21 @@ class DashBoard(models.Model):
             states_arg = """ parent_state = 'posted'"""
 
         self._cr.execute(('''select sum(debit)-sum(credit) as income ,to_char(account_move_line.date, 'Month')  as month ,
-                             internal_group from account_move_line ,account_account where 
-                             account_move_line.account_id=account_account.id AND internal_group = 'income' 
+                             internal_group from account_move_line ,account_account where
+                             account_move_line.account_id=account_account.id AND internal_group = 'income'
                              AND to_char(DATE(NOW()), 'YY') = to_char(account_move_line.date, 'YY')
                              AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
-                             AND %s 
-                             group by internal_group,month                  
+                             AND %s
+                             group by internal_group,month
                         ''') % (states_arg))
         record = self._cr.dictfetchall()
         self._cr.execute(('''select sum(debit)-sum(credit) as expense ,to_char(account_move_line.date, 'Month')  as month ,
-                            internal_group from account_move_line ,account_account where 
-                            account_move_line.account_id=account_account.id AND internal_group = 'expense' 
+                            internal_group from account_move_line ,account_account where
+                            account_move_line.account_id=account_account.id AND internal_group = 'expense'
                             AND to_char(DATE(NOW()), 'YY') = to_char(account_move_line.date, 'YY')
                             AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
-                            AND %s 
-                            group by internal_group,month                  
+                            AND %s
+                            group by internal_group,month
                         ''') % (states_arg))
 
         result = self._cr.dictfetchall()
@@ -132,21 +132,21 @@ class DashBoard(models.Model):
 
         self._cr.execute(('''select sum(debit)-sum(credit) as income ,to_char(account_move_line.date, 'Month')  as month ,
                             internal_group from account_move_line ,account_account
-                            where account_move_line.account_id=account_account.id AND internal_group = 'income' 
-                            AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW())) -1 
+                            where account_move_line.account_id=account_account.id AND internal_group = 'income'
+                            AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW())) -1
                             AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
                             AND %s
-                            group by internal_group,month                  
+                            group by internal_group,month
                  ''') % (states_arg))
         record = self._cr.dictfetchall()
 
         self._cr.execute(('''select sum(debit)-sum(credit) as expense ,to_char(account_move_line.date, 'Month')  as month ,
-                            internal_group from account_move_line , account_account where 
-                            account_move_line.account_id=account_account.id AND internal_group = 'expense' 
-                            AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW())) -1 
+                            internal_group from account_move_line , account_account where
+                            account_move_line.account_id=account_account.id AND internal_group = 'expense'
+                            AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW())) -1
                             AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
-                            AND %s 
-                            group by internal_group,month                  
+                            AND %s
+                            group by internal_group,month
                          ''') % (states_arg))
 
         result = self._cr.dictfetchall()
@@ -233,23 +233,23 @@ class DashBoard(models.Model):
             states_arg = """ parent_state = 'posted'"""
 
         self._cr.execute(('''select sum(debit)-sum(credit) as income ,cast(to_char(account_move_line.date, 'DD')as int)
-                            as date , internal_group from account_move_line , account_account where   
-                            Extract(month FROM account_move_line.date) in ''' + str(tuple(company_id)) + ''' 
+                            as date , internal_group from account_move_line , account_account where
+                            Extract(month FROM account_move_line.date) in ''' + str(tuple(company_id)) + '''
                             AND %s
-                            AND account_move_line.company_id in ''' + str(tuple(company_id)) + ''' 
-                            AND account_move_line.account_id=account_account.id AND internal_group='income'   
-                            group by internal_group,date                 
+                            AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
+                            AND account_move_line.account_id=account_account.id AND internal_group='income'
+                            group by internal_group,date
                              ''') % (states_arg))
 
         record = self._cr.dictfetchall()
 
         self._cr.execute(('''select sum(debit)-sum(credit) as expense ,cast(to_char(account_move_line.date, 'DD')as int)
-                            as date ,internal_group from account_move_line ,account_account where  
-                            Extract(month FROM account_move_line.date) in ''' + str(tuple(company_id)) + ''' 
+                            as date ,internal_group from account_move_line ,account_account where
+                            Extract(month FROM account_move_line.date) in ''' + str(tuple(company_id)) + '''
                             AND %s
-                            AND account_move_line.company_id in ''' + str(tuple(company_id)) + ''' 
+                            AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
                             AND account_move_line.account_id=account_account.id AND internal_group='expense'
-                            group by internal_group,date                 
+                            group by internal_group,date
                                  ''') % (states_arg))
         result = self._cr.dictfetchall()
         records = []
@@ -332,24 +332,24 @@ class DashBoard(models.Model):
 
         self._cr.execute(('''select sum(debit)-sum(credit) as income ,cast(to_char(account_move_line.date, 'DD')as int)
                             as date , internal_group from account_move_line , account_account
-                            where   Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW()))  
-                            AND Extract(YEAR FROM account_move_line.date) = Extract(YEAR FROM DATE(NOW()))  
+                            where   Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW()))
+                            AND Extract(YEAR FROM account_move_line.date) = Extract(YEAR FROM DATE(NOW()))
                             AND %s
-                            AND account_move_line.company_id in ''' + str(tuple(company_id)) + ''' 
+                            AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
                             AND account_move_line.account_id=account_account.id AND internal_group='income'
-                            group by internal_group,date                 
+                            group by internal_group,date
                         ''') % (states_arg))
 
         record = self._cr.dictfetchall()
 
         self._cr.execute(('''select sum(debit)-sum(credit) as expense ,cast(to_char(account_move_line.date, 'DD')as int)
-                            as date , internal_group from account_move_line , account_account where  
-                            Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW()))  
-                            AND Extract(YEAR FROM account_move_line.date) = Extract(YEAR FROM DATE(NOW()))  
+                            as date , internal_group from account_move_line , account_account where
+                            Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW()))
+                            AND Extract(YEAR FROM account_move_line.date) = Extract(YEAR FROM DATE(NOW()))
                             AND %s
-                            AND account_move_line.company_id in ''' + str(tuple(company_id)) + ''' 
+                            AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
                             AND account_move_line.account_id=account_account.id AND internal_group='expense'
-                            group by internal_group,date                 
+                            group by internal_group,date
                          ''') % (states_arg))
         result = self._cr.dictfetchall()
         records = []
@@ -426,12 +426,12 @@ class DashBoard(models.Model):
 
         self._cr.execute(('''  select res_partner.name as partner, res_partner.commercial_partner_id as res  ,
                             account_move.commercial_partner_id as parent, sum(account_move.amount_total) as amount
-                            from account_move,res_partner where 
+                            from account_move,res_partner where
                             account_move.partner_id=res_partner.id AND account_move.move_type = 'in_invoice' AND
-                            payment_state = 'not_paid' AND 
+                            payment_state = 'not_paid' AND
                               account_move.company_id in ''' + str(tuple(company_id)) + ''' AND
-                            %s 
-                            AND  account_move.commercial_partner_id=res_partner.commercial_partner_id 
+                            %s
+                            AND  account_move.commercial_partner_id=res_partner.commercial_partner_id
                             group by parent,partner,res
                             order by amount desc ''') % (states_arg))
 
@@ -475,13 +475,13 @@ class DashBoard(models.Model):
 
         self._cr.execute((''' select res_partner.name as partner, res_partner.commercial_partner_id as res,
                              account_move.commercial_partner_id as parent, sum(account_move.amount_total) as amount
-                            from account_move, account_move_line, res_partner, account_account where 
-                            account_move.partner_id=res_partner.id AND account_move.move_type = 'out_invoice' 
-                            AND payment_state = 'not_paid' 
+                            from account_move, account_move_line, res_partner, account_account where
+                            account_move.partner_id=res_partner.id AND account_move.move_type = 'out_invoice'
+                            AND payment_state = 'not_paid'
                             AND %s
                             AND account_move.company_id in ''' + str(tuple(company_id)) + '''
                             AND account_account.account_type = 'payable'
-                            AND account_move.commercial_partner_id=res_partner.commercial_partner_id 
+                            AND account_move.commercial_partner_id=res_partner.commercial_partner_id
                             group by parent,partner,res
                             order by amount desc
                             ''') % (states_arg))
@@ -517,12 +517,12 @@ class DashBoard(models.Model):
 
         company_id = self.get_current_company_value()
         if post[1] == 'this_month':
-            self._cr.execute((''' 
+            self._cr.execute(('''
                                select to_char(account_move.date, 'Month') as month, res_partner.name as due_partner, account_move.partner_id as parent,
                                sum(account_move.amount_total) as amount from account_move, res_partner where account_move.partner_id = res_partner.id
                                AND account_move.move_type = 'out_invoice'
                                AND payment_state = 'not_paid'
-                               AND %s 
+                               AND %s
                                AND Extract(month FROM account_move.invoice_date_due) = Extract(month FROM DATE(NOW()))
                                AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))
                                AND account_move.partner_id = res_partner.commercial_partner_id
@@ -538,7 +538,7 @@ class DashBoard(models.Model):
                                             AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))
                                             AND account_move.partner_id = res_partner.commercial_partner_id
                                             AND account_move.company_id in ''' + str(tuple(company_id)) + '''
-    
+
                                             group by parent, due_partner
                                             order by amount desc ''') % (states_arg))
 
@@ -576,12 +576,12 @@ class DashBoard(models.Model):
             states_arg = """ account_move.state = 'posted'"""
 
         if post[1] == 'this_month':
-            self._cr.execute((''' 
+            self._cr.execute(('''
                                 select to_char(account_move.date, 'Month') as month, res_partner.name as bill_partner, account_move.partner_id as parent,
                                 sum(account_move.amount_total) as amount from account_move, res_partner where account_move.partner_id = res_partner.id
                                 AND account_move.move_type = 'in_invoice'
                                 AND payment_state = 'not_paid'
-                                AND %s 
+                                AND %s
                                 AND Extract(month FROM account_move.invoice_date_due) = Extract(month FROM DATE(NOW()))
                                 AND Extract(YEAR FROM account_move.invoice_date_due) = Extract(YEAR FROM DATE(NOW()))
                                 AND account_move.company_id in ''' + str(tuple(company_id)) + '''
@@ -633,57 +633,57 @@ class DashBoard(models.Model):
         else:
             states_arg = """ account_move.state = 'posted'"""
         if post[1] == 'this_month':
-            self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
-                                    sum(account_move.amount_total) as amount from account_move, res_partner
-                                    where account_move.commercial_partner_id = res_partner.id
-                                    AND account_move.company_id in %s 
-                                    AND account_move.move_type = 'out_invoice' 
-                                    AND %s   
-                                    AND Extract(month FROM account_move.invoice_date) = Extract(month FROM DATE(NOW()))
-                                    AND Extract(YEAR FROM account_move.invoice_date) = Extract(YEAR FROM DATE(NOW()))                      
-                                    group by parent, customers
-                                    order by amount desc 
-                                    limit 10
-                                    ''') % (tuple(company_id), states_arg))
-            record_invoice = self._cr.dictfetchall()
-            self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
+            self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent,
                                     sum(account_move.amount_total) as amount from account_move, res_partner
                                     where account_move.commercial_partner_id = res_partner.id
                                     AND account_move.company_id in %s
-                                    AND account_move.move_type = 'out_refund' 
-                                    AND %s      
+                                    AND account_move.move_type = 'out_invoice'
+                                    AND %s
                                     AND Extract(month FROM account_move.invoice_date) = Extract(month FROM DATE(NOW()))
-                                    AND Extract(YEAR FROM account_move.invoice_date) = Extract(YEAR FROM DATE(NOW()))                   
+                                    AND Extract(YEAR FROM account_move.invoice_date) = Extract(YEAR FROM DATE(NOW()))
                                     group by parent, customers
-                                    order by amount desc 
+                                    order by amount desc
+                                    limit 10
+                                    ''') % (tuple(company_id), states_arg))
+            record_invoice = self._cr.dictfetchall()
+            self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent,
+                                    sum(account_move.amount_total) as amount from account_move, res_partner
+                                    where account_move.commercial_partner_id = res_partner.id
+                                    AND account_move.company_id in %s
+                                    AND account_move.move_type = 'out_refund'
+                                    AND %s
+                                    AND Extract(month FROM account_move.invoice_date) = Extract(month FROM DATE(NOW()))
+                                    AND Extract(YEAR FROM account_move.invoice_date) = Extract(YEAR FROM DATE(NOW()))
+                                    group by parent, customers
+                                    order by amount desc
                                     limit 10
                                     ''') % (tuple(company_id), states_arg))
             record_refund = self._cr.dictfetchall()
         else:
             one_month_ago = (datetime.now() - relativedelta(months=1)).month
-            self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
+            self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent,
                                             sum(account_move.amount_total) as amount from account_move, res_partner
                                             where account_move.commercial_partner_id = res_partner.id
                                             AND account_move.company_id in %s
-                                            AND account_move.move_type = 'out_invoice' 
-                                            AND %s            
+                                            AND account_move.move_type = 'out_invoice'
+                                            AND %s
                                             AND Extract(month FROM account_move.invoice_date) = ''' + str(
                 one_month_ago) + '''
                                             group by parent, customers
-                                            order by amount desc 
+                                            order by amount desc
                                             limit 10
                                             ''') % (tuple(company_id), states_arg))
             record_invoice = self._cr.dictfetchall()
-            self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent, 
+            self._cr.execute((''' select res_partner.name as customers, account_move.commercial_partner_id as parent,
                                             sum(account_move.amount_total) as amount from account_move, res_partner
                                             where account_move.commercial_partner_id = res_partner.id
-                                            AND account_move.company_id in %s 
-                                            AND account_move.move_type = 'out_refund' 
-                                            AND %s       
+                                            AND account_move.company_id in %s
+                                            AND account_move.move_type = 'out_refund'
+                                            AND %s
                                             AND Extract(month FROM account_move.invoice_date) = ''' + str(
-                one_month_ago) + '''                  
+                one_month_ago) + '''
                                             group by parent, customers
-                                            order by amount desc 
+                                            order by amount desc
                                             limit 10
                                             ''') % (tuple(company_id), states_arg))
             record_refund = self._cr.dictfetchall()
@@ -715,22 +715,22 @@ class DashBoard(models.Model):
             states_arg = """ account_move.state = 'posted'"""
 
         self._cr.execute(('''select sum(amount_total) as customer_invoice from account_move where move_type ='out_invoice'
-                            AND  %s  AND account_move.company_id in ''' + str(tuple(company_id)) + '''           
+                            AND  %s  AND account_move.company_id in ''' + str(tuple(company_id)) + '''
                         ''') % (states_arg))
         record_customer = self._cr.dictfetchall()
 
-        self._cr.execute(('''select sum(amount_total) as supplier_invoice from account_move where move_type ='in_invoice' 
-                          AND  %s  AND account_move.company_id in ''' + str(tuple(company_id)) + '''      
+        self._cr.execute(('''select sum(amount_total) as supplier_invoice from account_move where move_type ='in_invoice'
+                          AND  %s  AND account_move.company_id in ''' + str(tuple(company_id)) + '''
                         ''') % (states_arg))
         record_supplier = self._cr.dictfetchall()
 
         self._cr.execute(('''select sum(amount_total) as credit_note from account_move where move_type ='out_refund'
-                          AND  %s  AND account_move.company_id in ''' + str(tuple(company_id)) + '''      
+                          AND  %s  AND account_move.company_id in ''' + str(tuple(company_id)) + '''
                         ''') % (states_arg))
         result_credit_note = self._cr.dictfetchall()
 
         self._cr.execute(('''select sum(amount_total) as refund from account_move where move_type ='in_refund'
-                          AND  %s  AND account_move.company_id in ''' + str(tuple(company_id)) + '''   
+                          AND  %s  AND account_move.company_id in ''' + str(tuple(company_id)) + '''
                         ''') % (states_arg))
         result_refund = self._cr.dictfetchall()
 
@@ -753,16 +753,16 @@ class DashBoard(models.Model):
             states_arg = """ account_move.state = 'posted'"""
 
         self._cr.execute(('''select sum(amount_total_signed) as customer_invoice from account_move where move_type ='out_invoice'
-                            AND   %s                               
-                            AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
-                            AND account_move.company_id in ''' + str(tuple(company_id)) + '''           
+                            AND   %s
+                            AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
+                            AND account_move.company_id in ''' + str(tuple(company_id)) + '''
                         ''') % (states_arg))
         record_customer_current_year = self._cr.dictfetchall()
 
         self._cr.execute(('''select sum(-(amount_total_signed)) as supplier_invoice from account_move where move_type ='in_invoice'
-                            AND  %s                              
-                            AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
-                            AND account_move.company_id in ''' + str(tuple(company_id)) + '''      
+                            AND  %s
+                            AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
+                            AND account_move.company_id in ''' + str(tuple(company_id)) + '''
                         ''') % (states_arg))
         record_supplier_current_year = self._cr.dictfetchall()
         result_credit_note_current_year = [{'credit_note': 0.0}]
@@ -814,18 +814,18 @@ class DashBoard(models.Model):
             states_arg = """ account_move.state = 'posted'"""
 
         self._cr.execute(('''select sum(amount_total_signed) as customer_invoice from account_move where move_type ='out_invoice'
-                                    AND   %s                               
+                                    AND   %s
                                     AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))
-                                    AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
-                                    AND account_move.company_id in ''' + str(tuple(company_id)) + '''           
+                                    AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
+                                    AND account_move.company_id in ''' + str(tuple(company_id)) + '''
                                 ''') % (states_arg))
         record_customer_current_month = self._cr.dictfetchall()
 
         self._cr.execute(('''select sum(-(amount_total_signed)) as supplier_invoice from account_move where move_type ='in_invoice'
-                                    AND  %s                              
+                                    AND  %s
                                     AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))
-                                    AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
-                                    AND account_move.company_id in ''' + str(tuple(company_id)) + '''      
+                                    AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
+                                    AND account_move.company_id in ''' + str(tuple(company_id)) + '''
                                 ''') % (states_arg))
         record_supplier_current_month = self._cr.dictfetchall()
         result_credit_note_current_month = [{'credit_note': 0.0}]
@@ -878,10 +878,10 @@ class DashBoard(models.Model):
         else:
             states_arg = """ account_move.state = 'posted'"""
 
-        self._cr.execute(('''select sum(amount_total) from account_move where move_type = 'out_invoice' 
+        self._cr.execute(('''select sum(amount_total) from account_move where move_type = 'out_invoice'
                             AND %s
-                            AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))      
-                            AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))   
+                            AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))
+                            AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
                             AND account_move.company_id in ''' + str(tuple(company_id)) + '''
                             ''') % (states_arg))
         record = self._cr.dictfetchall()
@@ -896,7 +896,7 @@ class DashBoard(models.Model):
 
         self._cr.execute('''select sum(amount_total) from account_move where move_type = 'out_invoice' AND
                                account_move.state = 'posted'
-                            AND Extract(month FROM account_move.date) = ''' + str(one_month_ago) + ''' 
+                            AND Extract(month FROM account_move.date) = ''' + str(one_month_ago) + '''
                             ''')
         record = self._cr.dictfetchall()
         return record
@@ -906,9 +906,9 @@ class DashBoard(models.Model):
     @api.model
     def get_total_invoice_last_year(self):
 
-        self._cr.execute(''' select sum(amount_total) from account_move where move_type = 'out_invoice' 
+        self._cr.execute(''' select sum(amount_total) from account_move where move_type = 'out_invoice'
                             AND account_move.state = 'posted'
-                            AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW())) - 1    
+                            AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW())) - 1
                                 ''')
         record = self._cr.dictfetchall()
         return record
@@ -934,7 +934,7 @@ class DashBoard(models.Model):
     def unreconcile_items(self):
         self._cr.execute('''
                             select count(*) FROM account_move_line l,account_account a
-                            where L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                            where L.account_id=a.id AND l.full_reconcile_id IS NULL AND
                             l.balance != 0 AND a.reconcile IS TRUE ''')
         record = self._cr.dictfetchall()
         return record
@@ -954,21 +954,21 @@ class DashBoard(models.Model):
         qry = ''' select count(*) FROM account_move_line l,account_account a
                               where Extract(month FROM l.date) = Extract(month FROM DATE(NOW())) AND
                               Extract(YEAR FROM l.date) = Extract(YEAR FROM DATE(NOW())) AND
-                              L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                              L.account_id=a.id AND l.full_reconcile_id IS NULL AND
                               l.product_id IS NULL AND
-                              l.balance != 0 AND a.reconcile IS F 
+                              l.balance != 0 AND a.reconcile IS F
                               AND l.''' + states_arg + '''
-                              AND  l.company_id in ''' + str(tuple(company_id)) + '''                              
+                              AND  l.company_id in ''' + str(tuple(company_id)) + '''
                                '''
 
         self._cr.execute((''' select count(*) FROM account_move_line l,account_account a
                               where Extract(month FROM l.date) = Extract(month FROM DATE(NOW())) AND
                               Extract(YEAR FROM l.date) = Extract(YEAR FROM DATE(NOW())) AND
-                              L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                              L.account_id=a.id AND l.full_reconcile_id IS NULL AND
                               l.product_id IS NULL AND
-                              l.balance != 0 AND a.reconcile IS TRUE 
+                              l.balance != 0 AND a.reconcile IS TRUE
                               AND l.%s
-                              AND  l.company_id in ''' + str(tuple(company_id)) + '''                              
+                              AND  l.company_id in ''' + str(tuple(company_id)) + '''
                                ''') % (states_arg))
         record = self._cr.dictfetchall()
         return record
@@ -980,9 +980,9 @@ class DashBoard(models.Model):
 
         one_month_ago = (datetime.now() - relativedelta(months=1)).month
 
-        self._cr.execute('''  select count(*) FROM account_move_line l,account_account a 
+        self._cr.execute('''  select count(*) FROM account_move_line l,account_account a
                               where Extract(month FROM l.date) = ''' + str(one_month_ago) + ''' AND
-                              L.account_id=a.id AND l.full_reconcile_id IS NULL AND l.balance != 0 AND a.reconcile IS TRUE 
+                              L.account_id=a.id AND l.full_reconcile_id IS NULL AND l.balance != 0 AND a.reconcile IS TRUE
                          ''')
         record = self._cr.dictfetchall()
         return record
@@ -1001,11 +1001,11 @@ class DashBoard(models.Model):
 
         self._cr.execute(('''  select count(*) FROM account_move_line l,account_account a
                                   where Extract(year FROM l.date) = Extract(year FROM DATE(NOW())) AND
-                                  l.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                                  l.account_id=a.id AND l.full_reconcile_id IS NULL AND
                                   l.product_id IS NULL AND
-                                  l.balance != 0 AND a.reconcile IS TRUE  
+                                  l.balance != 0 AND a.reconcile IS TRUE
                                   AND l.%s
-                                  AND  l.company_id in ''' + str(tuple(company_id)) + '''       
+                                  AND  l.company_id in ''' + str(tuple(company_id)) + '''
                                   ''') % (states_arg))
         record = self._cr.dictfetchall()
         return record
@@ -1018,11 +1018,11 @@ class DashBoard(models.Model):
             states_arg = """ parent_state in ('posted', 'draft')"""
         else:
             states_arg = """ parent_state = 'posted'"""
-        self._cr.execute((''' select account_move_line.id from  account_account, account_move_line where 
-                            account_move_line.account_id = account_account.id AND account_account.internal_group = 'expense' AND  
-                            %s                
+        self._cr.execute((''' select account_move_line.id from  account_account, account_move_line where
+                            account_move_line.account_id = account_account.id AND account_account.internal_group = 'expense' AND
+                            %s
                             AND Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW()))
-                            AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW())) 
+                            AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))
                             AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
                                  ''') % (states_arg))
         record = [row[0] for row in self._cr.fetchall()]
@@ -1037,9 +1037,9 @@ class DashBoard(models.Model):
         else:
             states_arg = """ parent_state = 'posted'"""
         self._cr.execute((''' select account_move_line.id from  account_account, account_move_line where
-                                account_move_line.account_id = account_account.id AND account_account.internal_group = 'expense' AND  
-                                %s                         
-                                AND Extract(YEAR FROM account_move_line.date) = Extract(YEAR FROM DATE(NOW())) 
+                                account_move_line.account_id = account_account.id AND account_account.internal_group = 'expense' AND
+                                %s
+                                AND Extract(YEAR FROM account_move_line.date) = Extract(YEAR FROM DATE(NOW()))
                                 AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
                                 ''') % (states_arg))
         record = [row[0] for row in self._cr.fetchall()]
@@ -1058,9 +1058,9 @@ class DashBoard(models.Model):
         self._cr.execute(('''select account_move_line.id from account_account, account_move_line where
                                 account_move_line.account_id = account_account.id AND account_account.internal_group = 'income'
                                AND %s
-                               AND Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW())) 
-                               AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW())) 
-                               AND account_move_line.company_id in ''' + str(tuple(company_id)) + ''' 
+                               AND Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW()))
+                               AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))
+                               AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
 
                                      ''') % (states_arg))
         record = [row[0] for row in self._cr.fetchall()]
@@ -1077,10 +1077,10 @@ class DashBoard(models.Model):
         else:
             states_arg = """ parent_state = 'posted'"""
 
-        self._cr.execute((''' select account_move_line.id from account_account, account_move_line where                           
+        self._cr.execute((''' select account_move_line.id from account_account, account_move_line where
                              account_move_line.account_id = account_account.id AND account_account.internal_group = 'income'
                              AND %s
-                          AND Extract(YEAR FROM account_move_line.date) = Extract(YEAR FROM DATE(NOW())) 
+                          AND Extract(YEAR FROM account_move_line.date) = Extract(YEAR FROM DATE(NOW()))
                           AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
                         ''') % (states_arg))
         record = [row[0] for row in self._cr.fetchall()]
@@ -1097,14 +1097,14 @@ class DashBoard(models.Model):
         else:
             states_arg = """ parent_state = 'posted'"""
 
-        self._cr.execute(('''select account_move_line.id from  account_account, account_move_line where 
+        self._cr.execute(('''select account_move_line.id from  account_account, account_move_line where
                                        account_move_line.account_id = account_account.id AND
                                        %s AND
-                                       (account_account.internal_group = 'income' or    
-                                       account_account.internal_group = 'expense' ) 
-                                       AND Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW())) 
-                                       AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))   
-                                       AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''        
+                                       (account_account.internal_group = 'income' or
+                                       account_account.internal_group = 'expense' )
+                                       AND Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW()))
+                                       AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))
+                                       AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
                                         ''') % (states_arg))
         profit = [row[0] for row in self._cr.fetchall()]
         return profit
@@ -1118,13 +1118,13 @@ class DashBoard(models.Model):
         else:
             states_arg = """ parent_state = 'posted'"""
 
-        self._cr.execute(('''select account_move_line.id from  account_account, account_move_line where 
+        self._cr.execute(('''select account_move_line.id from  account_account, account_move_line where
                                             account_move_line.account_id = account_account.id AND
                                             %s AND
-                                           (account_account.internal_group = 'income' or    
-                                           account_account.internal_group = 'expense' )                                       
-                                           AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))  
-                                           AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''           
+                                           (account_account.internal_group = 'income' or
+                                           account_account.internal_group = 'expense' )
+                                           AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))
+                                           AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
                                             ''') % (states_arg))
         profit = [row[0] for row in self._cr.fetchall()]
         return profit
@@ -1138,9 +1138,9 @@ class DashBoard(models.Model):
         else:
             states_arg = """ account_move.state = 'posted'"""
         self._cr.execute(('''select account_move.id from account_move where move_type ='in_invoice'
-                               AND  %s                              
-                               AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
-                               AND account_move.company_id in ''' + str(tuple(company_id)) + '''      
+                               AND  %s
+                               AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
+                               AND account_move.company_id in ''' + str(tuple(company_id)) + '''
                            ''') % (states_arg))
         record_supplier_current_year = [row[0] for row in self._cr.fetchall()]
         return record_supplier_current_year
@@ -1189,9 +1189,9 @@ class DashBoard(models.Model):
         else:
             states_arg = """ account_move.state = 'posted'"""
         self._cr.execute(('''select account_move.id  from account_move where move_type ='out_invoice'
-                               AND   %s                               
-                               AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
-                               AND account_move.company_id in ''' + str(tuple(company_id)) + '''           
+                               AND   %s
+                               AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
+                               AND account_move.company_id in ''' + str(tuple(company_id)) + '''
                            ''') % (states_arg))
         record_customer_current_year = [row[0] for row in self._cr.fetchall()]
         return record_customer_current_year
@@ -1258,10 +1258,10 @@ class DashBoard(models.Model):
         else:
             states_arg = """ account_move.state = 'posted'"""
         self._cr.execute(('''select account_move.id from account_move where move_type ='out_invoice'
-                                    AND   %s                               
+                                    AND   %s
                                     AND Extract(month FROM account_move.date) = Extract(month FROM DATE(NOW()))
-                                    AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))     
-                                    AND account_move.company_id in ''' + str(tuple(company_id)) + '''           
+                                    AND Extract(YEAR FROM account_move.date) = Extract(YEAR FROM DATE(NOW()))
+                                    AND account_move.company_id in ''' + str(tuple(company_id)) + '''
                                 ''') % (states_arg))
         record_customer_current_month = [row[0] for row in self._cr.fetchall()]
         return record_customer_current_month
@@ -1277,21 +1277,21 @@ class DashBoard(models.Model):
         qry = ''' select count(*) FROM account_move_line l,account_account a
                               where Extract(month FROM l.date) = Extract(month FROM DATE(NOW())) AND
                               Extract(YEAR FROM l.date) = Extract(YEAR FROM DATE(NOW())) AND
-                              L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                              L.account_id=a.id AND l.full_reconcile_id IS NULL AND
                               l.product_id IS NULL AND
-                              l.balance != 0 AND a.reconcile IS F 
+                              l.balance != 0 AND a.reconcile IS F
                               AND l.''' + states_arg + '''
-                              AND  l.company_id in ''' + str(tuple(company_id)) + '''                              
+                              AND  l.company_id in ''' + str(tuple(company_id)) + '''
                                '''
 
         self._cr.execute((''' select l.id FROM account_move_line l,account_account a
                               where Extract(month FROM l.date) = Extract(month FROM DATE(NOW())) AND
                               Extract(YEAR FROM l.date) = Extract(YEAR FROM DATE(NOW())) AND
-                              L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                              L.account_id=a.id AND l.full_reconcile_id IS NULL AND
                               l.product_id IS NULL AND
-                              l.balance != 0 AND a.reconcile IS TRUE 
+                              l.balance != 0 AND a.reconcile IS TRUE
                               AND l.%s
-                              AND  l.company_id in ''' + str(tuple(company_id)) + '''                              
+                              AND  l.company_id in ''' + str(tuple(company_id)) + '''
                                ''') % (states_arg))
         record = [row[0] for row in self._cr.fetchall()]
         return record
@@ -1306,11 +1306,11 @@ class DashBoard(models.Model):
             states_arg = """ parent_state = 'posted'"""
         self._cr.execute(('''  select l.id FROM account_move_line l,account_account a
                                   where Extract(year FROM l.date) = Extract(year FROM DATE(NOW())) AND
-                                  L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                                  L.account_id=a.id AND l.full_reconcile_id IS NULL AND
                                   l.product_id IS NULL AND
-                                  l.balance != 0 AND a.reconcile IS TRUE  
+                                  l.balance != 0 AND a.reconcile IS TRUE
                                   AND l.%s
-                                  AND  l.company_id in ''' + str(tuple(company_id)) + '''       
+                                  AND  l.company_id in ''' + str(tuple(company_id)) + '''
                                   ''') % (states_arg))
         record = [row[0] for row in self._cr.fetchall()]
         return record
@@ -1322,7 +1322,7 @@ class DashBoard(models.Model):
 
         self._cr.execute('''  select count(*) FROM account_move_line l,account_account a
                                       where Extract(year FROM l.date) = Extract(year FROM DATE(NOW())) - 1 AND
-                                      L.account_id=a.id AND l.full_reconcile_id IS NULL AND 
+                                      L.account_id=a.id AND l.full_reconcile_id IS NULL AND
                                       l.balance != 0 AND a.reconcile IS TRUE
                                       ''')
         record = self._cr.dictfetchall()
@@ -1356,9 +1356,9 @@ class DashBoard(models.Model):
         self._cr.execute(('''select sum(debit) as debit, sum(credit) as credit from account_account, account_move_line where
                             account_move_line.account_id = account_account.id AND account_account.internal_group = 'income'
                            AND %s
-                           AND Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW())) 
-                           AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW())) 
-                           AND account_move_line.company_id in ''' + str(tuple(company_id)) + ''' 
+                           AND Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW()))
+                           AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))
+                           AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
 
                                  ''') % (states_arg))
         record = self._cr.dictfetchall()
@@ -1375,16 +1375,16 @@ class DashBoard(models.Model):
         else:
             states_arg = """ parent_state = 'posted'"""
 
-        self._cr.execute(('''select sum(debit) - sum(credit) as profit, account_account.internal_group from  account_account, account_move_line where 
-                                  
+        self._cr.execute(('''select sum(debit) - sum(credit) as profit, account_account.internal_group from  account_account, account_move_line where
+
                                     account_move_line.account_id = account_account.id AND
                                     %s AND
-                                    (account_account.internal_group = 'income' or    
-                                    account_account.internal_group = 'expense' ) 
-                                    AND Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW())) 
-                                    AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))   
-                                    AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''        
-                                    group by internal_group 
+                                    (account_account.internal_group = 'income' or
+                                    account_account.internal_group = 'expense' )
+                                    AND Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW()))
+                                    AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))
+                                    AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
+                                    group by internal_group
                                      ''') % (states_arg))
         income = self._cr.dictfetchall()
         profit = [item['profit'] for item in income]
@@ -1425,15 +1425,15 @@ class DashBoard(models.Model):
         else:
             states_arg = """ parent_state = 'posted'"""
 
-        self._cr.execute(('''select sum(debit) - sum(credit) as profit, account_account.internal_group from  account_account, account_move_line where 
-                                        
+        self._cr.execute(('''select sum(debit) - sum(credit) as profit, account_account.internal_group from  account_account, account_move_line where
+
                                          account_move_line.account_id = account_account.id AND
                                          %s AND
-                                        (account_account.internal_group = 'income' or    
-                                        account_account.internal_group = 'expense' )                                       
-                                        AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))  
-                                        AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''           
-                                        group by internal_group 
+                                        (account_account.internal_group = 'income' or
+                                        account_account.internal_group = 'expense' )
+                                        AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))
+                                        AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
+                                        group by internal_group
                                          ''') % (states_arg))
         income = self._cr.dictfetchall()
         profit = [item['profit'] for item in income]
@@ -1459,11 +1459,11 @@ class DashBoard(models.Model):
         one_month_ago = (datetime.now() - relativedelta(months=1)).month
 
         self._cr.execute('''
-                            select sum(debit) as debit, sum(credit) as credit from  account_account, 
-        account_move_line where 
-         account_move_line.account_id = account_account.id 
-        AND account_account.internal_group = 'income' AND 
-        account_move_line.parent_state = 'posted'  
+                            select sum(debit) as debit, sum(credit) as credit from  account_account,
+        account_move_line where
+         account_move_line.account_id = account_account.id
+        AND account_account.internal_group = 'income' AND
+        account_move_line.parent_state = 'posted'
         AND Extract(month FROM account_move_line.date) = ''' + str(one_month_ago) + '''
         ''')
 
@@ -1484,10 +1484,10 @@ class DashBoard(models.Model):
         else:
             states_arg = """ parent_state = 'posted'"""
 
-        self._cr.execute((''' select sum(debit) as debit, sum(credit) as credit from account_account, account_move_line where                           
+        self._cr.execute((''' select sum(debit) as debit, sum(credit) as credit from account_account, account_move_line where
                              account_move_line.account_id = account_account.id AND account_account.internal_group = 'income'
                              AND %s
-                          AND Extract(YEAR FROM account_move_line.date) = Extract(YEAR FROM DATE(NOW())) 
+                          AND Extract(YEAR FROM account_move_line.date) = Extract(YEAR FROM DATE(NOW()))
                           AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
                         ''') % (states_arg))
         record = self._cr.dictfetchall()
@@ -1499,7 +1499,7 @@ class DashBoard(models.Model):
     def month_income_last_year(self):
 
         self._cr.execute(''' select sum(debit) as debit, sum(credit) as credit from  account_account, account_move_line where
-                            account_move_line.parent_state = 'posted' 
+                            account_move_line.parent_state = 'posted'
                             AND  account_move_line.account_id = account_account.id AND account_account.internal_group = 'income'
                             AND Extract(YEAR FROM account_move_line.date) = Extract(YEAR FROM DATE(NOW())) - 1
                          ''')
@@ -1530,7 +1530,7 @@ class DashBoard(models.Model):
 
         self._cr.execute(''' select sum(debit) as debit , sum(credit) as credit from account_move, account_account,account_move_line
                             where account_move.move_type = 'entry'  AND account_move.state = 'posted' AND   account_move_line.account_id=account_account.id AND
-                             account_account.internal_group='expense' 
+                             account_account.internal_group='expense'
                              AND to_char(DATE(NOW()), 'MM') = to_char(account_move_line.date, 'MM')
                              ''')
         record = self._cr.dictfetchall()
@@ -1549,12 +1549,12 @@ class DashBoard(models.Model):
         else:
             states_arg = """ parent_state = 'posted'"""
 
-        self._cr.execute((''' select sum(debit) as debit, sum(credit) as credit from  account_account, account_move_line where 
-                        
-                            account_move_line.account_id = account_account.id AND account_account.internal_group = 'expense' AND  
-                            %s                
+        self._cr.execute((''' select sum(debit) as debit, sum(credit) as credit from  account_account, account_move_line where
+
+                            account_move_line.account_id = account_account.id AND account_account.internal_group = 'expense' AND
+                            %s
                             AND Extract(month FROM account_move_line.date) = Extract(month FROM DATE(NOW()))
-                            AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW())) 
+                            AND Extract(year FROM account_move_line.date) = Extract(year FROM DATE(NOW()))
                             AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
 
 
@@ -1576,10 +1576,10 @@ class DashBoard(models.Model):
             states_arg = """ parent_state = 'posted'"""
 
         self._cr.execute((''' select sum(debit) as debit, sum(credit) as credit from  account_account, account_move_line where
-                        
-                            account_move_line.account_id = account_account.id AND account_account.internal_group = 'expense' AND  
-                            %s                         
-                            AND Extract(YEAR FROM account_move_line.date) = Extract(YEAR FROM DATE(NOW())) 
+
+                            account_move_line.account_id = account_account.id AND account_account.internal_group = 'expense' AND
+                            %s
+                            AND Extract(YEAR FROM account_move_line.date) = Extract(YEAR FROM DATE(NOW()))
                             AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
 
 
@@ -1606,18 +1606,22 @@ class DashBoard(models.Model):
                             AND %s
                             AND account_move_line.company_id in ''' + str(tuple(company_id)) + '''
                             group by account_account.name
-                                                   
+
                             ''') % (states_arg))
 
         record = self._cr.dictfetchall()
         banks = [item['name'] for item in record]
-        # bank_name = [rec['en_US'] for rec in banks]
+        user_lang = self.env.user.lang
+        banks_list = [
+            rec.get(user_lang, rec.get('en_US', rec)) if isinstance(rec,
+                                                                    dict) else rec
+            for rec in banks]
         banking = [item['balance'] for item in record]
 
         bank_ids = [item['id'] for item in record]
 
         records = {
-            'banks': banks,
+            'banks': banks_list,
             'banking': banking,
             'bank_ids': bank_ids
         }

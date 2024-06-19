@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Tree view of amazon dataset for amazon forecasting-->
+    <record id="amazon_dataset_view_tree" model="ir.ui.view">
+        <field name="name">amazon.dataset.view.tree</field>
+        <field name="model">amazon.dataset</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="role_name"/>
+            </tree>
+        </field>
+    </record>
+    <!--Form view of amazon dataset for amazon forecasting-->
+    <record id="amazon_dataset_view_form" model="ir.ui.view">
+        <field name="name">amazon.dataset.view.form</field>
+        <field name="model">amazon.dataset</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_create_table" string="Create Table" type="object" states="table" class="oe_highlight"/>
+                    <button name="action_create_role" string="Create Role" type="object" states="role" class="oe_highlight"/>
+                    <button name="action_create_kms" string="Create KMS" type="object" states="kms" class="oe_highlight"/>
+                    <button name="action_create_policy" string="Create Policy" type="object" states="policy" class="oe_highlight"/>
+                    <button name="action_create_dataset" string="Create Dataset" type="object" states="dataset" class="oe_highlight"/>
+                    <button name="action_import_dataset" string="Import Dataset Job" type="object" states="import_dataset" class="oe_highlight"/>
+                    <button name="action_create_predictor" string="Create Predictor" type="object"  class="oe_highlight"/>
+                    <button name="action_create_forecast" string="Create Forecast" type="object" class="oe_highlight"/>
+                    <button name="query_forecast" string="Query Forecast" type="object" class="oe_highlight"/>
+                    <field name="state" widget="statusbar" statusbar_visible="table,import_dataset,query_forecast"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="table_name" />
+                        <field name="table_arn" />
+                        <field name="role_name" attrs="{'invisible': [('state', 'in', ('table'))], 'required': [('state', 'not in', ('table'))]}"/>
+                        <field name="role_arn" attrs="{'invisible': [('state', 'in', ('table'))]}"/>
+                        <field name="bucket_id" attrs="{'invisible': [('state', 'in', ('table', 'role'))], 'required': [('state', 'not in', ('table', 'role'))]}"/>
+                        <field name="kms_alias" attrs="{'invisible': [('state', 'in', ('table', 'role'))], 'required': [('state', 'not in', ('table', 'role'))]}"/>
+                        <field name="kms_arn" attrs="{'invisible': [('state', 'in', ('table', 'role'))]}"/>
+                        <field name="policy_name" attrs="{'invisible': [('state', 'in', ('table', 'role', 'kms'))], 'required': [('state', 'not in', ('table', 'role', 'kms'))]}"/>
+                        <field name="policy_arn" attrs="{'invisible': [('state', 'in', ('table', 'role', 'kms'))]}"/>
+                        <field name="dataset_group" attrs="{'invisible': [('state', 'in', ('table', 'role', 'kms', 'policy'))], 'required': [('state', 'not in', ('table', 'role', 'kms', 'policy'))]}"/>
+                        <field name="dataset_group_arn"  attrs="{'invisible': [('state', 'in', ('table', 'role', 'kms', 'policy','dataset'))]}"/>
+                        <field name="dataset" attrs="{'invisible': [('state', 'in', ('table', 'role', 'kms', 'policy'))], 'required': [('state', 'not in', ('table', 'role', 'kms', 'policy'))]}"/>
+                        <field name="dataset_arn"  attrs="{'invisible': [('state', 'in', ('table', 'role', 'kms', 'policy','dataset'))]}"/>
+                        <field name="forecast_frequency" attrs="{'invisible': [('state', 'in', ('table', 'role', 'kms', 'policy'))]}"/>
+                        <field name="import_job_name" attrs="{'invisible': [('state', 'in', ('table', 'role', 'kms', 'policy', 'dataset'))]}"/>
+                        <field name="import_job_arn" attrs="{'invisible': [('state', 'in', ('table', 'role', 'kms', 'policy', 'dataset'))]}"/>
+                        <field name="predictor_name" attrs="{'invisible': ['|', ('state', 'in', ('table', 'role', 'kms', 'policy', 'dataset')),('import_job_arn', '=', False)]}"/>
+                        <field name="predictor_algorithm" attrs="{'invisible': ['|', ('state', 'in', ('table', 'role', 'kms', 'policy', 'dataset')), ('import_job_arn', '=', False)]}"/>
+                        <field name="predictor_arn" attrs="{'invisible': ['|', ('state', 'in', ('table', 'role', 'kms', 'policy', 'dataset')), ('import_job_arn', '=', False)]}"/>
+                        <field name="forecast_name" attrs="{'invisible': [('state', 'in', ('table', 'role', 'kms', 'policy', 'dataset', 'import_dataset'))], 'required': [('state', 'not in', ('table', 'role', 'kms', 'policy', 'dataset', 'import_dataset'))]}"/>
+                        <field name="item_id" attrs="{'invisible': [('state', 'in', ('table', 'role', 'kms', 'policy', 'dataset', 'import_dataset', 'predictor'))], 'required': [('state', 'not in', ('table', 'role', 'kms', 'policy', 'dataset', 'import_dataset', 'predictor'))]}"/>
+                        <field name="forecast_arn" attrs="{'invisible': [('state', 'in', ('table', 'role', 'kms', 'policy', 'dataset', 'import_dataset', 'predictor'))]}"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--Window action for Amazon Dataset -->
+    <record id="action_amazon_dataset" model="ir.actions.act_window">
+        <field name="name">Forecast</field>
+        <field name="res_model">amazon.dataset</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Inherited form view of sale order for adding the sale quotation revision feature-->
+    <record id="view_order_form" model="ir.ui.view">
+        <field name="name">
+            sale.order.view.form.inherit.sale.quotation.revision
+        </field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="after">
+                <div class="alert alert-danger text-center o_form_header"
+                     attrs="{'invisible': [('is_revised', '=', False)]}"
+                     role="status">
+                    <strong>Quotation is Revised.
+                    </strong>
+                </div>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button class="oe_stat_button" type="object"
+                        name="get_revised_orders"
+                        attrs="{'invisible': [('rev_ord_count', '=', 0)]}"
+                        icon="fa-shopping-bag">
+                    <field string="Revised Orders" name="rev_ord_count"
+                           widget="statinfo"/>
+                </button>
+            </xpath>
+            <xpath expr="//header" position="inside">
+                <button name="action_revise_quotation" string="Revise Quotation"
+                        type="object"
+                        states="sent" class="btn-primary"
+                        attrs="{'invisible': [('state', '!=', 'sent')]}"/>
+            </xpath>
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="is_revised" readonly="1" invisible="1"/>
+                <field name="org_sale_id" readonly="1"
+                       attrs="{'invisible': [('is_revised', '!=', False)]}"/>
+            </xpath>
+            <xpath expr="//notebook/page[@name='other_information']"
+                   position="after">
+                <page name="sale_history" string="Sale Revisions"
+                      attrs="{'invisible': [('is_revised', '=', False)]}"
+                      readonly="True">
+                    <field name="rev_sale_ids" readonly="1">
+                        <tree>
+                            <field name="date_order"/>
+                            <field name='name'/>
+                            <field name="partner_id"/>
+                            <field name='user_id'/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_sale_order_confirm_wizard" model="ir.ui.view">
+        <field name="name">sale.order.confirm.wizard.form</field>
+        <field name="model">sale.order.confirm.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="sale_orders_ids" widget="many2many_tags"
+                           options="{'no_create': True, 'no_edit': True}"/>
+                </group>
+                <footer>
+                    <button string="Cancel Order" type="object"
+                            name="action_rev_cancel_orders"/>
+                    <button string="Keep Open" type="object"
+                            name="action_rev_keep_orders"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Hide Chatter',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Discuss',
     'summary': 'Disable the chatter of specific models',
     'description': "Hide Chatter for any module by selecting the modules "

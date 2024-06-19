@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--Website franchise feedback menu-->
+    <data noupdate="1">
+        <record id="feedback_dealer_menu" model="website.menu">
+            <field name="name">Monthly Franchise Feedback</field>
+            <field name="url">/feedback_report_menu</field>
+            <field name="parent_id" ref="website.main_menu"/>
+            <field name="sequence">40</field>
+        </record>
+    </data>
+    <!--Franchise sales feedback template-->
+    <template id="tmpl_dealer_feedback" name="Franchise Feedback">
+        <t t-call="website.layout">
+            <h1 align="center">FRANCHISE FEEDBACK</h1>
+            <div id="wrap">
+                <div class="oe_structure">
+                    <div class="container">
+                        <div class="col-md-6">
+                            <form action="/dealer_feedback_menu/form/submit">
+                                <div class="feedback_form">
+                                    <h6>
+                                        <b>franchise information:</b>
+                                    </h6>
+                                    <div>
+                                        <label for="dealer_id"
+                                               class="col-form-label col-sm-auto s_website_form_label">
+                                            Name:
+                                        </label>
+                                        <br/>
+                                        <t t-if="current_franchise">
+                                            <select name="dealer_id"
+                                                    id="dealer_id"
+                                                    class="o_dealer_name link-style"
+                                                    placeholder="Franchisee Name"
+                                            >
+                                                <option t-esc="current_franchise.dealer_name"
+                                                        t-att-value="current_franchise.id"
+                                                        selected="selected"/>
+                                            </select>
+                                            <input type="hidden"
+                                                   name="dealer_id"
+                                                   t-att-value="current_franchise.id"/>
+                                        </t>
+                                        <t t-elif="user_data">
+                                            <select name="dealer_id"
+                                                    id="dealer_id"
+                                                    class="o_dealer_name link-style"
+                                                    placeholder="Franchisee Name"
+                                            >
+                                                <option t-esc="user_data.dealer_name"
+                                                        t-att-value="user_data.id"
+                                                        selected="selected"/>
+                                            </select>
+                                            <input type="hidden"
+                                                   name="dealer_id"
+                                                   t-att-value="user_data.id"/>
+                                        </t>
+                                        <t t-else="">
+                                            <select name="dealer_id"
+                                                    id="dealer_id"
+                                                    class="o_dealer_name link-style"
+                                                    placeholder="Franchisee Name">
+                                                <t t-foreach="franchise_dealer_rec"
+                                                   t-as="dealer">
+                                                    <option t-esc="dealer.name"
+                                                            t-att-value="dealer.id"/>
+                                                </t>
+                                            </select>
+                                        </t>
+                                    </div>
+                                    <br/>
+                                    <div>
+                                        <label for="franchise_reference"
+                                               class="col-form-label col-sm-auto s_website_form_label">
+                                            Franchise Reference:
+                                        </label>
+                                        <input t-if="current_franchise"
+                                               type="text"
+                                               id="franchise_reference"
+                                               name="franchise_reference"
+                                               readonly="1"
+                                               class="link-style"
+                                               t-att-value="current_franchise.serial_no"/>
+                                        <input t-elif="user_data"
+                                               type="text"
+                                               id="franchise_reference"
+                                               name="franchise_reference"
+                                               readonly="1"
+                                               class="link-style"
+                                               t-att-value="user_data.serial_no"/>
+                                        <input t-else=""
+                                               type="text"
+                                               class="link-style"
+                                               placeholder="Franchisee reference no"
+                                               id="franchise_reference"
+                                               name="franchise_reference"/>
+                                    </div>
+                                    <br/>
+                                    <div>
+                                        <label for="dealer_agreement_id"
+                                               class="col-form-label col-sm-auto s_website_form_label">
+                                            Franchise Agreement:
+                                        </label>
+                                        <t t-if="current_franchise">
+                                            <input type="text"
+                                                   id="dealer_agreement_id"
+                                                   name="dealer_agreement_id"
+                                                   class="d-none"
+                                                   t-att-value="current_franchise.contract_type_id.id"/>
+                                            <input type="text"
+                                                   class="link-style"
+                                                   id="dealer_agreement_id"
+                                                   readonly="1"
+                                                   t-att-value="current_franchise.contract_type_id.agreement_type"/>
+                                            <br/>
+                                        </t>
+                                        <t t-elif="user_data">
+                                            <input type="text"
+                                                   id="dealer_agreement_id"
+                                                   name="dealer_agreement_id"
+                                                   class="d-none"
+                                                   t-att-value="user_data.contract_type_id.id"/>
+                                            <input type="text"
+                                                   id="dealer_agreement_id"
+                                                   name="dealer_agreement_id"
+                                                   readonly="1"
+                                                   class="link-style"
+                                                   t-att-value="user_data.contract_type_id.agreement_type"/>
+                                            <br/>
+                                        </t>
+                                        <t t-else="">
+                                            <select name="dealer_agreement_id"
+                                                    class="link-style"
+                                                    placeholder="Agreement">
+                                                <t t-foreach="franchise_agreement_rec"
+                                                   t-as="agreement">
+                                                    <option t-att-value="agreement.id">
+                                                        <t t-esc="agreement.agreement_type"/>
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </t>
+                                    </div>
+
+                                    <br/>
+                                    <div>
+                                        <label for="dealership_signed_on"
+                                               class="col-form-label col-sm-auto s_website_form_label">
+                                            Signed on:
+                                        </label>
+                                        <br/>
+                                        <input t-if="current_franchise"
+                                               type="date"
+                                               class="link-style"
+                                               id="dealership_signed_on"
+                                               name="dealership_signed_on"
+                                               readonly="1"
+                                               t-att-value="current_franchise.signed_on"/>
+                                        <input t-elif="user_data"
+                                               type="date"
+                                               class="link-style"
+                                               id="dealership_signed_on"
+                                               name="dealership_signed_on"
+                                               readonly="1"
+                                               t-att-value="user_data.signed_on"/>
+                                        <input t-else=""
+                                               type="date"
+                                               class="link-style"
+                                               placeholder="Dealership signed date"
+                                               id="dealership_signed_on"
+                                               name="dealership_signed_on"/>
+
+                                    </div>
+                                    <br/>
+                                    <div>
+                                        <label for="name"
+                                               class="col-form-label
+                                               col-sm-auto s_website_form_label">
+                                            Monthly Target:
+                                        </label>
+                                        <br/>
+                                        <input t-if="current_franchise"
+                                               type="number"
+                                               class="link-style"
+                                               id="monthly_target_amount"
+                                               name="monthly_target_amount"
+                                               readonly="1"
+                                               placeholder="Monthly Target"
+                                               t-att-value="current_franchise.monthly_target_amount"/>
+                                        <input t-elif="user_data"
+                                               type="number"
+                                               class="link-style"
+                                               id="monthly_target_amount"
+                                               name="monthly_target_amount"
+                                               readonly="1"
+                                               placeholder="Monthly Target"
+                                               t-att-value="user_data.monthly_target_amount"/>
+                                        <input t-else=""
+                                               type="number"
+                                               class="link-style"
+                                               required="1"
+                                               placeholder="Monthly Target"
+                                               id="monthly_target_amount"
+                                               name="monthly_target_amount"/>
+                                    </div>
+                                    <br/>
+                                    <br/>
+                                </div>
+                                <div id="details">
+                                    <h6>
+                                        <b>Sales Feedback:</b>
+                                    </h6>
+                                    <label for="name"
+                                           class="col-form-label
+                                               col-sm-auto s_website_form_label">
+                                        Sale Quantity:
+                                    </label>
+                                    <br/>
+                                    <input type="number"
+                                           class="link-style"
+                                           required="1"
+                                           name="sale_quantity"
+                                           id="sale_quantity"
+                                           placeholder="Sale Quantity"/>
+                                    <br/>
+                                    <label for="name"
+                                           class="col-form-label
+                                               col-sm-auto s_website_form_label">
+                                        Scrap Quantity:
+                                    </label>
+                                    <br/>
+                                    <input type="number"
+                                           class="link-style"
+                                           required="1"
+                                           name="scrap_quantity"
+                                           id="scrap_quantity"
+                                           placeholder="Scrap Quantity"/>
+                                    <br/>
+                                    <label for="name"
+                                           class="col-form-label
+                                               col-sm-auto s_website_form_label">
+                                        Sale Amount:
+                                    </label>
+                                    <br/>
+                                    <input type="number"
+                                           class="link-style"
+                                           required="1"
+                                           name="total_sale_amount"
+                                           id="total_sale_amount"
+                                           placeholder="Sale Amount"/>
+
+                                    <br/>
+                                    <label for="name"
+                                           class="col-form-label
+                                               col-sm-auto s_website_form_label">
+                                        Target Gained in (%):
+                                    </label>
+                                    <br/>
+                                    <input type="number"
+                                           class="link-style"
+                                           required="1"
+                                           name="monthly_target_gained"
+                                           id="monthly_target_gained"
+                                           placeholder="Target Gained"/>
+                                    <br/>
+                                    <br/>
+                                    <button type="submit" class="button">
+                                        Confirm
+                                    </button>
+                                    <br/>
+                                    <br/>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-6">
+                            <h1 class="head">
+                                <b>Car Service Booking</b>
+                            </h1>
+                            <div class="fd_image"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    <!--Feedback submit page template-->
+    <template id="feedback_success_page"
+              name="Franchise feedback Successfully Submitted">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <div class="container">
+                    <div class="col-md-12">
+                        <div>
+                            <h1>Thank You!!!</h1>
+                            <p>Your Franchise sales feedback submitted
+                                successfully..........
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

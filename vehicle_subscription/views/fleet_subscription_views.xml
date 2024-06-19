@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--Action of fleet.subscription-->
+    <record id="fleet_subscription_action" model="ir.actions.act_window">
+        <field name="name">Subscription</field>
+        <field name="res_model">fleet.subscription</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+<!--    Form view of the fleet subscription-->
+    <record id="fleet_subscription_view_form" model="ir.ui.view">
+        <field name="name">fleet.subscription.view.form</field>
+        <field name="model">fleet.subscription</field>
+        <field name="arch" type="xml">
+            <form string="Channel">
+                <header>
+                    <button name="action_invoice" class="oe_highlight"
+                            state="draft" string="Create Order"
+                            type="object"
+                            attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                    <button name="action_request" class="oe_highlight"
+                            string="Change subscription"
+                            type="object"
+                            attrs="{'invisible': ['|',('state', '!=', 'subscribed'),'&amp;',('invisible_sub','=',True),('state','=','subscribed')]}"/>
+                    <button name="action_cancel" class="oe_highlight"
+                            state="draft" string="Cancel subscription"
+                            type="object"
+                            attrs="{'invisible': [('state', '!=', 'subscribed')]}"/>
+                    <field name="state" widget="statusbar"
+                           options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div>
+                        <div name="button_box" position="inside">
+                            <button class="oe_stat_button" type="object"
+                                    name="action_get_car_insurance" icon="fa-car"
+                                    attrs="{'invisible': [('insurance_type_id', '=', False)]}"
+                                    string="Insurance">
+                            </button>
+                            <button class="oe_stat_button" type="object"
+                                    name="action_get_sale"
+                                    attrs="{ 'invisible': [('state', '=', 'draft')] }">
+                                <field string="Sale Order" name="sale"
+                                       widget="statinfo"/>
+                            </button>
+                            <button class="oe_stat_button" type="object"
+                                    name="action_get_invoice"
+                                    attrs="{ 'invisible': [('state', '=', 'draft')]}">
+                                <field string="Invoice" name="invoice"
+                                       widget="statinfo"/>
+                            </button>
+                            <button class="oe_stat_button" type="object"
+                                    name="action_get_refund"
+                                    attrs="{ 'invisible': [('refund', '=', 0), ('state', '!=', 'cancel')]}">
+                                <field string="Refund" name="refund"
+                                       widget="statinfo"/>
+                            </button>
+                        </div>
+                    </div>
+                    <group col="2">
+                        <group>
+                            <field name="vehicle_id"/>
+                            <field name="vehicle_ids" widget="many2many_tags"
+                                   invisible="True"/>
+                            <field name="customer_id"/>
+                            <field name="insurance_type_id"/>
+                            <field name="seating_capacity"/>
+                            <field name="price"/>
+                            <field name="sale_id" invisible="True"/>
+                            <field name="extra_price"/>
+                            <field name="invoice_ids" widget="many2many_tags"
+                                   invisible="True"/>
+                            <field name="invisible_sub" invisible="True"/>
+                        </group>
+                        <group>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <field name="cancellation_date"
+                                   attrs="{ 'invisible': [('state', '!=', 'cancel')] }"/>
+                            <field name="city"/>
+                            <field name="state_id"/>
+                            <field name="country_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Features">
+                            <group string="Add Extra Features">
+                                <field name="fuel"/>
+                                <field name="fuel_type"
+                                       attrs="{ 'invisible': [('fuel', '!=', 'with_fuel')] }"/>
+                                <field name="mileage"
+                                       attrs="{ 'invisible': [('fuel', '!=', 'with_fuel')] }"/>
+                                <field name="fuel_rate"
+                                       attrs="{ 'invisible': [('fuel', '!=', 'with_fuel')] }"/>
+                                <field name="charge_km"/>
+                                <field name="default_km"/>
+                                <field name="extra_km"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--Menu item of vehicle subscription-->
+    <menuitem id="vehicle_subscription_menu_action"
+              name="Subscription"
+              action="fleet_subscription_action"
+              parent="fleet.fleet_vehicles"
+    />
+</odoo>

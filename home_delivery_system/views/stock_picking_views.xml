@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- inherited view for pickings-->
+    <record id="stock_picking_view_form" model="ir.ui.view">
+        <field name="name">
+            stock.picking.view.form.inherit.home.delivery.system
+        </field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" eval="False"/>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="delivery_state" widget="statusbar"/>
+                    <button name="cancel_delivery"
+                            attrs="{'invisible':[('is_cancel_visibility','!=',False)]}"
+                            string="Cancel"
+                            type="object" class="oe_highlight"
+                    />
+                    <button name="reset_to_draft"
+                            attrs="{'invisible':[('delivery_state','!=','cancel')]}"
+                            string="Reset to Draft"
+                            type="object" class="oe_highlight"
+                    />
+                    <button name="assign_delivery"
+                            attrs="{'invisible':[('is_assign_visibility','!=',False)]}"
+                            string="Assign" type="object"
+                            class="oe_highlight"/>
+                    <button name="picking_delivery"
+                            string="Picked" type="object"
+                            attrs="{'invisible':[('delivery_state','!=','accept')]}"
+                            class="oe_highlight"/>
+                    <button name="reschedule_delivery_person"
+                            string="Reschedule" type="object"
+                            groups="home_delivery_system.home_delivery_system_delivery_manager"
+                            class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Paid"
+                            attrs="{'invisible': [('is_complete', '=', False)]}"/>
+                    <h1>
+                        <field name="origin" string="Order"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="is_cancel_visibility" invisible="1"/>
+                            <field name="is_assign_visibility" invisible="1"/>
+                            <field name="delivery_boy_id" attrs="{'readonly': [('delivery_state', '=', 'accept')]}"/>
+                            <field name="is_broadcast_order" attrs="{'readonly': [('delivery_state', '=', 'accept')]}"/>
+                            <field name="order_source" attrs="{'readonly': [('delivery_state', '=', 'accept')]}"/>
+                        </group>
+                        <group>
+                            <field name="delivery_assign_date" attrs="{'readonly': [('delivery_state', '=', 'accept')]}"/>
+                            <field name="payment_status" attrs="{'readonly': [('delivery_state', '=', 'accept')]}"/>
+                            <field name="distance" attrs="{'readonly': [('delivery_state', '=', 'accept')]}"/>
+                            <field name="partner_id" string="Customer" attrs="{'readonly': [('delivery_state', '=', 'accept')]}"/>
+                            <field name="company_id" attrs="{'readonly': [('delivery_state', '=', 'accept')]}"/>
+                            <field name="is_complete" attrs="{'readonly': [('delivery_state', '=', 'accept')]}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Products" name="operations">
+                            <field name="move_ids_without_package">
+                                <tree>
+                                    <field name="product_id" required="1"
+                                           context="{'default_detailed_type': 'product'}"
+                                    />
+                                    <field name="product_uom_qty"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Reschedule Reason"
+                              groups="home_delivery_system.home_delivery_system_delivery_manager">
+                            <field name="reschedule_reason">
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"
+                           options="{'open_attachments': True}"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="stock_picking_view_tree" model="ir.ui.view">
+        <field name="name">
+            stock.picking.view.tree.inherit.home.delivery.system
+        </field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" eval="False"/>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="origin"/>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="home_delivery_system_action" model="ir.actions.act_window">
+        <field name="name">Orders</field>
+        <field name="res_model">stock.picking</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,kanban,form,calendar</field>
+        <field name="domain">[('sale_id','!=',False)]</field>
+        <field name="context">{'contact_display': 'partner_address',
+            'create':False, 'default_company_id': allowed_company_ids[0]}
+        </field>
+        <field name="view_ids"
+               eval="[(5, 0, 0),
+               (0, 0, {'view_mode': 'tree', 'view_id': ref('home_delivery_system.stock_picking_view_tree')}),
+               (0, 0, {'view_mode': 'form', 'view_id': ref('home_delivery_system.stock_picking_view_form')})]"/>
+        <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No orders found. Let's create one!
+            </p>
+            <p>
+                Transfers allow you to move products from one location to
+                another.
+            </p>
+        </field>
+    </record>
+</odoo>

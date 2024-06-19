@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--        Tree view of certificates-->
+    <record id="certificates_view_tree" model="ir.ui.view">
+        <field name="name">certificates.view.tree</field>
+        <field name="model">certificates</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="certificate_number"/>
+                <field name="name"/>
+                <field name="customer_id"/>
+                <field name="certificates_types_id"/>
+                <field name="start_date"/>
+                <field name="expire_date"/>
+                <field name="issued_company_id"/>
+                <field name="company_id"/>
+                <field name="certificates_tags_ids" string="Tags"
+                       widget="many2many_tags"
+                       options="{'color_field': 'color'}" optional="hide"/>
+                <field name="project_id" string="Project" optional="hide"/>
+                <field name="task_id" string="Task" optional="hide"/>
+                <field name="product_id" string="Product" optional="hide"/>
+                <field name="user_id" string="Responsible Person"
+                       optional="hide"/>
+                <field name="expire_remainder_day" string="Expire Reminder Day"
+                       optional="hide"/>
+                <field name="state" string="Status" widget="badge"
+                       decoration-info="state == 'new'"
+                       decoration-warning="state == 'expired_soon'"
+                       decoration-danger="state == 'expired'"
+                       decoration-success="state == 'active'"/>
+            </tree>
+        </field>
+    </record>
+    <!--        Form view of certificates-->
+    <record id="certificates_view_form" model="ir.ui.view">
+        <field name="name">certificates.view.form</field>
+        <field name="model">certificates</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button name="active_certificate" class="btn btn-primary"
+                            type="object" string="Active"
+                            attrs="{'invisible': [('state', 'not in', 'new')]}">
+                    </button>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_active_certificate" type="object"
+                                class="certificate-stat-button"
+                                icon="fa-archive" string="Active"
+                                attrs="{'invisible': [('state', 'not in', 'active')]}">
+                        </button>
+                    </div>
+                    <h1>
+                        <div>
+                            <field name="certificate_number"/>
+                        </div>
+                        <div>
+                            <field name="name"/>
+                        </div>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="customer_id" string="Customer"/>
+                            <field name="certificates_types_id"
+                                   string="Certificates Types"/>
+                            <field name="start_date" string="Start Date"/>
+                            <field name="expire_date" string="Expired Date"/>
+                            <field name="issued_company_id" string="Issued By"/>
+                            <field name="certificates_tags_ids" string="Tags"
+                                   widget="many2many_tags"
+                                   options="{'color_field': 'color'}"
+                                   optional="show"/>
+                        </group>
+                        <group>
+                            <field name="project_id" string="Project"/>
+                            <field name="task_id" string="Task"/>
+                            <field name="product_id" string="Product"/>
+                            <field name="user_id" string="Responsible Person"/>
+                            <field name="company_id" string="Company"/>
+                            <field name="expire_remainder_day"
+                                   string="Expire Reminder Day"/>
+                            <field name="login_user_id" string="Login User"
+                                   invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Other Information">
+                            <group string="Internal Notes"
+                                   style="color: midnightblue;font-size: initial;">
+                                <field name="internal_notes" nolabel="1"
+                                       colspan="2"
+                                       style="color: black;font-size: unset;"/>
+                            </group>
+                            <group string="Description"
+                                   style="color: midnightblue;font-size: initial;">
+                                <field name="description" nolabel="1"
+                                       colspan="2"
+                                       style="color: black;font-size: unset;"/>
+                            </group>
+                        </page>
+                        <page string="Achievements"
+                              style="color: midnightblue;font-size: initial;">
+                            <group string="Achievements"
+                                   style="color: midnightblue;font-size: initial;">
+                                <field name="achievements" nolabel="1"
+                                       colspan="2"
+                                       style="color: black;font-size: unset;"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                    <field name="activity_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--        Search view of certificates-->
+    <record id="certificates_view_search" model="ir.ui.view">
+        <field name="name">certificates.view.search</field>
+        <field name="model">certificates</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="certificate_number"/>
+                <field name="customer_id"/>
+                <field name="project_id"/>
+                <field name="task_id"/>
+                <filter string="My Certificates" name="my_certificates"
+                        domain="[('login_user_id', '=', uid)]"
+                        groups="certificate_license_expiry.certificate_license_expiry_group_manager"/>
+                <group>
+                    <filter string="Expired" name="expired"
+                            domain="[('state', '=', 'expired')]"/>
+                    <filter string="Expired Soon" name="expired_soon"
+                            domain="[('state', '=', 'expired_soon')]"/>
+                    <filter string="Active" name="active"
+                            domain="[('state', '=', 'active')]"/>
+                    <filter string="New" name="new"
+                            domain="[('state', '=', 'new')]"/>
+                </group>
+                <group expand="1" string="Group By">
+                    <filter string="Customer" name="customer_id"
+                            context="{'group_by':'customer_id', 'residual_visible':True}"/>
+                    <filter string="State" name="state"
+                            context="{'group_by':'state', 'residual_visible':True}"/>
+                    <filter string="Certificate Type"
+                            name="certificates_types_id"
+                            context="{'group_by':'certificates_types_id', 'residual_visible':True}"/>
+                    <filter string="Issued By" name="issued_company_id"
+                            context="{'group_by':'issued_company_id', 'residual_visible':True}"/>
+                    <filter string="Project" name="project_id"
+                            context="{'group_by':'project_id', 'residual_visible':True}"/>
+                    <filter string="Task" name="task_id"
+                            context="{'group_by':'task_id', 'residual_visible':True}"/>
+                    <filter string="User" name="user_id"
+                            context="{'group_by':'user_id', 'residual_visible':True}"/>
+                    <filter string="Company" name="company_id"
+                            context="{'group_by':'company_id', 'residual_visible':True}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!--        Kanban view of certificates-->
+    <record id="certificates_view_kanban" model="ir.ui.view">
+        <field name="name">certificates.view.kanban</field>
+        <field name="model">certificates</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="certificate_number"/>
+                <field name="name"/>
+                <field name="start_date" string="Start Date"/>
+                <field name="expire_date" string="Expired Date"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_click">
+                            <div class="oe_kanban_card oe_kanban_global_click">
+                                <div>
+                                    <strong>
+                                        <field name="certificate_number"/>
+                                    </strong>
+                                    <field name="state" widget="badge"
+                                           decoration-info="state == 'new'"
+                                           decoration-warning="state == 'expired_soon'"
+                                           decoration-danger="state == 'expired'"
+                                           decoration-success="state == 'active'"
+                                           style="margin-left:190px"/>
+                                </div>
+
+                                <field name="project_id"/>
+
+                                <div>
+                                    <strong>
+                                        <field name="expire_date"
+                                               style="color:red"/>
+                                    </strong>
+                                </div>
+
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!--        Calender view of certificates-->
+    <record id="certificates_view_calender" model="ir.ui.view">
+        <field name="name">certificates.view.calender</field>
+        <field name="model">certificates</field>
+        <field name="arch" type="xml">
+            <calendar date_start="expire_date"
+                      string="Certificates Calender"
+                      mode="month" color="state"
+                      event_open_popup="true" quick_add="false">
+                <field name="certificate_number"/>
+                <field name="customer_id" avatar_field="image_128"/>
+                <field name="start_date"/>
+                <field name="expire_date"/>
+                <field name="certificates_types_id"/>
+                <field name="issued_company_id" avatar_field="image_128"/>
+                <field name="project_id" avatar_field="image_128"/>
+                <field name="task_id" avatar_field="image_128"/>
+                <field name="product_id" avatar_field="image_128"/>
+                <field name="user_id"/>
+            </calendar>
+        </field>
+    </record>
+    <!--        Graph view of certificates-->
+    <record id="certificates_view_graph" model="ir.ui.view">
+        <field name="name">certificates.view.graph</field>
+        <field name="model">certificates</field>
+        <field name="arch" type="xml">
+            <graph string="Certificates Analysis" sample="1">
+                <field name="name"/>
+                <field name="start_date" interval="month"/>
+                <field name="expire_date" interval="month"/>
+                <field name="certificate_number"/>
+                <field name="customer_id"/>
+                <field name="issued_company_id"/>
+                <field name="project_id"/>
+                <field name="task_id"/>
+                <field name="product_id"/>
+            </graph>
+        </field>
+    </record>
+    <!--        Tree view of types-->
+    <record id="certificates_types_view_tree" model="ir.ui.view">
+        <field name="name">certificates.types.view.tree</field>
+        <field name="model">certificates.types</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="certificate_type" string="Certificate Type"/>
+            </tree>
+        </field>
+    </record>
+    <!--        Search view of types-->
+    <record id="certificates_types_view_search" model="ir.ui.view">
+        <field name="name">certificates.types.view.search</field>
+        <field name="model">certificates.types</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="certificate_type" string="Certificate Type"/>
+            </search>
+        </field>
+    </record>
+    <!--        Tree view of tags-->
+    <record id="certificates_tags_view_tree" model="ir.ui.view">
+        <field name="name">certificates.tags.view.tree</field>
+        <field name="model">certificates.tags</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="certificates_tags" string="Certificate Tag"/>
+                <field name="color" string="Color" widget="color_picker"/>
+            </tree>
+        </field>
+    </record>
+    <!--        Search view of tags-->
+    <record id="certificates_tags_view_search" model="ir.ui.view">
+        <field name="name">certificates.tags.view.search</field>
+        <field name="model">certificates.tags</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="certificates_tags" string="Certificate Tag"/>
+                <field name="color" string="Color" widget="color_picker"/>
+            </search>
+        </field>
+    </record>
+</odoo>

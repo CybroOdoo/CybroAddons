@@ -59,7 +59,7 @@ class MrpBom(models.Model):
                     'product_id': rec.product_id.id,
                     'planned_qty': rec.product_qty,
                     'uom_id': rec.product_id.uom_id.id,
-                    'cost_unit': rec.product_id.lst_price,
+                    'cost_unit': rec.product_id.standard_price,
                 }) for rec in self.bom_line_ids]
         })
 

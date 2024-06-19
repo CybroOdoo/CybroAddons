@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <!--  Template for Widget org Chart  -->
+    <t t-name="CustomerChartWidget" owl="1">
+        <div class="org-chart">
+            <span>
+            <t t-if="OrgState.data['parent'] || OrgState.data['child'].length != 0">
+                <p style="margin-top:24px;width:max-content;font-weight: 500;"><u>HIERARCHY</u></p>
+            </t>
+            </span>
+            <t t-if="OrgState.data['parent']">
+                <div class="org-node parent-node">
+                    <p style="width:max-content;font-weight: bold;margin-bottom: 0rem;"
+                       t-on-click="() => onChildClick(OrgState.data['parent']['id'],this)">
+                        <t t-esc="OrgState.data['parent']['name']"/>
+                    </p>
+                </div>
+            </t>
+                <div class="org-parent">
+                    <div t-if="OrgState.data['parent'] == undefined"
+                         class="org-node self-node"
+                         t-attf-class="#{OrgState.data['parent'] == undefined ? '' : 'o_treeEntry'}"
+                         style="margin-left:3px; margin-bottom: 0rem;font-size: 16px; font-weight: bold;">
+                        <p style="margin-bottom:0rem;width:max-content; ">
+                            <t t-if="OrgState.data['self'] != false">
+                                <t t-esc="OrgState.data['self']"/>
+                            </t>
+                        </p>
+                    </div>
+                    <div t-if="OrgState.data['parent'] != undefined"
+                         class="org-node self-node o_treeEntry"
+                         style="margin-left:3px; margin-bottom: 0rem;">
+                        <p style="margin-bottom:0rem;width:max-content;">
+                            <t t-if="OrgState.data['self'] != 'false'">
+                                <t t-esc="OrgState.data['self']"/>
+                            </t>
+                        </p>
+                    </div>
+                </div>
+            <t t-if="OrgState.data['child'].length != 0">
+                <div class="org-children ">
+                    <t t-foreach="OrgState.data['child']" t-as="data"
+                       t-key="data_index">
+                        <div class="org-node child-node o_treeEntry"
+                             style="margin-left:19px;width:max-content">
+                            <p style="margin-bottom: 0rem"
+                               t-on-click="() => onChildClick(data['id'],this)">
+                                <t t-esc="data['name']"/>
+                            </p>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

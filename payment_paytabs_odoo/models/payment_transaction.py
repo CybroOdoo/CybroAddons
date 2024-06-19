@@ -91,9 +91,9 @@ class PaymentTransaction(models.Model):
     def execute_payment(self):
         """Fetching data and Executing Payment
         :return: The response content."""
-        api_url = 'https://secure-global.paytabs.com/payment/request'
-        domain_url = self.env['payment.provider'].search(
+        api_url = self.env['payment.provider'].search(
             [('code', '=', 'paytabs')]).domain
+        base_url = self.env['ir.config_parameter'].get_param('web.base.url')
         sale_order = self.env['payment.transaction'].search(
             [('id', '=', self.id)]).sale_order_ids
         paytabs_values = {
@@ -104,9 +104,9 @@ class PaymentTransaction(models.Model):
             "cart_id": self.reference,
             "cart_currency": self.currency_id.name,
             "cart_amount": (self.amount - sale_order.amount_tax),
-            'return': urls.url_join(domain_url,
+            'return': urls.url_join(base_url,
                                     PaymentPaytabs._return_url),
-            'callback': urls.url_join(domain_url,
+            'callback': urls.url_join(base_url,
                                       PaymentPaytabs._return_url),
             "api_url": api_url,
             "customer_details": {

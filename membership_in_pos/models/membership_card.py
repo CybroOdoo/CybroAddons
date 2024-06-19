@@ -23,6 +23,8 @@
 from uuid import uuid4
 from odoo import api, fields, models, _
 from odoo import exceptions
+from datetime import datetime, timedelta
+
 
 
 class MembershipCard(models.Model):
@@ -36,7 +38,8 @@ class MembershipCard(models.Model):
                                     required=True, help='Membership id')
     customer_id = fields.Many2one('res.partner', string="Customer",
                                   help='The customer')
-    issue_date = fields.Date(string="Issue Date", help='Issue date')
+    issue_date = fields.Date(string="Issue Date", help='Issue date',
+                             default=fields.Date.today())
     validity = fields.Float(string='Validity(days)',
                             compute='_compute_validity',
                             help='Validity of membership card')
@@ -74,9 +77,11 @@ class MembershipCard(models.Model):
 
     def _compute_validity(self):
         """Computes the validity"""
-        for rec in self:
-            date = rec.expiry_date - rec.issue_date
-            rec.validity = date.days
+        fmt = '%Y-%m-%d'
+        date_from = datetime.strptime(str(self.issue_date), fmt)
+        date_to = datetime.strptime(str(self.expiry_date), fmt)
+        duration = str((date_to - date_from).days)
+        self.validity = duration
 
     def membership_card_check(self, customer_input):
         """Checks the validity of the membership card"""

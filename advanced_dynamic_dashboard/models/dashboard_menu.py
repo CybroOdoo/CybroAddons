@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-################################################################################
+#############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Robin, Afra MP (odoo@cybrosys.com)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU AFFERO
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
@@ -18,7 +18,7 @@
 #    (AGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-################################################################################
+#############################################################################
 from odoo import api, fields, models
 
 
@@ -61,11 +61,11 @@ class DashboardMenu(models.Model):
             self.env['ir.ui.menu'].search(
                 [('parent_id', '=', rec['menu_id'].id),
                  ('action', '=', f'ir.actions.client,{client_act_id}')]).write({
-                'name': vals['name'] if 'name' in vals.keys() else rec['name'],
-                'parent_id': vals['menu_id'] if 'menu_id' in vals.keys() else
-                rec['menu_id'],
-                'action': f'ir.actions.client,{client_act_id}'
-            })
+                    'name': vals['name'] if 'name' in vals.keys() else rec['name'],
+                    'parent_id': vals['menu_id'] if 'menu_id' in vals.keys() else
+                    rec['menu_id'],
+                    'action': f'ir.actions.client,{client_act_id}'
+                 })
         return super(DashboardMenu, self).write(vals)
 
     def unlink(self):

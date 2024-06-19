@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-###################################################################################
+################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
+#    Copyright (C) 2024-TODAY Cybrosys Technologies (<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
@@ -19,7 +19,7 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-###################################################################################
+################################################################################
 from odoo import models, fields
 
 
@@ -28,4 +28,6 @@ class IrModelFields(models.Model):
 
     _inherit = 'ir.model.fields'
 
-    is_dynamic_field = fields.Boolean(string="Dynamic Field")
+    is_dynamic_field = fields.Boolean(string="Dynamic Field",
+                                      help="id created using All In One "
+                                           "Dynamic Custom Fields")

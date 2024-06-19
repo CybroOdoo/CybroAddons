@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Customer and Product QR Code Generator',
-    'version': '16.0.1.0.0',
+    'version': '16.0.2.0.1',
     'summary': 'Generate Unique QR Codes for Customers and Products',
     'description': 'QR Code, QR Code Generator, Odoo QR Code Generator,'
                    ' Customer QR Code, Product QR Code, QR, QR Code Odoo',

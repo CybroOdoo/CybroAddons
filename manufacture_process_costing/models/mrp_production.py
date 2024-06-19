@@ -82,6 +82,49 @@ class MrpProduction(models.Model):
             'res_id': reason.id,
         }
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Writes data to material_cost_ids, labour_cost_ids and
+        overhead_cost_ids when change in bom_id"""
+        res = super().create(vals_list)
+        res.write({'material_cost_ids': [(5, 0)]})
+        res.write({
+            'material_cost_ids': [
+                (0, 0, {
+                    'production_material_id': res.id,
+                    'material_cost_id': res.bom_id.id,
+                    'product_id': rec.product_id.id,
+                    'planned_qty': rec.planned_qty,
+                    'uom_id': rec.uom_id.id,
+                    'cost_unit': rec.cost_unit,
+                }) for rec in res.bom_id.material_cost_ids]
+        })
+        res.write({'labour_cost_ids': [(5, 0)]})
+        res.write({
+            'labour_cost_ids': [
+                (0, 0, {
+                    'production_labour_id': res.id,
+                    'labour_cost_id': rec.id,
+                    'operation': rec.operation,
+                    'work_center_id': rec.work_center_id.id,
+                    'planned_minute': rec.planned_minute,
+                    'cost_minute': rec.cost_minute,
+                }) for rec in res.bom_id.labour_cost_ids]
+        })
+        res.write({'overhead_cost_ids': [(5, 0)]})
+        res.write({
+            'overhead_cost_ids': [
+                (0, 0, {
+                    'production_overhead_id': res.id,
+                    'overhead_cost_id': rec.id,
+                    'operation': rec.operation,
+                    'work_center_id': rec.work_center_id.id,
+                    'planned_minute': rec.planned_minute,
+                    'cost_minute': rec.cost_minute,
+                }) for rec in res.bom_id.overhead_cost_ids]
+        })
+        return res
+
     @api.onchange('bom_id')
     def _onchange_bom_id(self):
         """Writes data to material_cost_ids, labour_cost_ids and

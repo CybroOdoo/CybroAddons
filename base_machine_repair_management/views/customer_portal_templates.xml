@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <!--        Portal view for repair requests-->
+        <template id="portal_my_home_menu_repair"
+                  name="Portal layout : repair menu entries"
+                  inherit_id="portal.portal_breadcrumbs" priority="20">
+            <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+                <li t-if="page_name == 'repair'"
+                    t-attf-class="breadcrumb-item #{'active ' if not repair else ''}">
+                    <a t-if="repair"
+                       t-attf-href="/my/repair?{{ keep_query() }}">Machine
+                        Repair Request
+                    </a>
+                    <t t-else="">Machine Repair Request</t>
+                </li>
+            </xpath>
+        </template>
+        <template id="portal_my_home_sale" name="Repair" customize_show="True"
+                  inherit_id="portal.portal_my_home"
+                  priority="20">
+            <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="title">Machine Repair Request</t>
+                    <t t-set="url" t-value="'/my/repair'"/>
+                    <t t-set="placeholder_count" t-value="'repair_count'"/>
+                </t>
+            </xpath>
+        </template>
+        <template id="portal_my_repair_request" name="My Repair Requests">
+            <t t-call="portal.portal_layout">
+                <t t-set="breadcrumbs_searchbar" t-value="True"/>
+                <t t-call="portal.portal_searchbar">
+                    <t t-set="title">Repair Requests</t>
+                </t>
+                <t t-if="machine_repair == 0">
+                    <p>There are currently no Repair Requests In your account.
+                    </p>
+                </t>
+                <t t-if="machine_repair" t-call="portal.portal_table">
+                    <thead>
+                        <tr class="active">
+                            <th>Reference</th>
+                            <th>Repair Request</th>
+                            <th class="d-none d-md-table-cell">Requested Date
+                            </th>
+                            <th>State</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="repair" t-as="repair">
+                            <tr>
+                                <td>
+                                    <a t-attf-href="/my/repair/#{repair.id}?{{ keep_query() }}"
+                                       t-att-title="repair.name">
+                                        <t t-esc="repair.repair_seq"
+                                           t-if="repair.name != '/'"/>
+                                        <em t-else="">Draft Repair</em>
+                                    </a>
+                                </td>
+                                <td>
+                                    <span t-field="repair.name"/>
+                                </td>
+                                <td class="d-none d-md-table-cell">
+                                    <span t-field="repair.repir_req_date"/>
+                                </td>
+                                <td class="tx_date">
+                                    <span t-esc="repair.state"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </t>
+            </t>
+        </template>
+        <!--        The repair request page-->
+        <template id="portal_repair_page" name="Repair Portal Template"
+                  inherit_id="portal.portal_sidebar"
+                  primary="True">
+            <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+                <t t-set="o_portal_fullwidth_alert"
+                   groups="sales_team.group_sale_salesman">
+                    <t t-call="portal.portal_back_in_edit_mode">
+                        <t t-set="url" t-value="'/my/repair/#'"/>
+                    </t>
+                </t>
+                <div class="row mt16 o_portal_sale_sidebar">
+                    <!--  Sidebar  -->
+                    <t t-call="portal.portal_record_sidebar">
+                        <t t-set="classes"
+                           t-value="'col-lg-auto d-print-none'"/>
+                        <t t-set="title">
+                            <h2 class="mb-0">
+                                <h3>Your Details</h3>
+                                <span class="s_website_form_label_content">
+                                    Customer
+                                </span>
+                                <span t-field="repair.customer_id"/>
+                            </h2>
+                            <h5 class="mb-0">
+                                <span class="s_website_form_label_content">
+                                    Email
+                                </span>
+                                <span t-field="repair.customer_email"
+                                      data-id="email"/>
+                                <br/>
+                                <span class="s_website_form_label_content">
+                                    Phone
+                                </span>
+                                <span t-field="repair.phone" data-id="phone"/>
+                            </h5>
+                        </t>
+                    </t>
+                    <div id="repair_content"
+                         class="col-12 col-lg justify-content-end">
+                        <div t-attf-class="card #{'pb-5' if report_type == 'pdf' else ''}"
+                             id="portal_sale_content">
+                            <div t-call="base_machine_repair_management.repair_portal_content"/>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </template>
+        <template id="repair_portal_content" name="Repair Portal Content">
+            <t t-foreach="repair" t-as="repair">
+                <div style="font-size:15pt; margin-bottom:0pt;margin-top:0pt;"
+                     align="center">
+                    <div class="row">
+                        <div>
+                            <div id="repair_name"
+                                 t-attf-class="pb-2 pt-3 #{'card-header bg-white'
+                                 if report_type == 'pdf' else ''}">
+                                <h3>
+                                    <b>Project Details</b>
+                                </h3>
+                                <h4 class="my-0">
+                                    <t t-esc="repair.repair_seq"/>
+                                    <t t-esc="repair.name"/>
+                                </h4>
+                            </div>
+                            <div id="project-details" t-attf-class="pb-2 pt-3}">
+                                <h4 class="my-0">
+                                    <t t-esc="repair.project.name"/>
+                                    <br/>
+                                    <t t-esc="repair.department.name"/>
+                                </h4>
+                            </div>
+                        </div>
+                        <br/>
+                        <div>
+                            <div id="repair_request"
+                                 t-attf-class="pb-2 pt-3 #{'card-header bg-white'
+                                 if report_type == 'pdf' else ''}">
+                                <h3>
+                                    <b>Machine repair Request Details</b>
+                                </h3>
+                                <h4 class="my-0">
+                                    <t t-esc="repair.repir_req_date"/>
+                                    <t t-esc="repair.closing_date"/>
+                                </h4>
+                            </div>
+                            <div id="request-details" t-attf-class="pb-2 pt-3}">
+                                <h4 class="my-0">
+                                    <t t-esc="repair.priority"/>
+                                    <br/>
+                                    <t t-esc="repair.repair_detail"/>
+                                    <br/>
+                                    <t t-esc="repair.repairing_duration"/>
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row"
+                         style="font-size:15pt; margin-bottom:0pt;margin-top:0pt;"
+                         align="center">
+                        <div id="repair_request"
+                             t-attf-class="pb-2 pt-3 #{'card-header bg-white' if
+                             report_type == 'pdf' else ''}">
+                            <h3>
+                                <b>Machine Details</b>
+                            </h3>
+                            <div>
+                                <h4 class="my-0">
+                                    <t t-esc="repair.machine.name"/>
+                                    <br/>
+                                    <t t-esc="repair.machine_cate.name"/>
+                                </h4>
+                            </div>
+                            <div id="request-details" t-attf-class="pb-2 pt-3}">
+                                <h4 class="my-0">
+                                    <t t-esc="repair.color"/>
+                                    <br/>
+                                    <t t-esc="repair.machine_brand"/>
+                                    <br/>
+                                    <t t-esc="repair.machine_model"/>
+                                    <br/>
+                                    <t t-esc="manufacturing_year"/>
+                                </h4>
+                            </div>
+                        </div>
+                        <br/>
+                        <br/>
+                        <div id="repair_team"
+                             t-attf-class="pb-2 pt-3 #{'card-header bg-white' if report_type == 'pdf' else ''}">
+                            <h3>
+                                <b>Team Details</b>
+                            </h3>
+                            <div>
+                                <h4 class="my-0">
+                                    <t t-esc="repair.technician_id.name"/>
+                                    <t t-esc="repair.repair_team_id.team_name"/>
+                                </h4>
+                            </div>
+                            <div id="request-details" t-attf-class="pb-2 pt-3}">
+                                <h4 class="my-0">
+                                    <t t-esc="repair.color"/>
+                                    <br/>
+                                    <t t-esc="repair.machine_brand"/>
+                                    <br/>
+                                    <t t-esc="repair.machine_model"/>
+                                    <br/>
+                                    <t t-esc="manufacturing_year"/>
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+    </data>
+</odoo>

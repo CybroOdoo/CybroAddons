@@ -39,7 +39,7 @@ odoo.define('odoo_chatgpt_connector.chatgpt_search', function(require) {
             myHeaders.append("Authorization", "Bearer " + this.api_key);
 
             var raw = JSON.stringify({
-                "model": "text-davinci-003",
+                "model": "gpt-3.5-turbo-instruct",
                 "prompt": question,
                 "temperature": 0,
                 "max_tokens": 1000,
@@ -66,8 +66,12 @@ odoo.define('odoo_chatgpt_connector.chatgpt_search', function(require) {
         },
         /*For copy the Answer to the clipboard*/
         copy: function(event) {
-            document.querySelector("textarea").select();
+            var textToCopy = $("#result_area").val();
+            var tempTextarea = $('<textarea>');
+            $('body').append(tempTextarea);
+            tempTextarea.val(textToCopy).select();
             document.execCommand('copy');
+            tempTextarea.remove();
         },
     });
 });

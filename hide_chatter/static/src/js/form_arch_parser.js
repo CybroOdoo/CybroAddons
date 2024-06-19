@@ -1,59 +1,33 @@
 /** @odoo-module */
-import {
-    FormArchParser
-} from "@web/views/form/form_arch_parser";
-import {
-    patch
-} from "@web/core/utils/patch";
-import {
-    archParseBoolean
-} from "@web/views/utils";
+import { patch } from "@web/core/utils/patch";
+import { useService } from "@web/core/utils/hooks";
+import { Chatter } from "@mail/components/chatter/chatter";
+import { ChatterContainer } from "@mail/components/chatter_container/chatter_container";
 var rpc = require('web.rpc');
-
-patch(FormArchParser.prototype, "parse", {
-    /**
-     * Patched version of the 'parse' method in 'FormArchParser'.
-     * Modifies the parsing behavior by removing the chatter node from the XML if the model is configured to hide the chatter.
-     *
-     * @param {string} arch - The XML architecture to parse.
-     * @param {Object} models - The model definitions.
-     * @param {string} modelName - The name of the model being parsed.
-     * @returns {Object} - The parsed result.
-     */
-    parse(arch, models, modelName) {
-        const parsedResult = this._super.apply(this, arguments);
-        rpc.query({
-            model: "ir.model",
-            method: "search",
-            args: [
-                [
-                    ["model", "=", modelName]
-                ]
-            ],
-            kwargs: {
-                limit: 1
-            },
-        }).then((result) => {
-            const resModelId = result;
-            rpc.query({
-                model: "ir.config_parameter",
-                method: "get_param",
-                args: ["chatter_enable.model_ids"],
-            }).then((result) => {
-                const modelIds = JSON.parse(result);
-                if (modelIds){
-                    if (modelIds.includes(resModelId[0])) {
-                        const {
-                            xmlDoc
-                        } = parsedResult;
-                        const chatterNode = xmlDoc.querySelector("div.oe_chatter");
-                        if (chatterNode && chatterNode.parentElement) {
-                            chatterNode.parentElement.removeChild(chatterNode);
-                        }
-                    }
-                }
-            })
-        })
-        return parsedResult;
+const {onMounted} = owl;
+import { FormRenderer } from '@web/views/form/form_renderer';
+/** Patched FormRender for hiding the chatter. */
+patch(Chatter.prototype, "parse", {
+    async setup() {
+     this._super(...arguments)
+         this.orm = useService("orm");
+         onMounted(async () => {
+         try {
+            // Fetch the list of model names from the configuration parameter
+            const response = await this.orm.call("ir.config_parameter", "get_param", [
+                "chatter_enable.model_ids", ])
+            const model = await rpc.query({
+                model: "ir.model",
+                method: "search",
+                args: [[["model", "=", this.chatter.threadModel]]],
+                kwargs: { limit: 1 },})
+            if (  response &&  response.includes(model[0])
+            ) {
+            this.el.classList.add("d-none")
+            }
+         }catch (error) {
+            console.error("Error fetching configuration parameter:", error);
+        }
+         })
     },
 });

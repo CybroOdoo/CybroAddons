@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <!--    Adding new icon on attachment card that have some functionalities-->
+   <t t-name="AttachmentCard" t-inherit="mail.AttachmentCard"
+      t-inherit-mode="extension" owl="1">
+     <xpath expr="//*[hasclass('o_AttachmentCard_aside')]/t[1]"
+            position="before">
+          <t t-if="!attachmentCard.attachmentList.composerViewOwner and !attachmentCard.attachment.isUploading">
+              <div class="dropdown" style="position:relative;">
+                  <button class="o_AttachmentCard_asideItem o_AttachmentCard_asideItemOptions
+                  btn top-0 justify-content-center align-items-center d-flex w-100 h-100 rounded-0"
+                          t-attf-class="{{ attachmentCard.attachmentList.composerViewOwner ? 'o-pretty position-absolute
+                           btn-primary transition-base' : 'bg-300' }}"
+                          data-bs-toggle="collapse"
+                          t-att-data-bs-target="'#settingsMenu' + attachmentCard.attachment.id"
+                          aria-expanded="true"
+                          t-att-aria-controls="'settingsMenu' + attachmentCard.attachment.id">
+                    <i class="fa fa-cog" role="img" aria-label="Options"/>
+                </button>
+                  <div class="context_menu_dropdown"
+                       t-att-id="'settingsMenu' + attachmentCard.attachment.id">
+                      <a class="dropdown-item context-menu-icon--fa fa fa-edit"
+                         t-on-click="onClickEditRecord"
+                         t-att-id="attachmentCard.attachment.id">Edit record</a>
+                      <t t-if="attachmentCard.attachment.extension != 'zip'">
+                      <a class="dropdown-item context-menu-icon--fa fa fa-eye"
+                         t-on-click="onClickPreviewOffline"
+                         t-att-name="attachmentCard.attachment.name"
+                         t-att-data-type="attachmentCard.attachment.extension"
+                         t-att-id="attachmentCard.attachment.id">Preview Offline</a>
+                      </t>
+                      <a class="dropdown-item context-menu-icon--fa fa fa-download"
+                         t-on-click="attachmentCard.attachment.onClickDownload">Download</a>
+                      <a class="dropdown-item context-menu-icon--fa fa fa-qrcode"
+                         t-on-click="_onClickQrCode"
+                         t-att-id="attachmentCard.attachment.id">Qr Code</a>
+                  </div>
+              </div>
+          </t>
+         <!--For preview xlsx,docx and pdf files-->
+         <center>
+                <div id="xlsx_preview" class="modal" t-ref="preview_modal">
+                <div class="modal-content" id="MyPreview_content">
+                    <span class="close" id="stop-preview-button"
+                          t-on-click="stopPreviewButton">X</span>
+                    <h1 id="FileHead"/>
+                    <div class="XlsxTable" t-ref="xlsx_table" >
+                    </div>
+                    <p class="MyDocs" t-ref="MyDocs"/>
+                </div>
+                </div>
+            </center>
+         <script src="https://code.jquery.com/jquery-3.6.0.min.js">
+         </script>
+      </xpath>
+   </t>
+</templates>

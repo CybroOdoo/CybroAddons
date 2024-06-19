@@ -19,6 +19,13 @@
         <field name="model">request.document</field>
         <field name="arch" type="xml">
             <form string="Request document">
+                <header>
+                    <group attrs="{'invisible':[('state', '=', 'accepted')]}">
+                        <button name="action_accept_request" string="Accept"
+                                type="object" class="btn-primary"
+                                attrs="{'invisible': ['|',('hide_accept_button', '=', False), ('hide_accept_for_user_button', '=', False)]}"/>
+                    </group>
+                </header>
                 <sheet>
                     <group>
                         <group>
@@ -27,6 +34,9 @@
                         <group>
                             <field name="workspace_id" string="Workspace"/>
                             <field name="company_id"/>
+                            <field name="hide_accept_for_user_button" invisible="1"/>
+                            <field name="boolean_user_default" invisible="1"/>
+                            <field name="hide_accept_button" invisible="1"/>
                             <field name="state" invisible="1"/>
                         </group>
                     </group>
@@ -56,12 +66,17 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="needed_doc" string="Request"/>
-                <field name="requested_by" string="Requested by" widget="many2one_avatar_user"/>
-                <field name="user_id" string="Requested to" widget="many2one_avatar_user"/>
+                <field name="requested_by" string="Requested by"
+                       widget="many2one_avatar_user"/>
+                <field name="user_id" string="Requested to"
+                       widget="many2one_avatar_user"/>
                 <field name="create_date" string="Requested Date"/>
                 <field name="workspace_id" string="Workspace"/>
                 <field name="needed_doc" string="Document"/>
-                <field name="state" string="State" widget="badge" decoration-warning="state == 'requested'" decoration-danger="state == 'rejected'" decoration-success="state == 'accepted'"/>
+                <field name="state" string="State" widget="badge"
+                       decoration-warning="state == 'requested'"
+                       decoration-danger="state == 'rejected'"
+                       decoration-success="state == 'accepted'"/>
             </tree>
         </field>
     </record>

@@ -3,7 +3,7 @@
     :alt: License: LGPL-3
 
 Customer Progress Billing
-================================================
+=========================
 * Customer Progress Billing Module for Odoo 16
 
 Installation

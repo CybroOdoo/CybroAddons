@@ -22,6 +22,7 @@ class BookOrderPopup extends AbstractAwaitablePopup {
         var date = this.order.creation_date;
         var line = this.order.orderlines;
         var price_list = this.order.pricelist.id;
+        var uid = this.order.uid;
         var product = {
             'product_id': [],
             'qty': [],
@@ -32,11 +33,23 @@ class BookOrderPopup extends AbstractAwaitablePopup {
             product['qty'].push(line[i].quantity)
             product['price'].push(line[i].price)
         };
-        await rpc.query({
+        var self = this
+        await this.rpc({
         //  this call for is creating a book order in the backend based on the value in popup
             model: 'book.order',
             method: 'create_booked_order',
-            args: [partner, phone, address, date, price_list, product, order_note, pickup_date, delivery_date]
+            args: [partner, phone, address, date, price_list, product, order_note, pickup_date, delivery_date,uid]
+        }).then(function(book_order) {
+            self.order.booking_ref_id=book_order
+        })
+        await this.rpc({
+            model: 'book.order',
+            method: 'all_orders',
+        }).then(function(result) {
+            self.showScreen('BookedOrdersScreen', {
+                data: result,
+                new_order: true,
+            });
         })
         this.cancel();
     }

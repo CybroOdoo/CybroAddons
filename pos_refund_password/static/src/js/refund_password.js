@@ -13,9 +13,9 @@ odoo.define('pos_refund_password.RefundPasswordButton', function (require) {
             var refund="";
             var session_refund= false;
             var data = await rpc.query({
-                model: 'ir.config_parameter',
-                method: 'get_param',
-                args:["pos_refund_password.global_refund_security"],
+                model: 'res.config.settings',
+                method: 'get_value',
+                args:[],
             })
             .then(result =>{
                 refund = result;

@@ -39,7 +39,7 @@
                'so that staff can see the information that is most '
                'important to them.',
     'category': 'Point Of Sale',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -63,7 +63,7 @@
         ],
         'web.assets_backend': [
             'pos_kitchen_screen_odoo/static/src/css/dashboard.css',
-            'pos_kitchen_screen_odoo/static/src/js/dashboard_action.js',
+            'pos_kitchen_screen_odoo/static/src/js/kitchen_screen.js',
             'pos_kitchen_screen_odoo/static/src/xml/dashboard_templates.xml',
             'pos_kitchen_screen_odoo/static/src/js/fields_load.js',
             'https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js',

@@ -24,7 +24,7 @@
     'summary': "Basic module for LnkedIn-HR Recruitment connector",
     'description': "Basic module for LnkedIn-HR Recruitment connector",
     'category': 'Generic Modules/Human Resources',
-    'version': "16.0.1.0.0",
+    'version': "16.0.1.0.1",
     'depends': ['hr_recruitment', 'auth_oauth'],
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',

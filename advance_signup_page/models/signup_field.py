@@ -31,7 +31,11 @@ class SignupFields(models.Model):
 
     field_id = fields.Many2one(comodel_name='ir.model.fields',
                                string='Signup Field',
-                               domain=[('model_id.model', '=', 'res.users')],
+                               domain=[('model_id.model', '=', 'res.users'),
+                                       ('ttype', 'in', ['char', 'integer',
+                                                        'float', 'text', 'date',
+                                                        'datetime',
+                                                        'binary', 'boolean'])],
                                help='The field associated with the '
                                     'signup field.')
     name = fields.Char(string='Field Label',

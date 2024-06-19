@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--    Action for the report-->
+    <record id="report_inventory_aging_action" model="ir.actions.report">
+        <field name="name">Inventory Aging Report</field>
+        <field name="model">report.inventory_advanced_reports.report_inventory_aging</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">inventory_advanced_reports.report_inventory_aging</field>
+        <field name="report_file">inventory_advanced_reports.report_inventory_aging</field>
+        <field name="binding_model_id"
+               ref="model_inventory_aging_report"/>
+        <field name="binding_type">report</field>
+    </record>
+<!--    Template for the report-->
+    <template id="report_inventory_aging">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <div class="text-center">
+                        <h1>Inventory Aging Report</h1>
+                    </div>
+                </div>
+                <table class="table table-condensed table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th align="center">Sl.no</th>
+                            <th align="center">PRODUCT</th>
+                            <th align="center">CATEGORY</th>
+                            <th align="center">CURRENT STOCK</th>
+                            <th align="center">CURRENT VALUE</th>
+                            <th align="center">STOCK QUANT(%)</th>
+                            <th align="center">STOCK VALUE(%)</th>
+                            <th align="center">OLDEST STOCK AGE</th>
+                            <th align="center">OLDEST STOCK</th>
+                            <th align="center">OLDEST STOCK VALUE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="options" t-as="new">
+                            <t t-log="new"/>
+                            <td>
+                                <t t-esc="new_index + 1"/>
+                            </td>
+                            <td>
+                                <t t-esc="new['product_code_and_name']"/>
+                            </td>
+                            <td>
+                                <t t-esc="new['category_name']"/>
+                            </td>
+                            <td>
+                                <t t-esc="new['qty_available']"/>
+                            </td>
+                            <td>
+                                <t t-esc="new['current_value']"/>
+                            </td>
+                            <td><t t-esc="new['stock_percentage']"/>%
+                            </td>
+                            <td><t t-esc="new['stock_value_percentage']"/>%
+                            </td>
+                            <td>
+                                <t t-esc="new['days_since_receipt']"/>
+                            </td>
+                            <td>
+                                <t t-esc="new['prev_qty_available']"/>
+                            </td>
+                            <td>
+                                <t t-esc="new['prev_value']"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </t>
+        </t>
+    </template>
+</odoo>

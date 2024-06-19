@@ -1,11 +1,11 @@
-Cost Price as Code in Barcode v16
+Customized Barcode Generator
 =================================
 
     The module enables user to print customized product labels.
 
 Installation
 ============
-    - www.odoo.com/documentation/15.0/setup/install.html
+    - www.odoo.com/documentation/16.0/setup/install.html
     - Install our custom addon
 
 Credits

@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Asana Odoo Connector',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Project',
     'summary': "With this module, you can easily connect the projects, tasks "
                "and partners in the odoo to asana",
@@ -32,13 +32,13 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['project'],
+    'depends': ['project', 'queue_job_cron_jobrunner'],
     'data': [
+        'data/ir_actions_server_data.xml',
         'views/project_project_views.xml',
         'views/project_task_views.xml',
         'views/project_task_type_views.xml',
         'views/res_config_settings_views.xml',
-        'data/ir_actions_data.xml',
     ],
     'external_dependencies': {
         'python': [
