@@ -1,5 +1,5 @@
-.. image:: https://img.shields.io/badge/license-AGPL--3-blue.svg
-    :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
+.. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
+    :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
 Total Items and Total Quantity in POS
@@ -8,7 +8,7 @@ This module allows to show the total items and total quantities of products alon
 
 Installation
 ============
-    - www.odoo.com/documentation/17.0/setup/install.html
+    - www.odoo.com/documentation/16.0/setup/install.html
     - Install our custom addon
 
 License

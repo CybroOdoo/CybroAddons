@@ -24,22 +24,24 @@
     'version': '17.0.1.0.0',
     'category': 'Point of Sale',
     'summary': "To Show the Total Quantity and Total Items Ordered in POS",
-    'description': "This app will shows the number of products ordered and the"
-                   " total quantity of products in the order summary in the pos"
-                   " screen and bill.",
+    'description': "This app will shows the number of "
+                   "products ordered and the total quantity"
+                   " of products in the order summary in"
+                   " the pos screen and bill.",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'depends': ['point_of_sale'],
     'data': [
-        'views/res_config_settings.views.xml'
     ],
     'assets': {
         'point_of_sale._assets_pos': [
-            'total_quantity_pos/static/src/xml/product_screen.xml',
-            'total_quantity_pos/static/src/xml/order_receipt.xml',
-        ],
+            'total_quantity_pos/static/src/overrides/components/order_widget.xml',
+            'total_quantity_pos/static/src/overrides/components/order_receipt.xml',
+            'total_quantity_pos/static/src/overrides/components/order_widget.js',
+            'total_quantity_pos/static/src/overrides/models/models.js',
+       ],
     },
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
