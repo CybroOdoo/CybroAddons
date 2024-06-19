@@ -35,7 +35,7 @@ class TableReservation(http.Controller):
     @http.route(['/restaurant/floors'], type='http', auth='user', website=True)
     def restaurant_floors(self, **kwargs):
         """ To get floor details """
-        floors = request.env['restaurant.floor'].search([])
+        floors = request.env['restaurant.floor'].sudo().search([])
         payment = request.env['ir.config_parameter'].sudo().get_param(
             "table_reservation_on_website.reservation_charge")
         refund = request.env['ir.config_parameter'].sudo().get_param(
@@ -58,9 +58,9 @@ class TableReservation(http.Controller):
         table_inbetween = []
         payment = request.env['ir.config_parameter'].sudo().get_param(
             "table_reservation_on_website.reservation_charge")
-        tables = request.env['restaurant.table'].search(
+        tables = request.env['restaurant.table'].sudo().search(
             [('floor_id', '=', int(kwargs.get('floors_id')))])
-        reserved = request.env['table.reservation'].search(
+        reserved = request.env['table.reservation'].sudo().search(
             [('floor_id', '=', int(kwargs.get('floors_id'))), (
                 'date', '=', datetime.strptime(kwargs.get('date'),
                                                "%Y-%m-%d")), (
@@ -95,7 +95,7 @@ class TableReservation(http.Controller):
         """ For booking tables """
         company = request.env.company
         list_tables = [rec for rec in kwargs.get("tables").split(',')]
-        record_tables = request.env['restaurant.table'].search(
+        record_tables = request.env['restaurant.table'].sudo().search(
             [('id', 'in', list_tables)])
         amount = [rec.rate for rec in record_tables]
         payment = request.env['ir.config_parameter'].sudo().get_param(
@@ -130,7 +130,7 @@ class TableReservation(http.Controller):
                         'price_unit': sum(amount),
                     })],
             })
-            sale_order.website_id = request.env['website'].search(
+            sale_order.website_id = request.env['website'].sudo().search(
                 [('company_id', '=', company.id)], limit=1)
             return request.redirect("/shop/cart")
         else:
@@ -149,9 +149,9 @@ class TableReservation(http.Controller):
 
     @http.route(['/table/reservation/pos'], type='json', auth='user',
                 website=True)
-    def table_reservation_pos(self, partner_id, table_id):
+    def table_reservation_pos(self, table_id):
         """ For pos table booking """
-        table = request.env['restaurant.table'].browse(table_id)
+        table = request.env['restaurant.table'].sudo().browse(table_id)
         date_and_time = datetime.now()
         starting_at = (
             (date_and_time + timedelta(hours=5, minutes=30)).time()).strftime(
@@ -163,7 +163,6 @@ class TableReservation(http.Controller):
             "table_reservation_on_website.reservation_charge")
         if payment:
             request.env['table.reservation'].sudo().create({
-                'customer_id': partner_id,
                 'floor_id': table.floor_id.id,
                 'booked_tables_ids': table,
                 'date': date_and_time.date(),
@@ -174,7 +173,6 @@ class TableReservation(http.Controller):
             })
         else:
             request.env['table.reservation'].sudo().create({
-                'customer_id': partner_id,
                 'floor_id': table.floor_id.id,
                 'booked_tables_ids': table,
                 'date': date_and_time.date(),

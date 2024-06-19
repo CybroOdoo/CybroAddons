@@ -9,3 +9,8 @@
 #### Version 17.0.1.0.1
 ##### UPDT
 - Issue solved on the pos payment screen.
+
+####  19.06.2024
+#### Version 17.0.1.0.1
+##### BUGFIX
+- Fixed issues in table booking from website.

@@ -35,8 +35,7 @@ class TableReservation(models.Model):
                            copy=False, help="Sequence number for records")
     customer_id = fields.Many2one(comodel_name="res.partner",
                                   string="Customer",
-                                  help="Name of the customer",
-                                  required=True)
+                                  help="Name of the customer")
     floor_id = fields.Many2one(comodel_name='restaurant.floor',
                                string="Floor Plan",
                                help="Booked floor", required=True)

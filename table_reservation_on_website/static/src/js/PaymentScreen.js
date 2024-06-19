@@ -10,19 +10,9 @@ patch(PaymentScreen.prototype, {
     For payment validation in pos
     **/
     async _finalizeValidation() {
-        let customer = this.currentOrder.get_partner();
-        if (!customer){
-                await this.popup.add(ConfirmPopup, {
-                title: _t("Customer Required"),
-                body: _t("Customer is required."),
-            })
-        }
-        else{
         jsonrpc('/table/reservation/pos',{
-            'partner_id' : customer.id,
             'table_id': this.currentOrder.tableId
         }).then( function(data){})
         return super._finalizeValidation()
-    }
     }
 });
