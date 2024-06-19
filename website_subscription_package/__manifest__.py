@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Website Subscription Package Management',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Website',
     'summary': 'Subscription Package Management Through website',
     'description': """This Module Create Subscription for A Product From 
