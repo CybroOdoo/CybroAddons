@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Website Product Stock",
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Website',
     'summary': 'Allows users to see stock details of products from the website',
     'description': """Helps to display the stock details of each product on 

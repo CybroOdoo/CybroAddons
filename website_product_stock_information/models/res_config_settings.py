@@ -54,13 +54,13 @@ class ResConfigSettings(models.TransientModel):
     def get_values(self):
         """to get values in settings"""
         res = super().get_values()
-        IrDefault = self.env['ir.default'].sudo()
+        IrDefaultGet = self.env['ir.default'].sudo()._get
         res.update(
-            location_type=IrDefault._get_model_defaults('product.template',
-                                        'location_type') or 'all',
-            stock_location_id=IrDefault._get_model_defaults('product.template',
-                                            'stock_location_id') or
-                            self.env.ref('stock.stock_location_stock'),
-            stock_type=IrDefault._get_model_defaults('product.template',
-                                     'stock_type') or 'on_hand')
+            location_type=IrDefaultGet('product.template', 'location_type') or
+                          'all',
+            stock_location_id=IrDefaultGet('product.template',
+                                           'stock_location_id') or
+                              self.env.ref('stock.stock_location_stock'),
+            stock_type=IrDefaultGet('product.template', 'stock_type') or
+                       'on_hand')
         return res
