@@ -25,7 +25,7 @@ class BalanceSheetView(models.TransientModel):
     analytic_ids = fields.Many2many(
         "account.analytic.account", string="Analytic Accounts")
     # analytic_tag_ids = fields.Many2many("account.analytic.tag",
-    #                                     string="Analyt58ic Tags")
+    #                                     string="Analytic Tags")
     display_account = fields.Selection(
         [('all', 'All'), ('movement', 'With movements'),
          ('not_zero', 'With balance is not equal to 0')],
@@ -124,7 +124,8 @@ class BalanceSheetView(models.TransientModel):
 
         def filter_movelines_parents(obj):
             for each in obj:
-                if each['report_type'] == 'accounts':
+                if each['report_type'] == 'accounts' and 'account' in each and \
+                        each['account']:
                     if each['account'] in move_line_accounts:
                         report_lines_move.append(each)
                         parent_list.append(each['p_id'])
