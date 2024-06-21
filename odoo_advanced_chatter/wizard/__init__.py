@@ -19,5 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import mail_message
-from . import schedule_log
+from . import mail_wizard_recipient

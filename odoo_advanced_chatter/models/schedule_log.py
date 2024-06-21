@@ -19,53 +19,49 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import models, fields
+
+from odoo import models, fields, _, api
 import datetime
 
 
 class ScheduleLog(models.Model):
     """To schedule the log note"""
-
-    _name = "schedule.log"
+    _name = 'schedule.log'
     _description = "Schedule log note in chatter"
 
     body = fields.Html(string="Body", help="Content of the log", required="1")
-    partner_ids = fields.Many2many(
-        "res.partner", string="Recipients", help="To whom the log is Mentioned"
-    )
-    time = fields.Datetime(
-        string="Scheduled Time", required="1", help="Time at which the log is scheduled"
-    )
-    attachment_ids = fields.Many2many(
-        comodel_name="ir.attachment", string="Attachments", help="attachments"
-    )
-    is_log = fields.Boolean(
-        string="Is Log",
-        default=False,
-        help="to check whether it is log note or send " "messages",
-    )
-    model = fields.Char(string="Related Model", help="Related Model")
+    partner_ids = fields.Many2many('res.partner', string='Recipients',
+                                   help='To whom the log is Mentioned')
+    time = fields.Datetime(string="Scheduled Time", required="1",
+                           help="Time at which the log is scheduled")
+    attachment_ids = fields.Many2many(comodel_name='ir.attachment',
+                                      string="Attachments", help="attachments")
+    is_log = fields.Boolean(string='Is Log', default=False,
+                            help="to check whether it is log note or send "
+                                 "messages")
+    model = fields.Char(string='Related Model', help="Related Model")
     model_reference = fields.Integer(string="Related Document Id")
-    status = fields.Selection(
-        [("draft", "Schedule"), ("post", "Post")],
-        string="Status",
-        default="draft",
-        help="status of the message",
-    )
+    status = fields.Selection([('draft', "Schedule"), ('post', "Post")],
+                              string='Status', default='draft',
+                              help="status of the message")
 
     def action_save(self):
         """Display notification when messages are scheduled"""
         if self.body:
             current_time = fields.Datetime.now().replace(second=0)
-            scheduled_time = fields.Datetime.from_string(self.time).replace(second=0)
-            time_difference = abs((current_time - scheduled_time).total_seconds())
+            scheduled_time = fields.Datetime.from_string(self.time).replace(
+                second=0)
+            time_difference = abs(
+                (current_time - scheduled_time).total_seconds())
             acceptable_difference = 5
             if time_difference <= acceptable_difference:
                 user_id = self.env.user.commercial_partner_id
                 partner_ids = self.partner_ids.ids
                 if user_id.id in self.partner_ids.ids:
                     partner_ids.remove(user_id.id)
-                model = self.env[self.model].sudo().browse(self.model_reference)
+                model = self.env[self.model].sudo().browse(
+                    self.model_reference)
+                print('elf.is_log', self.is_log)
                 if not self.is_log:
                     message = model.message_post(
                         author_id=self.create_uid.partner_id.id,
@@ -75,7 +71,7 @@ class ScheduleLog(models.Model):
                     )
                     for mail in message.mail_ids:
                         mail.send()
-                    self.status = "post"
+                    self.status = 'post'
                 else:
                     message = model.message_post(
                         author_id=self.create_uid.partner_id.id,
@@ -83,37 +79,36 @@ class ScheduleLog(models.Model):
                         body=self.body,
                         partner_ids=partner_ids,
                         attachment_ids=self.attachment_ids.ids,
-                        message_type="comment",
-                        subtype_xmlid="mail.mt_comment",
+                        message_type='comment',
+                        subtype_xmlid='mail.mt_comment'
                     )
+                print('notify',message.notification_ids)
                 message.notification_ids = [fields.Command.clear()]
-                message.notification_ids = [
-                    fields.Command.create({"res_partner_id": pid})
-                    for pid in partner_ids
-                ]
-                self.status = "post"
+                message.notification_ids = [fields.Command.create({
+                    'res_partner_id': pid
+                }) for pid in partner_ids]
+                self.status = 'post'
             else:
                 return {
-                    "type": "ir.actions.client",
-                    "tag": "display_notification",
-                    "params": {
-                        "title": "Title",
-                        "message": "Message scheduled successfully.",
-                        "sticky": True,
-                        "next": {"type": "ir.actions.act_window_close"},
-                    },
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': 'Title',
+                        'message': "Message scheduled successfully.",
+                        'sticky': True,
+                        'next': {'type': 'ir.actions.act_window_close'},
+                    }
                 }
 
     def schedule(self):
         """To schedule the log note"""
         date = datetime.datetime.now()
-        date_sec = date.replace(second=0).strftime("%Y-%m-%d %H:%M:%S")
-        date_max = date.replace(second=59).strftime("%Y-%m-%d %H:%M:%S")
-        scheduled_lognotes = self.env["schedule.log"].search(
+        date_sec = date.replace(second=0).strftime('%Y-%m-%d %H:%M:%S')
+        date_max = date.replace(second=59).strftime('%Y-%m-%d %H:%M:%S')
+        scheduled_lognotes = self.search(
             [
-                ("time", ">=", date_sec),
-                ("time", "<=", date_max),
-                ("status", "=", "draft"),
+                ('time', '>=', date_sec), ('time', '<=', date_max),
+                ('status', '=', 'draft')
             ]
         )
         for rec in scheduled_lognotes:
@@ -121,7 +116,8 @@ class ScheduleLog(models.Model):
             partner_ids = rec.partner_ids.ids
             if user_id.id in rec.partner_ids.ids:
                 partner_ids.remove(user_id.id)
-            model = self.env[rec.model].sudo().browse(rec.model_reference)
+            model = self.env[rec.model].sudo().browse(
+                rec.model_reference)
             if not rec.is_log:
                 message = model.message_post(
                     author_id=rec.create_uid.partner_id.id,
@@ -131,7 +127,7 @@ class ScheduleLog(models.Model):
                 )
                 for mail in message.mail_ids:
                     mail.send()
-                rec.status = "post"
+                rec.status = 'post'
             else:
                 message = model.message_post(
                     author_id=rec.create_uid.partner_id.id,
@@ -139,12 +135,11 @@ class ScheduleLog(models.Model):
                     body=rec.body,
                     partner_ids=partner_ids,
                     attachment_ids=rec.attachment_ids.ids,
-                    message_type="comment",
-                    subtype_xmlid="mail.mt_comment",
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_comment'
                 )
                 message.notification_ids = [fields.Command.clear()]
-                message.notification_ids = [
-                    fields.Command.create({"res_partner_id": pid})
-                    for pid in partner_ids
-                ]
-                rec.status = "post"
+                message.notification_ids = [fields.Command.create({
+                    'res_partner_id': pid
+                }) for pid in partner_ids]
+                rec.status = 'post'

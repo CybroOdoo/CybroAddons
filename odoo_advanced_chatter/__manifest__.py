@@ -20,34 +20,38 @@
 #
 #############################################################################
 {
-    "name": "Odoo Advanced Chatter",
-    "version": "16.0.1.0.0",
-    "category": "Discuss",
-    "summary": "Schedule Log note and Send Message in Chatter",
-    "description": """We have the capability to schedule log notes and send 
-    messages within Chatter.Additionally, followers can be managed both from 
-    the followers list and directly within the Schedule form.""",
-    "author": "Cybrosys Techno Solutions",
-    "company": "Cybrosys Techno Solutions",
-    "maintainer": "Cybrosys Techno Solutions",
-    "website": "https://www.cybrosys.com",
-    "depends": ["web", "mail"],
-    "data": [
-        "security/ir.model.access.csv",
-        "data/ir_cron.xml",
-        "views/schedule_log_views.xml",
+    'name': 'Odoo Advanced Chatter',
+    'version': '16.0.2.0.0',
+    'category': 'Discuss',
+    'summary': 'Schedule Log note and Send Message in Chatter',
+    'description': """We have the capability to schedule log notes and send 
+                    messages within Chatter.Additionally, followers can be 
+                    managed both from the followers list and directly within 
+                    the Schedule form.""",
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
+    'website': 'https://www.cybrosys.com',
+    'depends': ['web', 'mail'],
+    'data': [
+        'security/ir.model.access.csv',
+        'data/ir_cron.xml',
+        'views/schedule_log_view.xml',
+        'wizard/mail_wizard_recipients_views.xml',
     ],
     "assets": {
         "web.assets_backend": [
-            "odoo_advanced_chatter/static/src/xml/schedule_log.xml",
-            "odoo_advanced_chatter/static/src/js/schedule_mail.js",
-            "odoo_advanced_chatter/static/src/xml/follower_list.xml",
-            "odoo_advanced_chatter/static/src/js/follower_list.js",
+            'odoo_advanced_chatter/static/src/xml/schedule_log.xml',
+            'odoo_advanced_chatter/static/src/js/schedule_mail.js',
+            'odoo_advanced_chatter/static/src/xml/follower_list.xml',
+            'odoo_advanced_chatter/static/src/js/follower_list.js',
+            'odoo_advanced_chatter/static/src/xml/chatter.xml',
+            'odoo_advanced_chatter/static/src/js/composer.js',
         ]
     },
-    "images": ["static/description/banner.png"],
-    "license": "LGPL-3",
-    "installable": True,
-    "auto_install": False,
-    "application": False,
+    'images': ['static/description/banner.png'],
+    'installable': True,
+    'license': 'LGPL-3',
+    'auto_install': False,
+    'application': False,
 }
