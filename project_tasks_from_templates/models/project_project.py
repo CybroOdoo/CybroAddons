@@ -44,15 +44,23 @@ class ProjectProject(models.Model):
         Returns:
             dict: Action configuration to open the project form.
         """
-        for item in self.project_template_id.task_ids:
-            self._create_task(item, False)
-        return {
-            'view_mode': 'form',
-            'res_model': 'project.project',
-            'res_id': self.id,
-            'type': 'ir.actions.act_window',
-            'context': self._context
-        }
+        if not self.project_template_id.stage_ids:
+            for item in self.project_template_id.task_ids:
+                self._create_task(item, False)
+            return {
+                'view_mode': 'form',
+                'res_model': 'project.project',
+                'res_id': self.id,
+                'type': 'ir.actions.act_window',
+                'context': self._context
+            }
+        else:
+            for item in self.project_template_id.stage_ids:
+                if self.id not in item.project_stage_id.project_ids.ids:
+                    item.project_stage_id.project_ids = [(4, self.id)]
+                for task in item.task_ids:
+                    self._create_task_with_stage(task, item.project_stage_id,
+                                                 False)
 
     def _create_task(self, item, parent):
         """Creates a new project task for the given item and attaches it to
@@ -61,6 +69,7 @@ class ProjectProject(models.Model):
             item (models.Model): project task
             parent (int): id of parent project task
         """
+
         task = self.env['project.task'].sudo().create({
             'project_id': self.id,
             'name': item.name,
@@ -68,7 +77,28 @@ class ProjectProject(models.Model):
             'stage_id': self.env['project.task.type'].search(
                 [('sequence', '=', 1)], limit=1).id,
             'user_ids': item.user_ids,
-            'description': item.description
-            })
+            'description': item.description,
+            'state': item.state or '01_in_progress',
+        })
         for sub_task in item.child_ids:
             self._create_task(sub_task, task.id)
+
+    def _create_task_with_stage(self, item, stage, parent=False):
+        """Creates a new project task with stage for the given item and attaches it to
+        the current project.
+        Args:
+            item (models.Model): project task
+            parent (int): id of parent project task
+        """
+
+        task = self.env['project.task'].sudo().create({
+            'project_id': self.id,
+            'name': item.name,
+            'parent_id': parent,
+            'stage_id': stage.id,
+            'user_ids': item.user_ids,
+            'description': item.description,
+            'state': item.state or '01_in_progress',
+        })
+        for sub_task in item.child_ids:
+            self._create_task_with_stage(sub_task, stage, task.id)

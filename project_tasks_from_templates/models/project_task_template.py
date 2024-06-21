@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-from odoo import fields, models
+from odoo import fields, models , api
 
 
 class ProjectTaskTemplate(models.Model):
@@ -33,3 +33,32 @@ class ProjectTaskTemplate(models.Model):
         'project.sub.task', 'project_template_id',
         string='Tasks',
         help='List of the tasks associated with this template.')
+    stage_ids = fields.One2many(
+        'project.stage', 'project_template_id',
+        string='Stages',
+        help='List of the stages associated with this template.')
+
+
+class ProjectStage(models.Model):
+    """A model to define task templates for projects."""
+    _name = 'project.stage'
+    _order = "sequence,id"
+
+    project_template_id = fields.Many2one(
+        'project.task.template', string='Project Template',
+        help='Select a project task template to use for this task.')
+    project_stage_id = fields.Many2one(
+        'project.task.type', string='Project Stage',
+        help='Select a project stage. ',required=True)
+    task_ids = fields.Many2many(
+        'project.sub.task',
+        help='Choose the tasks corresponding to each stage')
+
+    sequence = fields.Integer(related="project_stage_id.sequence",readonly=False)
+
+
+class ProjectTaskType(models.Model):
+    _inherit = "project.task.type"
+
+    project_template_id = fields.Many2one(
+        'project.task.template')

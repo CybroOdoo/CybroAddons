@@ -21,6 +21,11 @@
 ###############################################################################
 from odoo import fields, models
 
+CLOSED_STATES = {
+    '1_done': 'Done',
+    '1_canceled': 'Canceled',
+}
+
 
 class ProjectSubTask(models.Model):
     """Customized version of the 'project.task' model to support templates
@@ -52,6 +57,14 @@ class ProjectSubTask(models.Model):
         compute='_compute_show_tasks_page',
         string="Show Tasks Page",
         readonly=False)
+
+    state = fields.Selection([
+        ('01_in_progress', 'In Progress'),
+        ('02_changes_requested', 'Changes Requested'),
+        ('03_approved', 'Approved'),
+        *CLOSED_STATES.items(),
+        ('04_waiting_normal', 'Waiting'),
+    ], string='State', default='01_in_progress')
 
     def action_open_task(self):
         """ Action method to open the current task in a form view.

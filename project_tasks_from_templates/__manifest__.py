@@ -40,6 +40,7 @@
         'security/ir.model.access.csv',
         'views/project_project_views.xml',
         'views/project_sub_task_views.xml',
+        'views/project_stage_views.xml',
         'views/project_task_template_views.xml'
     ],
     'images': ['static/description/banner.jpg'],
