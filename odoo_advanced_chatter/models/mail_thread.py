@@ -136,8 +136,6 @@ class Message(models.AbstractModel):
         if 'email_add_signature' not in msg_values:
             msg_values['email_add_signature'] = True
         if not msg_values.get('record_name'):
-            # use sudo as record access is not always granted (notably when replying
-            # a notification) -> final check is done at message creation level
             msg_values['record_name'] = self.sudo().display_name
         if body_is_html and self.user_has_groups("base.group_user"):
             _logger.warning(
@@ -153,7 +151,7 @@ class Message(models.AbstractModel):
             'model': self._name,
             'res_id': self.id,
             # content
-            'body': escape(body),  # escape if text, keep if markup
+            'body': escape(body),
             'message_type': message_type,
             'parent_id': self._message_compute_parent_id(parent_id),
             'subject': subject or False,

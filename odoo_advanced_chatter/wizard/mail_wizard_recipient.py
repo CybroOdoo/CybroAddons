@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import models, fields
+from odoo import models, fields, api
 
 
 class AddRecipient(models.TransientModel):
@@ -39,3 +39,9 @@ class AddRecipient(models.TransientModel):
         added to config parameters"""
         self.env['ir.config_parameter'].set_param('reply_to',
                                                   self.partner_id.id)
+
+    @api.model
+    def get_user(self, user_id):
+        """if reply mail is sent to the person who sent the mail,
+        then default person will be set in config parameters"""
+        self.env['ir.config_parameter'].set_param('reply_to', user_id)

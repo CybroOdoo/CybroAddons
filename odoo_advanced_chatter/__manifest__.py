@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Odoo Advanced Chatter',
-    'version': '17.0.2.0.0',
+    'version': '17.0.2.0.1',
     'category': 'Discuss',
     'summary': 'Schedule Log note and Send Message in Chatter',
     'description': """We have the capability to schedule log notes and send 

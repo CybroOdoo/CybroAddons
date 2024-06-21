@@ -6,8 +6,8 @@ import { useState } from "@odoo/owl";
 patch(FollowerList.prototype, {
     setup() {
     super.setup();
-    this.state = useState({
-        id:[]
+        this.state = useState({
+            id:[]
         });
     },
     async check(ev, follower){
@@ -20,5 +20,5 @@ patch(FollowerList.prototype, {
             this.state.id.push(follower.partner.id)
         }
         this.threadService.check = this.state.id
-     }
+    }
 })

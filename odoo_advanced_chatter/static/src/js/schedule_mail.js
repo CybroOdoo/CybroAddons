@@ -3,9 +3,16 @@ import { Composer } from "@mail/core/common/composer";
 import { patch } from "@web/core/utils/patch";
 import { prettifyMessageContent, escapeAndCompactTextContent } from "@mail/utils/common/format";
 import { useRef } from "@odoo/owl";
+import { useService } from "@web/core/utils/hooks";
 patch(Composer.prototype, {
-setup() {
-    super.setup();
+    setup() {
+        super.setup();
+        this.orm = useService("orm");
+        this.orm.call(
+            'mail.wizard.recipient',
+            'get_user',
+            [this.env.model.user.userId]
+        )
     },
     async scheduleLogNote(){
         //    ------to schedule lognote -------------
@@ -19,23 +26,23 @@ setup() {
             ? this.messageService.getMentionsFromText(message, {
                   mentionedChannels: this.props.composer.mentionedChannels,
                   mentionedPartners: this.props.composer.mentionedPartners,
-              })
+            })
             : undefined;
         $.each(validMentions.partners,(index,mentions) => {
             mentioned_list.push(mentions.id)
-            });
+        });
         var followers_list=[]
         $.each( this.props.composer.thread.followers,(index,follower) => {
             followers_list.push(follower.partner.id)
-            });
+        });
         if (recipient){
             recipient.forEach(item=>{
                 const index = followers_list.indexOf(item);
-            if (index !== -1) {
-                followers_list.splice(index, 1);
+                if (index !== -1) {
+                    followers_list.splice(index, 1);
                 }
             })
-            }
+        }
         if (this.props.type === "note" ){
             const action = {
                type: 'ir.actions.act_window',
@@ -55,7 +62,7 @@ setup() {
                 },
             };
             this.env.services.action.doAction(
-            action,
+                action,
         {
         }
         );

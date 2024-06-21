@@ -2,10 +2,17 @@
 import { Chatter } from "@mail/core/web/chatter";
 import { patch } from "@web/core/utils/patch";
 import { _t } from "@web/core/l10n/translation";
+import { useService } from "@web/core/utils/hooks";
 //patch the class ChatterContainer to added the click function
 patch(Chatter.prototype ,{
     setup() {
         super.setup();
+        this.orm = useService("orm");
+        this.orm.call(
+            'mail.wizard.recipient',
+            'get_user',
+            [this.env.model.user.userId]
+        );
     },
     replyTo(){
     //-----On clicking thr reply to icon a wizard is opened to select the recipient
