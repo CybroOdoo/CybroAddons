@@ -36,7 +36,7 @@ class ProductProduct(models.Model):
 
     alert_tag = fields.Char(
         string='Product Alert Tag', compute='_compute_alert_tag',
-        help='This field represents the alert tag of the product.', store=True)
+        help='This field represents the alert tag of the product.')
     is_low_stock_alert = fields.Boolean(
         string="Low Stock Alert",
         help='This field determines the minimum stock quantity at which a low '
