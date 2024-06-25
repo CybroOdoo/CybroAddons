@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Freight Management',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Industries',
     'summary': 'Module for Managing All Freight Operations',
     'description': 'From efficient order creation and dynamic shipment planning'
