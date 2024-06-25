@@ -1,41 +1,43 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
-#    This program is free software: you can modify
-#    it under the terms of the GNU Affero General Public License (AGPL) as
-#    published by the Free Software Foundation, either version 3 of the
-#    License, or (at your option) any later version.
+#    You can modify it under the terms of the GNU AFFERO
+#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
 #
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Affero General Public License for more details.
+#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
 #
-#    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
+#    (AGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+from odoo import api, fields, models
 
-from odoo import fields, models, api
 
-
-class ResConfigInherit(models.TransientModel):
+class ResConfigSettings(models.TransientModel):
+    """Class to add fields and functions in settings"""
     _inherit = 'res.config.settings'
 
     product_restriction = fields.Boolean(
         string='Out Of Stock Product Restriction',
-        help='Enable Out Of Stock Product Restriction')
+        help='Enable this to restrict the out of stock product')
     check_stock = fields.Selection(
-        [('on_hand_quantity', 'On Hand Ouantity'),
-         ('forecast_quantity', 'Forecast Ouantity')], string="Based On",
+        [('on_hand_quantity', 'On Hand Quantity'),
+         ('forecast_quantity', 'Forecast Quantity')], string="Based On",
         help='Choose the type of restriction')
 
     @api.model
     def get_values(self):
-        """get values from the fields"""
-        res = super(ResConfigInherit, self).get_values()
+        """Function to take values from the fields"""
+        res = super().get_values()
         params = self.env['ir.config_parameter'].sudo().get_param
         product_restriction = params('sale_stock_restrict.product_restriction')
         check_stock = params('sale_stock_restrict.check_stock')
@@ -46,8 +48,8 @@ class ResConfigInherit(models.TransientModel):
         return res
 
     def set_values(self):
-        """Set values in the fields"""
-        super(ResConfigInherit, self).set_values()
+        """Function to set the values in the fields"""
+        super().set_values()
         self.env['ir.config_parameter'].sudo().set_param(
             'sale_stock_restrict.product_restriction', self.product_restriction)
         self.env['ir.config_parameter'].sudo().set_param(
