@@ -233,6 +233,12 @@ class RoomBooking(models.Model):
                                          help="This is the Total Amount for "
                                               "Fleet", tracking=5)
 
+    def unlink(self):
+        for rec in self:
+            if rec.state != 'cancel' and rec.state != 'draft':
+                raise ValidationError('Cannot delete the Booking. Cancel the Booking ')
+        return super().unlink()
+
     @api.model
     def create(self, vals_list):
         """Sequence Generation"""
