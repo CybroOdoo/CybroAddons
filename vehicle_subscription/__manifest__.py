@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Vehicle Subscription Management',
-    'version': "16.0.1.0.0",
+    'version': "16.0.1.1.0",
     'category': 'Fleet',
     'summary': """Vehicle Subscription Management From Website""",
     'description': """Vehicle Subscription Management From Website""",

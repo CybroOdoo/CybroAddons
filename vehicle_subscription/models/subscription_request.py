@@ -41,13 +41,14 @@ class SubscriptionRequest(models.Model):
                                               "customer will be set")
     new_vehicle_id = fields.Many2one('fleet.vehicle', string="New Vehicle"
                                      , domain="[('id', 'in', vehicle_ids)]",
+                                     required=True,
                                      help="Can choose different vehicle "
                                           "with same model")
     vehicle_ids = fields.Many2many('fleet.vehicle',
                                    compute='_compute_vehicle_ids',
                                    help="Compute and can choose vehicle with "
                                         "satisfying domain ")
-    reason_to_change = fields.Char(string="Reason",
+    reason_to_change = fields.Char(string="Reason", required=True,
                                    help="Reason for changing vehicle")
     state = fields.Selection(
         selection=[('to_approve', 'To Approve'),

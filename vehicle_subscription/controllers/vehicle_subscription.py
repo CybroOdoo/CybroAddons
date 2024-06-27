@@ -68,7 +68,7 @@ class OnlineSubscription(http.Controller):
             insurance_amount = request.env['vehicle.insurance'].sudo().browse(
                 int(insurance)).insurance_amount
             insurance_type = request.env['vehicle.insurance'].sudo().search(
-                [('insurance_type_id.id', '=', insurance),
+                [('insurance_type_id.id', '=', int(insurance)),
                  ('start_date', '<=', start), ('end_date', '>=', end)])
             vehicle_ids = insurance_type.vehicle_id
             subscribed_vehicle_id = (request.env['fleet.subscription'].sudo().
