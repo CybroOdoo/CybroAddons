@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--    Sales Team Category-->
+    <record id="module_category_sales_team" model="ir.module.category">
+        <field name="name">Sales Team</field>
+        <field name="description">Sales Team Access Groups</field>
+        <field name="sequence">20</field>
+    </record>
+    <!-- Group Team Member-->
+    <record id="sales_team_access_controls_group_team_member"
+            model="res.groups">
+        <field name="name">Team Member</field>
+        <field name="category_id"
+               ref="sales_team_access_controls.module_category_sales_team"/>
+    </record>
+    <!--   Group Team Leader-->
+    <record id="sales_team_access_controls_group_team_leader"
+            model="res.groups">
+        <field name="name">Team Leader</field>
+        <field name="category_id"
+               ref="sales_team_access_controls.module_category_sales_team"/>
+        <field name="implied_ids"
+               eval="[(4, ref('sales_team_access_controls_group_team_member'))]"/>
+    </record>
+    <!--    Team member rule for accessing Leads-->
+    <record id="crm_lead_rule_team_member" model="ir.rule">
+        <field name="name">Team Member Leads</field>
+        <field ref="crm.model_crm_lead" name="model_id"/>
+        <field name="domain_force">
+            ['|',('user_id','=',user.id),('user_id','=',False)]
+        </field>
+        <field name="groups"
+               eval="[(4, ref('sales_team_access_controls.sales_team_access_controls_group_team_member'))]"/>
+    </record>
+    <!--    Team member rule for accessing Sale Order-->
+    <record id="sale_order_rule_team_member" model="ir.rule">
+        <field name="name">Team Member Sale Order</field>
+        <field ref="sale.model_sale_order" name="model_id"/>
+        <field name="domain_force">
+            ['|',('user_id','=',user.id),('user_id','=',False)]
+        </field>
+        <field name="groups"
+               eval="[(4, ref('sales_team_access_controls_group_team_member'))]"/>
+    </record>
+    <!--    Team member rule for accessing Res Partner-->
+    <record id="res_partner_rule_team_member" model="ir.rule">
+        <field name="name">Team Member Res Partner</field>
+        <field ref="base.model_res_partner" name="model_id"/>
+        <field name="domain_force">
+            ['|',('user_id','=',user.id),('user_id','=',False)]
+        </field>
+        <field name="groups"
+               eval="[(4, ref('sales_team_access_controls.sales_team_access_controls_group_team_member'))]"/>
+    </record>
+    <!--    Team Leader rule for accessing Leads-->
+    <record id="crm_lead_rule_team_leader" model="ir.rule">
+        <field name="name">Team Leader CRM Lead</field>
+        <field ref="crm.model_crm_lead" name="model_id"/>
+        <field name="domain_force">['|', ('user_id', '=', user.id),
+            ('team_id.member_ids', 'in', [user.id])]
+        </field>
+        <field name="groups"
+               eval="[(4, ref('sales_team_access_controls.sales_team_access_controls_group_team_leader'))]"/>
+    </record>
+    <!--    Team Leader rule for accessing Sale Order-->
+    <record id="sale_order_rule_team_leader" model="ir.rule">
+        <field name="name">Team Leader Sale Order</field>
+        <field ref="sale.model_sale_order" name="model_id"/>
+        <field name="domain_force">['|', ('user_id', '=', user.id),
+            ('team_id.member_ids', 'in', [user.id])]
+        </field>
+        <field name="groups"
+               eval="[(4, ref('sales_team_access_controls.sales_team_access_controls_group_team_leader'))]"/>
+    </record>
+    <!--    Team Leader rule for accessing Res Partner-->
+    <record id="res_partner_rule_team_leader" model="ir.rule">
+        <field name="name">Team Leader Res Partner</field>
+        <field ref="base.model_res_partner" name="model_id"/>
+        <field name="domain_force">['|', ('user_id', '=', user.id),
+            ('team_id.member_ids', 'in', [user.id])]
+        </field>
+        <field name="groups"
+               eval="[(4, ref('sales_team_access_controls.sales_team_access_controls_group_team_leader'))]"/>
+    </record>
+</odoo>
