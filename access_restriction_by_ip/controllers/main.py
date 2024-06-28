@@ -34,10 +34,8 @@ class Home(main.Home):
         request.params['login_success'] = False
         if request.httprequest.method == 'GET' and redirect and request.session.uid:
             return request.redirect(redirect)
-
         if not request.uid:
             request.uid = odoo.SUPERUSER_ID
-
         values = request.params.copy()
         try:
             values['databases'] = http.db_list()
@@ -85,5 +83,15 @@ class Home(main.Home):
                         request.uid = old_uid
                         if e.args == odoo.exceptions.AccessDenied().args:
                             values['error'] = _("Wrong login/password")
-
         return request.render('web.login', values)
+
+    @http.route('/get_ip', auth='user', type='json')
+    def get_ip(self):
+        ip_address = request.httprequest.environ['REMOTE_ADDR']
+        ip_addresses = []
+        for ips in request.env.user.allowed_ips:
+            ip_addresses.append(ips.ip_address)
+        if ip_addresses:
+            if ip_address not in ip_addresses:
+                return False
+        return True

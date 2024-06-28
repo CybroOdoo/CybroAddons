@@ -17,7 +17,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from odoo import models, fields
+from odoo import api, models, fields
 
 
 class ResUsersInherit(models.Model):
@@ -31,3 +31,4 @@ class AllowedIPs(models.Model):
 
     users_ip = fields.Many2one('res.users', string='IP')
     ip_address = fields.Char(string='Allowed IP')
+
