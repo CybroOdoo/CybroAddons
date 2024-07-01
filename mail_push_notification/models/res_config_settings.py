@@ -19,7 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from pyfcm import FCMNotification
+from firebase_admin import initialize_app, _apps
+from firebase_admin import credentials
 from odoo import fields, models, _
 
 
@@ -32,11 +33,33 @@ class ResConfigSettings(models.TransientModel):
                                        help="Enable Web Push Notification",
                                        related='company_id.push_notification',
                                        readonly=False)
-    server_key = fields.Char(string="Server Key",
-                             help="Server Key of the firebase",
-                             related='company_id.server_key', readonly=False)
-    vapid = fields.Char(string="Vapid", help='VapId of the firebase',
-                        related='company_id.vapid', readonly=False)
+    project_id_firebase = fields.Char(string="Project Id",
+                                      help='Corresponding projectId of '
+                                           'firebase config',
+                                      related='company_id.project_id_firebase',
+                                      readonly=False)
+    private_key_ref = fields.Char(string='Private Key Id',
+                                  help="Private Key Id in the certificate",
+                                  related='company_id.private_key_ref',
+                                  readonly=False)
+    private_key = fields.Char(string="Private Key",
+                              help="Private Key value in the firebase "
+                                   "certificate",
+                              related='company_id.private_key', readonly=False)
+    client_email = fields.Char(string="Client Email", help='Client Email in '
+                                                           'the firebase config',
+                               related='company_id.client_email',
+                               readonly=False)
+    client_id_firebase = fields.Char(string="Client Id",
+                                     help='Client Id in the firebase config',
+                                     related='company_id.client_id_firebase',
+                                     readonly=False)
+    client_cert_url = fields.Char(string="Client Certificate Url",
+                                  help='Value corresponding to '
+                                       'client_x509_cert_url in the firebase '
+                                       'config',
+                                  related='company_id.client_cert_url',
+                                  readonly=False)
     api_key = fields.Char(string="Api Key",
                           help='Corresponding apiKey of firebase config',
                           related='company_id.api_key', readonly=False)
@@ -44,11 +67,7 @@ class ResConfigSettings(models.TransientModel):
                               help='Corresponding authDomain of firebase '
                                    'config',
                               related='company_id.auth_domain', readonly=False)
-    project_id_firebase = fields.Char(string="Project Id",
-                                      help='Corresponding projectId of '
-                                           'firebase config',
-                                      related='company_id.project_id_firebase',
-                                      readonly=False)
+
     storage_bucket = fields.Char(string="Storage Bucket",
                                  help='Corresponding storageBucket of '
                                       'firebase config',
@@ -58,8 +77,7 @@ class ResConfigSettings(models.TransientModel):
                                                help='Corresponding '
                                                     'messagingSenderId of '
                                                     'firebase config',
-                                               related='company_id'
-                                                       '.messaging_sender_id_firebase',
+                                               related='company_id.messaging_sender_id_firebase',
                                                readonly=False)
     app_id_firebase = fields.Char(string="App Id",
                                   help='Corresponding appId of firebase config',
@@ -71,46 +89,47 @@ class ResConfigSettings(models.TransientModel):
                                           related='company_id'
                                                   '.measurement_id_firebase',
                                           readonly=False)
+    vapid = fields.Char(string="Vapid", help='VapId of the firebase',
+                        related='company_id.vapid', readonly=False)
 
     def test_connection(self):
         """Test connection to firebase using the firebase credentials"""
-        if self.env.company.push_notification:
-            try:
-                push_service = FCMNotification(
-                    api_key=self.env.company.server_key)
-                registration_ids = self.env['push.notification'].sudo().search(
-                    [('user_id', '=', self.env.user.id)])
-                push_service.notify_multiple_devices(
-                    registration_ids=[registration_id.register_id for
-                                      registration_id in registration_ids],
-                    message_title='Test Connection',
-                    message_body='Successfully',
-                    extra_notification_kwargs={
-                        'click_action': '/web'
-                    })
-                return {
-                    'type': 'ir.actions.client',
-                    'tag': 'display_notification',
-                    'params': {
-                        'type': 'success',
-                        'message': _("Connection successfully established"),
-                        'next': {
-                            'type': 'ir.actions.client',
-                            'tag': 'reload_context',
-                        },
+        if not self.env.company.push_notification:
+            return False
+        try:
+            # Initialize the firebase app with the credentials
+            if not _apps:
+                cred = credentials.Certificate(
+                    {
+                        "type": "service_account",
+                        "project_id": self.project_id_firebase,
+                        "private_key_id": self.private_key_ref,
+                        "private_key": self.private_key.replace('\\n', '\n'),
+                        "client_email": self.client_email,
+                        "client_id": self.client_id_firebase,
+                        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                        "token_uri": "https://oauth2.googleapis.com/token",
+                        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                        "client_x509_cert_url": self.client_cert_url,
+                        "universe_domain": "googleapis.com"
                     }
+                )
+                initialize_app(cred)
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'type': 'success',
+                    'message': _("Connection successfully established"),
                 }
-            except:
-                return {
-                    'type': 'ir.actions.client',
-                    'tag': 'display_notification',
-                    'params': {
-                        'type': 'danger',
-                        'message': _(
-                            "Failed to connect with firebase"),
-                        'next': {
-                            'type': 'ir.actions.client',
-                            'tag': 'reload_context',
-                        },
-                    }
+            }
+        except Exception as e:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'type': 'danger',
+                    'message': _(
+                        "Failed to connect with firebase:%s" % e),
                 }
+            }

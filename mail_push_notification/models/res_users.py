@@ -19,8 +19,11 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import mail_thread
-from . import push_notification
-from . import res_company
-from . import res_config_settings
-from . import res_users
+from odoo import models
+
+
+class ResUsers(models.Model):
+    _inherit = 'res.users'
+
+    def has_push_notification_permission(self):
+        return self.has_group('base.group_user')

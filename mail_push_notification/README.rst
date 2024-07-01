@@ -8,7 +8,7 @@ Push Notification From ChatBox
 
 Configuration
 =============
-* Install the pyfcm python package
+* Install the firebase_admin python package
 * Install our module and make sure that your instance served over https.Firebase is intent on being a highly secure solution, so they have chosen to require the use of a https for all communication and http is not working.
 * After installation of module its important that allow the notification access in the webpage
 

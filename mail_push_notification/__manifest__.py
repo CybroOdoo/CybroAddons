@@ -21,10 +21,10 @@
 #############################################################################
 {
     "name": "Push Notification From ChatBox",
-    'version': '17.0.1.0.0',
+    'version': '17.0.2.0.0',
     'category': 'Discuss,Extra Tools',
-    'summary': 'With Push Notification From ChatBox, users can respond promptly'
-               ' to important messages, improving communication efficiency.',
+    'summary': """With Push Notification From ChatBox, users can respond 
+     promptly to important messages, improving communication efficiency.""",
     'description': 'Push Notification From ChatBox is valuable for teams '
                    'looking to streamline communication and enhance '
                    'productivity within the Odoo platform.',
@@ -44,7 +44,7 @@
             "mail_push_notification/static/src/js/firebase.js",
         ],
     },
-    "external_dependencies": {"python": ["pyfcm"]},
+    "external_dependencies": {"python": ["firebase_admin"]},
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
