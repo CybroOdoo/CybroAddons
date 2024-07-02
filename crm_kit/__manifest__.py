@@ -21,7 +21,7 @@
 ################################################################################
 {
     "name": "CRM Kit",
-    "version": '17.0.1.0.0',
+    "version": '17.0.1.0.1',
     "category": 'Sales',
     'summary': """Complete CRM Kit for odoo 17""",
     'description': """Complete CRM Kit for odoo 17, CRM, CRM dashboard, 
