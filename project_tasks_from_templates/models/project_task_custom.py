@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-################################################################################
+###############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Anfas Faisal K (odoo@cybrosys.info)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
@@ -18,7 +18,7 @@
 #    (AGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-################################################################################
+###############################################################################
 from odoo import fields, models
 
 
@@ -27,8 +27,7 @@ class ProjectTaskCustom(models.Model):
     and sub-tasks
     Methods:
         action_open_task():
-            Returns an action to open the current task in a form view
-    """
+            Returns an action to open the current task in a form view"""
     _name = 'project.task.custom'
     _description = 'Project Task Custom'
 
@@ -53,6 +52,12 @@ class ProjectTaskCustom(models.Model):
         compute='_compute_show_tasks_page',
         string="Show Tasks Page",
         readonly=False)
+
+    state = fields.Selection([
+        ('normal', 'In Progress'),
+        ('done', 'Ready'),
+        ('blocked', 'Blocked')], string='State',
+        default='normal', required=True)
 
     def action_open_task(self):
         """ Action method to open the current task in a form view.

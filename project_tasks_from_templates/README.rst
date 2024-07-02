@@ -6,9 +6,14 @@ Project Templates
 =================
 This module will help you to create projects and tasks from templates.
 
+Features
+========
+* Allows to create project from project template.
+* Multiple levels of tasks and sub tasks from template.
+
 Configuration
 =============
-* No additional configurations needed
+Nothing to configure.
 
 License
 -------
@@ -21,8 +26,9 @@ Company
 
 Credits
 -------
-* Developers (V15) 	Ajmunnisa KP, Contact : odoo@cybrosys.com
-             (V16) 	Anfas Faisal K, Contact : odoo@cybrosys.com
+* Developers (V15) 	Ajmunnisa KP,
+             (V16) 	Anfas Faisal K,
+  Contact: odoo@cybrosys.com
 
 Contacts
 --------
@@ -39,6 +45,8 @@ Maintainer
    :target: https://cybrosys.com
 
 This module is maintained by Cybrosys Technologies.
+
+For support and more information, please visit `Our Website <https://cybrosys.com/>`__
 
 Further information
 ===================
