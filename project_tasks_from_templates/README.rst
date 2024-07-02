@@ -1,11 +1,24 @@
-Project Templates v15
-=====================
-This module will helps you to create projects and tasks from templates.
+.. image:: https://img.shields.io/badge/license-AGPL--3-blue.svg
+    :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
+    :alt: License: AGPL-3
 
+Project Templates
+=================
+This module will help you to create projects and tasks from templates.
+
+Features
+========
+* Allows to create project from project template.
+* Multiple levels of tasks and sub tasks from template.
 
 Configuration
 =============
-* No additional configurations needed
+Nothing to configure.
+
+License
+-------
+General Public License, Version 3 (AGPL v3).
+(https://www.gnu.org/licenses/agpl-3.0-standalone.html)
 
 Company
 -------
@@ -13,8 +26,8 @@ Company
 
 Credits
 -------
-* Developers: 	Ajmunnisa KP @ cybrosys, odoo@cybrosys.com
-
+* Developers (V15) 	Ajmunnisa KP,
+  Contact: odoo@cybrosys.com
 
 Contacts
 --------
@@ -31,3 +44,9 @@ Maintainer
    :target: https://cybrosys.com
 
 This module is maintained by Cybrosys Technologies.
+
+For support and more information, please visit `Our Website <https://cybrosys.com/>`__
+
+Further information
+===================
+HTML Description: `<static/description/index.html>`__
