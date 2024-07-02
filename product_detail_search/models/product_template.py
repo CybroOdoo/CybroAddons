@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import models
+from odoo import models,_
 
 
 class ProductTemplate(models.Model):
@@ -27,12 +27,18 @@ class ProductTemplate(models.Model):
     method"""
     _inherit = 'product.template'
 
+    def get_selection_label(self, object, field_name, field_value):
+        return _(dict(
+            self.env[object].fields_get(allfields=[field_name])[field_name][
+                'selection'])[field_value])
+
     def product_detail_search(self, barcode):
         """Find the details for the product When the barcode Scan is
         Detected"""
         product = self.env['product.product'].search(
             [('barcode', '=', barcode)])
         if product:
+            product_type = self.get_selection_label('product.product','detailed_type',product.detailed_type)
             product_details = [
                 {'id': product.id,
                  'display_name': product.display_name, 'name': product.name,
@@ -57,6 +63,10 @@ class ProductTemplate(models.Model):
             else:
                 extra_details.update({'tax_amount': 'No tax',
                                       'specification': specification})
+            if product_type:
+                extra_details.update({'detailed_type': product_type})
+            else:
+                extra_details.update({'detailed_type': False})
             product_details[0].update(extra_details)
         else:
             product_details = False
