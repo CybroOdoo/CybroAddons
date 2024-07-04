@@ -68,9 +68,16 @@ class CleaningRequest(models.Model):
     assigned_id = fields.Many2one('res.users', string="Assigned To",
                                   help="The team member to whom the request is"
                                        "Assigned To")
-    domain_partner_ids = fields.Many2many('res.partner',
-                                          string="Domain Partner",
-                                          help="Choose the Domain Partner")
+    team_member_ids = fields.Many2many('res.users', compute='_compute_team_member_ids', store=False,
+                                       help='For filtering Users')
+
+    @api.depends('team_id')
+    def _compute_team_member_ids(self):
+        for record in self:
+            if record.team_id:
+                record.team_member_ids = record.team_id.member_ids.ids
+            else:
+                record.team_member_ids = []
 
     @api.model
     def create(self, vals_list):
@@ -79,12 +86,6 @@ class CleaningRequest(models.Model):
             vals_list['sequence'] = self.env['ir.sequence'].next_by_code(
                 'cleaning.request')
         return super().create(vals_list)
-
-    @api.onchange('team_id')
-    def _onchange_team_id(self):
-        """Function for updating the domain partner ids"""
-        self.update(
-            {'domain_partner_ids': self.team_id.member_ids.ids})
 
     def action_assign_cleaning(self):
         """Button action for updating the state to assign"""

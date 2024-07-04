@@ -85,9 +85,16 @@ class MaintenanceRequest(models.Model):
     support_reason = fields.Char(string='Support',
                                  help="Reason for adding Support")
     remarks = fields.Char(string='Remarks', help="Add Remarks")
-    domain_partner_ids = fields.Many2many('res.partner',
-                                          string="Partner",
-                                          help="For filtering Users")
+    team_member_ids = fields.Many2many('res.users', compute='_compute_team_member_ids', store=False,
+                                       help='For filtering Users')
+
+    @api.depends('team_id')
+    def _compute_team_member_ids(self):
+        for record in self:
+            if record.team_id:
+                record.team_member_ids = record.team_id.member_ids.ids
+            else:
+                record.team_member_ids = []
 
     @api.model
     def create(self, vals_list):
@@ -96,13 +103,6 @@ class MaintenanceRequest(models.Model):
             vals_list['sequence'] = self.env['ir.sequence'].next_by_code(
                 'maintenance.request')
         return super().create(vals_list)
-
-    @api.onchange('team_id')
-    def _onchange_team_id(self):
-        """Function for filtering the maintenance team user"""
-        self.update({
-            'domain_partner_ids': self.team_id.member_ids.ids
-        })
 
     def action_assign_team(self):
         """Button action for changing the state to team_leader_approve"""
