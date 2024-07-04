@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--  Form view of the wizard model hr_holiday_generator-->
+    <record id="hr_holiday_generator_view_form" model="ir.ui.view">
+        <field name="name">hr.holiday.generator.view.form</field>
+        <field name="model">hr.holiday.generator</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="country_id"/>
+                        <field name="generation_mode" widget="radio"/>
+                        <field name="date"
+                               attrs="{'invisible':[('generation_mode','!=','date')]}"/>
+                        <field name="month"
+                               attrs="{'invisible':[('generation_mode','!=','month')]}"/>
+                        <field name="year"
+                               attrs="{'invisible':[('generation_mode','!=','year'),
+                           ('generation_mode','!=','month')]}"/>
+                        <button name="action_generate"
+                                string="Generate"
+                                type="object"
+                                data-hotkey="a"
+                                class="btn-primary"/>
+                    </group>
+                    <separator string="Generated Holidays" colspan="4"/>
+                    <field name="calender_leaves_ids">
+                        <tree>
+                            <field name="name"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <field name="description"/>
+                        </tree>
+                    </field>
+                    <footer>
+                        <button name="action_save"
+                                string="Save"
+                                type="object"
+                                data-hotkey="q"
+                                class="btn-primary"/>
+                        <button string="Cancel"
+                                class="btn-secondary"
+                                special="cancel" data-hotkey="z"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!--  Action for the view-->
+    <record id="hr_holiday_generator_action"
+            model="ir.actions.act_window">
+        <field name="name">Hr Holiday Generator</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">hr.holiday.generator</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="hr_holiday_generator_view_form"/>
+        <field name="target">new</field>
+    </record>
+<!--    Menu for the action-->
+    <menuitem id="hr_holiday_generator_menu"
+              name="Holiday Generator"
+              action="hr_holiday_generator_action"
+              parent="hr_holidays.menu_hr_holidays_configuration"
+              sequence="10"/>
+</odoo>
