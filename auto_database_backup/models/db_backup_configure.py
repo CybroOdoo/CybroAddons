@@ -881,7 +881,7 @@ class DbBackupConfigure(models.Model):
                                 for item in nc.list(folder_path):
                                     backup_file_name = item.path.split("/")[-1]
                                     backup_date_str = \
-                                        backup_file_name.split("_")[2]
+                                        backup_file_name.split("_")[1]
                                     backup_date = fields.datetime.strptime(
                                         backup_date_str, '%Y-%m-%d').date()
                                     if (fields.date.today() - backup_date).days \

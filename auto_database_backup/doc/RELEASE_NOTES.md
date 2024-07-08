@@ -29,3 +29,11 @@
 #### UPDT
 
 - Changed response.list_buckets() function to head_bucket().
+
+## Module <auto_database_backup>
+
+#### 08.07.2024
+#### Version 17.0.5.0.1
+#### UPDT
+
+- Fixed the nextcloud auto remove backup error.
