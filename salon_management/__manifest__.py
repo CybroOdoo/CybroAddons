@@ -22,7 +22,7 @@
 {
     'name': 'Beauty Spa Management',
     'version': '17.0.1.0.0',
-    "category": "Industries",
+    "category": "Services",
     'summary': 'Beauty Parlour Management with Online Booking System',
     'description': 'This module to helps your customers to do the online '
                    'booking for using the service. This module integrates with '

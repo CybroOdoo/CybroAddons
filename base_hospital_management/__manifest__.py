@@ -22,7 +22,7 @@
 {
     "name": "Hospital Management Odoo 17",
     "version": "17.0.1.0.0",
-    "category": "Industries",
+    "category": "Services",
     "summary": """This Module Helps to Manage Patients Records, Doctors Details,
      Lab Management , Employee Management etc.""",
     "description": """The hospital management module can be used to handle 
