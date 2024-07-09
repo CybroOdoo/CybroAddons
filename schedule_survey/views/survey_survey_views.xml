@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Inherit survey.survey form view for adding new fields-->
+    <record id="survey_survey_view_form" model="ir.ui.view">
+        <field name="name">survey.survey.view.form.inherit.schedule.survey</field>
+        <field name="model">survey.survey</field>
+        <field name="inherit_id" ref="survey.survey_survey_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="is_cron" string="Enable Cron"/>
+                <field name="scheduled_date" invisible="is_cron != True"/>
+                <field name="cron_status" widget="radio"
+                       options="{'horizontal': true}" invisible="is_cron != True " force_save="1"/>
+            </xpath>
+            <xpath expr="//page[@name='description']" position="after">
+                <page string="Sharing Option">
+                    <group>
+                        <field name="access_mode" widget="radio"/>
+                    </group>
+                    <group invisible="access_mode != 'token'">
+                        <field name="contact_ids" widget="many2many_tags"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
