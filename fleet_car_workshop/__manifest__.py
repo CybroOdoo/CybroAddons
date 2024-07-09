@@ -22,7 +22,7 @@
 {
     'name': 'Car Workshop',
     'version': '17.0.1.0.0',
-    'category': 'Industries',
+    'category': 'Services',
     'summary': 'A Complete Vehicle Workshop Operations & Reports',
     'description': """This module helps to manage automobile workshop with
      great ease. Keep track of everything, like vehicle owner details,

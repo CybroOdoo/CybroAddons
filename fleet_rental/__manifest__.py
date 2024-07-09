@@ -22,7 +22,7 @@
 {
     'name': 'Fleet Rental Management',
     'version': '17.0.1.0.0',
-    'category': "Extra Tools",
+    'category': "Services",
     'summary': """This module will helps you to give the vehicles for Rent.""",
     'description': """This module is an application for Vehicle Rental System which helps in managing the rental of vehicles like car,van,bike, jeep etc.
     It manages fleet/vehicle property by extending the basic fleet module of Odoo.

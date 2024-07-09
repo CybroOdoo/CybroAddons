@@ -22,7 +22,7 @@
 {
     'name': "Legal Case Management Dashboard",
     'version': '17.0.1.0.0',
-    'category': 'Industries',
+    'category': 'Services',
     'summary': """Legal Case Management Dashboard to get an overview of 
      legal case management module.""",
     'description': """This module helps you to view an detailed overview of all

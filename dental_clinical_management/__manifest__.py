@@ -22,7 +22,7 @@
 {
     'name': 'Dental Clinic Management',
     'version': '17.0.1.0.0',
-    'category': 'Industries',
+    'category': 'Services',
     'summary': """Dental Clinic Management is to manage the entire dental clinic.""",
     'description': """Dental Clinic Management software, dental clinics can 
     enhance efficiency, improve patient care, optimize resource utilization, 

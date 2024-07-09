@@ -22,7 +22,7 @@
 {
     'name': 'Agriculture Management',
     'version': '17.0.1.0.0',
-    'category': 'Industries',
+    'category': 'Services',
     'summary': """ We Can Easily Manage the Agriculture to Our Own Need.""",
     'description': """ In the Agriculture Management App, We can manage the "
     "agriculture to our own need.We can also manage the rentals of vehicle and

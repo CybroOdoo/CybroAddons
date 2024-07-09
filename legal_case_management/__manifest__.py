@@ -22,7 +22,7 @@
 {
     'name': "Legal Case Management",
     'version': '17.0.1.0.0',
-    'category': 'Industries',
+    'category': 'Services',
     'summary': 'Legal Case Management for odoo 17. This module will helps '
                'to manage a legal case management firm. This will allows to '
                'manage all details of case sucha as evidence, trial and overall'
