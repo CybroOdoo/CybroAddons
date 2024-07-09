@@ -20,7 +20,7 @@
 ###############################################################################
 {
     'name': "Whatsapp Product Inquiry In Website",
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'category': 'eCommerce',
     'summary': 'Customers can inquire Website product details through Whatsapp',
     'description': """By installing this module, there will be an Inquire
@@ -35,6 +35,11 @@
         'views/res_company_views.xml',
         'views/website_sale_templates.xml'
     ],
+    'assets': {
+        'web.assets_frontend': [
+            'whatsapp_product_inquiry/static/src/css/style.css',
+        ],
+    },
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
