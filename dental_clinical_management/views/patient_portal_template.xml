@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Template for the breadcrumbs for the prescriptions-->
+    <template id="portal_breadcrumbs_prescriptions"
+              name="portal.breadcrumbs.inherit.dental.clinical.management"
+          	  inherit_id="portal.portal_breadcrumbs" priority="60">
+    	<xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+        	<li t-if="page_name == 'prescriptions'"
+            	class="breadcrumb-item active">
+                <a t-attf-href="/my/prescriptions">
+                    <span>Prescriptions</span>
+                </a>
+        	</li>
+            <li t-if="prescription_details" class="breadcrumb-item active">
+                <t t-esc="prescription_details.sequence_no"/>
+            </li>
+    	</xpath>
+	</template>
+
+    <!-- Template for adding the portal my home-->
+    <template id="portal_my_home_prescriptions" name="Prescriptions"
+              customize_show="True" inherit_id="portal.portal_my_home">
+        <xpath expr="//div[@id='portal_alert_category']" position="attributes">
+            <attribute name="style">display:none;</attribute>
+        </xpath>
+        <div id="portal_client_category" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" style="height: 70px;"
+                   t-value="'/dental_clinical_management/static/src/img/prescriptions.svg'"/>
+                <t t-set="title">Dental Prescriptions</t>
+                <t t-set="url" t-value="'/my/prescriptions'"/>
+                <t t-set="text">Follow, all your prescriptions</t>
+                <t t-set="placeholder_count" t-value="'prescriptions_count'"/>
+            </t>
+        </div>
+    </template>
+
+    <!-- List of prescriptions of patients -->
+    <template id="portal_my_prescriptions" name="My Prescriptions">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Prescriptions</t>
+            </t>
+            <t t-if="prescriptions" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Appointment</th>
+                        <th>Doctor</th>
+                        <th>Treatment</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <t t-foreach="prescriptions" t-as="prescription">
+                    <tr>
+                        <td><a t-attf-href="/view/prescriptions/{{prescription.id}}"><t t-out="prescription.appointment_id.sequence_no"/></a></td>
+                        <td><span t-field="prescription.prescribed_doctor_id.name"/></td>
+                        <td><span t-field="prescription.treatment_id.name"/></td>
+                        <td><span t-field="prescription.prescription_date"/></td>
+                    </tr>
+                </t>
+            </t>
+        </t>
+    </template>
+    <!-- Template for the specific events to show the details-->
+    <template id="prescription_portal_template" name="Prescription Portal Template">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Prescription</t>
+            </t>
+            <div class="card pb-5">
+                <div id="introduction" class="pb-2 pt-3 card-header bg-white text-center">
+                    <h3 class="my-0">
+                        PRESCRIPTIONS
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="so_date">
+                        <div class="mb-3 col-6">
+                            <strong>Appointment:</strong>
+                            <span t-field="prescription_details.appointment_id.sequence_no"/>
+                        </div>
+                        <div class="mb-3 col-6">
+                            <strong>Doctor:</strong>
+                            <span t-field="prescription_details.prescribed_doctor_id"/>
+                        </div>
+                    </div>
+                    <div class="row" id="so_date">
+                        <div class="mb-3 col-6">
+                            <strong>Prescribed Date:</strong>
+                            <span t-field="prescription_details.prescription_date" t-options='{"widget": "date"}'/>
+                        </div>
+                        <div class="mb-3 col-6">
+                            <strong>Specialized:</strong>
+                            <span t-field="prescription_details.prescribed_doctor_id.specialised_in_id.name"/>
+                        </div>
+                    </div>
+                    <div class="row" id="so_date">
+                        <div class="mb-3 col-6">
+                            <strong>Treatment:</strong>
+                            <span t-field="prescription_details.treatment_id.name"/>
+                        </div>
+                    </div>
+                    <section id="details" style="page-break-inside: auto;" class="mt32">
+                        <h4 id="quote_3">Medicament List</h4>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead class="bg-100">
+                                    <tr align="center">
+                                        <th>Medicament</th>
+                                        <th>Dosage</th>
+                                        <th>Medicament Form</th>
+                                        <th>Quantity</th>
+                                        <th>Frequency</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="prescription_details.medicine_ids" t-as="line">
+                                        <tr align="center">
+                                            <td>
+                                                <t t-esc="line.medicament_id.name"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="line.dosage_strength"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="line.medicament_form"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="line.quantity"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="line.frequency_id.medicament_frequency"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                   </section>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
