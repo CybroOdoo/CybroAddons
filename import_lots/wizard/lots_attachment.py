@@ -21,7 +21,7 @@
 ###############################################################################
 from odoo import fields, models
 from odoo import _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 import openpyxl
 import base64
 from io import BytesIO
@@ -29,7 +29,6 @@ from io import BytesIO
 
 class LotsAttachment(models.TransientModel):
     """Class for lots wizard"""
-
     _name = 'lot.attachment'
     _description = "Lots Attachment"
 
@@ -105,6 +104,9 @@ class LotsAttachment(models.TransientModel):
                 'type': 'ir.actions.client',
                 'tag': 'reload',
             }
+        else:
+            raise ValidationError(
+                _('Check whether you upload the document'))
 
     def action_download_sample(self):
         """For downloading a sample excel file"""
