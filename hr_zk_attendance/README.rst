@@ -14,9 +14,19 @@ Configuration
 you can install zklib library using "sudo pip install zklib"
 
 Compatible Devices
+----------------
+This module support with the following machines :
 
-*ZKteco model 'uFace 202'
-*ZKteco model 'iFace990'
+ uFace202 (ZKteco)
+* iFace990 (ZKteco)
+
+Clients have reported that the module works well with the following machine :
+
+* K40 Pro (ZKteco)
+* SFace900 (ZKteco)
+* FR1500 (ZKteco)
+* UA760 (ZKteco)
+* MB10 (ZKteco
 
 License
 -------
