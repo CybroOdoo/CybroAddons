@@ -21,7 +21,7 @@
 ###############################################################################
 from odoo import fields, models
 from odoo import _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 import openpyxl
 import base64
 from io import BytesIO
@@ -54,6 +54,8 @@ class LotsAttachment(models.TransientModel):
         wb = openpyxl.load_workbook(
             filename=BytesIO(base64.b64decode(self.attachment)), read_only=True) \
             if self.attachment else ""
+        if not wb:
+            raise ValidationError(_('Check whether you upload the document'))
         ws = wb.active
         # Check if product exists in the sheet
         product_found = any(
