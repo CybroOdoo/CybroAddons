@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--Inherited the template of receipt and add the order type in to it-->
+    <t t-name="order_type" t-inherit="point_of_sale.ReceiptHeader"
+       t-inherit-mode="extension">
+         <xpath expr="//div[hasclass('pos-receipt-contact')]" position="after">
+            <t t-if="this.env.services.pos.get_order().delivery_method.name">
+                    <br/>
+                <b>Order Type : </b>
+                <t t-esc="this.env.services.pos.get_order().delivery_method.name"/>
+                <br/>
+                </t>
+            </xpath>
+        </t>
+    <!--    template for the order type button in the  number pad-->
+    <t t-name="SetDeliveryMethodButton" owl="1">
+        <div class='control-button btn btn-light rounded-0 fw-bolder'>
+            <i class='fa fa-truck' role="img" aria-label="Set delivery method"
+               title="Set delivery method"/>
+            <span/>
+            <span/>
+            <t t-if="this.pos.get_order().delivery_method">
+<span class="delivery_type" t-on-click="() => this.button_click()">
+    <t t-esc="this.pos.get_order().delivery_method.name"/>
+</span>
+</t>
+            <t t-else="">
+<span class="delivery_type"
+      t-on-click="() => this.button_click()">Order Types</span>
+</t>
+        </div>
+    </t>
+</templates>
