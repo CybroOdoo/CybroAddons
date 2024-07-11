@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Action for the new model turnover.report-->
+    <record id="turnover_report_action" model="ir.actions.act_window">
+        <field name="name">Report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">turnover.report</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <!--Shows the form view of the model with given fields-->
+    <record id="turnover_report_view_form" model="ir.ui.view">
+        <field name="name">turnover.report.view.form</field>
+        <field name="model">turnover.report</field>
+        <field name="arch" type="xml">
+            <form string="Inventory Turnover Analysis Report">
+                <group>
+                    <group>
+                        <separator string="SELECT DATE"/>
+                        <br/>
+                        <label for="start_date" string="Dates"
+                               id="label_dates"/>
+                        <div class="o_row o_row_readonly">
+                            <field name="start_date" class="oe_inline"
+                                   nolabel="1"
+                                   widget="daterange"
+                                   options="{'related_end_date': 'end_date'}"/>
+                            <i class="fa fa-long-arrow-right mx-2 oe_edit_only"
+                               aria-label="Arrow icon" title="Arrow"/>
+                            <field name="end_date" class="oe_inline"
+                                   widget="daterange"
+                                   options="{'related_start_date': 'start_date'}"/>
+                        </div>
+                    </group>
+                    <group>
+                        <separator string="SELECT PRODUCTS AND CATEGORIES"/>
+                        <field name="product_ids" widget="many2many_tags"/>
+                        <field name="category_ids" widget="many2many_tags"/>
+                    </group>
+                    <group>
+                        <separator string="SELECT WAREHOUSES AND COMPANIES"/>
+                        <field name="warehouse_ids" widget="many2many_tags"/>
+                        <field name="company_ids" widget="many2many_tags"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_pdf_report_generate"
+                            string="PDF Report"
+                            type="object" class="oe_highlight"/>
+                    <button name="action_xlsx_report_generate"
+                            string="XLSX Report"
+                            type="object" class="oe_highlight"/>
+                    <button name="action_data_fetch" string="View Data"
+                            type="object" class="oe_highlight"/>
+                    <button name="action_generate_graph_view"
+                            string="Graph Analysis"
+                            type="object" class="oe_highlight"/>
+                    <button name="action_cancel" string="Discard"
+                            class="btn-secondary" special="cancel"
+                            data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!--Menu action added to open the model-->
+    <menuitem id="inventory_report_menu"
+              name="Inventory Turnover Analysis Report"
+              parent="stock.menu_warehouse_report"
+              action="turnover_report_action"
+              sequence="1"/>
+</odoo>
