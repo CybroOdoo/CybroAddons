@@ -35,7 +35,7 @@
         'views/custom_stock_lot_views.xml',
         'views/purchase_order_views.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
