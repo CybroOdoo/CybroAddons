@@ -94,6 +94,12 @@ class DashboardBlock(models.Model):
         block_id = []
         for rec in self.env['dashboard.block'].sudo().search(
                 [('client_action', '=', int(action_id))]):
+            if rec.filter is False:
+                rec.filter = "[]"
+            filter_list = literal_eval(rec.filter)
+            filter_list = [filter_item for filter_item in filter_list if not (
+                    isinstance(filter_item, tuple) and filter_item[
+                0] == 'create_date')]
             vals = {
                 'id': rec.id,
                 'name': rec.name,
@@ -109,7 +115,8 @@ class DashboardBlock(models.Model):
                 'measured_field': rec.measured_field.field_description if rec.measured_field else None,
                 'y_field': rec.measured_field.name,
                 'x_field': rec.group_by.name,
-                'operation': rec.operation
+                'operation': rec.operation,
+                'domain': filter_list
             }
             domain = []
             if rec.filter:

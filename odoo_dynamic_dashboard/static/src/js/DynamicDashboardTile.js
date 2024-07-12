@@ -14,7 +14,8 @@ export class DynamicDashboardTile extends Component {
               type: 'ir.actions.act_window',
               res_model: model_name,
               view_mode: 'tree',
-              views: [[false, "tree"]]
+              views: [[false, "tree"]],
+              domain: this.props.widget.domain,
           });
         }
     }
