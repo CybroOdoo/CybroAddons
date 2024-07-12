@@ -47,6 +47,9 @@ class AccountPartnerLedger(models.TransientModel):
         :return: A dictionary containing the partner data for the report.
         :rtype: dict
         """
+        fiscal_year = self.env['res.company'].search([]).mapped('account_opening_date')[0].strftime('%Y-%m-%d')
+        fiscal_year_start = datetime.strptime(fiscal_year,
+                                              '%Y-%m-%d').date()
         partner_dict = {}
         partner_totals = {}
         move_line_ids = self.env['account.move.line'].search(
@@ -55,10 +58,18 @@ class AccountPartnerLedger(models.TransientModel):
              ('parent_state', '=', 'posted')])
         partner_ids = move_line_ids.mapped('partner_id')
         for partner in partner_ids:
+            total_debit_balance = 0
+            total_credit_balance = 0
+            balance = 0
             move_line_id = move_line_ids.filtered(
                 lambda x: x.partner_id == partner)
             move_line_list = []
             for move_line in move_line_id:
+                if move_line.invoice_date:
+                    if move_line.invoice_date < fiscal_year_start:
+                        total_debit_balance += move_line.debit
+                        total_credit_balance += move_line.credit
+                        balance = total_debit_balance - total_credit_balance
                 move_line_data = move_line.read(
                     ['date', 'move_name', 'account_type', 'debit', 'credit',
                      'date_maturity', 'account_id', 'journal_id', 'move_id',
@@ -77,7 +88,12 @@ class AccountPartnerLedger(models.TransientModel):
                 'total_debit': round(sum(move_line_id.mapped('debit')), 2),
                 'total_credit': round(sum(move_line_id.mapped('credit')), 2),
                 'currency_id': currency_id,
-                'partner_id': partner.id}
+                'initial_balance': balance,
+                'partner_id': partner.id,
+                'move_name': 'Initial Balance',
+                'initial_debit': total_debit_balance,
+                'initial_credit': total_credit_balance,
+            }
             partner_dict['partner_totals'] = partner_totals
         return partner_dict
 
@@ -139,6 +155,14 @@ class AccountPartnerLedger(models.TransientModel):
                             account_type_domain),
                          ('parent_state', 'in', option_domain)]).filtered(
                         lambda x: x.date.month == fields.Date.today().month)
+                    date_start = fields.Date.today().replace(day=1)
+                    balance_move_line_ids = self.env[
+                        'account.move.line'].search(
+                        [('partner_id', '=', partners), (
+                            'account_type', 'in',
+                            account_type_domain),
+                         ('parent_state', 'in', option_domain),
+                         ('invoice_date', '<', date_start)])
                 elif data_range == 'year':
                     move_line_ids = self.env['account.move.line'].search(
                         [('partner_id', '=', partners), (
@@ -146,6 +170,14 @@ class AccountPartnerLedger(models.TransientModel):
                             account_type_domain),
                          ('parent_state', 'in', option_domain)]).filtered(
                         lambda x: x.date.year == fields.Date.today().year)
+                    date_start = fields.Date.today().replace(month=1, day=1)
+                    balance_move_line_ids = self.env[
+                        'account.move.line'].search(
+                        [('partner_id', '=', partners), (
+                            'account_type', 'in',
+                            account_type_domain),
+                         ('parent_state', 'in', option_domain),
+                         ('invoice_date', '<', date_start)])
                 elif data_range == 'quarter':
                     move_line_ids = self.env['account.move.line'].search(
                         [('partner_id', '=', partners), (
@@ -154,6 +186,14 @@ class AccountPartnerLedger(models.TransientModel):
                          ('date', '>=', quarter_start),
                          ('date', '<=', quarter_end),
                          ('parent_state', 'in', option_domain)])
+                    date_start = quarter_start
+                    balance_move_line_ids = self.env[
+                        'account.move.line'].search(
+                        [('partner_id', '=', partners), (
+                            'account_type', 'in',
+                            account_type_domain),
+                         ('parent_state', 'in', option_domain),
+                         ('invoice_date', '<', date_start)])
                 elif data_range == 'last-month':
                     move_line_ids = self.env['account.move.line'].search(
                         [('partner_id', '=', partners), (
@@ -161,6 +201,14 @@ class AccountPartnerLedger(models.TransientModel):
                             account_type_domain),
                          ('parent_state', 'in', option_domain)]).filtered(
                         lambda x: x.date.month == fields.Date.today().month - 1)
+                    date_start = fields.Date.today().replace(day=1,month=fields.Date.today().month - 1)
+                    balance_move_line_ids = self.env[
+                        'account.move.line'].search(
+                        [('partner_id', '=', partners), (
+                            'account_type', 'in',
+                            account_type_domain),
+                         ('parent_state', 'in', option_domain),
+                         ('invoice_date', '<', date_start)])
                 elif data_range == 'last-year':
                     move_line_ids = self.env['account.move.line'].search(
                         [('partner_id', '=', partners), (
@@ -168,6 +216,14 @@ class AccountPartnerLedger(models.TransientModel):
                             account_type_domain),
                          ('parent_state', 'in', option_domain)]).filtered(
                         lambda x: x.date.year == fields.Date.today().year - 1)
+                    date_start = fields.Date.today().replace(day=1,month=1,)
+                    balance_move_line_ids = self.env[
+                        'account.move.line'].search(
+                        [('partner_id', '=', partners), (
+                            'account_type', 'in',
+                            account_type_domain),
+                         ('parent_state', 'in', option_domain),
+                         ('invoice_date', '<', date_start)])
                 elif data_range == 'last-quarter':
                     move_line_ids = self.env['account.move.line'].search(
                         [('partner_id', '=', partners), (
@@ -176,6 +232,14 @@ class AccountPartnerLedger(models.TransientModel):
                          ('date', '>=', previous_quarter_start),
                          ('date', '<=', previous_quarter_end),
                          ('parent_state', 'in', option_domain)])
+                    date_start = previous_quarter_start
+                    balance_move_line_ids = self.env[
+                        'account.move.line'].search(
+                        [('partner_id', '=', partners), (
+                            'account_type', 'in',
+                            account_type_domain),
+                         ('parent_state', 'in', option_domain),
+                         ('invoice_date', '<', date_start)])
                 elif 'start_date' in data_range and 'end_date' in data_range:
                     start_date = datetime.strptime(data_range['start_date'],
                                                    '%Y-%m-%d').date()
@@ -188,6 +252,14 @@ class AccountPartnerLedger(models.TransientModel):
                          ('date', '>=', start_date),
                          ('date', '<=', end_date),
                          ('parent_state', 'in', option_domain)])
+                    date_start = start_date
+                    balance_move_line_ids = self.env[
+                        'account.move.line'].search(
+                        [('partner_id', '=', partners), (
+                            'account_type', 'in',
+                            account_type_domain),
+                         ('parent_state', 'in', option_domain),
+                         ('invoice_date', '<', date_start)])
                 elif 'start_date' in data_range:
                     start_date = datetime.strptime(data_range['start_date'],
                                                    '%Y-%m-%d').date()
@@ -197,6 +269,14 @@ class AccountPartnerLedger(models.TransientModel):
                             account_type_domain),
                          ('date', '>=', start_date),
                          ('parent_state', 'in', option_domain)])
+                    date_start = start_date
+                    balance_move_line_ids = self.env[
+                        'account.move.line'].search(
+                        [('partner_id', '=', partners), (
+                            'account_type', 'in',
+                            account_type_domain),
+                         ('parent_state', 'in', option_domain),
+                         ('invoice_date', '<', date_start)])
                 elif 'end_date' in data_range:
                     end_date = datetime.strptime(data_range['end_date'],
                                                  '%Y-%m-%d').date()
@@ -206,12 +286,26 @@ class AccountPartnerLedger(models.TransientModel):
                             account_type_domain),
                          ('date', '<=', end_date),
                          ('parent_state', 'in', option_domain)])
+                    fiscal_year = self.env['res.company'].search([]).mapped(
+                        'account_opening_date')[0].strftime('%Y-%m-%d')
+                    date_start = datetime.strptime(fiscal_year,
+                                                          '%Y-%m-%d').date()
+                    balance_move_line_ids = self.env[
+                        'account.move.line'].search(
+                        [('partner_id', '=', partners), (
+                            'account_type', 'in',
+                            account_type_domain),
+                         ('parent_state', 'in', option_domain),
+                         ('invoice_date', '<', date_start)])
             else:
                 move_line_ids = self.env['account.move.line'].search(
                     [('partner_id', '=', partners), (
                         'account_type', 'in',
                         account_type_domain),
                      ('parent_state', 'in', option_domain)])
+            total_debit_balance = 0
+            total_credit_balance = 0
+            balance = 0
             move_line_list = []
             for move_line in move_line_ids:
                 move_line_data = move_line.read(
@@ -226,13 +320,24 @@ class AccountPartnerLedger(models.TransientModel):
                     move_line_data[0]['jrnl'] = journal_code
                     move_line_data[0]['code'] = account_code
                 move_line_list.append(move_line_data)
+            for remaining_move in balance_move_line_ids:
+                if remaining_move.invoice_date:
+                    if remaining_move.invoice_date < date_start:
+                        total_debit_balance += remaining_move.debit
+                        total_credit_balance += remaining_move.credit
+                        balance = total_debit_balance - total_credit_balance
             partner_dict[partner] = move_line_list
             currency_id = self.env.company.currency_id.symbol
             partner_totals[partner] = {
                 'total_debit': round(sum(move_line_ids.mapped('debit')), 2),
                 'total_credit': round(sum(move_line_ids.mapped('credit')), 2),
                 'currency_id': currency_id,
-                'partner_id': partners}
+                'partner_id': partners,
+                'initial_balance': balance,
+                'move_name': 'Initial Balance',
+                'initial_debit': total_debit_balance,
+                'initial_credit': total_credit_balance,
+            }
             partner_dict['partner_totals'] = partner_totals
         return partner_dict
 
@@ -262,6 +367,8 @@ class AccountPartnerLedger(models.TransientModel):
         sheet = workbook.add_worksheet()
         head = workbook.add_format(
             {'font_size': 15, 'align': 'center', 'bold': True})
+        head_highlight = workbook.add_format(
+            {'font_size': 10, 'align': 'center', 'bold': True})
         sub_heading = workbook.add_format(
             {'align': 'center', 'bold': True, 'font_size': '10px',
              'border': 1, 'bg_color': '#D3D3D3',
@@ -335,6 +442,24 @@ class AccountPartnerLedger(models.TransientModel):
                                       data['total'][partner]['total_debit'] -
                                       data['total'][partner]['total_credit'],
                                       txt_name)
+                    if data['total'][partner]['initial_balance'] != 0:
+                        row += 1
+                        sheet.write(row, col, '', txt_name)
+                        sheet.write(row, col + 1, ' ', txt_name)
+                        sheet.write(row, col + 2, ' ', txt_name)
+                        sheet.merge_range(row, col + 3, row, col + 4, 'Initial Balance ',
+                                          head_highlight)
+                        sheet.merge_range(row, col + 5, row, col + 6, ' ',
+                                          txt_name)
+                        sheet.merge_range(row, col + 7, row, col + 8,
+                                          data['total'][partner]['initial_debit'],
+                                          txt_name)
+                        sheet.merge_range(row, col + 9, row, col + 10,
+                                          data['total'][partner]['initial_credit'],
+                                          txt_name)
+                        sheet.merge_range(row, col + 11, row, col + 12,
+                                          data['total'][partner]['initial_balance'],
+                                          txt_name)
                     for rec in data['data'][partner]:
                         row += 1
                         sheet.write(row, col, rec[0]['date'], txt_name)
