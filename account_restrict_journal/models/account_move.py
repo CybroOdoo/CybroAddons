@@ -36,14 +36,15 @@ class AccountMove(models.Model):
         """Compute field for showing validation error for restricted journal's
         records"""
         self.check_journal = True
-        for rec in self.line_ids:
-            if rec.full_reconcile_id:
-                payment = self.env['account.payment.register'].search(
-                    [('id', '=', rec.full_reconcile_id.id)])
-                if payment.journal_id.id in self.env.user.journal_ids.ids:
-                    raise ValidationError(_('Restricted journals found.'))
-        if self.journal_id.id in self.env.user.journal_ids.ids:
-            raise ValidationError(_('Restricted journals found.'))
+        if self.env.user.has_group('account_restrict_journal.user_allowed_journal'):
+            for rec in self.line_ids:
+                if rec.full_reconcile_id:
+                    payment = self.env['account.payment.register'].search(
+                        [('id', '=', rec.full_reconcile_id.id)])
+                    if payment.journal_id.id in self.env.user.journal_ids.ids:
+                        raise ValidationError(_('Restricted journals found.'))
+            if self.journal_id.id in self.env.user.journal_ids.ids:
+                raise ValidationError(_('Restricted journals found.'))
 
     @api.onchange('partner_id')
     def _onchange_partner_id(self):
