@@ -60,9 +60,7 @@ class RoomBooking(models.Model):
                                                    "once")
     checkin_date = fields.Datetime(string="Check In",
                                    help="Date of Checkin",
-                                   states={"draft": [("readonly", False)]},
-                                   default=fields.Datetime.now()
-                                   )
+                                   default=fields.Datetime.now())
     checkout_date = fields.Datetime(string="Check Out",
                                     help="Date of Checkout",
                                     states={"draft": [("readonly", False)]},
@@ -237,6 +235,12 @@ class RoomBooking(models.Model):
                                          compute='_compute_amount_untaxed',
                                          help="This is the Total Amount for "
                                               "Fleet", tracking=5)
+
+    def unlink(self):
+        for rec in self:
+            if rec.state != 'cancel' and rec.state != 'draft':
+                raise ValidationError('Cannot delete the Booking. Cancel the Booking ')
+        return super().unlink()
 
     @api.model
     def create(self, vals_list):
