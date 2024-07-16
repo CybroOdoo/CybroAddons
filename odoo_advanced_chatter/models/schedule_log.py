@@ -61,7 +61,6 @@ class ScheduleLog(models.Model):
                     partner_ids.remove(user_id.id)
                 model = self.env[self.model].sudo().browse(
                     self.model_reference)
-                print('elf.is_log', self.is_log)
                 if not self.is_log:
                     message = model.message_post(
                         author_id=self.create_uid.partner_id.id,
@@ -82,7 +81,6 @@ class ScheduleLog(models.Model):
                         message_type='comment',
                         subtype_xmlid='mail.mt_comment'
                     )
-                print('notify',message.notification_ids)
                 message.notification_ids = [fields.Command.clear()]
                 message.notification_ids = [fields.Command.create({
                     'res_partner_id': pid
