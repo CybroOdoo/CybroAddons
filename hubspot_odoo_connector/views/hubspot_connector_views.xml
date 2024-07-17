@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--  Record for Form view of hubspot.connector  -->
+    <record id="hubspot_connector_view_form" model="ir.ui.view">
+        <field name="name">hubspot.connector.view.form</field>
+        <field name="model">hubspot.connector</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar" clickable="1"/>
+                </header>
+                <sheet>
+                    <field name="connection" invisible="1"/>
+                    <div name="button_box" position="inside">
+                        <button class="oe_stat_button" type="object"
+                                name="action_connect"
+                                invisible="connection==True"
+                                icon="fa-link" string="CONNECT">
+                        </button>
+                        <button class="oe_stat_button" type="object"
+                                name="action_connect"
+                                icon="fa-link" string="CLOSE" invisible="connection==False">
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name"
+                                   placeholder="e.g. Hubspot Instance"
+                                   required="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Authorization"
+                               invisible="connection==True">
+                            <field name="owner_id"/>
+                            <field name="access_key"/>
+                        </group>
+                    </group>
+                    <notebook
+                            invisible="connection==False">
+                        <page string=" Sync Contacts">
+                            <group>
+                                <group>
+                                    <field name="export_contacts"
+                                           widget="boolean_toggle"/>
+                                    <field name="contacts_last_exported"
+                                           invisible="export_contacts == False"/>
+                                    <field name="import_contacts"
+                                           widget="boolean_toggle"/>
+                                    <field name="contacts_last_imported"
+                                           invisible="import_contacts == False"/>
+                                    <field name="update_odoo_contacts"
+                                           widget="boolean_toggle"/>
+                                    <field style="white-space: pre-wrap;"
+                                           name="odoo_contact_last_updated"
+                                           invisible="update_odoo_contacts == False"/>
+                                    <field name="update_hub_contacts"
+                                           widget="boolean_toggle"/>
+                                    <field name="hub_contact_last_updated"
+                                           invisible="update_hub_contacts == False"/>
+                                </group>
+                                <group>
+                                    <button name="action_contact_sync"
+                                            type="object"
+                                            class="btn btn-outline-dark"
+                                            invisible="export_contacts != True and import_contacts != True and update_odoo_contacts != True and update_hub_contacts != True">
+                                        <span style="white-space: nowrap;">
+                                            <span class="fa fa-refresh"/>
+                                            <span> Sync Contacts</span>
+                                        </span>
+                                    </button>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Sync Company">
+                            <group>
+                                <group>
+                                    <field name="import_company"
+                                           widget="boolean_toggle"/>
+                                    <field name="company_last_imported"
+                                           invisible="import_company == False"/>
+                                    <field name="export_company"
+                                           widget="boolean_toggle"/>
+                                    <field name="company_last_exported"
+                                           invisible="export_company == False"/>
+                                    <field name="update_odoo_company"
+                                           widget="boolean_toggle"/>
+                                    <field name="odoo_company_last_updated"
+                                           invisible="update_odoo_company == False"/>
+                                    <field name="update_hub_company"
+                                           widget="boolean_toggle"/>
+                                    <field name="hub_company_last_updated"
+                                           invisible="update_hub_company == False"/>
+                                </group>
+                                <group>
+                                    <button name="action_company_sync"
+                                            type="object"
+                                            class="btn btn-outline-dark"
+                                            invisible="export_company != True and import_company != True and update_odoo_company != True and update_hub_company != True">
+                                        <span style="white-space: nowrap;">
+                                            <span class="fa fa-refresh"/>
+                                            <span> Sync Company</span>
+                                        </span>
+                                    </button>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Sync Deals">
+                            <group>
+                                <group>
+                                    <field name="import_deals"
+                                           widget="boolean_toggle"/>
+                                    <field name="deals_last_imported"
+                                           invisible="import_deals == False"/>
+                                    <field name="export_deals"
+                                           widget="boolean_toggle"/>
+                                    <field name="deals_last_exported"
+                                           invisible="export_deals == False"/>
+                                    <field name="update_odoo_deals"
+                                           widget="boolean_toggle"/>
+                                    <field name="odoo_deal_last_updated"
+                                           invisible="update_odoo_deals == False"/>
+                                    <field name="update_hub_deals"
+                                           widget="boolean_toggle"/>
+                                    <field name="hub_deal_last_updated"
+                                           invisible="update_hub_deals == False"/>
+                                </group>
+                                <group>
+                                    <button name="action_deal_sync"
+                                            type="object"
+                                            class="btn btn-outline-dark"
+                                            invisible="export_deals != True and import_deals != True and update_odoo_deals != True and update_hub_deals != True">
+                                        <span style="white-space: nowrap;">
+                                            <span class="fa fa-refresh"/>
+                                            <span> Sync Deals</span>
+                                        </span>
+                                    </button>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--  Menu action for Hubspot connector  -->
+    <record id="hubspot_connector_action" model="ir.actions.act_window">
+        <field name="name">Hubspot Connector</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">hubspot.connector</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--  Root Menu  -->
+    <menuitem id="hubspot_connector_menu_root"
+              name="Hubspot Connector"
+              web_icon="hubspot_odoo_connector,static/description/icon.png"/>
+    <!--  Sub Menus  -->
+    <menuitem id="hubspot_connector_menu"
+              name="HubSpot"
+              action="hubspot_connector_action"
+              parent="hubspot_connector_menu_root"/>
+    <menuitem id="hubspot_sync_history_menu"
+              name="Configuration"
+              parent="hubspot_connector_menu_root"
+              sequence="100"/>
+</odoo>
