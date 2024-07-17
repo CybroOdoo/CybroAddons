@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Action specified for the truck booking-->
+    <record id="truck_booking_action" model="ir.actions.act_window">
+        <field name="name">Truck Booking</field>
+        <field name="res_model">truck.booking</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--Search view records used in the truck booking -->
+    <record id='truck_booking_view_search' model='ir.ui.view'>
+        <field name="name">truck.booking.view.search</field>
+        <field name="model">truck.booking</field>
+        <field name="arch" type="xml">
+            <search string="Truck Booking">
+                <field name="reference_no"/>
+                <field name="partner_id"/>
+                <field name="truck_id"/>
+                <field name="goods_type_id"/>
+                <field name="state"/>
+                <separator/>
+                <filter string="Confirm" name="confirm"
+                        domain="[('state', '=', 'confirm')]"/>
+                <filter string="Invoiced" name="invoiced"
+                        domain="[('state', '=', 'invoice')]"/>
+                <filter string="Draft" name="draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <group expand="1" string="Group By">
+                    <filter string="Customer" name="groupby_partner_id"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter string="Truck Type" name="groupby_truck_id"
+                            context="{'group_by': 'truck_id'}"/>
+                    <filter string="goods Type" name="groupby_goods_type_id"
+                            context="{'group_by': 'goods_type_id'}"/>
+                    <filter string="State" name="groupby_state"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!--Tree view of the truck booking-->
+    <record id="truck_booking_view_tree" model="ir.ui.view">
+        <field name="name">truck.booking.view.tree</field>
+        <field name="model">truck.booking</field>
+        <field name="arch" type="xml">
+            <tree string="truck.booking">
+                <field name="reference_no"/>
+                <field name="partner_id"/>
+                <field name="from_location"/>
+                <field name="to_location"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    <!--form view of the truck booking-->
+    <record id="truck_booking_view_form" model="ir.ui.view">
+        <field name="name">truck.booking.view.form</field>
+        <field name="model">truck.booking</field>
+        <field name="arch" type="xml">
+            <form string="truck_booking">
+                <header>
+                    <button name="action_confirm" string='Confirm'
+                            class="btn-primary"
+                            invisible="state not in ['draft']" type="object"/>
+                    <button name="action_create_invoice"
+                            string='Create Invoice' class="btn-primary"
+                            invisible="hide_invoice or state != 'confirm'"
+                            type="object"/>
+                    <field name="state" widget="statusbar" string="Status"/>
+                </header>
+                <sheet>
+                    <div name="button_box" position="inside">
+                        <button class="oe_stat_button" type="object"
+                                name="action_view_invoice"
+                                icon="fa-pencil-square-o"
+                                invisible="invoice_count == 0">
+                            <field string="Invoice" name="invoice_count"
+                                   widget="statinfo"/>
+                        </button>
+                    </div>
+                    <group>
+                        <widget name="web_ribbon" title="INVOICED"
+                                bg_color="bg-success"
+                                invisible="state != 'invoice'"/>
+                    </group>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="reference_no"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="from_location"/>
+                            <field name="to_location"/>
+                            <field name="distance"/>
+                            <field name="amount"/>
+                            <field name="hide_invoice" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="truck_id"/>
+                            <field name="goods_type_id"/>
+                            <field name="weight"/>
+                            <field name="unit"/>
+                            <field name="invoiced_amount" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                    <field name="activity_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--Menus used as the parent and submenu for the truck booking-->
+    <menuitem id="operation_menu" name="Operations"
+              parent="packers_and_movers_management.truck_booking_menu_root"
+              sequence='1'/>
+    <menuitem id="truck_booking_menu_action" action="truck_booking_action"
+              parent="packers_and_movers_management.operation_menu"/>
+
+</odoo>
