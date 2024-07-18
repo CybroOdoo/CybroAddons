@@ -36,6 +36,7 @@
     ],
     'data': [
         'views/attachment_templates.xml',
+        'data/payment_proof_attachment.xml'
     ],
     'assets': {
         'web.assets_frontend': [

@@ -19,12 +19,14 @@ publicWidget.registry.PaymentProof = publicWidget.Widget.extend({
      */
     _onClickShowModal: function () {
         this.el.querySelector('#myModal').style.display = 'block';
+//        document.querySelector('#wrapwrap').style.overflow = 'hidden';
     },
     /**
      *for closing the modal dialog
      */
     _onClickCloseModal: function () {
         this.el.querySelector('#myModal').style.display = 'none';
+//        document.querySelector('#wrapwrap').style.overflow = 'auto';
     },
     /**
      *getting content from the uploaded file
@@ -74,7 +76,7 @@ publicWidget.registry.PaymentProof = publicWidget.Widget.extend({
                 $(attachment_ids).each(function (attachment_id) {
                     var id = "/web/content/" + attachment_ids[attachment_id]['id']
                     var name = attachment_ids[attachment_id]['name']
-                    self.$el.find('#showing_updated_receipt').append("<a class='btn btn-outline-info' href='" + id + "'>" + name + " <i class='fa fa-download'></i></a><br/>");
+                    self.$el.find('#showing_updated_receipt').append("<a style='width:200px; margin-bottom: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;' class='btn btn-outline-secondary' href='" + id + "'>" + name + " <i class='fa fa-download'></i></a><br/>");
                 });
             } else {
                 self.$el.find("#showing_updated_receipt").empty();

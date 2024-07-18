@@ -5,7 +5,7 @@ publicWidget.registry.Template = publicWidget.Widget.extend({
     init() {
         this.rpc = this.bindService("rpc");
     },
-    selector: '.my_account_screen',
+    selector: '#wrapwrap',
     events: {
         'click #btnShowModal': '_onClickShowModal',
         'click .close_modal': '_onClickCloseModal',
@@ -13,6 +13,8 @@ publicWidget.registry.Template = publicWidget.Widget.extend({
         'click #payment_proof_update': '_onClickUpdateAttachment',
         'click #btnShowReceipt': '_onClickShowReceipt',
         'click #refresh_receipt': '_onClickShowReceipt',
+
+
     },
     /**
      *for showing the modal dialog
@@ -77,11 +79,11 @@ publicWidget.registry.Template = publicWidget.Widget.extend({
                 $(attachment_ids).each(function (attachment_id) {
                     var id = "/web/content/" + attachment_ids[attachment_id]['id']
                     var name = attachment_ids[attachment_id]['name']
-                    self.$el.find('#showing_updated_receipt').append("<a class='btn btn-outline-info' href='" + id + "'>" + name + " <i class='fa fa-download'></i></a><br/>");
+                    self.$el.find('#showing_updated_receipt').append("<a style='width:200px; margin-bottom: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;' class='btn btn-outline-secondary' href='" + id + "'>" + name + " <i class='fa fa-download'></i></a><br/>");
                 });
             } else {
                 self.$el.find("#showing_updated_receipt").empty();
-                self.$el.find('#showing_updated_receipt').append("<p style='color:yellow;'>There is no attachments for this sale order.</p>")
+                self.$el.find('#showing_updated_receipt').append("<p style='color:red;'>There is no attachments for this sale order.</p>")
             }
         })
     }

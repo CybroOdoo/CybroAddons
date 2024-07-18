@@ -18,7 +18,7 @@
 #    (AGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
-from odoo import http
+from odoo import http, _
 from odoo.http import request
 
 
@@ -54,11 +54,13 @@ class WebsitePaymentProof(http.Controller):
             sale_id = int(kw.get('sale_id'))
         else:
             sale_id = request.session.sale_order_id
+        sale = request.env['sale.order'].sudo().browse(sale_id)
         attached_files = kw['attachments']
         for attachment in attached_files:
             name = attachment['name']
             content = attachment['content']
-            request.env['ir.attachment'].sudo().create({
+            payment_proof_attachment = request.env[
+                'ir.attachment'].sudo().create({
                 'name': name,
                 'res_model': 'sale.order',
                 'res_id': sale_id,
@@ -66,6 +68,20 @@ class WebsitePaymentProof(http.Controller):
                 'public': True,
                 'datas': content,
             })
+            copied_attachment = payment_proof_attachment.copy()
+            body = _("%s document is added by %s" % (
+                attachment['name'], request.env.user.name))
+            sale.message_post(body=body)
+            mail_template = request.env.ref(
+                'payment_proof_attachment'
+                '.payment_proof_attachment_email_template').id
+            payment_proof_template = request.env['mail.template'].browse(
+                mail_template)
+            payment_proof_template.attachment_ids = [
+                (6, 0, [copied_attachment.id])]
+            payment_proof_template.send_mail(sale_id, force_send=True)
+            payment_proof_template.attachment_ids = [(3, copied_attachment.id)]
+
         return
 
     @http.route(['/my_account_screen/show_updated'], type='json',
