@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Display Stock in POS | Restrict Out-of-Stock Products in POS',
-    'version': '16.0.1.0.1',
+    'version': '16.0.2.1.1',
     'category': 'Point of Sale',
     'summary': "Enhance your Point of Sale experience by preventing the "
                "ordering of out-of-stock products during your session",
@@ -42,6 +42,8 @@
             '/pos_restrict_product_stock/static/src/xml/RestrictStockPopup.xml',
             '/pos_restrict_product_stock/static/src/js/RestrictStockPopup.js',
             '/pos_restrict_product_stock/static/src/js/ProductScreen.js',
+            '/pos_restrict_product_stock/static/src/js/model.js',
+            '/pos_restrict_product_stock/static/src/js/receipt_screen.js',
         ],
     },
     'images': ['static/description/banner.jpg'],

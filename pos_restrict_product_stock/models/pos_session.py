@@ -34,5 +34,15 @@ class PosSession(models.Model):
         result = super()._loader_params_product_product()
         result['search_params']['fields'].append('qty_available')
         result['search_params']['fields'].append('virtual_available')
+        result['search_params']['fields'].append('detailed_type')
         result['context']['warehouse'] = self.config_id.picking_type_id.warehouse_id.id
+        return result
+
+    def _loader_params_res_company(self):
+        """Load point_of_sale_update_stock_quantities quantity field to pos session.
+                   :return dict: returns dictionary of field parameters for the
+                                res company model
+                """
+        result = super()._loader_params_res_company()
+        result['search_params']['fields'].append('point_of_sale_update_stock_quantities')
         return result
