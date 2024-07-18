@@ -27,7 +27,10 @@
               priority="30">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
             <t t-call="portal.portal_docs_entry">
+                <t t-set="icon"
+                   t-value="'/website_subscription_package/static/img/image01.png'"/>
                 <t t-set="title">Subscription</t>
+                <t t-set="text">Subscription to review</t>
                 <t t-set="url" t-value="'/my/subscription_order'"/>
                 <t t-set="placeholder_count" t-value="'subscription_count'"/>
             </t>
@@ -80,7 +83,7 @@
     <template id="subscription_page" name="Subscription Detail Page">
         <t t-call="portal.portal_layout">
             <t t-set="wrapwrap_classes" t-value="'o_portal_bg_dark'"/>
-            <div class="row mt16 o_portal_sidebar">
+            <div class="row mt16 o_portal_sidebar subscription_detail_temp">
                 <!--  Subscription detail page  -->
                 <div class="col-12 col-lg">
                     <div class="card">
@@ -93,6 +96,7 @@
                                             <span t-esc="subscription.name"/>
                                         </h1>
                                     </div>
+
                                     <t t-if="subscription.stage_id.name == 'Draft'">
                                         <a t-att-href="'/my/subscription_order/id=%s/state=%s' % (subscription.id,subscription.stage_id.name)">
                                             <button type="button"
@@ -104,6 +108,135 @@
                                             </button>
                                         </a>
                                     </t>
+                                    <t t-if="subscription.stage_id.name == 'In Progress'">
+                                        <div class="btnShowCloseSubscriptionModal">
+                                            <div id="btnShowCloseSubscriptionModal"
+                                                 t-att-id="subscription.id"
+                                                 class="btn btn-secondary">
+                                                Close Subscription
+                                            </div>
+                                        </div>
+                                    </t>
+                                    <!--Subscription Close Modal-->
+                                    <div id="subscription_close_modal"
+                                         class="modal">
+                                        <form action="/my/subscription_order/cancel"
+                                              method="post"
+                                              id="subscription_close_form"
+                                              name="subscription_close_form"
+                                              enctype="multipart/form-data"
+                                              data-mark="*">
+                                            <input type="hidden"
+                                                   name="csrf_token"
+                                                   t-att-value="request.csrf_token()"/>
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">
+                                                            Subscription Close
+                                                            Reason
+                                                        </h5>
+                                                        <span class="close_modal">
+                                                            <i class="fa fa-times-circle"/>
+                                                        </span>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                                            <label class="col-form-label col-sm-auto s_website_form_label">
+                                                                <span class="s_website_form_label_content">
+                                                                    Close
+                                                                    Reason
+                                                                </span>
+                                                                <span class="s_website_form_mark">
+                                                                    *
+                                                                </span>
+                                                            </label>
+                                                            <div class="col-sm">
+                                                                <select id="close_reason_id"
+                                                                        type="text"
+                                                                        class="form-control s_website_form_input"
+                                                                        name="reason"
+                                                                        required="required">
+                                                                    <option t-att-value=""/>
+                                                                    <t t-foreach="close_reasons or []"
+                                                                       t-as="reason">
+                                                                        <option t-att-value="reason.id"
+                                                                                t-att-data-state-name="reason.name">
+                                                                            <t t-esc="reason.name"/>
+                                                                        </option>
+                                                                    </t>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <br/>
+                                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                                            <label class="col-form-label col-sm-auto s_website_form_label"
+                                                                   for="studio1">
+                                                                <span class="s_website_form_label_content">
+                                                                    Closed By
+                                                                </span>
+                                                                <span class="s_website_form_mark">
+                                                                    *
+                                                                </span>
+                                                            </label>
+                                                            <div class="col-sm">
+                                                                <select id="user_id"
+                                                                        type="text"
+                                                                        class="form-control s_website_form_input"
+                                                                        name="user"
+                                                                        required="required">
+                                                                    <option t-att-value=""/>
+                                                                    <t t-foreach="users or []"
+                                                                       t-as="user">
+                                                                        <option t-att-value="user.id">
+                                                                            <t t-esc="user.name"/>
+                                                                        </option>
+                                                                    </t>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <br/>
+                                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                                            <label class="col-form-label col-sm-auto s_website_form_label"
+                                                                   for="studio1">
+                                                                <span class="s_website_form_label_content">
+                                                                    Closed On
+                                                                </span>
+                                                                <span class="s_website_form_mark">
+                                                                    *
+                                                                </span>
+                                                            </label>
+                                                            <div class="col-sm">
+                                                                <input type="date"
+                                                                       name="date_closed"
+                                                                       required="1"
+                                                                       t-attf-class="form-control"/>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                                            <div class="d-none col-sm">
+                                                                <input name="subscription_id"
+                                                                       id="id"
+                                                                       type="number"
+                                                                       t-att-value="subscription.id"
+                                                                       t-attf-class="form-control"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer document_attach_modal_footer">
+                                                        <button type="submit"
+                                                                id="confirm_close_subscription"
+                                                                t-att-id="subscription.id"
+                                                                class="btn btn-primary">
+                                                            <i class="fa fa-check"/>
+                                                            Submit
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
                                     <div class="subscription_state">
                                         <span class="badge rounded-pill bg-info text-white float-end fs-6"
                                               t-field="subscription.stage_id.name">
@@ -144,7 +277,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <hr/>
+                                <br/>
                                 <t t-call="website_subscription_package.subscription_lines"/>
                             </div>
                         </div>

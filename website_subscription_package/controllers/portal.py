@@ -86,6 +86,9 @@ class SubscriptionCustomerPortal(portal.CustomerPortal):
         """Render subscription page."""
         subscription = request.env['subscription.package'].sudo().browse(
             subscription)
+        cancel_reason = request.env['subscription.package.stop'].sudo().search(
+            [])
+        users = request.env['res.users'].sudo().search([])
         if state == 'Draft':
             subscription.button_start_date()
         try:
@@ -95,4 +98,29 @@ class SubscriptionCustomerPortal(portal.CustomerPortal):
             return request.website.render("website.403")
         return request.render(
             "website_subscription_package.subscription_page", {
-                'subscription': subscription.sudo()})
+                'subscription': subscription.sudo(),
+                'users': users,
+                'close_reasons': cancel_reason})
+
+    @http.route(
+        ['/my/subscription_order/cancel'],
+        type='http', auth="user", website=True)
+    def subscription_cancel(self, **post):
+        """Render subscription page."""
+        subscription = request.env['subscription.package'].sudo().browse(
+            int(post.get('subscription_id')))
+        subscription.is_closed = True
+        subscription.close_reason_id = int(post.get('reason'))
+        subscription.closed_by = int(post.get('user'))
+        subscription.close_date = post.get('date_closed')
+        stage = (request.env['subscription.package.stage'].search([
+            ('category', '=', 'closed')]).id)
+        values = {'stage_id': stage, 'is_to_renew': False}
+        subscription.write(values)
+        for lines in subscription.sale_order_id.order_line.filtered(
+                lambda x: x.product_template_id.is_subscription == True):
+            lines.qty_invoiced = lines.product_uom_qty
+            lines.qty_to_invoice = 0
+        return request.render(
+            "website_subscription_package.subscription_page",
+            {'subscription': subscription.sudo()})

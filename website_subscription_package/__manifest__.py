@@ -43,6 +43,7 @@
     'assets': {
         'web.assets_frontend': [
             'website_subscription_package/static/src/js/website_sale.js',
+            'website_subscription_package/static/src/js/subscription.js'
         ],
     },
     'images': ['static/description/banner.jpg'],
