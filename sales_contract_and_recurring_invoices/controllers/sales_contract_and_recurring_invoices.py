@@ -26,29 +26,47 @@ from odoo.addons.portal.controllers.portal import CustomerPortal
 
 class PortalAccount(CustomerPortal):
     """ Super customer portal and get count of contracts """
+
     def _prepare_home_portal_values(self, counters):
         """ Prepares values for the home portal """
         values = super()._prepare_home_portal_values(counters)
-        partner = request.env.user.partner_id.id
-        contract_count = request.env['subscription.contracts'].search([
-            ('partner_id', '=', partner)])
+
+        user = request.env.user
+        contract_model = request.env['subscription.contracts']
+        is_admin = user.has_group('base.group_system')
+        domain = []
+        if not is_admin:
+            partner_id = user.partner_id.id
+            domain = [('partner_id', '=', partner_id)]
+
+        contract_count = contract_model.search(domain)
         values['contract_count'] = len(contract_count)
         return values
 
 
 class ContractsController(http.Controller):
     """ Sale contract in customer portal controller """
+
     @http.route(['/my/contracts'], type='http', auth='user', csrf=False,
                 website=True)
     def portal_my_quotes(self):
         """ Displays Contracts in portal """
-        partner = request.env.user.partner_id.id
+        user = request.env.user
+        partner_id = user.partner_id.id
+        is_admin = user.has_group('base.group_system')
+
+        domain = []
+        if not is_admin:
+            domain = [('partner_id', '=', partner_id)]
+
+        records = request.env['subscription.contracts'].search(domain)
+
         values = {
-            'records': request.env['subscription.contracts'].search(
-                [('partner_id', '=', partner)]),
+            'records': records,
         }
         return request.render(
-            'sales_contract_and_recurring_invoices.tmp_contract_details', values)
+            'sales_contract_and_recurring_invoices.tmp_contract_details',
+            values)
 
     @http.route(['/contracts/<int:contract_id>/'], type='http', auth='user',
                 csrf=False, website=True)
