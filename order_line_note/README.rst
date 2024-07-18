@@ -3,7 +3,7 @@
     :alt: License: LGPL-3
 
 Order Line Notes
-================
+==================
 * The Order Line Notes module is used to add notes to sale and purchase order lines, which can also be viewed in the sales and purchase order reports.
 
 Installation

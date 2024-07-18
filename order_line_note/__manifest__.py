@@ -25,8 +25,9 @@
     'category': 'Sales,Purchases,Productivity',
     'summary': """This module is used to add note for product.""",
     'description': """The Order Line Notes module is used to add notes to
-    sale and purchase order lines, which can be viewed in the sales and purchase
-     order reports and also view in Transfers & Invoices.""",
+                   sale and purchase order lines, which can be viewed in
+                   the sales and purchase order reports and also view in 
+                   Transfers & Invoices.""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -41,7 +42,7 @@
         'views/sale_order_views.xml',
         'views/stock_picking_views.xml'
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'License': 'LGPL-3',
     'installable': True,
     'auto_install': False,
