@@ -89,10 +89,9 @@ class LoanRequest(models.Model):
                                                       "rejected reason")
     request = fields.Boolean(string="Request",
                              help="For monitoring the record")
-    state = fields.Selection(
-        string='State',
-        selection=[('draft', 'Draft'), ('confirmed', 'Confirmed'),
-                   ('waiting for approval', 'Waiting For Approval'),
+    state = fields.Selection(string='State',
+selection=[('draft', 'Draft'), ('confirmed', 'Confirmed'),
+                   ('waiting', 'Waiting For Approval'),
                    ('approved', 'Approved'), ('disbursed', 'Disbursed'),
                    ('rejected', 'Rejected'), ('closed', 'Closed')],
         copy=False, tracking=True, default='draft', help="Loan request states")
@@ -148,7 +147,7 @@ class LoanRequest(models.Model):
     def action_request_for_loan(self):
         """Change the state to waiting for approval"""
         if self.request:
-            self.write({'state': "waiting for approval"})
+            self.write({'state': "waiting"})
         else:
             message_id = self.env['message.popup'].create(
                 {'message': _("Compute the repayments before requesting")})

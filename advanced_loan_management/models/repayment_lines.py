@@ -122,9 +122,9 @@ class RepaymentLine(models.Model):
             ],
         })
         if invoice:
-            self.invoice = True
-            self.write({'state': 'invoiced'})
-
+            invoice.action_post()
+            self.invoice=True
+            self.write({'state':'invoiced'})
         return {
             'name': 'Invoice',
             'res_model': 'account.move',
@@ -136,8 +136,10 @@ class RepaymentLine(models.Model):
     def action_view_invoice(self):
         """To view the invoices"""
         invoice = self.env['account.move'].search([
-            ('payment_reference', '=', self.name,)
+            ('payment_reference', '=', self.name)
         ])
+        self.invoice = True
+
         return {
             'name': 'Invoice',
             'res_model': 'account.move',
