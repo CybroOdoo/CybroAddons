@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="diva_product_view" name="Diva Product View"
+              inherit_id="website_sale.product">
+        <xpath expr="//a[@id='add_to_cart']" position="replace">
+<!--            Replaced add to cart with new one-->
+            <a role="button" id="add_to_cart" style="margin-right:-30px;"
+               class="btn btn-add btn-primary btn-lg mt16 js_check_product
+               a-submit d-block d-sm-inline-block" href="#">
+                <i class="bi bi-cart2"/> Add to Cart</a>
+        </xpath>
+    </template>
+
+    <template id="diva_product_price" inherit_id="website_sale.product_price">
+        <xpath expr="//div[@itemprop='offers']"
+               position="replace">
+<!--            Setting up the product price-->
+            <div itemprop="offers" itemscope="itemscope"
+                 itemtype="http://schema.org/Offer" class="product_price mt16">
+                <h4 class="oe_price_h4 css_editable_mode_hidden">
+                    <span t-attf-class="text-danger oe_default_price {{'' if combination_info['has_discounted_price'] else 'd-none'}}"
+                          style="text-decoration: line-through; white-space: nowrap;"
+                          t-esc="combination_info['list_price']"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+                    />
+                    <b class="oe_price" style="white-space: nowrap; margin-right:250px;"
+                       t-esc="combination_info['price']"
+                       t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    <span itemprop="price" style="display:none;"
+                          t-esc="combination_info['price']"/>
+                    <span itemprop="priceCurrency" style="display:none;"
+                          t-esc="website.currency_id.name"/>
+                </h4>
+                <h4 class="css_non_editable_mode_hidden decimal_precision"
+                    t-att-data-precision="str(website.currency_id.decimal_places)">
+                    <span t-field="product.list_price"
+                          t-options='{
+                   "widget": "monetary",
+                   "display_currency": product.currency_id,}'/>
+                </h4>
+            </div>
+        </xpath>
+    </template>
+</odoo>

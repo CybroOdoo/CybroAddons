@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="product_page" inherit_id="website_sale.products"
+              active="True" name="Products 1">
+        <xpath expr="//div[hasclass('container')]" position="before">
+            <Section class="banner_sub">
+                <!--                Replaced the banner with the new styles-->
+                <div class="wrapper" style=" background-color: #b0dbf081;
+                padding: 50px 0;">
+                    <div class="container">
+                        <div class="row">
+                            <div class="sub_page">
+                                <div class="name"
+                                     style="color: #222831;
+                                     font-size: 28px;font-weight: 700;
+                                     padding-left: 12px">
+                                    Shop
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Section>
+        </xpath>
+    </template>
+    <template id="diva_search" name="diva Search"
+              inherit_id="website.website_search_box">
+        <xpath expr="//div[@role='search']" position="replace">
+            <div t-attf-class="input-group #{_classes}" role="search"
+                 style="width: 60%;">
+                <t t-set="search_placeholder">Search...</t>
+                <input type="search" name="search"
+                       t-att-class="'search-query form-control oe_search_box border-0 bg-light %s' % _input_classes"
+                       t-att-placeholder="placeholder if placeholder else search_placeholder"
+                       t-att-value="search" style="padding: 10px;font-size: 17px;
+                                        border: 1px solid #ccc !important;float: left;
+                                        width: 100%; background: #ffffff !important;"/>
+                <button type="submit"
+                        t-att-class="'btn oe_search_button %s' % (_submit_classes or 'btn-light')"
+                        aria-label="Search" title="Search" style="padding: 10px;
+                                        background: transparent;color: #e2e2e2;
+                                        font-size: 17px;border: 1px solid #ccc;
+                                        border-left-color: rgb(204, 204, 204);
+                                        border-left-style: solid;
+                                        border-left-width: 1px;
+                                        border-left: none;border-bottom: none;
+                                        cursor: pointer;position: absolute;
+                                        right: 0;z-index: 999;">
+                    <i class="oi oi-search"/>
+                    <span t-if="search" class="oe_search_found">
+                        <small>(
+                            <t t-out="search_count or 0"/>
+                            found)
+                        </small>
+                    </span>
+                </button>
+            </div>
+        </xpath>
+    </template>
+    <template id="products_featured" inherit_id="website_sale.products"
+              active="False" customize_show="True" name="Featured Products">
+        <xpath expr="//div[hasclass('o_wsale_products_main_row')]" position="before">
+            <t t-set="enable_left_column" t-value="True"/>
+        </xpath>
+    </template>
+
+    <template id="features" inherit_id="website_sale.products">
+        <xpath expr="//t[@t-if='is_view_active('website_sale.sort')']"
+               position="replace">
+            <!--            Replaced the sort with new styles-->
+            <div t-attf-class="o_sortby_dropdown dropdown dropdown_sorty_by ms-lg-3 {{_classes}}">
+                <small class="d-none d-lg-inline text-muted">Sort By:</small>
+                <a role="button" href="#"
+                   t-attf-class="dropdown-toggle btn btn-{{navClass}}"
+                   data-bs-toggle="dropdown">
+                    <span class="d-none d-lg-inline">
+                        <t t-if="isSortingBy" t-out="isSortingBy[0][1]"/>
+                        <span t-else="1" t-field="website.shop_default_sort"/>
+                    </span>
+                    <i class="fa fa-sort-amount-asc d-lg-none"/>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end" role="menu">
+                    <t t-foreach="website_sale_sortable" t-as="sortby">
+                        <a role="menuitem" rel="noindex,nofollow"
+                           t-att-href="keep('/shop', order=sortby[0])"
+                           class="dropdown-item">
+                            <span t-out="sortby[1]"/>
+                        </a>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="diva_price_list" name="diva Search"
+              inherit_id="website_sale.pricelist_list">
+        <xpath expr="//a[@role='button']" position="replace">
+            <!--            Replaced the pricelist with new one-->
+            <div t-attf-class="o_pricelist_dropdown dropdown #{'' if hasPricelistDropdown else 'd-none'} #{_classes}">
+                <t t-set="curr_pl" t-value="website.pricelist_id"/>
+                <a role="button" href="#"
+                   t-attf-class="dropdown-toggle btn btn-{{navClass}}"
+                   data-bs-toggle="dropdown">
+                    <t t-esc="curr_pl and curr_pl.name or ' - '"/>
+                </a>
+                <div class="dropdown-menu" role="menu">
+                    <t t-foreach="website_sale_pricelists" t-as="pl">
+                        <a role="menuitem"
+                           t-att-href="'/shop/change_pricelist/%s' % pl.id"
+                           class="dropdown-item">
+                            <span class="switcher_pricelist"
+                                  t-att-data-pl_id="pl.id" t-esc="pl.name"/>
+                        </a>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
