@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="customer_pos_screen" name="POS Customer Screen">
+        <!-- Template of Customer Screen -->
+        <div style='background-color:lightblue'>
+            <h3>
+                <center>POS Order Lines</center>
+            </h3>
+        </div>
+        <div class="container row" id="customer_facing_display"
+             style="width: 100%; display: contents; align-items: center; justify-content: center;">
+            <center style="width:100%">
+                <div class="pos_orderlines col-md-10">
+                    <table class="table table-striped table-light">
+                        <thead>
+                            <tr>
+                                <th scope="col" colspan="2">Name</th>
+                                <th scope="col">Quantity</th>
+                                <th scope="col">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="orderlinelist"
+                               t-as="orderline">
+                                <tr>
+                                    <th colspan="2">
+                                        <t t-esc="orderline['name']"/>
+                                        <input type="hidden" name="session"
+                                               class="session_id"
+                                               t-att-value="orderline['session']"/>
+                                        <input type="hidden" name="partner"
+                                               class="partner_id"
+                                               t-att-value="orderline['partner_id']"/>
+                                        <input type="hidden"
+                                               name="order_name"
+                                               class="order_name"
+                                               t-att-value="orderline['order_name']"/>
+                                    </th>
+                                    <td>
+                                        <t t-esc="orderline['qty']"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="orderline['price']"/>
+                                    </td>
+                                </tr>
+                            </t>
+                            <tr>
+                                <td colspan="2"/>
+                                <td/>
+                                <th>
+                                    <t t-esc="total"/>
+                                </th>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                    <div class="row" t-if="orderlinelist">
+                        <div class="col"
+                             style="align-items: flex-start; display: flex;">
+                            <button id="openModalBtn" class="btn btn-secondary">
+                                Add Review
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </center>
+        </div>
+        <!-- Review Modal -->
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeModal">&#215;</span>
+                <div id="review-form-container">
+                    <h2 id="add-review-header">Add Review</h2>
+                    <form id="review-form">
+                        <div class="popup five-star-rating-popup">
+                            <header class="title">Rate Our Service</header>
+                            <main class="body content">
+                                <div class="rate_this_prod mars_hide"
+                                     style="align-items: center;text-align: center; margin-top:40px; margin-bottom:40px;">
+                                    <div class="rate stars">
+                                        <input type="radio" id="star5"
+                                               name="rate" value="star5"
+                                               onclick="getStar()"/>
+                                        <label for="star5" title="text">5
+                                            stars
+                                        </label>
+                                        <input type="radio" id="star4"
+                                               name="rate" value="star4"
+                                               onclick="getStar()"/>
+                                        <label for="star4" title="text">4
+                                            stars
+                                        </label>
+                                        <input type="radio" id="star3"
+                                               name="rate" value="star3"
+                                               onclick="getStar()"/>
+                                        <label for="star3" title="text">3
+                                            stars
+                                        </label>
+                                        <input type="radio" id="star2"
+                                               name="rate" value="star2"
+                                               onclick="getStar()"/>
+                                        <label for="star2" title="text">2
+                                            stars
+                                        </label>
+                                        <input type="radio" id="star1"
+                                               name="rate" value="star1"
+                                               onclick="getStar()"/>
+                                        <label for="star1" title="text">1 star
+                                        </label>
+                                    </div>
+                                </div>
+                                <textarea
+                                        name="textarea"
+                                        t-on-change="review_text"
+                                        class="review_text"
+                                        id="productRating"
+                                        rows="4"
+                                        placeholder="'Write a message...'"/>
+                            </main>
+                            <footer class="footer">
+                                <button type="button" onclick="myFunction()">
+                                    Submit
+                                </button>
+                            </footer>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript"
+                src="//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"/>
+        <script>
+            <!--  Function for modal  -->
+            var modal = document.getElementById("myModal");
+            var openModalBtn = document.getElementById("openModalBtn");
+            var closeModal = document.getElementById("closeModal");
+            openModalBtn.addEventListener("click", function() {
+            modal.style.display = "block";
+            });
+            closeModal.addEventListener("click", function() {
+            modal.style.display = "none";
+            });
+            window.addEventListener("click", function(event) {
+            if (event.target == modal) {
+            modal.style.display = "none";
+            }
+            });
+        </script>
+        <script>
+            <!--  For pass review and star rating to backend  -->
+            var review_star;
+            function myFunction() {
+            var pos_order = []
+            var review_text = document.getElementById("productRating").value;
+            pos_order.push({
+            'review_text': review_text,
+            'review_star': review_star,
+            'session': document.querySelector('.session_id').value,
+            'partner_id': document.querySelector('.partner_id').value,
+            'order_name': document.querySelector('.order_name').value
+            })
+            var review = JSON.stringify(pos_order)
+            $.ajax({
+            url: '/customer/review/' + review,
+            type: 'post',
+            contentType: 'Application/json',
+            dataType: 'Application/json',
+            data:JSON.stringify({main:review}),
+            success: function(data) {
+            }, error: function(data){
+            }
+            })
+            modal.style.display = "none";
+            }
+            function getStar() {
+            const starInputs = document.querySelectorAll('.stars input[type="radio"]');
+            let selectedValue;
+            starInputs.forEach((input) => {
+            if (input.checked) {
+            selectedValue = input.value;
+            }
+            });
+            review_star = selectedValue
+            }
+        </script>
+    </template>
+    <template id="customer_screen_pos_main_page" name="Customer Screen">
+        <!-- Parent Template for merge Customer Screen -->
+        <div class="cust_scrn">
+            <t t-call="web.frontend_layout" aria-hidden="true"/>
+        </div>
+    </template>
+</odoo>
