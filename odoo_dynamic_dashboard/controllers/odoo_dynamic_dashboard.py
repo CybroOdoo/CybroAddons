@@ -24,38 +24,11 @@ from odoo.http import request
 
 
 class DynamicDashboard(http.Controller):
-    """
-    This is the class DynamicDashboard which is the subclass of the class
-    http.Controller
-    """
+    """Class to search and filter values in dashboard"""
 
-    @http.route('/create/tile', type='json', auth='user')
-    def tile_creation(self, **kw):
-        """This is the method to create the tile when create on the button
-        ADD BLOCK"""
-        tile_type = kw.get('type')
-        action_id = kw.get('action_id')
-        request.env['dashboard.block'].get_dashboard_vals(action_id)
-        tile_id = request.env['dashboard.block'].sudo().create({
-            'name': 'New Block',
-            'type': tile_type,
-            'tile_color': '#1f6abb',
-            'text_color': '#FFFFFF',
-            'fa_icon': 'fa fa-money',
-            'fa_color': '#132e45',
-            'edit_mode': True,
-            'client_action': int(action_id),
-        })
-        return {'id': tile_id.id, 'name': tile_id.name, 'type': tile_type, 'icon': 'fa fa-money',
-                'color': '#1f6abb',
-                'tile_color': '#1f6abb',
-                'text_color': '#FFFFFF',
-                'icon_color': '#1f6abb'}
-
-    @http.route('/get/values', type='json', auth='user')
-    def get_value(self, **kw):
-        """This is the method get_value which will get the records inside the
-        tile"""
-        action_id = kw.get('action_id')
-        datas = request.env['dashboard.block'].get_dashboard_vals(action_id)
-        return datas
+    @http.route('/custom_dashboard/search_input_chart', type='json',
+                auth="public", website=True)
+    def dashboard_search_input_chart(self, search_input):
+        """Function to filter search input in dashboard"""
+        return request.env['dashboard.block'].search([
+            ('name', 'ilike', search_input)]).ids

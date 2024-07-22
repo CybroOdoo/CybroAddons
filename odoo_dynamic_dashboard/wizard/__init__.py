@@ -19,15 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
-
-
-class DashboardBlockLine(models.Model):
-    """ Creates the model Dashboard Block Line"""
-    _name = "dashboard.block.line"
-    _description = "Dashboard Block Line"
-
-    sequence = fields.Integer(string="Sequence",
-                              help="Sequence of the block lines")
-    block_size = fields.Integer(string="Block size",
-                                help="Block size of the dashboard block line")
+from . import dashboard_mail

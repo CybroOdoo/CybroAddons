@@ -19,140 +19,164 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import models, fields, _
-from odoo.exceptions import ValidationError
-from odoo.osv import expression
 from ast import literal_eval
+from odoo import api, fields, models
+from odoo.osv import expression
 
 
 class DashboardBlock(models.Model):
-    """Creates the model Dashboard Blocks"""
+    """Class is used to create charts and tiles in dashboard"""
     _name = "dashboard.block"
-    _description = "Dashboard Blocks"
+    _description = "Dashboard Block"
 
     def get_default_action(self):
-        """This is the method get_default_action which will return the default
-        action id."""
+        """Function to get values from dashboard if action_id is true return
+        id else return false"""
         action_id = self.env.ref(
-            'odoo_dynamic_dashboard.dynamic_dashboard_action')
+            'odoo_dynamic_dashboard.dashboard_view_action')
         if action_id:
             return action_id.id
         return False
 
     name = fields.Char(string="Name", help='Name of the block')
-    field_id = fields.Many2one('ir.model.fields', string='Measured Field',
-                               domain="[('store', '=', True), ('model_id', '=', model_id), ('ttype', 'in', ['float','integer','monetary'])]",
-                               help='Measured field for the block')
-    fa_icon = fields.Char(string="Icon", help='Icon for the block')
-    graph_size = fields.Selection(
-        selection=[("col-lg-4", "Small"), ("col-lg-6", "Medium"),
-                   ("col-lg-12", "Large")],
-        string="Graph Size", default='col-lg-4', help="Size of the graph")
+    fa_icon = fields.Char(string="Icon", help="Add icon for tile")
     operation = fields.Selection(
         selection=[("sum", "Sum"), ("avg", "Average"), ("count", "Count")],
         string="Operation",
-        help='Tile Operation that needs to bring values for tile')
+        help='Tile Operation that needs to bring values for tile',
+        required=True)
     graph_type = fields.Selection(
         selection=[("bar", "Bar"), ("radar", "Radar"), ("pie", "Pie"),
-                   ("line", "Line"), ("doughnut", "Doughnut")],
+                   ("polarArea", "polarArea"), ("line", "Line"),
+                   ("doughnut", "Doughnut")],
         string="Chart Type", help='Type of Chart')
-    measured_field = fields.Many2one("ir.model.fields", string="Measured Field",
-                                     help='Measure field for the chart')
-    client_action = fields.Many2one('ir.actions.client',
-                                    default=get_default_action,
-                                    string="Client Action",
-                                    help='Client Action for the dashboard '
-                                         'block')
+    measured_field_id = fields.Many2one("ir.model.fields",
+                                        string="Measured Field",
+                                        help="Select the Measured")
+    client_action_id = fields.Many2one('ir.actions.client',
+                                       string="Client action",
+                                       default=get_default_action,
+                                       help="Client action")
     type = fields.Selection(
-        selection=[("graph", "Chart"), ("tile", "Tile")], string="Type",
-        help='Type of Block ie, Chart or Tile')
-    x_axis = fields.Char(string="X-Axis", help="X-axis for the chart")
-    y_axis = fields.Char(string="Y-Axis", help="Y-axis for the chart")
-    group_by = fields.Many2one("ir.model.fields", store=True,
-                               string="Group by(Y-Axis)",
-                               help='Field value for Y-Axis',
-                               domain="[('store', '=', True)]")
+        selection=[("graph", "Chart"), ("tile", "Tile")],
+        string="Type", help='Type of Block ie, Chart or Tile')
+    x_axis = fields.Char(string="X-Axis", help="Chart X-axis")
+    y_axis = fields.Char(string="Y-Axis", help="Chart Y-axis")
+    height = fields.Char(string="Height ", help="Height of the block")
+    width = fields.Char(string="Width", help="Width of the block")
+    translate_x = fields.Char(string="Translate_X",
+                              help="x value for the style transform translate")
+    translate_y = fields.Char(string="Translate_Y",
+                              help="y value for the style transform translate")
+    data_x = fields.Char(string="Data_X", help="Data x value for resize")
+    data_y = fields.Char(string="Data_Y", help="Data y value for resize")
+    group_by_id = fields.Many2one("ir.model.fields", store=True,
+                                  string="Group by(Y-Axis)",
+                                  help='Field value for Y-Axis')
     tile_color = fields.Char(string="Tile Color", help='Primary Color of Tile')
     text_color = fields.Char(string="Text Color", help='Text Color of Tile')
+    val_color = fields.Char(string="Value Color", help='Value Color of Tile')
     fa_color = fields.Char(string="Icon Color", help='Icon Color of Tile')
-    filter = fields.Char(string="Filter", help='Filter for Tile')
+    filter = fields.Char(string="Filter", help="Add filter")
     model_id = fields.Many2one('ir.model', string='Model',
-                               help='Model for Tile')
-    model_name = fields.Char(related='model_id.model', readonly=True,
-                             string="Model Name", help='Model Name of Tile')
-    filter_by = fields.Many2one("ir.model.fields", string=" Filter By",
-                                help="Filter By for Tile")
-    filter_values = fields.Char(string="Filter Values",
-                                help="Filter Values for tiles accordingly")
-    sequence = fields.Integer(string="Sequence",
-                              help="sequence of the dashboard")
-    edit_mode = fields.Boolean(default=False, invisible=True,
-                               string="Edit Mode", help="Edit mode of the tile")
+                               help="Select the module name")
+    model_name = fields.Char(related='model_id.model', string="Model Name",
+                             help="Added model_id model")
+    edit_mode = fields.Boolean(string="Edit Mode",
+                               help="Enable to edit chart and tile",
+                               default=False, invisible=True)
 
-    def get_dashboard_vals(self, action_id):
-        """Dashboard block values"""
+    @api.onchange('model_id')
+    def _onchange_model_id(self):
+        if self.operation or self.measured_field_id:
+            self.operation = False
+            self.measured_field_id = False
+
+    def get_dashboard_vals(self, action_id, start_date=None, end_date=None):
+        """Fetch block values from js and create chart"""
         block_id = []
         for rec in self.env['dashboard.block'].sudo().search(
-                [('client_action', '=', int(action_id))]):
+                [('client_action_id', '=', int(action_id))]):
             if rec.filter is False:
                 rec.filter = "[]"
             filter_list = literal_eval(rec.filter)
             filter_list = [filter_item for filter_item in filter_list if not (
                     isinstance(filter_item, tuple) and filter_item[
                 0] == 'create_date')]
-            vals = {
-                'id': rec.id,
-                'name': rec.name,
-                'type': rec.type,
-                'graph_type': rec.graph_type,
-                'icon': rec.fa_icon,
-                'cols': rec.graph_size,
-                'color': rec.tile_color if rec.tile_color else '#1f6abb;',
-                'text_color': rec.text_color if rec.text_color else '#FFFFFF;',
-                'icon_color': rec.fa_color if rec.fa_color else '#1f6abb;',
-                'tile_color': rec.tile_color if rec.tile_color else '#FFFFFF;',
-                'model_name': rec.model_name,
-                'measured_field': rec.measured_field.field_description if rec.measured_field else None,
-                'y_field': rec.measured_field.name,
-                'x_field': rec.group_by.name,
-                'operation': rec.operation,
-                'domain': filter_list
-            }
+            rec.filter = repr(filter_list)
+            vals = {'id': rec.id, 'name': rec.name, 'type': rec.type,
+                    'graph_type': rec.graph_type, 'icon': rec.fa_icon,
+                    'model_name': rec.model_name,
+                    'color': f'background-color: {rec.tile_color};' if rec.tile_color else '#1f6abb;',
+                    'text_color': f'color: {rec.text_color};' if rec.text_color else '#FFFFFF;',
+                    'val_color': f'color: {rec.val_color};' if rec.val_color else '#FFFFFF;',
+                    'icon_color': f'color: {rec.tile_color};' if rec.tile_color else '#1f6abb;',
+                    'height': rec.height,
+                    'width': rec.width,
+                    'translate_x': rec.translate_x,
+                    'translate_y': rec.translate_y,
+                    'data_x': rec.data_x,
+                    'data_y': rec.data_y,
+                    'domain': filter_list,
+                    }
             domain = []
             if rec.filter:
                 domain = expression.AND([literal_eval(rec.filter)])
             if rec.model_name:
                 if rec.type == 'graph':
-                    query = self.env[rec.model_name].get_query(domain,
-                                                               rec.operation,
-                                                               rec.measured_field,
-                                                               group_by=rec.group_by)
-                    try:
-                        self._cr.execute(query)
-                    except Exception as exc:
-                        raise ValidationError(
-                            _(f"Could'nt fetch data try another group by field for {rec.name} block")) from exc
+                    self._cr.execute(self.env[rec.model_name].get_query(domain,
+                                                                        rec.operation,
+                                                                        rec.measured_field_id,
+                                                                        start_date,
+                                                                        end_date,
+                                                                        group_by=rec.group_by_id))
                     records = self._cr.dictfetchall()
                     x_axis = []
                     for record in records:
-                        x_axis.append(record.get(rec.group_by.name))
+                        if record.get('name') and type(
+                                record.get('name')) == dict:
+                            x_axis.append(record.get('name')[self._context.get(
+                                'lang') or 'en_US'])
+                        else:
+                            x_axis.append(record.get(rec.group_by_id.name))
                     y_axis = []
                     for record in records:
                         y_axis.append(record.get('value'))
                     vals.update({'x_axis': x_axis, 'y_axis': y_axis})
                 else:
-                    query = self.env[rec.model_name].get_query(domain,
-                                                               rec.operation,
-                                                               rec.measured_field)
-                    self._cr.execute(query)
+                    self._cr.execute(self.env[rec.model_name].get_query(domain,
+                                                                        rec.operation,
+                                                                        rec.measured_field_id,
+                                                                        start_date,
+                                                                        end_date))
                     records = self._cr.dictfetchall()
                     magnitude = 0
                     total = records[0].get('value')
                     while abs(total) >= 1000:
                         magnitude += 1
                         total /= 1000.0
-                    val = f'{total:.2f}{" KMGTP"[magnitude]}' if magnitude else f'{total:.2f}'
+                    val = '%.2f%s' % (
+                        total, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
                     records[0]['value'] = val
                     vals.update(records[0])
             block_id.append(vals)
         return block_id
+
+    def get_save_layout(self, grid_data_list):
+        """Function fetch edited values while edit layout of the chart or tile
+         and save values in a database"""
+        for data in grid_data_list:
+            block = self.browse(int(data['id']))
+            if data.get('data-x'):
+                block.write({
+                    'translate_x': f"{data['data-x']}px",
+                    'translate_y': f"{data['data-y']}px",
+                    'data_x': data['data-x'],
+                    'data_y': data['data-y'],
+                })
+            if data.get('height'):
+                block.write({
+                    'height': f"{data['height']}px",
+                    'width': f"{data['width']}px",
+                })
+        return True
