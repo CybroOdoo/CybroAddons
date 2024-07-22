@@ -43,7 +43,7 @@
             'odoo_website_helpdesk_dashboard/static/src/js/dashboard_view.js'
         ],
     },
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'auto_install': False,
     'installable': True,
