@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Website Signup Approval",
-    'version': '17.0.1.0.1',
+    'version': '17.0.1.0.2',
     'summary': 'Approve signup request to login to the website',
     'description': """This module approve or reject signup approval request of 
      users from website.User can upload their documents for approval.""",
@@ -30,7 +30,7 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'category': 'Website',
-    'depends': ['website', 'sale_management'],
+    'depends': ['website_sale'],
     'data': [
         'security/website_signup_approval_groups.xml',
         'security/ir.model.access.csv',
