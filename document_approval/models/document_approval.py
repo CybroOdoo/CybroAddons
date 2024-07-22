@@ -20,7 +20,7 @@
 #
 #############################################################################
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 
 class DocumentApproval(models.Model):
@@ -95,6 +95,13 @@ class DocumentApproval(models.Model):
                     'state': step.state,
                     'note': step.note
                 })]
+
+    @api.constrains('team_id')
+    def _check_team_member(self):
+        """function to check whether the team has atleast one member."""
+        if not self.team_id.step_ids.approver_id:
+            raise ValidationError(
+                "Your Team member should atleast have one Approver.")
 
     @api.depends('team_id')
     def _compute_show_approve(self):

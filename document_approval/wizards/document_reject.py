@@ -31,8 +31,14 @@ class DocumentReject(models.TransientModel):
     description = fields.Text(string="Description",
                               help='For adding reason for the rejection')
     document_id = fields.Many2one("document.approval", string="Document",
-                                  help="To track which document is get approved")
+                                  help="To track which document is get approved"
+                                  )
 
     def action_reject_document(self):
         """ Function to reject document"""
         self.document_id.state = "reject"
+        for rec in self.document_id.step_ids.filtered(
+                lambda x: x.approver_id.id == self.env.user.id):
+            rec.write({
+                'current_state': 'rejected',
+            })
