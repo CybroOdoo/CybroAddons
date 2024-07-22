@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Document Approval",
-    "version": "17.0.1.0.0",
+    "version": "17.0.1.0.1",
     "category": "Documents Management",
     "summary": "Manager can approve or reject documents",
     "description": "User can create and upload various document for approvals."

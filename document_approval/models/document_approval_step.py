@@ -52,6 +52,6 @@ class DocumentApprovalSteps(models.Model):
     note = fields.Char(string='Notes', help="To add notes")
     current_state = fields.Selection(
         selection=[('upcoming', 'Upcoming'), ('pending', 'Pending'),
-                   ('approved', 'Approved')],
+                   ('approved', 'Approved'), ('rejected', 'Rejected')],
         default="upcoming", string="Approval State",
         help="THe current state of approval")
