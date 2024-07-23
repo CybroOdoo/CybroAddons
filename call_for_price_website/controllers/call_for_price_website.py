@@ -24,7 +24,8 @@ from odoo.http import request
 
 
 class WebsiteForm(http.Controller):
-    @http.route(['/call_for_price/submit'], type='http',csrf=False, auth="user", website=True ,methods=['POST'])
+    @http.route(['/call_for_price/submit'], type='http', csrf=False,
+                auth="public", website=True, methods=['POST'])
     def call_for_price(self, **post):
         """Function for store the call for price queries to backend"""
         record = request.env['call.price'].sudo().create(post)
