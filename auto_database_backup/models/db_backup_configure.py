@@ -1025,7 +1025,7 @@ class DbBackupConfigure(models.Model):
         if backup_format == 'zip':
             with tempfile.TemporaryDirectory() as dump_dir:
                 filestore = odoo.tools.config.filestore(db_name)
-                cmd.append('--file=' + os.path.join(dump_dir, 'dump.sql'))
+                cmd.insert(-1,'--file=' + os.path.join(dump_dir, 'dump.sql'))
                 subprocess.run(cmd, env=env, stdout=subprocess.DEVNULL,
                                stderr=subprocess.STDOUT, check=True)
                 if os.path.exists(filestore):
@@ -1048,7 +1048,7 @@ class DbBackupConfigure(models.Model):
                     t.seek(0)
                     return t
         else:
-            cmd.append('--format=c')
+            cmd.insert(-1,'--format=c')
             process = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE)
             stdout, _ = process.communicate()
             if stream:
