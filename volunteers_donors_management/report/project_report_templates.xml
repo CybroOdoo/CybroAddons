@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Report Template-->
+    <template id="report_project_details">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="data">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="text-center">
+                            <h1>
+                                <u>Project Report</u>
+                            </h1>
+                        </div>
+                        <br>
+                        </br>
+                        <h3>
+                            Project Name :
+                            <t t-esc="data.name"/>
+                        </h3>
+                        <table class="table table-sm"
+                               style="border: 1px solid black;">
+                            <tr>
+                                <td>
+                                    <strong>Customer Name:</strong>
+                                </td>
+                                <td>
+                                    <t t-if="data.partner_id.name">
+                                        <t t-esc="data.partner_id.name"/>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Project Manger:</strong>
+                                </td>
+                                <td>
+                                    <t t-if="data.user_id.name">
+                                        <t t-esc="data.user_id.name"/>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Planned Date</strong>
+                                </td>
+                                <td>
+                                    <t t-if="data.date_start">
+                                        <t t-esc="data.date_start"/>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Allocated Hours</strong>
+                                </td>
+                                <td>
+                                    <t t-if="data.allocated_hours">
+                                        <t t-esc="data.allocated_hours"/>
+                                    </t>
+                                </td>
+                            </tr>
+                        </table>
+                        <br>
+                        </br>
+                        <t t-if="data.task_ids">
+                            <h3>Tasks:</h3>
+                            <style>
+                                table, thead, th, td, tr, tbody {
+                                border: 1px solid black;
+                                border-collapse: collapse;
+                                padding: 5px;
+                                }
+                            </style>
+                            <table class="table table-sm"
+                                   style="border: 2px solid black;">
+                                <thead>
+                                    <tr>
+                                        <strong>
+                                            <th>Task Name</th>
+                                            <th>Planned Hours</th>
+                                            <th>Spent Hours</th>
+                                            <th>Remaining Hours</th>
+                                            <th>Assigned To</th>
+                                            <th>Assigning Date</th>
+                                            <th>Deadline</th>
+                                            <th>Stage</th>
+                                        </strong>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="data.task_ids" t-as="task">
+                                        <tr>
+                                            <td>
+                                                <t t-esc="task.name"/>
+                                            </td>
+                                            <td>
+                                                <t t-if="task.allocated_hours">
+                                                    <t t-esc="task.allocated_hours"/>
+                                                </t>
+                                            </td>
+                                            <td>
+                                                <t t-set="total_amount" t-value="0.0"/>
+                                                <t t-if="task.timesheet_ids">
+                                                    <t t-foreach="task.timesheet_ids" t-as="time">
+                                                        <t t-if="time.unit_amount">
+                                                            <t t-set="total_amount" t-value="total_amount + time.unit_amount"/>
+                                                        </t>
+                                                    </t>
+                                                </t>
+                                                <t t-esc="total_amount"/>
+                                            </td>
+
+                                            <td>
+                                                <t t-if="task.remaining_hours">
+                                                    <t t-esc="task.remaining_hours"/>
+                                                </t>
+                                            </td>
+                                            <td>
+                                                <t t-esc="', '.join(user.name for user in task.user_ids)"/>
+                                            </td>
+                                            <td>
+                                                <t t-if="task.date_assign">
+                                                    <t t-esc="task.date_assign.strftime('%d-%m-%Y')"/>
+                                                </t>
+                                            </td>
+                                            <td>
+                                                <t t-if="task.date_deadline">
+                                                    <t t-esc="task.date_deadline.strftime('%d-%m-%Y')"/>
+                                                </t>
+                                            </td>
+                                            <td>
+                                                <t t-esc="task.stage_id.name"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                        <br>
+                        </br>
+                        <t t-if="data.project_partner_ids">
+                            <h3>Volunteer Details</h3>
+                            <style>
+                                table, thead, th, td, tr, tbody {
+                                border: 1px solid black;
+                                border-collapse: collapse;
+                                padding: 5px;
+                                }
+                            </style>
+                            <table class="table table-sm"
+                                   style="border: 2px solid black;">
+                                <thead>
+                                    <tr>
+                                        <strong>
+                                            <th>Volunteer</th>
+                                            <th>Volunteer Type</th>
+                                            <th>Volunteer Skill</th>
+                                            <th>Phone</th>
+                                            <th>Email</th>
+                                        </strong>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                    <t t-foreach="data.project_partner_ids"
+                                       t-as="request">
+                                        <tr>
+                                            <td>
+                                                <t t-esc="request.display_name"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="request.volunteer_type_id.volunteer_type"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="', '.join(skill.volunteer_skill for skill in request.volunteer_skill_ids)"/>
+                                            </td>
+
+                                            <td>
+                                                <t t-esc="request.phone"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="request.email"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
