@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': ' University Education Management',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Industries',
     'summary': """This modules helps to manage the university 
      education system""",

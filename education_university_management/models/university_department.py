@@ -35,5 +35,5 @@ class UniversityDepartment(models.Model):
                                 help="In what course the department belongs")
     semester_ids = fields.One2many('university.semester',
                                    'department_id',
-                                   string="Semester", readonly=True,
+                                   string="Semester", required=1,
                                    help="List of semesters under every course")

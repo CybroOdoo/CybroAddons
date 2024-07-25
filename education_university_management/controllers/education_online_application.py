@@ -38,7 +38,7 @@ class OnlineAdmission(http.Controller):
                                     to the website registration form."""
         vals = {
             'department': request.env['university.department'].sudo().search(
-                []),
+                [('semester_ids', '!=', False)]),
             'course': request.env['university.course'].sudo().search([]),
             'semester': request.env['university.semester'].sudo().search([]),
             'year': request.env['university.academic.year'].sudo().search([]),
@@ -58,7 +58,7 @@ class OnlineAdmission(http.Controller):
                 'name': post.get('father'),
                 'is_parent': True
             })
-            request.env['university.application'].sudo().create({
+            application = request.env['university.application'].sudo().create({
                 'name': post.get('first_name'),
                 'last_name': post.get('last_name'),
                 'mother_name': post.get('mother'),
@@ -74,7 +74,18 @@ class OnlineAdmission(http.Controller):
                 'street': post.get('communication_address'),
                 'per_street': post.get('communication_address'),
                 'guardian_id': guardian.id,
-                'image': base64.b64encode(post.get('image').encode('utf-8'))
+                'image': base64.b64encode((post.get('image')).read())
+            })
+            doc_attachment = request.env['ir.attachment'].sudo().create({
+                'name': post.get('att').filename,
+                'res_name': 'Document',
+                'type': 'binary',
+                'datas': base64.encodebytes((post.get('att')).read()),
+            })
+            request.env['university.document'].sudo().create({
+                'document_type_id': post.get('doc_type'),
+                'attachment_ids': doc_attachment,
+                'application_ref_id': application.id
             })
         return request.render(
             "education_university_management.submit_admission",
