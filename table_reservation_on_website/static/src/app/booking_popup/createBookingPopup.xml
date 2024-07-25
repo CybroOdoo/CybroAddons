@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="createBookingPopup" owl="1">
+        <div class="popup product-line-popup">
+            <div class="modal-header">
+                <h4 class="modal-title title">
+                    <span>Reserve Table</span>
+                </h4>
+            </div>
+            <main class="modal-body" style="height: 70vh; overflow-y: scroll;">
+                <div class="partner-details-header d-flex pe-2 gap-2">
+                    <label class="col-form-label" for="name">Customer</label>
+                    <select name="partners"
+                        class="form-control form-control-lg"
+                        style="position: absolute; left:100px; width:75%;"
+                        t-model="state.partner" id="partners" required="true">
+                        <option>Select Customer</option>
+                        <t t-foreach="state.customers" t-as="partner" t-key="partner.id">
+                            <option t-att-value="partner.id">
+                                <t t-out="partner.name"/>
+                            </option>
+                        </t>
+                    </select>
+                    <span style="position: absolute; left: 79px; top: 20px; color: red;">*</span>
+                </div>
+                <br/>
+                <br/>
+                <div class="partner-details-header d-flex pe-2 gap-2">
+                    <label class="col-form-label" for="Date">Date</label>
+                    <input type="date" class="detail partner-name form-control form-control-lg"
+                           style="position: absolute; left:100px; width:75%;"
+                           t-att-required="true" name="Date" id="date"
+                           t-model="state.date" t-on-change="onChangeDate"/>
+                    <span style="position: absolute; left: 48px; top: 96px; color: red;">*</span>
+                </div>
+                <br/>
+                <br/>
+                <div class="partner-details-header d-flex pe-2 gap-2">
+                    <label class="col-form-label" for="starting time">Start Time</label>
+                    <input type="time" class="detail partner-name form-control form-control-lg"
+                           style="position: absolute; left:100px; width:75%;"
+                           t-att-required="true" id="start_time" name="starting time"
+                           t-model="state.start_time" t-on-change="onChangeTime"/>
+                    <span style="position: absolute; left: 83px; top: 171px; color: red;">*</span>
+                </div>
+                <br/>
+                <br/>
+                <div class="partner-details-header d-flex pe-2 gap-2">
+                    <label class="col-form-label" for="ending time">End Time</label>
+                    <input type="time" class="detail partner-name form-control form-control-lg"
+                           style="position: absolute; left:100px; width:75%;"
+                           t-att-required="true" id="end_time" name="ending time"
+                           t-model="state.end_time" t-on-change="onChangeTime"/>
+                    <span style="position: absolute; left: 76px; top: 245px; color: red;">*</span>
+                </div>
+                <br/>
+                <br/>
+                <div class="partner-details-header d-flex pe-2 gap-2">
+                    <label class="col-form-label" for="Floor">Floor</label>
+                    <select name="floor"
+                            class="form-control form-control-lg"
+                            style="position: absolute; left:100px; width:75%;"
+                            t-model="state.floor" required="true"
+                            id="floor" t-on-change="onSelectFloor">
+                        <option t-att-value="state.floor">Select Floor</option>
+                        <t t-foreach="state.floors"
+                           t-as="floor"
+                           t-key="floor.id">
+                            <option t-att-value="floor.id">
+                                <t t-out="floor.name"/>
+                            </option>
+                        </t>
+                    </select>
+                    <span style="position: absolute; left: 51px; top: 320px; color: red;">*</span>
+                </div>
+                <br/>
+                <br/>
+                <div class="table-details-header pe-2 gap-2" t-attf-style="{{ this.state.table_details_header ? 'display: block;' : 'display: none;' }}">
+                    <div id="table_list">
+                        <div class="row" id="table_container_row" style="margin-left: 1%;">
+                            <t t-foreach="state.tables" t-as="table" t-key="table.id">
+                                <div class="card card_table col-sm-2 text-truncate" t-att-data-id="table.id" t-on-click="onSelectTable"
+                                     style="background-color:#96ccd5; padding-right:0; padding-left: 0; margin:3px; width:30%; height: 50px;">
+                                    <div class="card-body" style="height: 40px;">
+                                        <span class="select_table_id text-truncate"><t t-esc="table.name"/></span>
+                                        <br/><br/>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+                <br/>
+                <br/>
+                <t t-if="env.services.pos.config.has_reservation_charge">
+                    <div class="partner-details-header d-flex pe-2 gap-2">
+                        <label class="col-form-label" for="amount">Amount</label>
+                        <input class="detail partner-name form-control form-control-lg"
+                               style="position: absolute; left:100px; width:75%;"
+                               name="amount" readonly="1" t-model="state.amount"/>
+                    </div>
+                </t>
+                <br/>
+                <br/>
+                <t t-if="env.services.pos.config.has_lead_time">
+                    <div class="partner-details-header d-flex pe-2 gap-2">
+                        <label class="col-form-label" for="Lead Time">Lead Time</label>
+                        <input type="time" class="detail partner-name form-control form-control-lg"
+                               style="position: absolute; left:100px; width:75%;"
+                               t-model="state.lead_time" name="Lead Time"/>
+                    </div>
+                </t>
+            </main>
+            <footer class="footer modal-footer">
+                <t t-if="env.services.pos.config.has_reservation_charge">
+                    <div class="button confirm btn btn-lg btn-primary"
+                        t-on-click="createReservationPayment">
+                        Pay
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="button confirm btn btn-lg btn-primary"
+                        t-on-click="createReservation">
+                        Confirm
+                    </div>
+                </t>
+                <div class="button cancel btn btn-lg btn-secondary"
+                     t-on-click="cancel">
+                    Cancel
+                </div>
+            </footer>
+        </div>
+    </t>
+</templates>

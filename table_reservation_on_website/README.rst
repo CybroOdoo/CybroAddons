@@ -2,9 +2,9 @@
     :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 
-Table Reservation on Website
+Table Reservation On POS And Website
 ============================
-This module allows to reserve tables in POS from website.
+This module allows to reserve tables in POS and website.
 
 Configuration
 =============

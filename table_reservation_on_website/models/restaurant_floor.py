@@ -22,12 +22,9 @@
 from odoo import api, fields, models
 
 
-class RestaurantTable(models.Model):
-    """ Inherit restaurant table for adding rate field """
-    _inherit = 'restaurant.table'
-
-    rate = fields.Float(string="Amount",
-                        help="Amount for reservation of this table")
+class RestaurantFloor(models.Model):
+    """ Inherit restaurant table for adding is_show_field field """
+    _inherit = 'restaurant.floor'
 
     is_show_field = fields.Boolean(string='Show field',
                                    compute='_compute_is_show_field',

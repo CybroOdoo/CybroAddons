@@ -19,7 +19,10 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
+from . import pos_config
 from . import res_config_settings
 from . import restaurant_table
 from . import sale_order
 from . import table_reservation
+from . import restaurant_floor
+from . import pos_session

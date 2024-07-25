@@ -19,5 +19,24 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-from . import table_reservation_on_website_website_sale
-from . import table_reservation_on_website
+from odoo import models
+
+
+class PosSession(models.Model):
+    """inherited pos session to load the product product"""
+    _inherit = 'pos.session'
+
+    def _get_pos_ui_product_product(self, params):
+        """load product to pos"""
+        result = super()._get_pos_ui_product_product(params)
+        product = self.env.ref('table_reservation_on_website'
+                               '.product_product_table_booking')
+
+        data = product.read(fields=params['search_params']['fields'])
+        append_data = data[0]
+        append_data['categ'] = {'id': product.categ_id.id,
+                                'name': product.categ_id.name,
+                                'parent_id': product.categ_id.parent_id.id,
+                                'parent': None}
+        result.append(append_data)
+        return result

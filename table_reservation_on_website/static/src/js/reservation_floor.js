@@ -10,28 +10,51 @@ publicWidget.registry.table_reservation_floor = publicWidget.Widget.extend({
     Select table for reservation
     **/
     _onTableClick: function () {
+        this.$el.find('.submit_button').prop('disabled', false);
         var current_div_id = event.target.closest('.card_table')
-        var rate = current_div_id.querySelector('#rate').innerText
-        var count = this.$el.find('#count_table')[0];
-        var amount = this.$el.find('#total_amount')[0];
-        var booked = this.$el.find('#tables_input')[0];
+        var rateElement = current_div_id.querySelector('#rate');
+        var countElement = this.$el.find('#count_table')[0];
+        var amountElement = this.$el.find('#total_amount')[0];
+        var bookedElement = this.$el.find('#tables_input')[0];
+        var rate = rateElement ? rateElement.innerText : 0;
         if (current_div_id.style.backgroundColor == 'green'){
             booked_table.splice(booked_table.indexOf(Number(current_div_id.id)), 1);
             current_div_id.style.backgroundColor = '#96ccd5';
-            count.innerText = Number(count.innerText) - 1;
-            amount.innerText = Number(amount.innerText) - Number(rate)
+            if (countElement) {
+                var countText = countElement.innerText.trim();
+                var count = countText !== '' ? Number(countText) : 0;
+                countElement.innerText = count > 0 ? count - 1 : 0;
+            }
+            if (amountElement) {
+                amountElement.innerText = Number(amountElement.innerText) - Number(rate);
+            }
         }
         else{
             current_div_id.style.backgroundColor = 'green'
-            count.innerText = Number(count.innerText) + 1;
-            booked_table.push(Number(current_div_id.id))
-            if (amount.innerText){
-                amount.innerText = Number(rate) + Number(amount.innerText)
+            if (countElement) {
+                var countText = countElement.innerText.trim();
+                var count = countText !== '' ? Number(countText) : 0;
+                countElement.innerText = count + 1;
             }
-            else{
-                amount.innerText = Number(rate)
+            booked_table.push(Number(current_div_id.id))
+            if (amountElement) {
+                if (amountElement.innerText) {
+                    amountElement.innerText = Number(rate) + Number(amountElement.innerText);
+                } else {
+                    amountElement.innerText = Number(rate);
+                }
             }
         }
-        booked.value  = booked_table
+        if (bookedElement) {
+            bookedElement.value = booked_table;
+        }
+        if (this.$el.find('#count_table')[0]) {
+            if (Number(this.$el.find('#count_table')[0].innerText.trim()) == 0){
+                this.$el.find('.submit_button').prop('disabled', true);
+            }
+            else{
+                this.$el.find('.submit_button').prop('disabled', false);
+            }
+        }
     },
 });

@@ -32,14 +32,28 @@ class ResConfigSettings(models.TransientModel):
                                                          "reservation_on_"
                                                          "website.reservation"
                                                          "_charge")
-    refund = fields.Text(string="No Refund Notes",
-                         help="No refund notes to display in website")
+    refund = fields.Text(string="Notes",
+                         help="You can display this notes in Website table "
+                              "booking")
+    is_lead_time = fields.Boolean(
+        string="Lead Time",
+        help="Enable to set lead time for reservations")
+    reservation_lead_time = fields.Float(
+        string="Reservation Lead Time",
+        help="The order should be reserved hours"
+             "before the booking start time.")
 
     def set_values(self):
         """ To set the value for fields in config setting """
+        res = super(ResConfigSettings, self).set_values()
         self.env['ir.config_parameter'].set_param(
             'table_reservation_on_website.refund', self.refund)
-        return super(ResConfigSettings, self).set_values()
+        self.env['ir.config_parameter'].set_param(
+            'table_reservation_on_website.is_lead_time', self.is_lead_time)
+        self.env['ir.config_parameter'].sudo().set_param(
+            'table_reservation_on_website.reservation_lead_time',
+            self.reservation_lead_time)
+        return res
 
     def get_values(self):
         """ To get the value in config settings """
@@ -47,4 +61,12 @@ class ResConfigSettings(models.TransientModel):
         refund = self.env['ir.config_parameter'].sudo().get_param(
             'table_reservation_on_website.refund')
         res.update(refund=refund if refund else False)
+        is_lead_time = self.env['ir.config_parameter'].sudo().get_param(
+            'table_reservation_on_website.is_lead_time')
+        res.update(is_lead_time=is_lead_time if is_lead_time else False)
+        reservation_lead_time = self.env['ir.config_parameter'].sudo().get_param(
+            'table_reservation_on_website.reservation_lead_time')
+        res.update(
+            reservation_lead_time=reservation_lead_time if reservation_lead_time
+            else 0.0)
         return res
