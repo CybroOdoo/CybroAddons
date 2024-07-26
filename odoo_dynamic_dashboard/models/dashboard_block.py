@@ -31,33 +31,44 @@ class DashboardBlock(models.Model):
     _rec_name = "name"
 
     def get_default_action(self):
-        action_id = self.env.ref('odoo_dynamic_dashboard.action_dynamic_dashboard')
+        action_id = self.env.ref('odoo_dynamic_dashboard'
+                                 '.action_dynamic_dashboard')
         if action_id:
             return action_id.id
         else:
             return False
 
     name = fields.Char(string="Name", help='Name of the block')
-    field_id = fields.Many2one('ir.model.fields', 'Measured Field',domain="[('store', '=', True), ('model_id', '=', model_id), ('ttype', 'in', ['float','integer','monetary'])]")
+    field_id = fields.Many2one('ir.model.fields', 'Measured Field',
+                               domain="[('store', '=', True), ('model_id', "
+                                      "'=', model_id), ('ttype', 'in', "
+                                      "['float','integer','monetary'])]")
     fa_icon = fields.Char(string="Icon")
     graph_size = fields.Selection(
-        selection=[("col-lg-4", "Small"), ("col-lg-6", "Medium"), ("col-lg-12", "Large")],
-        string="Graph Size",default='col-lg-4')
+        selection=[("col-lg-4", "Small"), ("col-lg-6", "Medium"),
+                   ("col-lg-12", "Large")],
+        string="Graph Size", default='col-lg-4')
     operation = fields.Selection(
         selection=[("sum", "Sum"), ("avg", "Average"), ("count", "Count")],
-        string="Operation", help='Tile Operation that needs to bring values for tile')
+        string="Operation",
+        help='Tile Operation that needs to bring values for tile')
 
     graph_type = fields.Selection(
-        selection=[("bar", "Bar"), ("radar", "Radar"), ("pie", "Pie"), ("line", "Line"), ("doughnut", "Doughnut")],
+        selection=[("bar", "Bar"), ("radar", "Radar"), ("pie", "Pie"),
+                   ("line", "Line"), ("doughnut", "Doughnut")],
         string="Chart Type", help='Type of Chart')
     measured_field = fields.Many2one("ir.model.fields", "Measured Field")
-    client_action = fields.Many2one('ir.actions.client', default = get_default_action)
+    client_action = fields.Many2one('ir.actions.client',
+                                    default=get_default_action)
 
     type = fields.Selection(
-        selection=[("graph", "Chart"), ("tile", "Tile")], string="Type", help='Type of Block ie, Chart or Tile')
+        selection=[("graph", "Chart"), ("tile", "Tile")], string="Type",
+        help='Type of Block ie, Chart or Tile')
     x_axis = fields.Char(string="X-Axis")
     y_axis = fields.Char(string="Y-Axis")
-    group_by = fields.Many2one("ir.model.fields", store=True, string="Group by(Y-Axis)", help='Field value for Y-Axis')
+    group_by = fields.Many2one("ir.model.fields", store=True,
+                               string="Group by(Y-Axis)",
+                               help='Field value for Y-Axis')
     tile_color = fields.Char(string="Tile Color", help='Primary Color of Tile')
     text_color = fields.Char(string="Text Color", help='Text Color of Tile')
     fa_color = fields.Char(string="Icon Color", help='Icon Color of Tile')
@@ -71,10 +82,18 @@ class DashboardBlock(models.Model):
     sequence = fields.Integer(string="Sequence")
     edit_mode = fields.Boolean(default=False, invisible=True)
 
+    @api.onchange('model_id')
+    def _onchange_model_id(self):
+        if self.operation or self.measured_field or self.group_by:
+            self.operation = False
+            self.measured_field = False
+            self.group_by = False
+
     def get_dashboard_vals(self, action_id):
         """Dashboard block values"""
         block_id = []
-        dashboard_block = self.env['dashboard.block'].sudo().search([('client_action', '=', int(action_id))])
+        dashboard_block = self.env['dashboard.block'].sudo().search(
+            [('client_action', '=', int(action_id))])
         for rec in dashboard_block:
             color = rec.tile_color if rec.tile_color else '#1f6abb;'
             icon_color = rec.tile_color if rec.tile_color else '#1f6abb;'
@@ -95,7 +114,9 @@ class DashboardBlock(models.Model):
                 domain = expression.AND([literal_eval(rec.filter)])
             if rec.model_name:
                 if rec.type == 'graph':
-                    query = self.env[rec.model_name].get_query(domain, rec.operation, rec.measured_field,
+                    query = self.env[rec.model_name].get_query(domain,
+                                                               rec.operation,
+                                                               rec.measured_field,
                                                                group_by=rec.group_by)
                     self._cr.execute(query)
                     records = self._cr.dictfetchall()
@@ -107,7 +128,9 @@ class DashboardBlock(models.Model):
                         y_axis.append(record.get('value'))
                     vals.update({'x_axis': x_axis, 'y_axis': y_axis})
                 else:
-                    query = self.env[rec.model_name].get_query(domain, rec.operation, rec.measured_field)
+                    query = self.env[rec.model_name].get_query(domain,
+                                                               rec.operation,
+                                                               rec.measured_field)
                     self._cr.execute(query)
                     records = self._cr.dictfetchall()
                     magnitude = 0
@@ -116,7 +139,8 @@ class DashboardBlock(models.Model):
                         magnitude += 1
                         total /= 1000.0
                     # add more suffixes if you need them
-                    val = '%.2f%s' % (total, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
+                    val = '%.2f%s' % (
+                        total, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
                     records[0]['value'] = val
                     vals.update(records[0])
             block_id.append(vals)

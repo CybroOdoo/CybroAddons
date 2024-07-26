@@ -44,9 +44,9 @@ var DynamicDashboard = AbstractAction.extend({
      fetch_data: function() {
         var self = this;
         var def1 =  this._rpc({
-                model: 'dashboard.block',
-                method: 'get_dashboard_vals',
-                args: [[],this.action_id]
+            model: 'dashboard.block',
+            method: 'get_dashboard_vals',
+            args: [[],this.action_id]
             }).then(function(result) {
                 self.block_ids = result;
         });
@@ -67,16 +67,15 @@ var DynamicDashboard = AbstractAction.extend({
     get_values_bar : function(block){
         var labels = block['x_axis']
         var data = {
-          labels: labels,
-          datasets: [{
-            label: "",
-            data: block['y_axis'],
+            labels: labels,
+            datasets: [{
+                label: "",
+                data: block['y_axis'],
                     backgroundColor: this.get_colors(block['x_axis']),
                     borderColor: 'rgba(200, 200, 200, 0.75)',
                     borderWidth: 1
-                  }]
+                    }]
                 };
-
         var options = {
                 scales: {
                   y: {
@@ -106,14 +105,14 @@ var DynamicDashboard = AbstractAction.extend({
     get_values_line : function(block){
         var labels = block['x_axis']
         var data = {
-          labels: labels,
-          datasets: [{
-            label: '',
-            data: block['y_axis'],
-            fill: false,
-            borderColor: 'rgb(75, 192, 192)',
-            tension: 0.1
-          }]
+            labels: labels,
+            datasets: [{
+                label: '',
+                data: block['y_axis'],
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
         };
         var options = { },
         line_data = [data,options]
@@ -123,35 +122,33 @@ var DynamicDashboard = AbstractAction.extend({
 
     get_values_doughnut : function(block){
         var data = {
-        labels: block['x_axis'],
-          datasets: [{
+            labels: block['x_axis'],
+            datasets: [{
             label: '',
             data: block['y_axis'],
             backgroundColor: this.get_colors(block['x_axis']),
             hoverOffset: 4
-          }]
+            }]
         };
         var options = { },
         doughnut_data = [data,options]
         return doughnut_data;
-
-
     },
 
     get_values_radar : function(block){
-          var data = {
-          labels: block['x_axis'],
-          datasets: [{
-            label: '',
-            data: block['y_axis'],
-            fill: true,
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-            borderColor: 'rgb(255, 99, 132)',
-            pointBackgroundColor: 'rgb(255, 99, 132)',
-            pointBorderColor: '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: 'rgb(255, 99, 132)'
-          }]
+        var data = {
+            labels: block['x_axis'],
+            datasets: [{
+                label: '',
+                data: block['y_axis'],
+                fill: true,
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgb(255, 99, 132)',
+                pointBackgroundColor: 'rgb(255, 99, 132)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgb(255, 99, 132)'
+            }]
         };
         var options = {
             elements: {
@@ -218,8 +215,8 @@ var DynamicDashboard = AbstractAction.extend({
                         var element = $('[data-id=' + result['id'] + ']')
                         var ctx =self.$('.chart_graphs').last()
                         var options = {
-                          type: 'bar',
-                          data: {
+                            type: 'bar',
+                            data: {
                             labels: [],
                             datasets: [
                                 {
@@ -244,6 +241,7 @@ var DynamicDashboard = AbstractAction.extend({
         ajax.jsonRpc('/tile/details', 'call', {
            'id': id
         }).then(function (result) {
+                if(result){
                 self.do_action({
                 name : result['model_name'],
                 type: 'ir.actions.act_window',
@@ -252,16 +250,10 @@ var DynamicDashboard = AbstractAction.extend({
                 views: [[false, 'list'], [false, 'form']],
                 domain: result['filter']
                 });
+                }
         });
     },
-
-
-
 });
-
-
 core.action_registry.add('dynamic_dashboard', DynamicDashboard);
-
 return DynamicDashboard;
-
 });
