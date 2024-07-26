@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Advanced Dynamic Dashboard",
-    'version': '16.0.2.1.2',
+    'version': '16.0.2.1.3',
     'category': 'Productivity',
     'summary': """Odoo Dynamic Dashboard, Dynamic Dashboard, Odoo Dashboard, Dynamic Dashbaord, AI Dashboard, Odoo17 Dashboard, Dashboard, Odoo17, Configurable Dashboard""",
     'description': """Create Configurable Advanced Dynamic Dashboard to get the 

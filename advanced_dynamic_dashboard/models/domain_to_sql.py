@@ -36,11 +36,15 @@ def get_query(self, args, operation, field, group_by=False,
         if group_by:
             if group_by.ttype == 'many2one':
                 relation_model = group_by.relation.replace('.', '_')
-                join = ' INNER JOIN %s on "%s".id = "%s".%s' % (
+                join = 'INNER JOIN %s ON "%s".id = "%s".%s' % (
                     relation_model, relation_model, self._table, group_by.name)
+                if relation_model == 'product_product':
+                    additional_join = ' INNER JOIN product_template ON product_template.id = product_product.product_tmpl_id'
+                    join = join + additional_join
+                    relation_model = 'product_template'
                 rec_name = self.env[group_by.relation]._rec_name_fallback()
-                data = data + ',"%s".%s AS %s' % (
-                    relation_model, rec_name, group_by.name)
+                data = data + ',"%s".%s AS name' % (
+                    relation_model, rec_name)
                 group_by_str = ' Group by "%s".%s' % (relation_model, rec_name)
             else:
                 data = data + ',"%s".%s' % (self._table, group_by.name)
@@ -48,7 +52,6 @@ def get_query(self, args, operation, field, group_by=False,
                     self._table, str(group_by.name))
     else:
         data = '"%s".id' % self._table
-
     from_clause, where_clause, where_clause_params = query.get_sql()
     where_str = where_clause and (" WHERE %s" % where_clause) or ''
     query_str = 'SELECT %s FROM ' % data + from_clause + join + where_str + group_by_str

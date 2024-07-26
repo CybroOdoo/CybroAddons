@@ -126,8 +126,8 @@ class DashboardBlock(models.Model):
             if rec.filter:
                 domain = expression.AND([literal_eval(rec.filter)])
             if rec.model_name:
-                if rec.type == 'graph':
-                    self._cr.execute(self.env[rec.model_name].get_query(domain,
+                if rec.type == 'graph' and rec.model_id == rec.group_by_id.model_id:
+                    m= self._cr.execute(self.env[rec.model_name].get_query(domain,
                                                                         rec.operation,
                                                                         rec.measured_field_id,
                                                                         group_by=rec.group_by_id))
