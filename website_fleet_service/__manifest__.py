@@ -50,7 +50,7 @@
             "website_fleet_service/static/src/js/website_service.js",
         ],
     },
-    "images": ["static/description/banner.png"],
+    "images": ["static/description/banner.jpg"],
     "license": "AGPL-3",
     "installable": True,
     "auto_install": False,
