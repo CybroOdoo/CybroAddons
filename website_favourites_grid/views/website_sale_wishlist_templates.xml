@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Display the wishlist products in grid and list view-->
+    <template id="my_product_wishlist"
+              inherit_id="website_sale_wishlist.product_wishlist"
+              name="My Wishlist">
+        <xpath expr="//table[@id='o_comparelist_table']" position="replace">
+            <t t-set="active_view" t-value="view_type"/>
+<!--            Icon for grid and list-->
+            <div t-attf-class="o_wishlist_apply_layout_1 btn-group ms-3 {{_classes}}"
+                 t-att-data-active-classes="_activeClasses"
+                 style=" display: flex; flex-direction: row-reverse; float: right;">
+                <a t-att-href="'/shop/wishlist?view_type=%s' % 'list'">
+                    <button type="button"
+                            t-attf-style="border: {{'2px solid #35979c' if active_view == 'list' else 'none'}}">
+                        <i class="oi oi-view-list"/>
+                    </button>
+                </a>
+                <a t-att-href="'/shop/wishlist?view_type=%s' % 'grid'">
+                    <button type="button"
+                            t-attf-style="border: {{'2px solid #35979c' if active_view == 'grid' else 'none'}}">
+                        <i class="fa fa-th-large"/>
+                    </button>
+                </a>
+            </div>
+<!--            Wishlist product list view-->
+            <table t-if="view_type=='list'"
+                   class="table table-bordered table-striped table-hover text-center mt16 table-comparator "
+                   style="table-layout:auto" id="table_list">
+                <body>
+                    <t t-foreach="wishes" t-as="wish">
+                        <t t-set="combination_info"
+                           t-value="wish.product_id._get_combination_info_variant()"/>
+                        <tr t-att-data-wish-id='wish.id'
+                            t-att-data-product-id='wish.product_id.id'>
+                            <td class='td-img align-middle'>
+                                <a t-att-href="wish.product_id.website_url">
+                                    <img t-attf-src="/web/image/product.product/#{wish.product_id.id}/image_128"
+                                         class="img img-fluid"
+                                         style="margin:auto;"
+                                         alt="Product image"/>
+                                </a>
+                            </td>
+                            <td class='text-start align-middle'>
+                                <strong>
+                                    <a t-att-href="wish.product_id.website_url">
+                                        <t t-esc="wish.product_id.display_name"/>
+                                    </a>
+                                </strong>
+                                <small class='d-none d-md-block'>
+                                    <p t-field="wish.product_id.description_sale"
+                                       class="text-muted"/>
+                                </small>
+                                <button type="button"
+                                        class="btn btn-link o_wish_rm no-decoration">
+                                    <small>
+                                        <i class='fa fa-trash-o'/>
+                                        Remove
+                                    </small>
+                                </button>
+                            </td>
+                            <td class="align-middle"
+                                t-if="combination_info['prevent_zero_price_sale']">
+                                <span t-field="website.prevent_zero_price_sale_text"/>
+                            </td>
+                            <td class="align-middle o_wish_price" t-else="">
+                                <t t-esc="combination_info['price']"
+                                   t-options="{'widget': 'monetary', 'display_currency': website.pricelist_id.currency_id}"/>
+                                <small t-if="combination_info['base_unit_price']"
+                                       class="cart_product_base_unit_price d-block text-muted"
+                                       groups="website_sale.group_show_uom_price">
+                                    <t t-call='website_sale.base_unit_price'>
+                                        <t t-set='product'
+                                           t-value='wish.product_id'/>
+                                    </t>
+                                </small>
+                            </td>
+                            <td class='text-center td-wish-btn align-middle'>
+                                <input name="product_id"
+                                       t-att-value="wish.product_id.id"
+                                       type="hidden"/>
+                                <a t-if="combination_info['prevent_zero_price_sale']"
+                                   t-att-href="website.contact_us_button_url"
+                                   class="btn btn-primary btn_cta">Contact Us
+                                </a>
+                                <button id="add_to_cart_button" t-else=""
+                                        type="button" role="button"
+                                        class="btn btn-secondary btn-block o_wish_add mb4">
+                                    Add
+                                    <span class='d-none d-md-inline'>to Cart
+                                    </span>
+                                </button>
+                            </td>
+                        </tr>
+                    </t>
+                </body>
+            </table>
+<!--            wishlist product grid view-->
+            <table t-if="view_type=='grid'"
+                   class="table table-bordered table-striped text-center mt16 table-comparator">
+                <tbody style="display: grid; grid-template-columns: repeat(4,1fr);gap: 10px;">
+                    <t t-foreach="wishes" t-as="wish">
+                        <t t-set="combination_info"
+                           t-value="wish.product_id._get_combination_info_variant()"/>
+                        <tr style="display: grid; grid-template-rows: auto; grid-gap: 10px;"
+                            t-att-data-wish-id='wish.id'
+                            t-att-data-product-id='wish.product_id.id'>
+                            <td class="td_grid">
+                                <a t-att-href="wish.product_id.website_url">
+                                    <img t-attf-src="/web/image/product.product/#{wish.product_id.id}/image_128"
+                                         class="img img-fluid"
+                                         alt="Product image"/>
+                                </a>
+                                <div>
+                                    <strong>
+                                        <a t-att-href="wish.product_id.website_url">
+                                            <t t-esc="wish.product_id.display_name"/>
+                                        </a>
+                                    </strong>
+                                </div>
+                                <div>
+                                    <t t-if="combination_info['prevent_zero_price_sale']">
+                                        <span t-field="website.prevent_zero_price_sale_text"/>
+                                    </t>
+                                    <t class="align-middle o_wish_price"
+                                       t-else="">
+                                        <t t-esc="combination_info['price']"
+                                           t-options="{'widget': 'monetary', 'display_currency': website.pricelist_id.currency_id}"/>
+                                        <small t-if="combination_info['base_unit_price']"
+                                               class="cart_product_base_unit_price d-block text-muted"
+                                               groups="website_sale.group_show_uom_price">
+                                            <t t-call='website_sale.base_unit_price'>
+                                                <t t-set='product'
+                                                   t-value='wish.product_id'/>
+                                            </t>
+                                        </small>
+                                    </t>
+                                </div>
+                                <div style="padding: 10px;">
+                                    <input name="product_id"
+                                           t-att-value="wish.product_id.id"
+                                           type="hidden"/>
+                                    <a t-if="combination_info['prevent_zero_price_sale']"
+                                       t-att-href="website.contact_us_button_url"
+                                       class="btn btn-primary btn_cta">
+                                        Contact Us
+                                    </a>
+                                    <button id="add_to_cart_button"
+                                            t-else=""
+                                            type="button" role="button"
+                                            class="btn btn-secondary btn-block o_wish_add mb4">
+                                        Add to Cart
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn-link o_wish_rm no-decoration">
+                                        <i class='fa fa-trash-o'/>
+                                        Remove
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </xpath>
+    </template>
+</odoo>
