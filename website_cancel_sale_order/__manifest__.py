@@ -42,7 +42,7 @@
         'web.assets_frontend': [
             'website_cancel_sale_order/static/src/js/sale_order_portal.js'],
     },
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
