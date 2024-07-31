@@ -721,10 +721,12 @@ class RoomBooking(models.Model):
                         if rec.date == fields.date.today():
                             today_revenue += rec.amount_total
             for rec in self.env['account.move'].search(
-                    [('payment_state', '=', 'not_paid')]):
-                if rec.ref:
-                    if 'BOOKING' in rec.ref:
+                    [('payment_state', 'in', ['not_paid', 'partial'])]):
+                if rec.ref and 'BOOKING' in rec.ref:
+                    if rec.payment_state == 'not_paid':
                         pending_payment += rec.amount_total
+                    elif rec.payment_state == 'partial':
+                        pending_payment += rec.amount_residual
             return {
                 'total_room': total_room,
                 'available_room': len(available_room),
