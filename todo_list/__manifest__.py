@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -21,6 +21,8 @@
 #############################################################################
 {
     'name': "To Do List",
+    'version': '16.0.2.0.1',
+    'category': 'Tools',
     'summary': """
         Create Todo List Using Activities""",
     'description': """
@@ -31,9 +33,7 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'live_test_url': 'https://youtu.be/LGiDWPFdkbks',
-    'category': 'Tools',
-    'version': '16.0.2.0.0',
-    'depends': ['base','sale','mail'],
+    'depends': ['base', 'sale', 'mail'],
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
@@ -41,8 +41,8 @@
         'data/general.xml',
         'views/views.xml',
     ],
-    'license': 'LGPL-3',
     'images': ['static/description/banner.png'],
+    'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
     'application': True,
