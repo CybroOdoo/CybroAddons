@@ -8,7 +8,7 @@ patch(PosStore.prototype, {
     async addProductToCurrentOrder(product, options = {}) {
             var product = product
             var options = options
-            if(this.env.services.pos.config.is_allow_manual_weight){
+            if(this.env.services.pos.config.is_allow_manual_weight && product.to_weight){
                     // Show the ScaleScreen to weigh the product.
                      const { confirmed, payload } = await this.showTempScreen('ScaleScreen', {
                             product,
@@ -28,5 +28,5 @@ patch(PosStore.prototype, {
             // Do not add product if options is undefined.
             if (!options) return;
             // Add the product after having the extra information.
-            }
-        })
+    }
+})
