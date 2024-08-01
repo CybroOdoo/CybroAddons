@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'POS Kitchen Screen',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Point Of Sale',
     'summary': 'POS Kitchen Screen facilitates sending certain orders '
                'automatically to the kitchen.The POS Kitchen Screen allows for'
@@ -54,8 +54,9 @@
     ],
     'assets': {
         'point_of_sale._assets_pos': [
-            'pos_kitchen_screen_odoo/static/src/js/order_button.js',
+            'pos_kitchen_screen_odoo/static/src/js/fields_load.js',
             'pos_kitchen_screen_odoo/static/src/js/order_payment.js',
+            'pos_kitchen_screen_odoo/static/src/js/order_button.js',
         ],
         'web.assets_backend': [
             'pos_kitchen_screen_odoo/static/src/css/kitchen_screen.css',

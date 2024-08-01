@@ -22,7 +22,7 @@ patch(Order.prototype, {
      * Override of the pay method to handle payment logic.
      */
     async pay() {
-        var order_name = this.pos.selectedOrder.name;
+        var order_name = this.pos.selectedOrder.uid;
         var self = this;
         await this.orm.call("pos.order", "check_order", ["", order_name]).then(function (result) {
             if (result.category) {
