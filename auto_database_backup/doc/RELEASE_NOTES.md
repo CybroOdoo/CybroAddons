@@ -37,3 +37,9 @@
 #### UPDT
 
 - Fixed the error while inputting list_db = False in odoo conf file.
+
+#### 29.06.2024
+#### Version 16.0.6.0.1
+#### UPDT
+
+- Fixed the 0kb error on windows.
