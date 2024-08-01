@@ -21,9 +21,9 @@
 #############################################################################
 {
     'name': "Animated Snippets",
-    'version': '16.0.1.0.0',
-    'summary': """Animated Snippets for Websites.""",
-    'description': """Variety of Snippets With Animations to Beautify your Website.""",
+    'version': '16.0.1.1.0',
+    'summary': """Animated snippets for websites.""",
+    'description': """Variety of snippets which have animations beautify your website.""",
     'author': "Cybrosys Techno Solutions",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -48,6 +48,7 @@
         'views/snippets/a_features_09_templates.xml',
         'views/snippets/a_numbers_templates.xml',
         'views/snippets/a_product_list_templates.xml',
+        'views/snippets/s_pricing_page.xml',
     ],
     'assets': {
         'web.assets_frontend': [
@@ -67,6 +68,8 @@
             '/animated_snippet/static/src/css/a_numbers.css',
             '/animated_snippet/static/src/css/a_product_list.css',
             '/animated_snippet/static/src/css/a_showcase.css',
+            '/animated_snippet/static/src/css/s_pricing_page.css',
+            '/animated_snippet/static/js/animated_snippet.js',
         ]},
     'images': ['static/description/banner.png'],
     'license': 'LGPL-3',
