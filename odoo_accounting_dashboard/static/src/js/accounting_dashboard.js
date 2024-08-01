@@ -1,8 +1,8 @@
 /** @odoo-module */
 import { registry } from "@web/core/registry"
-import { loadJS} from '@web/core/assets';
+import { loadJS } from '@web/core/assets';
 import { useService } from "@web/core/utils/hooks"
-const { Component, useRef, onMounted ,useState , onWillStart} = owl
+const { Component, useRef, onMounted, useState , onWillStart } = owl
 
 export class AccountDashboard extends Component {
     setup(){
@@ -22,14 +22,14 @@ export class AccountDashboard extends Component {
             payment_data_filter: 'this_month',
             payment_list_filter: 'customer_payment',
         })
-        this.All = useRef("All"),
-        this.AgedRecords = useRef("AgedRecords"),
-        this.Balance = useRef("Balance"),
+        this.All = useRef("All");
+        this.AgedRecords = useRef("AgedRecords");
+        this.Balance = useRef("Balance");
         this.orm = useService("orm");
         onWillStart(async () => {
             await this.FetchData();
         })
-        onMounted(async() => {
+        onMounted(() => {
             this.RenderChart()
         })
     }
@@ -38,9 +38,15 @@ export class AccountDashboard extends Component {
             this.state.chart.forEach((chart)=> {
                 chart.destroy()
             })
-            this.FetchData()
+            await this.fetchAndRender()
         }
     }
+
+    async fetchAndRender() {
+        await this.FetchData()
+        this.RenderChart()
+    }
+
     async FetchData(){
         this.state.data = await this.orm.call('account.move','get_datas',[]);
         this.state.income_chart = await this.orm.call("account.move","get_income_chart", [this.state.income]);
@@ -49,23 +55,21 @@ export class AccountDashboard extends Component {
         this.state.aged_payable = await this.orm.call("account.move","get_aged_payable", [this.state.aged_filter,this.state.aged_payable_filter]);
         this.state.top_sale_cust = await this.orm.call("account.move","get_sale_revenue", [this.state.top_sale_cust_filter]);
         this.state.balance = await this.orm.call("account.move","get_bank_balance", []);
-        this.RenderChart()
     }
-    async RenderChart(){
-        this.aged_chart(this.AgedRecords.el,'bar',this.state.aged_payable.partner,'Amount',this.state.aged_payable.amount)
-        if (this.state.IncomeExpense == 'income'){
-            this.income_charts(this.All.el,'bar',this.state.income_chart.date,this.state.income_chart.income)
-        }
-        else if (this.state.IncomeExpense == 'expense'){
-            this.expense_charts(this.All.el,'bar',this.state.income_chart.date,this.state.income_chart.expense)
-        }
-        else if (this.state.IncomeExpense == 'profit'){
-            this.profit_charts(this.All.el,'line',this.state.income_chart.date,this.state.income_chart.profit)
-        }
-        else {
-            this.AllInOneChart(this.All.el,'bar',this.state.income_chart.date,this.state.income_chart.income,this.state.income_chart.expense,this.state.income_chart.profit)
+
+    RenderChart() {
+        this.aged_chart(this.AgedRecords.el, 'bar', this.state.aged_payable.partner, 'Amount', this.state.aged_payable.amount)
+        if (this.state.IncomeExpense == 'income') {
+            this.income_charts(this.All.el, 'bar', this.state.income_chart.date, this.state.income_chart.income)
+        } else if (this.state.IncomeExpense == 'expense') {
+            this.expense_charts(this.All.el, 'bar', this.state.income_chart.date, this.state.income_chart.expense)
+        } else if (this.state.IncomeExpense == 'profit') {
+            this.profit_charts(this.All.el, 'line', this.state.income_chart.date, this.state.income_chart.profit)
+        } else {
+            this.AllInOneChart(this.All.el, 'bar', this.state.income_chart.date, this.state.income_chart.income, this.state.income_chart.expense, this.state.income_chart.profit)
         }
     }
+
     aged_chart(canvas,type,labels,label,data){
         this.state.chart.push(new Chart(
             canvas,
