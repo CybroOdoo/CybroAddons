@@ -2,9 +2,9 @@
    :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
    :alt: License: AGPL-3
 
-Return Invoices And Bills
-=========================
-This module allow to return the invoice  or bill while picking the product in Odoo17.
+Automated Credit/Debit Note Generation from Return Picking
+==========================================================
+This module allow to return the invoice or bill while picking the product in Odoo17.
 
 Company
 -------

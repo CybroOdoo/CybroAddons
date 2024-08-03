@@ -19,8 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from odoo.exceptions import ValidationError
 from odoo import fields, models
+from odoo.exceptions import ValidationError
 
 
 class ReturnMove(models.TransientModel):
