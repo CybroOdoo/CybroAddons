@@ -63,7 +63,7 @@ class StockMove(models.Model):
         """created for date validation, the delivery date should be after the
         today date."""
         for move in self:
-            if move.delivery_datetime.date() < date.today():
+            if move.delivery_datetime and move.delivery_datetime.date() < date.today():
                 raise ValidationError("Date should be after the today date")
 
     def _assign_picking(self):
