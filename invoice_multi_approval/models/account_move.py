@@ -26,8 +26,10 @@ class AccountMove(models.Model):
     _inherit = 'account.move'
 
     approval_ids = fields.One2many('approval.line', 'move_id')
-    document_fully_approved = fields.Boolean(compute='_compute_document_fully_approved')
-    check_approve_ability = fields.Boolean(compute='_compute_check_approve_ability')
+    document_fully_approved = fields.Boolean(
+        compute='_compute_document_fully_approved')
+    check_approve_ability = fields.Boolean(
+        compute='_compute_check_approve_ability')
     is_approved = fields.Boolean(compute='_compute_is_approved')
     page_visibility = fields.Boolean(compute='_compute_page_visibility')
 
@@ -38,6 +40,37 @@ class AccountMove(models.Model):
             self.page_visibility = True
         else:
             self.page_visibility = False
+
+    @api.model_create_multi
+    def create(self, vals):
+        record = super().create(vals)
+        invoice_approval_id = self.env['invoice.approval'].search([])
+        record.approval_ids = None
+        if invoice_approval_id.approve_customer_invoice and record.type == 'out_invoice':
+            for user in invoice_approval_id.invoice_approver_ids:
+                vals = {
+                    'approver_id': user.id
+                }
+                record.approval_ids |= record.approval_ids.new(vals)
+        elif invoice_approval_id.approve_vendor_bill and record.type == 'in_invoice':
+            for user in invoice_approval_id.bill_approver_ids:
+                vals = {
+                    'approver_id': user.id
+                }
+                record.approval_ids |= record.approval_ids.new(vals)
+        elif invoice_approval_id.approve_customer_credit and record.type == 'out_refund':
+            for user in invoice_approval_id.cust_credit_approver_ids:
+                vals = {
+                    'approver_id': user.id
+                }
+                record.approval_ids |= record.approval_ids.new(vals)
+        elif invoice_approval_id.approve_vendor_credit and record.type == 'in_refund':
+            for user in invoice_approval_id.vend_credit_approver_ids:
+                vals = {
+                    'approver_id': user.id
+                }
+                record.approval_ids |= record.approval_ids.new(vals)
+        return record
 
     @api.onchange('partner_id')
     def _onchange_partner_id(self):
