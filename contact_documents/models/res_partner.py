@@ -48,5 +48,5 @@ class PartnerDocuments(models.Model):
             'res_model': 'ir.attachment',
             'domain': [('res_id', '=', self.id),
                        ('res_model', '=', 'res.partner')],
-            'context': "{'create': True}"
+            'context': {'create': False},
         }
