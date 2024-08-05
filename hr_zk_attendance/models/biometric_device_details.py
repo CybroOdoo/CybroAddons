@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Ammu Raj (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -74,6 +74,41 @@ class BiometricDeviceDetails(models.Model):
                 }
         except Exception as error:
             raise ValidationError(f'{error}')
+    def action_set_timezone(self):
+        """Function to set user's timezone to device"""
+        for info in self:
+            machine_ip = info.device_ip
+            zk_port = info.port_number
+            try:
+                # Connecting with the device with the ip and port provided
+                zk = ZK(machine_ip, port=zk_port, timeout=15,
+                        password=0,
+                        force_udp=False, ommit_ping=False)
+            except NameError:
+                raise UserError(
+                    _("Pyzk module not Found. Please install it"
+                      "with 'pip3 install pyzk'."))
+            conn = self.device_connect(zk)
+            if conn:
+                user_tz = self.env.context.get(
+                    'tz') or self.env.user.tz or 'UTC'
+                user_timezone_time = pytz.utc.localize(fields.Datetime.now())
+                user_timezone_time = user_timezone_time.astimezone(
+                    pytz.timezone(user_tz))
+                conn.set_time(user_timezone_time)
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'message': 'Successfully Set the Time',
+                        'type': 'success',
+                        'sticky': False
+                    }
+                }
+            else:
+                raise UserError(_(
+                    "Please Check the Connection"))
+
 
     def action_clear_attendance(self):
         """Methode to clear record from the zk.machine.attendance model and
@@ -129,6 +164,7 @@ class BiometricDeviceDetails(models.Model):
                     _("Pyzk module not Found. Please install it"
                       "with 'pip3 install pyzk'."))
             conn = self.device_connect(zk)
+            self.action_set_timezone()
             if conn:
                 conn.disable_device()  # Device Cannot be used during this time.
                 user = conn.get_users()
