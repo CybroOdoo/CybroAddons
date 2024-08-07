@@ -22,7 +22,7 @@
 import datetime
 import logging
 import pytz
-from odoo import fields, models, _
+from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 
 _logger = logging.getLogger(__name__)
@@ -74,6 +74,7 @@ class BiometricDeviceDetails(models.Model):
                 }
         except Exception as error:
             raise ValidationError(f'{error}')
+
     def action_set_timezone(self):
         """Function to set user's timezone to device"""
         for info in self:
@@ -108,7 +109,6 @@ class BiometricDeviceDetails(models.Model):
             else:
                 raise UserError(_(
                     "Please Check the Connection"))
-
 
     def action_clear_attendance(self):
         """Methode to clear record from the zk.machine.attendance model and
@@ -145,6 +145,12 @@ class BiometricDeviceDetails(models.Model):
                           'Test Connection button to verify.'))
             except Exception as error:
                 raise ValidationError(f'{error}')
+
+    @api.model
+    def cron_download(self):
+        machines = self.env['biometric.device.details'].search([])
+        for machine in machines:
+            machine.action_download_attendance()
 
     def action_download_attendance(self):
         """Function to download attendance records from the device"""

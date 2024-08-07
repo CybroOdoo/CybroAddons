@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Biometric Device Integration',
-    'version': '17.0.1.1.1',
+    'version': '17.0.1.2.2',
     'category': 'Human Resources',
     'summary': "Integrating Biometric Device (Model: ZKteco uFace 202) With HR"
                "Attendance (Face + Thumb)",
@@ -40,6 +40,7 @@
         'views/hr_employee_views.xml',
         'views/daily_attendance_views.xml',
         'views/biometric_device_attendance_menus.xml',
+        'data/download_data.xml'
     ],
     'images': ['static/description/banner.png'],
     'license': 'AGPL-3',

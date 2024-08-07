@@ -11,3 +11,9 @@
 ##### UPDT
 
 - Added a new feature to Set the timezone for the device.
+
+#### 31.07.2024
+#### Version 17.0.1.2.2
+##### UPDT
+
+- Added a new feature to schedule attendance downloading
