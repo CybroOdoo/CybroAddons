@@ -38,7 +38,11 @@ class StockReturnPicking(models.TransientModel):
         active_id = self.env.context['active_id']
         if active_model == 'stock.picking' and active_id:
             stock_picking = self.env[active_model].browse(active_id)
-            result['picking_type_name'] = stock_picking.picking_type_id.name
+            picking_type = stock_picking.picking_type_id
+            result['picking_type_name'] = self.env['ir.model.data'].search([
+                ('model', '=', 'stock.picking.type'),
+                ('res_id', '=', picking_type.id)
+            ]).complete_name
         return result
 
     def _update_stock_picking(self):

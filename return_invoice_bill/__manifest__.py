@@ -20,8 +20,8 @@
 #
 ##############################################################################
 {
-    "name": "Returning Invoices And Bills",
-    "version": "16.0.1.0.0",
+    "name": "Automated Credit/Debit Note Generation from Return Picking",
+    "version": "16.0.1.1.0",
     "category": "Sales",
     "summary": "For creating credit note and debit note while picking.",
     "description": "We can create credit note or debit note while return the"

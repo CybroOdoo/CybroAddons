@@ -38,16 +38,40 @@ class ReturnMove(models.TransientModel):
         if not active_id:
             raise ValidationError("No active_id found in the context.")
         return_id = self.env['stock.return.picking'].browse(active_id)
-        return_id.create_returns()
+        new_picking_id = return_id.create_returns()
+        new_picking = self.env['stock.picking'].browse(
+            int(new_picking_id['res_id']))
         picking_id = return_id.picking_id
         sale_invoice_ids = picking_id.sale_id.invoice_ids
         purchase_invoice_ids = picking_id.purchase_id.invoice_ids
-        if sale_invoice_ids and sale_invoice_ids.state == 'posted' or \
-                purchase_invoice_ids and purchase_invoice_ids.state == 'posted':
-            invoice_ids = sale_invoice_ids if picking_id.picking_type_code == 'outgoing' else purchase_invoice_ids
-            reverse_moves = invoice_ids._reverse_moves()
-            reverse_moves.write({'invoice_date': fields.date.today()})
-            reverse_moves._post(soft=False)
+        sale_all_posted = all(element == 'posted' for element in
+                              sale_invoice_ids.mapped(
+                                  'state')) if sale_invoice_ids else False
+        purchase_all_posted = all(element == 'posted' for element in
+                                  purchase_invoice_ids.mapped(
+                                      'state')) if purchase_invoice_ids else False
+        if sale_all_posted or purchase_all_posted:
+            new_picking.action_set_quantities_to_reservation()
+            new_picking.button_validate()
+            if picking_id.sale_id:
+                action = self.env['sale.advance.payment.inv'].create(
+                    {'sale_order_ids': [
+                        fields.Command.link(
+                            picking_id.sale_id.id)]})
+                invoice = action._create_invoices(picking_id.sale_id)
+                move_id = self.env['account.move'].browse(invoice.id)
+            else:
+                invoice = picking_id.purchase_id.action_create_invoice()
+                move_id = self.env['account.move'].browse(invoice.get('res_id'))
+                move_id.invoice_date = fields.Date.today()
+            move_id.action_post()
+            return {
+                'type': 'ir.actions.act_window',
+                'view_mode': 'form',
+                'res_model': 'account.move',
+                'target': 'current',
+                'res_id': move_id.id,
+            }
         else:
             raise ValidationError(
                 "The selected picking should have at least one posted invoice.")
