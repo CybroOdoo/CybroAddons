@@ -46,7 +46,9 @@ class SaleOrderLine(models.Model):
         if product_restriction:
             if check_stock == 'on_hand_quantity':
                 self.qty_available = self.product_id.qty_available
+                self.forecast_quantity = self.product_id.virtual_available
             if check_stock == 'forecast_quantity':
+                self.qty_available = self.product_id.qty_available
                 self.forecast_quantity = self.product_id.virtual_available
 
 
@@ -89,7 +91,7 @@ class SaleOrder(models.Model):
                     low_qty.append(
                         f"You have added {rec.product_uom_qty} units of "
                         f"{rec.product_id.name}, but you only have "
-                        f"{rec.forecast_quantity} units available.")
+                        f"{rec.forecast_quantity} forecasted units.")
         message = ' '.join(map(str, low_qty))
         if self.onhand_check:
             raise ValidationError(message)
