@@ -6,19 +6,19 @@
 #    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
-#    You can modify it under the terms of the GNU LESSER
-#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#    You can modify it under the terms of the GNU AFFERO
+#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
 #
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
 #
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    (LGPL v3) along with this program.
+#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
+#    (AGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-############################################################################.
+#############################################################################
 import pytz
 from datetime import datetime, timedelta
 from odoo import api,fields, models
@@ -76,11 +76,9 @@ class HrAttendance(models.Model):
         max_limit = int(self.env['ir.config_parameter'].sudo().get_param(
             'employee_late_check_in.maximum_minutes')) or 0
         for rec in self.sudo().search([]):
-            print(rec,minutes_after)
             if rec.id not in self.env['late.check.in'].sudo().search(
                     []).attendance_id.ids:
                 if minutes_after < rec.late_check_in < max_limit:
-                    print(rec,'rec')
                     self.env['late.check.in'].sudo().create({
                         'employee_id': rec.employee_id.id,
                         'late_minutes': rec.late_check_in,

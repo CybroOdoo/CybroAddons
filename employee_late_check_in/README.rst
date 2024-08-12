@@ -1,6 +1,6 @@
-.. image:: https://img.shields.io/badge/license-LGPL--3-blue.svg
-    :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
-    :alt: License: LGPL-3
+.. image:: https://img.shields.io/badge/license-AGPL--3-blue.svg
+    :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
+    :alt: License: AGPL-3
 
 Employee Late Check-in
 ======================
@@ -16,8 +16,8 @@ Company
 
 License
 -------
-* Lesser General Public License, Version 3 (LGPL v3).
-(https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
+* Affero General Public License, Version 3 (AGPL v3).
+(https://www.gnu.org/licenses/agpl-3.0-standalone.html)
 
 Credits
 -------
