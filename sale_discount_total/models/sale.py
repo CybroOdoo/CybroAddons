@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -31,16 +30,14 @@ class SaleOrder(models.Model):
 
     @api.depends('order_line.price_total')
     def _amount_all(self):
-        """
-        Compute the total amounts of the SO.
-        """
+        """ Compute the total amounts of the SO. """
         for order in self:
             amount_untaxed = amount_tax = amount_discount = 0.0
             for line in order.order_line:
                 amount_untaxed += line.price_subtotal
                 amount_tax += line.price_tax
-                amount_discount += (
-                                           line.product_uom_qty * line.price_unit * line.discount) / 100
+                amount_discount += (line.product_uom_qty *
+                                    line.price_unit * line.discount)/100
             order.update({
                 'amount_untaxed': amount_untaxed,
                 'amount_tax': amount_tax,
@@ -75,6 +72,7 @@ class SaleOrder(models.Model):
 
     @api.onchange('discount_type', 'discount_rate', 'order_line')
     def supply_rate(self):
+        """supply discount into order line"""
         for order in self:
             if order.discount_type == 'percent' and order.discount_rate > 0:
                 for line in order.order_line:
@@ -82,14 +80,13 @@ class SaleOrder(models.Model):
             elif order.discount_rate > 0:
                 total = discount = 0.0
                 for line in order.order_line:
-                    total += round((line.product_uom_qty * line.price_unit))
+                    total += (line.product_uom_qty * line.price_unit)
                 if order.discount_rate != 0:
                     discount = (order.discount_rate / total) * 100
                 else:
                     discount = order.discount_rate
                 for line in order.order_line:
                     line.discount = discount
-                    # print(line.discount)
                     new_sub_price = (line.price_unit * (discount / 100))
                     line.total_discount = line.price_unit - new_sub_price
 
@@ -127,6 +124,7 @@ class SaleOrder(models.Model):
 
 
 class SaleOrderLine(models.Model):
+    """Inherit sale order  line and add fields"""
     _inherit = "sale.order.line"
 
     discount = fields.Float(string='Discount (%)', digits=(16, 20), default=0.0)
