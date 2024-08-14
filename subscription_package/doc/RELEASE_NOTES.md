@@ -6,10 +6,15 @@
 
 #### 12.04.2024
 #### Version 17.0.1.0.1
-#### ADD
+#### Update
 - Bug Fix
 
 #### 13.06.2024
 #### Version 17.0.1.1.2
 #### Update
 - Bug Fix, fixed issue in invoicing the subscription sale order multiple times, made the next_invoice_date field in the model subscription.package editable, updated context in xml files.
+
+#### 14.08.2024
+#### Version 17.0.2.1.2
+#### Update
+-  Added Paused feature.

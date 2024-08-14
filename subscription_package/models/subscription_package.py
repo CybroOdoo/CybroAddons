@@ -88,7 +88,7 @@ class SubscriptionPackage(models.Model):
                                help='Add the tags')
     stage_id = fields.Many2one('subscription.package.stage', string='Stage',
                                default=lambda self: self._default_stage_id(),
-                               index=True,
+                               index=True,tracking=True,
                                group_expand='_read_group_stage_ids',
                                help='Subscription Package stage', copy=False)
     invoice_count = fields.Integer(string='Invoices',
@@ -471,3 +471,9 @@ class SubscriptionPackage(models.Model):
         """ The function is used to perform the renewal
         action for the subscription package."""
         return self.button_sale_order()
+
+    def pause_subscription(self):
+        self.stage_id = self.env.ref('subscription_package.paused_stage').id
+
+    def button_resume(self):
+        self.stage_id = self.env.ref('subscription_package.progress_stage').id

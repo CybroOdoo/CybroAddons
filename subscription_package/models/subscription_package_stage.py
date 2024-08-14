@@ -40,6 +40,7 @@ class SubscriptionPackageStage(models.Model):
                                   "to display.")
     category = fields.Selection([('draft', 'Draft'),
                                  ('progress', 'In Progress'),
+                                 ('paused', 'Paused'),
                                  ('closed', 'Closed')],
                                 readonly=False, default='draft',
                                 help='Choose the appropriate category from'

@@ -67,6 +67,9 @@
                     <button name="button_start_date" string="START"
                             type="object" class="btn-primary"
                             invisible="stage_category != 'draft'"/>
+                    <button name="button_resume" string="Resume"
+                            type="object" class="btn-primary"
+                            invisible="stage_category != 'paused'"/>
                     <button name="button_sale_order" string="Create Sale Order"
                             type="object" class="btn-primary"
                             invisible="stage_category != 'progress' or so_count > 0"/>
@@ -147,7 +150,8 @@
                             <field name="product_line_ids">
                                 <tree string="Product lines" editable="bottom">
                                     <field name="sequence" widget="handle"/>
-                                    <field name="product_id" context="{'default_detailed_type': 'service'}" required="1"/>
+                                    <field name="product_id" context="{'default_detailed_type': 'service'}"
+                                           required="1"/>
                                     <field name="uom_catg_id" invisible="1"/>
                                     <field name="product_qty" required="1"/>
                                     <field name="product_uom_id" required="1"/>
@@ -260,6 +264,18 @@
             <pivot string="Pivot View">
                 <field name="name" type="row"/>
             </pivot>
+        </field>
+    </record>
+
+    <record id="model_subscription_package_pause_record" model="ir.actions.server">
+        <field name="name">Pause Subscription</field>
+        <field name="model_id" ref="model_subscription_package"/>
+        <field name="binding_model_id" ref="model_subscription_package"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="state">code</field>
+        <field name="code">
+            if records:
+            records.pause_subscription()
         </field>
     </record>
     <!-- Subscription package menu items -->
