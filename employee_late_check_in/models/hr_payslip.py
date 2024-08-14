@@ -47,7 +47,7 @@ class PayslipLateCheckIn(models.Model):
             input_data = {
                 'name': late_check_in_type.name,
                 'code': late_check_in_type.code,
-                'amount': sum(late_check_in_id.mapped('amount')),
+                'amount': sum(late_check_in_id.mapped('penalty_amount')),
                 'contract_id': self.contract_id.id,
             }
             res.append(input_data)

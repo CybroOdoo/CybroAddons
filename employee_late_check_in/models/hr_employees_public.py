@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ############################################################################.
-from odoo import fields, models, _
+from odoo import  fields, models,_
 
 
 class HrEmployees(models.Model):

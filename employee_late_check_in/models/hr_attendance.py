@@ -21,7 +21,7 @@
 ############################################################################.
 import pytz
 from datetime import datetime, timedelta
-from odoo import fields, models
+from odoo import fields, models, api
 
 
 class HrAttendance(models.Model):
@@ -30,8 +30,10 @@ class HrAttendance(models.Model):
 
     late_check_in = fields.Integer(
         string="Late Check-in(Minutes)", compute="_compute_late_check_in",
-        help="This indicates the duration of the employee's tardiness.")
+        help="This indicates the duration of the employee's tardiness.",
+        store=True)
 
+    @api.depends('check_in')
     def _compute_late_check_in(self):
         """Calculate late check-in minutes for each record in the current Odoo
         model.This method iterates through the records and calculates late
@@ -71,14 +73,28 @@ class HrAttendance(models.Model):
             'late_check_in_after')) or 0
         max_limit = int(self.env['ir.config_parameter'].sudo().get_param(
             'maximum_minutes')) or 0
-        for rec in self.sudo().search(
-                [('id', 'not in', self.env['late.check.in'].sudo().search(
-                    []).attendance_id.ids)]):
-            late_check_in = rec.sudo().late_check_in + 210
-            if rec.late_check_in > minutes_after and late_check_in > minutes_after and late_check_in < max_limit:
-                self.env['late.check.in'].sudo().create({
-                    'employee_id': rec.employee_id.id,
-                    'late_minutes': late_check_in,
+        for rec in self.sudo().search([]):
+            if rec.id not in self.env['late.check.in'].sudo().search(
+                    []).attendance_id.ids:
+                if rec.late_check_in > minutes_after and minutes_after < rec.late_check_in < max_limit:
+                    self.env['late.check.in'].sudo().create({
+                        'employee_id': rec.employee_id.id,
+                        'late_minutes': rec.late_check_in,
+                        'date': rec.check_in.date(),
+                        'attendance_id': rec.id,
+                    })
+            else:
+                self.env['late.check.in'].sudo().search(
+                    [('attendance_id', '=', rec.id)]).update({
+                    'late_minutes': rec.late_check_in,
                     'date': rec.check_in.date(),
                     'attendance_id': rec.id,
                 })
+
+    def unlink(self):
+        """Override the unlink method to delete the corresponding records in
+        late.check.in model"""
+        for record in self:
+            self.env['late.check.in'].sudo().search(
+                [('attendance_id', '=', record.id)]).unlink()
+            return super(HrAttendance, self).unlink()

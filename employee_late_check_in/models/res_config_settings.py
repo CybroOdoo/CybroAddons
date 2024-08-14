@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ############################################################################.
-from odoo import models, fields
+from odoo import fields, models
 
 
 class LateCheckinSettings(models.TransientModel):
@@ -33,7 +33,7 @@ class LateCheckinSettings(models.TransientModel):
     maximum_minutes = fields.Char(
         config_parameter='employee_late_check_in.maximum_minutes',
         help="Maximum time limit a employee was considered as late",
-        string="Maximum Late Minute")
+        string="Maximum Late Minute",default="240")
     late_check_in_after = fields.Char(
         config_parameter='employee_late_check_in.late_check_in_after',
         help='When should the late check-in count down starts.',

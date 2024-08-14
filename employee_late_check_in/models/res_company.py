@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ############################################################################.
-from odoo import models, fields
+from odoo import fields, models
 
 
 class ResCompany(models.Model):
