@@ -41,7 +41,7 @@
             'pos_traceability_validation/static/src/js/pos_orderline.js',
         ]
     },
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
