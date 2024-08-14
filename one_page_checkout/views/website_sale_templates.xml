@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- This template inherits from the website_sale.payment template and
+    is used for the one-page checkout payment step. -->
+    <template id="one_page_checkout_payment" inherit_id="website_sale.payment">
+        <xpath expr="//t[@t-call='website_sale.checkout_layout']" position="replace">
+            <t t-call="website_sale.checkout_layout">
+                <div class="single_pg_checkout_layout">
+                    <div class='col-auto'>
+                        <!-- This sets the step to 20 if the partner is inactive,
+                        or 40 if the partner is active. -->
+                        <t t-if="website_sale_order.partner_id.active == False">
+                            <t t-set="step" t-value="20"/>
+                        </t>
+                        <t t-else="">
+                            <t t-set="step" t-value="40"/>
+                        </t>
+                    </div>
+
+                    <div class='col-12'>
+                        <div class="col-12">
+                            <!-- This calls the payment template for the right column.
+                    If the partner is inactive, it adds the "block-ui" class to the column. -->
+                            <div t-attf-class="column #{'block-ui' if website_sale_order.partner_id.active == False else ''}">
+                                <t t-call="one_page_checkout.payment"/>
+                                <!-- This calls the cart_summary and extra_info templates for the left column. -->
+                                <div class="row">
+                                    <t t-call="one_page_checkout.extra_info"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <!-- This calls the address column template for the middle column. -->
+                                <div class="col-12">
+                                    <t t-call="one_page_checkout.address_column"/>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- This displays any errors that occur during checkout. -->
+                        <div class="col-12" t-if="errors">
+                            <t t-foreach="errors" t-as="error">
+                                <div class="alert alert-danger" t-if="error" role="alert">
+                                    <h4>
+                                        <t t-esc="error[0]"/>
+                                    </h4>
+                                    <t t-esc="error[1]"/>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+    <!-- This template inherits from the website_sale.cart template and is
+    used for the one-page checkout cart feature. -->
+    <template id="one_page_checkout_checkout"
+              inherit_id="website_sale.checkout">
+        <!-- This XPath expression finds the "redirect_url" element and
+        replaces it with a new value. -->
+        <xpath expr="//t[@t-set='redirect']" position="replace">
+            <!-- This sets the "redirect_url" variable to the new URL for
+            the one-page checkout. -->
+            <t t-set="redirect" t-value="'/shop/checkout?express=1'"/>
+        </xpath>
+    </template>
+</odoo>
