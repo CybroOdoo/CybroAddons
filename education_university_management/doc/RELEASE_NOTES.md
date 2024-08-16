@@ -9,3 +9,8 @@
 #### Version 17.0.1.0.1
 #### UPDT
 - Updated student portal template
+
+#### 09.08.2024
+#### Version 17.0.1.0.1
+#### UPDT
+- Updated student portal template and index 
