@@ -20,8 +20,10 @@
 #
 ###############################################################################
 import json
+
 import requests
 from werkzeug import urls
+
 from odoo import fields, models, _
 from odoo.exceptions import UserError
 from odoo.http import request
@@ -44,6 +46,10 @@ class ResConfigSettings(models.TransientModel):
         string='Onedrive Client Secret',
         config_parameter='onedrive_integration_odoo.client_secret',
         help="Client Secret for accessing OneDrive API")
+    onedrive_tenant_id = fields.Char(
+        string="Onedrive Tenant Id",
+        config_parameter='onedrive_integration_odoo.tenant_id',
+        help="Director (tenant) id for accessing OneDrive API")
     onedrive_access_token = fields.Char(
         string='Onedrive Access Token',
         help="Access Token for authenticating with OneDrive API")
@@ -72,8 +78,10 @@ class ResConfigSettings(models.TransientModel):
             'redirect_uri': request.env['ir.config_parameter'].get_param(
                 'web.base.url') + '/onedrive/authentication'
         }
+        tenant_id = self.env['ir.config_parameter'].get_param(
+                'onedrive_integration_odoo.tenant_id', '')
         res = requests.post(
-            "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+            f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token",
             data=data,
             headers={"content-type": "application/x-www-form-urlencoded"})
         response = res.content and res.json() or {}

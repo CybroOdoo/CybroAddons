@@ -42,3 +42,4 @@ class OnedriveAuth(http.Controller):
             state.get('onedrive_config_id'))
         onedrive_config_id.get_tokens(kw.get('code'))
         return request.redirect(state.get('url_return'))
+
