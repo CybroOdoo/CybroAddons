@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    template for the pdf file-->
+    <template id="download_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h1 style="text-align:center">Downloaded Data</h1>
+                    <hr/>
+                    <br/>
+                    <p>Name :
+                        <t t-if="name">
+                            <span t-esc="name"/>
+                        </t>
+                        <t t-else="">
+                            <t t-esc="doc.partner_id.name"/>
+                        </t>
+                    </p>
+                    <p>Data</p>
+                    <hr/>
+                    <div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Data</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="value">
+                                    <tr t-foreach="value" t-as="data">
+                                        <th t-esc="data.get('name')"/>
+                                        <td t-if="data.get('data') == 'False' or data.get('data') == ''">
+                                            No data for this field
+                                        </td>
+                                        <td t-else="" t-esc="data.get('data')"/>
+                                    </tr>
+                                </t>
+                                <t t-else="">
+                                    <t t-set="partner_id"
+                                       t-value="doc.partner_id"/>
+                                    <tr t-foreach="doc.template_id.field_ids"
+                                        t-as="temp">
+                                        <th t-esc="temp.field_description"/>
+                                        <td>
+                                            <t t-if="temp.ttype == 'many2one'">
+                                                <t t-esc="' '.join(map(str, partner_id.mapped(temp.name).name))"/>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-esc="' '.join(map(str, partner_id.mapped(temp.name)))"/>
+                                            </t>
+
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_custom">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="website_gdpr_odoo.download_template" t-lang="lang"/>
+            </t>
+        </t>
+    </template>
+</odoo>
