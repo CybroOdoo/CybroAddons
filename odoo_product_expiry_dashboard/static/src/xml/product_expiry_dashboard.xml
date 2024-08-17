@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<template id="expiry_dashboard_template">
+    <!-- Product Expiry Dashboard Template -->
+    <t t-name="ProductExpiryDashboard" owl="1">
+        <!-- Main component for the Product Expiry Dashboard -->
+        <!-- Container for the entire dashboard content -->
+        <div class="o_action_manager "
+             style="height:100%; overflow-y: scroll; overflow-x: scroll;">
+            <!-- Main section of the dashboard -->
+            <section class="dashboard_main_section" id="main_section_manager">
+                <!-- Dashboard header -->
+                <div class="dashboard-heading shadow-sm">
+                    <!-- Section to display products expired today -->
+                    <div class="product_expired_heading card-block" t-on-click="click_expired_today">
+                        <!-- Heading for products expired today -->
+                        <h2 style="margin-top: 8px;">Products Expired Today</h2>
+                        <hr/>
+                    </div>
+                    <!-- Centered banner for the dashboard -->
+                    <center>
+                        <div style="width: 544px">
+                            <h1 class="banner-heading">Product Expiry Dashboard</h1>
+                        </div>
+                    </center>
+                    <!-- Date filtering form -->
+                    <div class="col-12 " style="color: white; display: flex; justify-content: flex-end;">
+                        <form class="form-group">
+                            <span>Start Date: </span>
+                            <input type="date" id="start_date" name="start_date" t-on-change="filter_date" style="border-radius: 5px; font-family: monospace; padding: 5px; border: none;"/>
+                            <span>  End Date: </span>
+                            <input type="date" id="end_date" name="end_date" t-on-change="filter_date" style="border-radius: 5px; font-family: monospace; padding: 5px; border: none;"/>
+                        </form>
+                    </div>
+                </div>
+                <br/>
+                <!-- Row for displaying cards showing expiries within different timeframes -->
+                <div class="row expiry_dashboard_row">
+                    <div class="col-md-4 col-xl-3">
+                        <!-- Card for products expiring in 1 day -->
+                        <div class="card bg-c-blue order-card">
+                            <div class="card-block one-day" t-on-click="one_day_click">
+                                <h2 style="color:white; text-align:center;">Expiry Tomorrow</h2>
+                                <hr/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xl-3">
+                        <!-- Card for products expiring in 7 days -->
+                        <div class="card bg-c-green order-card">
+                            <div class="card-block seven-day" t-on-click="seven_day_click">
+                                <h2 style="color:white; text-align:center;">Expiry in 7 Days</h2>
+                                <hr/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xl-3">
+                        <!-- Card for products expiring in 30 days -->
+                        <div class="card bg-c-yellow order-card">
+                            <div class="card-block thirty-day" t-on-click="thirty_day_click">
+                                <h2 style="color:white; text-align:center;">Expiry in 30 Days</h2>
+                                <hr/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xl-3">
+                        <!-- Card for products expiring in 120 days -->
+                        <div class="card bg-c-pink order-card">
+                            <div class="card-block one-twenty-day" t-on-click="one_twenty_day_click">
+                                <h2 style="color:white; text-align:center;">Expiry in 120 Days</h2>
+                                <hr/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br/>
+                <!-- Row for displaying charts related to expired products -->
+                <div class="row">
+                    <div class="col-md">
+                        <div class="shadow-sm m-2 p-4"
+                             style="border-radius:5px; background-color: snow;"
+                             t-on-click="click_expired_today">
+                            <center>
+                                <h2 class="chart_heading" style="margin-top: 8px;">Products Expired Today</h2>
+                            </center>
+                            <!-- Chart for displaying the count of expired products -->
+                            <div>
+                                <canvas id="today_expire_products"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md">
+                        <div class="shadow-sm m-2 p-4"
+                             style="border-radius:5px; background-color: snow;">
+                            <center>
+                                <h2 class="chart_heading" style="margin-top: 8px;">Products Expired Today by Category</h2>
+                            </center>
+                            <!-- Chart for displaying the count of expired products by category -->
+                            <div>
+                                <canvas id="today_expire_products_category"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Row for displaying charts related to products expiring within 7 days -->
+                <div class="row">
+                    <div class="col-md">
+                        <div class="shadow-sm m-2 p-4"
+                             style="border-radius:5px; background-color: snow;"
+                             t-on-click="seven_day_click">
+                            <center>
+                                <h2 class="chart_heading" style="margin-top: 8px;">Products Expire in 7 Days</h2>
+                            </center>
+                            <!-- Chart for displaying products expiring within 7 days -->
+                            <div>
+                                <canvas t-ref="asd" id="nearby_expire_product"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md">
+                        <div class="shadow-sm m-2 p-4"
+                             style="border-radius:5px; background-color: snow;">
+                            <center>
+                                <h2 class="chart_heading" style="margin-top: 8px;">Products Category Expire in 7 Days</h2>
+                            </center>
+                            <!-- Chart for displaying products expiring by category within 7 days -->
+                            <div>
+                                <canvas id="nearby_expire_catg"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Row for displaying charts related to products expiring within 7 days and their location/warehouse -->
+                <div class="row">
+                    <div class="col-lg-3">
+                        <div class="shadow-sm m-2 p-4"
+                             style="border-radius:5px; background-color: snow;">
+                            <center>
+                                <!-- Chart for displaying products expiring by location within 7 days -->
+                                <h2 class="chart_heading" style="margin-top: 8px;">Location Expire in 7 Days</h2>
+                                <canvas id="nearby_expire_location"/>
+                            </center>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="shadow-sm m-2 p-4"
+                             style="border-radius:5px; background-color: snow;">
+                            <center>
+                                <!-- Chart for displaying products expiring by warehouse within 7 days -->
+                                <h2 class="chart_heading" style="margin-top: 8px;">Products by Warehouse Expire in 7 Days</h2>
+                                <canvas id="nearby_expire_warehouse"/>
+                            </center>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="shadow-sm m-2 p-4"
+                             style="border-radius:5px; background-color: snow;">
+                            <center>
+                                <!-- Chart for displaying products expiring by location within 7 days -->
+                                <h2 class="chart_heading" style="margin-top: 8px;">Expired Products</h2>
+                                    <canvas id="expired_product_count"/>
+                            </center>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="shadow-sm m-2 p-4"
+                             style="border-radius:5px; background-color: snow;">
+                            <center>
+                                <!-- Chart for displaying products expiring by warehouse within 7 days -->
+                                <h2 class="chart_heading" style="margin-top: 8px;">Expired Products by Category</h2>
+                                    <canvas id="expired_product_category_count"/>
+                            </center>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </t>
+</template>
