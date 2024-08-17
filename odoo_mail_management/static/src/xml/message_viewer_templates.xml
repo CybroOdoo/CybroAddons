@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="tmp" xml:space="preserve">
+        <!-- MessageView template for displaying a single mail message -->
+    <t t-name="MessageView" owl="1">
+        <div class="message" t-ref="root-mail">
+            <h4 t-out="props.mail.description" style="margin-right: auto;"/>
+            <br/>
+            <div>
+                <strong>From:</strong>
+                <span t-out="props.mail.email_from"/>
+            </div>
+            <div>
+                <strong>To:</strong>
+                <span t-out="props.mail.email_to"/>
+            </div>
+            <br/>
+            <div>
+                <t t-out="html_content"/>
+            </div>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; ">
+                <t t-foreach="this.state.attachments" t-as="data" t-key="data_index">
+                    <div t-if="data.mimetype == 'image/jpeg' ||  data.mimetype == 'image/png' ||  data.mimetype == 'image/gif' ||  data.mimetype == 'image/svg+xml' ||  data.mimetype == 'image/webp'">
+                        <div class="row">
+                            <div class="img-container" style="">
+                                <div class="hover-card"  t-on-click="() => this.onClickImage(data.attachment)">
+                                   <i class="fa fa-download"/>
+                                </div>
+                                <img class="img-fluid" style="width: 300px;height: 100px" t-att-src="'data:image/png;base64,'+data.datas"
+                                     alt=""/>
+                                </div>
+                        </div>
+                    </div>
+                    <div t-if="data.mimetype == 'application/pdf'">
+                        <div class="row bg-secondary">
+                            <div class="d-flex flex-row">
+                                <div>
+                                    <img class="p-2" style="width: 45px; height:45px"
+                                         src="/odoo_mail_management/static/src/img/pdf.png"
+                                         alt="PDF Preview"
+                                    />
+                                </div>
+                                <div>
+                                    <p class="mt-3" t-out="data.name"/>
+                                </div>
+                                <div style="width: 50px"/>
+                                <div>
+                                    <button type="download" class="btn mt-3"
+                                            t-on-click="() => this.onClickImage(data.attachment)">
+                                                <i class="text-black fa fa-download" aria-hidden="true"/>
+                              </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>
