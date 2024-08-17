@@ -35,6 +35,7 @@ class AccountMove(models.Model):
     def _compute_journal(self):
         """Compute field for showing validation error for restricted journal's
         records"""
+
         self.is_check_journal = True
         for rec in self.line_ids:
             if rec.full_reconcile_id:

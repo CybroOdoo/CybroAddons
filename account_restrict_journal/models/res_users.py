@@ -36,9 +36,12 @@ class ResUsers(models.Model):
              ' to the particular user')
 
     def _compute_is_check_user(self):
-        """Function for viewing the page for restrict journal users."""
-        self.is_check_user = False
-        if (self.env.ref(
-                'account_restrict_journal.account_restrict_journal_group_admin').id in
-                self.groups_id.mapped('id')):
-            self.is_check_user = True
+        """Compute the is_check_user field and clear journal_ids if necessary."""
+        for user in self:
+            if user.env.ref(
+                    'account_restrict_journal.account_restrict_journal_group_admin').id in user.groups_id.mapped(
+                    'id'):
+                user.is_check_user = True
+            else:
+                user.is_check_user = False
+                user.journal_ids = False  # Clear journal_ids if is_check_user is False

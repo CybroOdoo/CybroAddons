@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Restrict Journal for Users",
-    "version": "17.0.1.0.0",
+    "version": "17.0.1.0.1",
     "category": "Accounting ",
     "summary": "User can select only allowed journals",
     "description": """ Restrict account journal for the specific users to 
