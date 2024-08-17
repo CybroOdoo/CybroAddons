@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+<!--    Templates for the details in the timeoff dashboard.-->
+    <div t-name="hr_leave_dashboard.TimeOffEmpCard"
+         t-inherit="hr_holidays.dashboard_calendar_header"
+         t-inherit-mode='extension'
+         owl="1" class="o_timeoff_dashboard">
+        <xpath expr="//div[hasclass('o_timeoff_container')]"
+               position="replace">
+            <div class="o_timeoff_container d-flex">
+                <div t-foreach="timeoffs" t-as="timeoff"
+                     t-attf-class="o_timeoff_card flex-grow-1 d-flex flex-column py-3">
+                    <t t-set="requires_allocation"
+                       t-value="timeoff[2] === 'yes'"/>
+                    <t t-set="has_icon"
+                       t-value="timeoff[1]['icon'] !== false"/>
+                    <t t-set="cl" t-value="'text-muted'"/>
+                    <b><span t-esc="timeoff[0]" class="o_timeoff_name o_timeoff_big"/></b>
+                    <div class="mt-1">
+                        <t t-if="requires_allocation">
+                            <t t-if="has_icon"><img height="30px" t-attf-src="{{timeoff[1]['icon']}}"/></t>
+                            <span t-esc="timeoff[1]['virtual_remaining_leaves']"
+                                  class="o_timeoff_huge o_timeoff_purple font-weight-bold align-middle"/>
+                            <br/>
+                            <t class="o_timeoff_big o_timeoff_purple"
+                               t-if="timeoff[1]['request_unit'] == 'hour'"><span class="o_timeoff_purple">HOURS</span></t>
+                            <t class="o_timeoff_big o_timeoff_purple"
+                               t-else=""><span class="o_timeoff_purple">DAYS</span></t>
+                            <span class="o_timeoff_purple">AVAILABLE </span>
+                        </t>
+                        <t t-else="">
+                            <t t-if="has_icon"><img height="30px" t-attf-src="{{timeoff[1]['icon']}}"/></t>
+                            <span t-esc="timeoff[1]['virtual_leaves_taken']"
+                                  class="o_timeoff_huge o_timeoff_purple font-weight-bold align-middle"/>
+                            <br/>
+                            <t t-if="timeoff[1]['request_unit'] == 'hour'"><span class="o_timeoff_purple">HOURS</span></t>
+                            <t t-else=""><span class="o_timeoff_purple">DAYS</span></t>
+                            <span class="o_timeoff_purple">TAKEN</span>
+                        </t>
+                    </div>
+                </div>
+                <div t-attf-class="o_timeoff_card flex-grow-1 d-flex flex-column py-3 text-odoo"
+                     style="width:22%;">
+                    <t t-set="id" t-value="employee.id"/>
+                    <t t-set="name" t-value="employee.name"/>
+                    <t t-set="work_email" t-value="employee.work_email"/>
+                    <t t-set="work_phone" t-value="employee.work_phone"/>
+                    <t t-set="department_id"
+                         t-value="employee.department_id"/>
+                    <t t-set="resource_calendar_id"
+                         t-value="employee.resource_calendar_id"/>
+                    <t t-set="company" t-value="employee.company"/>
+                    <t t-set="job_position" t-value="employee.job_position"/>
+                    <t t-set="child_ids" t-value="employee.child_ids"/>
+                    <t t-set="child_count" t-value="employee.child_count"/>
+                    <t t-set="image" t-value="employee.image_1920"/>
+                    <div class="w-100 mt-2 mb-2 employee_box">
+                        <div class="employee_image">
+                            <t t-if="image">
+                                <img style="width: 50px; height: 50px;"
+                                       t-attf-src="data:image/png;base64,{{image}}"/>
+                            </t>
+                        </div>
+                        <span class="o_timeoff_duration employee_name">
+                            <t t-esc="name"/>
+                        </span>
+                    </div>
+                    <div class="employee_details" style="width:100%;">
+                        <div class="col-lg-6 divider-box"
+                               style="float:left; margin-bottom:12px;">
+                            <div class="text-uppercase box-content">
+                                <t t-if="job_position"
+                                     name="duration_unit">Job Position: <t t-esc="job_position"/>
+                                </t>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 divider-box"
+                               style="float:left; margin-bottom:12px;">
+                            <div class="box-content">
+                                <t t-if="resource_calendar_id"
+                                     name="duration_unit">Working Hours: <t
+                                          t-esc="resource_calendar_id"/>
+                                </t>
+                            </div>
+                        </div>
+                        <div class="col-lg-12 divider-box"
+                               style="float:left; margin-bottom:12px;">
+                            <div class="box-content">
+                                <t t-if="work_email"
+                                     name="duration_unit">EMAIL: <t t-esc="work_email"/></t>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 divider-box"
+                               style="float:left; margin-bottom:12px;">
+                            <div class="box-content">
+                                <t t-if="work_phone"
+                                     name="duration_unit">PHONE: <t t-esc="work_phone"/></t>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 divider-box"
+                             style="float:left; margin-bottom:12px;">
+                            <div class="text-uppercase box-content">
+                                <t t-if="department_id"
+                                     name="duration_unit">Department: <t t-esc="department_id"/></t>
+                            </div>
+                        </div>
+                        <div class="col-lg-12 divider-box"
+                               style="float:left; margin-bottom:12px;">
+                            <div class="text-uppercase box-content">
+                                <t t-if="company" name="duration_unit">Company: <t t-esc="company"/></t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <t t-set="is_self"
+                     t-value="employee.id == view_employee_id"/>
+                <t t-set="child_count" t-value="employee.child_all_count"/>
+                <t t-set="manager_count"
+                     t-value="employee.manager_all_count"/>
+                <section t-if="employee_type == 'self'"
+                           t-attf-class="o_org_chart_entry_self_container #{manager_count &gt; 0 ? 'o_org_chart_has_managers' : ''}">
+                    <div t-attf-class="o_org_chart_entry o_org_chart_entry_#{employee_type} d-flex position-relative py-2 overflow-visible #{manager_count &gt; 0 ? 'o_treeEntry' : ''}">
+                        <t t-call="hr_leave_dashboard.hr_org_chart">
+                            <t t-set="is_self" t-value="is_self"/>
+                        </t>
+                    </div>
+                </section>
+                <div t-else=""
+                       t-attf-class="o_org_chart_entry o_org_chart_entry_#{employee_type} o_treeEntry d-flex position-relative py-2 overflow-visible">
+                    <t t-call="hr_leave_dashboard.hr_org_chart">
+                        <t t-set="is_self" t-value="is_self"/>
+                    </t>
+                </div>
+                <div class="o_timeoff_card py-3 text-odoo"
+                       style="width:18%;">
+                    <t t-set="id" t-value="employee.id"/>
+                    <t t-set="department_id"
+                         t-value="employee.department_id"/>
+                    <t t-set="emp_count" t-value="0"/>
+                    <t t-set="child_count"
+                         t-value="employee.child_all_count"/>
+                    <t t-set="children" t-value="employee.children"/>
+                    <t t-set="absentees" t-value="employee.absentees"/>
+                    <t t-set="shift" t-value="employee.current_shift"/>
+                    <t t-set="upcoming_holidays"
+                         t-value="employee.upcoming_holidays"/>
+                    <span class="o_timeoff_duration">
+                        <t t-esc="department_id"/>
+                    </span>
+                    <div t-if="shift">
+                        <div class="text-uppercase col-lg-12 divide-leave ">
+                            <t t-if="shift" name="duration_unit">Current Shift: <t t-esc="shift"/></t>
+                        </div>
+                    </div>
+                    <div t-if="upcoming_holidays.length>0"
+                           class="col-lg-12 divide-leave">
+                        <div class="text-success">Upcoming Holidays</div>
+                        <t t-foreach="upcoming_holidays" t-as="holiday"
+                             t-key="holiday.id">
+                            <div>
+                                <t t-esc="holiday.name"/>
+                            </div>
+                            <div>
+                                (<t t-esc="holiday.date_from"/>)
+                            </div>
+                        </t>
+                    </div>
+                    <div t-if="absentees.length>0"
+                           class="col-lg-12 divide-leave">
+                        <div class="text-danger">On Leave</div>
+                        <t t-foreach="absentees" t-as="child"
+                           t-key="child.employee_id">
+                            <div>
+                                <t t-esc="child.name"/>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+                <div class="o_timeoff_card approval_status_card py-3 text-odoo"
+                       style="height: 475px;overflow-y: scroll;">
+                    <t t-set="approval_status_count"
+                         t-value="employee.approval_status_count"/>
+                    <t t-set="children" t-value="employee.children"/>
+                    <t t-if="!employee.is_manager">
+                        <div class="hr_holiday_user">
+                            <span class="o_timeoff_duration">
+                                <t t-esc="approval_status_count.validate_count"/>
+                            </span>
+                            <div class="text-uppercase">
+                                <span>Approved</span>
+                            </div>
+                            <span class="o_timeoff_duration">
+                                <t t-esc="approval_status_count.confirm_count"/>
+                            </span>
+                            <div class="text-uppercase">
+                                <span>To Approve</span>
+                            </div>
+                            <span class="o_timeoff_duration">
+                                <t t-esc="approval_status_count.refuse_count"/>
+                            </span>
+                            <div class="text-uppercase">
+                                <span>Refused</span>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <div class="hr_holiday_manager">
+                            <div class="pdf_report">
+                                <select id="duration" class="duration">
+                                    <option value="today">Today</option>
+                                    <option value="this_week">This week</option>
+                                    <option value="this_month">This month</option>
+                                    <option value="this_year">This Year</option>
+                                </select>
+                                <button type="button"
+                                      class="btn btn-primary print-pdf-report">Print PDF</button>
+                            </div>
+                            <table class="table table-hover time_off_dashboard_table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Approved</th>
+                                        <th>To Approve</th>
+                                        <th>Refused</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="children" t-as="child"
+                                        t-key="child.id">
+                                        <tr>
+                                            <td><t t-esc="child.name"/></td>
+                                            <td><t t-esc="child.approval_status_count.validate_count"/></td>
+                                            <td><t t-esc="child.approval_status_count.confirm_count"/></td>
+                                            <td><t t-esc="child.approval_status_count.refuse_count"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </div>
+</templates>
