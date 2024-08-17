@@ -23,7 +23,6 @@ import binascii
 import tempfile
 import certifi
 import urllib3
-import xlrd
 from odoo import models, fields, _
 import csv
 import base64
@@ -159,8 +158,6 @@ class BomImportWizard(models.TransientModel):
                 try:
                     file_string = tempfile.NamedTemporaryFile(suffix=".xlsx")
                     file_string.write(binascii.a2b_base64(self.file))
-                    book = xlrd.open_workbook(file_string.name)
-                    book.sheet_by_index(0)
                     urllib3.PoolManager(cert_reqs='CERT_REQUIRED',
                                         ca_certs=certifi.where())
                 except:

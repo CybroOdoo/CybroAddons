@@ -2,8 +2,8 @@
     :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 
-Import Bill Of Materials
-========================
+Import Bill Of Materials from CSV or Excel in Odoo
+==================================================
 Import Bill Of Materials using CSV or Excel files
 
 Configuration
@@ -17,7 +17,7 @@ Company
 License
 -------
 General Public License, Version 3 (LGPL v3).
-(https://www.odoo.com/documentation/user/17.0/legal/licenses/licenses.html)
+(https://www.odoo.com/documentation/user/16.0/legal/licenses/licenses.html)
 
 Credits
 -------
