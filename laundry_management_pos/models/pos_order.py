@@ -90,44 +90,44 @@ class PosOrder(models.Model):
         if order:
             order_id = order[0]['id']
             values = self.env['pos.order'].browse(order_id)
-            values.write({
-                'laundry_order': True,
-            })
-            if values.laundry_order:
-                values.action_pos_order_invoice()
             lines = []
-            for rec in values.lines:
-                vals = (0, 0, {
-                    'product_id': rec.product_id.id,
-                    'description': rec.full_product_name,
-                    'qty': rec.qty,
-                    'state': 'done',
-                    'tax_ids': [(6, 0, rec.tax_ids.ids)],
-                    'washing_type': rec.washing_type_id.id,
-                    'amount': rec.price_subtotal_incl,
+            if values.orderline_washing_type and False not in values.lines.mapped('washing_type_id.name'):
+                values.write({
+                    'laundry_order': True,
                 })
-                lines.append(vals)
-            laundry_order = self.env['laundry.order'].sudo().create({
-                'order_ref': values.name,
-                'pos_order_id': values.id,
-                'pos_reference': values.pos_reference,
-                'partner_id': values.partner_id.id,
-                'partner_invoice_id': values.partner_id.id,
-                'partner_shipping_id': values.partner_id.id,
-                'laundry_person': values.user_id.id,
-                'state': 'done',
-                'order_lines': lines,
-            })
-            for each in laundry_order:
-                for obj in each.order_lines:
-                    self.env['washing.washing'].create(
-                        {'name': obj.product_id.name + '-Washing',
-                         'user_id': obj.washing_type.assigned_person.id,
-                         'description': obj.description,
-                         'laundry_obj': obj.id,
-                         'state': 'done',
-                         'washing_date': datetime.now().strftime(
-                             '%Y-%m-%d %H:%M:%S')})
+                values.action_pos_order_invoice()
+                for rec in values.lines:
+                    vals = (0, 0, {
+                        'product_id': rec.product_id.id,
+                        'description': rec.full_product_name,
+                        'qty': rec.qty,
+                        'state': 'done',
+                        'tax_ids': [(6, 0, rec.tax_ids.ids)],
+                        'washing_type': rec.washing_type_id.id,
+                        'amount': rec.price_subtotal_incl,
+                    })
+                    lines.append(vals)
+                laundry_order = self.env['laundry.order'].sudo().create({
+                    'order_ref': values.name,
+                    'pos_order_id': values.id,
+                    'pos_reference': values.pos_reference,
+                    'partner_id': values.partner_id.id,
+                    'partner_invoice_id': values.partner_id.id,
+                    'partner_shipping_id': values.partner_id.id,
+                    'laundry_person': values.user_id.id,
+                    'state': 'done',
+                    'order_lines': lines,
+                })
+                for each in laundry_order:
+                    for obj in each.order_lines:
+                        self.env['washing.washing'].create(
+                            {'name': obj.product_id.name + '-Washing',
+                             'user_id': obj.washing_type.assigned_person.id,
+                             'description': obj.description,
+                             'laundry_obj': obj.id,
+                             'state': 'done',
+                             'washing_date': datetime.now().strftime(
+                                 '%Y-%m-%d %H:%M:%S')})
         return order
 
     def _prepare_invoice_lines(self):

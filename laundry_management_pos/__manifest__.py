@@ -20,7 +20,7 @@
 ##############################################################################
 {
     'name': "POS Laundry Management",
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Point of Sale',
     'summary': """Launch Automatic Laundry Orders After selling Through POS.""",
     'description': """It manages the Point of sale laundry process with assigning works to workers.We can create 
@@ -50,12 +50,12 @@
             'laundry_management_pos/static/src/xml/pos_receipt.xml',
             'laundry_management_pos/static/src/js/product_img.js',
             'laundry_management_pos/static/src/xml/product_img.xml',
-            'laundry_management_pos/static/src/js/screen/product_screen.js',
             'laundry_management_pos/static/src/css/pos.css',
             'laundry_management_pos/static/src/xml/button/product_create_button.xml',
             'laundry_management_pos/static/src/js/button/product_create_button.js',
             'laundry_management_pos/static/src/js/screen/product_create_popup.js',
-            'laundry_management_pos/static/src/xml/screen/product_create_popup.xml'
+            'laundry_management_pos/static/src/xml/screen/product_create_popup.xml',
+            'laundry_management_pos/static/src/js/screen/payment_screen.js',
          ],
     },
     'images': ['static/description/banner.png'],
