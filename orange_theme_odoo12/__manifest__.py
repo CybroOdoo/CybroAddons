@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': "Outrageous Orange Backend Theme",
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': "Themes/Backend",
     'summary': "Outrageous Orange Backend Theme",
     'description': """Backend theme for Odoo 17.0 community edition.""",
