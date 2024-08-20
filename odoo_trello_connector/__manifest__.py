@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Odoo Trello Connector",
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'category': 'Project',
     'summary': """Integrate Projects and Tasks between Trello and Odoo""",
     'description': """This module helps to import all Projects and Tasks from 
@@ -40,7 +40,8 @@
     ],
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
+    'pre_init_hook': 'pre_init_hook',
     'installable': True,
     'auto_install': False,
-    'application': False,
+    'application': False
 }

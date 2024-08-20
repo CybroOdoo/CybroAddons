@@ -56,41 +56,44 @@ class ResUsers(models.Model):
             "Accept": "application/json"
         }
         member = self.get_member_id(header, self.user_name)
-        for board in self.get_boards(header, query,
-                                     member):
-            project = self.env['project.project'].sudo().search(
-                [('trello_reference', '=', board['id'])])
-            if not project:
-                project = self.env['project.project'].sudo().create({
-                    'name': board['name'],
-                    'description': board['desc'],
-                    'trello_reference': board['id']
+        for board in self.get_boards(header, query, member):
+            self.with_delay(
+                channel='root.import_project',
+                description='Importing Board From Trello', max_retries=10)._delay_import(
+                board, header, query)
+
+    def _delay_import(self, board, header, query):
+        """Import will performed within the job queue"""
+        project = self.env['project.project'].sudo().search(
+            [('trello_reference', '=', board['id'])])
+        if not project:
+            project = self.env['project.project'].sudo().create({
+                'name': board['name'],
+                'description': board['desc'],
+                'trello_reference': board['id']
+            })
+        for rec in self.get_list_on_board(header, query, board['id']):
+            stages = self.env['project.task.type'].search([])
+            if rec['name'] not in stages.mapped('name'):
+                self.env['project.task.type'].sudo().create({
+                    'name': rec['name']
                 })
-            for rec in self.get_list_on_board(header, query, board['id']):
-                stages = self.env[
-                    'project.task.type'].search([])
-                if rec['name'] not in stages.mapped('name'):
-                    self.env['project.task.type'].sudo().create({
-                        'name': rec['name']
-                    })
-                project.sudo().write(
-                    {'type_ids': [(4, stages.search([(
-                        'name', '=', rec['name'])])[0].id, project.id)]})
-            for card in self.get_cards(header, query,
-                                       board['id']):
-                if card['id'] not in self.env['project.task'].search([]).mapped(
-                        'trello_reference'):
-                    self.env['project.task'].create({
-                        'name': card['name'],
-                        'project_id': project.id,
-                        'stage_id': self.env[
-                            'project.task.type'].search([('name', '=',
-                                                          self.get_a_list(
-                                                              header, query,
-                                                              card['idList'])[
-                                                              'name'])])[0].id,
-                        'trello_reference': card['id']
-                    })
+            project.sudo().write(
+                {'type_ids': [(4, stages.search([(
+                    'name', '=', rec['name'])])[0].id, project.id)]})
+        for card in self.get_cards(header, query, board['id']):
+            if card['id'] not in self.env['project.task'].search([]).mapped('trello_reference'):
+                self.env['project.task'].create({
+                    'name': card['name'],
+                    'project_id': project.id,
+                    'stage_id': self.env[
+                        'project.task.type'].search([('name', '=',
+                                                      self.get_a_list(
+                                                          header, query,
+                                                          card['idList'])[
+                                                          'name'])])[0].id,
+                    'trello_reference': card['id']
+                })
 
     def action_export(self):
         """Function that exports Project, Stages and Tasks from Odoo to
@@ -146,7 +149,6 @@ class ResUsers(models.Model):
         response = requests.get(
             f"https://api.trello.com/1/members/{username}",
             headers=headers, timeout=10)
-        print(response,'member')
         if response.status_code == 200:
             return response.json()['id']
         if response.status_code == 404:

@@ -20,3 +20,11 @@
 #
 ################################################################################
 from . import models
+from odoo.exceptions import UserError
+
+
+def pre_init_hook(env):
+    dependent_apps = env['ir.module.module'].search([('name', 'in', ['queue_job_cron_jobrunner', 'queue_job'])])
+    for app in dependent_apps:
+        if app.state != 'installed':
+            raise UserError('Please make sure you have added and installed Queue Job and Queue Job Cron Jobrunner in your system')
