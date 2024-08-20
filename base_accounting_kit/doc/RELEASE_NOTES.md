@@ -14,3 +14,8 @@
 #### Version 17.0.1.0.2
 ##### UPDT
 - Bug Fix-Resolved the style issues in report templates.
+
+#### 20.08.2024
+#### Version 17.0.1.0.3
+##### UPDT
+- Bug Fix-Resolved the Aged Partner Balance Report.
