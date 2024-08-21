@@ -19,3 +19,9 @@
 #### Version 17.0.1.0.3
 ##### BUGFIX
 - Move the configuration to select the receipt from configuration settings to POS configuration
+
+
+#### 20.08.2024
+#### Version 17.0.1.0.4
+##### BUGFIX
+- Fixed the missing products and amount details in the pos receipts from ticket screen.

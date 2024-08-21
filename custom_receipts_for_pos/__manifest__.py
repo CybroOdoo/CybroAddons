@@ -36,7 +36,8 @@
     'depends': ['base', 'point_of_sale'],
     'data': [
         'security/ir.model.access.csv',
-        'data/pos_receipt_data.xml',
+        'data/pos_receipt_design1_data.xml',
+        'data/pos_receipt_design2_data.xml',
         'views/pos_receipt_views.xml',
         'views/pos_config_views.xml'
     ],
