@@ -37,8 +37,8 @@ class WebsiteSaleInherit(WebsiteSale):
     def shop(self, page=0, category=None, search='', min_price=0.0,
              max_price=0.0, ppg=False, **post):
         """Method for finding log in user or not in shop page """
-        res = super().shop(page=0, category=None, search='', min_price=0.0,
-                           max_price=0.0, ppg=False, **post)
+        res = super().shop(page, category, search, min_price,
+                           max_price, ppg, **post)
         res.qcontext.update({
             'login_user': False if request.session.uid is None else True
         })
