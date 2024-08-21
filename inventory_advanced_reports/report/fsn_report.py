@@ -44,8 +44,7 @@ class FsnReport(models.AbstractModel):
         end_date = data.get('end_date')
         fsn = data.get('fsn')
         if not start_date or not end_date:
-            raise ValueError(
-                "Missing start_date or end_date in the data")
+            raise ValueError("Missing start_date or end_date in the data")
         start_date = datetime.strptime(start_date, '%Y-%m-%d')
         end_date = datetime.strptime(end_date, '%Y-%m-%d')
         filtered_product_stock = []
@@ -99,26 +98,26 @@ class FsnReport(models.AbstractModel):
                     END AS product_code_and_name, 
                     pc.complete_name AS category_name,
                     company.id AS company_id,
-                    sw.id AS warehouse_id,
-                    (SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'internal' 
+                    COALESCE(sw_dest.id, sw_src.id) AS warehouse_id,
+                    (SUM(CASE WHEN sm.date <= %s AND sl_dest.usage = 'internal' 
                     THEN sm.product_uom_qty ELSE 0 END) -
-                    SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'internal' 
+                    SUM(CASE WHEN sm.date <= %s AND sl_src.usage = 'internal' 
                     THEN sm.product_uom_qty ELSE 0 END)) AS opening_stock,
-                    (SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'internal' 
+                    (SUM(CASE WHEN sm.date <= %s AND sl_dest.usage = 'internal' 
                     THEN sm.product_uom_qty ELSE 0 END) -
-                    SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'internal' 
+                    SUM(CASE WHEN sm.date <= %s AND sl_src.usage = 'internal' 
                     THEN sm.product_uom_qty ELSE 0 END)) AS closing_stock,
                     SUM(CASE WHEN sm.date BETWEEN %s AND %s 
-                    AND sld_dest.usage = 'customer' 
+                    AND sl_dest.usage = 'customer' 
                     THEN sm.product_uom_qty ELSE 0 END) AS sales,
                     ((SUM(CASE WHEN sm.date <= %s 
-                    AND sld_dest.usage = 'internal' 
+                    AND sl_dest.usage = 'internal' 
                     THEN sm.product_uom_qty ELSE 0 END) -
-                    SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'internal' 
+                    SUM(CASE WHEN sm.date <= %s AND sl_src.usage = 'internal' 
                     THEN sm.product_uom_qty ELSE 0 END))+
-                    (SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'internal' 
+                    (SUM(CASE WHEN sm.date <= %s AND sl_dest.usage = 'internal' 
                     THEN sm.product_uom_qty ELSE 0 END) -
-                    SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'internal' 
+                    SUM(CASE WHEN sm.date <= %s AND sl_src.usage = 'internal' 
                     THEN sm.product_uom_qty ELSE 0 END)))/2 AS average_stock
                 FROM
                     stock_move sm
@@ -131,11 +130,13 @@ class FsnReport(models.AbstractModel):
                 JOIN
                     res_company company ON company.id = sm.company_id
                 JOIN
-                    stock_warehouse sw ON sw.company_id = company.id
+                    stock_location sl_dest ON sm.location_dest_id = sl_dest.id
+                JOIN
+                    stock_location sl_src ON sm.location_id = sl_src.id
                 LEFT JOIN
-                    stock_location sld_dest ON sm.location_dest_id = sld_dest.id
+                    stock_warehouse sw_dest ON sl_dest.warehouse_id = sw_dest.id
                 LEFT JOIN
-                    stock_location sld_src ON sm.location_id = sld_src.id
+                    stock_warehouse sw_src ON sl_src.warehouse_id = sw_src.id
                 WHERE
                     sm.state = 'done'
                         """
@@ -143,46 +144,36 @@ class FsnReport(models.AbstractModel):
             start_date, start_date, end_date, end_date, start_date, end_date,
             start_date, start_date, end_date, end_date
         ]
-        sub_queries = []
-        sub_params = []
-        param_count = 0
         if product_ids or category_ids:
             query += " AND ("
         if product_ids:
-            product_ids = [product_id for product_id in product_ids]
             query += "pp.id = ANY(%s)"
             params.append(product_ids)
-            param_count += 1
         if product_ids and category_ids:
             query += " OR "
         if category_ids:
-            category_ids = [category_id for category_id in category_ids]
             query += "pt.categ_id IN %s"
             params.append(tuple(category_ids))
-            param_count += 1
         if product_ids or category_ids:
             query += ")"
         if company_ids:
-            query += f" AND company.id IN %s"
-            sub_params.append(tuple(company_ids))
-            param_count += 1
+            query += " AND company.id IN %s"
+            params.append(tuple(company_ids))
         if warehouse_ids:
-            query += f" AND sw.id IN %s"
-            sub_params.append(tuple(warehouse_ids))
-            param_count += 1
-        if sub_queries:
-            query += " AND " + " AND ".join(sub_queries)
+            query += " AND (COALESCE(sw_dest.id, sw_src.id) IN %s)"
+            params.append(tuple(warehouse_ids))
         query += """
-                            GROUP BY pp.id, pt.categ_id,CASE
-                        WHEN pp.default_code IS NOT NULL 
-                            THEN CONCAT(pp.default_code, ' - ', 
-                            pt.name->>'en_US')
-                        ELSE
-                            pt.name->>'en_US'
-                    END, pc.complete_name, company.id, sw.id
-                        ) AS subquery
-                        """
-        self.env.cr.execute(query, tuple(params + sub_params))
+                GROUP BY pp.id, pt.categ_id,
+                CASE
+                    WHEN pp.default_code IS NOT NULL 
+                        THEN CONCAT(pp.default_code, ' - ', 
+                        pt.name->>'en_US')
+                    ELSE
+                        pt.name->>'en_US'
+                END, pc.complete_name, company.id, COALESCE(sw_dest.id, sw_src.id)
+                ) AS subquery
+                """
+        self.env.cr.execute(query, tuple(params))
         result_data = self.env.cr.dictfetchall()
         for fsn_data in result_data:
             if fsn_data.get('fsn_classification') == str(fsn):

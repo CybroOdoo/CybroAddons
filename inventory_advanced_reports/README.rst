@@ -2,18 +2,13 @@
     :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 
-Advanced Inventory Reports
+Inventory Advanced Reports
 ==========================
-Helps to Manage different types of Inventory Reports like FSN Report, Out Of Stock Report, etc.
+* This module provides inventory reports to help you manage your inventory properly.
 
 Configuration
 =============
 - Additional configuration not required
-
-Installation
-============
-- www.odoo.com/documentation/16.0/setup/install.html
-- Install our custom addon
 
 License
 -------

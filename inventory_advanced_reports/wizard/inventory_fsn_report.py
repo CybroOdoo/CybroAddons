@@ -64,155 +64,136 @@ class InventoryFsnReport(models.TransientModel):
         """Function for returning data for printing"""
         fsn = dict(self._fields['fsn'].selection).get(self.fsn)
         if self.start_date > self.end_date:
-            raise ValidationError(
-                "Start date cant be greater than end date")
+            raise ValidationError("Start date can't be greater than end date")
         start_date = self.start_date
         end_date = self.end_date
         filtered_product_stock = []
         query = """
-                SELECT
-                    product_id,
-                    product_code_and_name,
-                    category_id,
-                    category_name,
-                    company_id,
-                    warehouse_id,
-                    opening_stock,
-                    closing_stock,
-                    sales,
-                    average_stock,
-                    CASE
-                        WHEN sales > 0 
-                        THEN ROUND((sales / NULLIF(average_stock, 0)), 2)
-                        ELSE 0
-                    END AS turnover_ratio,
-                    CASE
-                        WHEN
-                            CASE
-                                WHEN sales > 0 
-                                THEN ROUND((sales / NULLIF(average_stock, 0)), 
-                                2)
-                                ELSE 0
-                            END > 3 THEN 'Fast Moving'
-                        WHEN
-                            CASE
-                                WHEN sales > 0 
-                                THEN ROUND((sales / NULLIF(average_stock, 0)), 
-                                2)
-                                ELSE 0
-                            END >= 1 AND
-                            CASE
-                                WHEN sales > 0 
-                                THEN ROUND((sales / NULLIF(average_stock, 0)), 
-                                2)
-                                ELSE 0
-                            END <= 3 THEN 'Slow Moving'
-                        ELSE 'Non Moving'
-                    END AS fsn_classification
-                FROM
-                    (SELECT
-                        pp.id AS product_id,
-                        pt.categ_id AS category_id,
+            SELECT
+                product_id,
+                product_code_and_name,
+                category_id,
+                category_name,
+                company_id,
+                warehouse_id,
+                opening_stock,
+                closing_stock,
+                sales,
+                average_stock,
+                CASE
+                    WHEN sales > 0 
+                    THEN ROUND((sales / NULLIF(average_stock, 0)), 2)
+                    ELSE 0
+                END AS turnover_ratio,
+                CASE
+                    WHEN
                         CASE
-                            WHEN pp.default_code IS NOT NULL 
-                                THEN CONCAT(pp.default_code, ' - ',
-                                 pt.name->>'en_US')
-                            ELSE
-                                pt.name->>'en_US'
-                        END AS product_code_and_name, 
-                        pc.complete_name AS category_name,
-                        company.id AS company_id,
-                        sw.id AS warehouse_id,
-                        (SUM(CASE WHEN sm.date <= %s 
-                        AND sld_dest.usage = 'internal' 
-                        THEN sm.product_uom_qty ELSE 0 END) -
-                        SUM(CASE WHEN sm.date <= %s 
-                        AND sld_src.usage = 'internal' THEN sm.product_uom_qty 
-                        ELSE 0 END)) AS opening_stock,
-                        (SUM(CASE WHEN sm.date <= %s 
-                        AND sld_dest.usage = 'internal' THEN sm.product_uom_qty 
-                        ELSE 0 END) -
-                        SUM(CASE WHEN sm.date <= %s 
-                        AND sld_src.usage = 'internal' THEN sm.product_uom_qty 
-                        ELSE 0 END)) AS closing_stock,
-                        SUM(CASE WHEN sm.date BETWEEN %s 
-                        AND %s AND sld_dest.usage = 'customer' 
-                        THEN sm.product_uom_qty ELSE 0 END) AS sales,
-                        ((SUM(CASE WHEN sm.date <= %s 
-                        AND sld_dest.usage = 'internal' THEN sm.product_uom_qty 
-                        ELSE 0 END) -
-                        SUM(CASE WHEN sm.date <= %s 
-                        AND sld_src.usage = 'internal' THEN sm.product_uom_qty 
-                        ELSE 0 END))+
-                        (SUM(CASE WHEN sm.date <= %s 
-                        AND sld_dest.usage = 'internal' THEN sm.product_uom_qty 
-                        ELSE 0 END) -
-                        SUM(CASE WHEN sm.date <= %s 
-                        AND sld_src.usage = 'internal' THEN sm.product_uom_qty 
-                        ELSE 0 END)))/2 AS average_stock
-                    FROM
-                        stock_move sm
-                    JOIN
-                        product_product pp ON sm.product_id = pp.id
-                    JOIN
-                        product_template pt ON pp.product_tmpl_id = pt.id
-                    JOIN
-                        product_category pc ON pt.categ_id = pc.id
-                    JOIN
-                        res_company company ON company.id = sm.company_id
-                    JOIN
-                        stock_warehouse sw ON sw.company_id = company.id
-                    LEFT JOIN
-                        stock_location sld_dest 
-                        ON sm.location_dest_id = sld_dest.id
-                    LEFT JOIN
-                        stock_location sld_src ON sm.location_id = sld_src.id
-                    WHERE
-                        sm.state = 'done'
-                                """
+                            WHEN sales > 0 
+                            THEN ROUND((sales / NULLIF(average_stock, 0)), 2)
+                            ELSE 0
+                        END > 3 THEN 'Fast Moving'
+                    WHEN
+                        CASE
+                            WHEN sales > 0 
+                            THEN ROUND((sales / NULLIF(average_stock, 0)), 2)
+                            ELSE 0
+                        END >= 1 AND
+                        CASE
+                            WHEN sales > 0 
+                            THEN ROUND((sales / NULLIF(average_stock, 0)), 2)
+                            ELSE 0
+                        END <= 3 THEN 'Slow Moving'
+                    ELSE 'Non Moving'
+                END AS fsn_classification
+            FROM
+                (SELECT
+                    pp.id AS product_id,
+                    pt.categ_id AS category_id,
+                    CASE
+                        WHEN pp.default_code IS NOT NULL 
+                            THEN CONCAT(pp.default_code, ' - ', pt.name->>'en_US')
+                        ELSE
+                            pt.name->>'en_US'
+                    END AS product_code_and_name, 
+                    pc.complete_name AS category_name,
+                    company.id AS company_id,
+                    COALESCE(sw_dest.id, sw_src.id) AS warehouse_id,
+                    (SUM(CASE WHEN sm.date <= %s AND sl_dest.usage = 'internal' 
+                    THEN sm.product_uom_qty ELSE 0 END) -
+                    SUM(CASE WHEN sm.date <= %s AND sl_src.usage = 'internal' 
+                    THEN sm.product_uom_qty ELSE 0 END)) AS opening_stock,
+                    (SUM(CASE WHEN sm.date <= %s AND sl_dest.usage = 'internal' 
+                    THEN sm.product_uom_qty ELSE 0 END) -
+                    SUM(CASE WHEN sm.date <= %s AND sl_src.usage = 'internal' 
+                    THEN sm.product_uom_qty ELSE 0 END)) AS closing_stock,
+                    SUM(CASE WHEN sm.date BETWEEN %s AND %s 
+                    AND sl_dest.usage = 'customer' 
+                    THEN sm.product_uom_qty ELSE 0 END) AS sales,
+                    ((SUM(CASE WHEN sm.date <= %s 
+                    AND sl_dest.usage = 'internal' 
+                    THEN sm.product_uom_qty ELSE 0 END) -
+                    SUM(CASE WHEN sm.date <= %s AND sl_src.usage = 'internal' 
+                    THEN sm.product_uom_qty ELSE 0 END))+
+                    (SUM(CASE WHEN sm.date <= %s AND sl_dest.usage = 'internal' 
+                    THEN sm.product_uom_qty ELSE 0 END) -
+                    SUM(CASE WHEN sm.date <= %s AND sl_src.usage = 'internal' 
+                    THEN sm.product_uom_qty ELSE 0 END)))/2 AS average_stock
+                FROM
+                    stock_move sm
+                JOIN
+                    product_product pp ON sm.product_id = pp.id
+                JOIN
+                    product_template pt ON pp.product_tmpl_id = pt.id
+                JOIN
+                    product_category pc ON pt.categ_id = pc.id
+                JOIN
+                    res_company company ON company.id = sm.company_id
+                JOIN
+                    stock_location sl_dest ON sm.location_dest_id = sl_dest.id
+                JOIN
+                    stock_location sl_src ON sm.location_id = sl_src.id
+                LEFT JOIN
+                    stock_warehouse sw_dest ON sl_dest.warehouse_id = sw_dest.id
+                LEFT JOIN
+                    stock_warehouse sw_src ON sl_src.warehouse_id = sw_src.id
+                WHERE
+                    sm.state = 'done'
+        """
         params = [
             start_date, start_date, end_date, end_date, start_date, end_date,
             start_date, start_date, end_date, end_date
         ]
-        sub_queries = []
-        sub_params = []
-        param_count = 0
         if self.product_ids or self.category_ids:
             query += " AND ("
         if self.product_ids:
             product_ids = [product_id.id for product_id in self.product_ids]
             query += "pp.id = ANY(%s)"
             params.append(product_ids)
-            param_count += 1
         if self.product_ids and self.category_ids:
             query += " OR "
         if self.category_ids:
             category_ids = [category_id.id for category_id in self.category_ids]
             query += "pt.categ_id IN %s"
             params.append(tuple(category_ids))
-            param_count += 1
         if self.product_ids or self.category_ids:
             query += ")"
         if self.company_ids:
-            query += f" AND company.id IN %s"
-            sub_params.append(tuple(self.company_ids.ids))
-            param_count += 1
+            query += " AND company.id IN %s"
+            params.append(tuple(self.company_ids.ids))
         if self.warehouse_ids:
-            query += f" AND sw.id IN %s"
-            sub_params.append(tuple(self.warehouse_ids.ids))
-            param_count += 1
-        if sub_queries:
-            query += " AND " + " AND ".join(sub_queries)
+            query += " AND (COALESCE(sw_dest.id, sw_src.id) IN %s)"
+            params.append(tuple(self.warehouse_ids.ids))
         query += """
-                        GROUP BY pp.id, pt.categ_id,CASE
+                GROUP BY pp.id, pt.categ_id,
+                CASE
                     WHEN pp.default_code IS NOT NULL 
                         THEN CONCAT(pp.default_code, ' - ', pt.name->>'en_US')
                     ELSE
                         pt.name->>'en_US'
-                END, pc.complete_name, company.id, sw.id
-                    ) AS subquery
-                                """
-        self.env.cr.execute(query, tuple(params + sub_params))
+                END, pc.complete_name, company.id, COALESCE(sw_dest.id, sw_src.id)
+                ) AS subquery
+        """
+        self.env.cr.execute(query, tuple(params))
         result_data = self.env.cr.dictfetchall()
         for fsn_data in result_data:
             if fsn_data.get('fsn_classification') == str(fsn):

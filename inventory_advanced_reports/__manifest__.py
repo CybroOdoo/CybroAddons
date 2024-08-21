@@ -20,11 +20,18 @@
 #
 ###############################################################################
 {
-    "name": "Advanced Inventory Reports",
-    "version": "16.0.1.0.0",
+    "name": "Inventory Advanced Reports",
+    "version": "16.0.1.0.1",
     "category": 'Warehouse',
-    "summary": "Helps to Manage different types of Inventory Reports like FSN Report, Out Of Stock Report, Inventory XYZ Report, etc.",
-    "description": "Helps to Manage different types of Inventory Reports like FSN Report, Out Of Stock Report, Inventory XYZ Report, etc",
+    "summary": "Inventory reports to help you to manage your inventory "
+               "properly",
+    "description": "This module allows you to generate inventory reports,users "
+                   "can track Aging analysis, FSN classification (inventory "
+                   "movement frequency classification), XYZ classification "
+                   "(inventory classification based on stock value), FSN-XYZ "
+                   "combined classification to define sales strategies for the "
+                   "existing inventories. Overstock analysis, Out of Stock "
+                   "analysis and Stock movements (inventory rotation).",
     "author": "Cybrosys Techno Solutions",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

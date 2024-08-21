@@ -60,143 +60,139 @@ class InventoryStockMovementReport(models.TransientModel):
     def get_report_data(self):
         """Function for returning the values for printing"""
         query = """
-                SELECT
-                pp.id as product_id,
-                CASE
-                WHEN pp.default_code IS NOT NULL 
-                    THEN CONCAT(pp.default_code, ' - ', pt.name->>'en_US')
-                ELSE
-                    pt.name->>'en_US'
-                END AS product_code_and_name, 
-                pc.complete_name AS category_name,
-                company.name AS company_name,                       
-        """
+                        SELECT
+                            pp.id as product_id,
+                            CASE
+                            WHEN pp.default_code IS NOT NULL 
+                                THEN CONCAT(pp.default_code, ' - ', 
+                                pt.name->>'en_US')
+                            ELSE
+                                pt.name->>'en_US'
+                            END AS product_code_and_name, 
+                            pc.complete_name AS category_name,
+                            company.name AS company_name,                       
+                """
         if self.report_up_to_certain_date:
             query += """
-                SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'inventory' 
-                THEN sm.product_uom_qty ELSE 0 END) AS opening_stock,
-                (SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'internal' 
-                THEN sm.product_uom_qty ELSE 0 END) -
-                SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'internal' 
-                THEN sm.product_uom_qty ELSE 0 END)) AS closing_stock,
-                SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'customer' 
-                THEN sm.product_uom_qty ELSE 0 END) AS sales,
-                SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'customer' 
-                THEN sm.product_uom_qty ELSE 0 END) AS sales_return,
-                SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'supplier' 
-                THEN sm.product_uom_qty ELSE 0 END) AS purchase,
-                SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'supplier' 
-                THEN sm.product_uom_qty ELSE 0 END) AS purchase_return,
-                SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'internal' 
-                THEN sm.product_uom_qty ELSE 0 END) AS internal_in,
-                SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'internal' 
-                THEN sm.product_uom_qty ELSE 0 END) AS internal_out,
-                SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'inventory' 
-                THEN sm.product_uom_qty ELSE 0 END) AS adj_in,
-                SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'inventory' 
-                THEN sm.product_uom_qty ELSE 0 END) AS adj_out,
-                SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'production' 
-                THEN sm.product_uom_qty ELSE 0 END) AS production_in,
-                SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'production' 
-                THEN sm.product_uom_qty ELSE 0 END) AS production_out,
-                SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'transit' 
-                THEN sm.product_uom_qty ELSE 0 END) AS transit_in,
-                SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'transit' 
-                THEN sm.product_uom_qty ELSE 0 END) AS transit_out
-            """
+                    SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'inventory' 
+                    THEN sm.product_uom_qty ELSE 0 END) AS opening_stock,
+                    (SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'internal' 
+                    THEN sm.product_uom_qty ELSE 0 END) -
+                    SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'internal' 
+                    THEN sm.product_uom_qty ELSE 0 END)) AS closing_stock,
+                    SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'customer' 
+                    THEN sm.product_uom_qty ELSE 0 END) AS sales,
+                    SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'customer' 
+                    THEN sm.product_uom_qty ELSE 0 END) AS sales_return,
+                    SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'supplier' 
+                    THEN sm.product_uom_qty ELSE 0 END) AS purchase,
+                    SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'supplier' 
+                    THEN sm.product_uom_qty ELSE 0 END) AS purchase_return,
+                    SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'internal' 
+                    THEN sm.product_uom_qty ELSE 0 END) AS internal_in,
+                    SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'internal' 
+                    THEN sm.product_uom_qty ELSE 0 END) AS internal_out,
+                    SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'inventory' 
+                    THEN sm.product_uom_qty ELSE 0 END) AS adj_in,
+                    SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'inventory' 
+                    THEN sm.product_uom_qty ELSE 0 END) AS adj_out,
+                    SUM(CASE WHEN sm.date <= %s 
+                    AND sld_dest.usage = 'production' 
+                    THEN sm.product_uom_qty ELSE 0 END) AS production_in,
+                    SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'production' 
+                    THEN sm.product_uom_qty ELSE 0 END) AS production_out,
+                    SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'transit' 
+                    THEN sm.product_uom_qty ELSE 0 END) AS transit_in,
+                    SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'transit' 
+                    THEN sm.product_uom_qty ELSE 0 END) AS transit_out
+                    """
             params = [self.up_to_certain_date] * 15
         else:
             query += """
-                (SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'internal' 
-                THEN sm.product_uom_qty ELSE 0 END) -
-                SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'internal' 
-                THEN sm.product_uom_qty ELSE 0 END)) AS opening_stock,
-                (SUM(CASE WHEN sm.date <= %s AND sld_dest.usage = 'internal' 
-                THEN sm.product_uom_qty ELSE 0 END) -
-                SUM(CASE WHEN sm.date <= %s AND sld_src.usage = 'internal' 
-                THEN sm.product_uom_qty ELSE 0 END)) AS closing_stock,
-                SUM(CASE WHEN sm.date BETWEEN %s AND %s 
-                AND sld_dest.usage = 'customer' 
-                THEN sm.product_uom_qty ELSE 0 END) AS sales,
-                SUM(CASE WHEN sm.date BETWEEN %s 
-                AND %s AND sld_src.usage = 'customer' THEN sm.product_uom_qty 
-                ELSE 0 END) AS sales_return,
-                SUM(CASE WHEN sm.date BETWEEN %s AND %s 
-                AND sld_src.usage = 'supplier' THEN sm.product_uom_qty 
-                ELSE 0 END) AS purchase,
-                SUM(CASE WHEN sm.date BETWEEN %s 
-                AND %s AND sld_dest.usage = 'supplier' THEN sm.product_uom_qty 
-                ELSE 0 END) AS purchase_return,
-                SUM(CASE WHEN sm.date BETWEEN %s AND %s 
-                AND sld_dest.usage = 'internal' THEN sm.product_uom_qty 
-                ELSE 0 END) AS internal_in,
-                SUM(CASE WHEN sm.date BETWEEN %s AND %s 
-                AND sld_src.usage = 'internal' THEN sm.product_uom_qty 
-                ELSE 0 END) AS internal_out,
-                SUM(CASE WHEN sm.date BETWEEN %s AND %s 
-                AND sld_dest.usage = 'inventory' THEN sm.product_uom_qty 
-                ELSE 0 END) AS adj_in,
-                SUM(CASE WHEN sm.date BETWEEN %s AND %s 
-                AND sld_src.usage = 'inventory' THEN sm.product_uom_qty 
-                ELSE 0 END) AS adj_out,
-                SUM(CASE WHEN sm.date BETWEEN %s AND %s 
-                AND sld_dest.usage = 'production' THEN sm.product_uom_qty 
-                ELSE 0 END) AS production_in,
-                SUM(CASE WHEN sm.date BETWEEN %s 
-                AND %s AND sld_src.usage = 'production' THEN sm.product_uom_qty 
-                ELSE 0 END) AS production_out,
-                SUM(CASE WHEN sm.date BETWEEN %s AND %s 
-                AND sld_dest.usage = 'transit' THEN sm.product_uom_qty 
-                ELSE 0 END) AS transit_in,
-                SUM(CASE WHEN sm.date BETWEEN %s AND %s 
-                AND sld_src.usage = 'transit' THEN sm.product_uom_qty 
-                ELSE 0 END) AS transit_out
-            """
-            params = [self.start_date, self.start_date, self.end_date,
-                      self.end_date, self.start_date,
-                      self.end_date, self.start_date, self.end_date,
-                      self.start_date, self.end_date, self.start_date,
-                      self.end_date, self.start_date, self.end_date,
-                      self.start_date, self.end_date, self.start_date,
-                      self.end_date, self.start_date, self.end_date,
-                      self.start_date,
-                      self.end_date, self.start_date, self.end_date,
-                      self.start_date,
-                      self.end_date, self.start_date, self.end_date]
+                        (SUM(CASE WHEN sm.date <= %s 
+                        AND sld_dest.usage = 'internal' 
+                        THEN sm.product_uom_qty ELSE 0 END) -
+                        SUM(CASE WHEN sm.date <= %s 
+                        AND sld_src.usage = 'internal' 
+                        THEN sm.product_uom_qty ELSE 0 END)) AS opening_stock,
+                        (SUM(CASE WHEN sm.date <= %s 
+                        AND sld_dest.usage = 'internal' 
+                        THEN sm.product_uom_qty ELSE 0 END) -
+                        SUM(CASE WHEN sm.date <= %s 
+                        AND sld_src.usage = 'internal' 
+                        THEN sm.product_uom_qty ELSE 0 END)) AS closing_stock,
+                        SUM(CASE WHEN sm.date BETWEEN %s AND %s 
+                        AND sld_dest.usage = 'customer' 
+                        THEN sm.product_uom_qty ELSE 0 END) AS sales,
+                        SUM(CASE WHEN sm.date BETWEEN %s AND %s 
+                        AND sld_src.usage = 'customer' 
+                        THEN sm.product_uom_qty ELSE 0 END) AS sales_return,
+                        SUM(CASE WHEN sm.date BETWEEN %s AND %s 
+                        AND sld_src.usage = 'supplier' 
+                        THEN sm.product_uom_qty ELSE 0 END) AS purchase,
+                        SUM(CASE WHEN sm.date BETWEEN %s AND %s 
+                        AND sld_dest.usage = 'supplier' 
+                        THEN sm.product_uom_qty ELSE 0 END) AS purchase_return,
+                        SUM(CASE WHEN sm.date BETWEEN %s AND %s 
+                        AND sld_dest.usage = 'internal' 
+                        THEN sm.product_uom_qty ELSE 0 END) AS internal_in,
+                        SUM(CASE WHEN sm.date BETWEEN %s AND %s 
+                        AND sld_src.usage = 'internal' 
+                        THEN sm.product_uom_qty ELSE 0 END) AS internal_out,
+                        SUM(CASE WHEN sm.date BETWEEN %s AND %s 
+                        AND sld_dest.usage = 'inventory' 
+                        THEN sm.product_uom_qty ELSE 0 END) AS adj_in,
+                        SUM(CASE WHEN sm.date BETWEEN %s AND %s 
+                        AND sld_src.usage = 'inventory' 
+                        THEN sm.product_uom_qty ELSE 0 END) AS adj_out,
+                        SUM(CASE WHEN sm.date BETWEEN %s 
+                        AND %s AND sld_dest.usage = 'production' 
+                        THEN sm.product_uom_qty ELSE 0 END) AS production_in,
+                        SUM(CASE WHEN sm.date BETWEEN %s AND %s 
+                        AND sld_src.usage = 'production' 
+                        THEN sm.product_uom_qty ELSE 0 END) AS production_out,
+                        SUM(CASE WHEN sm.date BETWEEN %s 
+                        AND %s AND sld_dest.usage = 'transit' 
+                        THEN sm.product_uom_qty ELSE 0 END) AS transit_in,
+                        SUM(CASE WHEN sm.date BETWEEN %s 
+                        AND %s AND sld_src.usage = 'transit' 
+                        THEN sm.product_uom_qty ELSE 0 END) AS transit_out
+                    """
+            params = [self.start_date, self.start_date, self.end_date, self.end_date] + [self.start_date, self.end_date] * 12
         query += """
-               FROM stock_move sm
+                    FROM stock_move sm
                     INNER JOIN product_product pp ON pp.id = sm.product_id
                     INNER JOIN product_template pt ON pt.id = pp.product_tmpl_id
                     INNER JOIN res_company company ON company.id = sm.company_id
-                    INNER JOIN stock_warehouse sw ON sw.company_id = company.id
                     INNER JOIN product_category pc ON pc.id = pt.categ_id   
-        """
+                """
         query += """
                     LEFT JOIN stock_location sld_dest 
                     ON sm.location_dest_id = sld_dest.id
                     LEFT JOIN stock_location sld_src 
                     ON sm.location_id = sld_src.id
+                    LEFT JOIN
+                    stock_warehouse sw_dest ON sld_dest.warehouse_id = sw_dest.id
+                    LEFT JOIN
+                    stock_warehouse sw_src ON sld_src.warehouse_id = sw_src.id
                     WHERE
                 sm.state = 'done'
-                """
-        sub_queries = []
+                        """
         if self.product_ids:
             product_ids = [product_id.id for product_id in self.product_ids]
-            sub_queries.append("pp.id = ANY(%s)")
+            query += "AND pp.id = ANY(%s)"
             params.append(product_ids)
         if self.category_ids:
             category_ids = [category.id for category in self.category_ids]
-            sub_queries.append("pt.categ_id = ANY(%s)")
+            query += "AND pt.categ_id = ANY(%s)"
             params.append(category_ids)
-        if sub_queries:
-            query += " AND (" + " OR ".join(sub_queries) + ")"
         if self.company_ids:
             company_ids = [company.id for company in self.company_ids]
             query += " AND sm.company_id = ANY(%s)"
             params.append(company_ids)
         if self.warehouse_ids:
             warehouse_ids = [warehouse.id for warehouse in self.warehouse_ids]
-            query += " AND sw.id = ANY(%s)"
+            query += " AND (COALESCE(sw_dest.id, sw_src.id) = ANY(%s))"
             params.append(warehouse_ids)
         query += """
             GROUP BY pp.id,pt.name,pc.complete_name,company.name

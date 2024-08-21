@@ -60,101 +60,89 @@ class InventoryOutOfStockReport(models.TransientModel):
     def get_report_data(self):
         """Function for returning data to print"""
         query = """
-                    SELECT
-                    product_id,
-                    product_code_and_name,
-                    category_id,
-                    category_name,
-                    company_id,
-                    current_stock,
-                    warehouse_id,
-                    incoming_quantity,
-                    outgoing_quantity,
-                    virtual_stock,
-                    sales,
-                    ads,
-                    advance_stock_days,
-                    ROUND(advance_stock_days * ads, 0) AS demanded_quantity,
-                    ROUND(CASE
+            SELECT
+                product_id,
+                product_code_and_name,
+                category_id,
+                category_name,
+                company_id,
+                current_stock,
+                warehouse_id,
+                incoming_quantity,
+                outgoing_quantity,
+                virtual_stock,
+                sales,
+                ads,
+                advance_stock_days,
+                ROUND(advance_stock_days * ads, 0) AS demanded_quantity,
+                ROUND(CASE
                     WHEN ads = 0 THEN virtual_stock / 0.001
                     ELSE virtual_stock / ads
-                    END,0) AS in_stock_days,
-                    ROUND(CASE
-                    WHEN ads = 0 THEN GREATEST(advance_stock_days - 
-                    ROUND(virtual_stock / 0.001, 2), 0)
-                    ELSE GREATEST(advance_stock_days - 
-                    ROUND(virtual_stock / ads, 2), 0)
-                    END ,0) AS out_of_stock_days,
-                    ROUND(
+                END,0) AS in_stock_days,
+                ROUND(CASE
+                    WHEN ads = 0 THEN GREATEST(advance_stock_days - ROUND(virtual_stock / 0.001, 2), 0)
+                    ELSE GREATEST(advance_stock_days - ROUND(virtual_stock / ads, 2), 0)
+                END ,0) AS out_of_stock_days,
+                ROUND(
                     CASE
-                    WHEN advance_stock_days = 0 THEN 0
-                    ELSE
-                        CASE
-                        WHEN ads = 0 THEN GREATEST(advance_stock_days - 
-                        ROUND(virtual_stock / 0.001, 2), 0)
-                        ELSE GREATEST(advance_stock_days - 
-                        ROUND(virtual_stock / ads, 2), 0)
-                        END
+                        WHEN advance_stock_days = 0 THEN 0
+                        ELSE
+                            CASE
+                                WHEN ads = 0 THEN GREATEST(advance_stock_days - ROUND(virtual_stock / 0.001, 2), 0)
+                                ELSE GREATEST(advance_stock_days - ROUND(virtual_stock / ads, 2), 0)
+                            END
                     END, 2
-                        ) AS out_of_stock_ratio,
-                    ROUND(
-                        CASE
-                        WHEN ads = 0 THEN GREATEST(advance_stock_days - 
-                        ROUND(virtual_stock / 0.001, 2), 0)
-                        ELSE GREATEST(advance_stock_days - 
-                        ROUND(virtual_stock / ads, 2), 0)
-                        END * ads, 0
-                    ) AS out_of_stock_qty,
-                    ROUND(
+                ) AS out_of_stock_ratio,
+                ROUND(
                     CASE
-                    WHEN virtual_stock = 0 THEN 0 
-                    ELSE sales / virtual_stock
+                        WHEN ads = 0 THEN GREATEST(advance_stock_days - ROUND(virtual_stock / 0.001, 2), 0)
+                        ELSE GREATEST(advance_stock_days - ROUND(virtual_stock / ads, 2), 0)
+                    END * ads, 0
+                ) AS out_of_stock_qty,
+                ROUND(
+                    CASE
+                        WHEN virtual_stock = 0 THEN 0 
+                        ELSE sales / virtual_stock
                     END, 2
-                    ) AS turnover_ratio,
+                ) AS turnover_ratio,
+                CASE
+                    WHEN
+                        CASE
+                            WHEN sales > 0 THEN ROUND((sales / NULLIF(virtual_stock, 0)), 2)
+                            ELSE 0
+                        END > 3 THEN 'Fast Moving'
+                    WHEN
+                        CASE
+                            WHEN sales > 0 THEN ROUND((sales / NULLIF(virtual_stock, 0)), 2)
+                            ELSE 0
+                        END >= 1 AND
+                        CASE
+                            WHEN sales > 0 THEN ROUND((sales / NULLIF(virtual_stock, 0)), 2)
+                            ELSE 0
+                        END <= 3 THEN 'Slow Moving'
+                    ELSE 'Non Moving'
+                END AS fsn_classification
+            FROM(
+                SELECT 
                     CASE
-                        WHEN
-                            CASE
-                                WHEN sales > 0 THEN 
-                                ROUND((sales / NULLIF(virtual_stock, 0)), 2)
-                                ELSE 0
-                            END > 3 THEN 'Fast Moving'
-                        WHEN
-                            CASE
-                                WHEN sales > 0 THEN 
-                                ROUND((sales / NULLIF(virtual_stock, 0)), 2)
-                                ELSE 0
-                            END >= 1 AND
-                            CASE
-                                WHEN sales > 0 THEN 
-                                ROUND((sales / NULLIF(virtual_stock, 0)), 2)
-                                ELSE 0
-                            END <= 3 THEN 'Slow Moving'
-                        ELSE 'Non Moving'
-                    END AS fsn_classification
-                    FROM(
-                        SELECT 
-                            CASE
-                                WHEN pp.default_code IS NOT NULL 
-                                    THEN CONCAT(pp.default_code, ' - ', 
-                                    pt.name->>'en_US')
-                                ELSE
-                                    pt.name->>'en_US'
-                            END AS product_code_and_name,
-                            company.id AS company_id,
-                            company.name AS company_name,
-                            sm.product_id AS product_id,
-                            pc.id AS category_id,
-                            pc.complete_name AS category_name,
-                            sw.id AS warehouse_id,
-                                    SUM(CASE
-                        WHEN sld_dest.usage = 'internal' AND sm.state 
-                        IN ('assigned', 'confirmed', 'waiting') 
+                        WHEN pp.default_code IS NOT NULL 
+                            THEN CONCAT(pp.default_code, ' - ', pt.name->>'en_US')
+                        ELSE
+                            pt.name->>'en_US'
+                    END AS product_code_and_name,
+                    company.id AS company_id,
+                    company.name AS company_name,
+                    sm.product_id AS product_id,
+                    pc.id AS category_id,
+                    pc.complete_name AS category_name,
+                    COALESCE(sld_dest.warehouse_id, sld_src.warehouse_id) AS warehouse_id,
+                    SUM(CASE
+                        WHEN sld_dest.usage = 'internal' AND sm.state IN ('assigned', 'confirmed', 'waiting') 
                         THEN sm.product_uom_qty
                         ELSE 0
                     END) AS incoming_quantity,
                     SUM(CASE
-                        WHEN sld_src.usage = 'internal' AND sm.state 
-                        IN ('assigned', 'confirmed', 'waiting') 
+                        WHEN sld_src.usage = 'internal' AND sm.state IN ('assigned', 'confirmed', 'waiting') 
                         THEN sm.product_uom_qty
                         ELSE 0
                     END) AS outgoing_quantity,
@@ -179,87 +167,76 @@ class InventoryOutOfStockReport(models.TransientModel):
                         ELSE 0
                     END)+
                     SUM(CASE
-                        WHEN sld_dest.usage = 'internal' AND sm.state 
-                        IN ('assigned', 'confirmed', 'waiting') 
+                        WHEN sld_dest.usage = 'internal' AND sm.state IN ('assigned', 'confirmed', 'waiting') 
                         THEN sm.product_uom_qty
                         ELSE 0
                     END) -
                     SUM(CASE
-                        WHEN sld_src.usage = 'internal' AND sm.state 
-                        IN ('assigned', 'confirmed', 'waiting') 
+                        WHEN sld_src.usage = 'internal' AND sm.state IN ('assigned', 'confirmed', 'waiting') 
                         THEN sm.product_uom_qty
                         ELSE 0
                     END) AS virtual_stock,
-                     SUM(CASE WHEN sm.date BETWEEN %s AND %s 
-                     AND sld_dest.usage = 'customer' 
-                     THEN sm.product_uom_qty ELSE 0 END) AS sales,
-                            ROUND(SUM(CASE
-                WHEN sm.date BETWEEN %s AND %s 
-                AND sld_src.usage = 'internal' AND sm.state = 'done' 
-                THEN sm.product_uom_qty
-                ELSE 0
-                END) / ((date %s - date %s)+1), 2) AS ads,
-                %s AS advance_stock_days
+                    SUM(CASE WHEN sm.date BETWEEN %s AND %s AND sld_dest.usage = 'customer' 
+                        THEN sm.product_uom_qty ELSE 0 END) AS sales,
+                    ROUND(SUM(CASE
+                        WHEN sm.date BETWEEN %s AND %s AND sld_src.usage = 'internal' 
+                        AND sm.state = 'done' THEN sm.product_uom_qty
+                        ELSE 0
+                    END) / ((date %s - date %s)+1), 2) AS ads,
+                    %s AS advance_stock_days
                 FROM stock_move sm
                 INNER JOIN product_product pp ON pp.id = sm.product_id
                 INNER JOIN product_template pt ON pt.id = pp.product_tmpl_id
                 INNER JOIN res_company company ON company.id = sm.company_id
-                INNER JOIN stock_warehouse sw ON sw.company_id = company.id
                 INNER JOIN product_category pc ON pc.id = pt.categ_id
                 LEFT JOIN (
-                    SELECT sm.id AS move_id, usage
+                    SELECT sm.id AS move_id, sld.usage, sw.id AS warehouse_id
                     FROM stock_location sld
                     INNER JOIN stock_move sm ON sld.id = sm.location_dest_id
+                    LEFT JOIN stock_warehouse sw ON sld.warehouse_id = sw.id
                 ) sld_dest ON sm.id = sld_dest.move_id
                 LEFT JOIN (
-                    SELECT sm.id AS move_id, usage
+                    SELECT sm.id AS move_id, sld.usage, sw.id AS warehouse_id
                     FROM stock_location sld
                     INNER JOIN stock_move sm ON sld.id = sm.location_id
+                    LEFT JOIN stock_warehouse sw ON sld.warehouse_id = sw.id
                 ) sld_src ON sm.id = sld_src.move_id
                 WHERE pp.active = TRUE
-                        AND pt.active = TRUE
-                        AND pt.type = 'product'
-                        """
+                    AND pt.active = TRUE
+                    AND pt.type = 'product'
+        """
         params = [
             self.start_date, self.end_date,
             self.start_date, self.end_date,
             self.end_date, self.start_date,
             self.inventory_for_next_x_days
         ]
-        sub_queries = []
-        sub_params = []
-        param_count = 0
         if self.product_ids or self.category_ids:
             query += " AND ("
         if self.product_ids:
             product_ids = [product_id.id for product_id in self.product_ids]
             query += "pp.id = ANY(%s)"
             params.append(product_ids)
-            param_count += 1
         if self.product_ids and self.category_ids:
             query += " OR "
         if self.category_ids:
             category_ids = [category.id for category in self.category_ids]
             params.append(category_ids)
             query += "(pt.categ_id = ANY(%s))"
-            param_count += 1
         if self.product_ids or self.category_ids:
             query += ")"
         if self.company_ids:
             company_ids = [company.id for company in self.company_ids]
             query += " AND (sm.company_id = ANY(%s))"  # Specify the table alias
-            sub_params.append(company_ids)
-            param_count += 1
+            params.append(company_ids)
         if self.warehouse_ids:
             warehouse_ids = [warehouse.id for warehouse in self.warehouse_ids]
-            query += " AND (sw.id = ANY(%s))"  # Specify the table alias
-            sub_params.append(warehouse_ids)
-            param_count += 1
-        if sub_queries:
-            query += " AND " + " AND ".join(sub_queries)
+            query += " AND (COALESCE(sld_dest.warehouse_id, sld_src.warehouse_id) = ANY(%s))"
+            params.append(warehouse_ids)
         query += """ GROUP BY pp.id, pt.name, pc.id, company.id, sm.product_id, 
-        sw.id) AS sub_query """
-        self.env.cr.execute(query, tuple(params + sub_params))
+                        COALESCE(sld_dest.warehouse_id, sld_src.warehouse_id)
+                    ) AS sub_query """
+        self.env.cr.execute(query, tuple(params))
         result_data = self.env.cr.dictfetchall()
         for data in result_data:
             product_id = data.get('product_id')

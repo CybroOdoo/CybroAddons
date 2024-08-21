@@ -110,7 +110,7 @@ class OverStockReport(models.AbstractModel):
                     sm.product_id AS product_id,
                     pc.id AS category_id,
                     pc.complete_name AS category_name,
-                    sw.id AS warehouse_id,
+                    COALESCE(sld_dest.warehouse_id, sld_src.warehouse_id) AS warehouse_id,
                             SUM(CASE
                 WHEN sld_dest.usage = 'internal' AND sm.state 
                 IN ('assigned', 'confirmed', 'waiting') THEN sm.product_uom_qty
@@ -164,17 +164,18 @@ class OverStockReport(models.AbstractModel):
                 INNER JOIN product_product pp ON pp.id = sm.product_id
                 INNER JOIN product_template pt ON pt.id = pp.product_tmpl_id
                 INNER JOIN res_company company ON company.id = sm.company_id
-                INNER JOIN stock_warehouse sw ON sw.company_id = company.id
                 INNER JOIN product_category pc ON pc.id = pt.categ_id
                 LEFT JOIN (
-                    SELECT sm.id AS move_id, usage
+                    SELECT sm.id AS move_id, sld.usage, sw.id AS warehouse_id
                     FROM stock_location sld
                     INNER JOIN stock_move sm ON sld.id = sm.location_dest_id
+                    LEFT JOIN stock_warehouse sw ON sld.warehouse_id = sw.id
                 ) sld_dest ON sm.id = sld_dest.move_id
                 LEFT JOIN (
-                    SELECT sm.id AS move_id, usage
+                    SELECT sm.id AS move_id, sld.usage, sw.id AS warehouse_id
                     FROM stock_location sld
                     INNER JOIN stock_move sm ON sld.id = sm.location_id
+                    LEFT JOIN stock_warehouse sw ON sld.warehouse_id = sw.id
                 ) sld_src ON sm.id = sld_src.move_id
                 WHERE pp.active = TRUE
                         AND pt.active = TRUE
@@ -186,40 +187,32 @@ class OverStockReport(models.AbstractModel):
             end_date, start_date,
             inventory_for_next_x_days
         ]
-        sub_queries = []
-        sub_params = []
-        param_count = 0
         if product_ids or category_ids:
             query += " AND ("
         if product_ids:
             product_ids = [product_id for product_id in product_ids]
             query += "pp.id = ANY(%s)"
             params.append(product_ids)
-            param_count += 1
         if product_ids and category_ids:
             query += " OR "
         if category_ids:
             category_ids = [category for category in category_ids]
             params.append(category_ids)
             query += "(pt.categ_id = ANY(%s))"
-            param_count += 1
         if product_ids or category_ids:
             query += ")"
         if company_ids:
             company_ids = [company for company in company_ids]
             query += " AND (sm.company_id = ANY(%s))"
-            sub_params.append(company_ids)
-            param_count += 1
+            params.append(company_ids)
         if warehouse_ids:
             warehouse_ids = [warehouse for warehouse in warehouse_ids]
-            query += " AND (sw.id = ANY(%s))"
-            sub_params.append(warehouse_ids)
-            param_count += 1
-        if sub_queries:
-            query += " AND " + " AND ".join(sub_queries)
+            query += " AND (COALESCE(sld_dest.warehouse_id, sld_src.warehouse_id) = ANY(%s))"
+            params.append(warehouse_ids)
         query += """ GROUP BY pp.id, pt.name, pc.id, company.id, sm.product_id, 
-        sw.id) AS sub_query """
-        self.env.cr.execute(query, tuple(params + sub_params))
+        COALESCE(sld_dest.warehouse_id, sld_src.warehouse_id)
+                    ) AS sub_query """
+        self.env.cr.execute(query, tuple(params))
         result_data = self.env.cr.dictfetchall()
         for data in result_data:
             product_id = data.get('product_id')
