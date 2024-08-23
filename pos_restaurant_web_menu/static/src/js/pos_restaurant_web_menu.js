@@ -9,6 +9,7 @@ odoo.define('pos_restaurant_web_menu.web_menu', function (require) {
     var core = require('web.core');
     var qweb = core.qweb;
     var count=0;
+    var rowCounter = 1;
     var cart_item = [];
     var PosWebMenu = PublicWidget.Widget.extend({
         selector:'.pos_web_menu_container',
@@ -17,7 +18,8 @@ odoo.define('pos_restaurant_web_menu.web_menu', function (require) {
             'click .add_to_cart_pos': '_onClick',
             'click .o_pos_web_menu_button': '_view_cart',
             'click .pos_web_order': '_make_an_order',
-            'click .button_back': 'back'
+            'click .button_back': 'back',
+            'click .order-line': '_onClickCancel'
         },
         //   Back button for pos web menu
         back: function(ev){
@@ -38,7 +40,8 @@ odoo.define('pos_restaurant_web_menu.web_menu', function (require) {
             }).then(function (data) {
                 amount = data['lst_price']
                 cart_item.push(data)
-                self.$el.find("tbody").append("<tr id='demo'><td><span>"+data['display_name']+"</span></td><td><span>"+data['currency']+ amount+"</span></td><td><input type='text' width='30%' class='form-control' placeholder='Add internal note..' /></td><tr>");
+                self.$el.find("tbody").append("<tr class=" + parseInt(product_id) + " id='demo_" + rowCounter + "'><td><span>"+data['display_name']+"</span></td><td><span>"+data['currency']+ amount+"</span></td><td><input type='text' width='30%' class='form-control' placeholder='Add internal note..' /></td><td><button class='order-line' id=" + rowCounter + " style='width: 30px; height: 37px; background-color: white;border-color: #e5cece; color: #9fbabb; border-radius: 5px;'><i class='fa fa-times' id=" + rowCounter + " aria-hidden='true'></i></button></td><tr>");
+                rowCounter++;
             });
             self.$el.find(".cart_products").text((cart_item.length+1));
         },
@@ -83,6 +86,22 @@ odoo.define('pos_restaurant_web_menu.web_menu', function (require) {
             this.$el.find(".pos_web_front_page").hide();
             this.$el.find(".pos_web_product_page").show();
         },
+        // Click the button to delete the order line from the cart
+        _onClickCancel: function(ev){
+            var orderline = ev.target.attributes.id.value
+            const element = document.getElementById('demo_' + orderline);
+            const className = element.className;
+            var rawline = this.$el.find("#demo_" + orderline).remove();
+            var cart_count = this.$el.find(".cart_products").text()
+            this.$el.find(".cart_products").text((cart_count - 1))
+            var num = 0
+            for(var i=0; i < cart_item.length; i++){
+                if (cart_item[i].id == className){
+                    num = i
+                }
+            }
+            cart_item.splice(num, 1);
+        }
     });
     PublicWidget.registry.PosWebMenu = PosWebMenu;
     return PosWebMenu;

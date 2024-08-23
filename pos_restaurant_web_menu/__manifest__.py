@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'POS Restaurant Web Menu',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Point of Sale',
     'summary': 'This module help to view Pos Restaurant Website Menu',
     'description': """This module create pos restaurant website menu for 
