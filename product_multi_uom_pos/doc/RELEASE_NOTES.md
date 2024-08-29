@@ -14,3 +14,8 @@
 #### Version 17.0.1.0.1
 ##### UPDT
 - Bug Fix-Resolved the issue in the picking 
+
+#### 20.08.2024
+#### Version 17.0.1.0.1
+##### UPDT
+- Bug Fix - Resolved the issue of UOM shown in sales details report
