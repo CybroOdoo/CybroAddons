@@ -15,7 +15,6 @@ setup() {
         super.setup();
         this.orm = useService("orm");
         this.popup = useService("popup");
-
     },
     get swapButton() {
         return this.props.actionType === "payment" && this.pos.config.module_pos_restaurant;
@@ -30,13 +29,14 @@ setup() {
                 !this.currentOrder?.hasChangesToPrint() && this.currentOrder?.hasSkippedChanges(),
         };
     },
+
     async submitOrder() {
-    var line = []
-    var self = this;
+        var line = []
+        var self = this;
         if (!this.clicked) {
             this.clicked = true;
             try {
-                var order_name=this.pos.selectedOrder.uid
+                var order_name=this.pos.selectedOrder.name
                 await this.orm.call("pos.order", "check_order_status", ["", order_name]).then(function(result){
                     if (result==false){
                     self.kitchen_order_status=false
@@ -48,20 +48,21 @@ setup() {
                     else{
                             self.kitchen_order_status=true
                     }
-            });
-            if ( self.kitchen_order_status){
-                await this.pos.sendOrderInPreparationUpdateLastChange(this.currentOrder);
-                for (const orders of this.pos.get_order().orderlines) {
+                });
+                if ( self.kitchen_order_status){
+                    await this.pos.sendOrderInPreparationUpdateLastChange(this.currentOrder);
+                    for (const orders of this.pos.get_order().orderlines) {
                         line.push([0, 0, {
                             'qty': orders.quantity,
                             'price_unit': orders.price,
                             'price_subtotal': orders.quantity * orders.price,
-                            'price_subtotal_incl': orders.quantity * orders.price,
+                            'price_subtotal_incl': orders.get_display_price(),
                             'discount': orders.discount,
                             'product_id': orders.product.id,
                             'tax_ids': [
-                                [6, false, []]
+                                [6, 0, orders.get_taxes().map((tax) => tax.id)]
                             ],
+
                             'id': 29,
                             'pack_lot_ids': [],
                             'full_product_name': orders.product.display_name,
@@ -72,7 +73,7 @@ setup() {
                         }])
                     }
                     var orders = [{
-                        'pos_reference': this.pos.get_order().uid,
+                        'pos_reference': this.pos.get_order().name,
                         'session_id':1,
                         'amount_total': 0,
                         'amount_paid': 0,
@@ -89,8 +90,8 @@ setup() {
                         'floor':this.pos.get_order().pos.currentFloor.name,
                         'config_id':this.pos.get_order().pos.config.id
                     }]
-                await self.orm.call("pos.order", "get_details", ["", self.pos.config.id, orders])
-            }
+                    await self.orm.call("pos.order", "get_details", ["", self.pos.config.id, orders])
+                }
             } finally {
                 this.clicked = false;
             }

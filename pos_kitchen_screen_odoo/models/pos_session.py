@@ -57,5 +57,7 @@ class PosSession(models.Model):
 
     def _get_pos_ui_pos_order_line(self, params):
         """Get pos ui pos order line"""
+        data = self.env['pos.order.line'].search_read(
+            **params['search_params'])
         return self.env['pos.order.line'].search_read(
             **params['search_params'])
