@@ -36,6 +36,8 @@ class PosConfig(models.Model):
         string="Reservation Charge",
         compute="_compute_has_reservation_charge",
         help="Enable to apply charge for reservations.")
+    is_paid = fields.Boolean(string="Is paid reservation",
+        help="To identify if the reservation is already paid")
 
     def _compute_has_lead_time(self):
         """ To check whether lead time is enabled from settings """

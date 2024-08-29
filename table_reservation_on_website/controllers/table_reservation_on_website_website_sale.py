@@ -106,7 +106,7 @@ class WebsiteSalePayment(WebsiteSale):
                      '<td valign="top" style="font-size: 13px;">'
                      '<div>'
                      'Dear' + ' ' + request.env.user.name + ',' '<br/>''<br/>'
-                    'Your table booking at ' + request.env['restaurant.floor'].browse(int(order.floors)).name + ' ' + 'has been confirmed on '+str(reservation.date)+' for '+reservation.starting_at+' to '+reservation.ending_at + '.' + final_sentence +
+                    'Your table booking at ' + request.env['restaurant.floor'].sudo().browse(int(order.floors)).name + ' ' + 'has been confirmed on '+str(reservation.date)+' for '+reservation.starting_at+' to '+reservation.ending_at + '.' + final_sentence +
                     '<br/>''<br/>'
                     '</span>'
                     '</div>'

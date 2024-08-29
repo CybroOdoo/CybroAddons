@@ -8,7 +8,7 @@ This module allows to reserve tables in POS and website.
 
 Configuration
 =============
-* No additional configurations needed.z
+* No additional configurations needed.
 
 Company
 -------

@@ -20,9 +20,11 @@
 #
 ###############################################################################
 from datetime import date, datetime, timedelta
-import re
+import pytz, re
+from pytz import timezone
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
+from odoo.tools.populate import compute
 
 
 class TableReservation(models.Model):
@@ -39,9 +41,13 @@ class TableReservation(models.Model):
     floor_id = fields.Many2one(comodel_name='restaurant.floor',
                                string="Floor Plan",
                                help="Booked floor", required=True)
-    booked_tables_ids = fields.Many2many(comodel_name='restaurant.table',
-                                         string="Tables", required=True,
-                                         help="Booked tables")
+    available_tables = fields.Many2many(
+        'restaurant.table', 'available_tables_rel',
+        string="Tables", store=True, compute="_compute_available_tables")
+    booked_tables_ids = fields.Many2many(
+        comodel_name='restaurant.table', relation='booked_tables_rel',
+        string="Tables", domain=lambda self: "["f"('id', 'in', available_tables)]",
+        required=True, help="Booked tables")
     date = fields.Date(string="Date", help="Date of reservation",
                        required=True)
     starting_at = fields.Char(string="Starting At",
@@ -85,6 +91,32 @@ class TableReservation(models.Model):
                         rec.lead_time = lead_times
                         rec.lead_time_computed = True
 
+    @api.depends('floor_id', 'date', 'starting_at', 'ending_at')
+    def _compute_available_tables(self):
+        """ Compute available non reserved tables in the selected floor """
+        if self.floor_id:
+            for record in self:
+                tables = self.env['restaurant.table'].search([('floor_id', '=',
+                                                           self.floor_id.id)])
+                table_inbetween = []
+                reserved = self.search([('floor_id', '=', self.floor_id.id),
+                                        ('date', '=', self.date),
+                                        ('state', '=', 'reserved')])
+                if record.starting_at:
+                    start_time_new = datetime.strptime(
+                        self.starting_at, "%H:%M").time()
+                    for rec in reserved:
+                        start_at = datetime.strptime(rec.starting_at, "%H:%M").time()
+                        end_at = datetime.strptime(rec.ending_at, "%H:%M").time()
+                        if start_at <= start_time_new <= end_at:
+                            for table in rec.booked_tables_ids:
+                                table_inbetween.append(table.id)
+                table_floor = [rec.id for rec in tables if
+                               rec.id not in table_inbetween]
+                record.available_tables = [(6, 0, table_floor)]
+        else:
+            tables = self.env['restaurant.table'].browse([])
+            self.available_tables = [(6, 0, [table.id for table in tables])]
     @api.model
     def create(self, vals):
         """ Super create function to add sequence number """
@@ -106,29 +138,6 @@ class TableReservation(models.Model):
                 if not re.match(pattern, record.ending_at):
                     raise UserError(_("Invalid time format! [ "
                                       "format HH:MM]"))
-
-    @api.onchange("floor_id")
-    def _onchange_floor_id(self):
-        """ To show the tables corresponding the floor """
-        tables = self.env['restaurant.table'].search([('floor_id', '=',
-                                                       self.floor_id.id)])
-        table_inbetween = []
-        reserved = self.search([('floor_id', '=', self.floor_id.id),
-                                ('date', '=', self.date),
-                                ('state', '=', 'reserved')])
-        if self.starting_at:
-            start_time_new = datetime.strptime(
-                self.starting_at, "%H:%M").time()
-            for rec in reserved:
-                start_at = datetime.strptime(rec.starting_at, "%H:%M").time()
-                end_at = datetime.strptime(rec.ending_at, "%H:%M").time()
-                if start_at <= start_time_new <= end_at:
-                    for table in rec.booked_tables_ids:
-                        table_inbetween.append(table.id)
-        table_floor = [rec.id for rec in tables if
-                       rec.id not in table_inbetween]
-        domain = [('id', 'in', table_floor)]
-        return {'domain': {'booked_tables_ids': domain}}
 
     @api.depends("booked_tables_ids")
     def _compute_booking_amount(self):
@@ -168,6 +177,11 @@ class TableReservation(models.Model):
         reservations = self.search_read([('date', '>=', today),
                                          ('state', '=', 'reserved')])
         return reservations
+
+    @api.constrains('date', 'starting_at', 'ending_at')
+    def _onchange_date(self):
+        if self.date < datetime.now().date():
+            raise ValidationError(_("You can't select a past date."))
 
     @api.model
     def edit_reservations(self, booking_id, date, customer, start_time,
@@ -347,3 +361,11 @@ class TableReservation(models.Model):
         res.update({
             'state': 'cancel'
         })
+
+    @api.model
+    def add_payment(self, table_id, floor_id):
+        """ Add payment to the table reservations from POS. """
+        selected_table = self.env['restaurant.table'].search([
+            ('id', '=', table_id), ('floor_id', '=', floor_id)])
+        product_id = self.env.ref('table_reservation_on_website.product_product_table_booking_pos')
+        return {'product': product_id.id, 'rate': selected_table.rate}

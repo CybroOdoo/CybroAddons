@@ -187,13 +187,12 @@ export class createBookingPopup extends AbstractAwaitablePopup {
                         this.state.Table, this.state.date, this.state.start_time, this.state.end_time,
                         this.state.partner, this.state.lead_time, this.state.floor, this.pos.get_order().name])
                 this.cancel();
-                this.pos.showScreen('ProductScreen');
-                var product = this.pos.db.product_by_id[data]
-                product['lst_price'] = this.state.amount
-                this.pos.get_order().set_partner(this.pos.db.partner_by_id[parseInt(this.state.partner)])
-                this.pos.get_order().add_product(product, {
-                    quantity: 1,
-                });
+//                this.pos.showScreen('ProductScreen');
+//                var product = this.pos.db.product_by_id[data]
+//                product['lst_price'] = this.state.amount
+//                this.pos.get_order().add_product(product, {
+//                    quantity: 1,
+//                });
             }
             else{
                 this.popup.add(ErrorPopup, {
