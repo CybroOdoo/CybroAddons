@@ -30,11 +30,14 @@ class SaleOrder(models.Model):
 
     def _create_purchase_order(self):
         """Create a purchase order based on the current sale order."""
-        company_id = self.env['res.company'].search(
+        company = self.env['res.company'].search(
             [('partner_id', '=', self.partner_id.id)], limit=1)
+        if not company:
+            return False
+
         purchase_order_vals = {
             'partner_id': self.company_id.partner_id.id,
-            'company_id': company_id.id,
+            'company_id': company.id,
             'origin': self.name,
             'order_line': [(0, 0, {
                 'product_id': line.product_id.id,
@@ -43,6 +46,7 @@ class SaleOrder(models.Model):
                 'price_subtotal': line.price_subtotal,
             }) for line in self.order_line],
         }
+
         return self.env['purchase.order'].create(purchase_order_vals)
 
     def action_confirm(self):
