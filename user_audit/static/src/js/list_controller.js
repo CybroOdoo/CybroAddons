@@ -3,6 +3,7 @@ import { patch } from "@web/core/utils/patch";
 import { ListController } from '@web/views/list/list_controller';
 import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
+import { DynamicRecordList } from "@web/model/relational_model/dynamic_record_list";
 import {
     deleteConfirmationMessage,
     ConfirmationDialog,

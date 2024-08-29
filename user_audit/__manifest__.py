@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "User Activity Audit",
-    "version": "17.0.1.0.0",
+    "version": "17.0.1.0.2",
     "category": "Extra Tools",
     "summary": "Tracking user's create, write, read activities",
     "description": "This module helps you to track user's all type of "
