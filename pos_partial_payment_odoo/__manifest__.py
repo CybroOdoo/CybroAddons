@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'POS Partial Payment',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Point of Sale',
     'summary': "Simplify Payments with Partial Payment in Odoo POS",
     'description': "In Odoo POS, partial payments allow customers to pay for "

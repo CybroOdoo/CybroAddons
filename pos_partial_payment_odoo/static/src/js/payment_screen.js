@@ -11,6 +11,7 @@ patch(PaymentScreen.prototype, {
         setup() {
             super.setup(...arguments);
             this.root = useRef('PartialPayment');
+            this.button = useRef('PartialPaymentButton');
         },
     //Partial Payment Button Functionality
     PartialPaymentButton() {
@@ -21,13 +22,15 @@ patch(PaymentScreen.prototype, {
                 });
             return false;
         };
+        console.log(this.root.el, "this.root.el")
+        console.log(this.button, "this.root.el")
         if (this.currentOrder.partial_payment === true) {
             this.currentOrder.partial_payment = false;
-            var validate = this.root.el
+            var validate = this.root.el || this.button.el
             validate.classList.add('disabled');
         } else if(this.currentOrder.get_partner()){
             this.currentOrder.partial_payment = true;
-            var validate = this.root.el
+            var validate = this.root.el || this.button.el
             validate.classList.remove('disabled');
         }
     },
