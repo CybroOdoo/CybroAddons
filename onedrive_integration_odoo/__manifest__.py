@@ -20,11 +20,12 @@
 #
 ###############################################################################
 {
-    'name': "OneDrive Integration",
+    'name': "Onedrive Integration",
     'version': "16.0.1.0.0'",
     'category': "Document Management",
-    'summary': """Sync Files between OneDrive and Odoo""",
-    'description': """Sync Files between OneDrive and Odoo""",
+    'summary': """Upload and download files in Onedrive using odoo """,
+    'description': """This module was developed to upload files to Onedrive as 
+    well as access files from Onedrive in Odoo.""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
