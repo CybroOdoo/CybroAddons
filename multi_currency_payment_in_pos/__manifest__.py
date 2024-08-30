@@ -21,7 +21,7 @@
 ##############################################################################
 {
     'name': "POS Multi Currency Payment",
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Point of Sale',
     'summary': "This module allows us to make payment in multiple "
                    "currencies in Odoo 16 POS module.",
