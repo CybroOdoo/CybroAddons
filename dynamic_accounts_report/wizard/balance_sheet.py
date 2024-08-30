@@ -93,7 +93,6 @@ class BalanceSheetView(models.TransientModel):
         account_report_id = self.env['account.financial.report'].with_context(
             lang=lang).search([
             ('name', 'ilike', tag_upd)])
-
         new_data = {'id': self.id, 'date_from': False,
                     'enable_filter': True,
                     'debit_credit': True,

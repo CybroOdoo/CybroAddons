@@ -569,7 +569,6 @@ class GeneralView(models.TransientModel):
 
         # Get move lines base on sql query and Calculate the total balance of
         # move lines
-        # print(new_final_filter)
         sql = ('''SELECT DISTINCT ON (l.id) l.id AS lid,m.id AS move_id, l.account_id AS account_id,
                 l.date AS ldate, j.code AS lcode, l.currency_id, l.amount_currency,
                 l.ref AS lref, l.name AS lname, COALESCE(l.debit,0) AS debit, 
@@ -591,7 +590,6 @@ class GeneralView(models.TransientModel):
                l.ref, l.name, m.name, c.symbol, c.position, p.name, anl.keys''')
 
         params = tuple(where_params)
-        # print('new_final_filter', sql, params)
         cr.execute(sql, params)
         account_ress = cr.dictfetchall()
         i = 0
