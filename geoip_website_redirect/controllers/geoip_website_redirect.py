@@ -26,11 +26,13 @@ from odoo.http import request
 from odoo.addons.web.controllers.home import Home
 
 
-class GeoIP(Home):
+class Geolocation(Home):
     """ controller for selecting login user's datas """
+
     def get_location(self, ip_address):
         """ Get location details of user using ip address"""
-        response = requests.get(f'http://ip-api.com/json/{ip_address}', timeout=20).json()
+        response = requests.get(f'http://ip-api.com/json/{ip_address}',
+                                timeout=20).json()
         return {"country": response.get("country")}
 
     @http.route()
