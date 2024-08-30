@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Warehouse Reports",
-    "version": "16.0.1.0.0",
+    "version": "16.0.1.0.1",
     "category": "Warehouse",
     "summary": "All warehouse related PDF and Excel reports",
     "description": "User is able to print Pdf and Excel report of Stock move,"
