@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Record rule for adding visibility to the approvers team -->
+    <record id="document_approval_rule_user" model="ir.rule">
+        <field name="name">document approval rule user</field>
+        <field name="model_id"
+               ref="document_approval.model_document_approval"/>
+        <field name="domain_force">
+            ['|','|',('step_ids.approver_id.id','=',user.id),('approve_initiator_id','=',user.id),('team_id.team_lead_id.id','=',user.id)]
+        </field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+    <!--Multi company rule for the model document approval-->
+    <record model="ir.rule" id="document_approval_multi_company_rule">
+        <field name="name">Document Approval Multi Company</field>
+        <field name="model_id" ref="model_document_approval"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False),
+            ('company_id', 'in', company_ids)]
+        </field>
+    </record>
+</odoo>
