@@ -20,6 +20,7 @@
 #
 #############################################################################
 from odoo import api, fields, models
+from odoo.addons.base.models.decimal_precision import dp
 
 
 class DirectMaterialCost(models.Model):
@@ -33,8 +34,9 @@ class DirectMaterialCost(models.Model):
     product_id = fields.Many2one('product.product',
                                  string='Product',
                                  help='Product required for the work')
-    planned_qty = fields.Integer(string='Planned Qty',
-                                 help='Planned minutes for the work')
+    planned_qty = fields.Float(string='Planned Qty',
+                                 help='Planned minutes for the work',
+                               digits=dp.get_precision('Quantity'))
     uom_id = fields.Many2one('uom.uom', string='UoM',
                              help="Unit of measure")
     cost_unit = fields.Float(string='Cost/Unit',
