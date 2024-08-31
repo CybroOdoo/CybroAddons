@@ -21,6 +21,8 @@
 #############################################################################
 import json
 import logging
+from datetime import datetime
+
 from odoo import http
 from odoo.http import request
 
@@ -77,10 +79,17 @@ class RestApi(http.Controller):
                     datas = []
                     if rec_id != 0:
                         partner_records = request.env[
-                            str(model_name)].search_read(
+                            str(model_name)
+                        ].search_read(
                             domain=[('id', '=', rec_id)],
                             fields=fields
                         )
+
+                        # Manually convert datetime fields to string format
+                        for record in partner_records:
+                            for key, value in record.items():
+                                if isinstance(value, datetime):
+                                    record[key] = value.isoformat()
                         data = json.dumps({
                             'records': partner_records
                         })
@@ -88,10 +97,18 @@ class RestApi(http.Controller):
                         return request.make_response(data=datas)
                     else:
                         partner_records = request.env[
-                            str(model_name)].search_read(
+                            str(model_name)
+                        ].search_read(
                             domain=[],
                             fields=fields
                         )
+
+                        # Manually convert datetime fields to string format
+                        for record in partner_records:
+                            for key, value in record.items():
+                                if isinstance(value, datetime):
+                                    record[key] = value.isoformat()
+
                         data = json.dumps({
                             'records': partner_records
                         })
