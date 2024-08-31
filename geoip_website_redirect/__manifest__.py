@@ -20,12 +20,12 @@
 #
 ###############################################################################
 {
-    'name': 'Website Language And Currency Based On GeoIP',
+    'name': 'Website Geolocation Based Language and Currency',
     'version': '15.0.1.0.0',
     'category': 'eCommerce, Productivity',
     'summary': """This module helps you to map currency and language
      based on Customer's IP address for Odoo 15""",
-    'description': """Website Language And Currency Based On GeoIP Application
+    'description': """Website Geolocation Based Language and Currency Application
      module helps the user to view website and its contents in the language of 
      country from which the user login and also able to view the website shop's 
      currency as that country's currency""",
@@ -47,5 +47,4 @@
     'installable': True,
     'auto_install': False,
     'application': False,
-
 }

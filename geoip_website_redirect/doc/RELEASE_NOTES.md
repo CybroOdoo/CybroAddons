@@ -4,4 +4,4 @@
 #### Version 15.0.1.0.0
 #### ADD
 
-- Initial commit for Website Language And Currency Based On GeoIP
+- Initial commit for Website Geolocation Based Language and Currency
