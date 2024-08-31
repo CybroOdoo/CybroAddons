@@ -26,7 +26,7 @@
     'summary': """Ensures restricted concurrent sessions, enforces user force
     logout, and automates session expiry for enhanced security.""",
     'description': """This module ensures security by restricting concurrent
-    user sessions and provides the option for forced logout. It includes
+    user sessions and provides the option for forced logout, It includes
     automatic session expiry after a set duration, managing user logins
     efficiently.""",
     'author': 'Cybrosys Techno Solutions',
