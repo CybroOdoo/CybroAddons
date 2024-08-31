@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Inherit the sale order form view to add a new field "delivery_status" after the "commitment_date" field -->
+    <record id="view_order_form" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Add "delivery_status" field, which is invisible unless the state is 'sale' -->
+            <field name="commitment_date" position="after">
+                <field name="delivery_status"
+                       invisible="state!= 'sale'"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Inherit the sale order tree view to add "delivery_status" field after the "invoice_status" field -->
+    <record id="view_order_tree" model="ir.ui.view">
+        <field name="name">sale.order.tree.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            <!-- Add "delivery_status" field with different decorations based on its value -->
+            <xpath expr="//field[@name='invoice_status']" position="after">
+                <field name="delivery_status" optional="show" widget="badge"
+                       decoration-muted="delivery_status == 'nothing'"
+                       decoration-warning="delivery_status == 'to_deliver' or delivery_status == 'processing'"
+                       decoration-info="delivery_status == 'partial'"
+                       decoration-success="delivery_status == 'delivered'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Inherit the sale quotation tree view to add "delivery_status" field after the "state" field -->
+    <record id="view_quotation_tree_with_onboarding" model="ir.ui.view">
+        <field name="name">sale.quotation.tree.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id"
+               ref="sale.view_quotation_tree_with_onboarding"/>
+        <field name="arch" type="xml">
+            <!-- Add "delivery_status" field with different decorations based on its value -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="delivery_status" optional="show" widget="badge"
+                       decoration-muted="delivery_status == 'nothing'"
+                       decoration-warning="delivery_status == 'to_deliver' or delivery_status == 'processing'"
+                       decoration-info="delivery_status == 'partial'"
+                       decoration-success="delivery_status == 'delivered'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
