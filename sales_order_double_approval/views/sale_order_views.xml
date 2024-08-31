@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--
+    This XML code defines a new view that extends the existing sale order form view in Odoo.
+    It adds 'Approve' and 'Cancel' buttons next to the 'Send by Email' button in the sale order form.
+    These buttons are intended for use by sales managers to approve or cancel sale orders
+    that are in a specific state.
+
+    Attributes:
+        - id: Unique identifier for the new view record.
+        - model: Specifies the model this view is associated with, which is 'sale.order'.
+        - inherit_id: Refers to the existing view 'sale.view_order_form' to be inherited.
+        - arch: The architecture of the view, defined in XML.
+
+    The new buttons added include:
+        - A button 'Approve' that triggers the 'button_approve' method and is visible
+          only to members of the 'sales_team.group_sale_manager' group when the order is in 'to_approve' state.
+        - A button 'Cancel' that triggers the 'action_cancel' method and is also visible
+          only to members of the 'sales_team.group_sale_manager' group when the order is in 'to_approve' state.
+    -->
+    <record id="sale_order_form_view_inherit_sales_order_double_approval"
+            model="ir.ui.view">
+        <field name="name">
+            sale.order.form.view.inherit.sales.order.double.approval
+        </field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_quotation_send']"
+                   position="after">
+                <button name="button_approve" string="Approve"
+                        class="oe_highlight" type="object"
+                        groups="sales_team.group_sale_manager"
+                        attrs="{'invisible':[('state', 'not in', 'to_approve')]}"/>
+                <button name="action_cancel" string="Cancel"
+                        class="oe_highlight" type="object"
+                        groups="sales_team.group_sale_manager"
+                        attrs="{'invisible':[('state', 'not in', 'to_approve')]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
