@@ -2,8 +2,8 @@
     :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 
-Website GeoIP Based Language and Currency
-=========================================
+Website Geolocation Based Language and Currency
+==============================================
 This module allow to view the website content according to login user's country details
 
 Company

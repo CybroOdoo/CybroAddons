@@ -27,7 +27,7 @@ from odoo.exceptions import UserError
 from odoo.http import request
 
 
-class GeoIP(Home):
+class Geolocation(Home):
     """ Controller for selecting login user's datas """
 
     def get_location(self, ip_address):
@@ -49,7 +49,7 @@ class GeoIP(Home):
     @http.route()
     def web_login(self, redirect=None, **kw):
         """ On login access customer country information """
-        result = super(GeoIP, self).web_login(redirect=redirect, **kw)
+        result = super(Geolocation, self).web_login(redirect=redirect, **kw)
         request.env.user.write({'ip_address': kw.get('user_ip')})
         datas = self.get_location(kw.get('user_ip'))
         if datas:
