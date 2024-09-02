@@ -38,7 +38,7 @@
         'security/ir.model.access.csv',
         'views/module_activity_views.xml',
     },
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
