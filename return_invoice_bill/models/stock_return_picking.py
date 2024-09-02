@@ -38,17 +38,54 @@ class StockReturnPicking(models.TransientModel):
         active_id = self.env.context['active_id']
         if active_model == 'stock.picking' and active_id:
             stock_picking = self.env[active_model].browse(active_id)
-            result['picking_type_name'] = stock_picking.picking_type_id.name
+            picking_type = stock_picking.picking_type_id
+            result['picking_type_name'] = self.env['ir.model.data'].search([
+                ('model', '=', 'stock.picking.type'),
+                ('res_id', '=', picking_type.id)
+            ]).complete_name
         return result
 
+    def _update_stock_picking(self):
+        """Update the 'is_paid' field of the active stock picking to indicate
+        payment. This function is typically called when processing returns with
+        credit or debit notes."""
+        active_model = self.env.context.get('active_model')
+        active_id = self.env.context.get('active_id')
+        if active_model == 'stock.picking' and active_id:
+            stock_picking = self.env[active_model].browse(active_id)
+            stock_picking.is_paid = True
+
+    def _get_return_action(self):
+        """
+        Retrieve the action for returning a move, specifically for credit notes.
+        Returns:
+            ir.actions.actions: Action object for returning moves with credit
+            notes.
+        """
+        return self.env["ir.actions.actions"]._for_xml_id(
+            "return_invoice_bill.return_move_action")
+
     def action_returns_with_credit_note(self):
-        """Return wizard view ,To enter the cancel reason. """
-        action = self.env["ir.actions.actions"]._for_xml_id(
-            "return_invoice_bill.action_return_move")
-        return action
+        move = self.read()
+        """
+        Perform the action of returning moves with credit notes and update the
+        stock picking accordingly.
+
+        Returns:
+            ir.actions.actions: Action object for returning moves with credit
+            notes.
+        """
+        self._update_stock_picking()
+        return self._get_return_action()
 
     def action_returns_with_debit_note(self):
-        """Return wizard view ,To enter the cancel reason. """
-        action = self.env["ir.actions.actions"]._for_xml_id(
-            "return_invoice_bill.action_return_move")
-        return action
+        """
+        Perform the action of returning moves with debit notes and update the
+        stock picking accordingly.
+
+        Returns:
+            ir.actions.actions: Action object for returning moves with debit
+            notes.
+        """
+        self._update_stock_picking()
+        return self._get_return_action()

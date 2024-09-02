@@ -30,12 +30,16 @@ class StockPicking(models.Model):
 
     picking_type_name = fields.Char(string='Picking Type Name',
                                     help='Name of picking type')
+    is_paid = fields.Boolean(string='Is Paid',
+                             help='Value will be True when order has paid '
+                                  'otherwise False.')
 
     @api.model
     def create(self, vals):
         """This method overrides the default create method to set the
         'picking_type_name' field based on the 'picking_type_id' field
         before creating the record."""
+
         self.picking_type_name = self.picking_type_id.name
         return super(StockPicking, self).create(vals)
 
@@ -43,24 +47,26 @@ class StockPicking(models.Model):
         """Generates an action to view reversal credit notes
          based on the context."""
         self.ensure_one()
-        credit_notes = self.sale_id.invoice_ids.filtered(
-            lambda x: x.move_type == 'out_refund')
+        credit_notes = self.env['account.move'].search([
+            ('picking_id', '=', self.id)
+        ])
         return {
             'type': 'ir.actions.act_window',
             'name': _(
                 'Reversal of Credit Note: %s') % self.sale_id.invoice_ids.filtered(
-                lambda x: x.move_type == 'in_invoice').name,
+                lambda x: x.move_type == 'out_invoice').name,
             'res_model': 'account.move',
             'view_mode': 'tree,form',
-            'domain': [('id', 'in', credit_notes.ids)]
+            'domain': [('id', 'in', credit_notes.ids)],
         }
 
     def action_get_debit_note(self):
         """Generates an action to view reversal  debit notes
                 based on the context."""
-        debit_notes = self.purchase_id.invoice_ids.filtered(
-            lambda x: x.move_type == 'in_refund')
         self.ensure_one()
+        debit_notes = self.env['account.move'].search([
+            ('picking_id', '=', self.id)
+        ])
         return {
             'type': 'ir.actions.act_window',
             'name': _(

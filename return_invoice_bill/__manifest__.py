@@ -20,26 +20,27 @@
 #
 ##############################################################################
 {
-    'name': 'Return Invoices And Bills',
-    'version': '15.0.1.0.0',
-    'category': 'Sales',
-    'summary': 'For creating credit note and debit note while picking.',
-    'description': 'We can create credit note or debit note while return the'
-                   ' picking by using this module in Odoo 15. ',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['sale_management', 'stock', 'purchase'],
-    'data': [
-        'security/ir.model.access.csv',
-        'views/stock_picking_views.xml',
-        'views/stock_return_picking_views.xml',
-        'wizard/return_move_views.xml'
+    "name": "Automated Credit/Debit Note Generation from Return Picking",
+    "version": "15.0.1.1.1",
+    "category": "Sales",
+    "summary": "For creating credit note and debit note while picking.",
+    "description": "We can create credit note or debit note while return the"
+    " picking by using this module in Odoo 15. ",
+    "author": "Cybrosys Techno Solutions",
+    "company": "Cybrosys Techno Solutions",
+    "maintainer": "Cybrosys Techno Solutions",
+    "website": "https://www.cybrosys.com",
+    "depends": ["sale_management", "stock", "purchase"],
+    "data": [
+        "security/ir.model.access.csv",
+        "views/account_move_views.xml",
+        "views/stock_picking_views.xml",
+        "views/stock_return_picking_views.xml",
+        "wizard/return_move_views.xml",
     ],
-    'images': ['static/description/banner.png'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
+    "images": ["static/description/banner.png"],
+    "license": "AGPL-3",
+    "installable": True,
+    "auto_install": False,
+    "application": False,
 }

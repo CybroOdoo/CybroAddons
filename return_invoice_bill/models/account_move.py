@@ -19,6 +19,11 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from . import account_move
-from . import stock_picking
-from . import stock_return_picking
+from odoo import fields, models
+
+
+class AccountMove(models.Model):
+    _inherit = 'account.move'
+
+    picking_id = fields.Many2one('stock.picking', "Picking Id",
+                                 help='Related Picking Id')
