@@ -39,7 +39,7 @@
             'website_customer_note/static/js/pay_now_button.js'
         ],
     },
-    'images': ['static/description/assets/banner.png'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
