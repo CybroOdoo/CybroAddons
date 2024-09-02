@@ -19,9 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import website
-from . import sale_order
-from . import account_move
-from . import res_config_settings
-from . import res_company
-from . import selection_message
+from . import whatsapp_mail_messaging

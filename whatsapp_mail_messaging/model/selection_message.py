@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#############################################################################
+##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
@@ -18,10 +18,16 @@
 #    (LGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
-from . import website
-from . import sale_order
-from . import account_move
-from . import res_config_settings
-from . import res_company
-from . import selection_message
+##############################################################################
+from odoo import api, fields, models
+
+
+class SelectionMessage(models.Model):
+    """ Message Templates """
+    _name = 'selection.message'
+    _description = 'Selection Message'
+
+    name = fields.Char(string="Name",
+                       help="Name of message template")
+    message = fields.Text(string="Message", required=True,
+                          help="The message to send")
