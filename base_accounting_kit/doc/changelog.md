@@ -105,8 +105,3 @@
 #### Version 14.0.3.13.14
 #### FIX
 - Dashboard cash and bank balance issue fix
-
-#### 23.04.2024
-#### Version 14.0.3.13.15
-#### FIX
-- Residual value and Archive issue Fix
