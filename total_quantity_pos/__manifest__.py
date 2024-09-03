@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Total Items and Total Quantity in POS',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Point of Sale',
     'summary': "To Show the Total Quantity and Total Items Ordered in POS",
     'description': "This app will shows the number of "
@@ -34,6 +34,7 @@
     'website': 'https://www.cybrosys.com',
     'depends': ['point_of_sale'],
     'data': [
+        'views/res_config_settings_views.xml',
     ],
     'assets': {
         'point_of_sale._assets_pos': [
