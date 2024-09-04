@@ -35,7 +35,7 @@ class AccountMove(models.Model):
     def _compute_journal(self):
         """Compute field for showing validation error for restricted journal's
         records"""
-
+        print(self.env.user.journal_ids.ids,"print 1")
         self.is_check_journal = True
         for rec in self.line_ids:
             if rec.full_reconcile_id:
@@ -49,5 +49,6 @@ class AccountMove(models.Model):
     @api.onchange('partner_id')
     def _onchange_partner_id(self):
         """Function for hiding restricted journals from account.move."""
+        print(self.env.user.journal_ids.ids,"print 2")
         if self.journal_id.id in self.env.user.journal_ids.ids:
             self.journal_id = False
