@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Theme Splash',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Theme/Corporate',
     'summary': 'Design Web Pages with Theme Splash',
     'description': 'Theme Splash is an attractive and unique front-end theme '
