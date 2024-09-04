@@ -46,9 +46,7 @@ class PosOrder(models.Model):
         order = self.env['pos.order'].search([('barcode', '=', barcode),
                                               ('is_return', '=', False)])
         if order and order.is_refunded is False:
-            order.refund()
-            return True
-        return False
+            return order.id
 
     def _prepare_refund_values(self, current_session):
         """override this function to pass that the order is return """

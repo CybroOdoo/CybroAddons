@@ -2,6 +2,7 @@
 //Patched order to fetch barcode number and to search for the order related to  barcode
 import { patch } from "@web/core/utils/patch";
 import { Order } from "@point_of_sale/app/store/models";
+import { _t } from "@web/core/l10n/translation";
 
 patch(Order.prototype, {
      setup(_defaultObj, options) {
@@ -9,11 +10,11 @@ patch(Order.prototype, {
         this.barcode_reader = this.barcode_reader || null;
         this.orm = options.pos.orm;
         this.is_barcode = false
-        this.barcode = null
+        let barcode = _t("%s", this.uid);
+        this.barcode =barcode.replace(/-/g, "")
         },
-
      set_barcode_reader(barcode_reader) {
-        this.comment_feedback = barcode_reader.Value;
+        this.barcode_reader = barcode_reader.Value;
     },
     get_barcode_reader() {
         return this.barcode_reader;

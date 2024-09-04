@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'POS Return Barcode',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'summary': """This module in Odoo 17 allows to  return product effortless 
      via receipt barcode scanning.""",
     'description': """The POS Return Barcode module in Odoo 17 streamlines the
@@ -42,6 +42,7 @@
             'pos_return_barcode/static/src/js/return_product.js',
             'pos_return_barcode/static/src/js/order.js',
             'pos_return_barcode/static/src/js/barcode_popup.js',
+            'pos_return_barcode/static/src/js/ticket_screen.js',
             'pos_return_barcode/static/src/xml/return_product_template.xml',
             'pos_return_barcode/static/src/xml/barcode_popup.xml',
             'pos_return_barcode/static/src/xml/order_receipt.xml',

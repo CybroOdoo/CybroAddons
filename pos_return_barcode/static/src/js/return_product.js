@@ -6,6 +6,7 @@ import { useService } from "@web/core/utils/hooks";
 import { Component } from "@odoo/owl";
 import BarcodePopup from "@pos_return_barcode/js/barcode_popup"
 import { ErrorPopup } from "@point_of_sale/app/errors/popups/error_popup";
+
 export class ReturnProductButton extends Component {
     static template = "point_of_sale.ReturnProduct";
     setup() {
@@ -28,16 +29,23 @@ export class ReturnProductButton extends Component {
             var self = this
             this.pos.receipt_barcode_reader = inputbarcode;
             let barcode = inputbarcode.barcodeValue.toString().replace(/\n/g, "");
-            await this.orm.call("pos.order", "action_barcode_return", ["", barcode]).then(function(result){
-            if(result == false)
+
+         let result = await this.orm.call("pos.order", "action_barcode_return", ["", barcode])
+                if (!result)
             {
                     self.popup.add(ErrorPopup, {
                         title: _t("Order not found"),
                         body: _t("Invalid data , Order could not be found"),
                     });
             }
-            window.location.reload();
-            })
+          const ui = {
+            searchDetails: {
+                fieldName: "BARCODE",
+                searchTerm: barcode,
+            },
+            filter: "SYNCED",
+        };
+        this.pos.showScreen("TicketScreen", { ui });
        }
     }
 }
