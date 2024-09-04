@@ -32,7 +32,7 @@
                    'and clear cart options by default.',
     'summary': 'Design Web Pages with Theme Splash',
     'category': 'Theme/Corporate',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
