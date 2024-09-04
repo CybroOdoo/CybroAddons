@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Odoo17 Hotel Management',
-    'version': '17.0.1.1.4',
+    'version': '17.0.1.2.5',
     'category': 'Services',
     'summary': """Hotel Management, Odoo Hotel Management, Hotel, Room Booking odoo, Amenities Odoo, Event management, Rooms, Events, Food, Booking, Odoo Hotel, Odoo17, Odoo Apps""",
     'description': """The module helps you to manage rooms, amenities, 

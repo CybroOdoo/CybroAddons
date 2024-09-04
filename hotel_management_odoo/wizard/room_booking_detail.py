@@ -86,25 +86,22 @@ class RoomBookingWizard(models.TransientModel):
             )
         room_booking = self.env["room.booking"].search_read(
             domain=domain,
-            fields=["partner_id", "name", "checkin_date", "checkout_date"],
+            fields=["partner_id", "name"],
         )
         for rec in room_booking:
-            rooms = (
-                self.env["room.booking"]
-                .browse(rec["id"])
-                .room_line_ids.room_id.mapped("name")
-            )
+            rooms = self.env["room.booking"].browse(rec["id"])
             rec["partner_id"] = rec["partner_id"][1]
-            for room in rooms:
+            for line in rooms.room_line_ids:
                 if self.room_id:
-                    if self.room_id.name == room:
-                        rec["room_id"] = room
+                    if self.room_id.id == line.room_id.id:
+                        rec["room_id"] = line.room_id.name
+                        rec["checkin_date"] = line.checkin_date.date()
+                        rec["checkout_date"] = line.checkout_date.date()
                         room_list.append(rec)
                 else:
                     rec_copy = rec.copy()
-                    rec_copy["room_id"] = room
+                    rec_copy["room_id"] = line.room_id.name
                     room_list.append(rec_copy)
-
         return room_list
 
     def get_xlsx_report(self, data, response):

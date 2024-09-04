@@ -150,14 +150,13 @@ class RoomBookingLine(models.Model):
             rec_room_id = rec.room_line_ids.room_id
             rec_checkin_date = rec.room_line_ids.checkin_date
             rec_checkout_date = rec.room_line_ids.checkout_date
-
             if rec_room_id and rec_checkin_date and rec_checkout_date:
                 # Check for conflicts with existing room lines
                 for line in self:
                     if line.id != rec.id and line.room_id == rec_room_id:
                         # Check if the dates overlap
-                        if (rec_checkin_date <= line.checkin_date <= rec_checkout_date or
-                                rec_checkin_date <= line.checkout_date <= rec_checkout_date):
+                        if (rec_checkin_date >= line.checkin_date >= rec_checkout_date or
+                                rec_checkin_date >= line.checkout_date >= rec_checkout_date):
                             raise ValidationError(
                                 _("Sorry, You cannot create a reservation for "
                                   "this date since it overlaps with another "
