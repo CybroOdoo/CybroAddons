@@ -30,6 +30,7 @@ class BalanceSheet(models.TransientModel):
         data = dict()
         report_lines = acc
         data['form'] = form
+        decimal_places = self.env.company.currency_id.decimal_places
 
         # find the journal items of these accounts
         journal_items = self.find_journal_items(report_lines, data['form'])
@@ -49,7 +50,7 @@ class BalanceSheet(models.TransientModel):
 
         # finding the root
         for item in report_lines:
-            item['balance'] = round(item['balance'], 2)
+            item['balance'] = round(item['balance'], decimal_places)
             if not item['parent']:
                 item['level'] = 1
                 parent = item

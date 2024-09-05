@@ -201,13 +201,14 @@ class BalanceSheetView(models.TransientModel):
         currency = company_id.currency_id
         symbol = currency.symbol
         rounding = currency.rounding
+        decimal_places = currency.decimal_places
         position = currency.position
 
         for rec in final_report_lines:
-            rec['debit'] = round(rec['debit'], 2)
-            rec['credit'] = round(rec['credit'], 2)
+            rec['debit'] = round(rec['debit'], decimal_places)
+            rec['credit'] = round(rec['credit'], decimal_places)
             rec['balance'] = rec['debit'] - rec['credit']
-            rec['balance'] = round(rec['balance'], 2)
+            rec['balance'] = round(rec['balance'], decimal_places)
             if (rec['balance_cmp'] < 0 and rec['balance'] > 0) or (
                     rec['balance_cmp'] > 0 and rec['balance'] < 0):
                 rec['balance'] = rec['balance'] * -1
@@ -379,6 +380,7 @@ class BalanceSheetView(models.TransientModel):
     def _get_report_values(self, data):
         docs = data['model']
         display_account = data['display_account']
+        decimal_places = self.env.company.currency_id.decimal_places
         init_balance = True
         journals = data['journals']
         accounts = self.env['account.account'].search([])
@@ -405,7 +407,7 @@ class BalanceSheetView(models.TransientModel):
         debit_total = 0
         debit_total = sum(x['debit'] for x in account_res)
         credit_total = sum(x['credit'] for x in account_res)
-        debit_balance = round(debit_total, 2) - round(credit_total, 2)
+        debit_balance = round(debit_total, decimal_places) - round(credit_total, decimal_places)
         return {
             'doc_ids': self.ids,
             'debit_total': debit_total,
@@ -454,6 +456,7 @@ class BalanceSheetView(models.TransientModel):
         MoveLine = self.env['account.move.line']
         move_lines = {x: [] for x in accounts.ids}
         currency_id = self.env.company.currency_id
+        decimal_places = self.env.company.currency_id.decimal_places
 
         # Prepare sql query base on selected parameters from wizard
         tables, where_clause, where_params = MoveLine._query_get()
@@ -493,10 +496,10 @@ class BalanceSheetView(models.TransientModel):
         #         tuple(data.get('analytic_tags').ids) + tuple([0]))
         # current_lang = self.env.user.lang
         # Get move lines base on sql query and Calculate the total balance of move lines
-        sql = ('''SELECT l.account_id AS account_id, a.code AS code,a.id AS id, a.name AS name, 
-                    ROUND(COALESCE(SUM(l.debit),0),2) AS debit, 
-                    ROUND(COALESCE(SUM(l.credit),0),2) AS credit, 
-                    ROUND(COALESCE(SUM(l.balance),0),2) AS balance,
+        base_sql = ('''SELECT l.account_id AS account_id, a.code AS code,a.id AS id, a.name AS name, 
+                    ROUND(COALESCE(SUM(l.debit),0),{}) AS debit, 
+                    ROUND(COALESCE(SUM(l.credit),0),{}) AS credit, 
+                    ROUND(COALESCE(SUM(l.balance),0),{}) AS balance,
                     anl.keys, act.name as tag
                     FROM account_move_line l
                     JOIN account_move m ON (l.move_id=m.id)
@@ -512,9 +515,9 @@ class BalanceSheetView(models.TransientModel):
                     SELECT jsonb_object_keys(l.analytic_distribution)::INT 
                     AS keys) anl ON true
                     LEFT JOIN account_analytic_account an 
-                    ON (anl.keys = an.id)'''
-               + WHERE + final_filters + ''' GROUP BY l.account_id, 
-                   a.code,a.id,a.name,anl.keys, act.name''')
+                    ON (anl.keys = an.id)''').format(decimal_places, decimal_places, decimal_places)
+        sql = base_sql + WHERE + final_filters + ''' GROUP BY l.account_id, 
+                   a.code,a.id,a.name,anl.keys, act.name'''
 
         if data.get('accounts'):
             params = tuple(where_params)

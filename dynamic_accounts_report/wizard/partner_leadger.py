@@ -216,6 +216,7 @@ class PartnerView(models.TransientModel):
         docs = data['model']
         display_account = data['display_account']
         init_balance = True
+        decimal_places = self.env.company.currency_id.decimal_places
         company_id = self.env.companies.ids
         accounts = self.env['account.account'].search(
             [('account_type', 'in', ('asset_receivable', 'liability_payable')),
@@ -237,7 +238,7 @@ class PartnerView(models.TransientModel):
         debit_total = 0
         debit_total = sum(x['debit'] for x in partner_res)
         credit_total = sum(x['credit'] for x in partner_res)
-        debit_balance = round(debit_total, 2) - round(credit_total, 2)
+        debit_balance = round(debit_total, decimal_places) - round(credit_total, decimal_places)
         return {
             'doc_ids': self.ids,
             'debit_total': debit_total,
@@ -294,6 +295,7 @@ class PartnerView(models.TransientModel):
         move_line = self.env['account.move.line']
         move_lines = {x: [] for x in partners.ids}
         currency_id = self.env.company.currency_id
+        decimal_places = self.env.company.currency_id.decimal_places
         tables, where_clause, where_params = move_line._query_get()
         wheres = [""]
         if where_clause.strip():
@@ -370,9 +372,9 @@ class PartnerView(models.TransientModel):
             balance = 0
             if row['partner_id'] in move_lines:
                 for line in move_lines.get(row['partner_id']):
-                    balance += round(line['debit'], 2) - round(line['credit'],
-                                                               2)
-                row['balance'] += (round(balance, 2))
+                    balance += round(line['debit'], decimal_places) - round(line['credit'],
+                                                               decimal_places)
+                row['balance'] += (round(balance, decimal_places))
                 row['m_id'] = row['account_id']
                 row['account_name'] = account_list[row['account_id']][
                                           'name'] + "(" + \
@@ -389,9 +391,9 @@ class PartnerView(models.TransientModel):
             res['id'] = partner.id
             res['move_lines'] = move_lines[partner.id]
             for line in res.get('move_lines'):
-                res['debit'] += round(line['debit'], 2)
-                res['credit'] += round(line['credit'], 2)
-                res['balance'] = round(line['balance'], 2)
+                res['debit'] += round(line['debit'], decimal_places)
+                res['credit'] += round(line['credit'], decimal_places)
+                res['balance'] = round(line['balance'], decimal_places)
             if display_account == 'all':
                 partner_res.append(res)
             if display_account == 'movement' and res.get('move_lines'):

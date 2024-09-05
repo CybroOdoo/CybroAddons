@@ -45,3 +45,8 @@
 ### version 16.0.1.0.11,
 ### BUGFIX
 - General Ledger: Fixed the Redundancy bug 
+
+### 05.09.2024
+### version 16.0.1.0.12,
+### BUGFIX
+- Report Bug Fix: Problem with rounding issue.

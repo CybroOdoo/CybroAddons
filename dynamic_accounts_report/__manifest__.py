@@ -22,7 +22,7 @@
 
 {
     'name': 'Dynamic Financial Reports V16',
-    'version': '16.0.1.0.11',
+    'version': '16.0.1.0.12',
     'category': 'Accounting',
     'live_test_url': 'https://www.youtube.com/watch?v=gVQi9q9Rs-E&t=5s',
     'summary': "Odoo 16 Accounting Financial Reports",

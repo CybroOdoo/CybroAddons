@@ -284,9 +284,10 @@ class TrialView(models.TransientModel):
         if not lang:
             lang = 'en_US'
         lang = lang.replace("_", '-')
+
         currency_array = [self.env.company.currency_id.symbol,
                           self.env.company.currency_id.position,
-                          lang]
+                          lang,self.env.company.currency_id.decimal_places]
         return currency_array
 
     def get_dynamic_xlsx_report(self, data, response ,report_data, dfr_data):

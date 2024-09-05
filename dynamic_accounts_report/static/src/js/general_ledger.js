@@ -88,6 +88,7 @@ odoo.define('dynamic_accounts_report.general_ledger', function(require) {
 		load_data: function(initial_render = true) {
 			var self = this;
 			self.$(".categ").empty();
+			console.log('load data.....')
 			try {
 				var self = this;
 				var action_title = self._title
@@ -127,6 +128,10 @@ odoo.define('dynamic_accounts_report.general_ledger', function(require) {
 						});
 					}
 					var child = [];
+					console.log(datas['debit_balance'],'debit balance....')
+					console.log(datas['debit_total'],'debit_total....')
+					console.log(datas['credit_total'],'credit_total....')
+					console.log(datas['currency'],'currency....')
 					self.$('.table_view_tb').html(QWeb.render('GLTable', {
 						report_lines: datas['report_lines'],
 						filter: datas['filters'],
