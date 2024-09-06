@@ -22,7 +22,7 @@
 ################################################################################
 {
     'name': 'POS Receipt Design',
-    'version': '17.0.1.0.4',
+    'version': '17.0.1.0.5',
     'category': 'Point of Sale',
     'summary': "POS Receipt, Receipt Design, POS Receipt Template, Design "
                "Report, Custom Receipt, POS Report, Customise Receipt, Odoo17, "

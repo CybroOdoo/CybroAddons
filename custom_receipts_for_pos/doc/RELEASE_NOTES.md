@@ -25,3 +25,8 @@
 #### Version 17.0.1.0.4
 ##### BUGFIX
 - Fixed the missing products and amount details in the pos receipts from ticket screen.
+
+#### 05.09.2024
+#### Version 17.0.1.0.5
+##### BUGFIX
+- Fixed the missing company logo in the pos receipts when printing.

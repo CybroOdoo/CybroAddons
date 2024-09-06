@@ -44,7 +44,6 @@ class PosSession(models.Model):
         return {
             'search_params': {
                 'fields': ['design_receipt', 'name'],
-
             },
         }
 

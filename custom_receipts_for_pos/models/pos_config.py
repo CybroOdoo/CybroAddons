@@ -34,6 +34,8 @@ class PosConfig(models.Model):
                                      help='Choose any receipt design')
     design_receipt = fields.Text(related='receipt_design.design_receipt',
                                  string='Receipt XML')
+    logo = fields.Binary(related='company_id.logo', string='Logo',
+                         readonly=False)
     is_custom_receipt = fields.Boolean(string='Is Custom Receipt',
                                        help='Indicates the receipt  design is '
                                             'custom or not')
