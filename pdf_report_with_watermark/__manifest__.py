@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Reports With Watermark',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.1',
     'category': 'Extra Tools',
     'summary':"""Print the PDF reports with watermark""",
     'description':"""This module allows you to add watermarks to PDF reports
@@ -35,6 +35,7 @@
     'data': [
         'views/res_company_views.xml',
         'report/pdf_with_watermark_template.xml',
+        'views/base_document_layout.xml',
     ],
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
