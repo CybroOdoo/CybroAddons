@@ -42,7 +42,7 @@ class ResConfigSettings(models.TransientModel):
     consignment_product_only = fields.Boolean(help='Enable Product '
                                                    'Filtered in '
                                                    'consignment by '
-                                                   'Consignment Prodduct',
+                                                   'Consignment Product',
                                               string='Consignment Product',
                                               config_parameter='sale_consignment.consignment_product_only', )
     consignment_customer_only = fields.Boolean(help='Enable Customer '

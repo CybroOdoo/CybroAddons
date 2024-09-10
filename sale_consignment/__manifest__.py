@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Sale Consignment",
-    'version': "17.0.1.0.0",
+    'version': "17.0.1.0.1",
     'category': 'Sales',
     'summary': """Consignment Sale Order""",
     'description': """Sale Order with consignment option""",

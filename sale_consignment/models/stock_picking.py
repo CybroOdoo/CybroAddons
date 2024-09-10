@@ -35,6 +35,9 @@ class StockPicking(models.Model):
          related to the consignment order"""
         res = super().button_validate()
         consignment_id = self.sale_id.consignment_id
+        if consignment_id:
+            self.location_id = consignment_id.location_dest_id
+            self.move_line_ids.location_id = consignment_id.location_dest_id
         sale_order = self.env['sale.order'].search([
             ('consignment_id', '=', consignment_id.id)])
         for record in consignment_id.consignment_line_ids:
