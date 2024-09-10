@@ -28,8 +28,8 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'images': ['static/description/banner.png'],
     'website': 'https://www.cybrosys.com',
-    'depends': ['base', 'website_sale', 'website_sale_wishlist',
-                'website_sale_comparison', 'stock'],
+    'depends': ['website_sale', 'website_sale_wishlist',
+                'website_sale_comparison', 'website_sale_stock'],
     'summary': """Helps to hide price of specified product from shop""",
     'description': "Hide price and add to cart item button of All page stores"
                    "and user must ask for a call for price",
