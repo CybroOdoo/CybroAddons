@@ -38,7 +38,7 @@ class AccountMove(models.Model):
                 if line.discount > 0 and \
                         line.product_id.categ_id.customer_account_discount_id:
                     debit_credit_value = abs(
-                        float_round((line.price_subtotal - line.price_unit),
+                        float_round((line.price_subtotal - (line.quantity * line.price_unit)),
                                     precision_digits=
                                     self.currency_id.decimal_places))
                     self.env['account.move.line'].create({
@@ -66,7 +66,7 @@ class AccountMove(models.Model):
                 if line.discount > 0 and \
                         line.product_id.categ_id.vendor_account_discount_id:
                     debit_credit_value = abs(
-                        float_round((line.price_subtotal - line.price_unit),
+                        float_round((line.price_subtotal - (line.quantity * line.price_unit)),
                                     precision_digits=
                                     self.currency_id.decimal_places))
                     self.env['account.move.line'].with_context(

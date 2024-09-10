@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Journal Discount on Invoices And Bills',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Accounting',
     'summary': """Create discount journal items for discounts in invoices and 
     bills""",
