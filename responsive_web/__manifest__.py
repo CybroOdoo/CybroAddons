@@ -20,19 +20,25 @@
 #
 ##############################################################################
 {
-    'name': "Web Responsive Odoo16",
-    'version': '16.0.1.0.0',
+    'name': "Web Responsive",
+    'version': '16.0.1.1.0',
     'category': 'Extra Tools',
-    'summary': 'This module helps to create enterprise like app drawer,Responsiveness and sticky headers included.',
+    'summary': 'This module adds responsiveness to web backend',
     'description': """This module helps to create enterprise like app drawer,
      Responsiveness and sticky headers included.""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['base', 'web', 'mail'],
-    'assets': {
-        'web.assets_backend': [
+    'images': [
+        'static/description/banner.png'],
+    'license': 'AGPL-3',
+    'installable': True,
+    'auto_install': False,
+    'application': False,
+    "depends": ["base", "web", "mail"],
+    "assets": {
+        "web.assets_backend": [
             'responsive_web/static/src/css/main.css',
             'responsive_web/static/src/css/menu_order.css',
             'responsive_web/static/src/components/apps_menu/link_view.xml',
@@ -41,9 +47,5 @@
             'responsive_web/static/src/xml/PivotCustom.xml'
         ]
     },
-    'images': ['static/description/banner.png'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
+
 }
