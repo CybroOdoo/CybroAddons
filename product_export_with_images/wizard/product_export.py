@@ -34,7 +34,7 @@ class ExportWizard(models.TransientModel):
         "product.template", string="Products",
         help="Products for exporting")
     product_ids = fields.Many2many(
-        "product.product", string="Products",
+        "product.product", string="Products Variants",
         help="Product variants for exporting")
 
     def action_export_products(self):
