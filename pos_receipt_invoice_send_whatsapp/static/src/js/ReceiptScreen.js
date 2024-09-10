@@ -22,7 +22,7 @@ patch(ReceiptScreen.prototype, {
             method: 'action_send_invoice',
             args: [0],
             kwargs: {
-                order_id: order_id, // Pass order_id as a keyword argument
+                order_id: order_id,
                 number: this.currentOrder.get_partner().whatsapp_number,
                 config_id: this.pos.config.id
             }
