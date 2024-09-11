@@ -9,3 +9,9 @@
 #### Version 16.0.1.0.0
 #### FIX
 - Fixed UOM saving issue when POS tables switched.
+
+
+#### 11.09.2024
+#### Version 16.0.1.0.0
+#### FIX
+- Added UOM in Sales details report.
