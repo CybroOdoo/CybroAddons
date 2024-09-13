@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Dealer Sales Feedback Form_view.-->
+    <record id="dealer_sale_view_form" model="ir.ui.view">
+        <field name="name">dealer.sale.view.form</field>
+        <field name="model">dealer.sale</field>
+        <field name="arch" type="xml">
+            <form string="Dealer Feedback">
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="a_to_verify,b_verified"/>
+                    <button name="action_verify_sale" class="oe_highlight"
+                            states="a_to_verify" string="Verify" type="object"/>
+                </header>
+                <sheet>
+                <br/>
+                    <h1><b><field name="serial_no" readonly="1" /></b></h1>
+                    <br/>
+                    <group>
+                        <group>
+                            <field name="dealer_id"
+                                   options="{'no_create':True}"/>
+                            <field name="franchise_reference"
+                                   options="{'no_create':True}"/>
+                            <field name="dealer_agreement_id"
+                                   options="{'no_create':True}"/>
+                            <field name="dealership_signed_on" />
+                            <field name="monthly_target_amount"/>
+                        </group>
+                        <group>
+                            <field name="sale_quantity"/>
+                            <field name="scrap_quantity"/>
+                            <field name="total_sale_amount" />
+                            <field name="discount_percentage"/>
+                            <field name="monthly_target_gained"/>
+                        </group>
+                    </group>
+            </sheet>
+            <div class="oe_chatter">
+                <field name="message_follower_ids"/>
+                <field name="activity_ids"/>
+                <field name="message_ids"/>
+            </div>
+        </form>
+        </field>
+    </record>
+    <!--Dealer Sales Feedback Tree_view-->
+    <record id="dealer_sale_view_tree" model="ir.ui.view">
+        <field name="name">dealer.sale.view.tree</field>
+        <field name="model">dealer.sale</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="total_sale_amount > monthly_target_amount"
+                   decoration-danger="monthly_target_amount > total_sale_amount" >
+                <field name="serial_no"/>
+                <field name="dealer_id"/>
+                <field name="dealer_agreement_id"/>
+                <field name="monthly_target_amount"/>
+                <field name="sale_quantity"/>
+                <field name="scrap_quantity"/>
+                <field name="total_sale_amount"/>
+                <field name="state" readonly="1" widget="badge"
+                           decoration-warning="state == 'a_to_verify'"
+                           decoration-success="state == 'b_verified'"/>
+            </tree>
+        </field>
+     </record>
+    <!--Dealer Sales Feedback Action-->
+    <record id="dealer_sale_action" model="ir.actions.act_window">
+        <field name="name">Dealer Sales Feedback</field>
+        <field name="res_model">dealer.sale</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
