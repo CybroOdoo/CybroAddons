@@ -77,7 +77,6 @@ class RFQCustomerPortal(CustomerPortal):
             'In Progress': {'label': _('In Progress'),
                             'domain': [('state', '=', 'in_progress')]},
         }
-        # default filter by value
         if not filterby:
             filterby = 'all'
         domain += searchbar_filters[filterby]['domain']
@@ -129,11 +128,20 @@ class RFQCustomerPortal(CustomerPortal):
     @http.route(['/quote/details'], type='http', auth="public", website=True)
     def quote_details(self, **post):
         """Quote details"""
-        request.env['vendor.quote.history'].sudo().create({
-            'vendor_id': request.env.user.partner_id.id,
-            'quoted_price': float(post.get('price')),
-            'estimate_date': post.get('delivery_date'),
-            'note': post.get('additional_note'),
-            'quote_id': post.get('rfq_id'),
-        })
+        vendor_quote_history_id = request.env['vendor.quote.history'].sudo().search(
+            [('quote_id', '=', int(post.get('rfq_id'))),
+             ('vendor_id', '=', request.env.user.partner_id.id)])
+        if vendor_quote_history_id:
+            vendor_quote_history_id.write({
+                'quoted_price': post.get('price'),
+                'estimate_date': post.get('delivery_date')
+            })
+        else:
+            request.env['vendor.quote.history'].sudo().create({
+                'vendor_id': request.env.user.partner_id.id,
+                'quoted_price': float(post.get('price')),
+                'estimate_date': post.get('delivery_date'),
+                'note': post.get('additional_note'),
+                'quote_id': post.get('rfq_id'),
+            })
         return request.redirect('/my/vendor_rfq/%s' % (post.get('rfq_id')))

@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Odoo Vendor Portal',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Purchases',
     'summary': """Vendor Portal Management in Odoo""",
     'description': """This module helps to sent quotations for a product 

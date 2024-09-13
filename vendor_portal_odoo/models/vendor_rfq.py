@@ -19,7 +19,9 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 
 
 class VendorRFQ(models.Model):
@@ -50,7 +52,8 @@ class VendorRFQ(models.Model):
                                help="Quotation closing date")
     vendor_ids = fields.Many2many('res.partner',
                                   domain="[('is_registered', '=', True)]",
-                                  help="Vendors you want to send quotations")
+                                  help="Vendors you want to send quotations",
+                                  required=True)
     vendor_quote_history_ids = fields.One2many('vendor.quote.history',
                                                'quote_id',
                                                string="Vendor Quote History",
@@ -70,6 +73,18 @@ class VendorRFQ(models.Model):
         'res.company', string='Company',
         default=lambda self: self.env.company, help="Select Company"
     )
+
+    @api.constrains('vendor_quote_history_ids')
+    def _check_vendor_id(self):
+        vendor_count = {}
+        for rec in self.vendor_quote_history_ids:
+            vendor_id = rec.vendor_id.id
+            vendor_name = rec.vendor_id.name
+            if vendor_id in vendor_count:
+                raise ValidationError(
+                    _("Vendor '%s' has already submitted a quotation.") % vendor_name)
+            else:
+                vendor_count[vendor_id] = vendor_name
 
     @api.model
     def create(self, vals):
