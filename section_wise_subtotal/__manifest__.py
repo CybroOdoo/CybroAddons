@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Section Wise Subtotal',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'category': 'Sales,Purchases',
     'summary': 'Section wise subtotal in the order line',
     'description': 'This module help you section wise subtotal in order '

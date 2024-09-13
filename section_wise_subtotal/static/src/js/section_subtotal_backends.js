@@ -2,9 +2,6 @@
  * This module help us to calculate the section wise subtotal in
  * Sale order and Purchase order.
  **/
- odoo.define('section_wise_subtotal.section_subtotal_backends', function(require){
-"use strict";
-
 var basic_fields = require('web.basic_fields');
 var SectionAndNoteListRenderer = require('account.section_and_note_backend');
 
@@ -86,5 +83,5 @@ basic_fields.NumericField.include({
         }
     }
     },
-});
+//});
 });
