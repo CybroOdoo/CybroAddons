@@ -9,3 +9,9 @@
 #### Version 16.0.1.0.1
 #### UPDATED
 - Added the case of credit and debit notes in to the statement
+
+
+#### 11.09.2024
+#### Version 16.0.1.0.1
+#### UPDATED
+- Resolve the issue when the 'xlsx' report type more than once in the registry
