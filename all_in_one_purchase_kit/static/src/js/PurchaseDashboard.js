@@ -36,7 +36,6 @@ class purchaseDashboard extends  Component {
             this.renderByMonthPurchase();
             this.renderTopProduct();
          });
-         console.warn(this)
     }
     /**
      * Handler for selecting a mode.
