@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from odoo import fields, models, _
+from odoo import fields, models, _, api
 from odoo.exceptions import UserError
 
 
@@ -27,30 +27,33 @@ class AccountMove(models.Model):
     """Inherits 'account move' to show stock picking in invoice"""
     _inherit = 'account.move'
 
-    def _get_stock_type_ids(self):
-        """Fetch the move types and return to 'picking_type_id' field"""
-        data = self.env['stock.picking.type'].search([])
-        if self._context.get('default_move_type') == 'out_invoice':
-            for line in data:
-                if line.code == 'outgoing':
-                    return line
-        if self._context.get('default_move_type') == 'in_invoice':
-            for line in data:
-                if line.code == 'incoming':
-                    return line
+    picking_count = fields.Integer(string="Count", copy=False,
+                                   help="Count of the created picking")
 
-    picking_count = fields.Integer(string="Count", copy=False, help="Count of "
-                                                                    "the "
-                                                                    "created "
-                                                                    "picking")
     invoice_picking_id = fields.Many2one(comodel_name='stock.picking',
                                          string="Picking Id", copy=False,
-                                         help="corresponding picking")
+                                         help="Corresponding picking")
+
     picking_type_id = fields.Many2one(comodel_name='stock.picking.type',
                                       string='Picking Type',
-                                      default=_get_stock_type_ids,
-                                      help="This will determine picking "
-                                           "type of incoming shipment")
+                                      compute='compute_stock_type',
+                                      help="This will determine the picking type "
+                                           "of incoming/outgoing shipment")
+    @api.depends('move_type')
+    def compute_stock_type(self):
+        for rec in self:
+            type = ''
+            data = self.env['stock.picking.type'].search([])
+            print('self._context.get', self._context.get('default_move_type'))
+            if self._context.get('default_move_type') == 'out_invoice':
+                for line in data:
+                    if line.code == 'outgoing':
+                        type = line
+            if self._context.get('default_move_type') == 'in_invoice':
+                for line in data:
+                    if line.code == 'incoming':
+                        type = line
+            rec.picking_type_id = type
 
     def action_stock_move(self):
         """Function to create transfer from invoice"""

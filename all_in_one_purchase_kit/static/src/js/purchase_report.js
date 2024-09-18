@@ -1,10 +1,13 @@
 /** @odoo-module */
+
 const { Component } = owl;
+import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
 import { download } from "@web/core/network/download";
 import { useService } from "@web/core/utils/hooks";
-import { useRef, useState } from "@odoo/owl";
+import { useRef, useState, onMounted } from "@odoo/owl";
 import { BlockUI } from "@web/core/ui/block_ui";
+import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 const actionRegistry = registry.category("actions");
 import { uiService } from "@web/core/ui/ui_service";
 //  Extending components for adding purchase report class
@@ -18,6 +21,7 @@ class PurchaseReport extends Component {
         this.start_date = useRef('date_from');
         this.end_date = useRef('date_to');
         this.order_by = useRef('order_by');
+        this.dialog = useService("dialog");
         this.state = useState({
             order_line: [],
             data: null,
@@ -25,8 +29,8 @@ class PurchaseReport extends Component {
             wizard_id : []
         });
         this.load_data();
-        }
-        async load_data(wizard_id = null) {
+    }
+    async load_data(wizard_id = null) {
         /**
          * Loads the data for the purchase report.
          */
@@ -67,6 +71,13 @@ class PurchaseReport extends Component {
         /**
          * Generates and downloads an XLSX report for the purchase orders.
          */
+        if (this.state.order_line.length == 0){
+            this.dialog.add(ConfirmationDialog, {
+                body: _t('There is no data to print'),
+                confirm: () => {},
+            });
+            return
+        }
         var data = this.state.data
         var action = {
 					'data': {
@@ -93,6 +104,13 @@ class PurchaseReport extends Component {
          * @param {Event} ev - The event object triggered by the action.
          * @returns {Promise} - A promise that resolves to the result of the action.
          */
+        if (this.state.order_line.length == 0){
+            this.dialog.add(ConfirmationDialog, {
+                body: _t('There is no data to print'),
+                confirm: () => {},
+            });
+            return
+        }
         ev.preventDefault();
         var self = this;
         var action_title = self.props.action.display_name;
