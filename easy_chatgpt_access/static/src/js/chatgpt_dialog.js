@@ -11,6 +11,7 @@ patch(ChatGPTDialog.prototype, {
     setup() {
         super.setup(...arguments);
         this.action = useService('action');
+        this.notification = useService("notification");
     },
     // Copy the generated AI text into clipboard when hitting the Copy button
     copyMessage(ev) {
@@ -22,16 +23,16 @@ patch(ChatGPTDialog.prototype, {
         textArea.select();
         var successful = document.execCommand('copy');
         document.body.removeChild(textArea)
-        // Display notification after copying the text
-        this.action.doAction({
-            type: "ir.actions.client",
-            tag: "display_notification",
-            params: {
-                title: "Text copied",
-                message: "Text copied to Clipboard!",
-                sticky: false,
-            },
-        });
+        this.displayNotification(
+           ("Text copied to Clipboard")
+        );
         return successful;
+    },
+    displayNotification(text) {
+        this.notification.add(text, {
+           type: 'success',
+           title: 'Text copied',
+           sticky: false,
+        });
     }
 })

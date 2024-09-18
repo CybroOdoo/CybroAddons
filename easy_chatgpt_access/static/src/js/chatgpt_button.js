@@ -124,8 +124,8 @@ export class SystrayIcon extends Component {
     };
 };
 session.isEnterprise = function () {
-            return !!session.server_version_info[5];
-        };
+    return !!session.server_version_info[5];
+};
 SystrayIcon.template = "systray_icon";
 export const systrayItem = {
     Component: SystrayIcon,

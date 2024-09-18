@@ -43,7 +43,7 @@
             'easy_chatgpt_access/static/src/js/chatgpt_dialog.js',
         ],
     },
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
