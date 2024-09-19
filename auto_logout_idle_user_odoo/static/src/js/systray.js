@@ -11,6 +11,9 @@ class TimerSystrayItem extends Component{
     setup(){
         super.setup();
         this.get_idle_time();
+        this.state = useState({
+           idle_time: null,
+        })
     }
     get_idle_time() {
         var self = this
@@ -42,16 +45,16 @@ class TimerSystrayItem extends Component{
             var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             var seconds = Math.floor((distance % (1000 * 60)) / 1000);
             if (hours && days) {
-                document.querySelector("#idle_timer").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+                self.state.idle_time = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
             } else if (hours) {
-                document.querySelector("#idle_timer").innerHTML = hours + "h " + minutes + "m " + seconds + "s ";
+                self.state.idle_time = hours + "h " + minutes + "m " + seconds + "s ";
             } else {
-                document.querySelector("#idle_timer").innerHTML = minutes + "m " + seconds + "s ";
+                self.state.idle_time = minutes + "m " + seconds + "s ";
             }
             /** if the countdown is zero the link is redirect to the login page*/
             if (distance < 0) {
                 clearInterval(idle);
-                document.querySelector("#idle_timer").innerHTML = "EXPIRED";
+                self.state.idle_time = "EXPIRED";
                 location.replace("/web/session/logout")
             }
         }, 1000);
