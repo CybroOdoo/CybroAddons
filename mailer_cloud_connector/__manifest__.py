@@ -20,7 +20,7 @@
 #
 #############################################################################
 {
-    'name': 'Mailer Cloud Connector',
+    'name': 'Mailercloud Connector',
     'version': '17.0.1.0.0',
     'category': 'Email Marketing',
     'summary': 'Connect the odoo to the mailer cloud.',
@@ -43,7 +43,7 @@
             'mailer_cloud_connector/static/src/js/form_style.js'
         ]
     },
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
