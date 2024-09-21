@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Portal Menu-->
+    <template id="website_certificates" name="my_certificate"
+              inherit_id="portal.portal_my_home" customize_show="True"
+              priority="32">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Certificates</t>
+                <t t-set="url" t-value="'/my/certificates'"/>
+                <t t-set="placeholder_count" t-value="'certificates'"/>
+            </t>
+        </xpath>
+    </template>
+    <!--    certificate normal template-->
+    <template id="portal_my_certificates" name="My Certificates">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <h8 style="margin-left: -825px;color: darkslategray;">/ My
+                    Certificates
+                </h8>
+            </t>
+            <t t-call="certificate_license_expiry.portal_my_certificates_tree"/>
+        </t>
+    </template>
+    <!--    Certificate search template-->
+    <template id="portal_my_certificates_tree">
+        <div class="search_certificates">
+            <t t-if="not certificates">
+                <h5>There Are Currently No Certificates For Your Account</h5>
+            </t>
+            <t t-if="certificates" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Events #</th>
+                        <th class="text-right">Customer</th>
+                        <th class="text-right">Start Date</th>
+                        <th class="text-right">Expire Date</th>
+                        <th class="text-right">Project</th>
+                        <th class="text-right">Task</th>
+                        <th class="text-right">Product</th>
+                    </tr>
+                </thead>
+                <t t-foreach="certificates" t-as="certificates">
+                    <tr>
+                        <td id="my_selector">
+                            <a class="my_certificates_link"
+                               t-attf-data-id="{{certificates.id}}"
+                               t-attf-href="/my/certificates/form/{{certificates.id}}">
+                                <t t-esc="certificates.certificate_number"/>
+                            </a>
+                        </td>
+                        <td class="text-right">
+                            <span t-field="certificates.customer_id.name"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-field="certificates.start_date"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-field="certificates.expire_date"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-field="certificates.project_id.name"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-field="certificates.task_id.name"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-field="certificates.product_id.name"/>
+                        </td>
+                        <td class="text-center">
+                            <span t-if="certificates.state == 'new'"
+                                  class="badge badge-pill badge-secondary"
+                                  style="background-color:deepskyblue">New
+                            </span>
+                            <span t-if="certificates.state == 'active'"
+                                  class="badge badge-pill badge-secondary"
+                                  style="background-color:green">Active
+                            </span>
+                            <span t-if="certificates.state == 'expired_soon'"
+                                  class="badge badge-pill badge-secondary"
+                                  style="background-color:yellow">Expired Soon
+                            </span>
+                            <span t-if="certificates.state == 'expired'"
+                                  class="badge badge-pill badge-secondary"
+                                  style="background-color:red">Expired
+                            </span>
+                        </td>
+                    </tr>
+                </t>
+            </t>
+        </div>
+    </template>
+    <!--    certificate form template-->
+    <template id="certificates_portal_form_template"
+              name="Certificates Portal Content">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <a href="/my/certificates">
+                    <h8 style="margin-left: -1231px;color: darkslategray;"
+                        class="breadcrumb-item active">/ My
+                        Certificates
+                    </h8>
+                </a>
+                <h8 style="margin-left: -1106px;color: darkgray;">/ Certificate
+                    <t t-esc="my_certificates['certificate_number']"/>
+                </h8>
+            </t>
+            <!--            Slidebar-->
+            <div class="row mt16 o_portal_sale_sidebar">
+                <t t-call="portal.portal_record_sidebar">
+                    <t t-set="classes" t-value="'col-lg-auto d-print-none'"/>
+                    <t t-set="title">
+                        <h4 class="mb-0">
+                            <t t-esc="my_certificates['certificate_number']"/>
+                        </h4>
+                    </t>
+                    <t t-set="entries">
+                        <ul class="list-group list-group-flush flex-wrap flex-row flex-lg-column">
+                            <li class="list-group-item d-grid align-content-start">
+                                <div class="small mb-1">
+                                    <strong class="text-muted">Your Contact
+                                    </strong>
+                                </div>
+                                <div class="row flex-nowrap">
+                                    <div class="col flex-grow-0 pe-2">
+                                        <img class="rounded-circle mr4 float-start o_portal_contact_img"
+                                             t-att-src="image_data_uri(my_certificates['customer_id'].avatar_1024)"
+                                             alt="Contact"/>
+                                    </div>
+                                    <div class="col ps-0"
+                                         style="min-width: 150px">
+                                        <span t-esc="my_certificates['customer_id']"
+                                              t-options='{"widget": "contact", "fields": ["name", "phone"], "no_marker": True}'/>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </t>
+                </t>
+                <!-- Certificate Number -->
+                <div id="certificates_call_page_details"
+                     class="col-12 col-lg justify-content-end">
+                    <div t-attf-class="card #{'pb-5' if report_type == 'html' else ''}"
+                         id="cer_portal_doc_content">
+                        <div style="height:700px;">
+                            <div class="container">
+                                <h4 class="mb-0" style="margin-left:15px;">
+                                    <br/>
+                                    <b>
+                                        <t t-esc="my_certificates['certificate_number']"/>
+                                    </b>
+                                </h4>
+                                <hr style="width:100%"/>
+                            </div>
+                            <!--                        Page Content  -->
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th>Customer</th>
+                                    <td>
+                                        <t t-esc="my_certificates['customer_id'].name"/>
+                                    </td>
+                                    <th>Project</th>
+                                    <td>
+                                        <t t-esc="my_certificates['project_id'].name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Certificate Type</th>
+                                    <td>
+                                        <t t-esc="my_certificates['certificates_types_id'].certificate_type"/>
+                                    </td>
+                                    <th>Task</th>
+                                    <td>
+                                        <t t-esc="my_certificates['task_id'].name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Start Date</th>
+                                    <td>
+                                        <t t-esc="my_certificates['start_date']"/>
+                                    </td>
+                                    <th>Product</th>
+                                    <td>
+                                        <t t-esc="my_certificates['product_id'].name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Expired Date</th>
+                                    <td>
+                                        <t t-esc="my_certificates['expire_date']"/>
+                                    </td>
+                                    <th>Responsible Person</th>
+                                    <td>
+                                        <t t-esc="my_certificates['user_id'].name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Issued By</th>
+                                    <td>
+                                        <t t-esc="my_certificates['issued_company_id'].name"/>
+                                    </td>
+                                    <th>Company</th>
+                                    <td>
+                                        <t t-esc="my_certificates['company_id'].name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Description</th>
+                                </tr>
+                                <tr>
+                                    <td colspan="4">
+                                        <t t-esc="my_certificates['description']"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    <!--    Certificate group by template-->
+    <template id="certificates_group_by_template">
+        <t t-if="not certificates">
+            <h5>Choose An Group By option</h5>
+        </t>
+        <t t-if="certificates" t-call="portal.portal_table">
+            <tbody>
+                <t t-foreach="certificates" t-as="certificate">
+                    <tr>
+                        <th class="table-light" colspan="4">
+                            <t t-esc="certificate['name']"/>
+                        </th>
+                    </tr>
+                    <t t-foreach="certificate['data']" t-as="certificate">
+                        <t t-foreach="certificate" t-as="data">
+                            <tr>
+                                <td>
+                                    <a href="#"
+                                       t-attf-href="/my/certificates/form/{{data.id}}">
+                                        <t t-esc="data.certificate_number"
+                                           t-value="data.id"/>
+                                    </a>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="data.product_id.name"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="data.certificates_types_id.certificate_type"/>
+                                </td>
+                                <td class="text-center">
+                                    <span t-if="data.state == 'new'"
+                                          class="badge badge-pill badge-secondary"
+                                          style="background-color:deepskyblue">
+                                        New
+                                    </span>
+                                    <span t-if="data.state == 'active'"
+                                          class="badge badge-pill badge-secondary"
+                                          style="background-color:green">Active
+                                    </span>
+                                    <span t-if="data.state == 'expired_soon'"
+                                          class="badge badge-pill badge-secondary"
+                                          style="background-color:yellow">
+                                        Expired Soon
+                                    </span>
+                                    <span t-if="data.state == 'expired'"
+                                          class="badge badge-pill badge-secondary"
+                                          style="background-color:red">Expired
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+                    </t>
+                </t>
+            </tbody>
+        </t>
+    </template>
+</odoo>
