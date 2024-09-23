@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import fields, models, Command
 
 
 class ResUsers(models.Model):
@@ -30,14 +30,14 @@ class ResUsers(models.Model):
 
     def write(self, vals):
         """
-         Write method for the ResUsers model.
-         Ensure the menu will not remain hidden after removing it from the list.
-           """
+        Write method for the ResUsers model.
+        Ensure the menu will not remain hidden after removing it from the list.
+        """
         res = super(ResUsers, self).write(vals)
         for record in self:
             for menu in record.hide_menu_ids:
                 menu.write({
-                    'restrict_user_ids': [fields.Command.link(record.id)]
+                'restrict_user_ids': [Command.set([record.id] + [user.id for user in menu.restrict_user_ids])]
                 })
         return res
 
