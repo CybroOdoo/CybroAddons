@@ -40,7 +40,10 @@ class WebsiteSaleInherit(WebsiteSale):
         res = super().shop(page, category, search, min_price,
                            max_price, ppg, **post)
         res.qcontext.update({
-            'login_user': False if request.session.uid is None else True
+            'login_user': True if not request.env.user._is_public() or (
+                    request.env.user._is_public() and not request.env[
+                'ir.config_parameter'].sudo().get_param(
+                'website_hide_button.hide_cart')) else False,
         })
         return res
 
@@ -50,7 +53,10 @@ class WebsiteSaleInherit(WebsiteSale):
                                                                       category,
                                                                       search,
                                                                       **kwargs)
-        res['login_user'] = False if request.session.uid is None else True
+        res['login_user'] = True if not request.env.user._is_public() or (
+                request.env.user._is_public() and not request.env[
+            'ir.config_parameter'].sudo().get_param(
+            'website_hide_button.hide_cart')) else False
         return res
 
     @http.route()
@@ -58,7 +64,12 @@ class WebsiteSaleInherit(WebsiteSale):
         """  Restrict public visitors from accessing payment page so that SO
         creation will be disabled   """
         user = http.request.env.user
-        if user and user.has_group('base.group_portal') or \
+        if (
+                not user._is_public() or user._is_public() and not request.env.user._is_public() and not
+        request.env[
+            'ir.config_parameter'].sudo().get_param(
+            'website_hide_button.hide_cart')) and user.has_group(
+            'base.group_portal') or \
                 user.has_group('base.group_user'):
             res = super(WebsiteSaleInherit, self).shop_payment(**post)
             return res
