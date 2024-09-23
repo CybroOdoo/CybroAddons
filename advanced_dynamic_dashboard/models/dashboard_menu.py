@@ -73,6 +73,7 @@ class DashboardMenu(models.Model):
     def unlink(self):
         """Delete dashboard along with menu item"""
         for rec in self:
+            print("rec", rec)
             self.env['ir.ui.menu'].search(
                 [('parent_id', '=', rec['menu_id'].id),
                  ('action', '=',

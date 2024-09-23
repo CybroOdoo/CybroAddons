@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Advanced Dynamic Dashboard",
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'category': 'Productivity',
     'summary': """Create Configurable Dashboards Easily""",
     'description': """Create Configurable Advanced Dynamic Dashboard to get the 
@@ -56,6 +56,7 @@
     'installable': True,
     'auto_install': False,
     'application': True,
+    'uninstall_hook': 'uninstall_hook',
 }
 
 
