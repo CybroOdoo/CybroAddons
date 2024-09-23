@@ -1,6 +1,6 @@
-.. image:: https://img.shields.io/badge/license-LGPL--3-green.svg
-    :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
-    :alt: License: LGPL-3
+.. image:: https://img.shields.io/badge/license-AGPL--3-blue.svg
+    :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
+    :alt: License: AGPL-3
 
 Import Employee Task Checklist in Project
 =========================================
@@ -19,8 +19,8 @@ Configuration
 
 License
 -------
-GNU Lesser General Public License, Version 3 (LGPL v3).
-(https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
+Gnu Affero General Public License, Version 3 (AGPL v3).
+(https://www.gnu.org/licenses/agpl-3.0-standalone.html)
 
 Credits
 -------
