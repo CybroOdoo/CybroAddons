@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import fields, models, api
 
 
 class MultiBarcodeProducts(models.Model):
@@ -42,6 +42,8 @@ class MultiBarcodeProducts(models.Model):
     _sql_constraints = [('field_unique', 'unique(multi_barcode)',
                          'Existing barcode is not allowed !'),]
 
-    def get_barcode_val(self, product):
+    @api.model
+    def get_barcode_val(self, barcode):
+        temp = self.search([('multi_barcode', '=', barcode)])
         """returns barcode of record in self and product id"""
-        return self.multi_barcode, product
+        return temp.multi_barcode, temp.product_multi_id.id
