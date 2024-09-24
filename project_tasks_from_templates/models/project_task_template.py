@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-from odoo import fields, models , api
+from odoo import fields, models, api
 
 
 class ProjectTaskTemplate(models.Model):
@@ -28,15 +28,15 @@ class ProjectTaskTemplate(models.Model):
     _description = 'Project Task Template'
 
     name = fields.Char(string='Template Name', translate=True,
-                       help='Name for the task template.')
+                       help='Name for the task template.', copy=False)
     task_ids = fields.One2many(
         'project.task.custom', 'project_template_id',
         string='Tasks',
-        help='List of the tasks associated with this template.')
+        help='List of the tasks associated with this template.', copy=True)
     stage_ids = fields.One2many(
         'project.stage', 'project_template_id',
         string='Stages',
-        help='List of the stages associated with this template.')
+        help='List of the stages associated with this template.', copy=True)
 
 
 class ProjectStage(models.Model):
@@ -49,12 +49,13 @@ class ProjectStage(models.Model):
         help='Select a project task template to use for this task.')
     project_stage_id = fields.Many2one(
         'project.task.type', string='Project Stage',
-        help='Select a project stage. ',required=True)
+        help='Select a project stage. ', required=True)
     task_ids = fields.Many2many(
         'project.task.custom',
         help='Choose the tasks corresponding to each stage')
 
-    sequence = fields.Integer(related="project_stage_id.sequence",readonly=False)
+    sequence = fields.Integer(related="project_stage_id.sequence",
+                              readonly=False)
 
 
 class ProjectTaskType(models.Model):
