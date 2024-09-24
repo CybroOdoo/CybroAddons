@@ -60,6 +60,10 @@ class AccountInvoice(models.Model):
         'line_ids.payment_id.state',
         'line_ids.full_reconcile_id')
     def _compute_amount(self):
+        try:
+            super(AccountInvoice, self)._compute_amount()
+        except NameError:
+            pass
         for move in self:
             total_untaxed, total_untaxed_currency = 0.0, 0.0
             total_tax, total_tax_currency = 0.0, 0.0
