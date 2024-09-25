@@ -204,7 +204,7 @@ DynamicDashboardChart.template = xml`
             <h3 class="chart_title">
                 <t t-esc="this.props.widget.name"/>
             </h3>
-            <div class="row">
+            <div class="row-class">
                 <div class="col-md-12 chart_canvas" id="chart_canvas"
                     t-att-data-id="this.props.widget.id">
                     <canvas id="canvas" t-ref="chart" t-att-data-title="this.props.widget.name"/>

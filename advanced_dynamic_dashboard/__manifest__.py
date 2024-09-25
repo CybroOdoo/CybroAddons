@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Advanced Dynamic Dashboard",
-    'version': '17.0.1.1.0',
+    'version': '17.0.1.2.0',
     'category': 'Productivity',
     'summary': """Create Configurable Dashboards Easily""",
     'description': """Create Configurable Advanced Dynamic Dashboard to get the 
