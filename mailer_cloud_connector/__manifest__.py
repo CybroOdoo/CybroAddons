@@ -23,8 +23,8 @@
     'name': 'Mailercloud Connector',
     'version': '17.0.1.0.0',
     'category': 'Email Marketing',
-    'summary': 'Connect the odoo to the mailer cloud.',
-    'description': 'This module helps to connect the odoo to the mailer cloud and to '
+    'summary': 'Connect the odoo to the mailercloud.',
+    'description': 'This module helps to connect the odoo to the mailercloud and to '
                    'synchronize the contacts',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',

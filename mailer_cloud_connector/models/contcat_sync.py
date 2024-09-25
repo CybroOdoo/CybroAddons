@@ -29,15 +29,15 @@ class ContactContactSync(models.Model):
 
     property_id = fields.Many2one(
         'mailer.cloud.properties',
-        required=True, string='Mailer Cloud Properties',
-        help='Reference to the Mailer Cloud properties associated with this record.')
+        required=True, string='Mailercloud Properties',
+        help='Reference to the Mailercloud properties associated with this record.')
     contact_fields = fields.Selection(
         selection=lambda self: self.dynamic_selection(),
         required=True, string='Odoo Fields',
-        help='Selection of Odoo fields to be synchronized with Mailer Cloud.')
+        help='Selection of Odoo fields to be synchronized with Mailercloud.')
     sync_id = fields.Many2one(
         'mailer.cloud.api.sync', string='Synchronization',
-        help='Reference to the Mailer Cloud API synchronization associated with this record.')
+        help='Reference to the Mailercloud API synchronization associated with this record.')
 
     def dynamic_selection(self):
         """ Generate a dynamic selection for Odoo fields.

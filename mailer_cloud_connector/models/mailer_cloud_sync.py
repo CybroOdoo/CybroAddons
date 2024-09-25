@@ -27,9 +27,9 @@ from odoo.exceptions import ValidationError
 
 class MailerCloudApiSync(models.Model):
     """
-        Model representing the synchronization configuration for Mailer Cloud API.
+        Model representing the synchronization configuration for Mailercloud API.
 
-        This model stores information about the Mailer Cloud API synchronization, including the API key,
+        This model stores information about the Mailercloud API synchronization, including the API key,
         synchronization status, user details, plan information, associated mailing list, contact mappings,
         and synchronization activity.
         """
@@ -39,44 +39,44 @@ class MailerCloudApiSync(models.Model):
     api_key = fields.Char(
         string='Api Key',
         required=True,
-        help='API key for connecting to Mailer Cloud.')
+        help='API key for connecting to Mailercloud.')
     active = fields.Boolean(
         string='Active',
-        help='Check to activate the Mailer Cloud API synchronization.')
+        help='Check to activate the Mailercloud API synchronization.')
     email = fields.Char(
         string='Email',
-        help='Email associated with the Mailer Cloud API user.')
+        help='Email associated with the Mailercloud API user.')
     name = fields.Char(
         string="Name",
-        help='Name associated with the Mailer Cloud API user.')
+        help='Name associated with the Mailercloud API user.')
     plan = fields.Char(
         string='Plan',
-        help='Current plan of the Mailer Cloud API user.')
+        help='Current plan of the Mailercloud API user.')
     remaining_contacts = fields.Integer(
         string='Remaining Contacts',
-        help='Remaining contact quota in the Mailer Cloud API user\'s plan.')
+        help='Remaining contact quota in the Mailercloud API user\'s plan.')
     total_contacts = fields.Integer(
         string='Total Contacts',
-        help='Total contact quota in the Mailer Cloud API user\'s plan.')
+        help='Total contact quota in the Mailercloud API user\'s plan.')
     used_contacts = fields.Integer(
         string='Used Contacts',
-        help='Number of contacts used in the Mailer Cloud API user\'s plan.')
+        help='Number of contacts used in the Mailercloud API user\'s plan.')
     list_id = fields.Many2one(
         'mailer.cloud.list', string='Mailing List',
-        help='Default mailing list associated with the Mailer Cloud API user.')
+        help='Default mailing list associated with the Mailercloud API user.')
     contact_mapping_ids = fields.One2many(
         'contact.sync', 'sync_id', string='Contact Mapping Ids',
-        help='Mappings between Odoo contact fields and Mailer Cloud properties for synchronization.')
+        help='Mappings between Odoo contact fields and Mailercloud properties for synchronization.')
     contact_sync_active = fields.Boolean(string='Contact Sync Active',
-                                         help='Check to activate contact synchronization with Mailer Cloud.')
+                                         help='Check to activate contact synchronization with Mailercloud.')
     contact_sync_time = fields.Datetime(string='Contact Sync time',
                                         help='Timestamp of the last contact synchronization activity.')
 
     def action_sync(self):
         """
-            Test connection to Mailer Cloud API and synchronize information.
+            Test connection to Mailercloud API and synchronize information.
 
-            This function tests the connection to the Mailer Cloud API and retrieves information
+            This function tests the connection to the Mailercloud API and retrieves information
             about the API user's plan. It updates the relevant fields in the current record and triggers
             synchronization of lists and properties associated with the API user.
 
@@ -119,9 +119,9 @@ class MailerCloudApiSync(models.Model):
 
     def get_list(self, user):
         """
-            Retrieve Mailer Cloud lists associated with the current API user.
+            Retrieve Mailercloud lists associated with the current API user.
 
-            This function sends a request to the Mailer Cloud API to retrieve lists related to the
+            This function sends a request to the Mailercloud API to retrieve lists related to the
             current API's authorization. It processes the response and creates records in the 'mailer.cloud.list'
             model in Odoo.
 
@@ -160,9 +160,9 @@ class MailerCloudApiSync(models.Model):
 
     def get_properties(self):
         """
-            Retrieve Mailer Cloud contact properties associated with the current API.
+            Retrieve Mailercloud contact properties associated with the current API.
 
-            This function sends a request to the Mailer Cloud API to retrieve contact properties
+            This function sends a request to the Mailercloud API to retrieve contact properties
             related to the current API's authorization. It processes the response and inserts
             new properties into the 'mailer.cloud.properties' model in Odoo.
 
@@ -204,10 +204,10 @@ class MailerCloudApiSync(models.Model):
 
     def action_contact_sync(self):
         """
-            Synchronize contacts with Mailer Cloud.
+            Synchronize contacts with Mailercloud.
 
-            This function synchronizes contacts from Odoo's 'res.partner' model to Mailer Cloud.
-            It constructs the contact details and sends a batch request to the Mailer Cloud
+            This function synchronizes contacts from Odoo's 'res.partner' model to Mailercloud.
+            It constructs the contact details and sends a batch request to the Mailercloud
             API for contact synchronization.
 
             :raises: ValidationError if there is an issue with the synchronization process.

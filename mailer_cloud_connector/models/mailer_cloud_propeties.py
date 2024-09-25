@@ -26,16 +26,16 @@ from odoo import api, fields, models
 
 class MailerCloudList(models.Model):
     """
-        Model representing properties in Mailer Cloud associated with Odoo records.
+        Model representing properties in Mailecloud associated with Odoo records.
         """
     _name = 'mailer.cloud.properties'
     _description = 'List of Mail Cloud properties'
 
-    mailer_cloud = fields.Char(string='Mailer Cloud',
-                               help="Mailer Cloud property identifier.")
+    mailer_cloud = fields.Char(string='Mailercloud',
+                               help="Mailercloud property identifier.")
     name = fields.Char(
         string='Property Name', required=True,
-        help="Name of the Mailer Cloud property.")
+        help="Name of the Mailercloud property.")
     type = fields.Selection(
         [
             ('text', 'Text'),
@@ -44,7 +44,7 @@ class MailerCloudList(models.Model):
             ('textarea', 'Textarea')
         ],
         string='Type', required=True,
-        help="Type of the Mailer Cloud property.")
+        help="Type of the Mailercloud property.")
     authorization_id = fields.Many2one(
         'mailer.cloud.api.sync', ondelete='cascade',
         help="Authorization associated with this property.")
@@ -52,7 +52,7 @@ class MailerCloudList(models.Model):
     @api.model
     def create(self, vals_list):
         """
-                Override the create method to synchronize property creation with Mailer Cloud.
+                Override the create method to synchronize property creation with Mailercloud.
 
                 :param vals_list: Dictionary of values for creating the record.
                 :return: Newly created record.

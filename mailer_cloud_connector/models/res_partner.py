@@ -27,9 +27,9 @@ from odoo.exceptions import ValidationError
 
 class InheritContacts(models.Model):
     """
-        Extends the base 'res.partner' model to include additional fields related to Mailer Cloud integration.
+        Extends the base 'res.partner' model to include additional fields related to Mailercloud integration.
 
-        This class inherits from the 'res.partner' model and adds custom fields for Mailer Cloud integration,
+        This class inherits from the 'res.partner' model and adds custom fields for Mailercloud integration,
         including 'partner_type' and 'mailer_cloud'.
         """
     _inherit = 'res.partner'
@@ -37,9 +37,9 @@ class InheritContacts(models.Model):
     partner_type = fields.Char(
         string='Partner Type', compute='_compute_partner_type',
         help='Type of the partner, computed based on specific criteria.')
-    mailer_cloud = fields.Char(string='Mailer Cloud',
+    mailer_cloud = fields.Char(string='Mailercloud',
                                help='Identifier for the partner in '
-                                    'Mailer Cloud.')
+                                    'Mailercloud.')
 
     def _compute_partner_type(self):
         """
@@ -60,14 +60,14 @@ class InheritContacts(models.Model):
     @api.model
     def create(self, vals_list):
         """
-            Create method to extend the creation of 'res.partner' records and synchronize data with Mailer Cloud.
+            Create method to extend the creation of 'res.partner' records and synchronize data with Mailercloud.
 
             This method is called when creating a new 'res.partner' record. It extends the base creation process
-            to include synchronization with Mailer Cloud, if contact synchronization is active for any associated API.
+            to include synchronization with Mailercloud, if contact synchronization is active for any associated API.
 
             :param vals_list: List of dictionaries containing values for the new 'res.partner' record(s).
             :return: Created 'res.partner' record(s).
-            :raises: ValidationError if there is an issue with the Mailer Cloud API synchronization.
+            :raises: ValidationError if there is an issue with the Mailercloud API synchronization.
             """
         res = super(InheritContacts, self).create(vals_list)
         contact_sync = self.env['mailer.cloud.api.sync'].search(
@@ -120,14 +120,14 @@ class InheritContacts(models.Model):
 
     def write(self, vals):
         """
-            Extend the standard write method for 'res.partner' records and synchronize updates with Mailer Cloud.
+            Extend the standard write method for 'res.partner' records and synchronize updates with Mailercloud.
 
             This method is called when updating an existing 'res.partner' record. It extends the base write process
-            to include synchronization with Mailer Cloud if contact synchronization is active for any associated API.
+            to include synchronization with Mailercloud if contact synchronization is active for any associated API.
 
             :param vals: Dictionary of field-value pairs to update for the 'res.partner' record.
             :return: Result of the standard write method.
-            :raises: ValidationError if there is an issue with the Mailer Cloud API synchronization.
+            :raises: ValidationError if there is an issue with the Mailercloud API synchronization.
             """
         res = super(InheritContacts, self).write(vals)
         contact_sync = self.env['mailer.cloud.api.sync'].search(

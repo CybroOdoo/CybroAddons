@@ -23,13 +23,13 @@ from odoo import fields, models
 
 
 class MailerCloudList(models.Model):
-    """ Model representing a list in the Mailer Cloud."""
+    """ Model representing a list in the Mailercloud."""
     _name = 'mailer.cloud.list'
     _description = 'List of Mail Cloud'
 
     mailer_cloud = fields.Char(
-        string='Mailer Cloud ID',
-        help='Unique identifier for the Mailer Cloud associated '
+        string='Mailercloud ID',
+        help='Unique identifier for the Mailercloud associated '
              'with this record.')
     name = fields.Char(
         string='Name',
@@ -37,5 +37,5 @@ class MailerCloudList(models.Model):
     authorization_id = fields.Many2one(
         'mailer.cloud.api.sync',
         string='Authorization',
-        help='Reference to the Mailer Cloud API synchronization '
+        help='Reference to the Mailercloud API synchronization '
              'associated with this record.')
