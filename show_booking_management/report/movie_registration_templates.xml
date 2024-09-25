@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--  Movie ticket report template -->
+    <template id="report_movie_ticket">
+        <t t-call="web.basic_layout">
+            <div class="page">
+                <div class="oe_structure"/>
+                <div class="pos-receipt" style="width:80mm;padding:10px;font-size:10pt;">
+                    <t t-foreach="docs" t-as="doc">
+                        <div class="receipt-header" style="text-align: center;margin-bottom: 10px;">
+                            <h2>Movie Ticket</h2>
+                            <h3><t t-esc="doc.name"/></h3>
+                        </div>
+                        <br/>
+                        <div style="margin-top:10px;text-align: center;border-top: 1px solid #000;border-bottom: 1px solid #000;">
+                            <div class="receipt-center-align" style="text-align: center;padding: 5px;">
+                                <img t-attf-src="data:image/png;base64,#{doc.qr_code}" style="width:100px; height:100px;"/>
+                            </div>
+                        </div>
+                        <div class="receipt-ticket-data" style="margin-top: 10px;">
+                            <div style="text-align: center;margin:10px;">
+                                <img t-attf-src="data:image/png;base64,#{doc.movie_id.movie_poster}" style="width:150px; height:200px;"/>
+                            </div>
+                            <table class="table table-hover" style="width:100%;margin-top: 10px;display: flex;">
+                                <tr style="display: flex;">
+                                    <td style="padding: 5px;">Movie:</td>
+                                    <td style="padding: 5px;"><strong><t t-esc="doc.movie_id.name"/></strong></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 5px;">Date:</td>
+                                    <td style="padding: 5px;"><strong><t t-esc="doc.date"/></strong></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 5px;">Time:</td>
+                                    <td style="padding: 5px;"><strong><t t-esc="doc.time_slot_id.name"/></strong></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 5px;">Screen:</td>
+                                    <td style="padding: 5px;"><strong><t t-esc="doc.screen_id.name"/></strong></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 5px;">No of Tickets:</td>
+                                    <td style="padding: 5px;"><strong><t t-esc="doc.no_of_tickets"/></strong></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 5px;">Seats:</td>
+                                    <td>
+                                        <t t-foreach="doc.seat_ids" t-as="seat">
+                                            <span style="padding: 5px;background:#7ec4ed;border-radius: 10px;"><strong><t t-esc="seat.seat"/></strong></span>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="receipt-footer" style="margin-top:20px;text-align: center;">
+                            <div class="receipt-center-align" style="text-align: center;padding-top: 5px;">
+                                <strong>Enjoy Your Movie!</strong>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+    <!--  Action report movie ticket  -->
+    <record id="action_report_movie_ticket" model="ir.actions.report">
+        <field name="name">Movie Ticket</field>
+        <field name="model">movie.registration</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">show_booking_management.report_movie_ticket</field>
+        <field name="report_file">show_booking_management.report_movie_ticket</field>
+        <field name="binding_model_id"
+               ref="show_booking_management.model_movie_registration"/>
+        <field name="paperformat_id"
+               ref="show_booking_management.paper_format_movie_ticket"/>
+    </record>
+</odoo>

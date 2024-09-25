@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--  Movie show template  -->
+    <template id="show_movie">
+        <t t-call="website.layout">
+            <div id="snippetContent">
+                <div class="container" id="main_layout">
+                    <section class="content">
+                        <div class="row">
+                            <div class="d-contents">
+                                <t t-foreach="movies" t-as="movie"
+                                   t-key="movie.id">
+                                    <div class="card">
+                                        <div class="card-body d-flex">
+                                            <div>
+                                                <div style="display:grid;justify-content:center;">
+                                                    <img t-attf-src="data:image/png;base64,#{movie.movie_poster}"
+                                                         alt="Movie Poster"
+                                                         width="185px"
+                                                         height="275px;"/>
+                                                </div>
+                                                <div style="margin-top:10px;display:grid;justify-content:center;">
+                                                    <h5 class="movie-name">
+                                                        <b>
+                                                            <t t-esc="movie.name"/>
+                                                        </b>
+                                                    </h5>
+                                                </div>
+                                                <div>
+                                                    <a t-att-href="'/book_now/' + str(movie.id)"
+                                                       class="btn btn-primary d-block">
+                                                        Book Now
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!--  Book Show template  -->
+    <template id="book_movie" t-name="BookShow">
+        <t t-call="website.layout">
+            <div id="snippetContent">
+                <div class="container" id="main_layout">
+                    <div class="card"
+                         style="margin-top:30px;margin-bottom:30px;">
+                        <div class="d-flex"
+                             style="justify-content:space-evenly;background-color:slategray;">
+                            <div style="margin:25px;">
+                                <img t-attf-src="data:image/png;base64,#{movie.movie_poster}"
+                                     alt="Movie Poster" width="185px"
+                                     height="275px;"/>
+                            </div>
+                            <div style="align-self:center;">
+                                <div>
+                                    <h3>
+                                        <t t-esc="movie.name"/>
+                                    </h3>
+                                </div>
+                                <div>
+                                    <span t-if="movie.movie_language_id.name">
+                                        <i class="fa fa-globe"/>
+                                        <t t-esc="movie.movie_language_id.name"/>
+                                    </span>
+                                </div>
+                                <div>
+                                    <span>
+                                        <i class="fa fa-calendar-o"/>
+                                        <t t-esc="movie.release_date"/>
+                                    </span>
+                                </div>
+                                <div class="text">
+                                    <span>
+                                        <i class="fa fa-clock-o"/>
+                                        <t t-esc="movie.duration"/>
+                                        Hrs
+                                    </span>
+                                </div>
+                                <div>
+                                    <span>
+                                        <i class="fa fa-calendar"/>
+                                        <t t-esc="movie.show_start_date"/>
+                                        <i class="fa fa-long-arrow-right"/>
+                                        <t t-esc="movie.show_end_date"/>
+                                    </span>
+                                </div>
+                                <div>
+                                    <t t-foreach="movie.show_type_ids"
+                                       t-as="show_type"
+                                       t-key="show_type.id">
+                                        <li style="display:inline;margin-right:5px;background-color:cornflowerblue;padding:3px;border-radius:20px;">
+                                            <t t-esc="show_type.name"/>
+                                        </li>
+                                    </t>
+                                </div>
+                            </div>
+                            <div class="book_show" style="margin-block:auto;">
+                                <form class="form-control"
+                                      action="/movie/book_ticket" method="post"
+                                      t-att-data-movie-id="movie.id">
+                                    <input type="hidden" name="movie_id"
+                                           t-att-value="movie.id"
+                                           invisible="1"/>
+                                    <div style="text-align: center;">
+                                        <h3>Book Tickets</h3>
+                                    </div>
+                                    <table>
+                                        <tr>
+                                            <th>Date:</th>
+                                            <td>
+                                                <input id="choose_date"
+                                                       name="show_date"
+                                                       class="form-control"
+                                                       type="date"
+                                                       required="1"/>
+                                            </td>
+                                        </tr>
+                                        <span id="error_box"
+                                              style="display:none;color:#ed2121;"/>
+                                        <tr>
+                                            <th>Screen:</th>
+                                            <td>
+                                                <select name="screen"
+                                                        class="form-control"
+                                                        required="1">
+                                                    <t t-foreach="movie.available_screens_ids"
+                                                       t-as="screen"
+                                                       t-key="screen.id">
+                                                        <option t-att-value="screen.id">
+                                                            <t t-esc="screen.name"/>
+                                                        </option>
+                                                    </t>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Time Slots:</th>
+                                            <td>
+                                                <select name="time_slots"
+                                                        class="form-control"
+                                                        required="1">
+                                                    <t t-foreach="movie.available_time_slots_ids"
+                                                       t-as="time_slots"
+                                                       t-key="time_slots.id">
+                                                        <option class="form-control"
+                                                                t-att-value="time_slots.id">
+                                                            <t t-esc="time_slots.name"/>
+                                                        </option>
+                                                    </t>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <div style="text-align: center; margin-top: 20px;">
+                                        <button type="submit"
+                                                class="btn btn-primary"
+                                                style="width:-webkit-fill-available;">
+                                            Select Seats
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div style="margin:25px;">
+                            <div style="font-size:x-large;margin:15px;"
+                                 t-if="movie.about_movie">Overview
+                            </div>
+                            <hr/>
+                            <div class="row">
+                                <div class="text mb-4">
+                                    <t t-esc="movie.about_movie"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin:25px;">
+                            <div style="font-size:x-large;margin: 15px;"
+                                 t-if="movie.movie_cast_ids">Show Cast
+                            </div>
+                            <hr/>
+                            <div class="row">
+                                <t t-foreach="movie.movie_cast_ids" t-as="cast"
+                                   t-key="cast.id">
+                                    <div class="col-md-2 text-center mb-4">
+                                        <t t-if="cast.cast_image">
+                                            <img t-attf-src="data:image/png;base64,#{cast.cast_image}"
+                                                 class="img-fluid"
+                                                 alt="Cast Image"
+                                                 style="max-width: 100px;border-radius:60px;"/>
+                                        </t>
+                                        <t t-else="">
+                                            <img src="/show_booking_management/static/src/img/avatar-default.svg"
+                                                 class="img-fluid rounded-circle"
+                                                 alt="Default Avatar"
+                                                 style="max-width: 100px;height:150px;"/>
+                                        </t>
+                                        <div class="mt-2">
+                                            <span t-esc="cast.name"/>
+                                        </div>
+                                        <div class="text-muted"
+                                             style="background-color:powderblue; border-radius:20px;">
+                                            <span t-esc="cast.cast_id.name"/>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!--  Seat selection template  -->
+    <template id="seat_selection_template" name="Seat Selection">
+        <t t-call="website.layout">
+            <div style="display:flex;">
+                <div class="container mt-5 seat-selection">
+                    <form id="seat-selection-form"
+                          action="/movie/confirm_booking" method="post">
+                        <div style="display:flex;justify-content:center;">
+                            <div>
+                                <div class="h2"
+                                     style="text-align: center;font-family: monospace;margin-bottom:30px;">
+                                    Select Your Seats
+                                </div>
+                                <div style="padding:15px;display:flex;justify-content:space-evenly;">
+                                    <t t-foreach="movie.available_time_slots_ids"
+                                       t-as="time_slot">
+                                        <div t-att-class="'time-slot-btn btn btn-outline-info active' if time_slot_id.id == time_slot.id else 'time-slot-btn btn btn-outline-info'"
+                                             t-att-data-time-slot-id="time_slot.id">
+                                            <t t-esc="time_slot.name"/>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                            <div class="button-container" style="display:none">
+                                <button type="submit" class="btn btn-primary"
+                                        style="margin:10px;">Confirm Booking
+                                </button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="csrf_token"
+                               t-att-value="request.csrf_token()"/>
+                        <div class="seating-chart-container">
+                            <div class="seating-chart">
+                                <t t-foreach="range(screen.total_rows)"
+                                   t-as="row">
+                                    <div class="seat-row">
+                                        <div class="seat-row-inner">
+                                            <div style="width: max-content;">
+                                                Row
+                                                <t t-esc="row + 1"/>
+                                            </div>
+                                            <t t-foreach="range(screen.no_of_seat_row)"
+                                               t-as="col">
+                                                <t t-set="seat_id"
+                                                   t-value="'R' + str(row + 1) + 'C' + str(col + 1)"/>
+                                                <div class="seat-wrapper">
+                                                    <input type="checkbox"
+                                                           class="seat-checkbox"
+                                                           t-att-id="'seat-' + str(row + 1) + '-' + str(col + 1)"
+                                                           t-att-name="'selected_seats'"
+                                                           t-att-value="'R' + str(row + 1) + 'C' + str(col + 1)"
+                                                           t-att-disabled="seat_id in booked_seats"
+                                                           t-att-checked="seat_id in booked_seats"/>
+                                                    <label t-att-for="'seat-' + str(row +1) + '-' + str(col + 1)"
+                                                           class="seat-label">
+                                                        <t t-esc="col + 1"/>
+                                                    </label>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                        <div class="selected-seats" style="text-align:center;display:none">
+                            <label class="seat-demo-selected">0</label>
+                            Selected
+                        </div>
+                        <input type="hidden" name="screen_id"
+                               t-att-value="screen.id"/>
+                        <input type="hidden" name="time_slot_id"
+                               t-att-value="time_slot_id.id"/>
+                        <input type="hidden" name="movie_id"
+                               t-att-value="movie.id"/>
+                        <input type="hidden" name="booking_date"
+                               t-att-value="booking_date"/>
+                        <div class="screen">
+                            <h3>Screen</h3>
+                        </div>
+                    </form>
+                </div>
+                <div class="container mt-3 sidebar">
+                    <div class="h3" style="text-align:center;">
+                        Details
+                    </div>
+                    <hr/>
+                    <table class="table">
+                        <tr>
+                            <th>Movie</th>
+                            <td>
+                                <t t-esc="movie.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Screen</th>
+                            <td>
+                                <t t-esc="screen.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Time Slot</th>
+                            <td class="sidebar_timeslot">
+                                <t t-esc="time_slot_id.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Booking Date</th>
+                            <td>
+                                <t t-esc="booking_date"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label class="seat-demo-available">
+                                    <t t-esc="available_seats_count"/>
+                                </label>
+                            </td>
+                            <td>
+                                Available
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label class="seat-demo-booked">
+                                    <t t-esc="booked_seats_count"/>
+                                </label>
+                            </td>
+                            <td>
+                                Booked
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
