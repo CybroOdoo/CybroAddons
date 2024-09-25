@@ -59,6 +59,9 @@ class SubscriptionPlan(models.Model):
                                    compute='_compute_product_count')
     subscription_count = fields.Integer(string='Subscriptions',
                                         compute='_compute_subscription_count')
+    subscription_state = fields.Selection([('draft', 'Draft'),
+                                     ('in_progress', 'In Progress')],
+                                    default='in_progress')
 
     @api.depends('product_count')
     def _compute_product_count(self):

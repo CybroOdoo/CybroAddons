@@ -63,16 +63,28 @@ class SaleOrder(models.Model):
                                            'product_qty': line.product_uom_qty,
                                            'unit_price': line.price_unit}]
                         this_products_line.append(rec_list)
-                        self.env['subscription.package'].create(
-                            {
-                                'sale_order': self.id,
-                                'reference_code': self.env['ir.sequence'].next_by_code('sequence.reference.code'),
-                                'start_date': fields.Date.today(),
-                                'stage_id': self.env.ref('subscription_package.draft_stage').id,
-                                'partner_id': self.partner_id.id,
-                                'plan_id': line.product_id.subscription_plan_id.id,
-                                'product_line_ids': this_products_line
-                            })
+                        if line.product_id.subscription_plan_id.subscription_state == 'draft':
+                            self.env['subscription.package'].create(
+                                {
+                                    'sale_order': self.id,
+                                    'reference_code': self.env['ir.sequence'].next_by_code('sequence.reference.code'),
+                                    'start_date': fields.Date.today(),
+                                    'stage_id': self.env.ref('subscription_package.draft_stage').id,
+                                    'partner_id': self.partner_id.id,
+                                    'plan_id': line.product_id.subscription_plan_id.id,
+                                    'product_line_ids': this_products_line
+                                })
+                        else:
+                            self.env['subscription.package'].create(
+                                {
+                                    'sale_order': self.id,
+                                    'reference_code': self.env['ir.sequence'].next_by_code('sequence.reference.code'),
+                                    'start_date': fields.Date.today(),
+                                    'stage_id': self.env.ref('subscription_package.progress_stage').id,
+                                    'partner_id': self.partner_id.id,
+                                    'plan_id': line.product_id.subscription_plan_id.id,
+                                    'product_line_ids': this_products_line
+                                })
         return super()._action_confirm()
 
 
