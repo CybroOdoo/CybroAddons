@@ -39,9 +39,12 @@ class ProductInvoice(models.TransientModel):
         default='order', required=True)
 
     def action_change_invoice_policy_products(self):
-        """
-        Function for changing invoice policy of selected products
-        """
+        """Function for changing invoice policy of selected products"""
         if self.product_ids:
             for products in self.product_ids:
                 products.write({'invoice_policy': self.invoice_policy})
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
+

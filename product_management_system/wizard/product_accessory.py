@@ -37,11 +37,13 @@ class ProductAccessory(models.TransientModel):
                                      help='Products wanted to added as Accessory Products')
 
     def action_add_accessory_products(self):
-        """
-        Function for adding Accessory Products for the selected products
-        """
+        """Function for adding Accessory Products for the selected products"""
         if self.product_ids and self.accessory_ids:
             for products in self.product_ids:
                 for items in self.accessory_ids:
                     products.accessory_product_ids = [
                         fields.Command.link(items.id)]
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

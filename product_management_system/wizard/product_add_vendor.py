@@ -37,9 +37,7 @@ class ProductAddVendor(models.TransientModel):
                                  help='Product Vendors')
 
     def action_add_product_vendors(self):
-        """
-        Function for adding seller_ids (product vendors) for Selected Products
-        """
+        """Function for adding seller_ids (product vendors) for Selected Products"""
         if self.product_ids and self.vendor_ids:
             for products in self.product_ids:
                 for vendor in self.vendor_ids:
@@ -49,6 +47,10 @@ class ProductAddVendor(models.TransientModel):
                         'currency_id': vendor.currency_id.id,
                         'delay': vendor.delay,
                     })]
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
 
 
 class ProductAttribute(models.TransientModel):

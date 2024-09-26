@@ -38,10 +38,12 @@ class ProductCustomerTax(models.TransientModel):
                                help='Customer Tax')
 
     def action_change_customer_tax(self):
-        """
-        Function for changing tax_ids (Customer Tax) of selected products
-        """
+        """Function for changing tax_ids (Customer Tax) of selected products"""
         if self.product_ids and self.tax_ids:
             for products in self.product_ids:
                 for items in self.tax_ids:
                     products.taxes_id = [fields.Command.link(items.id)]
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

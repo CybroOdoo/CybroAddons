@@ -38,10 +38,12 @@ class ProductInventoryLocation(models.TransientModel):
                                             domain="[('usage','=','inventory')]")
 
     def action_change_inventory_location(self):
-        """
-        Function for changing product inventory location of selected products
-        """
+        """Function for changing product inventory location of selected products"""
         if self.product_ids and self.inventory_location_id:
             for products in self.product_ids:
                 products.write(
                     {'property_stock_inventory': self.inventory_location_id})
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

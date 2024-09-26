@@ -34,11 +34,13 @@ class ProductArchive(models.TransientModel):
                                    help='Products which are selected')
 
     def action_archive_product(self):
-        """
-        Function for archiving Selected Products
-        """
+        """Function for archiving Selected Products"""
         if self.product_ids:
             for products in self.product_ids:
                 products.write({
                     'active': False
                 })
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

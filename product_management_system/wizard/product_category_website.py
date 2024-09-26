@@ -37,10 +37,13 @@ class ProductWebsiteCategory(models.TransientModel):
                                         help='Select Product Category In Website')
 
     def action_change_website_category(self):
-        """
-        Function for changing public_categ_ids (Website Category) of Selected Products
-        """
+        """Function for changing public_categ_ids (Website Category) of
+        Selected Products"""
         if self.product_ids and self.public_categ_ids:
             for products in self.product_ids:
                 for items in self.public_categ_ids:
                     products.public_categ_ids = [fields.Command.link(items.id)]
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

@@ -41,9 +41,11 @@ class ProductChangeTracking(models.TransientModel):
         default='none', required=True)
 
     def action_change_product_tracking(self):
-        """
-        Function for changing tracking method of selected products
-        """
+        """Function for changing tracking method of selected products"""
         if self.product_ids:
             for products in self.product_ids:
                 products.write({'tracking': self.tracking})
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

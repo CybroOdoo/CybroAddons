@@ -36,11 +36,13 @@ class ProductUpdatePrice(models.TransientModel):
                                  help='Price of the product')
 
     def action_product_update_price_confirm(self):
-        """
-        Function for updating price of the selected products
-        """
+        """Function for updating price of the selected products"""
         if self.product_ids:
             for rec in self.product_ids:
                 rec.write({
                     'list_price': self.product_price if self.product_price != 0 else rec.list_price,
                 })
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

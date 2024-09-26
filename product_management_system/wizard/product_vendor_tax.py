@@ -38,10 +38,12 @@ class ProductVendorTax(models.TransientModel):
                                domain="[('type_tax_use', '=', 'purchase')]")
 
     def action_change_vendor_tax(self):
-        """
-        Function for updating vendor tax of the selected products
-        """
+        """Function for updating vendor tax of the selected products"""
         if self.product_ids and self.tax_ids:
             for products in self.product_ids:
                 for items in self.tax_ids:
                     products.supplier_taxes_id = [fields.Command.link(items.id)]
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

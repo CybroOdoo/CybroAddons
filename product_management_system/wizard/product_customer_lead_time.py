@@ -36,9 +36,12 @@ class ProductCustomerLeadTime(models.TransientModel):
                               help='Delivery lead time in days')
 
     def action_change_customer_lead_time(self):
-        """
-        Function for changing sale_delay (Customer Lead Time) of Selected Products
-        """
+        """Function for changing sale_delay (Customer Lead Time) of
+        Selected Products"""
         if self.product_ids and self.sale_delay != 0:
             for products in self.product_ids:
                 products.write({'sale_delay': self.sale_delay})
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

@@ -34,17 +34,21 @@ class ProductPublish(models.TransientModel):
                                    help='Products which are selected')
 
     def action_publish_product(self):
-        """
-        Function for making selected products publish on website
-        """
+        """Function for making selected products publish on website"""
         if self.product_ids:
             for products in self.product_ids:
                 products.write({'is_published': True})
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
 
     def action_not_publish_product(self):
-        """
-        Function for not making selected products publish on website
-        """
+        """Function for not making selected products publish on website"""
         if self.product_ids:
             for products in self.product_ids:
                 products.write({'is_published': False})
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

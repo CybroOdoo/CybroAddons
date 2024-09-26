@@ -41,6 +41,7 @@ var KanbanButton = KanbanController.extend({
         var toast = $('.toast')
         var checked = $(ev.target).is(':checked');
         var record_id =parseInt($(ev.target).data('id'));
+        console.log('record_idrecord_idrecord_idrecord_id', record_id)
         if (checked){
             toast.addClass('show');
             toast.css("display","inline");

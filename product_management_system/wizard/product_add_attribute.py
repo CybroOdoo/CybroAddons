@@ -38,9 +38,7 @@ class ProductAddAttribute(models.TransientModel):
                                          help='Attribute Lines')
 
     def action_add_product_attributes(self):
-        """
-        Function for adding Attributes and Variants for Selected Products
-        """
+        """Function for adding Attributes and Variants for Selected Products"""
         if self.product_ids and self.attribute_line_ids:
             for products in self.product_ids:
                 for line in self.attribute_line_ids:
@@ -48,12 +46,14 @@ class ProductAddAttribute(models.TransientModel):
                         'attribute_id': line.attribute_id.id,
                         'value_ids': line.value_ids,
                     })]
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
 
 
 class ProductAttribute(models.TransientModel):
-    """
-    Model for attribute_lines for the model product.add.attribute
-    """
+    """Model for attribute_lines for the model product.add.attribute"""
     _name = 'product.management.attribute'
     _description = 'Product Attributes'
 

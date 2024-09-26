@@ -38,10 +38,12 @@ class ProductProductionLocation(models.TransientModel):
                                              domain="[('usage','=','production')]")
 
     def action_change_production_location(self):
-        """
-        Function for changing production location of the selected products
-        """
+        """Function for changing production location of the selected products"""
         if self.product_ids:
             for products in self.product_ids:
                 products.write(
                     {'property_stock_production': self.production_location_id})
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

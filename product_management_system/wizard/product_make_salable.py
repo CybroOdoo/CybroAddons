@@ -34,21 +34,25 @@ class ProductMakeSaleable(models.TransientModel):
                                    help='Products which are selected')
 
     def action_product_make_salable_confirm(self):
-        """
-            Function for making product Salable
-        """
+        """Function for making product Salable"""
         if self.product_ids:
             for rec in self.product_ids:
                 rec.write({
                     'sale_ok': True
                 })
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
 
     def action_product_make_salable_false(self):
-        """
-            Function for making product not Salable
-        """
+        """Function for making product not Salable"""
         if self.product_ids:
             for rec in self.product_ids:
                 rec.write({
                     'sale_ok': False
                 })
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

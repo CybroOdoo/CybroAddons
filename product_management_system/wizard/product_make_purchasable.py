@@ -34,21 +34,25 @@ class ProductMakePurchasable(models.TransientModel):
                                    help='Products which are selected')
 
     def action_product_make_purchasable_confirm(self):
-        """
-        Function for making product purchasable
-        """
+        """Function for making product purchasable"""
         if self.product_ids:
             for rec in self.product_ids:
                 rec.write({
                     'purchase_ok': True
                 })
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
 
     def action_product_make_purchasable_false(self):
-        """
-        Function for making product not purchasable
-        """
+        """Function for making product not purchasable"""
         if self.product_ids:
             for rec in self.product_ids:
                 rec.write({
                     'purchase_ok': False
                 })
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

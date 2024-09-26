@@ -34,9 +34,12 @@ class ProductDelete(models.TransientModel):
                                    help='Products which are selected')
 
     def action_delete_product(self):
-        """
-        Function for deleting selected products
-        """
+        """Function for deleting selected products"""
         if self.product_ids:
             for products in self.product_ids:
                 products.unlink()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
+

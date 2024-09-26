@@ -39,11 +39,13 @@ class ProductAlternative(models.TransientModel):
                                        domain="[('id', 'not in', product_ids)]")
 
     def action_add_alternative_products(self):
-        """
-        Function for adding alternative products for Selected Products
-        """
+        """Function for adding alternative products for Selected Products"""
         if self.product_ids and self.alternative_ids:
             for products in self.product_ids:
                 for items in self.alternative_ids:
                     products.alternative_product_ids = [
                         fields.Command.link(items.id)]
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

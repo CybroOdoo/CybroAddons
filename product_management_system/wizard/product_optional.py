@@ -39,11 +39,13 @@ class ProductOptional(models.TransientModel):
                                     domain="[('id', 'not in', product_ids)]")
 
     def action_add_optional_products(self):
-        """
-        Function for adding optional products for selected products
-        """
+        """Function for adding optional products for selected products"""
         if self.product_ids and self.optional_ids:
             for products in self.product_ids:
                 for items in self.optional_ids:
                     products.optional_product_ids = [
                         fields.Command.link(items.id)]
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

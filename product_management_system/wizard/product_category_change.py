@@ -37,11 +37,13 @@ class ProductCategoryChange(models.TransientModel):
                                   help='Category')
 
     def action_product_category_change_confirm(self):
-        """
-        Function for changing category of Selected Products
-        """
+        """Function for changing category of Selected Products"""
         if self.product_ids and self.category_id:
             for rec in self.product_ids:
                 rec.write({
                     'categ_id': self.category_id
                 })
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
