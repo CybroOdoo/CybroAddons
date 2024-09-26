@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--  Inheriting invoice portal views and add button  -->
+    <template id="custom_portal_record_sidebar"
+              inherit_id="account.portal_invoice_page">
+        <xpath expr="//div[hasclass('o_portal_invoice_sidebar')]//div[hasclass('o_download_pdf')]"
+               position="before">
+            <div class="flex-grow-1" style="margin-bottom:5px;"
+                 t-if="invoice.movie_ticket_id and invoice.invoice_origin == 'Movie'">
+                <a class="btn btn-secondary d-block"
+                   t-attf-href="/report/pdf/show_booking_management.action_report_movie_ticket/{{invoice.movie_ticket_id.id}}">
+                    <i class="fa fa-cloud-download"/>
+                    Download Ticket
+                </a>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="portal_my_home_subscription" name="Tickets"
+               customize_show="True" inherit_id="portal.portal_my_home">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/show_booking_management/static/src/img/ticket (2).png'"/>
+                <t t-set="title">Show Bookings</t>
+                <t t-set="url" t-value="'/my/shows'"/>
+                <t t-set="placeholder_count" t-value="'shows_count'"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_my_shows" name="My Show Bookings">
+        <t t-call="website.layout">
+            <div class="container mt32 mb32">
+                <h1>My Show Bookings</h1>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Show Name #</th>
+                            <th>Movie</th>
+                            <th>Language</th>
+                            <th>Date</th>
+                            <th>Time Slot</th>
+                            <th>Number Of Tickets</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="shows" t-as="show">
+                            <tr>
+                                <td><t t-esc="show.name"/></td>
+                                <td><t t-esc="show.movie_id.name"/></td>
+                                <td><t t-esc="show.movie_lang.name"/></td>
+                                <td><t t-esc="show.date"/></td>
+                                <td><t t-esc="show.time_slot_id.name"/></td>
+                                <td><t t-esc="show.no_of_tickets"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+</odoo>

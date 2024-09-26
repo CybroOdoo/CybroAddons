@@ -21,11 +21,8 @@
 ################################################################################
 from .import models
 from .import wizard
-from odoo import api, SUPERUSER_ID
 
-
-def _uninstall_hook(cr, registry):
-    env = api.Environment(cr, SUPERUSER_ID, {})
+def uninstall_hook(env):
     env['ir.config_parameter'].sudo().set_param(
         'pos_paid_order_delete.is_delete',
         False)

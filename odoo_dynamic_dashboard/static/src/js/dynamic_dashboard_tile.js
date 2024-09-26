@@ -46,8 +46,8 @@ export class DynamicDashboardTile extends Component {
             await this.doAction({
               type: 'ir.actions.act_window',
               res_model: model_name,
-              view_mode: 'tree',
-              views: [[false, "tree"]],
+              view_mode: 'tree,form',
+              views: [[false, "tree"], [false, "form"]],
               domain: this.props.widget.domain,
           });
         }
@@ -55,7 +55,7 @@ export class DynamicDashboardTile extends Component {
 }
 DynamicDashboardTile.template = xml `
     <div class="resize-drag tile"
-        t-on-dblclick="getRecords"
+        t-on-click="getRecords"
         t-att-data-id="this.props.widget.id"
         t-att-data-x="this.props.widget.data_x"
         t-att-data-y="this.props.widget.data_y"

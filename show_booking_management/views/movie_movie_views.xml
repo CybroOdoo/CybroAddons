@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+<!--  Movie Search View  -->
+    <record id="movie_movie_view_search" model="ir.ui.view">
+        <field name="name">movie.movie.view.search</field>
+        <field name="model">movie.movie</field>
+        <field name="arch" type="xml">
+            <search string="Search Tips">
+                <field name="name" string="Name"/>
+                <filter name="filter_movies_ongoing" string="Ongoing" domain="[('state','=','ongoing')]"/>
+                <filter name="filter_movies_draft" string="Draft" domain="[('state','=','draft')]"/>
+                <filter name="filter_movies_cancel" string="Cancelled" domain="[('state','=','cancel')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="State" string="State"
+                            context="{'group_by':'state'}"/>
+                    <filter name="Language" string="Language"
+                            context="{'group_by':'movie_language_id'}"/>
+                    <filter name="Release Date" string="Release Date"
+                            context="{'group_by':'release_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+<!--  Movie Kanban View  -->
+    <record id="movie_movie_view_kanban" model="ir.ui.view">
+        <field name="name">movie.movie.view.kanban</field>
+        <field name="model">movie.movie</field>
+        <field name="arch" type="xml">
+            <kanban sample="1">
+                <field name="id"/>
+                <field name="movie_language_id"/>
+                <field name="movie_poster"/>
+                <field name="show_type_ids"/>
+                <field name="available_time_slots_ids"/>
+                <field name="price"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="o_kanban_image">
+                                <img t-att-src="kanban_image('movie.movie', 'movie_poster', record.id.raw_value)"
+                                     alt="Movie Poster"/>
+                            </div>
+                            <div class="oe_kanban_details">
+                                <strong class="o_kanban_record_title">
+                                    <field name="name"/>
+                                </strong>
+                                <ul>
+                                    <li>
+                                        <strong>Language:
+                                            <field name="movie_language_id"/>
+                                        </strong>
+                                    </li>
+                                    <li>
+                                        <strong>Price:
+                                            <field name="price"/>
+                                        </strong>
+                                    </li>
+                                    <li>
+                                        <strong>Show Type:
+                                            <field name="show_type_ids" widget="many2many_tags"/>
+                                        </strong>
+                                    </li>
+                                    <li>
+                                        <strong>Time Slots:
+                                            <field name="available_time_slots_ids" widget="many2many_tags"/>
+                                        </strong>
+                                    </li>
+                                    <li>
+                                        <strong>Screen:
+                                            <field name="available_screens_ids" widget="many2many_tags"/>
+                                        </strong>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!--  Movie Form View  -->
+    <record id="movie_movie_view_form" model="ir.ui.view">
+        <field name="name">movie.movie.view.form</field>
+        <field name="model">movie.movie</field>
+        <field name="arch" type="xml">
+            <form string="Movie Movie">
+                <header>
+                    <button name="action_start_show" type="object" string="Start Show"
+                        invisible="state not in ['draft']" class="btn-primary"/>
+                    <button name="action_cancel_show" type="object" string="Cancel Show"
+                        invisible="state not in ['ongoing']" class="btn-primary"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" required="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="duration" required="1"/>
+                            <field name="release_date" required="1"/>
+                            <field name="show_type_ids"
+                                   widget="many2many_tags" required="1"/>
+                            <field name="movie_language_id"/>
+                            <field name="available_time_slots_ids"
+                                   widget="many2many_tags" required="1"/>
+                            <field name="available_screens_ids"
+                                   widget="many2many_tags" required="1"/>
+                            <field name="show_start_date" required="1"/>
+                            <field name="show_end_date" required="1"/>
+                            <field name="price" required="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="movie_poster" widget="image" options="{'size': [185, 280]}" required="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="About">
+                            <field name="about_movie" placeholder="Overview of the movie"/>
+                        </page>
+                        <page string="Cast">
+                            <field name="movie_cast_ids"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--  Movie Tree View  -->
+    <record id="movie_movie_view_tree" model="ir.ui.view">
+        <field name="name">movie.movie.view.tree</field>
+        <field name="model">movie.movie</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <!--  Action Movie  -->
+    <record id="movie_movie_action" model="ir.actions.act_window">
+        <field name="name">Shows</field>
+        <field name="res_model">movie.movie</field>
+        <field name="view_mode">kanban,form,tree</field>
+    </record>
+    <!--  MenuItem for movie, registration, configuration  -->
+    <menuitem id="movie" name="Shows" sequence="1"
+              groups="show_booking_management.show_booking_management_group_admin"
+              web_icon="show_booking_management,static/description/icon.png"/>
+    <menuitem id="movie_ticket" name="Shows" parent="show_booking_management.movie"
+              action="movie_movie_action" sequence="1"/>
+    <menuitem id="movie_registration" name="Registration"
+              parent="show_booking_management.movie"/>
+    <menuitem id="movie_configuration" name="Configuration"
+              parent="show_booking_management.movie" sequence="5"/>
+</odoo>

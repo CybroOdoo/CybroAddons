@@ -25,13 +25,18 @@ patch(PosDB.prototype, {
                         continue;
                     }
                     results.push(product);
-                }else if(this.product_by_lot_id[old_query]){
+                }
+                else if(this.product_by_lot_id){
+                     if(this.product_by_lot_id[old_query]){
+                         console.log(this.product_by_lot_id[old_query])
                         const product = this.get_product_by_id(this.product_by_lot_id[old_query]);
                         if (!this.shouldAddProduct(product, results)) continue;
                         if(!results.includes(product)){
                             results.push(product);
                         }
-                }else{
+                }
+                }
+                else{
                     break;
                 }
            }

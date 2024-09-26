@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'POS Paid Order Delete',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'POS',
     'summary': "Can Delete POS Orders in Paid State With or Without Code",
     'description': "This app allow the specified user to delete the pos orders"
@@ -45,6 +45,6 @@
     'installable': True,
     'auto_install': False,
     'application': False,
-    'uninstall_hook': '_uninstall_hook',
+    'uninstall_hook': 'uninstall_hook',
 }
 

@@ -22,3 +22,16 @@
 from . import controllers
 from . import models
 from . import wizard
+
+
+def uninstall_hook(env):
+    """Uninstall hook to delete all menu items and client actions created by the
+       Advanced Dynamic Dashboard module."""
+    client_actions = env['ir.actions.client'].search(
+        [('tag', '=', 'AdvancedDynamicDashboard')])
+    for action in client_actions:
+        dashboard_menus = env['ir.ui.menu'].search([
+            ('action', '=', 'ir.actions.client,%d' % action.id)
+        ])
+        dashboard_menus.unlink()
+    client_actions.unlink()
