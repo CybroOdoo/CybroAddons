@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-from werkzeug import urls
 from odoo import api, fields, models, _
 
 GOOGLE_AUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/auth'
