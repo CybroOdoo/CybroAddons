@@ -99,6 +99,7 @@ odoo.define('dynamic_accounts_report.general_ledger', function(require) {
 						[this.wizard_id], action_title
 					],
 				}).then(function(datas) {
+					console.log(datas, 'datas')
 					//                    _.each(datas['report_lines'], function(rep_lines) {
 					//                            rep_lines.debit = self.format_currency(datas['currency'],rep_lines.debit);
 					//                            rep_lines.credit = self.format_currency(datas['currency'],rep_lines.credit);
@@ -109,6 +110,7 @@ odoo.define('dynamic_accounts_report.general_ledger', function(require) {
 						self.$('.filter_view_tb').html(QWeb.render('GLFilterView', {
 							filter_data: datas['filters'],
 							title: datas['name'],
+							tag: datas['tag'],
 							//                                        eng_title : datas['eng_title'],
 						}));
 						self.$el.find('.journals').select2({
