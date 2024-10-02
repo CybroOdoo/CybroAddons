@@ -16,9 +16,9 @@ patch(OrderReceipt.prototype, {
         return {
             data: this.props.data,
             order: this.pos.orders,
-            receipt: this.pos.orders[0].export_for_printing(),
-            orderlines:this.pos.orders[0].get_orderlines(),
-            paymentlines:this.pos.orders[0].get_paymentlines()
+            receipt: this.pos.get_order().export_for_printing(),
+            orderlines:this.pos.get_order().get_orderlines(),
+            paymentlines:this.pos.get_order().get_paymentlines()
         };
     },
     get templateComponent() {
