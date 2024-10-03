@@ -145,6 +145,7 @@ class AccountPartnerLedger(models.TransientModel):
                 'account_type', 'in', account_type_domain),
                 ('parent_state', 'in', option_domain)]).mapped(
                 'partner_id').ids
+        balance_move_line_ids = []
         for partners in partner_id:
             partner = self.env['res.partner'].browse(partners).name
             if data_range:
