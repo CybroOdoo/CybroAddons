@@ -75,7 +75,7 @@ class ChecklistProgress(models.Model):
 
     start_date = fields.Datetime(string='Start Date')
     end_date = fields.Datetime(string='End Date')
-    progress = fields.Float(compute='_compute_progress', string='Progress in %')
+    checklist_progress = fields.Float(compute='_compute_checklist_progress', string='Progress in %')
     checklist_ids = fields.Many2many('task.checklist', compute='_compute_checklist_ids')
     checklist_id = fields.Many2one('task.checklist')
     checklists = fields.One2many('checklist.item.line', 'projects_id', string='CheckList Items', required=True)
@@ -94,14 +94,14 @@ class ChecklistProgress(models.Model):
         for rec in self:
             self.checklist_ids = self.env['task.checklist'].search([('task_ids', '=', rec.id)])
 
-    def _compute_progress(self):
+    def _compute_checklist_progress(self):
         for rec in self:
             total_completed = 0
             for activity in rec.checklists:
                 if activity.state in ['cancel', 'done', 'in_progress']:
                     total_completed += 1
             if total_completed:
-                rec.progress = float(total_completed) / len(rec.checklists) * 100
+                rec.checklist_progress = float(total_completed) / len(rec.checklists) * 100
 
             else:
-                rec.progress = 0.0
+                rec.checklist_progress = 0.0
