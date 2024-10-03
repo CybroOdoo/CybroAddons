@@ -51,6 +51,6 @@
         ],
     },
     'external_dependencies': {
-        'python': ['speech_recognition']
+        'python': ['Speechrecognition','pyaudio']
     },
 }
