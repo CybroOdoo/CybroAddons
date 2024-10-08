@@ -40,10 +40,9 @@ class WebsiteSaleInherit(WebsiteSale):
         res = super().shop(page, category, search, min_price,
                            max_price, ppg, **post)
         res.qcontext.update({
-            'login_user': True if not request.env.user._is_public() or (
-                    request.env.user._is_public() and not request.env[
+            'login_user': True if request.env.user._is_public() and request.env[
                 'ir.config_parameter'].sudo().get_param(
-                'website_hide_button.hide_cart')) else False,
+                'website_hide_button.hide_cart') else False
         })
         return res
 
@@ -53,10 +52,10 @@ class WebsiteSaleInherit(WebsiteSale):
                                                                       category,
                                                                       search,
                                                                       **kwargs)
-        res['login_user'] = True if not request.env.user._is_public() or (
-                request.env.user._is_public() and not request.env[
-            'ir.config_parameter'].sudo().get_param(
-            'website_hide_button.hide_cart')) else False
+        res['login_user'] = True if request.env.user._is_public() and \
+                                    request.env[
+                                        'ir.config_parameter'].sudo().get_param(
+                                        'website_hide_button.hide_cart') else False
         return res
 
     @http.route()

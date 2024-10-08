@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': "Hide Price, Add To Cart And Quantity Button In Website",
-    'version': '17.0.2.0.0',
+    'version': '17.0.2.0.1',
     'category': 'Website',
     'summary': """Hide Price, Add To Cart and Quantity button for guest
      users""",
