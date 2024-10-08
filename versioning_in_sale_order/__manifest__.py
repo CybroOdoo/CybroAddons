@@ -22,7 +22,7 @@
 
 {
     'name': 'Sale Order Versions',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Sales/Sales',
     'summary': 'For creating multiple sale order versions',
     'description': 'For creating multiple sale order versions',
@@ -39,4 +39,5 @@
     'installable': True,
     'auto_install': False,
     'application': False,
+    'uninstall_hook': 'uninstall_hook',
 }
