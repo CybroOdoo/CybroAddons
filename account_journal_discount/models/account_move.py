@@ -33,63 +33,65 @@ class AccountMove(models.Model):
         """Redefining the function to create new journal entries whenever
         journal discounts are provided.
         """
-        if self.move_type == 'out_invoice':
-            for line in self.invoice_line_ids:
-                if line.discount > 0 and \
-                        line.product_id.categ_id.customer_account_discount_id:
-                    debit_credit_value = abs(
-                        float_round((line.price_subtotal - (line.quantity * line.price_unit)),
-                                    precision_digits=
-                                    self.currency_id.decimal_places))
-                    self.env['account.move.line'].create({
-                        'move_id': self.id,
-                        'currency_id': self.currency_id.id,
-                        'display_type': 'tax',
-                        'name': line.name,
-                        'account_id': line.product_id.categ_id.customer_account_discount_id.id,
-                        'journal_id': self.journal_id,
-                        'credit': 0,
-                        'debit': debit_credit_value,
-                    })
-                    self.env['account.move.line'].create({
-                        'move_id': self.id,
-                        'display_type': 'tax',
-                        'currency_id': self.currency_id.id,
-                        'name': line.name,
-                        'account_id': line.account_id.id,
-                        'journal_id': self.journal_id,
-                        'credit': debit_credit_value,
-                        'debit': 0,
-                    })
-        elif self.move_type == 'in_invoice':
-            for line in self.invoice_line_ids:
-                if line.discount > 0 and \
-                        line.product_id.categ_id.vendor_account_discount_id:
-                    debit_credit_value = abs(
-                        float_round((line.price_subtotal - (line.quantity * line.price_unit)),
-                                    precision_digits=
-                                    self.currency_id.decimal_places))
-                    self.env['account.move.line'].with_context(
-                        check_move_validity=False).create({
-                            'move_id': self.id,
+        for move in self:
+            if move.move_type == 'out_invoice':
+                for line in move.invoice_line_ids:
+                    if line.discount > 0 and \
+                            line.product_id.categ_id.customer_account_discount_id:
+                        debit_credit_value = abs(
+                            float_round((line.price_subtotal - (line.quantity * line.price_unit)),
+                                        precision_digits=
+                                        move.currency_id.decimal_places))
+                        move.env['account.move.line'].create({
+                            'move_id': move.id,
+                            'currency_id': move.currency_id.id,
                             'display_type': 'tax',
                             'name': line.name,
-                            'account_id': line.product_id.categ_id.vendor_account_discount_id.id,
-                            'journal_id': self.journal_id,
-                            'currency_id': self.currency_id.id,
+                            'account_id': line.product_id.categ_id.customer_account_discount_id.id,
+                            'journal_id': move.journal_id.id,
                             'credit': 0,
                             'debit': debit_credit_value,
                         })
-                    self.env['account.move.line'].with_context(
-                        check_move_validity=False).create({
-                            'move_id': self.id,
+                        move.env['account.move.line'].create({
+                            'move_id': move.id,
                             'display_type': 'tax',
+                            'currency_id': move.currency_id.id,
                             'name': line.name,
                             'account_id': line.account_id.id,
-                            'journal_id': self.journal_id,
-                            'currency_id': self.currency_id.id,
+                            'journal_id': move.journal_id.id,
                             'credit': debit_credit_value,
                             'debit': 0,
                         })
+            elif move.move_type == 'in_invoice':
+                for line in move.invoice_line_ids:
+                    if line.discount > 0 and \
+                            line.product_id.categ_id.vendor_account_discount_id:
+                        debit_credit_value = abs(
+                            float_round((line.price_subtotal - (line.quantity * line.price_unit)),
+                                        precision_digits=
+                                        move.currency_id.decimal_places))
+                        move.env['account.move.line'].with_context(
+                            check_move_validity=False).create({
+                            'move_id': move.id,
+                            'display_type': 'tax',
+                            'name': line.name,
+                            'account_id': line.product_id.categ_id.vendor_account_discount_id.id,
+                            'journal_id': move.journal_id.id,
+                            'currency_id': move.currency_id.id,
+                            'credit': 0,
+                            'debit': debit_credit_value,
+                        })
+                        move.env['account.move.line'].with_context(
+                            check_move_validity=False).create({
+                            'move_id': move.id,
+                            'display_type': 'tax',
+                            'name': line.name,
+                            'account_id': line.account_id.id,
+                            'journal_id': move.journal_id.id,
+                            'currency_id': move.currency_id.id,
+                            'credit': debit_credit_value,
+                            'debit': 0,
+                        })
+
         res = super(AccountMove, self).action_post()
         return res
