@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Website Restrict Country',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Website',
     'summary': "The Website Restrict Country module allows you to set"
                "restrictions for products that are unavailable in certain"
