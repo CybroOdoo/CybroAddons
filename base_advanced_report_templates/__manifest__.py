@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Odoo Professional Report Templates',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'category': 'Sales,Purchases,Accounting,Warehouse',
     'summary': "Report Templates, Professional Report Templates, Report Customisations, Sale Reports, Purchase Reports, Invoice Reports, Templates, Odoo17, Oodoo Apps",
     'description': "To tailor the presentation of different reports such as "
@@ -66,4 +66,5 @@
     'installable': True,
     'auto_install': False,
     'application': False,
+    'uninstall_hook': 'uninstall_hook',
 }
