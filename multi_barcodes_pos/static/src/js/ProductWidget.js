@@ -1,5 +1,4 @@
 /** @odoo-module */
-
 import { patch } from "@web/core/utils/patch";
 import { PosDB } from "@point_of_sale/app/store/db";
 import { unaccent } from "@web/core/utils/strings";
@@ -28,7 +27,6 @@ patch(PosDB.prototype, {
                 }
                 else if(this.product_by_lot_id){
                      if(this.product_by_lot_id[old_query]){
-                         console.log(this.product_by_lot_id[old_query])
                         const product = this.get_product_by_id(this.product_by_lot_id[old_query]);
                         if (!this.shouldAddProduct(product, results)) continue;
                         if(!results.includes(product)){
