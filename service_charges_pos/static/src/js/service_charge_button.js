@@ -90,9 +90,9 @@ export class ServiceChargeButton extends Component {
 ProductScreen.addControlButton({
     component: ServiceChargeButton,
     condition: function () {
-        let res_config_settings = this.pos.res_config_settings[this.pos.res_config_settings.length -1]
+        let res_config_settings = this.pos.config.is_service_charges
         if (res_config_settings) {
-            return res_config_settings.enable_service_charge
+            return this.pos.config.is_service_charges
         } else {
             return false
         }

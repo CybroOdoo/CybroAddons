@@ -61,7 +61,9 @@ class ResConfigSettings(models.TransientModel):
     def onchange_enable_service_charge(self):
         """When the service charge is enabled set service product and amount
         by default in globally"""
+        service_charges =self.env['pos.config'].search([])
         if self.enable_service_charge:
+            service_charges.is_service_charges = True
             if not self.global_product_id:
                 self.global_product_id = self.env[
                     'product.product'].search([
