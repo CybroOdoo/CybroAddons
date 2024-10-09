@@ -24,8 +24,8 @@
     'version': "17.0.1.0.0",
     'category': 'Theme/Corporate',
     'summary': 'Theme Upshift is a modern and versatile website theme'
-    'designed for businesses looking to establish a professional presence'
-    'and feature',
+    ' designed for businesses looking to establish a professional presence'
+    ' and feature',
     'description': 'Theme Upshift is a modern and stylish website template'
     'designed for businesses seeking a dynamic and professional.'
     'It offers a clean, user-friendly layout with customizable sections for'
@@ -76,7 +76,7 @@
         ],
     },
     "images": [
-        "static/description/banner.png",
+        "static/description/banner.jpg",
         "static/description/theme_sreenshot.jpg",
     ],
     "license": "LGPL-3",

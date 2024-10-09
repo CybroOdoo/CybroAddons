@@ -34,7 +34,7 @@
                                                 data-bs-dismiss="offcanvas"
                                                 aria-label="Close"/>
                                     </div>
-                                    <div class="offcanvas-body">
+                                    <div class="offcanvas-body justify-content-between">
                                         <ul class="navbar-nav">
                                             <t t-foreach="website.menu_id.child_id"
                                                t-as="submenu">
@@ -46,6 +46,23 @@
                                                 </t>
                                             </t>
                                         </ul>
+                                        <ul class="navbar-nav">
+                                            <!-- Sign In -->
+                                            <t t-call="portal.placeholder_user_sign_in">
+                                                <t t-set="_link_class"
+                                                   t-valuef="btn btn-outline-secondary w-100 nav-link"/>
+                                            </t>
+                                            <!-- User Dropdown -->
+                                            <t t-call="portal.user_dropdown">
+                                                <t t-set="_user_name"
+                                                   t-value="True"/>
+                                                <t t-set="_item_class"
+                                                   t-value="'nav-item dropdown ml-lg-auto'"/>
+                                                <t t-set="_link_class"
+                                                   t-value="'nav-link'"/>
+                                            </t>
+                                        </ul>
+
                                     </div>
                                 </div>
                                 <a href="/contact-us"
@@ -65,6 +82,27 @@
                     </div>
                 </div>
             </header>
+        </xpath>
+    </template>
+    <template id="upshift_header_user_dropdown"
+              inherit_id="portal.user_dropdown"
+              name="Upshift Sign in">
+        <xpath expr="//a"
+               position="replace">
+            <a href="#" role="button" data-bs-toggle="dropdown"
+               t-attf-class="#{'' if _no_caret else 'dropdown-toggle'} btn #{_link_class}" id="HeaderUser">
+                <t t-if="_avatar">
+                    <t t-set="avatar_source" t-value="image_data_uri(user_id.avatar_256)"/>
+                    <img t-att-src="avatar_source" t-attf-class="rounded-circle o_object_fit_cover #{_avatar_class}"
+                         width="24" height="24" alt="" loading="eager"/>
+                </t>
+                <div t-if="_icon" t-attf-class="#{_icon_wrap_class}">
+                    <i t-attf-class="fa fa-1x fa-fw fa-user #{_icon_class}"/>
+                </div>
+                <span t-if="_user_name" t-attf-class="#{_user_name_class}"
+                      t-esc="user_id.name[:23] + '...' if user_id.name and len(user_id.name) &gt; 25 else user_id.name"/>
+            </a>
+
         </xpath>
     </template>
 </odoo>

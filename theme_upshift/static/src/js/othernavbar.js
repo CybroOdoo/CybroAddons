@@ -221,7 +221,9 @@ export const NavigationScroll = PublicWidget.Widget.extend({
                 targetNav.removeClass('nav-link2');
                 logoName.addClass('span1').removeClass('brandD');
             }
-        } else {
+        }
+
+        else {
             if (targetNav.length > 0) {
                 targetNav.addClass('nav-link2');
                 logoName.addClass('brandD').removeClass('span1');
