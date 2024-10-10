@@ -77,7 +77,7 @@
     },
     "images": [
         "static/description/banner.jpg",
-        "static/description/theme_sreenshot.jpg",
+        "static/description/theme_screenshot.jpg",
     ],
     "license": "LGPL-3",
     'installable': True,
