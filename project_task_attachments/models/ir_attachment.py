@@ -53,7 +53,8 @@ class IrAttachment(models.Model):
                   'project.project'):
                 vals['project_id'] = vals['res_id']
                 vals['attach_to'] = 'project'
-            else:
+            elif ('task_id' not in vals.keys() and vals['res_model'] ==
+                  'project.task'):
                 vals['task_id'] = vals['res_id']
                 vals['attach_to'] = 'task'
         return super().create(vals_list)
