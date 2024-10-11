@@ -21,7 +21,7 @@
 #############################################################################
 
 {
-    'name': 'Odoo 13 Full Accounting Kit',
+    'name': 'Odoo 13 Full Accounting Kit for Community',
     'version': '13.0.4.11.15',
     'category': 'Accounting',
     'live_test_url': 'https://www.youtube.com/watch?v=peAp2Tx_XIs',
