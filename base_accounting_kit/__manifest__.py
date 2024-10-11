@@ -17,7 +17,7 @@
 #    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
 #    (LGPL v3) along with this program.
 {
-    'name': 'Odoo 15 Full Accounting Kit',
+    'name': 'Odoo 15 Full Accounting Kit for Community',
     'version': '15.0.2.2.6',
     'category': 'Accounting',
     'live_test_url': 'https://www.youtube.com/watch?v=peAp2Tx_XIs',
