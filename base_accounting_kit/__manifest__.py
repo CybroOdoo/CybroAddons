@@ -20,7 +20,7 @@
 #
 #############################################################################
 {
-    'name': 'Odoo 17 Full Accounting Kit',
+    'name': 'Odoo 17 Full Accounting Kit for Community',
     'version': '17.0.1.0.4',
     'category': 'Accounting',
     'summary': """Odoo 17 Accounting, Odoo 17 Accounting Reports, Odoo17 Accounting, Odoo Accounting, Odoo17 Financial Reports, Odoo17 Asset, Odoo17 Profit and Loss, PDC, Followups, Odoo17, Accounting, Odoo Apps, Reports""",
