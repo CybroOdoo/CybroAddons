@@ -19,9 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 {
-    'name': 'Odoo 14 Full Accounting Kit',
+    'name': 'Odoo 14 Full Accounting Kit for Community',
     'version': '14.0.3.13.16',
     'category': 'Accounting',
     'live_test_url': 'https://www.youtube.com/watch?v=peAp2Tx_XIs',
