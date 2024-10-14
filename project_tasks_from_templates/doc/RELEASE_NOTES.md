@@ -9,3 +9,8 @@
 #### Version 17.0.1.0.1
 ##### UPDT
 - Bug Fix-Resolved the duplicate issues.
+
+#### 10.10.2024
+#### Version 17.0.1.0.2
+##### UPDT
+- Bug Fix-Resolved the duplicate issues.
