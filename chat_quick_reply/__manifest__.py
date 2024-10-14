@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Chat Quick Reply',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Extra Tools',
     'summary': """To reply to the chat from the Notification itself.""",
     'description': "This module to reply to chat from the Notification itself.",
