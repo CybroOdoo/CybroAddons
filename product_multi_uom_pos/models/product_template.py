@@ -27,22 +27,9 @@ class ProductTemplate(models.Model):
     of measure"""
     _inherit = 'product.template'
 
-    multi_uom = fields.Boolean(compute='_compute_multi_uom', string='Multi UoM',
-                               help='A boolean field to show the one2many field'
-                                    'POS Multiple UoM if the Multi UoM option'
-                                    ' is enabled in Configuration settings')
-    pos_multi_uom_ids = fields.One2many('pos.multi.uom', 'product_template_id',
+    product_uom_category_id = fields.Many2one(related='uom_id.category_id')
+    pos_multi_uom_ids = fields.Many2many('uom.uom', 'product_template_id',
                                         string="POS Multiple UoM",
+                                        domain="[('category_id', '=', product_uom_category_id)]",
                                         help='These UoM can be selected from '
                                              'PoS')
-
-    def _compute_multi_uom(self):
-        """
-         Updates the 'multi_uom' field based on the configuration parameter
-          'product_multi_uom_pos.pos_multi_uom'.
-        """
-        status = self.env['ir.config_parameter'].sudo().get_param(
-            'product_multi_uom_pos.pos_multi_uom')
-        self.write({
-            'multi_uom': status
-        })

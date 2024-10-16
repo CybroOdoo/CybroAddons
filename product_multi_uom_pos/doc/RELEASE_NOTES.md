@@ -19,3 +19,10 @@
 #### Version 17.0.1.0.1
 ##### UPDT
 - Bug Fix - Resolved the issue of UOM shown in sales details report
+
+#### 16.10.2024
+#### Version 17.0.1.0.2
+##### UPDT
+- Bug Fix - 1) Changed the workflow, Unit and price will be automatically calculated on the basis of selected UOM ratio.
+            2) Resolved issue with the multiple order lines in the POS.
+            3) Resolved the issue in the delivery.
