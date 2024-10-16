@@ -46,7 +46,6 @@ patch(NavBar.prototype, {
         this.action.doAction({
             type: 'ir.actions.client',
             tag: 'web_responsive',
-            name: 'Web Responsive',
             name: _t('Dashboard'),
             target: 'main'
         });
