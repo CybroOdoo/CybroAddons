@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "To Do List",
-    'version': '16.0.2.0.1',
+    'version': '16.0.2.0.2',
     'category': 'Tools',
     'summary': """
         Create Todo List Using Activities""",
