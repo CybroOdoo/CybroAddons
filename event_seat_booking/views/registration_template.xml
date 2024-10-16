@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- New Template - Custom Registration -->
+    <template id="custom_registration_template"
+              inherit_id="website_event.registration_template"
+              name="Custom Registration">
+        <xpath expr="//form[@id='registration_form']" position="attributes">
+            <attribute name="t-if">not event.is_seat_booking</attribute>
+        </xpath>
+        <xpath expr="//form[@id='registration_form']" position="after">
+            <div t-if="event.is_seat_booking">
+                <div t-if="event.event_registrations_open">
+                    <t t-call="event_seat_booking.seat_booking_button_template"/>
+                </div>
+
+            </div>
+        </xpath>
+    </template>
+<!--    Button Template for Seat Booking-->
+    <template id="seat_booking_button_template" name="Seat Booking Button">
+        <form id="seat_booking_form"
+              class="mb-5 bg-white rounded shadow-sm d-flex align-items-center">
+            <div class="d-grid col-lg-4 pt-3 pt-lg-0 ps-2 ps-lg-0">
+                <a t-attf-href="/event/#{event.id}/SeatsBooking"
+                   class="btn btn-primary o_wait_lazy_js">Seat Booking
+                </a>
+            </div>
+        </form>
+    </template>
+<!--    New Registration Attendee Template-->
+    <template id="registration_attendee_details_booking"
+              inherit_id="website_event.registration_attendee_details"
+              name="Attendess Registration">
+        <xpath expr="//form[@id='attendee_registration']/div[@class='modal-content']"
+               position="replace">
+            <t t-if="event.is_seat_booking">
+                <div class="modal-content">
+                    <div class="modal-header align-items-center">
+                        <h4 class="modal-title">Attendees</h4>
+                        <button type="button" class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <t t-set="counter_type" t-value="1"/>
+                    <t t-set="counter" t-value="0"/>
+                    <t t-foreach="tickets" t-as="ticket"
+                       t-if="availability_check">
+                        <t t-foreach="range(1, ticket['quantity'] + 1)"
+                           t-as="att_counter" name="attendee_loop">
+                            <t t-if="counter is None">
+                                <t t-set="counter" t-value="0"/>
+                            </t>
+                            <t t-set="counter" t-value="counter + 1"/>
+                            <div class="modal-body border-bottom">
+                                <div class="row mb-2">
+                                    <div class="col-lg">
+                                        <h5 class="mt-1 pb-2 border-bottom">
+                                            <t t-if="ticket['seat_details'] and ticket['seat_details'][att_counter-1]">
+                                                Seat No #R
+                                                <t t-out="ticket['seat_details'][att_counter-1]['row_no']"/>
+                                                S
+                                                <t t-out="ticket['seat_details'][att_counter-1]['column_no']"/>
+                                            </t>
+                                            -
+                                            <span t-out="ticket['name']"/>
+                                        </h5>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg my-2">
+                                        <label>Name *</label>
+                                        <input class="form-control" type="text"
+                                               t-attf-name="#{counter}-name"
+                                               required="This field is required"
+                                               t-att-value="default_first_attendee.get('name', '') if counter == 1 else ''"/>
+                                    </div>
+                                    <div class="col-lg my-2">
+                                        <label>Email *</label>
+                                        <input class="form-control"
+                                               type="email"
+                                               t-attf-name="#{counter}-email"
+                                               required="This field is required"
+                                               t-att-value="default_first_attendee.get('email', '') if counter == 1 else ''"/>
+                                    </div>
+                                    <div class="col-lg my-2">
+                                        <label>Phone
+                                            <small>(Optional)</small>
+                                        </label>
+                                        <input class="form-control" type="tel"
+                                               t-attf-name="#{counter}-phone"
+                                               t-att-value="default_first_attendee.get('phone', '') if counter == 1 else ''"/>
+                                    </div>
+                                    <input class="d-none" type="text"
+                                           t-attf-name="#{counter}-event_ticket_id"
+                                           t-attf-value="#{ticket['id']}"/>
+                                    <t t-if="ticket['seat_details'] and ticket['seat_details'][att_counter-1]">
+                                        <input type="hidden"
+                                               t-attf-name="#{counter}-unique_column_id"
+                                               t-attf-value="#{ticket['seat_details'][att_counter-1]['unique_id']}"/>
+                                        <input type="hidden"
+                                               t-attf-name="#{counter}-row_number"
+                                               t-attf-value="#{ticket['seat_details'][att_counter-1]['row_no']}"/>
+                                        <input type="hidden"
+                                               t-attf-name="#{counter}-column_number"
+                                               t-attf-value="#{ticket['seat_details'][att_counter-1]['column_no']}"/>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                        <t t-set="counter_type" t-value="counter_type + 1"/>
+                    </t>
+                    <t t-if="not availability_check">
+                        <div class="modal-body border-bottom">
+                            <strong>You ordered more tickets than available
+                                seats
+                            </strong>
+                        </div>
+                    </t>
+                    <div class="modal-footer border-0 justify-content-between">
+                        <button type="button"
+                                class="btn btn-secondary js_goto_event"
+                                data-bs-dismiss="modal">Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary"
+                                t-if="availability_check">Continue
+                        </button>
+                    </div>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="modal-content">
+                    <div class="modal-header align-items-center">
+                        <h4 class="modal-title">Attendees</h4>
+                        <button type="button" class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <t t-set="counter_type" t-value="1"/>
+                    <t t-set="counter" t-value="0"/>
+                    <t t-foreach="tickets" t-as="ticket"
+                       t-if="availability_check">
+                        <t t-foreach="range(1, ticket['quantity'] + 1)"
+                           t-as="att_counter" name="attendee_loop">
+                            <t t-set="counter" t-value="counter + 1"/>
+                            <div class="modal-body border-bottom">
+                                <h5 class="mt-1 pb-2 border-bottom">Ticket #
+                                    <span t-out="counter"/>
+                                    <small class="text-muted">-
+                                        <span t-out="ticket['name']"/>
+                                    </small>
+                                </h5>
+                                <div class="row">
+                                    <div class="col-lg my-2">
+                                        <label>Name *</label>
+                                        <input class="form-control" type="text"
+                                               t-attf-name="#{counter}-name"
+                                               required="This field is required"
+                                               t-att-value="default_first_attendee.get('name', '') if counter == 1 else ''"/>
+                                    </div>
+                                    <div class="col-lg my-2">
+                                        <label>Email *</label>
+                                        <input class="form-control"
+                                               type="email"
+                                               t-attf-name="#{counter}-email"
+                                               required="This field is required"
+                                               t-att-value="default_first_attendee.get('email', '') if counter == 1 else ''"/>
+                                    </div>
+                                    <div class="col-lg my-2">
+                                        <label>Phone
+                                            <small>(Optional)</small>
+                                        </label>
+                                        <input class="form-control" type="tel"
+                                               t-attf-name="#{counter}-phone"
+                                               t-att-value="default_first_attendee.get('phone', '') if counter == 1 else ''"/>
+                                    </div>
+                                    <input class="d-none" type="text"
+                                           t-attf-name="#{counter}-event_ticket_id"
+                                           t-attf-value="#{ticket['id']}"/>
+                                </div>
+                            </div>
+                        </t>
+                        <t t-set="counter_type" t-value="counter_type + 1"/>
+                    </t>
+                    <t t-if="not availability_check">
+                        <div class="modal-body border-bottom">
+                            <strong>You ordered more tickets than available
+                                seats
+                            </strong>
+                        </div>
+                    </t>
+                    <div class="modal-footer border-0 justify-content-between">
+                        <button type="button"
+                                class="btn btn-secondary js_goto_event"
+                                data-bs-dismiss="modal">Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary"
+                                t-if="availability_check">Continue
+                        </button>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>
