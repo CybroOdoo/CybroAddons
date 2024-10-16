@@ -38,7 +38,7 @@
         'views/res_config_settings_views.xml',
         'wizard/product_multiple_tag_views.xml',
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': "LGPL-3",
     'installable': True,
     'auto_install': False,
