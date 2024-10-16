@@ -2,6 +2,7 @@ odoo.define('pos_invoice_automate.PaymentScreen', function(require) {
     'use strict';
     const PaymentScreen = require('point_of_sale.PaymentScreen');
     const Registries = require('point_of_sale.Registries');
+    const { isConnectionError } = require('point_of_sale.utils');
     var rpc = require('web.rpc');
     const {
         useErrorHandlers,
@@ -70,7 +71,7 @@ odoo.define('pos_invoice_automate.PaymentScreen', function(require) {
                     // 1. Save order to server.
                     syncOrderResult = await this.env.pos.push_single_order(this.currentOrder);
                     // 2. Invoice.
-                    if (this.shouldDownloadInvoice() && this.currentOrder.is_to_invoice()) {
+                    if (this.currentOrder.is_to_invoice()) {
                         if (syncOrderResult.length) {
                             await this.env.legacyActionManager.do_action('account.account_invoices', {
                                 additional_context: {
