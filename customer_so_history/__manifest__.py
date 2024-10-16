@@ -35,7 +35,7 @@
             'security/ir.model.access.csv',
             'views/sale_order_inherit.xml'
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'installable': True,
     'application': True,
     'license': 'LGPL-3',
