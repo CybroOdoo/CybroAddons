@@ -20,7 +20,7 @@
 #
 #############################################################################
 {
-    'name': 'Odoo 18 Full Accounting Kit for Community',
+    'name': 'Odoo 18 Full Accounting Kit',
     'version': '18.0.1.0.0',
     'category': 'Accounting',
     'summary': """Odoo 18 Accounting, Odoo 18 Accounting Reports, Odoo18 Accounting, Odoo Accounting, Odoo18 Financial Reports, Odoo18 Asset, Odoo18 Profit and Loss, PDC, Followups, Odoo18, Accounting, Odoo Apps, Reports""",
@@ -100,7 +100,7 @@
         ]
     },
     'license': 'LGPL-3',
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,
     'application': True,
