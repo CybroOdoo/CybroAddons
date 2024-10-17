@@ -2,8 +2,8 @@
     :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 
-Odoo 18 Full Accounting Kit
-===========================
+Odoo 18 Full Accounting Kit for Community
+=========================================
 Full accounting kit for Odoo 18 community editions
 
 Configuration
