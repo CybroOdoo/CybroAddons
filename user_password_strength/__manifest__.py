@@ -36,7 +36,7 @@
         'views/signup_page_view.xml',
         'views/restrict_password.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'assets': {
             'web.assets_frontend': ['user_password_strength/static/src/js/signup_user.js', ],
     },
