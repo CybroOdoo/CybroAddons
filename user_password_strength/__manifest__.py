@@ -22,7 +22,7 @@
 ###########################################################################
 
 {
-    'name': "User Password Strength",
+    'name': "User Password Strength - Restrict Weak Password",
     'version': "16.0.1.0.0",
     'summary': """ User password strength - restrict weak password""",
     'description': """  User password strength - restrict weak password""",
