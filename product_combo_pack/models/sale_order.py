@@ -27,11 +27,13 @@ class SaleOrder(models.Model):
     """Model for extending the sale order to include a selection of packs."""
     _inherit = 'sale.order'
 
-    product_pack_ids = fields.Many2many('product.product',
-                                        string='Select Pack',
-                                        domain=[('is_pack', '=', True)],
-                                        help='The selected pack product for'
-                                             ' the sale order.')
+    product_pack_ids = fields.Many2many(
+        'product.product',
+        'sale_order_product_pack_rel',
+        string='Select Pack',
+        domain=[('is_pack', '=', True)],
+        help='The selected pack product for the sale order.'
+    )
 
     @api.onchange('product_pack_ids')
     def onchange_product_pack_ids(self):
