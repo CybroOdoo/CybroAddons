@@ -38,7 +38,7 @@ class AccountMove(models.Model):
         """Compute the total amount in company currency for each record."""
         for amount in self:
             amount.amount_total_company_signed = self.env[
-                'res.currency']._compute(
+                'res.currency']._convert(
                 amount.currency_id, amount.company_id.currency_id,
                 amount.amount_total)
 
