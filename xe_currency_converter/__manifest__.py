@@ -6,7 +6,7 @@
     'category': 'Accounting',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
+    'website': "https://www.cybrosys.com/odoo/industries/accounting-and-finance/",
     'maintainer': 'Cybrosys Techno Solutions',
     'depends': ['base', 'account'],
     'data': ['views/config_settings_views.xml',

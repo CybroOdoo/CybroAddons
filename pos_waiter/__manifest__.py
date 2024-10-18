@@ -28,7 +28,7 @@
    					 provides report for analysing the performance of the waiter""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
+    'website': 'https://www.cybrosys.com/odoo/industries/hotel-management-erp/',
     'category': 'Point of Sale',
     'depends': ['base', 'point_of_sale', 'hr'],
     'license': 'AGPL-3',
