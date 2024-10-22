@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Product Pack',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Sales',
     'summary': 'Manage Products as Pack',
     'description': """Selling products in a pack is a great way to raise average 

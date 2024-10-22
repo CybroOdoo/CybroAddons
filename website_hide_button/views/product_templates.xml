@@ -2,11 +2,11 @@
 <odoo>
     <!-- Hide Add To Cart Button and quantity selector for public users -->
     <template id="product_hide" inherit_id="website_sale.product">
-        <xpath expr="//a[@id='add_to_cart']" position="before">
+        <xpath expr="//div[@id='o_product_terms_and_share']" position="before">
             <div class="alert alert-info"
-                 t-if="request.env.user._is_public() and request.env['ir.config_parameter'].sudo().get_param('website_hide_button.hide_cart')">
+                 t-if="login_user">
                 <i class="fa fa-info-circle"/>
-                <span>Please Log in to see price and buy options.</span>
+                <span>Please Log in to see  buy options.</span>
             </div>
         </xpath>
         <xpath expr="//a[@id='add_to_cart']" position="attributes">
@@ -20,7 +20,7 @@
     <!--  Hide Add To Cart button for guest users  -->
     <template id="product" inherit_id="website_sale.product">
         <xpath expr="//div[@id='o_wsale_cta_wrapper']" position="attributes">
-            <attribute name="t-if">login_user == True</attribute>
+            <attribute name="t-if">login_user == False</attribute>
         </xpath>
     </template>
     <!--    Hide Product price in price_widget    -->
@@ -28,7 +28,7 @@
         <xpath expr="//div[@itemprop='offers']" position="attributes">
             <attribute name="t-if">not request.env.user._is_public() or
                 (request.env.user._is_public() and not
-                request.env['ir.config_parameter'].sudo().get_param('website_hide_button.hide_pricet'))
+                request.env['ir.config_parameter'].sudo().get_param('website_hide_button.hide_price'))
             </attribute>
         </xpath>
     </template>

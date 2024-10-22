@@ -43,17 +43,17 @@ patch(Orderline.prototype, {
     return this.product.get_unit();
     },
     onSelectionChangedUom(ev) {
-            var splitTargetValue = ev.target.value.split(',')
-            var price = splitTargetValue[0]
-            var uomId = splitTargetValue[1]
-            var uomName = splitTargetValue[2]
-            // Set the selected unit of measure on the order line
-            const currentOrder = this.env.services.pos.get_order();
-            currentOrder.selected_orderline.set_uom({0:uomId,1:uomName})
-          // Set the price_manually_set flag to indicate that the price was manually set
-            currentOrder.selected_orderline.price_type = "manual";
-           // Set the unit price of selected UoM on the order line
-            currentOrder.selected_orderline.set_unit_price(price);
+            var uom_id = ev.target.value
+            var selected_uom = this.env.services.pos.units_by_id[uom_id]
+            var selected_product = this.props.slots['product-name'].__ctx.line
+            selected_product.set_uom({0:selected_uom.id,1:selected_uom.name})
+            selected_product.price_type = "manual";
+            if (selected_uom.uom_type == "smaller"){
+                selected_product.set_unit_price(selected_product.product.lst_price * (1 / selected_uom.ratio));
+            } else {
+                selected_product.set_unit_price(selected_product.product.lst_price * selected_uom.ratio);
+            }
+
     },
      getUom(self) {
         const currentOrder = self.env.services.pos.get_order();
@@ -74,6 +74,7 @@ patch(Orderline.prototype, {
             getUom: this.getUom,
             resetUom: this.resetUom,
             onSelectionChangedUom: this.onSelectionChangedUom,
+            multiUom: [...this.product.pos_multi_uom_ids],
         };
     },
 });

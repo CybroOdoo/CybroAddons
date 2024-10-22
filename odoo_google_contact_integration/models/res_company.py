@@ -59,7 +59,7 @@ class ResCompany(models.Model):
     def _compute_contact_redirect_uri(self):
         """Compute the redirect URI for onedrive and Google Drive"""
         for rec in self:
-            base_url = request.env['ir.config_parameter'].get_param(
+            base_url = self.env['ir.config_parameter'].sudo().get_param(
                 'web.base.url')
             rec.contact_redirect_uri = base_url + '/google_contact_authentication'
 

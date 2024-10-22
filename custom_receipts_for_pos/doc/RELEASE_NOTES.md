@@ -35,3 +35,9 @@
 #### Version 17.0.2.0.5
 ##### BUGFIX
 - Fixed the receipt printing order issue.
+
+#### 07.10.2024
+#### Version 17.0.3.0.5
+##### BUGFIX
+- Fixed the receipt printing blank screen.
+

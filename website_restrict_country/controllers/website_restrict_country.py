@@ -24,18 +24,14 @@ from odoo.http import request
 
 
 class WebsiteCountry(http.Controller):
-    """
-        This controller used to pass the selected country to the corresponding
-        template
-    """
-    @http.route('/website/countries', type='json', auth="user", website=True)
+    """ This controller used to pass the selected country to the corresponding
+    template. """
+    @http.route('/website/countries', type='json', auth="public", website=True)
     def website_countries(self, country_id):
-        """
-            This function used to search the country id, and it renders the
-            details of the selected country in to the template.
-        """
-        country_id = request.env['res.country'].browse(int(country_id))
-        website_id = request.env['website'].browse(request.website.id)
+        """ This function used to search the country id, and it renders the
+        details of the selected country in to the template. """
+        country_id = request.env['res.country'].sudo().browse(int(country_id))
+        website_id = request.env['website'].sudo().browse(request.website.id)
         website_id.default_country_id = country_id.id
         response = http.Response(
             template='website_restrict_country.country_selection',

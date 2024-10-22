@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-from odoo import fields, models, api
+from odoo import fields, models, _
 
 
 class ProjectTaskTemplate(models.Model):
@@ -28,7 +28,7 @@ class ProjectTaskTemplate(models.Model):
     _description = 'Project Task Template'
 
     name = fields.Char(string='Template Name', translate=True,
-                       help='Name for the task template.', copy=False)
+                       help='Name for the task template.')
     task_ids = fields.One2many(
         'project.sub.task', 'project_template_id',
         string='Tasks',
@@ -37,6 +37,12 @@ class ProjectTaskTemplate(models.Model):
         'project.stage', 'project_template_id',
         string='Stages',
         help='List of the stages associated with this template.', copy=True)
+
+    def copy(self, default=None):
+        """Duplicating the Model"""
+        default = dict(default or {})
+        default.setdefault('name', _("%(old_name)s (copy)", old_name=self.name))
+        return super().copy(default=default)
 
 
 class ProjectStage(models.Model):

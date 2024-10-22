@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': "Web Responsive",
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Extra Tools',
     'summary': 'This module helps to create enterprise like app drawer,'
                'Responsiveness and sticky headers included.',

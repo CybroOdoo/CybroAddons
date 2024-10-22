@@ -19,7 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import api, fields, models
+from odoo.tools import decode_message_header
 
 
 class ResConfigSettings(models.TransientModel):

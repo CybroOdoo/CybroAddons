@@ -11,3 +11,7 @@
 - Bug Fix-Added an option in the general settings of the Website module to enable 'Hide Cart for Guests' and 'Hide Product Prices from Guests'.
 
 
+#### 08.10.2024
+#### Version 17.0.2.0.1
+##### UPDT
+- Bug Fix - Hide the visibility add to cart and price

@@ -26,4 +26,3 @@ from . import stock_picking
 from . import pos_config
 from . import report_sale_details
 from . import res_config_settings
-from . import pos_multi_uom

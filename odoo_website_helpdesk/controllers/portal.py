@@ -19,8 +19,12 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+from werkzeug.utils import redirect
+
 from odoo import http
 from odoo.addons.portal.controllers import portal
+
+from odoo.exceptions import AccessError
 from odoo.http import request
 
 
@@ -63,8 +67,7 @@ class TicketPortal(portal.CustomerPortal):
             'tickets': tickets,
             'page_name': 'ticket',
         }
-        return request.render("odoo_website_helpdesk.portal_my_tickets",
-                              values)
+        return request.render("odoo_website_helpdesk.portal_my_tickets", values)
 
     @http.route(['/my/tickets/<int:id>'], type='http', auth="public",
                 website=True)
@@ -78,6 +81,8 @@ class TicketPortal(portal.CustomerPortal):
         """
         ticket_id = kwargs.get("id")
         details = request.env['ticket.helpdesk'].sudo().browse(ticket_id)
+        if not details or details.customer_id != request.env.user.partner_id:
+            return redirect('/my/tickets')
         data = {
             'page_name': 'ticket',
             'ticket': True,

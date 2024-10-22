@@ -20,3 +20,17 @@
 #
 #############################################################################
 from . import model
+
+def uninstall_hook(env):
+
+    env['ir.actions.report'].search([
+        ('report_name', '=','base_advanced_report_templates.report_saleorder_custom')]).write({'report_name': 'sale.report_saleorder',
+                                                                                               'name': 'PDF Quote'})
+    env['ir.actions.report'].search([
+        ('report_name', '=','base_advanced_report_templates.report_deliveryslip_custom')]).write({'report_name':'stock.report_deliveryslip'})
+    env['ir.actions.report'].search([
+        ('report_name', '=','base_advanced_report_templates.report_invoice_custom')]).write({'report_name':'account.report_invoice_with_payments',})
+    env['ir.actions.report'].search([
+        ('report_name', '=','base_advanced_report_templates.report_purchase_custom'),('name','=','Purchase Order')]).write({'report_name': 'purchase.report_purchaseorder'})
+    env['ir.actions.report'].search([('report_name', '=','base_advanced_report_templates.report_purchase_custom'),
+        ('name','=','Request for Quotation')]).write({'report_name':'purchase.report_purchasequotation'})

@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'POS Product Multi Barcode',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.2',
     'category': 'Point of Sale',
     'summary': """Allows to create multiple barcode for a single product""",
     'description': """This module allows you to set multiple barcodes for a 
