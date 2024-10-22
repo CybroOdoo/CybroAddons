@@ -79,12 +79,20 @@ class AccountBankStatementLine(models.Model):
         """Ensure the current recordset holds a single record and mark it as reconciled."""
         self.ensure_one()
         self.is_reconciled = True
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
 
     def button_reset(self):
         """Reset the current bank statement line if it is in a 'reconciled' state."""
         self.ensure_one()
         if self.bank_state == 'reconciled':
             self.action_undo_reconciliation()
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'reload',
+            }
 
     def button_to_check(self, async_action=True):
         """Ensure the current recordset holds a single record, validate the bank
@@ -93,11 +101,19 @@ class AccountBankStatementLine(models.Model):
         if self.bank_state == 'valid':
             self.button_validation(async_action=async_action)
             self.move_id.to_check = True
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'reload',
+            }
 
     def button_set_as_checked(self):
         """Mark the associated move as 'not to check' by setting 'to_check' to False."""
         self.ensure_one()
         self.move_id.to_check = False
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
 
     @api.model
     def get_statement_line(self, record_id):

@@ -55,7 +55,56 @@ class AccountJournal(models.Model):
     def action_open_reconcile(self):
         """Open the reconciliation view based on the type of the account journal."""
         self.ensure_one()
-
+        if self.type in ('bank', 'cash'):
+            views = [
+                (self.env.ref(
+                    'base_accounting_kit.account_bank_statement_line_view_kanban').id,
+                 'kanban'),
+                (self.env.ref(
+                    'base_accounting_kit.account_bank_statement_line_view_tree').id,
+                 'list'),  # Include tree view
+            ]
+            context = {
+                'default_journal_id': self.id,
+                'search_default_journal_id': self.id,
+            }
+            kanban_first = True
+            name = None
+            extra_domain = None
+            return {
+                'name': name or _("Bank Reconciliation"),
+                'type': 'ir.actions.act_window',
+                'res_model': 'account.bank.statement.line',
+                'context': context,
+                'search_view_id': [
+                    self.env.ref(
+                        'base_accounting_kit.account_bank_statement_line_view_search').id,
+                    'search'],
+                'view_mode': 'kanban,list' if kanban_first else 'list,kanban',
+                'views': views if kanban_first else views[::-1],
+                'domain': [('state', '!=', 'cancel')] + (extra_domain or []),
+                'help': _("""
+                            <p class="o_view_nocontent_smiling_face">
+                                Nothing to do here!
+                            </p>
+                            <p>
+                                No transactions matching your filters were found.
+                            </p>
+                        """),
+            }
+        else:
+            # Open reconciliation view for customers/suppliers
+            action_context = {'show_mode_selector': False,
+                              'company_ids': self.mapped('company_id').ids}
+            if self.type == 'sale':
+                action_context.update({'mode': 'customers'})
+            elif self.type == 'purchase':
+                action_context.update({'mode': 'suppliers'})
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'manual_reconciliation_view',
+                'context': action_context,
+            }
 
     def create_cash_statement(self):
         """for redirecting in to bank statement lines"""

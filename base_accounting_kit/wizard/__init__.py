@@ -25,6 +25,7 @@ from . import account_balance_report
 from . import account_bank_book_report
 from . import account_cash_book_report
 from . import account_day_book_report
+from . import account_lock_date
 from . import account_print_journal
 from . import account_report_general_ledger
 from . import account_report_partner_ledger
