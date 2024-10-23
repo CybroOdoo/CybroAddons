@@ -1,27 +1,26 @@
 /** @odoo-module **/
-    /*Extending the public widget of the reset form for checking the user
-    password strength conditions on password input function of the password field in
-    the reset form,Based on the conditions from configuration settings.*/
+     /*Extending the public widget of the signup form for checking the user
+     password strength conditions on input password function of the password field in
+     the sign up form,Based on the conditions from configuration settings*/
 import { jsonrpc } from "@web/core/network/rpc_service";
 import publicWidget from "@web/legacy/js/public/public_widget";
 
-publicWidget.registry.SignUpFormInputPasswordChange = publicWidget.Widget.extend({
-    selector: '.oe_signup_form',
+publicWidget.registry.ResetFormInputPasswordChange = publicWidget.Widget.extend({
+    selector: '.oe_website_login_container',
     events: {
-        'input input[type="password"]': '_onPasswordInput', // Listening for input event on password field
+        'input input[type="password"]': '_onPasswordInput', // Using input event instead of keypress
     },
-
     start() {
         this._super.apply(this, arguments);
     },
 
     _onPasswordInput: function (ev) {
-        var passwordInput = ev.currentTarget;  // Get the password input field
-        var current_pwd = passwordInput.value; // Get the current password value
+        // Get the password field value
+        var password = ev.currentTarget.value;
 
         // Reset the progress bar if the password field is empty
-        if (current_pwd.length === 0) {
-            var progressBar = document.getElementById("progress");
+        var progressBar = document.getElementById("progress");
+        if (password.length === 0) {
             if (progressBar) {
                 progressBar.value = "0";
                 progressBar.style.backgroundColor = "#FF0000"; // Reset to red
@@ -40,9 +39,9 @@ publicWidget.registry.SignUpFormInputPasswordChange = publicWidget.Widget.extend
 
             // Evaluate password strength based on specific conditions
             var prog = [/[$@$!%*#?&]/, /[A-Z]/, /[0-9]/, /[a-z]/]
-                .reduce((memo, test) => memo + test.test(current_pwd), 0);
+                .reduce((memo, test) => memo + test.test(password), 0);
 
-            if (prog > 2 && current_pwd.length > 7) {
+            if (prog > 2 && password.length > 7) {
                 prog++;
             }
 
@@ -125,7 +124,6 @@ publicWidget.registry.SignUpFormInputPasswordChange = publicWidget.Widget.extend
             }
 
             // Update progress bar
-            var progressBar = document.getElementById("progress");
             if (progressBar) {
                 progressBar.value = progress;
                 progressBar.style.backgroundColor = currentColor;
