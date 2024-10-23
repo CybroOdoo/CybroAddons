@@ -354,7 +354,7 @@ class HubspotConnector(models.Model):
                                       f"Status code: {response.status_code}")
         # Setting api client connection via api
         api_client = HubSpot(access_token=self.access_key)
-        odoo_partners = self.env['res.partner'].search([])
+        odoo_partners = self.env['res.partner'].search([('active','=', True)])
         success_count = 0
         # Fetch HubSpot contact's ID as list
         hubspot_partners = [rec.properties['hs_object_id']
@@ -453,7 +453,7 @@ class HubspotConnector(models.Model):
                     'country_id': country_dict.get(
                         str(rec.properties['country']), None),
                     'image_1920': base64.b64decode(
-                        rec.properties['odoo_image_string']) if rec.properties[
+                        rec.properties.get('odoo_image_string')) if rec.properties[
                         'odoo_image_string'] else None,
                     'hs_object_id': rec.properties['hs_object_id'],
                     'sync_mode': 'import'
