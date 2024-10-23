@@ -1,15 +1,14 @@
 .. image:: https://img.shields.io/badge/license-LGPL--3-green.svg
-    :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
+    :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 
 Pos Face Recognition
-=======================
- This module helps you to login pos session by face recognition
+====================
+This module helps you to login pos session by face recognition
 
 Configuration
 =============
-Opencv [version:4.2.0]and face recognition need to be installed[
-https://linuxize.com/post/how-to-install-opencv-on-ubuntu-20-04/]
+* No additional configuration required
 
 Company
 -------
@@ -22,7 +21,8 @@ General Public License, Version 3 (LGPL v3).
 
 Credits
 -------
-Developer: (V16) Fathima Mazlin AM , Contact: odoo@cybrosys.com
+Developer: (V16) Fathima Mazlin AM
+Contact: odoo@cybrosys.com
 
 Contacts
 --------
