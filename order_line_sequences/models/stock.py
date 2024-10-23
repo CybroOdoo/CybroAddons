@@ -29,12 +29,11 @@ class StockMove(models.Model):
     _inherit = 'stock.move'
     sequence_number = fields.Integer(string='#',
                                      compute='_compute_sequence_number',
-                                     help='Line Numbers')
+                                     help='Line Numbers',default=False)
 
     @api.depends('picking_id')
     def _compute_sequence_number(self):
         """Function to compute line numbers"""
-        self.sequence_number = 1
         for picking in self.mapped('picking_id'):
             sequence_number = 1
             if picking.move_ids_without_package:
@@ -42,7 +41,7 @@ class StockMove(models.Model):
                     lines.sequence_number = sequence_number
                     sequence_number += 1
             else:
-                picking.sequence()
+                self.sequence_number = ''
 
 
 class StockPicking(models.Model):
