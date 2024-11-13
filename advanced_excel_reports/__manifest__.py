@@ -33,13 +33,7 @@
     'depends': ['sale_management', 'account', 'stock'],
     'data': [
         'data/ir_action_data.xml'
-    ],
-    'assets':
-        {
-            'web.assets_backend': [
-                'advanced_excel_reports/static/src/js/excel_report.js'
-            ],
-        },
+      
     'images': [
         'static/description/banner.jpg'],
     'license': 'LGPL-3',
