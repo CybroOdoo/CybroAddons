@@ -33,7 +33,7 @@
     "depends": ['base', 'web'],
     "data": [
         'security/ir.model.access.csv',
-        'views/res_users_views.xml',
+        'security/res_api_odoo_security.xml',
         'views/connection_api_views.xml'
     ],
     'images': ['static/description/banner.png'],
