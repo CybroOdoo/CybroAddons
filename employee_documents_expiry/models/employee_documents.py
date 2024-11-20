@@ -51,7 +51,7 @@ class HrEmployeeDocument(models.Model):
     def check_expr_date(self):
         for each in self:
             exp_date = each.expiry_date
-            if exp_date < date.today():
+            if exp_date and exp_date < date.today():
                 raise Warning('Your Document Is Already Expired.')
 
     name = fields.Char(string='Document Number', required=True, copy=False)
@@ -90,10 +90,10 @@ class HrEmployee(models.Model):
                            Click to Create for New Documents
                         </p>'''),
             'limit': 80,
-            'context': "{'default_employee_ref': '%s'}" % self.id
+            'context': {'default_employee_ref': self.id}
         }
 
-    document_count = fields.Integer(compute='_document_count', string='# Documents')
+    document_count = fields.Integer(compute='_document_count', string='# Documents', groups='hr.group_hr_user')
 
 
 class HrEmployeeAttachment(models.Model):
