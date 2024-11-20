@@ -38,7 +38,7 @@
     ],
     'external_dependencies':
         {
-        'python': ['mechanize', 'linkedin'],
+        'python': ['mechanize', 'linkedin', 'MechanicalSoup'],
         },
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
