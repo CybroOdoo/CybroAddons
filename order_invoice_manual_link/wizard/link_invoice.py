@@ -1,24 +1,3 @@
-# -*- coding: utf-8 -*-
-################################################################################
-#
-#    Cybrosys Technologies Pvt. Ltd.
-#
-#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Anfas Faisal K (odoo@cybrosys.info)
-#
-#    You can modify it under the terms of the GNU AFFERO
-#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
-#
-#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
-#    (AGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
-################################################################################
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
@@ -32,12 +11,26 @@ class LinkInvoice(models.TransientModel):
 
     invoice_ids = fields.Many2many(
         "account.move", string="Invoices",
-        help="Select the invoices you want to link to the sale order.")
-    sale_order_id = fields.Many2one('sale.order',
-                                    string="Default Sale Order",
-                                    readonly=True,
-                                    help="The default sale order to which the "
-                                         "selected invoices will be linked.")
+        help="Select the invoices you want to link to the sale order.",
+        domain=lambda self: self._get_available_invoices())
+    sale_order_id = fields.Many2one(
+        'sale.order', string="Default Sale Order",
+        readonly=True, help="The default sale order to which the "
+                            "selected invoices will be linked.")
+
+    def _get_available_invoices(self):
+        """
+        Dynamically filter the available invoices that are not linked
+        to any sale order.
+        """
+        return [('id', 'not in', self._get_linked_invoice_ids())]
+
+    @api.model
+    def _get_linked_invoice_ids(self):
+        """
+        Fetch all invoice IDs that are already linked to sale orders.
+        """
+        return self.env['sale.order.line'].mapped('invoice_lines').ids
 
     def action_add_invoices(self):
         """
@@ -73,3 +66,12 @@ class LinkInvoice(models.TransientModel):
                     raise ValidationError(_(
                         "Partner mismatch between Sale Order and Invoice. "
                         "Please remove it to Link Invoice"))
+
+
+class SaleOrder(models.Model):
+    _inherit = 'sale.order'
+
+    invoice_line_tab = fields.One2many(
+        'account.move.line', 'move_id',
+        string="Linked Invoices",
+        help="Shows invoices linked to this Sale Order.")

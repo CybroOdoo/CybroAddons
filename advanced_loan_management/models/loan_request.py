@@ -1,24 +1,3 @@
-# -*- coding: utf-8 -*-
-################################################################################
-#
-#    Cybrosys Technologies Pvt. Ltd.
-#
-#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Megha (odoo@cybrosys.com)
-#
-#    You can modify it under the terms of the GNU AFFERO
-#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
-#
-#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
-#    (AGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
-################################################################################
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from odoo import api, fields, models, _
@@ -240,12 +219,24 @@ selection=[('draft', 'Draft'), ('confirmed', 'Confirmed'),
         self.request = True
         for loan in self:
             loan.repayment_lines_ids.unlink()
-            date_start = datetime.strptime(str(loan.date),'%Y-%m-%d') + relativedelta(months=1)
+            date_start = datetime.strptime(str(loan.date), '%Y-%m-%d') + relativedelta(months=1)
             amount = loan.loan_amount / loan.tenure
             interest = loan.loan_amount * loan.interest_rate
             interest_amount = interest / loan.tenure
             total_amount = amount + interest_amount
-            partner = self.partner_id
+            partner = loan.partner_id
+
+            # Retrieve account IDs with error handling
+            try:
+                interest_account_id = self.env.ref('advanced_loan_management.loan_management_inrst_accounts').id
+            except ValueError:
+                raise UserError("Interest account configuration is missing. Please check the configuration.")
+
+            try:
+                repayment_account_id = self.env.ref('advanced_loan_management.demo_loan_accounts').id
+            except ValueError:
+                raise UserError("Repayment account configuration is missing. Please check the configuration.")
+
             for rand_num in range(1, loan.tenure + 1):
                 self.env['repayment.line'].create({
                     'name': f"{loan.name}/{rand_num}",
@@ -254,12 +245,10 @@ selection=[('draft', 'Draft'), ('confirmed', 'Confirmed'),
                     'amount': amount,
                     'interest_amount': interest_amount,
                     'total_amount': total_amount,
-                    'interest_account_id': self.env.ref('advanced_loan_management.'
-                                                        'loan_management_'
-                                                        'inrst_accounts').id,
-                    'repayment_account_id': self.env.ref('advanced_loan_management.'
-                                                         'demo_'
-                                                         'loan_accounts').id,
-                    'loan_id': loan.id})
+                    'interest_account_id': interest_account_id,
+                    'repayment_account_id': repayment_account_id,
+                    'loan_id': loan.id
+                })
                 date_start += relativedelta(months=1)
+
         return True
