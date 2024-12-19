@@ -6,9 +6,9 @@
             <field name="inherit_id" ref="base.view_users_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//notebook" position="inside">
-                    <page string="Hide Specific Menu"  attrs="{'invisible': [('is_admin','=', True)]}">
+                    <page string="Hide Specific Menu" attrs="{'invisible': [('is_admin','=', True)]}">
                         <tree>
-                            <field name="hide_menu_ids"/>
+                            <field name="hide_menu_ids" context="{'search_default_module':1, 'search_view_ref': 'hide_menu_user.edit_menu_access_search_custom', 'tree_view_ref': 'hide_menu_user.edit_menu_custom'}"/>
                         </tree>
                     </page>
                 </xpath>
@@ -29,6 +29,36 @@
                             <field name="restrict_user_ids"/>
                         </tree>
                     </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="edit_menu_access_search_custom" model="ir.ui.view">
+            <field name="name">ir.ui.menu.search</field>
+            <field name="model">ir.ui.menu</field>
+            <field name="arch" type="xml">
+                <search string="Menu">
+                    <field name="name" string="Menu"/>
+                    <field name="parent_id"/>
+                    <separator/>
+                    <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Module" name="module" domain="[]" context="{'group_by':'module_name'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="edit_menu_custom" model="ir.ui.view">
+            <field name="model">ir.ui.menu</field>
+            <field name="inherit_id" ref="base.edit_menu"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree" position="replace">
+                    <tree string="Menu">
+                        <field name="module_name" invisible="1"/>
+                        <field name="sequence" widget='handle'/>
+                        <field icon="icon" name="complete_name" string="Menu"/>
+                    </tree>
                 </xpath>
             </field>
         </record>

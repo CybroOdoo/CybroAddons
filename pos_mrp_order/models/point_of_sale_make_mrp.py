@@ -98,6 +98,11 @@ class MrpProduction(models.Model):
                                               'move_finished_ids': [
                                                   (0, 0, finished_vals)]
                                               })
+                            # This piece of code gets the order done immediately
+                            immediate_production = self.env['mrp.immediate.production'].sudo().create(
+                                {'mo_ids': [(6, 0, mrp_order.ids)], 'immediate_production_line_ids': [
+                                    (0, 0, {'production_id': mrp_order.id, 'to_immediate': True})]}).process()
+                            mrp_order.button_mark_done()
         return True
 
 
