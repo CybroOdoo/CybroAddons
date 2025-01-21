@@ -30,7 +30,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['sale', 'delivery', 'website_sale'],
+    'depends': ['sale', 'delivery', 'website_sale', 'website_sale_delivery'],
     'data': [
         'views/delivery_carrier_views.xml',
         'views/sale_order_views.xml',
