@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Odoo Dynamic Dashboard",
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Productivity',
     'summary': """Odoo Dynamic Dashboard, Dynamic Dashboard, Odoo18, Odoo18 Dashboards, Dashboard with AI, AI Dashboard, Odoo Dashboard,Graph View,""",
     'description': """Create Configurable Odoo Dynamic Dashboard to get the 
@@ -50,7 +50,7 @@
             'odoo_dynamic_dashboard/static/src/js/**/*.js',
             'odoo_dynamic_dashboard/static/src/xml/**/*.xml',
             'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css',
-            'odoo_dynamic_dashboard/static/lib/js/interactjs.js',
+            'odoo_dynamic_dashboard/static/src/js/interact_min.js'
         ],
     },
     'images': ['static/description/banner.gif'],

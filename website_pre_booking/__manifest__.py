@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Website Pre Booking',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Website',
     'summary': 'Allows pre booking option for website',
     'description': """This module will help you to managing prebooking of

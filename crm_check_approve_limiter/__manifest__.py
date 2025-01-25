@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'CheckList & Approval Process in CRM',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.1.0',
     'category': 'CRM',
     'summary': 'Manage CRM based on CheckList and Team/Stage and'
                'Approval Process to Make Sure Everything Completed In '

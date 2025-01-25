@@ -65,6 +65,20 @@ class SaleOrder(models.Model):
     amount_total = fields.Monetary(string='Total', store=True, readonly=True,
                                    compute='_amount_all',
                                    help="Total amount provided.")
+    margin_test = fields.Float(string="Margin", compute='_compute_margin_test',)
+
+    @api.depends('amount_untaxed','amount_tax','amount_total')
+    def _compute_margin_test(self):
+        # Compute logic for margin if sale_margin is installed
+        if self.env['ir.module.module'].sudo().search(
+                [('name', '=', 'sale_margin'), ('state', '=', 'installed')]):
+            # If sale_margin is installed, calculate margin
+            for record in self:
+                print(record.margin, 'll')
+                record.margin_test = record.margin
+        else:
+            for record in self:
+                record.margin_test = False
 
     def action_confirm(self):
         """This function super action_confirm method"""

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <!--    settings menu for attachment image-->
+    <t name="AttachmentImageTools"
+       t-inherit="mail.AttachmentList"
+       t-inherit-mode="extension"
+       owl="1">
+
+        <xpath expr="//div[@t-foreach='images']" position="replace">
+                            <div t-foreach="images" t-as="attachment" t-key="attachment.id"
+                                 t-att-aria-label="attachment.filename"
+                                 class="o-mail-AttachmentImage d-flex position-relative flex-shrink-0 mw-100 mb-1 me-1 rounded"
+                                 t-att-title="attachment.name"
+                                 t-att-class="{ 'o-isUploading': attachment.uploading }"
+                                 tabindex="0"
+                                 t-att-data-mimetype="attachment.mimetype"
+                                 t-on-click="() => this.fileViewer.open(attachment, props.attachments)"
+                                 role="menuitem"
+                            >
+                    <img
+                            class="img img-fluid my-0 mx-auto o-viewable rounded"
+                            t-att-class="{ 'opacity-25': attachment.uploading }"
+                            t-att-src="getImageUrl(attachment)"
+                            t-att-alt="attachment.name"
+                            t-attf-style="max-width: min(100%, {{ imagesWidth }}px); max-height: {{ props.imagesHeight }}px;"
+                            t-on-load="onImageLoaded"
+                    />
+                                <div t-if="attachment.uploading"
+                                     class="position-absolute top-0 bottom-0 start-0 end-0 d-flex align-items-center justify-content-center"
+                                     title="Uploading">
+                        <i class="fa fa-spin fa-spinner"/>
+                    </div>
+                                <!--        TUI image editor for edit attachment images.-->
+                                <center>
+                <div id="imageEditor" class="modal"
+                     style=" width:35%; height:58%;">
+                <div class="modal-content">
+                <header>
+                <div class="tui-image-editor-container"
+                     id="tui-image-editor-container">
+                </div>
+                </header>
+                </div>
+                </div>
+            </center>
+                                <div class="dropdown">
+                        <div class="btn btn-sm btn-dark rounded opacity-75 opacity-100-hover"
+                             title="settings"> <i class="fa fa-cog"/>
+                        </div>
+                                    <div class="context_menu_dropdown">
+                            <a class="dropdown-item context-menu-icon--fa fa fa-edit"
+                               t-on-click="(ev) => this.onClickEditImgRecord(ev, attachment)">Edit Record</a>
+                                        <a class="dropdown-item context-menu-icon--fa fa fa-magic"
+                                           t-on-click="(ev) => this.onClickImageEdit(ev, attachment)">Image Editor</a>
+                                        <a class="dropdown-item context-menu-icon--fa fa fa-close"
+                                           t-on-click.stop="() => this.onClickUnlink(attachment)">Delete</a>
+                        </div>
+                    </div>
+                </div>
+
+                </xpath>
+
+        <xpath expr="//button[hasclass('o-mail-AttachmentCard-unlink')]"
+               position="before">
+                        <div class="dropdown" style="position:relative;">
+                          <button class="o_AttachmentCard_asideItem o_AttachmentCard_asideItemOptions
+                          btn top-0 justify-content-center align-items-center d-flex w-100 h-100 rounded-0"
+                                  t-attf-class="{{ env.inComposer ? 'o-inComposer position-absolute btn-primary transition-base' : 'bg-300' }}"
+                                  data-bs-toggle="collapse"
+                                  t-att-data-bs-target="'#settingsMenu' + attachment.id"
+                                  aria-expanded="true"
+                                  t-att-aria-controls="'settingsMenu' + attachment.id">
+                            <i class="fa fa-cog" role="img" aria-label="Options"/>
+                        </button>
+                            <div class="context_menu_dropdown dropdown-menu"
+                                 t-att-id="'settingsMenu' + attachment.id">
+                              <a class="dropdown-item context-menu-icon--fa fa fa-edit"
+                                 t-on-click="(ev) => this.onClickEditRecord(ev, attachment)"
+                                 t-att-id="attachment.id">Edit record</a>
+                                <t t-if="attachment.extension != 'zip'">
+                              <a class="dropdown-item context-menu-icon--fa fa fa-eye"
+                                 t-on-click="(ev) => this.onClickPreviewOffline(ev, attachment)"
+                                 t-att-name="attachment.name"
+                                 t-att-data-type="attachment.extension"
+                                 t-att-id="attachment.id">Preview Offline</a>
+                              </t>
+                                <a class="dropdown-item context-menu-icon--fa fa fa-download"
+                                   t-on-click="() => this.onClickDownload(attachment)">Download</a>
+                                <a class="dropdown-item context-menu-icon--fa fa fa-qrcode"
+                                   t-on-click="_onClickQrCode"
+                                   t-att-id="attachment.id">Qr Code</a>
+                          </div>
+                      </div>
+            <!--For preview xlsx,docx and pdf files-->
+            <center>
+                        <div id="xlsx_preview" class="modal" t-ref="preview_modal">
+                        <div class="modal-content" id="MyPreview_content">
+                            <span class="close" id="stop-preview-button"
+                                  t-on-click="stopPreviewButton">X</span>
+                            <h1 id="FileHead"/>
+                            <div class="XlsxTable" t-ref="xlsx_table">
+                            </div>
+                            <p class="MyDocs" t-ref="MyDocs"/>
+                        </div>
+                        </div>
+                    </center>
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js">
+                 </script>
+                </xpath>
+   </t>
+</templates>

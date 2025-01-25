@@ -96,15 +96,18 @@ class CrmLead(models.Model):
                             and item not in self.check_list_ids:
                         self.check_list_ids += item
         if 'check_list_ids' in vals_set.keys():
-            group_check = self.env.user. \
-                has_group('crm_check_approve_limiter.'
-                          'crm_check_approve_manager')
+            group_check = self.env.user.has_group('crm_check_approve_limiter.crm_check_approve_manager')
             user_groups = self.env.user.groups_id
-            new_ids = self.env['stage.check.list']. \
-                search([('id', 'in', vals_set['check_list_ids'][-1])])
-            check_item_id = (self.check_list_ids - new_ids)
-            check_item2 = (new_ids - self.check_list_ids)
-            for ch_lst in check_item2:
+            complete_operations = []
+            notcomplete_operations = []
+            for operation in vals_set['check_list_ids']:
+                if operation[0] == 4:  # Add operation
+                    complete_operations.append(operation[1])
+                elif operation[0] == 3:  # Remove operation
+                    notcomplete_operations.append(operation[1])
+            new_complete_ids = self.env['stage.check.list'].search([('id', 'in', complete_operations)])
+            new_notcomplete_ids = self.env['stage.check.list'].search([('id', 'in', notcomplete_operations)])
+            for ch_lst in new_complete_ids:
                 if (ch_lst.approve_groups_ids and not ch_lst.approve_groups_ids
                         .filtered(lambda f: f in user_groups) and
                         not group_check):
@@ -114,37 +117,37 @@ class CrmLead(models.Model):
                     raise ValidationError(f'Only the below specified group'
                                           f' members can complete this task'
                                           f' : {grp_string_t}')
-            for ch_lst in check_item_id:
+            for ch_lst in new_notcomplete_ids:
                 if (ch_lst.approve_groups_ids and not ch_lst.approve_groups_ids
-                        .filtered(
-                    lambda f: f in user_groups) and not group_check):
+                        .filtered(lambda f: f in user_groups) and
+                        not group_check):
                     grp_string_t = '\n'.join(
                         map(str, ch_lst.approve_groups_ids.
                             mapped('full_name')))
                     raise ValidationError(f'Only the below specified group'
-                                          f' members can undo this task'
+                                          f' members can complete this task'
                                           f' : {grp_string_t}')
-            if 'stage_id' not in vals_set.keys() and check_item_id:
-                for c_item in check_item_id:
+            if 'stage_id' not in vals_set.keys() and new_complete_ids:
+                for c_item in new_complete_ids:
                     vals = {
-                        'lead_id': self.id,
-                        'check_item_id': c_item.id,
-                        'list_action': 'not_complete',
-                        'change_date': datetime.now(),
-                        'user_id': self.env.user.id,
-                        'stage_id': self.stage_id.id
-                    }
+                                    'lead_id': self.id,
+                                    'check_item_id': c_item.id,
+                                    'list_action': 'complete',
+                                    'change_date': datetime.now(),
+                                    'user_id': self.env.user.id,
+                                    'stage_id': self.stage_id.id
+                                }
                     self.env['crm.lead.check.history'].sudo().create(vals)
-            elif 'stage_id' not in vals_set.keys() and check_item2:
-                for c_item in check_item2:
+            if 'stage_id' not in vals_set.keys() and new_notcomplete_ids:
+                for c_item in new_notcomplete_ids:
                     vals = {
-                        'lead_id': self.id,
-                        'check_item_id': c_item.id,
-                        'list_action': 'complete',
-                        'change_date': datetime.now(),
-                        'user_id': self.env.user.id,
-                        'stage_id': self.stage_id.id
-                    }
+                                    'lead_id': self.id,
+                                    'check_item_id': c_item.id,
+                                    'list_action': 'not_complete',
+                                    'change_date': datetime.now(),
+                                    'user_id': self.env.user.id,
+                                    'stage_id': self.stage_id.id
+                                }
                     self.env['crm.lead.check.history'].sudo().create(vals)
         res = super().write(vals_set)
         return res

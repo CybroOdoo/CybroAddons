@@ -35,6 +35,7 @@ class CrmLeadCheckHistory(models.Model):
     list_action = fields.Selection([('complete', 'Complete'),
                                     ('not_complete', 'Not Complete')],
                                    required=True, string="Action",
+                                   default='not_complete',
                                    help="Selection field representing "
                                         "the action for the check item.")
     user_id = fields.Many2one('res.users', string="User",

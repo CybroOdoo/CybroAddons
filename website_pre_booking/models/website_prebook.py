@@ -55,7 +55,7 @@ class WebsitePrebook(models.Model):
     def create(self, vals):
         """Supering create function for creating sequence"""
         if vals.get('reference', _('New')) == _('New'):
-            vals['reference'] = self.env['ir.sequence'].next_by_code('prebook.sequence') or _('New')
+            vals['reference'] = self.env['ir.sequence'].next_by_code('website.prebook') or _('New')
         return super(WebsitePrebook, self).create(vals)
 
     def action_confirm(self):

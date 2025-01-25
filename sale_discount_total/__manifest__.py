@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Sale Discount on Total Amount',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.1.0',
     'category': 'Sales Management',
     'summary': "Discount on Total in Sale and Invoice With Discount Limit "
                "and Approval",
@@ -36,7 +36,7 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'live_test_url': 'https://www.youtube.com/watch?v=CigmHe9iC4s&feature=youtu.be',
-    'depends': ['sale_management', 'account'],
+    'depends': ['sale_management', 'account',],
     'data': [
         'views/res_config_settings_views.xml',
         'views/sale_order_views.xml',

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+<!--    Template for customized the search bar-->
+    <template id="website_search_box_input" inherit_id="website.website_search_box" >
+        <xpath expr="//input[@name='search']" position="attributes">
+            <attribute name="t-att-data-search-type">search_type</attribute>
+            <attribute name="t-att-data-limit">limit or '5'</attribute>
+            <attribute name="t-att-data-display-image">display_image or 'true'</attribute>
+            <attribute name="t-att-data-display-description">display_description or 'true'</attribute>
+            <attribute name="t-att-data-display-extra-link">display_extra_link or 'true'</attribute>
+            <attribute name="t-att-data-display-detail">display_detail or 'true'</attribute>
+            <attribute name="t-att-data-order-by">order_by or 'name asc'</attribute>
+        </xpath>
+        <xpath expr="//div[@role='search']" position="attributes">
+            <attribute name="t-attf-class" remove="s_searchbar_input" separator=" "/>
+        </xpath>
+         <xpath expr="//input[@type='search']" position="attributes">
+            <attribute name="style">border:none !important;</attribute>
+        </xpath>
+        <xpath expr="//div[@role='search']" position="replace">
+            <form t-attf-class="o_searchbar_form o_wait_lazy_js s_searchbar_input #{_form_classes}" t-att-action="action" method="get" t-attf-data-snippet="s_searchbar_input"
+                  style="width:1000px;border-radius:30px; background-color:#FFFAF4; border:none !important;">
+                <t>$0</t>
+                <input name="order" type="hidden" class="o_search_order_by" t-att-value="order_by if order_by else 'name asc'"/>
+                <t t-out="0"/>
+            </form>
+        </xpath>
+    </template>
+    <!--    Template customized for header-->
+    <template id="template_header_theme_shopping"
+              inherit_id="website.template_header_default"
+              name="website_layout">
+        <xpath expr="//header" position="attributes">
+            <attribute name="t-attf-class" add="d-none"  separator=" " />
+        </xpath>
+        <xpath expr="//header" position="after">
+            <header>
+                <div class="st-topnavbar">
+                    <nav class="container navbar flex-nowrap">
+                        <!-- Logo -->
+                        <a class="navbar-brand d-none d-md-block st-logo"
+                           href="index.html">
+                            <t t-call="website.placeholder_header_brand">
+                                <t t-set="_link_class"
+                                   t-value="'mr-4'"/>
+                            </t>
+                        </a>
+                        <t t-call="theme_shopping.website_search_box_input">
+                            <t t-set="search_type" t-valuef="all"/>
+                            <t t-set="action" t-valuef="/website/search"/>
+                            <t t-set="limit" t-value="limit or '5'"/>
+                            <t t-set="display_image" t-valuef="true"/>
+                            <t t-set="display_description" t-valuef="true"/>
+                            <t t-set="display_extra_link" t-valuef="true"/>
+                            <t t-set="display_detail" t-valuef="true"/>
+                        </t>
+                        <div class="st-header_link-list  d-md-flex">
+                            <!--Wishlist-->
+                            <t t-set="_icon" t-value="True"/>
+                            <t t-set="_link_class"
+                               t-value="'o_navlink_background btn position-relative rounded-circle p-1 text-center text-reset'"/>
+                            <t t-set="_badge_class"
+                               t-value="'position-absolute top-0 end-0 mt-n1 me-n1 rounded-pill'"/>
+                            <t t-nocache="The wishlist may vary and depends on the user."
+                               t-nocache-_icon="_icon"
+                               t-nocache-_item_class="_item_class"
+                               t-nocache-_link_class="_link_class"
+                               t-nocache-_badge_class="_badge_class"
+                               t-nocache-_icon_wrap_class="_icon_wrap_class"
+                               t-nocache-_text_class="_text_class"
+                               t-nocache-_text="_text">
+                                <t t-set="wishcount"
+                                   t-value="len(request.env['product.wishlist'].current())"/>
+                                <t t-set="show_wishes" t-value="True"/>
+                                <li t-attf-class="o_wsale_my_wish #{not show_wishes and 'd-none'} #{_item_class}"
+                                >
+                                    <a href="/shop/wishlist"
+                                       t-attf-class="#{_link_class}"
+                                       style="color: #fff !important;">
+                                        <div t-attf-class="#{_icon_wrap_class}">
+                                            <i t-if="_icon"
+                                               class="fa fa-heart"/>
+                                            <sup t-esc="wishcount"
+                                                 t-attf-class="my_wish_quantity o_animate_blink badge text-bg-primary #{_badge_class}"
+                                                 style="margin-top: -0.75rem !important;border: -10px solid var(--bg-solid) !important;"/>
+                                        </div>
+                                        <span t-if="_text"
+                                              t-attf-class="#{_text_class}">
+                                            Wishlist
+                                        </span>
+                                    </a>
+                                </li>
+                            </t>
+                            <!-- Sign In -->
+                            <div style="margin-left: 15px;">
+                                <t t-call="portal.placeholder_user_sign_in">
+                                    <t t-set="_link_class"
+                                       t-valuef="btn btn-outline-secondary w-100"/>
+                                </t>
+                            </div>
+                            <!--User Dropdown-->
+                            <t t-call="portal.user_dropdown">
+                                <t t-set="_user_name"
+                                   t-value="False"/>
+                                <t t-set="_item_class"
+                                   t-value="'nav-item dropdown ml-lg-auto'"/>
+                                <t t-set="_link_class"
+                                   t-value="'nav-link'"/>
+                            </t>
+                            <!--Cart-->
+                            <t t-call="website_sale.header_cart_link">
+                                <t t-set="_icon" t-value="True"/>
+                                <t t-set="_item_class"
+                                   t-value="'nav-item mx-lg-3 custom_cart'"/>
+                            </t>
+                        </div>
+                    </nav>
+                </div>
+                <div class="st-mob-sidebar_menu-container">
+                    <ul class="main-menu" id="myMenus"
+                        style=" display: flex; justify-content: center;">
+                        <t t-foreach="website.menu_id.child_id"
+                           t-as="submenu">
+                            <li class="menu-list">
+                                <button class="st-mob-sidebar--nav-btn">
+                                    <t t-call="website.submenu">
+                                        <t t-set="item_class"
+                                           t-value="'st-menu__item'"/>
+                                        <t t-set="link_class"
+                                           t-value="'nav-link'"/>
+                                    </t>
+                                </button>
+                            </li>
+                        </t>
+                    </ul>
+                </div>
+            </header>
+        </xpath>
+    </template>
+
+        <template id="user_logo" name="Link to frontend portal" inherit_id="portal.user_dropdown">
+        <xpath expr="//div[@t-if='_icon']" position="replace">
+             <div t-if="_icon" t-attf-class="#{_icon_wrap_class}">
+                        <i t-attf-class="fa fa-1x fa-fw fa-user #{_icon_class} mt-4" style="margin-left: -2px;"/>
+                    </div>
+        </xpath>
+    </template>
+</odoo>

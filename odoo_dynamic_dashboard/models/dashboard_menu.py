@@ -41,7 +41,7 @@ class DashboardMenu(models.Model):
                                        help="Client action of the "
                                             "corresponding dashboard menu")
 
-    @api.model
+    @api.model_create_multi
     def create(self, vals):
         """Function to create new dashboard menu"""
         action_id = self.env['ir.actions.client'].create([{

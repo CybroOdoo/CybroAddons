@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+     Customize the breadcrumb navigation in the website_sale.products_breadcrumb template
+    <template id="theme_shopping_products_breadcrumb"
+              name="Theme Products Breadcrumb"
+              inherit_id="website_sale.products_breadcrumb">
+        <xpath expr="//ol[contains(@t-attf-class, 'breadcrumb')]"
+               position="replace">
+            <nav aria-label="breadcrumb" class="st-breadcrumbs"
+                 style="margin-left: -16px;">
+                <ol t-if="category" class="breadcrumb mb-0">
+                    <li class="breadcrumb-item st-breadcrumb__list">
+                        <a href="/shop">Products</a>
+                    </li>
+                    <t t-foreach="category.parents_and_self" t-as="cat">
+                        <li t-if="cat == category"
+                            class="breadcrumb-item st-breadcrumb__list">
+                            <span class="d-inline-block" t-field="cat.name"/>
+                        </li>
+                        <li t-else=""
+                            class="breadcrumb-item st-breadcrumb__list">
+                            <a t-att-href="keep('/shop/category/%s' % slug(cat), category=0)"
+                               t-field="cat.name"/>
+                        </li>
+                    </t>
+                </ol>
+            </nav>
+        </xpath>
+    </template>
+    <!-- Customize the search box in the website.website_search_box template -->
+    <template id="theme_shopping_website_search_box" name="Theme Shop Searchbox"
+              inherit_id="website.website_search_box">
+        <xpath expr="//div[@role='search']"
+               position="replace">
+            <div t-attf-class="input-group #{_classes}" role="search">
+                <t t-set="search_placeholder">Search...</t>
+                <div class="st-search_container ">
+                    <span class="input-group-text st-search_icon">
+                        <i class="fa fa-search"/>
+                    </span>
+                    <input type="search" name="search"
+                           t-att-class="'search-query form-control st-search_input st-productlist_searchbar'"
+                           t-att-placeholder="placeholder if placeholder else search_placeholder"
+                           t-att-value="search"/>
+                    <span t-if="search"
+                          class="input-group-text oe_search_found">
+                        <small>(
+                            <t t-out="search_count or 0"/>
+                            found)
+                        </small>
+                    </span>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <!-- Customize the pricelist dropdown in the website_sale.pricelist_list template -->
+    <template id="theme_shopping_pricelist_list" name="Theme Shop Pricelists"
+              inherit_id="website_sale.pricelist_list">
+        <xpath expr="//div[contains(@t-attf-class, 'o_pricelist_dropdown')]"
+               position="replace">
+                <div class="o_pricelist_dropdown dropdown dropdown_sorty_by {{_classes if hasPricelistDropdown else 'd-none'}}">
+                    <t t-set="curr_pl" t-value="website.pricelist_id"/>
+                    <a role="button" href="#"
+                       class="form-control st-productlist_searchbar"
+                       data-bs-toggle="dropdown">
+                        <span class="d-none d-lg-inline">
+                            <t t-if="curr_pl" t-out="curr_pl.name"/>
+                        </span>
+                        <i class="fa fa-sort-amount-asc d-lg-none"/>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end" role="menu">
+                        <t t-foreach="website_sale_pricelists" t-as="pl">
+                            <a role="menuitem"
+                               t-att-href="'/shop/change_pricelist/%s' % pl.id"
+                            class="dropdown-item">
+                                <span class="switcher_pricelist small"
+                                      t-att-data-pl_id="pl.id" t-esc="pl.name"/>
+                            </a>
+                        </t>
+                    </div>
+                </div>
+        </xpath>
+    </template>
+    <!-- Customize the sort-by dropdown in the website_sale.sort template -->
+    <template id="theme_shopping_sort" name="Theme Shop Sort-by"
+              inherit_id="website_sale.sort">
+        <xpath expr="//div[contains(@t-attf-class, 'o_sortby_dropdown')]"
+               position="replace">
+            <div t-attf-class="o_sortby_dropdown dropdown dropdown_sorty_by {{_classes}}">
+                <a role="button" href="#"
+                   class="form-control st-productlist_searchbar"
+                   data-bs-toggle="dropdown">
+                    <span class="d-none d-lg-inline">
+                        <t t-if="isSortingBy" t-out="isSortingBy[0][1]"/>
+                        <span t-else="1" t-field="website.shop_default_sort"/>
+                    </span>
+                    <i class="fa fa-sort-amount-asc d-lg-none"/>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end" role="menu">
+                    <t t-foreach="website_sale_sortable" t-as="sortby">
+                        <a role="menuitem" rel="noindex,nofollow"
+                           t-att-href="keep('/shop', order=sortby[0])"
+                           class="dropdown-item">
+                            <span t-out="sortby[1]"/>
+                        </a>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <!-- Customize the grid or list view toggle in the website_sale.add_grid_or_list_option template -->
+    <template id="theme_shopping_grid_or_list" active="True"
+              inherit_id="website_sale.add_grid_or_list_option"
+              name="Theme Shop Grid or List">
+        <xpath expr="//div[contains(@t-attf-class, 'o_wsale_apply_layout')]"
+               position="replace">
+            <div t-attf-class="o_wsale_apply_layout btn-group {{_classes}}"
+                 t-att-data-active-classes="_activeClasses">
+                <input type="radio" class="btn-check"
+                       name="st_products_layout"
+                       id="st_apply_grid"
+                       t-att-checked="'checked' if layout_mode != 'list' else None"
+                       value="grid"
+                       checked="checked"/>
+                <label class="btn st-product_listtab-btn st_grid active"
+                       title="Grid" for="st_apply_grid">
+                    <i class="fa fa-th"/>
+                </label>
+                <input type="radio" class="btn-check"
+                       name="st_products_layout"
+                       id="st_apply_list"
+                       t-att-checked="'checked' if layout_mode == 'list' else None"
+                       value="list"/>
+                <label t-attf-class="btn btn-{{navClass}} #{_activeClasses if layout_mode == 'list' else None} btn st-product_listtab-btn st_list"
+                       title="List" for="st_apply_list">
+                    <i class="fa fa-list"/>
+                </label>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Inherit the website_sale.products template to customize the shopping page -->
+    <template id="theme_shopping_page" name="Theme Shop"
+              inherit_id="website_sale.products">
+        <xpath expr="//div[@id='wrap']" position="before">
+            <section class="container">
+                <t t-call="website_sale.products_breadcrumb"/>
+            </section>
+        </xpath>
+        <xpath expr="//div[hasclass('o_wsale_products_grid_before_rail')]"
+               position="before">
+            <div class="st-product_filter-head">
+                <span class="st-product_filter--heading">
+                    Filter
+                </span>
+                <a t-attf-href="/shop">
+                <button class="st-product_clear-btn">Clear all</button>
+                </a>
+            </div>
+        </xpath>
+
+    </template>
+
+    <!-- Inherit the website_sale.products_add_to_cart template to customize the shopping cart button -->
+    <template id="shopping_cart_button"
+              inherit_id="website_sale.products_add_to_cart"
+              name="Shopping Cart Button">
+        <xpath expr="//a[hasclass('a-submit')]" position="replace">
+            <div class="st-product_overlay-content">
+                <a t-if="product._website_show_quick_add()"
+                   href="#" role="button"
+                   class="btn btn-primary a-submit st-cart_btn--sm "
+                   aria-label="Shopping cart" title="Shopping cart">
+                        <i class="fa fa-shopping-cart fa-stack custom_cart"/>Add to Cart
+                </a>
+            </div>
+        </xpath>
+    </template>
+    <!-- Inherit the website_sale_wishlist.add_to_wishlist template to customize the wishlist button -->
+    <template id="shopping_wishlist_button"
+              inherit_id="website_sale_wishlist.add_to_wishlist"
+              name="Wishlist Button">
+        <xpath expr="//button[hasclass('o_add_wishlist')]"
+               position="replace">
+            <div class="st-product_overlay-content"
+                 style="float: right; width: 20%;">
+                <button t-if="product_variant_id"
+                        type="button"
+                        role="button"
+                        class="btn btn-outline-primary bg-white o_add_wishlist st-product-like_btn btn st-product-like_btn"
+                        t-att-disabled='in_wish or None' title="Add to Wishlist"
+                        t-att-data-product-template-id="product.id"
+                        t-att-data-product-product-id="product_variant_id"
+                        data-action="o_wishlist">
+                    <i class="fa fa-heart" aria-label="Add to wishlist"/>
+                </button>
+            </div>
+        </xpath>
+    </template>
+</odoo>
