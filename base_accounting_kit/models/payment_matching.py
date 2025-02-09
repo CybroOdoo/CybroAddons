@@ -721,9 +721,10 @@ class AccountReconciliation(models.AbstractModel):
 
         statement_currency = st_line.journal_id.currency_id or st_line.journal_id.company_id.currency_id
         if st_line.amount_currency and st_line.currency_id:
-            amount = st_line.amount_currency
-            amount_currency = st_line.amount
-            amount_currency_str = formatLang(self.env, abs(amount_currency), currency_obj=statement_currency)
+            amount = st_line.amount # st_line.amount_currency
+            amount_currency = st_line.amount_currency # st_line.amount
+            #amount_currency_str = formatLang(self.env, abs(amount_currency), currency_obj=statement_currency)
+            amount_currency_str = formatLang(self.env, abs(amount_currency), currency_obj=st_line.foreign_currency_id)
         else:
             amount = st_line.amount
             amount_currency = amount
