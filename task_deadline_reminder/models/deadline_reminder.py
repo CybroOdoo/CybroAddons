@@ -34,4 +34,6 @@ class DeadLineReminder(models.Model):
                         msg_id.send()
         return True
 
-
+    @api.multi
+    def get_task_deadline_reminder_url(self):
+        return self.get_base_url() + self._get_share_url(redirect=True)
