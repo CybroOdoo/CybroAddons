@@ -47,9 +47,8 @@ class WebsiteFormInherit(WebsiteForm):
     form submissions to create a new help desk ticket instead."""
     def _handle_website_form(self, model_name, **kwargs):
         """Website Help Desk Form"""
-        customer = request.env.user.partner_id
         if model_name == 'help.ticket':
-            tickets = request.env['ticket.stage'].search([])
+            tickets = request.env['ticket.stage'].sudo().search([])
             for rec in tickets:
                 sequence = tickets.mapped('sequence')
                 lowest_sequence = tickets.filtered(
@@ -57,6 +56,12 @@ class WebsiteFormInherit(WebsiteForm):
                 if rec == lowest_sequence:
                     lowest_stage_id = lowest_sequence
             products = kwargs.get('product')
+            partner_create = request.env['res.partner'].sudo().create({
+                'name':kwargs.get('customer_name'),
+                'company_name':kwargs.get('company'),
+                'phone':kwargs.get('phone'),
+                'email':kwargs.get('email_from')
+            })
             if products:
                 splited_product = products.split(',')
                 product_list = [int(i) for i in splited_product]
@@ -69,7 +74,7 @@ class WebsiteFormInherit(WebsiteForm):
                     'priority': kwargs.get('priority'),
                     'product_ids': product_list,
                     'stage_id': lowest_stage_id.id,
-                    'customer_id': customer.id,
+                    'customer_id': partner_create.id,
                     'ticket_type': kwargs.get('ticket_type'),
                     'category_id': kwargs.get('category'),
                 }
@@ -106,7 +111,7 @@ class WebsiteFormInherit(WebsiteForm):
                     'phone': kwargs.get('phone'),
                     'priority': kwargs.get('priority'),
                     'stage_id': lowest_stage_id.id,
-                    'customer_id': customer.id,
+                    'customer_id': partner_create.id,
                     'ticket_type': kwargs.get('ticket_type'),
                     'category_id': kwargs.get('category'),
                 }
