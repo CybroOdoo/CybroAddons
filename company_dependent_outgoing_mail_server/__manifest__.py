@@ -21,7 +21,7 @@
 #############################################################################
 {
     "name": "Company Dependent Outgoing Mail Server",
-    "version": "16.0.1.0.0",
+    "version": "16.0.1.1.1",
     "category": "Extra Tools",
     "summary": "Send outgoing mails from company depend outgoing mail server",
     "description": "Configure multiple outgoing mail server and set each "
@@ -35,11 +35,6 @@
     "data": [
         "views/ir_mail_server_views.xml",
     ],
-    "assets": {
-        "web.assets_backend": [
-            "company_dependent_outgoing_mail_server/static/src/js/get_company" ".js",
-        ],
-    },
     "images": [
         "static/description/banner.png",
         "static/description/icon.png",
@@ -48,5 +43,4 @@
     "installable": True,
     "auto_install": False,
     "application": False,
-    "post_init_hook": "_post_init_check_company",
 }

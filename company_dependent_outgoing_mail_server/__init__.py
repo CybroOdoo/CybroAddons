@@ -20,11 +20,3 @@
 #
 #############################################################################
 from . import models
-from odoo import api, SUPERUSER_ID
-
-
-def _post_init_check_company(cr, registry):
-    """Set current company id to current.company.id key"""
-    env = api.Environment(cr, SUPERUSER_ID, {})
-    env['ir.config_parameter'].sudo().set_param('current.company.id',
-                                                env.company.id)
