@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Beauty Spa Management',
-    'version': '17.0.1.1.0',
+    'version': '17.0.1.1.1',
     "category": "Services",
     'summary': 'Beauty Parlour Management with Online Booking System',
     'description': 'This module to helps your customers to do the online '
@@ -35,6 +35,11 @@
     'data': [
         'security/salon_management_groups.xml',
         'security/ir.model.access.csv',
+        'data/product_template_data.xml',
+        'data/res_partner_data.xml',
+        'data/salon_holiday_data.xml',
+        'data/salon_stages_data.xml',
+        'data/salon_working_hours_data.xml',
         'data/salon_website_menu.xml',
         'data/salon_chair_cron_action.xml',
         'data/salon_management_mail_template.xml',
@@ -50,13 +55,6 @@
         'views/salon_booking_views.xml',
         'views/salon_order_views.xml',
         'views/salon_management_menus.xml',
-    ],
-    'demo': [
-        'data/product_template_data.xml',
-        'data/res_partner_data.xml',
-        'data/salon_holiday_data.xml',
-        'data/salon_stages_data.xml',
-        'data/salon_working_hours_data.xml',
     ],
     'assets': {
         'web.assets_backend': [
