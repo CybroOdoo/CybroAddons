@@ -21,3 +21,4 @@
 ###############################################################################
 from . import table_reservation_on_website_website_sale
 from . import table_reservation_on_website
+from . import pos_config

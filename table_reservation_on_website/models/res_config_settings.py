@@ -42,6 +42,21 @@ class ResConfigSettings(models.TransientModel):
         string="Reservation Lead Time",
         help="The order should be reserved hours"
              "before the booking start time.")
+    pos_set_opening_hours = fields.Boolean(
+        related='pos_config_id.set_opening_hours',
+        readonly=False,
+        help="Enable to configure restaurant opening and closing hours."
+    )
+    pos_opening_hour = fields.Float(
+        related='pos_config_id.opening_hour',
+        readonly=False,
+        help="Restaurant opening hour in 24-hour format."
+    )
+    pos_closing_hour = fields.Float(
+        related='pos_config_id.closing_hour',
+        readonly=False,
+        help="Restaurant closing hour in 24-hour format."
+    )
 
     def set_values(self):
         """ To set the value for fields in config setting """
@@ -53,6 +68,15 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param(
             'table_reservation_on_website.reservation_lead_time',
             self.reservation_lead_time)
+        self.env['ir.config_parameter'].sudo().set_param(
+            'table_reservation_on_website.set_opening_hours',
+            self.pos_set_opening_hours)
+        self.env['ir.config_parameter'].sudo().set_param(
+            'table_reservation_on_website.opening_hour',
+            self.pos_opening_hour)
+        self.env['ir.config_parameter'].sudo().set_param(
+            'table_reservation_on_website.closing_hour',
+            self.pos_closing_hour)
         return res
 
     def get_values(self):
@@ -69,4 +93,16 @@ class ResConfigSettings(models.TransientModel):
         res.update(
             reservation_lead_time=reservation_lead_time if reservation_lead_time
             else 0.0)
+        set_opening_hours = self.env['ir.config_parameter'].sudo().get_param(
+            'table_reservation_on_website.set_opening_hours')
+        res.update(pos_set_opening_hours=bool(set_opening_hours))
+        opening_hour = self.env['ir.config_parameter'].sudo().get_param(
+            'table_reservation_on_website.opening_hour')
+        res.update(
+            pos_opening_hour=float(opening_hour) if opening_hour else 0.0)
+        closing_hour = self.env[
+            'ir.config_parameter'].sudo().get_param(
+            'table_reservation_on_website.closing_hour')
+        res.update(
+            pos_closing_hour=float(closing_hour) if opening_hour else 0.0)
         return res

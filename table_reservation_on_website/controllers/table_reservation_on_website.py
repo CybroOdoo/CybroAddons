@@ -30,8 +30,24 @@ class TableReservation(http.Controller):
     @http.route(['/table_reservation'], type='http', auth='user', website=True)
     def table_reservation(self):
         """ For rendering table reservation template """
+        pos_config = request.env['res.config.settings'].sudo().search([],
+                                                                      limit=1)
+        try:
+            opening_hour = self.float_to_time(float(pos_config.pos_opening_hour))
+            closing_hour = self.float_to_time(float(pos_config.pos_closing_hour))
+        except ValueError:
+            opening_hour = "00:00"
+            closing_hour = "23:59"
+
         return http.request.render(
-            "table_reservation_on_website.table_reservation", {})
+            "table_reservation_on_website.table_reservation", {'opening_hour': opening_hour,
+            'closing_hour': closing_hour})
+
+    def float_to_time(self, hour_float):
+        """ Convert float hours (e.g., 8.5 → 08:30) to HH:MM format """
+        hours = int(hour_float)
+        minutes = int((hour_float - hours) * 60)
+        return f"{hours:02d}:{minutes:02d}"
 
     @http.route(['/restaurant/floors'], type='http', auth='user', website=True)
     def restaurant_floors(self, **kwargs):

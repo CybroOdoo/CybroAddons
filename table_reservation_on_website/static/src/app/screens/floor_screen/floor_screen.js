@@ -35,10 +35,8 @@ patch(FloorScreen.prototype, {
     },
     async onSelectTable(table, ev) {
 //        if (table['reserved'] == true){
-//            console.log("hello welcome", this.env.services.pos)
 //            var data = await this.orm.call('table.reservation', 'add_payment', [table.id, table.floor.id])
 //            const current_order = this.pos.get_order();
-//            console.log("prod", current_order)
 //            if (this.pos.get_order){
 //            }
 //            this.pos.get_order().add_product(product, {

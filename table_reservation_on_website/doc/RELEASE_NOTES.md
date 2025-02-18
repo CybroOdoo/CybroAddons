@@ -19,3 +19,8 @@
 #### Version 17.0.1.1.3
 ##### BUGFIX
 - Updated the module work flow.
+
+####  18.02.2025
+#### Version 17.0.1.2.3
+##### BUGFIX
+- Updated module to set opening and closing hours.

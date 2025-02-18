@@ -22,7 +22,6 @@ patch(ProductScreen.prototype, {
                 var product = this.pos.db.product_by_id[productDetails[0].product_id]
                 product['lst_price'] = productDetails[0].rate
                 if (current_order.orderlines.length == 0){
-                    console.log('prodsss', product['lst_price'])
                     this.pos.get_order().add_product(product, {
                         quantity: 1,
                     });

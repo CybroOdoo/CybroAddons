@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Table Reservation On POS And Website',
-    'version': '17.0.1.1.3',
+    'version': '17.0.1.2.3',
     'category': 'eCommerce,Point of Sale',
     'summary': 'Reserve tables in POS from website',
     'description': """This module enables to reserve tables in POS from website.
