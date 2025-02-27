@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Agriculture Management',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Services',
     'summary': """ We Can Easily Manage the Agriculture to Our Own Need.""",
     'description': """ In the Agriculture Management App, We can manage the "
