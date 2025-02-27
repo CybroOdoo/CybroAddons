@@ -124,6 +124,10 @@ class BudgetLines(models.Model):
     company_id = fields.Many2one(related='budget_id.company_id',
                                  comodel_name='res.company',
                                  string='Company', store=True, readonly=True)
+    currency_id = fields.Many2one('res.currency', string='Currency',
+                                  required=True, help="Currency",
+                                  default=lambda self: self.env.user.company_id.
+                                  currency_id)
 
     def _compute_practical_amount(self):
         for line in self:
