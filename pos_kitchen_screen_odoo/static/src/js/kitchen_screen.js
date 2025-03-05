@@ -25,8 +25,20 @@ class kitchen_screen_dashboard extends Component {
             draft_count:[],
             waiting_count:[],
             ready_count:[],
-            lines:[]
+            lines:[],
+            session_ids: [] // <-- Store open session IDs here
         });
+        // Fetch Open POS Sessions
+        this.orm.call("pos.session", "search_read", [[
+           ["state", "=", "opened"]  // Get only open sessions
+           ]]).then(function(sessions) {
+           if (sessions.length > 0) {
+              self.state.session_ids = sessions.map(session => session.id);  // Store session IDs in state
+           } else {
+              self.state.session_ids = []
+           }
+        });
+
         var session_shop_id;
         //if refreshing the page then the last passed context (shop id)
         //save to the session storage
@@ -39,7 +51,7 @@ class kitchen_screen_dashboard extends Component {
             this.shop_id = parseInt(session_shop_id, 10);;
         }
         self.orm.call("pos.order", "get_details", ["", self.shop_id,""]).then(function(result) {
-            self.state.order_details = result['orders']
+            self.state.order_details = result['orders'].filter(order => order.session_id && self.state.session_ids.includes(order.session_id[0]));
             self.state.lines = result['order_lines']
             self.state.shop_id=self.shop_id
             self.state.draft_count=self.state.order_details.filter((order) => order.order_status=='draft' && order.config_id[0]==self.state.shop_id).length
@@ -54,7 +66,7 @@ class kitchen_screen_dashboard extends Component {
         var self=this
         if(payload.message == "pos_order_created" && payload.res_model == "pos.order"){
             self.orm.call("pos.order", "get_details", ["", self.shop_id,""]).then(function(result) {
-            self.state.order_details = result['orders']
+            self.state.order_details = result['orders'].filter(order => order.session_id && self.state.session_ids.includes(order.session_id[0]));
             self.state.lines = result['order_lines']
             self.state.shop_id=self.shop_id
             self.state.draft_count=self.state.order_details.filter((order) => order.order_status=='draft' && order.config_id[0]==self.state.shop_id).length

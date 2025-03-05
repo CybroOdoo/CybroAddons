@@ -21,3 +21,9 @@
 #### Version 17.0.1.0.4
 #### BUG FIX
 - Fix the issue - Floor and Time is not showing in the kitchen display.
+
+#### 01.03.2025
+#### Version 17.0.1.1.4
+#### UPDT
+- UPDT - Added a new feature that automatically removes kitchen screen orders
+  when the session is closed.
