@@ -1,6 +1,6 @@
 ## Module <employee_purchase_requisition>
 
-#### 24.01.2024
-#### Version 17.0.1.0.0
-#### ADD
-- Initial commit for Employee Purchase Requisition
+#### 25.02.2025
+#### Version 17.0.1.0.1
+#### FIX
+- Bug fixes for Employee Purchase Requisition

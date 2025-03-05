@@ -29,5 +29,6 @@ class HrEmployeePrivate(models.Model):
 
     employee_location_id = fields.Many2one(
         comodel_name='stock.location',
+        groups='hr.group_hr_user',
         string="Destination Location",
         help='Select a employee location from the location list')
