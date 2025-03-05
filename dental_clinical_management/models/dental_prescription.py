@@ -20,6 +20,7 @@
 #
 ################################################################################
 from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 
 
 class DentalPrescription(models.Model):
@@ -112,8 +113,18 @@ class DentalPrescription(models.Model):
         self.appointment_id.state = 'done'
 
     def create_invoice(self):
-        """Create an invoice based on the patient invoice."""
+        """Create an invoice based on the patient invoice and manage stock moves for medicines."""
         self.ensure_one()
+        medicine_moves = []
+        for rec in self.medicine_ids:
+            product_id = self.env['product.product'].search([
+                ('product_tmpl_id', '=', rec.medicament_id.id)], limit=1)
+            if product_id and product_id.type == 'product':  # Only stockable products
+                medicine_moves.append({
+                    'product_id': product_id,
+                    'quantity': rec.quantity,
+                })
+
         invoice_vals = {
             'move_type': 'out_invoice',
             'partner_id': self.patient_id.id,
@@ -126,18 +137,43 @@ class DentalPrescription(models.Model):
             ]
         }
         invoice = self.env['account.move'].create(invoice_vals)
+
         for rec in self.medicine_ids:
             product_id = self.env['product.product'].search([
-                ('product_tmpl_id', '=', rec.medicament_id.id)])
-            invoice['invoice_line_ids'] = [(0, 0, {
-                'product_id': product_id.id,
-                'name': rec.display_name,
-                'quantity': rec.quantity,
-                'price_unit': rec.price,
-            })]
-        self.invoice_data_id = invoice.id
+                ('product_tmpl_id', '=', rec.medicament_id.id)], limit=1)
+            if product_id:
+                invoice.write({
+                    'invoice_line_ids': [(0, 0, {
+                        'product_id': product_id.id,
+                        'name': rec.display_name,
+                        'quantity': rec.quantity,
+                        'price_unit': rec.price,
+                    })]
+                })
         invoice.action_post()
+
+        if medicine_moves:
+            warehouse = self.env['stock.warehouse'].search([('company_id', '=', self.env.company.id)], limit=1)
+            if not warehouse:
+                raise UserError(_('No warehouse found for the company. Please configure a warehouse.'))
+            source_location = warehouse.lot_stock_id  # Clinic's stock location
+            customer_location = self.env.ref('stock.stock_location_customers')  # Customer location
+
+            for move in medicine_moves:
+                self.env['stock.move'].create({
+                    'name': f'Prescription {self.sequence_no}',
+                    'product_id': move['product_id'].id,
+                    'product_uom_qty': move['quantity'],
+                    'quantity': move['quantity'],
+                    'product_uom': move['product_id'].uom_id.id,
+                    'location_id': source_location.id,
+                    'location_dest_id': customer_location.id,
+                    'state': 'done',
+                })
+
+        self.invoice_data_id = invoice.id
         self.state = 'invoiced'
+
         return {
             'name': _('Customer Invoice'),
             'view_mode': 'form',
