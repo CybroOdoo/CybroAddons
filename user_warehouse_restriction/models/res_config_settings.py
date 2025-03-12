@@ -39,6 +39,7 @@ class ResConfigSettings(models.TransientModel):
 
     @api.onchange('group_user_warehouse_restriction')
     def _onchange_group_user_warehouse_restriction(self):
+        print("_onchange_group_user_warehouse_restriction")
         """This method is triggered when the 'group_user_warehouse_restriction'
         field is changed. if it's true, assigns the current user as the
         allowed user of all existing warehouses."""

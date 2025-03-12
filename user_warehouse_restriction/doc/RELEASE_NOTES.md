@@ -15,3 +15,8 @@
 #### Version 17.0.2.0.1
 #### UPDT
 - Incorporated condition when modifying Warehouse Restriction.
+
+#### 6.03.2025
+#### Version 17.0.2.0.2
+#### UPDT
+- Incorporated condition when modifying Allowed Users.

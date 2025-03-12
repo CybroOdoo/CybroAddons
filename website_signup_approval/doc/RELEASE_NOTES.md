@@ -16,6 +16,11 @@
 - Changed the Configuration from Sale Configuration to Website Configuration. 
 
 #### 05.08.2024
-#### Version 17.0.1.0.2
+#### Version 17.0.1.0.3
+#### UPDT
+- Added validation for the field in settings. 
+
+#### 05.08.2024
+#### Version 17.0.1.0.4
 #### UPDT
 - Added validation for the field in settings. 

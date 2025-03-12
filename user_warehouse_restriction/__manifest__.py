@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': "User Warehouse Restriction",
-    'version': '17.0.2.0.1',
+    'version': '17.0.2.0.2',
     'category': 'Warehouse',
     'summary': """Restrict Warehouses and location for users.""",
     'description': """This module helps you to restrict warehouse and stock 

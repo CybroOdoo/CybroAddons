@@ -20,6 +20,7 @@
 #
 ###############################################################################
 from odoo import api, fields, models
+from odoo.exceptions import ValidationError
 
 
 class StockWarehouse(models.Model):
@@ -40,18 +41,46 @@ class StockWarehouse(models.Model):
 
     @api.onchange('restrict_location', 'user_ids')
     def _onchange_restrict_location(self):
-        """Triggered when the 'restrict_location' or 'user_ids' fields
-        are modified. It updates the 'restrict_location' field for selected
-        users when restricting stock location access."""
-        for rec in self.user_ids:
-            if self.restrict_location:
-                rec._origin.write({'restrict_location': True,
-                                   'allowed_warehouse_ids': [
-                                       (4, self._origin.id)]})
-            elif not self.restrict_location:
-                rec._origin.write({'restrict_location': True,
-                                   'location_ids': False
-                                   })
+        if not self.company_id:
+            return
+
+        current_user = self.env.user
+        if current_user not in self.user_ids and self.restrict_location:
+            self.user_ids = [(4, current_user.id)]
+
+        # Filter valid users with access to the warehouse’s company
+        valid_users = self.user_ids.filtered(
+            lambda u: self.company_id in u.company_ids
+        )
+        if self.restrict_location:
+            valid_users.with_context(
+                allowed_company_ids=self.company_id.ids
+            ).write({
+                'restrict_location': True,
+                'allowed_warehouse_ids': [(4, self._origin.id)],
+            })
+        else:
+            valid_users.with_context(
+                allowed_company_ids=valid_users.company_ids.ids
+            ).write({
+                'restrict_location': True,
+                'location_ids': False,
+            })
+
+    def write(self, vals):
+        """Override the write method to prevent the current user from being
+        removed from the user_ids Many2many field."""
+        res = super(StockWarehouse, self).write(vals)
+        if 'user_ids' in vals:
+            # Check if the current user is still in user_ids after the update
+            current_user = self.env.user
+            for warehouse in self:
+                if current_user not in warehouse.user_ids:
+                    raise ValidationError(
+                        "You cannot remove yourself from the allowed users "
+                        "of this warehouse."
+                    )
+        return res
 
     def action_open_users_view(self):
         """Return user basic form view to give restricted location for users"""
