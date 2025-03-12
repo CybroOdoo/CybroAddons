@@ -46,11 +46,9 @@ class ResUsers(models.Model):
 
     def write(self, vals):
         self.clear_caches()
-        print(vals)
         return super(ResUsers, self).write(vals)
 
     def _compute_check_user(self):
-        print("_compute_check_user")
         """To determine if the user has warehouse location restrictions.
         Sets the check_user field accordingly."""
         restriction_group_id = self.env.ref(

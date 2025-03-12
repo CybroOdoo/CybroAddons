@@ -29,7 +29,6 @@ class StockPicking(models.Model):
 
     @api.onchange('location_id', 'location_dest_id')
     def _onchange_location_id(self):
-        print("_onchange_location_id")
         """Domain for location_id and location_dest_id."""
         if self.env['ir.config_parameter'].sudo().get_param('user_warehouse_restriction.group_user_warehouse_restriction'):
             return {
