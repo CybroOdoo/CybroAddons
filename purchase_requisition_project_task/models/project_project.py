@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2025-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -52,7 +52,7 @@ class ProjectProject(models.Model):
         return {
             'type': 'ir.actions.act_window',
             'name': 'Purchase Requisition',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'res_model': 'purchase.requisition',
             'domain': [('project_id', '=', self.id)],
             'context': {
