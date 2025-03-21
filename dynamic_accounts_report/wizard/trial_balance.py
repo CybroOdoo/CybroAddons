@@ -184,7 +184,6 @@ class TrialView(models.TransientModel):
         return res
 
     def _get_accounts(self, accounts, display_account, data):
-
         account_result = {}
         # Prepare sql query base on selected parameters from wizard
         tables, where_clause, where_params = self.env['account.move.line']._query_get()

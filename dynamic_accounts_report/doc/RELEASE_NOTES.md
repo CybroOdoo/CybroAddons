@@ -50,3 +50,8 @@
 ### version 16.0.1.0.12,
 ### BUGFIX
 - Report Bug Fix: Problem with rounding issue.
+- 
+### 12.03.2025
+### version 16.0.2.0.0,
+### UPDT
+- Added new filter display accounts in trial balance.

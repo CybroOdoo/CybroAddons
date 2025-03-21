@@ -72,14 +72,10 @@ odoo.define('dynamic_accounts_report.trial_balance', function(require) {
 					],
 				}).then(function(datas) {
 
-
-
 					_.each(datas['report_lines'], function(rep_lines) {
 						rep_lines.debit = self.format_currency(datas['currency'], rep_lines.debit);
 						rep_lines.credit = self.format_currency(datas['currency'], rep_lines.credit);
 						rep_lines.balance = self.format_currency(datas['currency'], rep_lines.balance);
-
-
 
 					});
 					if (initial_render) {
@@ -92,9 +88,9 @@ odoo.define('dynamic_accounts_report.trial_balance', function(require) {
 						self.$el.find('.target_move').select2({
 							placeholder: 'Target Move...',
 						});
-						//                                    self.$el.find('#start_dateee').select2({
-						//                                        placeholder: 'Date.',
-						//                                    });
+						self.$el.find('.display_account').select2({
+							placeholder: 'Display Accounts...',
+						});
 					}
 					var child = [];
 
@@ -263,32 +259,32 @@ odoo.define('dynamic_accounts_report.trial_balance', function(require) {
 
 
 		apply_filter: function(event) {
-			event.preventDefault();
-			var self = this;
-			self.initial_render = false;
-			var filter_data_selected = {};
-			var journal_ids = [];
-			var journal_text = [];
-			var journal_res = document.getElementById("journal_res")
-			var journal_list = $(".journals").select2('data')
+            event.preventDefault();
+            var self = this;
+            self.initial_render = false;
+            var filter_data_selected = {};
+            var journal_ids = [];
+            var journal_text = [];
+            var journal_res = document.getElementById("journal_res");
+            var journal_list = $(".journals").select2('data');
 
-			for (var i = 0; i < journal_list.length; i++) {
-				if (journal_list[i].element[0].selected === true) {
+            for (var i = 0; i < journal_list.length; i++) {
+                if (journal_list[i].element[0].selected === true) {
+                    journal_ids.push(parseInt(journal_list[i].id));
+                    if (journal_text.includes(journal_list[i].text) === false) {
+                        journal_text.push(journal_list[i].text);
+                    }
+                    journal_res.value = journal_text;
+                    journal_res.innerHTML = journal_res.value;
+                }
+            }
 
-					journal_ids.push(parseInt(journal_list[i].id))
-					if (journal_text.includes(journal_list[i].text) === false) {
-						journal_text.push(journal_list[i].text)
-					}
-					journal_res.value = journal_text
-					journal_res.innerHTML = journal_res.value;
-				}
-			}
-			if (journal_list.length == 0) {
-				journal_res.value = ""
-				journal_res.innerHTML = "";
+            if (journal_list.length == 0) {
+                journal_res.value = "";
+                journal_res.innerHTML = "";
+            }
 
-			}
-			filter_data_selected.journal_ids = journal_ids
+            filter_data_selected.journal_ids = journal_ids;
 
 			if (this.$el.find('.datetimepicker-input[name="date_from"]').val()) {
 				filter_data_selected.date_from = moment(this.$el.find('.datetimepicker-input[name="date_from"]').val(), time.getLangDateFormat()).locale('en').format('YYYY-MM-DD');
@@ -318,6 +314,21 @@ odoo.define('dynamic_accounts_report.trial_balance', function(require) {
 
 				}
 			}
+			   // Display Accounts Filter
+//            if ($(".display_account").length) {
+//                var display_account_res = document.getElementById("display_account_res");
+//                var display_account_select = $("#display_accounts");
+//                var selectedValue = display_account_select.val() || "all";
+//                filter_data_selected.display_account = selectedValue;
+//                display_account_res.innerHTML = selectedValue;
+//            }
+            if ($(".display_account").length) {
+                var display_account_res = document.getElementById("display_account_res");
+                var display_account_select = $("#display_accounts");
+                var selectedOption = display_account_select.find("option:selected").text();
+                filter_data_selected.display_account = display_account_select.val();
+                display_account_res.innerHTML = selectedOption;
+            }
 			rpc.query({
 				model: 'account.trial.balance',
 				method: 'write',
