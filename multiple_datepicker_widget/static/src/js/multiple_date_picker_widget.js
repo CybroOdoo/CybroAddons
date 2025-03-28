@@ -17,25 +17,37 @@ export class DomainSelectorTextField extends Component {
     }
 
     _onSelectDateField(ev){
+
         var dateFormat = time.getLangDateFormat();
-       if (dateFormat.includes('MMMM')){
+
+        if (dateFormat.includes('MMMM')){
           var dates = dateFormat.toLowerCase()
           var result = dates.replace(/mmmm/g, 'MM');
+          console.log(result, 'res1')
           dateFormat = result
-      }
-      else if (dateFormat.includes('MMM')) {
+        }
+
+        else if (dateFormat.includes('MMM')) {
           var dates = dateFormat.toLowerCase()
           var result = dates.replace(/mmm/g, 'M');
+          console.log(result, 'res2')
+
           dateFormat = result
-      }
-      else if(dateFormat.includes('ddd')){
+        }
+
+        else if(dateFormat.includes('ddd')){
           var dates =new dateFormat.toLowerCase()
           var result = new dates.replace(/ddd/g, 'DD');
+          console.log(result, 'res3')
+
           dateFormat = result
-      }
-     else{
-        dateFormat = dateFormat.toLowerCase()
-     }
+        }
+
+        else {
+            dateFormat = dateFormat.toLowerCase()
+            console.log(dateFormat, 'res4')
+        }
+        console.log($(this.input.el), 'eee')
         if (this.input.el){
             $(this.input.el).datepicker({
                 multidate: true,
@@ -45,10 +57,21 @@ export class DomainSelectorTextField extends Component {
     }
 
     async onSelectDate(ev, dateFormat) {
-        const newDate = moment(ev.date).format(this.convertToMomentFormat(dateFormat))
-        this.state.date = `${this.state.date},${newDate}`
-        await this.props.update(this.state.date)
+        if (ev.dates.length === 0) {
+            this.state.date = "";
+            await this.props.update(this.state.date);
+
+            $(this.input.el).val('');
+            return;
+        }
+
+        let dateList = ev.dates.map(date => moment(date).format(this.convertToMomentFormat(dateFormat)));
+
+        this.state.date = [...new Set(dateList)].join(',');
+
+        await this.props.update(this.state.date);
     }
+
 
     convertToMomentFormat(format) {
         return format.replace(/d{1,2}/g, 'DD')
