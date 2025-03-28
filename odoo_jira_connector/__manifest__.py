@@ -21,7 +21,7 @@
 ##############################################################################
 {
     'name': 'Odoo Jira Connector',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Project',
     'summary': 'Odoo Jira Connector is a valuable integration tool for '
                'businesses that use both Odoo and Jira. By connecting these '

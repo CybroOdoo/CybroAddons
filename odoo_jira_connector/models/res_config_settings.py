@@ -152,6 +152,7 @@ class ResConfigSettings(models.TransientModel):
         auth = HTTPBasicAuth(self.user_id_jira, self.api_token)
         response = requests.request('GET', self.url + 'rest/api/2/project',
                                     headers=JIRA_HEADERS, auth=auth)
+
         projects = json.dumps(json.loads(response.text), sort_keys=True,
                               indent=4, separators=(',', ': '))
         project_json = json.loads(projects)
@@ -484,7 +485,7 @@ class ResConfigSettings(models.TransientModel):
                                         auth=auth)
                 data = response.json()
                 project = self.env['project.project'].search(
-                    [('project_id_jira', '=', jira_id)])
+                    [('project_id_jira', '=', jira_id)], limit=1)
                 tasks = self.env['project.task'].search(
                     [('project_id', '=', project.id)])
                 task_jira_ids = [task.task_id_jira for task in tasks]
@@ -493,7 +494,7 @@ class ResConfigSettings(models.TransientModel):
                                   issue['key']
                     if issue['key'] in task_jira_ids:
                         task = self.env['project.task'].search(
-                            [('task_id_jira', '=', issue['key'])])
+                            [('task_id_jira', '=', issue['key'])], limit=1)
                     else:
                         task = self.env['project.task'].create({
                             'project_id': project.id,
