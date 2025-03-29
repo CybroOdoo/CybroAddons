@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2025-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -43,7 +43,7 @@ class ProjectTask(models.Model):
         return {
             'type': 'ir.actions.act_window',
             'name': 'Purchase Requisition',
-            'view_mode': 'list,form',
+            'view_mode': 'tree,form',
             'res_model': 'purchase.requisition',
             'domain': [('task_ids', '=', self.id)]
         }

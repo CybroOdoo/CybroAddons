@@ -23,7 +23,6 @@ Credits
 ========
 * Developer: (V16) Sajna,
             (V17) Busthana Shirin,
-            (V18)Busthana Shirin,
 Contact : odoo@cybrosys.com
 
 Contacts

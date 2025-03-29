@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2025-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Purchase Requisition & Project Task Integration',
-    'version': '18.0.1.0.1',
+    'version': '17.0.1.0.0',
     'category': 'Project,Purchase',
     'summary': """Purchase Requisition and Project Task module relate project,
                   task and purchase requisition""",
