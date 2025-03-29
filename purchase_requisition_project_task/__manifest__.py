@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Purchase Requisition & Project Task Integration',
-    'version': '18.0.1.0.1',
+    'version': '17.0.1.0.1',
     'category': 'Project,Purchase',
     'summary': """Purchase Requisition and Project Task module relate project,
                   task and purchase requisition""",
