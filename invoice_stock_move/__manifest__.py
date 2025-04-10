@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Stock Picking From Invoice",
-    'version': '17.0.1.0.1',
+    'version': '17.0.1.0.2',
     'category': 'Accounting',
     'summary': """Stock Picking From Customer/Supplier Invoice""",
     'description': """This Module Enables To Create Stocks Picking From 
