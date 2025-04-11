@@ -63,6 +63,7 @@ class AgeReceivableReport(models.TransientModel):
                 ['name', 'move_name', 'date', 'amount_currency', 'account_id',
                  'date_maturity', 'currency_id', 'debit', 'move_id'])
             for val in move_line_data:
+                diffrence = 0
                 if val['date_maturity']:
                     diffrence = (today - val['date_maturity']).days
                 val['diff0'] = val['debit'] if diffrence <= 0 else 0.0
