@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Report Template-->
+    <template id="report_fleet_rental_contract">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="data">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-size: 12pt;">
+                        <h2 style="text-align: center;">Vehicle Contract
+                            Details
+                        </h2>
+                        <p>Reference Number:
+                            <span t-field="data.name"/>
+                        </p>
+
+                        <table class="table table-sm"
+                               style="border: 1px solid transparent; border-collapse: collapse; width: 100%;">
+                            <tr>
+                                <td colspan="2">
+                                    <strong>Customer Details</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 50%;">
+                                    <span>Customer:</span>
+                                    <span t-field="data.customer_id.name"/>
+                                </td>
+                                <td style="width: 50%; text-align: right;">
+                                    <span>Phone:</span>
+                                    <span t-field="data.customer_id.phone"/>
+                                    <br/>
+                                    <span>Email:</span>
+                                    <span t-field="data.email"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <table class="table table-sm"
+                               style="border: 1px solid transparent; width: 100%; margin-top: 10px;">
+
+                            <tr>
+                                <td colspan="2">
+                                    <strong>Pick-Up &amp; Drop-Off Details
+                                    </strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 50%; vertical-align: top;">
+                                    <span>Pick-up Date:</span>
+                                    <span t-field="data.pickup_date"/>
+                                    <br/>
+                                    <span>Pick-Up Location:</span>
+                                    <span t-field="data.pickup_location"/>
+                                    <br/>
+                                    <span t-field="data.pickup_street"/>
+                                    <br/>
+                                    <span t-field="data.pickup_city"/>,
+                                    <span t-field="data.pickup_state_id.name"/>
+                                    <span t-field="data.pickup_zip"/>
+                                    <br/>
+                                    <span t-field="data.pickup_country_id.name"/>
+                                </td>
+                                <td style="width: 50%; vertical-align: top;">
+                                    <span>Drop-off Date:</span>
+                                    <span t-field="data.dropoff_date"/>
+                                    <br/>
+                                    <span>Drop-Off Location:</span>
+                                    <span t-field="data.dropoff_location"/>
+                                    <br/>
+                                    <span t-field="data.dropoff_street"/>
+                                    <br/>
+                                    <span t-field="data.dropoff_city"/>,
+                                    <span t-field="data.dropoff_state_id.name"/>
+                                    <span t-field="data.dropoff_zip"/>
+                                    <br/>
+                                    <span t-field="data.dropoff_country_id.name"/>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!--Vehicle Deatils-->
+                        <table class="table table-sm"
+                               style="border: 1px solid transparent; width: 100%; margin-top: 10px;">
+                            <tr>
+                                <td colspan="2">
+                                    <strong>Vehicle Details</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 50%; vertical-align: top;">
+                                    <span>Vehicle:</span>
+                                    <span t-field="data.vehicle_id.name"/>
+                                    <br/>
+                                    <span>Model:</span>
+                                    <span t-field="data.model"/>
+                                    <br/>
+                                    <span>Transmission:</span>
+                                    <span t-field="data.transmission"/>
+                                    <br/>
+                                    <span>Fuel Type:</span>
+                                    <span t-field="data.fuel_type"/>
+                                    <br/>
+                                    <span>Last Odometer:</span>
+                                    <span t-field="data.last_odometer"/>
+                                    <span t-field="data.odometer_unit"/>
+                                </td>
+                                <td style="width: 50%; vertical-align: top;">
+                                    <t t-if="data.driver_required">
+                                        <span>Driver:</span>
+                                        <span t-field="data.driver_id.name"/>
+                                        <br/>
+                                        <span>Driver Charge Type:</span>
+                                        <span t-field="data.charge_type"/>
+                                        <br/>
+
+                                        <span>Driver Charge:</span>
+                                        <span t-field="data.driver_charge"
+                                              t-options="{'widget': 'monetary', 'display_currency': data.currency_id}"/>
+                                    </t>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table class="table table-sm"
+                               style="border: 1px solid transparent; width: 100%; margin-top: 10px;">
+                            <tr>
+                                <td style="width: 50%; vertical-align: top;">
+                                    <strong>Rent Details</strong>
+                                    <br/>
+
+                                    <span>Rent Type:</span>
+                                    <span t-field="data.rent_type"/>
+                                    <br/>
+                                    <span>Rent /</span>
+                                    <span t-field="data.rent_type"/>
+                                    <span>:</span>
+                                    <span t-field="data.rent_per_hour"
+                                          t-if="data.rent_type == 'hours'"
+                                          t-options="{'widget': 'monetary', 'display_currency': data.currency_id}"/>
+                                    <span t-field="data.rent_per_day"
+                                          t-if="data.rent_type == 'days'"
+                                          t-options="{'widget': 'monetary', 'display_currency': data.currency_id}"/>
+                                    <span t-field="data.rent_per_km"
+                                          t-if="data.rent_type == 'kilometers'"
+                                          t-options="{'widget': 'monetary', 'display_currency': data.currency_id}"/>
+                                    <br/>
+                                    <span>Total</span>
+                                    <span t-field="data.rent_type"/>
+                                    <span>:</span>
+                                    <span t-field="data.total_hours"
+                                          t-if="data.rent_type == 'hours'"/>
+                                    <span t-field="data.total_days"
+                                          t-if="data.rent_type == 'days'"/>
+                                    <span t-field="data.total_km"
+                                          t-if="data.rent_type == 'kilometers'"/>
+                                    <br/>
+                                    <span>Total:</span>
+                                    <span t-field="data.total_rental_charge"
+                                          t-options="{'widget': 'monetary', 'display_currency': data.currency_id}"/>
+                                </td>
+                                <td style="width: 50%; vertical-align: top;">
+                                    <strong>Payment Details</strong>
+                                    <br/>
+                                    <span>Payment Type:</span>
+                                    <span t-field="data.payment_type"/>
+                                    <br/>
+                                    <span>Invoice Item:</span>
+                                    <span t-field="data.invoice_item_id"/>
+                                    <br/>
+                                </td>
+                            </tr>
+                        </table>
+                        <!--              Extra Charges Details-->
+                        <table class="table table-sm"
+                               style="border: 1px solid transparent; width: 100%; margin-top: 10px;">
+                            <tr>
+                                <td style="width: 50%; vertical-align: top;">
+                                    <strong>Extra Charges Details</strong>
+                                    <br/>
+                                    <span>Is any extra charges:</span>
+
+
+                                    <span t-field="data.is_extra_charge"/>
+                                    <br/>
+                                    <span>Total Extra:</span>
+                                    <span t-field="data.rent_type"/>
+                                    :
+                                    <span t-field="data.total_extra_hours"
+                                          t-if="data.rent_type == 'hours'"/>
+                                    <span t-field="data.total_extra_days"
+                                          t-if="data.rent_type == 'days'"/>
+                                    <span t-field="data.total_extra_km"
+                                          t-if="data.rent_type == 'kilometers'"/>
+                                    <br/>
+
+                                    <span>Extra Charge /</span>
+                                    <span t-field="data.rent_type"/>
+                                    <span t-field="data.extra_per_hour"
+                                          t-if="data.rent_type == 'hours'"/>
+                                    <span t-field="data.extra_per_day"
+                                          t-if="data.rent_type == 'days'"/>
+                                    <span t-field="data.extra_per_km"
+                                          t-if="data.rent_type == 'kilometers'"/>
+                                    <br/>
+                                    <span>Total Extra Charges:</span>
+                                    <span t-field="data.total_extra_charge"
+                                          t-options="{'widget': 'monetary', 'display_currency': data.currency_id}"/>
+
+                                </td>
+                                <td style="width: 50%; vertical-align: top;">
+                                    <strong>Responsible Details</strong>
+                                    <br/>
+                                    <span>Responsible:</span>
+                                    <span t-field="data.responsible_id.name"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <!--Vehicle Payment Option-->
+                        <h4 style="margin-top: 20px;">Vehicle Payment Option
+                        </h4>
+                        <table class="table table-sm"
+                               style="border: 1px solid black; border-collapse: collapse; width: 100%;">
+                            <thead>
+                                <tr style="background-color: #f2f2f2;">
+                                    <th style="border: 1px solid black; padding: 5px; text-align: left;">
+                                        Invoice Item
+                                    </th>
+                                    <th style="border: 1px solid black; padding: 5px; text-align: left;">
+                                        Payment Date
+                                    </th>
+                                    <th style="border: 1px solid black; padding: 5px; text-align: left;">
+                                        Payment Amount Invoice
+                                    </th>
+                                    <th style="border: 1px solid black; padding: 5px; text-align: left;">
+                                        Payment State
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="data.rental_payment_plan_ids"
+                                    t-as="payment">
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <span t-field="payment.invoice_item_id"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <span t-field="payment.payment_date"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <span t-field="payment.payment_amount"
+                                              t-options="{'widget': 'monetary', 'display_currency': data.currency_id}"/>
+                                        <t t-if="payment.invoice_id">
+                                            <span t-field="payment.invoice_id.name"/>
+                                        </t>
+                                        <t t-else="">
+                                            Draft Invoice
+                                        </t>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <span t-field="payment.payment_state"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!-- Insurance Policy-->
+                        <h4 style="margin-top: 20px;">Insurance Policy</h4>
+                        <table class="table table-sm"
+                               style="border: 1px solid black; border-collapse: collapse; width: 100%;">
+                            <thead>
+                                <tr style="background-color: #f2f2f2;">
+                                    <th style="border: 1px solid black; padding: 5px; text-align: left;">
+                                        Policy Number
+                                    </th>
+                                    <th style="border: 1px solid black; padding: 5px; text-align: left;">
+                                        Name
+                                    </th>
+                                    <th style="border: 1px solid black; padding: 5px; text-align: left;">
+                                        Description
+                                    </th>
+                                    <th style="border: 1px solid black; padding: 5px; text-align: left;">
+                                        Policy Amount
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="data.insurance_ids"
+                                    t-as="insurance">
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <span t-field="insurance.policy_number"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <span t-field="insurance.name"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <span t-field="insurance.description"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <span t-field="insurance.policy_amount"
+                                              t-options="{'widget': 'monetary', 'display_currency': data.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!--Extra Services-->
+                        <h4 style="margin-top: 20px;">Extra Services</h4>
+                        <table class="table table-sm"
+                               style="border: 1px solid black; border-collapse: collapse; width: 100%;">
+                            <thead>
+                                <tr style="background-color: #f2f2f2;">
+                                    <th style="border: 1px solid black; padding: 5px; text-align: left;">
+                                        Product
+                                    </th>
+                                    <th style="border: 1px solid black; padding: 5px; text-align: left;">
+                                        Qty
+                                    </th>
+                                    <th style="border: 1px solid black; padding: 5px; text-align: left;">
+                                        Description
+                                    </th>
+                                    <th style="border: 1px solid black; padding: 5px; text-align: left;">
+                                        Amount
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="data.extra_service_ids"
+                                    t-as="service">
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <span t-field="service.product_id"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <span t-field="service.quantity"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <span t-field="service.description"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <span t-field="service.amount"
+                                              t-options="{'widget': 'monetary', 'display_currency': data.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!-- Damage Details Tab -->
+                        <h4 style="margin-top: 20px;">Vehicle Damages</h4>
+                        <table class="table table-sm"
+                               style="border: 1px solid black; border-collapse: collapse; width: 100%;">
+                            <tr>
+                                <td style="border: 1px solid black; padding: 5px;">
+                                    <strong>Total Damage Amount:</strong>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px;">
+                                    <span t-field="data.damage_amount"
+                                          t-options="{'widget': 'monetary', 'display_currency': data.currency_id}"/>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="margin-top: 10px;">
+                            <strong>Descriptions</strong>
+                        </p>
+                        <p t-field="data.damage_description"/>
+                        <!-- Vehicle Images -->
+                        <h4 style="margin-top: 20px;">Vehicle Images</h4>
+                        <div class="vehicle-images"
+                             style="text-align: center;">
+                            <t t-foreach="data.image_ids" t-as="image_record">
+                                <img t-if="image_record.image"
+                                     t-att-src="image_record.image and ('data:image/png;base64,%s' % image_record.image.decode('utf-8'))"
+                                     alt="Vehicle Image"
+                                     style="max-width: 200px; margin: 10px;"/>
+                            </t>
+                        </div>
+
+                        <!-- Signature Section -->
+                        <div class="signature-section"
+                             style="margin-top: 30px; text-align: right;">
+
+                            <p>Signature Date:
+                                <span t-field="data.sign_date"/>
+                            </p>
+                            <p>
+                                <strong>Signature</strong>
+                                <img t-if="data.digital_sign"
+                                     class="mobile-hide"
+                                     t-attf-src="data:image/png;base64,{{data.digital_sign}}"
+                                     style="width:125px; margin-top:8px;margin-bottom:-25px;"
+                                     alt="Signature"/>
+                            </p>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
