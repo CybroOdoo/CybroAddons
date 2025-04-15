@@ -9,3 +9,8 @@
 #### Version 17.0.1.0.1
 ##### BUGFIX
 - Updated the function for importing data from Jira.
+
+####  11.04.2025
+#### Version 17.0.1.0.2
+##### BUGFIX
+- Fixed issue when importing comments with attachments from Jira.

@@ -26,8 +26,11 @@ import re
 import requests
 from requests.auth import HTTPBasicAuth
 from odoo import fields, models, _
+import logging
 from odoo.exceptions import ValidationError
 from odoo.tools import html2plaintext
+
+_logger = logging.getLogger(__name__)
 
 # The Header parameters
 HEADERS = {
@@ -141,7 +144,7 @@ class ResConfigSettings(models.TransientModel):
                     }
                 }
             }
-        except Exception:
+        except Exception as e:
             raise ValidationError(_('Please Enter Valid Credentials.'))
 
     def action_export_to_jira(self):
@@ -461,102 +464,171 @@ class ResConfigSettings(models.TransientModel):
         return ''
 
     def action_import_from_jira(self):
-        """ Import all the projects and corresponding tasks
-           from Odoo to Jira. If a project or task is modified in Odoo,
-           it will also be updated in Jira.
+        """ Import projects, tasks, comments, and attachments from Jira to Odoo.
+            Updates existing tasks if modified in Jira. Handles text, emojis, and image attachments without duplication.
         """
-
         auth = HTTPBasicAuth(self.user_id_jira, self.api_token)
-        response = requests.get(self.url + 'rest/api/2/project',
+
+        # Fetch Jira projects
+        response = requests.get(f"{self.url}rest/api/2/project",
                                 headers=JIRA_HEADERS, auth=auth)
-        projects = json.loads(response.text)
+        response.raise_for_status()
+        projects = response.json()
+
         odoo_projects = self.env['project.project'].search([])
+        odoo_project_map = {p.project_id_jira: p.id for p in odoo_projects}
 
-        jira_project_ids = [int(a_dict['id']) for a_dict in projects]
-        name_list = [a_dict['name'] for a_dict in projects]
-        key_list = [a_dict['key'] for a_dict in projects]
+        for project_data in projects:
+            jira_id = int(project_data['id'])
+            name = project_data['name']
+            key = project_data['key']
 
-        for (name, key, jira_id) in zip(name_list, key_list, jira_project_ids):
-            if jira_id in [project.project_id_jira for project in
-                           odoo_projects]:
-                response = requests.get(self.url + 'rest/api/3/search',
-                                        headers=JIRA_HEADERS,
-                                        params={'jql': 'project = %s' % key},
-                                        auth=auth)
-                data = response.json()
-                project = self.env['project.project'].search(
-                    [('project_id_jira', '=', jira_id)], limit=1)
-                tasks = self.env['project.task'].search(
-                    [('project_id', '=', project.id)])
-                task_jira_ids = [task.task_id_jira for task in tasks]
-                for issue in data['issues']:
-                    comment_url = self.url + 'rest/api/3/issue/%s/comment' % \
-                                  issue['key']
-                    if issue['key'] in task_jira_ids:
-                        task = self.env['project.task'].search(
-                            [('task_id_jira', '=', issue['key'])], limit=1)
-                    else:
-                        task = self.env['project.task'].create({
-                            'project_id': project.id,
-                            'name': issue['fields']['summary'],
-                            'task_id_jira': issue['key']
-                        })
-                        self.import_task_count += 10
-
-                    response = requests.get(comment_url, headers=JIRA_HEADERS,
-                                            auth=auth)
-                    data = response.json()
-                    messages = self.env['mail.message'].search(
-                        [('res_id', '=', task.id),
-                         ('model', '=', 'project.task')])
-                    odoo_comment_list = [str(html2plaintext(chat.body)) for chat
-                                         in messages]
-                    jira_comment_list = [
-                        str(comment['body']['content'][0]['content'][0]['text'])
-                        for comment in data['comments'] if str(
-                            comment['body']['content'][0]['content'][0][
-                                'text']) not in odoo_comment_list]
-                    comment_list = list(filter(None, jira_comment_list))
-                    for comment in comment_list:
-                        task.message_post(body=comment)
+            # Create or get Odoo project
+            if jira_id in odoo_project_map:
+                project_id = odoo_project_map[jira_id]
+                project = self.env['project.project'].browse(project_id)
             else:
                 project = self.env['project.project'].create({
                     'name': name,
                     'project_id_jira': jira_id,
                     'jira_project_key': key
                 })
-                self.import_project_count = 10
-                response = requests.get(self.url + 'rest/api/3/search',
-                                        headers=JIRA_HEADERS,
-                                        params={'jql': 'project = %s' % key},
-                                        auth=auth)
-                data = response.json()
+                self.import_project_count += 1
+                odoo_project_map[jira_id] = project.id
 
-                for issue in data['issues']:
-                    comment_url = self.url + 'rest/api/3/issue/%s/comment' % \
-                                  issue['key']
+            # Fetch issues for the project
+            response = requests.get(
+                f"{self.url}rest/api/3/search",
+                headers=JIRA_HEADERS,
+                params={'jql': f'project = {key}'},
+                auth=auth
+            )
+            response.raise_for_status()
+            issues = response.json().get('issues', [])
+
+            odoo_tasks = self.env['project.task'].search(
+                [('project_id', '=', project.id)])
+            task_jira_ids = {task.task_id_jira: task.id for task in odoo_tasks}
+
+            for issue in issues:
+                issue_key = issue['key']
+
+                # Create or get Odoo task
+                if issue_key in task_jira_ids:
+                    task = self.env['project.task'].browse(
+                        task_jira_ids[issue_key])
+                else:
                     task = self.env['project.task'].create({
                         'project_id': project.id,
                         'name': issue['fields']['summary'],
-                        'task_id_jira': issue['key']
+                        'task_id_jira': issue_key
                     })
                     self.import_task_count += 1
 
-                    response = requests.get(comment_url, headers=JIRA_HEADERS,
-                                            auth=auth)
-                    data = response.json()
-                    messages = self.env['mail.message'].search(
-                        [('res_id', '=', task.id),
-                         ('model', '=', 'project.task')])
-                    odoo_comment_list = [str(html2plaintext(chat.body)) for chat
-                                         in messages]
-                    jira_comment_list = [
-                        str(comment['body']['content'][0]['content'][0]['text'])
-                        for comment in data['comments'] if str(
-                            comment['body']['content'][0]['content'][0][
-                                'text']) not in odoo_comment_list]
-                    comment_list = list(filter(None, jira_comment_list))
+                # Fetch issue attachments
+                attachment_url = f"{self.url}rest/api/3/issue/{issue_key}?fields=attachment"
+                try:
+                    attachment_response = requests.get(attachment_url,
+                                                       headers=JIRA_HEADERS,
+                                                       auth=auth)
+                    attachment_response.raise_for_status()
+                    issue_attachments = {att['filename']: att for att in
+                                         attachment_response.json().get(
+                                             'fields', {}).get('attachment',
+                                                               [])}
+                except requests.RequestException as e:
+                    _logger.error(
+                        f"Failed to fetch attachments for issue {issue_key}: {str(e)}")
+                    issue_attachments = {}
 
-                    for comment in comment_list:
-                        task.message_post(body=comment)
+                # Fetch comments
+                comment_url = f"{self.url}rest/api/3/issue/{issue_key}/comment"
+                response = requests.get(comment_url, headers=JIRA_HEADERS,
+                                        auth=auth)
+                response.raise_for_status()
+                comments = response.json().get('comments', [])
 
+                # Get existing Odoo comments and attachments to avoid duplicates
+                messages = self.env['mail.message'].search(
+                    [('res_id', '=', task.id), ('model', '=', 'project.task')])
+                odoo_comment_ids = {
+                    m.message_id_jira: html2plaintext(m.body).strip() for m in
+                    messages if m.message_id_jira}
+                existing_attachments = self.env['ir.attachment'].search([
+                    ('res_model', '=', 'project.task'),
+                    ('res_id', '=', task.id)
+                ])
+                existing_attachment_names = {att.name for att in
+                                             existing_attachments}
+
+                for comment in comments:
+                    jira_comment_id = int(comment['id'])
+                    text_content = ""
+                    attachments = []
+                    comment_body = comment.get('body', {}).get('content', [])
+
+                    # Process comment content
+                    for block in comment_body:
+                        if block.get('type') == 'paragraph':
+                            for item in block.get('content', []):
+                                if item.get('type') == 'text':
+                                    text_content += item.get('text', '') + " "
+                                elif item.get('type') == 'emoji':
+                                    text_content += item.get('attrs', {}).get(
+                                        'text', '') + " "
+                        elif block.get('type') == 'mediaSingle':
+                            for item in block.get('content', []):
+                                if item.get('type') == 'media':
+                                    media_attrs = item.get('attrs', {})
+                                    media_id = media_attrs.get('id')
+                                    filename = media_attrs.get('alt',
+                                                               f"attachment-{media_id}")
+                                    if filename in issue_attachments:
+                                        attachment = issue_attachments[filename]
+                                        if attachment[
+                                            'filename'] not in existing_attachment_names:
+                                            attachments.append({
+                                                'url': attachment['content'],
+                                                'filename': attachment[
+                                                    'filename'],
+                                                'media_id': media_id
+                                            })
+                                    else:
+                                        _logger.warning(
+                                            f"Attachment '{filename}' (media_id: {media_id}) not found for issue {issue_key}")
+
+                    # Import text comment if not already in Odoo
+                    text_content = text_content.strip()
+                    if text_content and jira_comment_id not in odoo_comment_ids:
+                        message = task.message_post(body=text_content)
+                        message.write({'message_id_jira': jira_comment_id})
+                        odoo_comment_ids[jira_comment_id] = text_content
+
+                    # Import attachments
+                    for attachment in attachments:
+                        try:
+                            response = requests.get(attachment['url'],
+                                                    headers=JIRA_HEADERS,
+                                                    auth=auth, stream=True)
+                            response.raise_for_status()
+                            attachment_data = base64.b64encode(
+                                response.content).decode('utf-8')
+                            self.env['ir.attachment'].create({
+                                'name': attachment['filename'],
+                                'datas': attachment_data,
+                                'res_model': 'project.task',
+                                'res_id': task.id,
+                                'mimetype': self._guess_mimetype(
+                                    attachment['filename']),
+                            })
+                            existing_attachment_names.add(
+                                attachment['filename'])
+                        except requests.RequestException as e:
+                            _logger.error(
+                                f"Failed to download attachment '{attachment['filename']}' (media_id: {attachment['media_id']}, URL: {attachment['url']}) for task {task.task_id_jira}: {str(e)}")
+
+    def _guess_mimetype(self, filename):
+        """ Guess the MIME type based on the file extension """
+        from mimetypes import guess_type
+        mime_type, _ = guess_type(filename)
+        return mime_type or 'application/octet-stream'
