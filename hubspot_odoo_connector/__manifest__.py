@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'HubSpot Odoo Connector',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Marketing',
     'summary': 'Connect Odoo With Hubspot',
     'description': """ This module integrates HubSpot with Odoo to sync 
