@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+<!-- Pinned Messages Section -->
+    <t t-name="mail.Chatter" t-inherit="mail.Chatter"
+       t-inherit-mode="extension">
+        <xpath expr="//Thread" position="before">
+            <div t-if="pinnedMessages.length > 0" class="o-mail-PinnedMessages">
+                <div class="d-flex pt-4 cursor-pointer fw-bolder"
+                     t-on-click="togglePinnedMessages">
+                    <hr class="flex-grow-1 fs-3"/>
+                    <div class="d-flex align-items-center px-3">
+                        <i class="fa fa-fw"
+                           t-att-class="state.showPinnedMessages ? 'fa-caret-down' : 'fa-caret-right'"/>
+                        Pinned Messages
+                        <span t-if="!state.showPinnedMessages"
+                              class="badge rounded-pill ms-2 text-bg-primary">
+                            <t t-esc="pinnedMessages.length"/>
+                        </span>
+                    </div>
+                    <hr class="flex-grow-1 fe-3"/>
+                </div>
+                <t t-if="state.showPinnedMessages">
+                    <MessageCardList
+                            messages="pinnedMessages"
+                            thread="state.thread"
+                            mode="'extended'"
+                            showEmpty="false"/>
+                </t>
+            </div>
+        </xpath>
+    </t>
+    <!-- Add Pin Button to Message -->
+    <t t-name="mail.Message" t-inherit="mail.Message"
+       t-inherit-mode="extension">
+        <xpath expr="//span[hasclass('o-mail-Message-author')]"
+               position="after">
+            <button class="btn btn-link"
+                    t-on-click="() => this.onMessagePin(props.message.id)">
+                <i t-attf-class="fa {{ props.message.is_pinned ? 'fa-thumb-tack text-primary' : 'fa-thumb-tack-o' }}"
+                   role="img"
+                   t-att-aria-label="props.message.is_pinned ? 'Unpin Message' : 'Pin Message'"/>
+            </button>
+        </xpath>
+    </t>
+</templates>
