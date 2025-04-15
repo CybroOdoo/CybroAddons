@@ -61,7 +61,10 @@ class IrHttp(models.AbstractModel):
                 sid = request.session.sid
                 last_update = user_pool.last_update
                 now = datetime.now()
-                exp_date = datetime.now() + timedelta(minutes=45)
+                session_time_limit = int(
+                    request.env['ir.config_parameter'].sudo().get_param(
+                        'restrict_logins.session_expire_time'))
+                exp_date = datetime.now() + timedelta(minutes=session_time_limit)
                 # Check that the authentication contains bus_inactivity
                 # request_params = request.params.copy()
                 # if 'options' in request_params and 'bus_inactivity' in \

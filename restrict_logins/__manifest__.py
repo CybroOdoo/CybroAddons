@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Restrict Concurrent User Login',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'category': 'Extra Tools',
     'summary': """Ensures restricted concurrent sessions, enforces user force
     logout, and automates session expiry for enhanced security.""",
@@ -33,10 +33,12 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
+    'depends':['base_setup'],
     'data': [
         'data/ir_cron_data.xml',
         'views/res_users_views.xml',
         'views/login_clear_session_template.xml',
+        'views/res_config_settings_views.xml',
     ],
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',

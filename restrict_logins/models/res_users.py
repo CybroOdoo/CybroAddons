@@ -98,7 +98,10 @@ class ResUsers(models.Model):
 
     def _save_session(self):
         """ Function for saving session details of the corresponding user."""
-        exp_date = datetime.utcnow() + timedelta(minutes=45)
+        session_time_limit = int(
+            self.env['ir.config_parameter'].sudo().get_param(
+                'restrict_logins.session_expire_time'))
+        exp_date = datetime.utcnow() + timedelta(minutes=session_time_limit)
         sid = request.session.sid
         self.with_user(SUPERUSER_ID).write({
             'sid': sid,
