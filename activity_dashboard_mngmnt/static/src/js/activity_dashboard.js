@@ -45,7 +45,7 @@ export class ActivityDashboard extends Component {
          self.planned_activity=planned_activity
          self.today_activity=today_activity
          self.overdue_activity=overdue_activity
-         self.activity_type=await self.orm.call('mail.activity.type',
+         self.activity_type = await self.orm.call('mail.activity.type',
                                                         'search_count', [],
                                                         {domain:[]});
     }
@@ -65,7 +65,6 @@ export class ActivityDashboard extends Component {
         view_mode: 'tree,form',
         domain: [['active', 'in', [true,false]]],
         views: [[false, 'list'], [false, 'form']],
-        view_mode: 'form',
         target: 'current'
         }, options);
 	}
@@ -85,7 +84,6 @@ export class ActivityDashboard extends Component {
         domain: [['state', '=', 'planned']],
         view_mode: 'tree,form',
         views: [[false, 'list'], [false, 'form']],
-        view_mode: 'form',
         target: 'current'
         }, options);
 	}
@@ -105,7 +103,6 @@ export class ActivityDashboard extends Component {
         domain: [['state', '=', 'done'],['active','in',[true,false]]],
         view_mode: 'tree,form',
         views: [[false, 'list'], [false, 'form']],
-        view_mode: 'form',
         target: 'current'
         }, options);
 	}
@@ -125,7 +122,6 @@ export class ActivityDashboard extends Component {
         domain: [['state', '=', 'today']],
         view_mode: 'tree,form',
         views: [[false, 'list'], [false, 'form']],
-        view_mode: 'form',
         target: 'current'
         }, options);
 	}/**
@@ -144,7 +140,6 @@ export class ActivityDashboard extends Component {
         domain: [['state', '=', 'overdue']],
         view_mode: 'tree,form',
         views: [[false, 'list'], [false, 'form']],
-        view_mode: 'form',
         target: 'current'
         }, options);
 	}
@@ -163,7 +158,6 @@ export class ActivityDashboard extends Component {
         res_model: 'mail.activity.type',
         view_mode: 'tree,form',
         views: [[false, 'list'], [false, 'form']],
-        view_mode: 'form',
         target: 'current'
         }, options);
 	}

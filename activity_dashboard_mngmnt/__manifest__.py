@@ -16,12 +16,9 @@
 #
 #    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
 #    (AGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
-################################################################################
 {
     'name': 'Activity Management',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Extra Tools',
     'summary': """Dashboard for streamlined management of all activities.""",
     'description': """Simplify activity management with a comprehensive 
@@ -49,7 +46,13 @@
     },
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
+    'post_init_hook': 'post_init_hook',
+    'uninstall_hook': 'uninstall_hook',
     'installable': True,
     'auto_install': False,
     'application': True,
+
 }
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
