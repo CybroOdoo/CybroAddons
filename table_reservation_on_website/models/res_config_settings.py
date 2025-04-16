@@ -34,17 +34,40 @@ class ResConfigSettings(models.TransientModel):
                                                          "_charge")
     refund = fields.Text(string="No Refund Notes", help="No refund notes to "
                                                         "display in website")
+    set_opening_hours = fields.Boolean(string="Set Opening Hours",
+                                       help="Enable to configure restaurant opening and closing hours.",
+                                       config_parameter="table_"
+                                                        "reservation_on_"
+                                                        "website.reservation"
+                                                        "set_opening_hours")
+    opening_hour = fields.Float(string="Opening Hours",
+                                help="Restaurant opening hour in 24-hour format."
+                                )
+    closing_hour = fields.Float(string="Closing Hours",
+                                help="Restaurant closing hour in 24-hour format."
+                                )
 
     def set_values(self):
         """To set the value for a fields in config setting"""
-        self.env['ir.config_parameter'].set_param(
-            'table_reservation_on_website.refund', self.refund)
-        return super(ResConfigSettings, self).set_values()
+        """To set the value for fields in config setting"""
+        super(ResConfigSettings, self).set_values()
+        params = self.env['ir.config_parameter'].sudo()
+        params.set_param('table_reservation_on_website.refund',
+                         self.refund or "")
+        params.set_param('table_reservation_on_website.opening_hour',
+                         self.opening_hour or 0.0)
+        params.set_param('table_reservation_on_website.closing_hour',
+                         self.closing_hour or 0.0)
 
     def get_values(self):
-        """To get the value in config settings"""
+        """To get the values in config settings"""
         res = super(ResConfigSettings, self).get_values()
-        refund = self.env['ir.config_parameter'].sudo().get_param(
-            'table_reservation_on_website.refund')
-        res.update(refund=refund if refund else False)
+        params = self.env['ir.config_parameter'].sudo()
+
+        res.update(
+            refund=params.get_param('table_reservation_on_website.refund', ""),
+            opening_hour=float(params.get_param('table_reservation_on_website.opening_hour', 0.0)),
+            closing_hour=float(params.get_param('table_reservation_on_website.closing_hour', 0.0))
+        )
         return res
+

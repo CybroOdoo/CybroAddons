@@ -21,3 +21,4 @@
 ###############################################################################
 from . import main
 from . import table_reservation_on_website
+from . import pos_config
