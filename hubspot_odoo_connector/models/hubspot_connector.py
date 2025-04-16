@@ -26,7 +26,7 @@ from hubspot.crm.deals import BatchInputSimplePublicObjectBatchInput
 from hubspot.crm.deals import SimplePublicObjectInput
 import requests
 from odoo import fields, models, _
-from odoo.exceptions import AccessError
+from odoo.exceptions import AccessError, UserError
 
 
 class HubspotConnector(models.Model):
@@ -178,22 +178,26 @@ class HubspotConnector(models.Model):
         and shows sync options, if connected disconnects.
         """
         if not self.connection:
-            owners_endpoint = 'https://api.hubapi.com/owners/v2/owners'
+            owners_endpoint = 'https://api.hubapi.com/crm/v3/owners'
             headers = {'Authorization': f'Bearer {self.access_key}'}
+
             try:
                 response = requests.get(owners_endpoint, headers=headers)
                 if response.status_code == 200:
                     data = response.json()
-                    if str(data[0]['ownerId']) == self.owner_id:
-                        self.connection = True
-                        self.state = "connected"
+                    owners = data.get('results', [])
+                    if not owners:
+                        raise UserError(_("No owners found in HubSpot account"))
+                    for owner in owners:
+                        if str(owner['id']) == self.owner_id:
+                            self.connection = True
+                            self.state = "connected"
+                            return
+                    raise UserError(_("Owner ID does not match any HubSpot owner"))
                 else:
-                    raise AccessError(_("Error when Fetching account info"))
-            except requests.exceptions.RequestException:
-                return None
-        else:
-            self.connection = False
-            self.state = "disconnected"
+                    raise UserError(_("Failed to connect to HubSpot: %s") % response.text)
+            except requests.exceptions.RequestException as e:
+                raise UserError(_("Network error connecting to HubSpot: %s") % str(e))
 
     def action_contact_sync(self):
         """
