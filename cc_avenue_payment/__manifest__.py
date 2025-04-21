@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'CCAvenue Payment Acquirer',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'eCommerce,Marketing',
     'summary': 'CCAvenue Payment Gateway For Website',
     'description': "This module enables seamless payments through CCAvenue, "

@@ -100,7 +100,7 @@ class PaymentTransaction(models.Model):
         form_data = {
             "order_id": self.reference,
             "currency": self.currency_id.name,
-            "amount": (self.amount - sale_order.amount_tax),
+            "amount": self.amount,
             "redirect_url": f"{web_url}/payment/ccavenue/return",
             "cancel_url": f"{web_url}/payment/ccavenue/cancel",
             "billing_name": self.partner_name,
