@@ -9,3 +9,8 @@
 #### Version 16.0.1.1.1
 ##### UPDT
 - Manifest updated, Functionality updated in Receipt.js
+
+#### 19.04.2025
+#### Version 16.0.1.1.2
+#### BUG FIX
+- Fix the issue - Fixed an issue where kitchen orders disappeared after changing tables or when items were marked as "Preparing"

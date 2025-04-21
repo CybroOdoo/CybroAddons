@@ -100,8 +100,7 @@ class PosOrder(models.Model):
             if not orders:
                 self.create(dic)
             else:
-                orders.lines = False
-                orders.lines = dic[0]['lines']
+                orders.lines.write({'is_cooking': True})
         kitchen_screen = self.env["kitchen.screen"].sudo().search(
             [("pos_config_id", "=", shop_id)])
 
