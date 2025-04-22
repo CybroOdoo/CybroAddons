@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'HubSpot Odoo Connector',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'summary': 'This module integrate Hubspot with odoo',
     'description': """ This module integrates HubSpot with Odoo to sync 
     contacts, companies, and deals. It allows seamless integration between 
