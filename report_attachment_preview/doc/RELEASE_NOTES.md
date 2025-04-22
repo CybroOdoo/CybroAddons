@@ -4,3 +4,8 @@
 #### Version 17.0.1.0.0
 #### ADD
 - Initial Commit for Reports and Attachments Preview in Browser
+
+#### 17.04.2025
+#### Version 17.0.1.0.0
+#### Updated
+- Updated the depends in the manifest

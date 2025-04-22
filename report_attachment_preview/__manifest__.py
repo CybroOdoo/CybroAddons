@@ -31,7 +31,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['web'],
+    'depends': ['web','mail'],
     'assets': {
         'web.assets_backend': [
             'report_attachment_preview/static/src/js/report_utils.js',
