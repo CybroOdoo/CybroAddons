@@ -19,6 +19,7 @@
 
 ###############################################################################
 import calendar
+from collections import OrderedDict
 from odoo import api, models
 
 
@@ -104,7 +105,7 @@ class ProductTemplate(models.Model):
                 product_product.id inner join product_template on 
                 product_product.product_tmpl_id = product_template.id 
                 where stock_move_line.company_id = %s and 
-                stock_move_line.product_id = %s group by 
+                product_template.id  = %s group by 
                 product_template.name,stock_move_line.date"""
                 % (self.env.company.id, data))
         self._cr.execute(query)
@@ -120,10 +121,38 @@ class ProductTemplate(models.Model):
         for rec in range(1, 13):
             if rec not in month:
                 product_move.append({'count': 0,'dates': calendar.month_name[rec],'month': rec})
+        count = []
+        months = []
         cr = sorted(product_move, key=lambda i: i['month'])
-        count = [item['count'] for item in cr]
-        months = [item['dates'] for item in cr]
-        return {'count': count,'dates': months}
+        month_of_num = 0
+        total_count = 0
+        for rec in cr:
+            if month_of_num == rec['month']:
+                total_count += rec['count']
+                if rec['count'] > 0:
+                    rec.update({'count': total_count})
+            else:
+                month_of_num = rec['month']
+                total_count = rec['count']
+        # OrderedDict to maintain insertion order
+        result = OrderedDict()
+        for item in cr:
+            # Check if month already exists
+            if item['month'] not in result:
+                result[item['month']] = item
+            else:
+                # Update if count is higher
+                if item['count'] > result[item['month']]['count']:
+                    result[item['month']] = item
+        # Convert back to list
+        result = list(result.values())
+        for rec in result:
+            count.append(rec['count'])
+            months.append(rec['dates'])
+        return {
+            'count': count,
+            'dates': months
+        }
 
     @api.model
     def get_product_qty_by_loc(self, args):

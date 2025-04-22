@@ -20,7 +20,7 @@
 ###############################################################################
 {
     'name': 'Product Management',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'category': 'Sales',
     'summary': 'Product Management Dashboard',
     'description': """This module allows you Effortlessly manage your products,
