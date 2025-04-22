@@ -12,15 +12,15 @@ publicWidget.registry.table_reservation = publicWidget.Widget.extend({
     **/
     _onFloorChange: function () {
         var floors = this.$el.find("#floors_rest")[0].value;
-        var date = this.$el.find("#date_id").prevObject[0].offsetParent.lastElementChild[1].defaultValue
-        var start = this.$el.find("#start_id").prevObject[0].offsetParent.lastElementChild[2].defaultValue
+        var date = $("#date_id").val();
+        var start = $("#start_id").val();
         document.getElementById('count_table').innerText = 0;
         document.getElementById('total_amount').innerText = 0;
         ajax.jsonRpc("/restaurant/floors/tables", 'call', {
                        'floors_id' : floors,
                        'date': date,
                        'start':start,
-        })
+                 })
         .then(function (data) {
             if(floors == 0){
                 $('#table_container_row').empty();

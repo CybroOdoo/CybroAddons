@@ -30,8 +30,27 @@ class TableReservation(http.Controller):
     @http.route(['/table_reservation'], type='http', auth='user', website=True)
     def table_reservation(self):
         """For render table reservation template"""
+        pos_config = request.env['pos.config'].sudo().search([],limit=1,
+                                                                      order="id desc")
+        try:
+            opening_hour = self.float_to_time(
+                float(pos_config.opening_hour))
+            closing_hour = self.float_to_time(
+                float(pos_config.closing_hour))
+        except ValueError:
+            opening_hour = "00:00"
+            closing_hour = "23:59"
         return http.request.render(
-            "table_reservation_on_website.table_reservation", {})
+            "table_reservation_on_website.table_reservation",
+            {'opening_hour': opening_hour,
+             'closing_hour': closing_hour})
+
+    def float_to_time(self, hour_float):
+        """ Convert float hours (e.g., 8.5 → 08:30) to HH:MM format """
+        hours = int(hour_float)
+        minutes = int((hour_float - hours) * 60)
+        return f"{hours:02d}:{minutes:02d}"
+
 
     @http.route(['/restaurant/floors'], type='http', auth='user', website=True)
     def restaurant_floors(self, **kwargs):
@@ -54,7 +73,7 @@ class TableReservation(http.Controller):
             "table_reservation_on_website.restaurant_floors", vals)
 
     @http.route(['/restaurant/floors/tables'], type='json', auth='user',
-                website=True)
+                website=True )
     def restaurant_floors_tables(self, **kwargs):
         """To get non-reserved table details"""
         table_inbetween = []
@@ -93,8 +112,8 @@ class TableReservation(http.Controller):
                     data_tables[rec.id]['rate'] = 0
         return data_tables
 
-    @http.route(['/booking/confirm'], type="http", auth="public",
-                csrf=False, website=True)
+    @http.route(['/booking/confirm'], type="http", auth="public", methods=['POST'], website=True
+                )
     def booking_confirm(self, **kwargs):
         """For booking tables"""
         company = request.env.company

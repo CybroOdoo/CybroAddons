@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Table Reservation on Website',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.1.0',
     'category': 'eCommerce,Point of Sale',
     'summary': 'We can reserve table through website',
     'description': 'We can reserve table through website. And also user can '
@@ -53,6 +53,7 @@
         'web.assets_frontend': [
             'table_reservation_on_website/static/src/js/table_reservation.js',
             'table_reservation_on_website/static/src/js/reservation_floor.js',
+            'table_reservation_on_website/static/src/js/reservation.js',
         ],
     },
     'images': ['static/description/banner.png'],

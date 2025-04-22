@@ -5,3 +5,9 @@
 #### ADD
 
 - Initial commit for Table Reservation on Website
+
+####  01.04.2025
+#### Version 15.0.1.1.0
+#### UPDATE
+
+- Updated module to set opening and closing hours.

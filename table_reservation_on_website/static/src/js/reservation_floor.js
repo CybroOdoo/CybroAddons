@@ -15,20 +15,16 @@ publicWidget.registry.table_reservation_floor = publicWidget.Widget.extend({
         var count = this.$el.find('#count_table')[0];
         var amount = this.$el.find('#total_amount')[0];
         var booked = this.$el.find('#tables_input')[0];
-        var table_count = this.$el.find('#tables_counts')[0];
-        count.innerText = table_count.value
         if (current_div_id.style.backgroundColor == 'green'){
             booked_table.splice(booked_table.indexOf(Number(current_div_id.id)), 1);
             current_div_id.style.backgroundColor = '#96ccd5';
             count.innerText = Number(count.innerText) - 1;
             amount.innerText = Number(amount.innerText) - Number(rate)
-            table_count.value =  Number(count.innerText);
         }
         else{
             current_div_id.style.backgroundColor = 'green'
             count.innerText = Number(count.innerText) + 1;
             booked_table.push(Number(current_div_id.id))
-            table_count.value =  Number(count.innerText);
             if (amount.innerText){
                 amount.innerText = Number(rate) + Number(amount.innerText)
             }

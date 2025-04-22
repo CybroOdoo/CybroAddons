@@ -35,3 +35,15 @@ class PosConfig(models.Model):
     refund = fields.Text(string="No Refund Notes", help="No refund notes to "
                                                         "display in website",
                          config_parameter="table_reservation_on_website.refund")
+    set_opening_hours = fields.Boolean(string="Set Opening Hours",
+                                       help="Enable to configure restaurant opening and closing hours.",
+                                       config_parameter="table_"
+                                                        "reservation_on_"
+                                                        "website.reservation"
+                                                        "set_opening_hours")
+    opening_hour = fields.Float(string="Opening Hours",
+                                help="Restaurant opening hour in 24-hour format."
+                                )
+    closing_hour = fields.Float(string="Closing Hours",
+                                help="Restaurant closing hour in 24-hour format."
+                                )
