@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Property sale action -->
+    <record id="property_sale_action" model="ir.actions.act_window">
+        <field name="name">Property Sale</field>
+        <field name="res_model">property.sale</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Property Sale
+            </p>
+        </field>
+    </record>
+    <!-- Property sale menu item -->
+    <menuitem id="property_sale_menu" name="Property Sale"
+              parent="property_menu"
+              action="property_sale_action" sequence="5"/>
+    <!-- Property sale tree view -->
+    <record id="property_sale_view_tree" model="ir.ui.view">
+        <field name="name">property.sale.view.tree</field>
+        <field name="model">property.sale</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="property_id"/>
+                <field name="partner_id"/>
+                <field name="sale_price"/>
+                <field name="state" widget='badge'
+                       decoration-success="state=='confirm'"
+                       decoration-info="state=='draft'"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Property sale form view -->
+    <record id="property_sale_view_form" model="ir.ui.view">
+        <field name="name">property.sale.view.form</field>
+        <field name="model">property.sale</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="create_invoice" string="Create Invoice"
+                            type="object" class="btn primary"
+                            invisible="invoiced or state != 'confirm'"/>
+                    <button name="commission_bill" string="Commission Bill"
+                            type="object" class="btn primary"
+                            invisible="billed or not (any_broker and state == 'confirm')"/>
+                    <button name="action_confirm" string="Confirm" type="object"
+                            class="btn primary" invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoice" type="object"
+                                class="oe_stat_button" icon="fa-file"
+                                string="Invoices" invisible="not invoiced"/>
+                        <button name="action_view_commission_bill" type="object"
+                                class="oe_stat_button" icon="fa-file"
+                                string="Commission Bills"
+                                invisible="not billed"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"
+                                   widget="res_partner_many2one"
+                                   context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}"
+                                   options='{"always_reload": True}'/>
+                            <field name="invoiced" invisible="1"/>
+                            <field name="billed" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="order_date"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Property Details">
+                        <group>
+                            <field name="property_id"/>
+                        </group>
+                        <group>
+                            <field name="sale_price"/>
+                        </group>
+                    </group>
+                    <group string="Broker Details">
+                        <group>
+                            <field name="any_broker" readonly="billed"/>
+                            <field name="broker_id" readonly="billed"
+                                   invisible="not any_broker" required="any_broker"/>
+                        </group>
+                        <group invisible="not any_broker">
+                            <field name="commission_plan_id" required="any_broker" readonly="billed"/>
+                            <field name="commission_type"/>
+                            <field name="commission"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+</odoo>
