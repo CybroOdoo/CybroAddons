@@ -110,24 +110,26 @@ class SaleOrder(models.Model):
     @api.onchange('discount_type', 'discount_rate', 'order_line')
     def supply_rate(self):
         """This function calculates supply rates based on change of
-        discount_type, discount_rate and invoice_line_ids"""
+                discount_type, discount_rate and invoice_line_ids"""
         for order in self:
-            if order.discount_type == 'percent':
-                for line in order.order_line:
-                    line.discount = order.discount_rate
-            else:
-                total = 0.0
-                for line in order.order_line:
-                    total += round((line.product_uom_qty * line.price_unit))
-                if order.discount_rate != 0:
-                    discount = (
-                                           order.discount_rate / total) * 100 if total > 0 else 0
+            if order.discount_rate > 0:
+                if order.discount_type == 'percent':
+                    for line in order.order_line:
+                        line.discount = order.discount_rate
                 else:
-                    discount = order.discount_rate
-                for line in order.order_line:
-                    line.discount = discount
-                    new_sub_price = (line.price_unit * (discount / 100))
-                    line.total_discount = line.price_unit - new_sub_price
+                    total = 0.0
+                    for line in order.order_line:
+                        total += round((line.product_uom_qty * line.price_unit))
+                    if total > 0:
+                        discount = (order.discount_rate / total) * 100
+                    else:
+                        discount = 0.0
+                    for line in order.order_line:
+                        line.discount = discount
+                        new_sub_price = (line.price_unit * (discount / 100))
+                        line.total_discount = line.price_unit - new_sub_price
+            else:
+                pass
 
     def _prepare_invoice(self, ):
         """Super sale order class and update with fields"""
