@@ -32,3 +32,8 @@
 #### Version 17.0.1.1.4
 #### ADD
 - ADD - Created a new i18n translation folder and portuguese PO file added inside the i18n translation folder.
+
+#### 19.04.2025
+#### Version 17.0.1.1.5
+#### BUG FIX
+- Fix the issue - Send button is activated again with negative numbers.

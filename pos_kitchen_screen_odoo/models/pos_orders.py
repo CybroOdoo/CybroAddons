@@ -101,8 +101,7 @@ class PosOrder(models.Model):
                 orders.floor = dic[0]['floor']
                 orders.hour = dic[0]['hour']
                 orders.minutes = dic[0]['minutes']
-                orders.lines = False
-                orders.lines = dic[0]['lines']
+                orders.lines.write({'is_cooking': True})
         kitchen_screen = self.env["kitchen.screen"].sudo().search(
             [("pos_config_id", "=", shop_id)])
         pos_orders = self.env["pos.order.line"].search(
