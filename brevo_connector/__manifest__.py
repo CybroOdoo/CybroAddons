@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Brevo Connector',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Discuss',
     'summary': 'Allows to view the status of mail send by Odoo by connecting to Brevo.',
     'description': 'This module provides the ability to track the Status of '
