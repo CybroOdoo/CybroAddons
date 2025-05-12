@@ -38,12 +38,20 @@ class DownloadAllAttachments(http.Controller):
             Returns:
                 werkzeug.wrappers.Response: HTTP response with the zip file.
             """
-        chatter_id = request.params.get('res_id')
-        attachments = request.env['ir.attachment'].search(
-            [('res_id', '=', chatter_id)])
+        res_id = request.params.get('res_id')
+        res_model = request.params.get('res_model')
+
+        if not res_id or not res_model:
+            return request.not_found()
+
+        attachments = request.env['ir.attachment'].sudo().search([
+            ('res_id', '=', int(res_id)),
+            ('res_model', '=', res_model),
+            ('datas', '!=', False),
+        ])
         if attachments:
             # Define the name of the zip file
-            zip_filename = f'attachments_{chatter_id}.zip'
+            zip_filename = f'attachments_{res_id}.zip'
             # Create a zip file with the attachments and prepare it for download
             zip_data = io.BytesIO()
             with zipfile.ZipFile(zip_data, 'w', zipfile.ZIP_DEFLATED) as zipf:

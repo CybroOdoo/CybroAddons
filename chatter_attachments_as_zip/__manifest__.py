@@ -21,7 +21,7 @@
 ###############################################################################
 {
     "name": "Chatter Attachments as ZIP",
-    "version": "16.0.1.0.0",
+    "version": "16.0.1.0.1",
     "category": "Extra Tools",
     "summary": """Download All Chatter Attachments As A Single Zip File.""",
     "description": """This module helps to download all chatter attachments 

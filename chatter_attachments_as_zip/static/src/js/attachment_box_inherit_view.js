@@ -19,7 +19,7 @@ registerPatch({
                 return;
             }
             // Build the URL with parameters in the query string
-            const url = `/chatter/attachments/download/zip?res_id=${this.chatter.threadId}`;
+            const url = `/chatter/attachments/download/zip?res_id=${this.chatter.threadId}&res_model=${this.chatter.thread.model}`;
             // Send an HTTP GET request to download attachments as a zip file
             fetch(url)
                 .then(response => {
