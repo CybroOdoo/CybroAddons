@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
-<!--    Website helpdesk portal menu action-->
+    <!--    Helpdesk ticket menu.-->
     <record id="website_helpdesk" model="website.menu">
         <field name="name">Helpdesk</field>
         <field name="url" eval="'/helpdesk_ticket'"/>
         <field name="parent_id" ref="website.main_menu"/>
         <field name="sequence" type="int">55</field>
     </record>
-<!--    Help desk thanks page in portal-->
+    <!--For displaying a "Thank You" message after a helpdesk ticket is submitted. -->
     <record id="odoo_website_helpdesk.helpdesk_thanks" model="website.page">
         <field name="name">Thanks (Helpdesk)</field>
         <field name="type">qweb</field>
@@ -80,7 +80,7 @@
             </t>
         </field>
     </record>
-<!--    Helpdesk ticket form template -->
+<!--    Defines a helpdesk ticket form for the Odoo website module.-->
     <template id="ticket_form" name="Helpdesk Ticket">
         <t t-call="website.layout">
             <t t-set="logged_partner"
@@ -95,7 +95,7 @@
             }"/>
             <span class="hidden" data-for="contactus_form"
                   t-att-data-values="contactus_form_values"/>
-            <div id="wrap" class="oe_structure oe_empty website_ticket">
+            <div id="wrap" class="oe_structure oe_empty">
                 <section
                         class="s_title parallax s_parallax_is_fixed bg-black-50 pt24 pb24"
                         data-vcss="001" data-snippet="s_title"
@@ -130,7 +130,7 @@
                                               enctype="multipart/form-data"
                                               class="o_mark_required"
                                               data-mark="*"
-                                              data-model_name="help.ticket"
+                                              data-model_name="ticket.helpdesk"
                                               data-success-mode="redirect"
                                               data-success-page="/helpdesk-thank-you"
                                               data-pre-fill="true">
@@ -227,7 +227,7 @@
                                                     </div>
                                                     <br/>
                                                 </div>
-                                                 <div class="form-group col-12 s_website_form_field s_website_form_custom"
+                                                <div class="form-group col-12 s_website_form_field s_website_form_custom"
                                                      data-type="char"
                                                      data-name="Field">
                                                     <div class="row s_col_no_resize s_col_no_bgcolor">
@@ -242,7 +242,7 @@
                                                             </span>
                                                         </label>
                                                         <div class="col-sm">
-                                                            <select name="ticket_type" id="contact53"
+                                                            <select name="ticket_type_id" id="contact53"
                                                                     t-attf-class="form-control s_website_form_input"
                                                                     required="1">
                                                                 <t t-foreach="types or []"
@@ -253,7 +253,8 @@
                                                                 </t>
                                                             </select>
                                                         </div>
-                                                    </div><br/>
+                                                    </div>
+                                                    <br/>
                                                 </div>
                                                 <div class="form-group col-12 s_website_form_field s_website_form_required"
                                                      data-type="char"
@@ -281,35 +282,37 @@
                                                                 </t>
                                                             </select>
                                                         </div>
-                                                    </div><br/>
-                                                </div>
-                                                <t t-set="product" t-value="request.env['ir.config_parameter'].sudo().get_param('odoo_website_helpdesk.product_website')"/>
-                                                <t t-if="product">
-                                                <div class="form-group col-12 s_website_form_field s_website_form_custom s_website_form_required"
-                                                     data-type="text"
-                                                     data-name="Field">
-                                                    <div class="row s_col_no_resize s_col_no_bgcolor">
-                                                        <label class="col-form-label col-sm-auto s_website_form_label"
-                                                               style="width: 200px"
-                                                               for="contact52">
-                                                            <span class="s_website_form_label_content">
-                                                                Products
-                                                            </span>
-                                                        </label>
-                                                        <div class="col-sm">
-                                                            <select id="product"
-                                                                    name="product"
-                                                                    multiple="multiple">
-                                                                <option value="0"
-                                                                        selected="true">
-                                                                    Choose
-                                                                    Products
-                                                                </option>
-                                                            </select>
-                                                        </div>
                                                     </div>
                                                     <br/>
                                                 </div>
+                                                <t t-set="product"
+                                                   t-value="request.env['ir.config_parameter'].sudo().get_param('odoo_website_helpdesk.product_website')"/>
+                                                <t t-if="product">
+                                                    <div class="form-group col-12 s_website_form_field s_website_form_custom s_website_form_required"
+                                                         data-type="text"
+                                                         data-name="Field">
+                                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                                            <label class="col-form-label col-sm-auto s_website_form_label"
+                                                                   style="width: 200px"
+                                                                   for="contact52">
+                                                                <span class="s_website_form_label_content">
+                                                                    Products
+                                                                </span>
+                                                            </label>
+                                                            <div class="col-sm">
+                                                                <select id="product"
+                                                                        name="product"
+                                                                        multiple="multiple" class="form-control">
+                                                                    <option value="0"
+                                                                            selected="true">
+                                                                        Choose
+                                                                        Products
+                                                                    </option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <br/>
+                                                    </div>
                                                 </t>
                                                 <div class="form-group col-12 s_website_form_field s_website_form_required"
                                                      data-type="char"
@@ -376,7 +379,7 @@
                                                                 Attachment
                                                             </span>
                                                         </label>
-                                                        <div class="col-sm">
+                                                        <div class="col-sm form-control">
                                                             <input type="file"
                                                                    name="ticket_attachment"
                                                                    multiple="true"/>

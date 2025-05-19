@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-#############################################################################
+################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Bhagyadev KP (<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -18,29 +18,40 @@
 #    (LGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+################################################################################
 from odoo import http
 from odoo.http import request
 
 
 class TicketGroupBy(http.Controller):
-    """Control for handle the  customer portal groupBy
-    filtering by the tickets."""
+    """Controller for handling ticket grouping based on different criteria."""
+
     @http.route(['/ticketgroupby'], type='json', auth="public", website=True)
     def ticket_group_by(self, **kwargs):
-        """Display the list of tickets based on the groupBy filtering"""
+        """grouping tickets based on user-defined criteria.
+        Args:
+        - kwargs (dict): Keyword arguments received from the HTTP request.
+        Returns:
+        - http.Response: Rendered HTTP response containing grouped ticket information.
+        """
         context = []
         group_value = kwargs.get("search_value")
         if group_value == '0':
             context = []
-            tickets = request.env["help.ticket"].search([])
-            context.append(tickets)
+            tickets = request.env["ticket.helpdesk"].search(
+                [('user_id', '=', request.env.user.id)])
+            if tickets:
+                context.append({
+                    'name': '',
+                    'data': tickets
+                })
         if group_value == '1':
             context = []
             stage_ids = request.env['ticket.stage'].search([])
             for stage in stage_ids:
-                ticket_ids = request.env['help.ticket'].search([
-                    ('stage_id', '=', stage.id)
+                ticket_ids = request.env['ticket.helpdesk'].search([
+                    ('stage_id', '=', stage.id),
+                    ('user_id', '=', request.env.user.id)
                 ])
                 if ticket_ids:
                     context.append({
@@ -49,10 +60,11 @@ class TicketGroupBy(http.Controller):
                     })
         if group_value == '2':
             context = []
-            type_ids = request.env['helpdesk.types'].search([])
+            type_ids = request.env['helpdesk.type'].search([])
             for types in type_ids:
-                ticket_ids_1 = request.env['help.ticket'].search([
-                    ('ticket_type', '=', types.id)
+                ticket_ids_1 = request.env['ticket.helpdesk'].search([
+                    ('ticket_type_id', '=', types.id),
+                    ('user_id', '=', request.env.user.id)
                 ])
                 if ticket_ids_1:
                     context.append({
