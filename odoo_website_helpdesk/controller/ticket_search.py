@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-################################################################################
+#############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Bhagyadev KP (<https://www.cybrosys.com>)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -18,23 +18,20 @@
 #    (LGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-################################################################################
+#############################################################################
 from odoo import http
 from odoo.http import request
 
 
 class TicketSearch(http.Controller):
+    """Control for handle the  customer portal search
+    filtering by the tickets."""
     @http.route(['/ticketsearch'], type='json', auth="public", website=True)
     def ticket_search(self, **kwargs):
-        """
-        Search for tickets based on the provided search value.
-        :param search_value: The value to search for in the ticket name or subject.
-        :type search_value: str
-        :return: A JSON response containing the matching tickets.
-        :rtype: http.Response
-        """
+        """ Display the list of tickets satisfying the searching condition.
+        Searching the ticket  based on name or subject"""
         search_value = kwargs.get("search_value")
-        tickets = request.env["ticket.helpdesk"].search(
+        tickets = request.env["help.ticket"].search(
             ['|', ('name', 'ilike', search_value),
              ('subject', 'ilike', search_value)])
         values = {

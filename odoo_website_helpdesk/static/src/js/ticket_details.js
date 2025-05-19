@@ -1,8 +1,10 @@
-/** @odoo-module **/
-//enables a popover on elements with the ID 'popover' when a mouseover event occurs.
+odoo.define("odoo_website_helpdesk.ticket_details", function (require) {
+  "use strict";
+
   $(document).on("mouseover", "#popover", function (event) {
     var self = this;
     var item_text = "";
+    var element = $(this);
     if (self.parentElement.parentElement.children[3]) {
       item_text =
         "Ticket : " +
@@ -21,7 +23,7 @@
         self.parentElement.parentElement.children[3].outerText +
         "<br/>";
     }
-    $(this).popover({
+    element.popover({
       html: true,
       placement: "right",
       trigger: "hover",
@@ -29,3 +31,4 @@
       content: "<span>" + item_text + "</span>",
     });
   });
+});

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-################################################################################
+#############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Bhagyadev KP (<https://www.cybrosys.com>)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -18,54 +18,59 @@
 #    (LGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-################################################################################
+#############################################################################
 {
-    'name': "Website Helpdesk Management",
-    'version': '18.0.1.0.2',
+    'name': "Website Helpdesk Support Ticket Management",
+    'version': '16.0.3.0.1',
     'category': 'Website',
-    'summary': """The website allows for the creation of tickets, which can 
-    then be controlled from the backend.""",
-    'description': """Website Helpdesk, Odoo Helpdesk, Helpdesk, Helpdesk Management, Helpdesk Ticket, Odoo18 Helpdesk, Website Ticket, Support Ticket, Odoo18""",
+    'summary': """Helpdesk Module for community""",
+    'description': 'Can create ticket from website also and can manage it from'
+                   ' backend.Bill can be created for ticket with service cost',
     'author': "Cybrosys Techno Solutions",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'website': "http://www.cybrosys.com",
-    'depends': ['website', 'project', 'sale_project', 'hr_timesheet',
-                'mail', 'contacts'],
+    'website': 'https://www.cybrosys.com',
+    'depends': ['base', 'website', 'project', 'sale_project',
+                'hr_timesheet', 'mail', 'contacts'],
     'data': [
-        'security/odoo_website_helpdesk_groups.xml',
         'security/odoo_website_helpdesk_security.xml',
         'security/ir.model.access.csv',
-        'data/helpdesk_category_data.xml',
-        'data/helpdesk_replay_template_data.xml',
-        'data/helpdesk_type_data.xml',
-        'data/ir_cron_data.xml',
         'data/ir_sequence_data.xml',
-        'data/mail_template_data.xml',
         'data/ticket_stage_data.xml',
-        'views/helpdesk_category_views.xml',
-        'views/helpdesk_tag_views.xml',
-        'views/helpdesk_type_views.xml',
-        'views/merge_ticket_views.xml',
-        'views/odoo_website_helpdesk_portal_templates.xml',
-        'views/portal_templates.xml',
-        'views/rating_form.xml',
-        'report/helpdesk_ticket_report_template.xml',
+        'data/helpdesk_types_data.xml',
+        'data/ir_cron_data.xml',
+        'data/mail_template_data.xml',
+        'views/help_team_views.xml',
+        'views/portal_search_templates.xml',
         'views/res_config_settings_views.xml',
-        'views/team_helpdesk_views.xml',
-        'views/ticket_helpdesk_views.xml',
-        'views/ticket_stage_views.xml',
         'views/website_form.xml',
-        'views/helpdesk_menu_views.xml',
+        'views/report_templates.xml',
+        'views/help_ticket_views.xml',
+        'views/portal_views_templates.xml',
+        'views/helpdesk_categories_views.xml',
+        'views/rating_form_templates.xml',
+        'views/merge_tickets_views.xml',
+        'views/helpdesk_tag_views.xml',
+        'views/helpdesk_types_views.xml',
+        'views/ticket_stage_views.xml',
+        'views/helpdesk_replay_template.xml',
+        'views/odoo_website_helpdesk_menus.xml',
+        'report/help_ticket_templates.xml',
     ],
     'assets': {
+        'web.assets_backend': [
+            'odoo_website_helpdesk/static/src/xml/help_ticket_templates.xml',
+            'odoo_website_helpdesk/static/src/js/helpdesk_dashboard_action.js',
+        ],
         'web.assets_frontend': [
-            '/odoo_website_helpdesk/static/src/js/ticket_details.js',
-            '/odoo_website_helpdesk/static/src/js/portal_search.js',
+            'odoo_website_helpdesk/static/src/js/ticket_details.js',
+            '/odoo_website_helpdesk/static/src/js/portal_groupby_and_search.js',
             '/odoo_website_helpdesk/static/src/js/multiple_product_choose.js',
+            '/odoo_website_helpdesk/static/src/cdn/jquery.sumoselect.min.js',
+            '/odoo_website_helpdesk/static/src/cdn/sumoselect.min.css',
         ]
     },
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,

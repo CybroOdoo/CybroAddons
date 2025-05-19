@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-################################################################################
+#############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Bhagyadev KP (<https://www.cybrosys.com>)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -18,13 +18,13 @@
 #    (LGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-################################################################################
+#############################################################################
 from odoo import fields, models
 
 
 class HelpdeskTag(models.Model):
-    """Helpdesk tags"""
+    """ Its handle to control the helpdesk ticket tags"""
     _name = 'helpdesk.tag'
-    _description = 'Helpdesk Tags'
+    _description = 'Helpdesk Tag'
 
-    name = fields.Char(string='Tag', help='Tag name of the helpdesk.')
+    name = fields.Char(string='Tag', help='Choose the tags')
