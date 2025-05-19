@@ -1,123 +1,127 @@
-/**@odoo-module*/
+/** @odoo-module **/
+
 import publicWidget from "@web/legacy/js/public/public_widget";
 
 publicWidget.registry.WarrantyClaim = publicWidget.Widget.extend({
-//init function to bind rpc
-init(){
-    this.rpc = this.bindService("rpc");
-},
     selector: '.container',
+
     events: {
-        'click #customer_id': '_onClickCustomer',
         'change #customer_id': '_onClickCustomer',
-        'click #sale_order_id': '_onClickSaleOrder',
         'change #sale_order_id': '_onClickSaleOrder',
-        'submit #form_submit': '_onSubmit'
+        'submit #form_submit': '_onSubmit',
+    },
+
+    willStart: function () {
+        const def = this._super.apply(this, arguments);
+        this.rpc = this.bindService("rpc");
+        return def;
     },
 
     _onClickCustomer: function (ev) {
-    //    To show the sale order of the selected customer only
         ev.preventDefault();
-        var selectedCustomerId = this.$('#customer_id').val();
-        var $saleOrderDropdown = this.$('#sale_order_id');
-        var $productDropdown = this.$('#products_id');
+        const selectedCustomerId = this.$('#customer_id').val();
+        const $saleOrderDropdown = this.$('#sale_order_id');
+        const $productDropdown = this.$('#products_id');
+
         $saleOrderDropdown.empty().append('<option value="">Select Sale Order</option>').prop('disabled', true);
         $productDropdown.empty().append('<option value="">Select Product</option>').prop('disabled', true);
+
         if (selectedCustomerId) {
             this.rpc('/partner/sale_order', {
-                'partner_id': parseInt(selectedCustomerId)
-            }).then(function (result) {
-               if (result.length > 0) {
-                $saleOrderDropdown.prop('disabled', false);
-                $.each(result, function (i, saleOrder) {
-                    $saleOrderDropdown.append($('<option>', {
-                        value: saleOrder.id,
-                        text: saleOrder.name,
+                partner_id: parseInt(selectedCustomerId)
+            }).then(result => {
+                if (Array.isArray(result) && result.length > 0) {
+                    $saleOrderDropdown.prop('disabled', false);
+                    result.forEach(saleOrder => {
+                        $saleOrderDropdown.append($('<option>', {
+                            value: saleOrder.id,
+                            text: saleOrder.name,
                         }));
                     });
-                    $productDropdown.prop('disabled', false);
-                } else {
-                    $productDropdown.prop('disabled', true);
                 }
             });
         }
     },
 
     _onClickSaleOrder: function (ev) {
-    //    get the product details of the selected sale order
         ev.preventDefault();
-        var selectedSaleOrderId = this.$('#sale_order_id').val();
-        var $productDropdown = this.$('#products_id');
-        $productDropdown.empty().append('<option value="">Select Product</option>').prop('disabled', true);
-        var self = this
-        if (selectedSaleOrderId) {
-        this.rpc('/partner/sale_order_line', {
-                'order_id': parseInt(selectedSaleOrderId)
-            }).then(function (result) {
-                var $productDropdown = self.$('#products_id');
-                $productDropdown.prop('disabled', false);
-                $productDropdown.empty();
-                $.each(result, function (i, saleOrderLine) {
-                    $productDropdown.append($('<option>', {
-                        value: saleOrderLine.product_id[0],
-                        text: saleOrderLine.product_id[1],
-                    }));
-                });
-            });
-        }
-    },
+        const selectedSaleOrderId = this.$('#sale_order_id').val();
+        const $productDropdown = this.$('#products_id');
+        const self = this;
 
-    _onSubmit: function (ev) {
-        var self = this
-        ev.preventDefault();
-        // Get the selected sale order ID, customer ID, and product ID
-        var selectedSaleOrderId = this.$('#sale_order_id').val();
-        var selectedCustomerId = this.$('#customer_id').val();
-        var selectedProductId = this.$('#products_id').val();
-        var errorMessageElement = this.$('#error_message');
-        if (selectedSaleOrderId && selectedCustomerId && selectedProductId) {
-            this.rpc('/partner/warranty_claim_count',{
-                'sale_order_id' : parseInt(selectedSaleOrderId)
-            }).then(function (count) {
-                if (count > 0) {
-                    errorMessageElement.text("A warranty claim for this sale order already exists.");
-                    setTimeout(function () {
-                        errorMessageElement.text("");
-                    }, 10000);
-                } else {
-                    errorMessageElement.text("");
-                    self.rpc('/read/sale_order',{
-                    'order_id': parseInt(selectedSaleOrderId) ,
-                    }).then(function (saleOrderData) {
-                        if (saleOrderData && saleOrderData[0] && saleOrderData[0].is_warranty_check === true) {
-                            self.rpc('/check/selected_product',{
-                            'product_id' : parseInt(selectedProductId)
-                            }).then(function (productData) {
-                                if (productData && productData[0] && productData[0].is_warranty_available === true) {
-                                    self.rpc('/create_warranty_claim',{
-                                        'sale_order_id': parseInt(selectedSaleOrderId),
-                                        'customer_id': parseInt(selectedCustomerId),
-                                        'product_id': parseInt(selectedProductId),
-                                    }).then(function (result) {
-                                        window.location.href = '/warranty/claim/submit';
-                                    });
-                                } else {
-                                    errorMessageElement.text("Selected product does not have warranty available.");
-                                    setTimeout(function () {
-                                        errorMessageElement.text("");
-                                    }, 10000);
-                                }
-                            });
-                        } else {
-                            errorMessageElement.text("Selected sale order does not have warranty available.");
-                            setTimeout(function () {
-                                errorMessageElement.text("");
-                            }, 10000);
+        $productDropdown.empty().append('<option value="">Select Product</option>').prop('disabled', true);
+
+        if (selectedSaleOrderId) {
+            this.rpc('/partner/sale_order_line', {
+                order_id: parseInt(selectedSaleOrderId)
+            }).then(result => {
+                if (Array.isArray(result) && result.length > 0) {
+                    $productDropdown.prop('disabled', false);
+                    result.forEach(saleOrderLine => {
+                        if (saleOrderLine.product_id && saleOrderLine.product_id.length === 2) {
+                            $productDropdown.append($('<option>', {
+                                value: saleOrderLine.product_id[0],
+                                text: saleOrderLine.product_id[1],
+                            }));
                         }
                     });
                 }
             });
         }
+    },
+
+    _onSubmit: function (ev) {
+        ev.preventDefault();
+        const self = this;
+
+        const selectedSaleOrderId = this.$('#sale_order_id').val();
+        const selectedCustomerId = this.$('#customer_id').val();
+        const selectedProductId = this.$('#products_id').val();
+        const errorMessageElement = this.$('#error_message');
+
+        if (selectedSaleOrderId && selectedCustomerId && selectedProductId) {
+            this.rpc('/partner/warranty_claim_count', {
+                sale_order_id: parseInt(selectedSaleOrderId)
+            }).then(count => {
+                if (count > 0) {
+                    errorMessageElement.text("A warranty claim for this sale order already exists.");
+                    setTimeout(() => errorMessageElement.text(""), 10000);
+                } else {
+                    errorMessageElement.text("");
+                    self.rpc('/read/sale_order', {
+                        order_id: parseInt(selectedSaleOrderId),
+                    }).then(saleOrderData => {
+                        const order = saleOrderData && saleOrderData[0];
+                        if (order && order.is_warranty_check === true) {
+                            self.rpc('/check/selected_product', {
+                                product_id: parseInt(selectedProductId)
+                            }).then(productData => {
+                                const product = productData && productData[0];
+                                if (product && product.is_warranty_available === true) {
+                                    self.rpc('/create_warranty_claim', {
+                                        sale_order_id: parseInt(selectedSaleOrderId),
+                                        customer_id: parseInt(selectedCustomerId),
+                                        product_id: parseInt(selectedProductId),
+                                    }).then(() => {
+                                        window.location.href = '/warranty/claim/submit';
+                                    });
+                                } else {
+                                    errorMessageElement.text("Selected product does not have warranty available.");
+                                    setTimeout(() => errorMessageElement.text(""), 10000);
+                                }
+                            });
+                        } else {
+                            errorMessageElement.text("Selected sale order does not have warranty available.");
+                            setTimeout(() => errorMessageElement.text(""), 10000);
+                        }
+                    });
+                }
+            });
+        } else {
+            errorMessageElement.text("Please select all required fields.");
+            setTimeout(() => errorMessageElement.text(""), 10000);
+        }
     }
 });
+
 return publicWidget.registry.WarrantyClaim;
