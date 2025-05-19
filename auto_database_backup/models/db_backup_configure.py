@@ -795,7 +795,18 @@ class DbBackupConfigure(models.Model):
                         oauth2_refresh_token=rec.dropbox_refresh_token)
                     dropbox_destination = (rec.dropbox_folder + '/' +
                                            backup_filename)
-                    dbx.files_upload(temp.read(), dropbox_destination)
+                    file_size = os.path.getsize(temp.name)
+                    upload_threshold = 150 * 1024 * 1024  # 150 MB in bytes
+
+                    if file_size > upload_threshold:
+                        # Large file — use chunked upload
+                        rec.upload_large_file_to_dropbox(temp.name,
+                                                         dropbox_destination)
+                    else:
+                        # Small file — use normal upload
+
+                        dbx.files_upload(temp.read(), dropbox_destination)
+
                     if rec.auto_remove:
                         files = dbx.files_list_folder(rec.dropbox_folder)
                         file_entries = files.entries
@@ -1008,6 +1019,36 @@ class DbBackupConfigure(models.Model):
                         # notifying them about the failed backup
                         if rec.notify_user:
                             mail_template_failed.send_mail(rec.id, force_send=True)
+
+    def upload_large_file_to_dropbox(self, local_path, dropbox_path):
+        """Upload a large file to Dropbox using chunked upload."""
+        chunk_size = 4 * 1024 * 1024
+        dbx = dropbox.Dropbox(
+            app_key=self.dropbox_client_key,
+            app_secret=self.dropbox_client_secret,
+            oauth2_refresh_token=self.dropbox_refresh_token)
+        with open(local_path, 'rb') as f:
+            file_size = os.path.getsize(local_path)
+
+            # Start an upload session
+            session_start_result = dbx.files_upload_session_start(
+                f.read(chunk_size))
+            cursor = dropbox.files.UploadSessionCursor(
+                session_id=session_start_result.session_id, offset=f.tell())
+            commit = dropbox.files.CommitInfo(path=dropbox_path)
+
+            # Upload chunks
+            while f.tell() < file_size:
+                if (file_size - f.tell()) <= chunk_size:
+                    # Upload the last chunk and finish the session
+                    dbx.files_upload_session_finish(f.read(chunk_size), cursor,
+                                                    commit)
+                else:
+                    # Upload a chunk and update the cursor
+                    dbx.files_upload_session_append_v2(f.read(chunk_size),
+                                                       cursor)
+                    cursor.offset = f.tell()
+
 
     def dump_data(self, db_name, stream, backup_format):
         """Dump database `db` into file-like object `stream` if stream is None
