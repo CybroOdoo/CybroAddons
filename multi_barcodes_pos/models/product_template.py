@@ -39,9 +39,10 @@ class ProductTemplate(models.Model):
            and update the associated multi-barcode product.
         """
         res = super(ProductTemplate, self).create(vals)
-        res.template_multi_barcodes_ids.update({
-            'product_multi_id': res.product_variant_id.id
-        })
+        if res.product_variant_count == 1:
+            res.template_multi_barcodes_ids.update({
+                'product_multi_id': res.product_variant_id.id
+            })
         return res
 
     def write(self, vals):
@@ -50,8 +51,9 @@ class ProductTemplate(models.Model):
            update the associated multi-barcode product.
         """
         res = super(ProductTemplate, self).write(vals)
-        if self.template_multi_barcodes_ids:
-            self.template_multi_barcodes_ids.update({
-                'product_multi_id': self.product_variant_id.id
-            })
+        for rec in self:
+            if rec.product_variant_count == 1 and rec.template_multi_barcodes_ids:
+                rec.template_multi_barcodes_ids.update({
+                    'product_multi_id': rec.product_variant_id.id
+                })
         return res

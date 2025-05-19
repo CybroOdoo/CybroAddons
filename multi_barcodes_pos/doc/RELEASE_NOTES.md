@@ -14,3 +14,8 @@
 #### Version 17.0.1.0.2
 ##### BUG FIX
 - Added an alert and fix issue of multiple barcode 
+
+#### 19.05.2025
+#### Version 17.0.1.0.3
+##### BUG FIX
+- Fixed a bug where updating the product template caused the barcodes of all variants to be assigned to the first variant, resulting in the removal of barcodes from the other variants.

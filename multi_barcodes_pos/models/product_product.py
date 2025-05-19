@@ -50,7 +50,8 @@ class ProductProduct(models.Model):
                the associated multi-barcode product template.
         """
         res = super(ProductProduct, self).write(vals)
-        self.product_multi_barcodes_ids.update({
-            'template_multi_id': self.product_tmpl_id.id
-        })
+        if 'product_multi_barcodes_ids' in vals:
+            self.product_multi_barcodes_ids.update({
+                'template_multi_id': self.product_tmpl_id.id
+            })
         return res
