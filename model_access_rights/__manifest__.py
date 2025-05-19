@@ -21,7 +21,7 @@
 ##############################################################################
 {
     'name': 'Hide Create|Delete|Archive|Export Options - Model Wise',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'category': 'Extra Tools',
     'summary': """Hide module features for user groups.""",
     'description': """

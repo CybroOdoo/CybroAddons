@@ -4,3 +4,8 @@
 #### Version 15.0.1.0.0
 ##### ADD
 - Initial Commit for Hide Create|Delete|Archive|Export Options - Model Wise
+
+#### 12.05.2025
+#### Version 15.0.1.0.1
+#### BUG FIX
+- Fixed issue of export action not appearing in res.groups list view after module installation

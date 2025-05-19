@@ -47,24 +47,26 @@ class AccessRight(models.Model):
 
     @api.model
     def hide_buttons(self, args):
-        """This function contains a query  that detects which all options want
-        to hide, in which model,and to which user groups"""
-        access_right_rec = self.sudo().search_read([],
-                                                   ['model_id', 'is_delete',
-                                                    'is_export',
-                                                    'is_create_or_update',
-                                                    'is_archive',
-                                                    'groups_id'])
-        for rec in access_right_rec:
-            model_id = self.env['ir.model'].sudo(). \
-                browse(rec['model_id'][0]).model
-            if str(model_id) == args[1]:
-                groups = self.env['res.users'].browse(args[0]).groups_id.ids
-                if rec['groups_id'][0] in groups:
-                    data = {
-                        'is_delete': rec['is_delete'],
-                        'is_export': rec['is_export'],
-                        'is_create_or_update': rec['is_create_or_update'],
-                        'is_archive': rec['is_archive']
-                    }
-                    return data
+        """Returns the visibility settings for buttons per model and group."""
+        user = self.env['res.users'].browse(args[0])
+        model_name = args[1]
+        access_right_rec = self.sudo().search_read([
+            ('model_id.model', '=', model_name),
+            ('groups_id', 'in', user.groups_id.ids)
+        ], ['is_delete', 'is_export', 'is_create_or_update', 'is_archive'])
+
+        if access_right_rec:
+            rec = access_right_rec[0]  # If multiple, first match wins
+            return {
+                'is_delete': rec['is_delete'],
+                'is_export': rec['is_export'],
+                'is_create_or_update': rec['is_create_or_update'],
+                'is_archive': rec['is_archive']
+            }
+        return {
+            'is_delete': False,
+            'is_export': False,
+            'is_create_or_update': False,
+            'is_archive': False
+        }
+

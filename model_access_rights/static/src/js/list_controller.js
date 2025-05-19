@@ -27,8 +27,10 @@ patch(ListController.prototype, 'model_access_rights/static/src/js/list_controll
                 if(data['is_archive']){
                     self.archiveEnabled = false;
                 }
-                if(data['is_export']){
+                if (data['is_export']) {
                     self.isExportEnable = false;
+                } else {
+                    self.isExportEnable = true;
                 }
             }
         });
