@@ -55,6 +55,7 @@ class WebsiteFormInherit(WebsiteForm):
         :return: JSON response indicating the success or failure of form submission.
         :rtype: str
         """
+        print('hiiii')
         customer = request.env.user.partner_id
         lowest_stage_id = None
         if model_name == 'ticket.helpdesk':
@@ -105,6 +106,20 @@ class WebsiteFormInherit(WebsiteForm):
                     'category_id': kwargs.get('category'),
                 }
             ticket_id = request.env['ticket.helpdesk'].sudo().create(rec_val)
+            if ticket_id and partner_create.email:
+                request.env['mail.mail'].sudo().create({
+                    'subject': 'Your Ticket Has Been Created',
+                    'body_html': f"<p>Hello {partner_create.name},</p><p>Your ticket <strong>{ticket_id.name}</strong> with the subject <strong>{ticket_id.subject}</strong> has been successfully submitted. Our support team will contact you soon.</p> <p>Thank You.</p>",
+                    'email_to': partner_create.email,
+                    'email_from': request.env.user.email or 'support@example.com',
+                }).send()
+                ticket_id.message_post(
+                    body="A confirmation email regarding the ticket creation has been sent to the customer.",
+                    subject="Ticket Confirmation Email",
+                    message_type='email',
+                    subtype_xmlid="mail.mt_comment",
+                )
+
             request.session['ticket_number'] = ticket_id.name
             request.session['ticket_id'] = ticket_id.id
             model_record = request.env['ir.model'].sudo().search(

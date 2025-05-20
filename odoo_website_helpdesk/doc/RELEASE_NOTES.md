@@ -15,3 +15,9 @@
 ##### UPDT
 -A new contact record is created upon form submission.
 
+#### 19.05.2025
+#### Version 17.0.1.0.3
+##### UPDT
+-A confirmation email will be sent to the customer upon ticket creation.
+
+
