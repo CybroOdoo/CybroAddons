@@ -31,7 +31,6 @@
     'website': "https://www.cybrosys.com",
     'depends': ['base'],
     'data': [
-        'security/security.xml',
         'views/res_users_views.xml',
     ],
     'license': 'LGPL-3',
