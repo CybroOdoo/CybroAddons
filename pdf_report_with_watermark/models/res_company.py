@@ -43,3 +43,14 @@ class ResCompany(models.Model):
     background_image = fields.Image(string='Image', help='Select the image')
     rotating_angle = fields.Float(string='Angle of Rotation',
                                   help='Mention the angle of rotation')
+
+class BaseDocumentLayout(models.TransientModel):
+    _inherit = 'base.document.layout'
+
+    watermark = fields.Boolean(related='company_id.watermark')
+    content_text = fields.Char(related='company_id.content_text')
+    watermark_type = fields.Selection(related='company_id.watermark_type')
+    color_picker = fields.Char(related='company_id.color_picker')
+    font_size = fields.Integer(related='company_id.font_size')
+    background_image = fields.Image(related='company_id.background_image')
+    rotating_angle = fields.Float(related='company_id.rotating_angle')
