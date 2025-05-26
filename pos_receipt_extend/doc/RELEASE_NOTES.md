@@ -11,3 +11,7 @@
 #### BUGFIX
 - Added superuser access to res.config.settings
 
+#### 26.05.2025
+#### Version 17.0.1.0.1
+#### BUGFIX
+- Updated the template of the Pos order receipt.
