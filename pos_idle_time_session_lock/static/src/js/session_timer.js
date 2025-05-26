@@ -18,6 +18,9 @@ var count_down_time;
 const PosTimerChrome = (Chrome) =>
         class extends Chrome {
             // Timer main function for set the timer
+            setup() {
+                super.setup();
+            }
             set_timer() {
                 var self = this;
                 var count_down_time = this.env.pos.config.idle_time_limit
@@ -35,9 +38,9 @@ const PosTimerChrome = (Chrome) =>
                         var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                         var seconds = Math.floor((distance % (1000 * 60)) / 1000);
                         if (hours) {
-                            this.body.children[1].querySelector('#times').textContent = hours + " h " + minutes + " m " + seconds + " s ";
+                            this.document.body.querySelector('#times').textContent = hours + " h " + minutes + " m " + seconds + " s ";
                         } else {
-                            this.body.children[1].querySelector('#times').textContent= minutes + " m " + seconds + " s ";
+                            this.document.body.querySelector('#times').textContent= minutes + " m " + seconds + " s ";
                         }
                         if (distance < 0) {
                             clearInterval(x);
