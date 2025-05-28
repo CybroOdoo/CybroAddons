@@ -40,14 +40,13 @@ class AccountBudgetPost(models.Model):
                                      'account.budget.post'))
 
     def _check_account_ids(self, vals):
-        for val in vals:
-            if 'account_ids' in val:
-                account_ids = val['account_ids']
-            else:
-                account_ids = self.account_ids
-            if not account_ids:
-                raise ValidationError(
-                    _('The budget must have at least one account.'))
+        if 'account_ids' in vals:
+            account_ids = vals['account_ids']
+        else:
+            account_ids = self.account_ids
+        if not account_ids:
+            raise ValidationError(
+                _('The budget must have at least one account.'))
 
     @api.model_create_multi
     def create(self, vals):
