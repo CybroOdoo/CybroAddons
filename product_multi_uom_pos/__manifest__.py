@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "POS Product Multiple UOM",
-    'version': '17.0.1.0.4',
+    'version': '17.0.1.0.5',
     'category': 'Point of Sale',
     'summary': """A module to manage multiple UoM in POS""",
     'description': """Using this app, you can change unit of measure of 
@@ -32,7 +32,9 @@
     'website': "https://www.cybrosys.com",
     'depends': ['point_of_sale', 'uom'],
     'data':
-        [   'data/uom_data.xml',
+        [
+            'security/ir.model.access.csv',
+            'data/uom_data.xml',
             'views/res_config_settings_views.xml',
             'views/product_template_views.xml',
             'views/pos_order_views.xml',
