@@ -101,7 +101,6 @@ class WebsiteFormInherit(WebsiteForm):
                     'form_builder_model_model'] = model_record.model
                 request.session['form_builder_model'] = model_record.name
                 request.session['form_builder_id'] = ticket_id.id
-                return json.dumps({'id': ticket_id.id})
             else:
                 rec_val = {
                     'customer_name': kwargs.get('customer_name'),
@@ -137,7 +136,23 @@ class WebsiteFormInherit(WebsiteForm):
                 request.session['form_builder_model_model'] = model_record.model
                 request.session['form_builder_model'] = model_record.name
                 request.session['form_builder_id'] = ticket_id.id
-                return json.dumps({'id': ticket_id.id})
+            # Sent a confirmation mail upon Ticket creation
+            if ticket_id:
+                request.env['mail.mail'].sudo().create({
+                    'subject': 'Your Ticket Has Been Created',
+                    'body_html': f"<p>Hello {partner_create.name},</p><p>Your ticket <strong>{ticket_id.name}</strong> with the subject <strong>{ticket_id.subject}</strong> has been successfully submitted. Our support team will contact you soon.</p> <p>Thank You.</p>",
+                    'email_to': partner_create.email,
+                    'email_from': request.env.user.email or 'support@example.com',
+                }).send()
+                ticket_id.message_post(
+                    body="A confirmation email regarding the ticket creation has been sent to the customer.",
+                    subject="Ticket Confirmation Email",
+                    message_type='email',
+                    subtype_xmlid="mail.mt_comment",
+                )
+            return json.dumps({'id': ticket_id.id})
+
+
         else:
             model_record = request.env['ir.model'].sudo().search(
                 [('model', '=', model_name)])
