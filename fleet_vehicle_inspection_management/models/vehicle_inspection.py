@@ -37,4 +37,4 @@ class VehicleInspection(models.Model):
     user_id = fields.Many2one('res.users', string='Inspection Supervisor',
                               helps='Inspection supervisor')
     company_id = fields.Many2one('res.company', string='Company',
-                                 help='Company Name')
+                                 help='Company Name', default=lambda self: self.env.company)
