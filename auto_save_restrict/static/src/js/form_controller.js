@@ -1,33 +1,50 @@
 /** @odoo-module */
 import { FormController } from "@web/views/form/form_controller";
 import { patch } from "@web/core/utils/patch";
-import { useSetupView } from "@web/views/view_hook";
-patch(FormController.prototype, {
+import { useSetupAction } from "@web/webclient/actions/action_hook";
+import { _t } from "@web/core/l10n/translation";
+import { SettingsConfirmationDialog } from "@web/webclient/settings_form_view/settings_confirmation_dialog";
+
 /* Patch FormController to restrict auto save in form views */
+
+patch(FormController.prototype, {
    setup(){
       super.setup(...arguments);
-      this.beforeLeaveHook = false
-      useSetupView({
-          beforeLeave: () => this.beforeLeave(),
-          beforeUnload: (ev) => this.beforeUnload(ev),
-      });
    },
+
    async beforeLeave() {
-   /* function will work before leave the form */
-      if(this.model.root.isDirty && this.beforeLeaveHook == false){
-          if (confirm("Do you want to save changes before leaving?")) {
-              this.beforeLeaveHook = true
-              await this.model.root.save({
-                  reload: false,
-                  onError: this.onSaveError.bind(this),
-              });
-          } else {
-              this.beforeLeaveHook = true
-              this.model.root.discard();
-          }
-      }
-   },
-   beforeUnload: async (ev) => {
-       ev.preventDefault();
-   }
+        const dirty = await this.model.root.isDirty();
+        if (dirty) {
+            return this._confirmSave();
+        }
+    },
+
+   beforeUnload() {},
+
+   async _confirmSave() {
+        let _continue = true;
+        await new Promise((resolve) => {
+            this.dialogService.add(SettingsConfirmationDialog, {
+                body: _t("Would you like to save your changes?"),
+                confirm: async () => {
+                    await this.save();
+                    // It doesn't make sense to do the action of the button
+                    // as the res.config.settings `execute` method will trigger a reload.
+                    _continue = true;
+                    resolve();
+                },
+                cancel: async () => {
+                    await this.model.root.discard();
+                    await this.model.root.save();
+                    _continue = true;
+                    resolve();
+                },
+                stayHere: () => {
+                    _continue = false;
+                    resolve();
+                },
+            });
+        });
+        return _continue;
+    }
 });
