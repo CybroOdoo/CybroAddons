@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Invoice From Stock Picking",
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Extra Tools',
     'summary': """Create invoice for stock picking""",
     'description': """In this module creating customer invoice,vendor bill, 

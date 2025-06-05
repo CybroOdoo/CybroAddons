@@ -82,22 +82,23 @@ class StockPicking(models.Model):
                             picking_id.company_id.account_sale_tax_id.id])],
                         'quantity': move_ids_without_package.quantity,
                     })
+
                     invoice_line_list.append(vals)
-                    invoice = picking_id.env['account.move'].create({
-                        'move_type': 'out_invoice',
-                        'invoice_origin': picking_id.name,
-                        'invoice_user_id': current_user,
-                        'narration': picking_id.name,
-                        'partner_id': picking_id.partner_id.id,
-                        'currency_id':
-                            picking_id.env.user.company_id.currency_id.id,
-                        'journal_id': int(customer_journal_id),
-                        'payment_reference': picking_id.name,
-                        'picking_id': picking_id.id,
-                        'invoice_line_ids': invoice_line_list,
-                        'transfer_ids': self
-                    })
-                    return invoice
+                invoice = picking_id.env['account.move'].create({
+                    'move_type': 'out_invoice',
+                    'invoice_origin': picking_id.name,
+                    'invoice_user_id': current_user,
+                    'narration': picking_id.name,
+                    'partner_id': picking_id.partner_id.id,
+                    'currency_id':
+                        picking_id.env.user.company_id.currency_id.id,
+                    'journal_id': int(customer_journal_id),
+                    'payment_reference': picking_id.name,
+                    'picking_id': picking_id.id,
+                    'invoice_line_ids': invoice_line_list,
+                    'transfer_ids': self
+                })
+                return invoice
 
     def action_create_bill(self):
         """This is the function for creating vendor bill
@@ -121,31 +122,32 @@ class StockPicking(models.Model):
                             move_ids_without_package.product_id.lst_price,
                         'account_id':
                             move_ids_without_package.product_id.
-                            property_account_income_id.id if
+                            property_account_expense_id.id if
                             move_ids_without_package.product_id.
-                            property_account_income_id
+                            property_account_expense_id
                             else move_ids_without_package.product_id.categ_id.
-                            property_account_income_categ_id.id,
+                            property_account_expense_categ_id.id,
                         'tax_ids': [(6, 0, [
                             picking_id.company_id.account_purchase_tax_id.id])],
                         'quantity': move_ids_without_package.quantity,
+
                     })
                     invoice_line_list.append(vals)
-                    invoice = picking_id.env['account.move'].create({
-                        'move_type': 'in_invoice',
-                        'invoice_origin': picking_id.name,
-                        'invoice_user_id': current_user,
-                        'narration': picking_id.name,
-                        'partner_id': picking_id.partner_id.id,
-                        'currency_id':
-                            picking_id.env.user.company_id.currency_id.id,
-                        'journal_id': int(vendor_journal_id),
-                        'payment_reference': picking_id.name,
-                        'picking_id': picking_id.id,
-                        'invoice_line_ids': invoice_line_list,
-                        'transfer_ids': self
-                    })
-                    return invoice
+                invoice = picking_id.env['account.move'].create({
+                    'move_type': 'in_invoice',
+                    'invoice_origin': picking_id.name,
+                    'invoice_user_id': current_user,
+                    'narration': picking_id.name,
+                    'partner_id': picking_id.partner_id.id,
+                    'currency_id':
+                        picking_id.env.user.company_id.currency_id.id,
+                    'journal_id': int(vendor_journal_id),
+                    'payment_reference': picking_id.name,
+                    'picking_id': picking_id.id,
+                    'invoice_line_ids': invoice_line_list,
+                    'transfer_ids': self
+                })
+                return invoice
 
     def action_create_customer_credit(self):
         """This is the function for creating customer credit note
