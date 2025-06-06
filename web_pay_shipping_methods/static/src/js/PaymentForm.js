@@ -2,7 +2,6 @@
 
 import { patch } from "@web/core/utils/patch";
 import PaymentForm from '@payment/js/payment_form';
-console.log(PaymentForm)
 PaymentForm.include({
     /**
     * Function executes when payment provider is clicked and it checks if there are
@@ -18,9 +17,11 @@ PaymentForm.include({
             $(this).addClass('d-none');
         });
         let providerId = ev.target.dataset['providerId']
-        let carriers = await this.orm.read("payment.provider",[parseInt(providerId)],['delivery_carrier_ids'])
-        if(carriers[0].delivery_carrier_ids.length > 0){
-            carriers[0].delivery_carrier_ids.forEach((id)=>{
+        let carriers=await this.rpc('/web/deliver/carrier',{
+            'provider_id':parseInt(providerId),
+        })
+        if(carriers.length > 0){
+            carriers.forEach((id)=>{
                 if(id){
                     let deliveryMethod = '#delivery_method_'+id
                     $(deliveryMethod)[0].classList.remove('d-none')

@@ -17,14 +17,14 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from odoo import api, fields, models
+from odoo import http
+from odoo.http import request
 
 
-class PaymentProvider(models.Model):
-    """Inherited payment_provider to add shipping method field"""
-    _inherit = 'payment.provider'
+class WebPayShippingMethods(http.Controller):
 
-    delivery_carrier_ids = fields.Many2many('delivery.carrier', string="Shipping Methods",
-                                            domain="[('website_published','=', True)]",
-                                            help="Add shipping methods which will be available while "
-                                                 "choosing this payment provider")
+    @http.route('/web/deliver/carrier', type='json', auth='public', website=True)
+    def get_delivery_carriers(self, **kwargs):
+        provider_id = kwargs.get('provider_id')
+        payment_provider = request.env['payment.provider'].sudo().browse(provider_id)
+        return payment_provider.delivery_carrier_ids.ids

@@ -17,14 +17,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from odoo import api, fields, models
-
-
-class PaymentProvider(models.Model):
-    """Inherited payment_provider to add shipping method field"""
-    _inherit = 'payment.provider'
-
-    delivery_carrier_ids = fields.Many2many('delivery.carrier', string="Shipping Methods",
-                                            domain="[('website_published','=', True)]",
-                                            help="Add shipping methods which will be available while "
-                                                 "choosing this payment provider")
+from . import main
