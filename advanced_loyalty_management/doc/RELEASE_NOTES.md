@@ -15,3 +15,8 @@
 #### Version 17.0.1.0.2
 #### ADD
 - BUG FIX
+
+#### 03.06.2025
+#### Version 17.0.1.0.2
+#### BUG FIX
+- Super was called in the function override.
