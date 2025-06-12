@@ -10,3 +10,9 @@
 #### Update
 - Added a new feature that restricts stock availability when clicking the payment button. 
 This will help prevent the ordering of out-of-stock products, whether entered via barcode or through any other method.
+
+
+#### 12.06.2025
+#### Version 17.0.2.1.2
+#### Update
+- Fixed the issue occurring while ordering out-of-stock products
