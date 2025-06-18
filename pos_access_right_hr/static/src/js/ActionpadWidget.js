@@ -16,7 +16,6 @@ patch(ActionpadWidget.prototype, {
     },
     disable_payment() {
         if (this.pos.cashier?.disable_payment) {
-
             return true;
         } else {
             return false;

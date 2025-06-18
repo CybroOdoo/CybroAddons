@@ -15,3 +15,8 @@
 #### Version 17.0.2.1.2
 ##### BUG_FIX
 - Bug fix: Payment button on the tab screen is no longer restricted in portrait mode.
+
+#### 16.06.2025
+#### Version 17.0.2.1.3
+##### BUG_FIX
+- Bug fix: POS Restaurant session failed to load correctly.
