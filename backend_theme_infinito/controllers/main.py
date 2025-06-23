@@ -26,6 +26,8 @@ import re
 from odoo import http
 from odoo.http import request
 
+from odoo.modules.module import get_module_resource
+
 
 def minify_css(path):
     """Minify css string"""
@@ -223,10 +225,10 @@ class ThemeStudio(http.Controller):
 
     @http.route(['/theme_studio/get_presets'], type="json")
     def get_presets(self):
-        working_dir = os.path.dirname(os.path.realpath(__file__))
-        working_dir = working_dir.replace('/controllers', '')
-        file_path = working_dir + '/static/src/json/presets.json'
+        file_path = get_module_resource(
+            'backend_theme_infinito',
+            'static', 'src', 'json', 'presets.json'
+        )
         file = open(file_path, 'r')
         presets = json.load(file)
-
         return presets
