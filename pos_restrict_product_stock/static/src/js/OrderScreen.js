@@ -1,4 +1,4 @@
-/** @odoo-module */
+    /** @odoo-module */
 
 import { Order } from "@point_of_sale/app/store/models";
 import { patch } from "@web/core/utils/patch";
@@ -6,30 +6,51 @@ import RestrictStockPopup from "@pos_restrict_product_stock/js/RestrictStockPopu
 
 patch(Order.prototype, {
     async pay() {
-             var type = this.pos.config.stock_type
-             const pay = true
-             const body = []
-             const pro_id = false
-            for (const line of this.orderlines) {
-             if (line.pos.config.is_restrict_product && ((type == 'qty_on_hand') && (line.product.qty_available <= 0)) | ((type == 'virtual_qty') && (line.product.virtual_available <= 0)) |
-                                     ((line.product.qty_available <= 0) && (line.product.virtual_available <= 0))) {
-                                     // If the product restriction is activated in the settings and quantity is out stock, it show the restrict popup.
-                                body.push(line.product.display_name)
-                 }
-             }
-             if (body.length > 0) { // Check if body has items
-                     const confirmed = await this.pos.popup.add(RestrictStockPopup, {
-                         body: body,
-                         pro_id: pro_id
-                     });
-                     if (confirmed == true) {
-                         return super.pay(); // Proceed with payment
-                     } else {
-                          return ;
-                     }
-                 } else {
-                     return super.pay(); // No restrictions, proceed with payment
-                 }
-             }
+        const type = this.pos.config.stock_type;
+        const is_restrict = this.pos.config.is_restrict_product;
+        const body = [];
+        const productQuantities = {};
 
-    })
+        for (const line of this.orderlines) {
+            const productId = line.product.id;
+            if (!productQuantities[productId]) {
+                productQuantities[productId] = {
+                    name: line.product.display_name,
+                    product: line.product,
+                    total_qty: 0,
+                };
+            }
+            productQuantities[productId].total_qty += line.quantity;
+        }
+
+        for (const { product, total_qty, name } of Object.values(productQuantities)) {
+            if (is_restrict) {
+                const qty_available = product.qty_available;
+                const virtual_qty = product.virtual_available;
+
+                const should_restrict = (
+                    (type === 'qty_on_hand' && total_qty > qty_available) ||
+                    (type === 'virtual_qty' && total_qty > virtual_qty) ||
+                    (total_qty > qty_available && total_qty > virtual_qty)
+                );
+
+                if (should_restrict) {
+                    body.push(name);
+                }
+            }
+        }
+        if (body.length > 0) {
+            const confirmed = await this.pos.popup.add(RestrictStockPopup, {
+                body: body.join(', '),
+                pro_id: false
+            });
+
+            if (confirmed === true) {
+                return super.pay();
+            } else {
+                return;
+            }
+        }
+        return super.pay();
+    }
+})
