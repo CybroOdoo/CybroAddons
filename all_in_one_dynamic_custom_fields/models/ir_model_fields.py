@@ -20,7 +20,7 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
-from odoo import models, fields
+from odoo import api, models, fields
 
 
 class IrModelFields(models.Model):
@@ -31,3 +31,22 @@ class IrModelFields(models.Model):
     is_dynamic_field = fields.Boolean(string="Dynamic Field",
                                       help="id created using All In One "
                                            "Dynamic Custom Fields")
+    custom_field_id = fields.Many2one('dynamic.fields','Custom Field')
+
+    @api.model
+    def create(self, vals):
+        record = super().create(vals)
+        if vals.get('field_description') and record.custom_field_id:
+            record.custom_field_id.write({
+                'field_label': vals['field_description']
+            })
+        return record
+
+    def write(self, vals):
+        res = super().write(vals)
+        for rec in self:
+            if 'field_description' in vals and rec.custom_field_id:
+                rec.custom_field_id.write({
+                    'field_label': vals['field_description']
+                })
+        return res

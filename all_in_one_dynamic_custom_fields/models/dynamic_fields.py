@@ -29,7 +29,7 @@ from odoo.exceptions import ValidationError
 class DynamicFields(models.Model):
     """Class DynamicFields to create fields dynamically to any model"""
     _name = 'dynamic.fields'
-    _rec_name = 'field_description'
+    _rec_name = 'field_label'
     _description = 'Custom Dynamic Fields'
     _inherit = 'ir.model.fields'
 
@@ -128,6 +128,18 @@ class DynamicFields(models.Model):
     created_tree_view_id = fields.Many2one('ir.ui.view',
                                            help='Dynamic Created tree view id',
                                            string='Dynamic Tree view id')
+    field_label = fields.Char('Field Label')
+    create_field_id = fields.Many2one('ir.model.fields')
+
+    def action_open_create_field(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'ir.model.fields',
+            'res_id': self.create_field_id.id,
+            'name': _("Field Info"),
+            'target': 'current',
+            'views': [(False, 'form')],
+        }
 
     @api.depends('tree_view_id')
     def _compute_tree_field_ids(self):
@@ -171,9 +183,9 @@ class DynamicFields(models.Model):
                 'relation': 'res.currency',
                 'is_dynamic_field': True
             })
-        self.env['ir.model.fields'].sudo().create({
+        create_field_id = self.env['ir.model.fields'].sudo().create({
             'name': self.name,
-            'field_description': self.field_description,
+            'field_description': self.field_label,
             'model_id': self.model_id.id,
             'ttype': self.field_type,
             'relation': self.ref_model_id.model,
@@ -184,11 +196,13 @@ class DynamicFields(models.Model):
             'readonly': self.readonly,
             'selection': self.selection_field,
             'copied': self.copied,
-            'is_dynamic_field': True
+            'is_dynamic_field': True,
+            'custom_field_id': self.id,
         })
+        self.create_field_id = create_field_id.id
         inherit_form_view_name = (str(
             self.form_view_id.name) + ".inherit.dynamic.custom." +
-                                  str(self.field_description) + ".field")
+                                  str(self.field_label) + ".field")
         xml_id = self.form_view_id.xml_id
         inherit_id = self.env.ref(xml_id)
         arch_base = _('<?xml version="1.0"?>'

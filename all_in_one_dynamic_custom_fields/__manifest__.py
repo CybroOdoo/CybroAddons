@@ -22,7 +22,7 @@
 ################################################################################
 {
     'name': 'All in One Dynamic Fields',
-    'version': '16.0.1.2.4',
+    'version': '16.0.1.3.0',
     'category': 'Extra Tools',
     'summary': 'Create Custom Fields As Per Your Need Without Any Coding.',
     'description': 'All in One Dynamic Fields, All in One Custom Fields, '
