@@ -19,62 +19,67 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
+
+
 from odoo import api, fields, models
-
-
+#
+#
 class ProjectTask(models.Model):
-    """In ProjectTask class, which will add a new field for task sequence.
-       When we create the record, the sequence will be based on the
-      task_sequence."""
     _inherit = 'project.task'
 
-    task_sequence = fields.Char(string='Task Sequence', readonly=True,
-                                copy=False, default='New',
-                                help='Unique sequence number of the task.')
+    task_sequence = fields.Char(string='Task Sequence', readonly=True, copy=False, default='New',
+                                help='Hierarchical sequence number of the task.')
 
     @api.model_create_multi
-    def create(self, vals):
-        """Overwrite the function create to calculate the sequence value based
-         on the given prefix"""
-        for records in vals:
-            if not records['project_id']:
-                if records.get('task_sequence', 'New') == 'New':
-                    records['task_sequence'] = self.env['ir.sequence']. \
-                                                   next_by_code(
-                        'project.task') or 'New'
-            else:
-                project = self.env['project.project'].browse(
-                    records['project_id'])
-                if project.task_sequence_id.prefix:
-                    records['task_sequence'] = '%s/%s/%s' % \
-                                             (project.project_sequence,
-                                              project.task_sequence_id.prefix,
-                                              self.env['ir.sequence'].
-                                               next_by_code('project.task') or
-                                              'New')
-                else:
-                    records['task_sequence'] = '%s/%s' % \
-                                                  (project.project_sequence,
-                                                   self.env['ir.sequence'].
-                                                   next_by_code(
-                                                       'project.task') or
-                                                   'New')
-            return super(ProjectTask, self).create(records)
+    def create(self, vals_list):
+        tasks = super(ProjectTask, self).create(vals_list)
+        for task in tasks:
+            task.with_context(bypass_sequence=True)._compute_custom_sequence()
+        return tasks
 
     def write(self, vals):
-        """Overwrite the function to update the sequence """
-        if vals.get('project_id'):
-            project = self.env['project.project'].browse(vals.get(
-                'project_id'))
-            if project.task_sequence_id.prefix:
-                vals['task_sequence'] = '%s/%s/%s' % \
-                                        (project.project_sequence,
-                                         project.task_sequence_id.prefix,
-                                         self.env['ir.sequence'].next_by_code(
-                                             'project.task') or 'New')
+        result = super(ProjectTask, self).write(vals)
+        if not self.env.context.get('bypass_sequence'):
+            for task in self:
+                task.with_context(bypass_sequence=True)._compute_custom_sequence()
+        return result
+
+    def _compute_custom_sequence(self):
+        for task in self:
+            task_seq = self.env['ir.sequence'].next_by_code('project.task') or 'New'
+
+            if not task.project_id or not task.project_id.project_sequence:
+                continue  # Skip if missing project data
+
+            if task.parent_id:
+                parent_seq = task.parent_id.task_sequence or task.parent_id.name
+                subtask_number = task._get_sibling_count(task.parent_id)
+
+                # Use sub-task name if provided
+                # subtask_name = (task.name or '').split(',')[0].strip()
+                # if subtask_name:
+                #     sequence = f"{parent_seq}/{subtask_name}"
+                # else:
+                sequence = f"{parent_seq}/Sub Task {subtask_number}"
             else:
-                vals['task_sequence'] = '%s/%s' % \
-                                        (project.project_sequence,
-                                         self.env['ir.sequence'].
-                                         next_by_code('project.task') or 'New')
-        return super(ProjectTask, self).write(vals)
+                task_number = task._get_task_count(task.project_id)
+                formatted_task_number = str(task_number).zfill(4)
+
+                sequence = self.env['ir.sequence'].search([('code', '=', 'project.task')], limit=1)
+                task_prefix = sequence.prefix if sequence else ''
+                sequence = f"{task.project_id.project_sequence}-{task_prefix}{formatted_task_number}"
+
+            # Avoid recursion
+            task.sudo().write({'task_sequence': sequence})
+
+    def _get_task_count(self, project):
+        return self.search_count([
+            ('project_id', '=', project.id),
+            ('parent_id', '=', False)
+        ])
+
+    def _get_sibling_count(self, parent_task):
+        return self.search_count([
+            ('parent_id', '=', parent_task.id),
+            ('id', '!=', self.id)
+        ]) + 1

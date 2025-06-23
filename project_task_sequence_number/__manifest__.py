@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Project & Project Task Sequence Number',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Project',
     'summary': 'Add dynamic sequence number for project and task.',
     'description': 'This helps to give unique sequence number to project and '
@@ -35,7 +35,7 @@
     'data': [
         'data/ir_sequence_data.xml',
         'views/project_project_views.xml',
-        'views/project_task_views.xml'
+        'views/project_task_views.xml',
     ],
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
