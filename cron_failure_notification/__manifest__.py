@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Cron Failure Notification",
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.1',
     'category': 'Discuss',
     'summary': 'Notify the Admin About Cron Failures Via Mail',
     'description': """This module helps to send notification to admin with 
@@ -32,12 +32,12 @@
     'website': 'https://www.cybrosys.com',
     'depends': ['mail'],
     'data': ['security/ir.model.access.csv',
-            'report/ir_cron_failure_templates.xml',
-            'report/ir_cron_reports.xml',
-            'data/failure_mail_data.xml',
-            'data/mail_template_data.xml',
-            'views/ir_cron_views.xml',
-            'views/failure_history_views.xml'],
+             'report/ir_cron_failure_templates.xml',
+             'report/ir_cron_reports.xml',
+             'data/failure_mail_data.xml',
+             'data/mail_template_data.xml',
+             'views/ir_cron_views.xml',
+             'views/failure_history_views.xml'],
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,

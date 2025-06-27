@@ -19,6 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
+import base64
 import datetime
 import logging
 import odoo
@@ -77,11 +78,27 @@ class IrCron(models.Model):
             [('create_date', '>', start_of_day),
              ('create_date', '<', end_of_day)])
         if failure:
-            admin_mail = self.env['res.groups'].search(
-                [('category_id', '=', 'Administration'),
-                 ('name', '=', 'Access Rights')]).users.login
-            email_values = {'admin_mail': admin_mail}
+            admins = self.env.ref('base.group_erp_manager')
+            admins_email = self.env.ref('base.group_erp_manager').users if admins else ''
+            admins_email = ','.join(admins_email.mapped('login')) if admins_email else ''
+            email_values = {'email_to': admins_email,
+                            'email_from': self.env.user.email}
             mail_template = self.env.ref(
                 'cron_failure_notification.mail_template_cron_error')
-            mail_template.with_context(email_values).send_mail(self.id,
-                                                               force_send=True)
+            report_template_id = self.env['ir.actions.report']._render_qweb_pdf(
+                report_ref='cron_failure_notification.cron_fail_pdf_report',
+                res_ids=False,
+            )
+            data_record = base64.b64encode(report_template_id[0])
+            ir_values = {
+                'name': "Scheduled Cron Job Failed Attachment.pdf",
+                'type': 'binary',
+                'datas': data_record,
+                'store_fname': data_record,
+                'mimetype': 'application/x-pdf',
+            }
+            data_id = self.env['ir.attachment'].create(ir_values)
+            mail_template.attachment_ids = [(6, 0, [data_id.id])]
+            mail_template.with_context(email_values).send_mail(self.id, email_values=email_values, force_send=True)
+            mail_template.attachment_ids = [(3, data_id.id)]
+        return True
