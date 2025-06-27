@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Cron Failure Notification",
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'category': 'Extra Tools',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',

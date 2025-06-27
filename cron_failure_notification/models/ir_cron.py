@@ -77,10 +77,10 @@ class IrCron(models.Model):
             [('create_date', '>', start_of_day),
              ('create_date', '<', end_of_day)])
         if failure:
-            admin_mail = self.env['res.groups'].search(
-                [('category_id', '=', 'Administration'),
-                 ('name', '=', 'Access Rights')]).users.login
-            email_values = {'admin_mail': admin_mail}
+            admins = self.env.ref('base.group_erp_manager')
+            admins_email = self.env.ref('base.group_erp_manager').users if admins else ''
+            admins_email = ','.join(admins_email.mapped('login')) if admins_email else ''
+            email_values = {'admin_mail': admins_email}
             mail_template = self.env.ref(
                 'cron_failure_notification.cron_error_mail')
             mail_template.with_context(email_values).send_mail(self.id,
