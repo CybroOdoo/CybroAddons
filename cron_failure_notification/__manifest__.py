@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Cron Failure Notification",
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.1',
     'category': 'Discuss',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
