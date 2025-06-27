@@ -22,3 +22,8 @@ Also Changed the quantity visible for service product
 #### Update
 - Added a new feature that restricts stock availability when clicking the payment button. 
 This will help prevent the ordering of out-of-stock products, whether entered via barcode or through any other method.
+
+#### 25.06.2025
+#### Version 16.0.2.2.2
+#### Update
+- Fixed the bug and updated the out-of-stock condition. If the product quantity is out of stock, a popup will be displayed.

@@ -8,44 +8,85 @@ import ProductScreen from 'point_of_sale.ProductScreen';
 const RestrictProductScreen = (ProductScreen) => class RestrictProductScreen extends ProductScreen {
     async _clickProduct(event) {
         const product = event.detail;
-        var type = this.env.pos.config.stock_type
-        if (this.env.pos.config.is_restrict_product && ((type == 'qty_on_hand') && (product.qty_available <= 0)) | ((type == 'virtual_qty') && (product.virtual_available <= 0)) |
-            ((product.qty_available <= 0) && (product.virtual_available <= 0))) {
-            // If the product restriction is activated in the settings and quantity is out stock, it show the restrict popup.
-            this.showPopup("RestrictStockPopup", {
-                body: product.display_name,
-                pro_id: product.id
-            });
+        const type = this.env.pos.config.stock_type;
+        const is_restrict = this.env.pos.config.is_restrict_product;
+
+        let qty = 0;
+
+        const selectedLine = this.currentOrder.selected_orderline;
+        if (selectedLine && selectedLine.product.id === product.id) {
+            qty = selectedLine.quantity + 1;
+        } else {
+            qty = 1;
         }
-        else{
-            await super._clickProduct(event)
+
+        const qty_available = product.qty_available;
+        const virtual_qty = product.virtual_available;
+
+        const should_restrict =
+            is_restrict && (
+                (type === 'qty_on_hand' && qty > qty_available) ||
+                (type === 'virtual_qty' && qty > virtual_qty) ||
+                (qty > qty_available && qty > virtual_qty)
+            );
+
+        if (should_restrict) {
+            await this.showPopup("RestrictStockPopup", {
+                body: product.display_name,
+                pro_id: product.id,
+            });
+        } else {
+            await super._clickProduct(event);
         }
     }
     async _onClickPay() {
-     var type = this.env.pos.config.stock_type
-             const pay = true
-             const body = []
-             const pro_id = false
-            for (const line of this.env.pos.selectedOrder.orderlines) {
-             if (line.pos.config.is_restrict_product && ((type == 'qty_on_hand') && (line.product.qty_available <= 0)) | ((type == 'virtual_qty') && (line.product.virtual_available <= 0)) |
-                                     ((line.product.qty_available <= 0) && (line.product.virtual_available <= 0))) {
-                                     // If the product restriction is activated in the settings and quantity is out stock, it show the restrict popup.
-                                body.push(line.product.display_name)
-                 }
-             }
-             if (body.length > 0) { // Check if body has items
-                     const confirmed = await  this.showPopup("RestrictStockPopup", {
-                         body: body,
-                         pro_id: pro_id
-                     });
-                     if (confirmed == true) {
-                        return  super._onClickPay(...arguments);// Proceed with payment
-                     } else {
-                          return ;
-                     }
-                 } else {
-                    return  super._onClickPay(...arguments); // No restrictions, proceed with payment
-                 }
-             }
+        const type = this.env.pos.config.stock_type;
+        const is_restrict = this.env.pos.config.is_restrict_product;
+        const body = [];
+        const orderlines = this.env.pos.selectedOrder.orderlines;
+
+        const productQtyMap = {};
+
+        for (const line of orderlines) {
+            const productId = line.product.id;
+            if (!productQtyMap[productId]) {
+                productQtyMap[productId] = {
+                    name: line.product.display_name,
+                    product: line.product,
+                    total_qty: 0,
+                };
+            }
+            productQtyMap[productId].total_qty += line.quantity;
+        }
+
+        for (const { product, name, total_qty } of Object.values(productQtyMap)) {
+            const qty_available = product.qty_available;
+            const virtual_qty = product.virtual_available;
+
+            const should_restrict = is_restrict && (
+                (type === 'qty_on_hand' && total_qty > qty_available) ||
+                (type === 'virtual_qty' && total_qty > virtual_qty) ||
+                (total_qty > qty_available && total_qty > virtual_qty)
+            );
+
+            if (should_restrict) {
+                body.push(name);
+            }
+        }
+
+        if (body.length > 0) {
+            const { confirmed } = await this.showPopup("RestrictStockPopup", {
+                body: body.join(', '),
+                pro_id: false,
+            });
+            if (confirmed != false) {
+                return super._onClickPay(...arguments);
+            } else {
+                return;
+            }
+        }
+
+        return super._onClickPay(...arguments);
+    }
 }
 Registries.Component.extend(ProductScreen, RestrictProductScreen);
