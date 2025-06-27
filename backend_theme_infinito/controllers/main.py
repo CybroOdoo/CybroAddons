@@ -26,6 +26,8 @@ import re
 from odoo import http
 from odoo.http import request
 
+from odoo.modules.module import get_module_resource
+
 
 def minify_css(path):
     """Minify css string"""
