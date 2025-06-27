@@ -31,7 +31,7 @@ class BonusRequest(models.Model):
             override create function for generating sequence number for the new
             records of the model.
         action_confirm(self):
-            actions to perform when clicking on the 'Confirm' button.
+            actions to perform when clicking on the 'Submit' button.
         action_department_approve(self):
             actions to perform when clicking on the 'Approve by Department'
             button.
@@ -42,18 +42,23 @@ class BonusRequest(models.Model):
             actions to perform when clicking on the 'Reject' button.
         action_reset_to_draft(self):
             actions to perform when clicking on the 'Reset to Draft' button.
+        action_post_journal_entry(self):
+            actions to create and post a journal entry for the bonus.
+        action_view_journal_items(self):
+            action to view the journal items for the bonus request.
     """
     _name = 'bonus.request'
     _description = 'Bonus Request'
     _inherit = 'mail.thread'
-    _rec_name = 'reference_no'
+    _rec_name = 'reference'
 
-    reference_no = fields.Char(string='Reference Number', copy=False,
-                               help='Sequence number for the bonus request.')
+    reference = fields.Char(string='Reference Number', copy=False,
+                            help='Sequence number for the bonus request.')
     state = fields.Selection(
-        [('draft', 'Draft'), ('confirmed', 'Confirmed'),
+        [('draft', 'Draft'), ('submitted', 'Submitted'),
          ('department_approved', 'Department Approved'),
-         ('manager_approved', 'Manager Approved'), ('rejected', 'Rejected')],
+         ('manager_approved', 'Manager Approved'), ('accounting', 'Accounting Head Approved'),
+         ('posted', 'Posted'), ('rejected', 'Rejected')],
         string='State', default='draft', copy=False, tracking=True,
         help='State of the bonus request.')
     employee_id = fields.Many2one(
@@ -63,8 +68,8 @@ class BonusRequest(models.Model):
         'res.users', string='User', related='employee_id.user_id',
         help='The user of the employee(If any)')
     department_id = fields.Many2one('hr.department', string='Department',
-                                    related='employee_id.department_id',
-                                    help='The department of the employee.')
+                                   related='employee_id.department_id',
+                                   help='The department of the employee.')
     job_id = fields.Many2one(
         'hr.job', string='Job', related='employee_id.job_id',
         help='Job of the employee')
@@ -81,7 +86,7 @@ class BonusRequest(models.Model):
     bonus_amount = fields.Float(string='Bonus Amount', tracking=True,
                                 help='This amount will be given as the bonus.')
     currency_id = fields.Many2one(
-        'res.currency', string='Company Currency',  required=True,
+        'res.currency', string='Company Currency', required=True,
         readonly=True,
         default=lambda self: self.env.user.company_id.currency_id,
         help='Company Currency')
@@ -100,6 +105,21 @@ class BonusRequest(models.Model):
     hr_manager_id = fields.Many2one(
         'res.users', string='Manager', readonly=True, copy=False,
         help='Name of the Manager, who approved the bonus request.')
+    journal_id = fields.Many2one('account.journal', string='Bonus Journal',
+                                 help='The Journal for bonus request',
+                                 company_dependent=True, required=False,
+                                 domain="[('type', '=', 'general')]")
+    move_id = fields.Many2one('account.move', string='Accounting Entry',
+                              help='Accounting entry of bonus request',
+                              readonly=True)
+    credit_account_id = fields.Many2one('account.account',
+                                        string='Credit Account',
+                                        help='The credit account for creating '
+                                             'journal entry')
+    debit_account_id = fields.Many2one('account.account',
+                                       string='Debit Account',
+                                       help='The debit account for creating '
+                                            'journal entry')
 
     @api.model
     def create(self, vals):
@@ -109,21 +129,21 @@ class BonusRequest(models.Model):
        Returns:
             models.Model: the created records of 'bonus.request'.
         """
-        if vals.get('reference_no', 'New') == 'New':
-            vals['reference_no'] = self.env['ir.sequence'].next_by_code(
+        if vals.get('reference', 'New') == 'New':
+            vals['reference'] = self.env['ir.sequence'].next_by_code(
                 'bonus.request') or 'New'
         res = super(BonusRequest, self).create(vals)
         return res
 
     def action_confirm(self):
         """
-        Function for the 'Confirm' button to change the state to 'confirmed',
+        Function for the 'Submit' button to change the state to 'submitted',
         and update the confirmed user and date.
         """
         self.write({
-            'state': 'confirmed',
+            'state': 'submitted',
             'confirmed_user_id': self._uid,
-            'confirmed_date': fields.Datetime.today()
+            'confirmed_date': fields.Date.today()
         })
 
     def action_department_approve(self):
@@ -135,18 +155,18 @@ class BonusRequest(models.Model):
         self.write({
             'state': 'department_approved',
             'department_manager_id': self._uid,
-            'department_approved_date': fields.Datetime.today()
+            'department_approved_date': fields.Date.today()
         })
 
     def action_manager_approve(self):
         """
         Function for the 'Approve by Manager' button to change the state to
-        'manager_approved', and update the HR manager and approved date & time.
+        'manager_approved', and update the HR manager and approved date.
         """
         self.write({
             'state': 'manager_approved',
             'hr_manager_id': self._uid,
-            'manager_approved_date': fields.Datetime.today()
+            'manager_approved_date': fields.Date.today()
         })
 
     def action_reject(self):
@@ -169,3 +189,42 @@ class BonusRequest(models.Model):
             'hr_manager_id': False,
             'manager_approved_date': False
         })
+
+    def action_post_journal_entry(self):
+        """ Function for the 'Post Journal Entry' button to create and post a journal entry
+         for approved bonus request and change state to 'posted' """
+        account_move = self.env['account.move'].create({
+            'ref': self.reference,
+            'state': 'draft',
+            'date': self.manager_approved_date,
+            'journal_id': self.journal_id.id,
+            'line_ids': [
+                (0, 0, {
+                    'account_id': self.credit_account_id.id,
+                    'credit': self.bonus_amount,
+                    'name': self.employee_id.name + '-' + self.reference,
+                    'debit': 0.0,
+                }),
+                (0, 0, {
+                    'account_id': self.debit_account_id.id,
+                    'debit': self.bonus_amount,
+                    'name': self.employee_id.name + '-' + self.reference,
+                    'credit': 0.0,
+                })
+            ]
+        })
+        account_move.action_post()
+        self.write({
+            'move_id': account_move.id,
+            'state': 'posted'
+        })
+
+    def action_view_journal_items(self):
+        """To view the journal items for the bonus request"""
+        return {
+            'name': 'Journal Items',
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.move',
+            'view_mode': 'form',
+            'res_id': self.move_id.id
+        }

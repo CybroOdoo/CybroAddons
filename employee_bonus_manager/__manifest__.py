@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Employee Bonus',
-    'version': '16.0.1.0.0',
+    'version': '16.0.2.1.0',
     'category': 'Human Resources',
     'summary': 'This module will help you in managing the employee bonus.',
     'description': """This module helps to manage the bonus for employees , the 
@@ -30,12 +30,14 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['base', 'hr'],
+    'depends': ['base', 'hr','account','hr_payroll_community'],
     'data': [
         'security/employee_bonus_manager_groups.xml',
         'security/bonus_request_security.xml',
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
+        'data/hr_salary_rule_data.xml',
+        'data/hr_payroll_structure_data.xml',
         'views/bonus_request_views.xml',
         'views/bonus_reason_views.xml',
         'views/employee_bonus_manager_menus.xml'

@@ -22,6 +22,7 @@
 from odoo import fields, models
 
 
+
 class BonusReason(models.Model):
     """ This class is used to create the bonus reasons. """
     _name = "bonus.reason"
