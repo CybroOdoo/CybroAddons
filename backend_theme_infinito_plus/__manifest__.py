@@ -27,7 +27,7 @@
                 With Odoo.Main Highlight Of The Theme Is You Can Dynamically 
                 Change The Fonts,Animations, Languages,Chatbox Layouts...Etc""",
     'category': "Themes/Backend",
-    'version': "16.0.1.0.0",
+    'version': "16.0.1.0.1",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
