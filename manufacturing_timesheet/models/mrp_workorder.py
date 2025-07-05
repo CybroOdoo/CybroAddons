@@ -168,35 +168,43 @@ class MrpWorkorder(models.Model):
         """
         res = super(MrpWorkorder, self).button_finish()
 
-        allocated_hours = int(self.duration_expected)
-        allocated_minutes = int(
-            (self.duration_expected - allocated_hours) * 60)
-        allocated_time_str = f"{allocated_hours:02d}:{allocated_minutes:02d}"
-        allocated_minutes_str, allocated_seconds_str = allocated_time_str.split(
-            ":")
-        allocated_minutes = int(allocated_minutes_str)
-        allocated_seconds = int(allocated_minutes_str)
-        total_allocated_hours = (
-                            allocated_minutes + allocated_seconds / 60) / 60
-        project = self.env['project.project'].search(
-            [('name', '=', ("MO: {}".format(self.production_id.name)))])
-        task_id = project.task_ids.search([('name', '=', (
-            "{} in {} for {} on {}".format(self.name, self.workcenter_id.name,
-                                           self.product_id.display_name,
-                                           str(self.date_start))))])
-        task_id.write({
-            'allocated_hours': total_allocated_hours
-        })
-        timesheet = task_id.mapped('timesheet_ids')
-        hours = int(self.duration)
-        minutes = int((self.duration - hours) * 60)
-        time_str = f"{hours:02d}:{minutes:02d}"
-        minutes_str, seconds_str = time_str.split(":")
-        minutes = int(minutes_str)
-        seconds = int(seconds_str)
-        total_hours = (minutes + seconds / 60) / 60
-        for rec in timesheet:
-            rec.write({
-                'unit_amount': total_hours,
+        for workorder in self:
+            allocated_hours = int(workorder.duration_expected)
+            allocated_minutes = int((workorder.duration_expected - allocated_hours) * 60)
+            allocated_time_str = f"{allocated_hours:02d}:{allocated_minutes:02d}"
+            allocated_minutes_str, allocated_seconds_str = allocated_time_str.split(":")
+
+            allocated_minutes = int(allocated_minutes_str)
+            allocated_seconds = int(allocated_seconds_str)
+
+            total_allocated_hours = (allocated_minutes + allocated_seconds / 60) / 60
+
+            project = self.env['project.project'].search([
+                ('name', '=', f"MO: {workorder.production_id.name}")
+            ], limit=1)
+            task_id = project.task_ids.search([
+                ('name', '=', f"{workorder.name} in {workorder.workcenter_id.name} "
+                              f"for {workorder.product_id.display_name} on {workorder.date_start}")
+            ], limit=1)
+
+            task_id.write({
+                'allocated_hours': total_allocated_hours
             })
+
+            timesheet = task_id.mapped('timesheet_ids')
+
+            hours = int(workorder.duration)
+            minutes = int((workorder.duration - hours) * 60)
+            time_str = f"{hours:02d}:{minutes:02d}"
+            minutes_str, seconds_str = time_str.split(":")
+
+            minutes = int(minutes_str)
+            seconds = int(seconds_str)
+            total_hours = (minutes + seconds / 60) / 60
+
+            for rec in timesheet:
+                rec.write({
+                    'unit_amount': total_hours,
+                })
+
         return res
