@@ -1,41 +1,36 @@
-/** @odoo-module */
+/** @odoo-module **/
+
 import { FormController } from "@web/views/form/form_controller";
 import { patch } from "@web/core/utils/patch";
-import { useSetupAction } from "@web/webclient/actions/action_hook";
 import { _t } from "@web/core/l10n/translation";
 import { SettingsConfirmationDialog } from "@web/webclient/settings_form_view/settings_confirmation_dialog";
 
-/* Patch FormController to restrict auto save in form views */
+// Save original method reference
+const _superOnPagerUpdate = FormController.prototype.onPagerUpdate;
 
 patch(FormController.prototype, {
-   setup(){
-      super.setup(...arguments);
-   },
-
-   async beforeLeave() {
+    async beforeLeave() {
         const dirty = await this.model.root.isDirty();
         if (dirty) {
             return this._confirmSave();
         }
+        return true;
     },
 
-   beforeUnload() {},
+    beforeUnload() {},
 
-   async _confirmSave() {
+    async _confirmSave() {
         let _continue = true;
         await new Promise((resolve) => {
             this.dialogService.add(SettingsConfirmationDialog, {
                 body: _t("Would you like to save your changes?"),
                 confirm: async () => {
                     await this.save();
-                    // It doesn't make sense to do the action of the button
-                    // as the res.config.settings `execute` method will trigger a reload.
                     _continue = true;
                     resolve();
                 },
                 cancel: async () => {
                     await this.model.root.discard();
-                    await this.model.root.save();
                     _continue = true;
                     resolve();
                 },
@@ -46,5 +41,14 @@ patch(FormController.prototype, {
             });
         });
         return _continue;
-    }
+    },
+
+    async onPagerUpdate(value) {
+        const proceed = await this.beforeLeave();
+        if (!proceed) {
+            return;
+        }
+        await this.model.root.discard();
+        return _superOnPagerUpdate.call(this, value);
+    },
 });
