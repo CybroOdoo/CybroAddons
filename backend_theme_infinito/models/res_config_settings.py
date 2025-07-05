@@ -105,5 +105,4 @@ class ResConfigSettings(models.TransientModel):
                   self.loader_class)
         set_param('backend_theme_infinito.is_chameleon',
                   self.is_chameleon)
-
         super(ResConfigSettings, self).set_values()

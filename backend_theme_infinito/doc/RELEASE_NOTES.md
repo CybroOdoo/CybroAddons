@@ -9,3 +9,9 @@ Initial Commit
 #### Version 15.0.1.0.1
 #### UPDT
 Updated the functionality to fetch the module resource.
+
+
+#### 05.07.2025
+#### Version 15.0.1.0.2
+#### UPDT
+Updated the functionality to fetch the module resource.
