@@ -139,11 +139,8 @@ class ThemeStudio(http.Controller):
         changed_styles_str = kwargs.get('changed_styles', '{}')
         object_class = kwargs.get('object_class', '')
         changed_styles = json.loads(changed_styles_str)
-        working_dir = os.path.dirname(os.path.realpath(__file__))
-        working_dir = working_dir.replace('/controllers', '')
-        file_path = working_dir + '/static/src/css/dynamic_styles.css'
+        file_path = get_module_resource('backend_theme_infinito', 'static', 'src', 'css', 'dynamic_styles.css')
         style_file = open(file_path, 'a')
-
         if os.stat(file_path).st_size == 0:
             style_file.write('/* This file is generated automatically by '
                              'Theme Infinito */\n')
@@ -193,9 +190,7 @@ class ThemeStudio(http.Controller):
            ```
        """
         selector = kwargs.get('selector', '')
-        working_dir = os.path.dirname(os.path.realpath(__file__))
-        file_path = working_dir.replace('controllers',
-                                        'static/src/css/dynamic_styles.css')
+        file_path = get_module_resource('backend_theme_infinito', 'static', 'src', 'css', 'dynamic_styles.css')
         style_file = open(file_path, 'r')
         css = style_file.read()
         css = re.sub(r'/\*[\s\S]*?\*/', "", css)
@@ -241,9 +236,7 @@ class ThemeStudio(http.Controller):
             reset_to_default()
             ```
         """
-        working_dir = os.path.dirname(os.path.realpath(__file__))
-        file_path = working_dir.replace('controllers',
-                                        'static/src/css/dynamic_styles.css')
+        file_path = get_module_resource('backend_theme_infinito', 'static', 'src', 'css', 'dynamic_styles.css')
         style_file = open(file_path, 'w')
         style_file.write('')
         return True

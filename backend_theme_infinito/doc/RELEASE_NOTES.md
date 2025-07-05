@@ -14,3 +14,9 @@ Initial Commit for Infinito Backend Theme
 #### Version 17.0.1.0.2
 ##### BUGFIX
 - Updated the functionality to fetch the module resource.
+
+#### 05.07.2025
+#### Version 17.0.1.0.3
+##### BUGFIX
+- Updated the functionality to fetch the module resource.
+- 

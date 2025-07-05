@@ -22,7 +22,6 @@
 #############################################################################
 import base64
 
-from odoo import api, SUPERUSER_ID
 from odoo.modules import get_module_resource
 
 

@@ -23,6 +23,7 @@ import json
 from odoo import http
 from odoo.http import request
 
+from odoo.modules.module import get_module_resource
 
 class BasePwa(http.Controller):
     """
@@ -36,13 +37,14 @@ class BasePwa(http.Controller):
         Returns:
             dict: Dictionary containing PWA manifest data.
         """
+        src = get_module_resource('backend_theme_infinito', 'static', 'src', 'img', 'menu.png')
         return {
             'short_name': 'Odoo',
             'name': 'Odoo-infinito',
             'description': 'PWA provided by backend theme infinito',
             'icons': [
                 {
-                    'src': '/backend_theme_infinito/static/src/img/menu.png',
+                    'src': f'{src}',
                     'type': 'image/png',
                     'sizes': '144x144',
                     'purpose': 'any maskable'
