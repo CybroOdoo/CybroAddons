@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Backend Theme Infinito Plus',
-    'version': "15.0.1.0.0",
+    'version': "15.0.1.0.1",
     'category': 'Extra Tools',
     'summary': 'The Backend Theme Infinito Is A Dynamic And Ultimate Theme'
                'For Your Odoo V15. This Theme Will Give You A New Experience '
