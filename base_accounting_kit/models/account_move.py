@@ -224,7 +224,10 @@ class AccountInvoiceLine(models.Model):
         if state and state.lower() != 'all':
             domain += [('parent_state', '=', state)]
         if context.get('company_id'):
-            domain += [('company_id', '=', context['company_id'])]
+            company_branches = self.env['res.company'].browse([context['company_id']]).mapped('child_ids').ids
+            company_branches.append(context['company_id'])
+            common_ids = list(set(context['allowed_company_ids']) & set(company_branches))
+            domain += [('company_id', 'in', common_ids)]
         elif context.get('allowed_company_ids'):
             domain += [('company_id', 'in', self.env.companies.ids)]
         else:

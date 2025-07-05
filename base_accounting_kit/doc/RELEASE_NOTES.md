@@ -34,3 +34,8 @@
 #### Version 17.0.1.1.5
 ##### UPDT
 - Updated the visibility of the Effective Date in the Register Payment form.
+
+#### 02.07.2025
+#### Version 17.0.1.1.6
+##### UPDT
+- Trial Balance report enhanced to include transactions from selected branch companies in addition to the main company.
