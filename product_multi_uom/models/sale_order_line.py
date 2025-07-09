@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+from odoo import api, fields, models
 
 
 class SaleOrderLine(models.Model):
@@ -50,24 +50,32 @@ class SaleOrderLine(models.Model):
         """Function that update the product_uom_qty as the value in the
          secondary uom quantity"""
         all_uom = []
-        if self.product_template_id.is_need_secondary_uom:
+        domain = [('secondary_uom_id', '=', self.secondary_product_uom_id.id)]
+        if self.product_template_id.attribute_line_ids and self.product_id.is_need_secondary_uom:
             self.is_secondary_readonly = True
+            domain.append(('product_id', '=', self.product_id.id))
+            for uom in self.product_id.secondary_uom_ids:
+                all_uom.append(uom.secondary_uom_id.id)
+        elif self.product_template_id.is_need_secondary_uom:
+            self.is_secondary_readonly = True
+            domain.append(('product_template_id', '=', self.product_template_id.id))
             for uom in self.product_template_id.secondary_uom_ids:
                 all_uom.append(uom.secondary_uom_id.id)
         if self.is_secondary_readonly:
             self.product_uom_readonly = True
             if self.secondary_product_uom_id.id in all_uom:
-                primary_uom_ratio = self.env['secondary.uom.line'].search(
-                    [('secondary_uom_id', '=', self.secondary_product_uom_id.id),
-                     ('product_id', '=', self.product_template_id.id)]).mapped(
+                primary_uom_ratio = self.env['secondary.uom.line'].search(domain).mapped(
                     'secondary_uom_ratio')
+                print(self.env['secondary.uom.line'].search([]).read())
+                print(domain, self.env['secondary.uom.line'].search([]))
+                print(primary_uom_ratio)
                 converted_uom_qty = primary_uom_ratio[
                                         0] * self.secondary_product_uom_qty
                 self.product_uom_qty = converted_uom_qty
 
     @api.depends('product_id')
     def _compute_secondary_product_uom(self):
-        """Compute the default secondary uom"""
+        """Compute the s secondary uom"""
         for rec in self:
             if (not rec.product_uom or
                     rec.product_id.uom_id.id != rec.secondary_product_uom_id.id):

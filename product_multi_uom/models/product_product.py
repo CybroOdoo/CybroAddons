@@ -22,14 +22,14 @@
 from odoo import api, fields, models
 
 
-class ProductTemplate(models.Model):
+class ProductProduct(models.Model):
     """Inherits the 'product.template' for adding the secondary uom"""
-    _inherit = "product.template"
+    _inherit = "product.product"
 
     is_need_secondary_uom = fields.Boolean(string="Need Secondary UoM's",
                                            help="Enable this field for "
                                                 "using the secondary uom")
-    secondary_uom_ids = fields.One2many('secondary.uom.line', 'product_template_id',
+    secondary_uom_ids = fields.One2many('secondary.uom.line', 'product_id',
                                         string="Secondary UoM's",
                                         help='Select the secondary UoM and '
                                              'their ratio', store=True)
@@ -54,9 +54,10 @@ class ProductTemplate(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        """Assign default value to the product variants"""
+        """ Assign the default value to the secondary uom's """
         res = super().create(vals_list)
-        for product in res:
-            if product.is_need_secondary_uom:
-                product.product_variant_ids.is_need_secondary_uom = True
+        for rec in res:
+            if rec.product_tmpl_id.is_need_secondary_uom:
+                rec.is_need_secondary_uom = True
+            rec._onchange_is_need_secondary_uom()
         return res
