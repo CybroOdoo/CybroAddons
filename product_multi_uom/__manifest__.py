@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Product Multi UoM",
-    'version': '17.0.1.1.0',
+    'version': '17.0.1.2.1',
     'category': 'Sales',
     'summary': 'This module help to sell a product with multiple Uom category',
     'description': "This versatile module empowers your sales strategy by "
@@ -39,6 +39,7 @@
         'security/ir.model.access.csv',
         'views/product_product_views.xml',
         'views/sale_order_line_views.xml',
+        'views/product_template_views.xml',
     ],
     'images': ['static/description/banner.png'],
     'license': 'AGPL-3',

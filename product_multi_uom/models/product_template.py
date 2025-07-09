@@ -4,7 +4,7 @@
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Saneen K (<https://www.cybrosys.com>)
+#    Author: Ammu Raj (<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU AFFERO
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
@@ -22,14 +22,14 @@
 from odoo import api, fields, models
 
 
-class ProductProduct(models.Model):
+class ProductTemplate(models.Model):
     """Inherits the 'product.template' for adding the secondary uom"""
-    _inherit = "product.product"
+    _inherit = "product.template"
 
     is_need_secondary_uom = fields.Boolean(string="Need Secondary UoM's",
                                            help="Enable this field for "
                                                 "using the secondary uom")
-    secondary_uom_ids = fields.One2many('secondary.uom.line', 'product_id',
+    secondary_uom_ids = fields.One2many('secondary.uom.line', 'product_template_id',
                                         string="Secondary UoM's",
                                         help='Select the secondary UoM and '
                                              'their ratio', store=True)
@@ -39,7 +39,7 @@ class ProductProduct(models.Model):
         """Function that write the default Uom and their ratio to the
         secondary uom"""
         base_uom = self.env['uom.uom'].sudo().search(
-            [('category_id', '=', self.uom_id.category_id.id)])
+                [('category_id', '=', self.uom_id.category_id.id)])
         if not self.secondary_uom_ids or self.uom_id.id not in self.secondary_uom_ids.mapped('secondary_uom_id').ids:
             self.secondary_uom_ids = [fields.Command.clear()]
             for uom in base_uom:
@@ -54,10 +54,9 @@ class ProductProduct(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        """ Assign the default value to the secondary uom's """
+        """Assign default value to the product variants"""
         res = super().create(vals_list)
-        for rec in res:
-            if rec.product_tmpl_id.is_need_secondary_uom:
-                rec.is_need_secondary_uom = True
-            rec._onchange_is_need_secondary_uom()
+        for product in res:
+            if product.is_need_secondary_uom:
+                product.product_variant_ids.is_need_secondary_uom = True
         return res
