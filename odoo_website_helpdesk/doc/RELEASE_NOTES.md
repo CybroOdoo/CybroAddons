@@ -20,4 +20,9 @@
 ##### UPDT
 -A confirmation email will be sent to the customer upon ticket creation.
 
+#### 14.07.2025
+#### Version 17.0.1.0.4
+##### FIX
+- Tickets created was not visible for the user.
+
 

@@ -55,7 +55,6 @@ class WebsiteFormInherit(WebsiteForm):
         :return: JSON response indicating the success or failure of form submission.
         :rtype: str
         """
-        print('hiiii')
         customer = request.env.user.partner_id
         lowest_stage_id = None
         if model_name == 'ticket.helpdesk':
@@ -70,12 +69,20 @@ class WebsiteFormInherit(WebsiteForm):
                 return json.dumps(
                     {'error': "No stage found with the lowest sequence."})
             products = kwargs.get('product')
-            partner_create = request.env['res.partner'].sudo().create({
-                'name': kwargs.get('customer_name'),
-                'company_name': kwargs.get('company'),
-                'phone': kwargs.get('phone'),
-                'email': kwargs.get('email_from')
-            })
+            # Check if partner already exists with the same email
+            email = kwargs.get('email_from')
+            existing_partner = request.env['res.partner'].sudo().search([
+                ('email', '=', email)
+            ], limit=1)
+            if existing_partner:
+                partner_create = existing_partner
+            else:
+                partner_create = request.env['res.partner'].sudo().create({
+                    'name': kwargs.get('customer_name'),
+                    'company_name': kwargs.get('company'),
+                    'phone': kwargs.get('phone'),
+                    'email': kwargs.get('email_from')
+                })
             if products:
                 split_product = products.split(',')
                 product_list = [int(i) for i in split_product]

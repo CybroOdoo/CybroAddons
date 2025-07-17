@@ -21,7 +21,7 @@
 ############################################################################
 {
     'name': "Website Helpdesk Support Ticket Management",
-    'version': '17.0.1.0.3',
+    'version': '17.0.1.0.4',
     'category': 'Website',
     'summary': """The website allows for the creation of tickets, which can 
     then be controlled from the backend. Furthermore, a bill that includes 
