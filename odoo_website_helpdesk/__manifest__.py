@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Website Helpdesk Support Ticket Management",
-    'version': '16.0.3.0.2',
+    'version': '16.0.3.0.3',
     'category': 'Website',
     'summary': """Helpdesk Module for community""",
     'description': 'Can create ticket from website also and can manage it from'

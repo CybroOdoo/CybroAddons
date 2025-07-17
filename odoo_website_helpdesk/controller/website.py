@@ -30,6 +30,7 @@ from odoo.addons.website.controllers.form import WebsiteForm
 
 class HelpdeskProduct(http.Controller):
     """It controls the website products and return the product."""
+
     @http.route('/product', auth='public', type='json')
     def product(self):
         """Product control function"""
@@ -45,6 +46,7 @@ class WebsiteFormInherit(WebsiteForm):
     controller to display a list of tickets for the current user in their
     portal, and overrides the website form controller's method for handling
     form submissions to create a new help desk ticket instead."""
+
     def _handle_website_form(self, model_name, **kwargs):
         """Website Help Desk Form"""
         if model_name == 'help.ticket':
@@ -56,12 +58,28 @@ class WebsiteFormInherit(WebsiteForm):
                 if rec == lowest_sequence:
                     lowest_stage_id = lowest_sequence
             products = kwargs.get('product')
-            partner_create = request.env['res.partner'].sudo().create({
-                'name':kwargs.get('customer_name'),
-                'company_name':kwargs.get('company'),
-                'phone':kwargs.get('phone'),
-                'email':kwargs.get('email_from')
-            })
+
+            # Check if user is logged in and not public user
+            if request.env.user and request.env.user.id != request.env.ref(
+                    'base.public_user').id:
+                partner_create = request.env.user.partner_id
+            else:
+                # Check if partner already exists with the same email
+                email = kwargs.get('email_from')
+                existing_partner = request.env['res.partner'].sudo().search([
+                    ('email', '=', email)
+                ], limit=1)
+                if existing_partner:
+                    partner_create = existing_partner
+                else:
+                    # Create new partner only if it doesn't exist
+                    partner_create = request.env['res.partner'].sudo().create({
+                        'name': kwargs.get('customer_name'),
+                        'company_name': kwargs.get('company'),
+                        'phone': kwargs.get('phone'),
+                        'email': kwargs.get('email_from')
+                    })
+
             if products:
                 splited_product = products.split(',')
                 product_list = [int(i) for i in splited_product]
@@ -86,7 +104,7 @@ class WebsiteFormInherit(WebsiteForm):
                 data = self.extract_data(model_record, request.params)
                 if ('ticket_attachment' in request.params or
                         request.httprequest.files or data.get(
-                        'attachments')):
+                            'attachments')):
                     attached_files = data.get('attachments')
                     for attachment in attached_files:
                         attached_file = attachment.read()
@@ -122,7 +140,7 @@ class WebsiteFormInherit(WebsiteForm):
                 data = self.extract_data(model_record, request.params)
                 if ('ticket_attachment' in request.params or
                         request.httprequest.files or data.get(
-                        'attachments')):
+                            'attachments')):
                     attached_files = data.get('attachments')
                     for attachment in attached_files:
                         attached_file = attachment.read()
