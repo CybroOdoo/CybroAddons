@@ -38,6 +38,15 @@ class PurchaseOrderLine(models.Model):
         method and we will create record in the stock.move.line corresponding to
         this stock.move for creating the lots"""
         res = super(PurchaseOrderLine, self)._create_stock_moves(picking)
+
+        lot_count = len(self.lot_ids)
+        total_qty = int(self.product_uom_qty)
+        base_qty = total_qty // lot_count
+        remaining = total_qty % lot_count
+
+        for index, lot in enumerate(self.lot_ids):
+            qty = base_qty + (1 if index < remaining else 0)
+
         for items in self.lot_ids:
             self.env['stock.move.line'].create({
                 'company_id': self.env.company.id,
@@ -46,7 +55,7 @@ class PurchaseOrderLine(models.Model):
                 'location_id': res.location_id.id,
                 'location_dest_id': res.location_dest_id.id,
                 'lot_name': items.name,
-                'quantity': self.product_uom_qty,
+                'quantity': qty,
                 'description_picking': self.product_id.display_name,
                 'move_id': res.id
             })
