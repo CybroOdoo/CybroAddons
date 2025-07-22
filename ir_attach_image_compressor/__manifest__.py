@@ -39,7 +39,7 @@
         'views/image_compression_rule_views.xml',
         'views/file_format_views.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
     'application': False,
