@@ -16,3 +16,9 @@
 #### Version 18.0.1.1.1
 #### BUG FIX
 - Fixed issue where completed orders were still shown after the session was closed.
+
+
+#### 15.07.2025
+#### Version 18.0.1.1.2
+#### BUG FIX
+- Fixed issue where order reference in order list become mistmatch/wrong, get order ref from other POS.

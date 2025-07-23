@@ -86,14 +86,12 @@ class PosOrder(models.Model):
             else:
                 if vals.get('order_id') and not vals.get('name'):
                     # set name based on the sequence specified on the config
-                    config = self.env['pos.order'].browse(
-                        vals['order_id']).session_id.config_id
-                    if config.sequence_line_id:
+                    config = self.env['pos.order'].browse(vals['order_id']).session_id.config_id
+                    if config and config.sequence_line_id:
                         vals['name'] = config.sequence_line_id._next()
-                if not vals.get('name'):
-                    # fallback on any pos.order sequence
-                    vals['name'] = self.env['ir.sequence'].next_by_code(
-                        'pos.order.line')
+                    else:
+                        # Generate a unique name using a default fallback sequence
+                        vals['name'] = self.env['ir.sequence'].next_by_code('pos.order')
                 return super().create(vals_list)
 
     def get_details(self, shop_id, order=None):
