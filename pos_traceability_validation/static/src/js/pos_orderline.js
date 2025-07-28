@@ -21,7 +21,6 @@ patch(Orderline.prototype,  {
             const result = await this.pos.orm.call(
                 "stock.lot", "get_available_lots_qty_pos", [product_id, lot_names], {}
             )
-            print('1111111111111', quantity, result)
             if (quantity > result) {
                 this.quantity = result
                 await this.env.services.popup.add(CustomButtonPopup, {

@@ -20,7 +20,7 @@
 ##############################################################################
 {
     'name': 'POS Serial Number Validator',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.2',
     'category': 'Point of Sale',
     'summary': """Validate Serial number of a product by checking 
                   availability in stock""",
