@@ -25,6 +25,7 @@ export class ModuleQuality extends Component {
             all_modules : {},
             loading_accordian: false,
             expanded_accordian: false,
+            selectedModule: false,
         });
 
         this.orm = useService("orm");
@@ -94,7 +95,6 @@ export class ModuleQuality extends Component {
     }
 
     displayViolations(name) {
-        // If clicking the same module again, toggle the table visibility
         if (this.state.selectedModule === name) {
             this.state.selectedModule = null;
             this.state.module_selected = null;

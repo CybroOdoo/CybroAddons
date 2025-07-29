@@ -20,8 +20,8 @@
 #
 ######################################################################################
 {
-    'name': 'Odoo Health Report',
-    'version': '18.0.2.1.1',
+    'name': 'Odoo Module Health Report',
+    'version': '18.0.2.2.1',
     'category': 'Productivity',
     'summary': "Odoo Module Health Monitoring Tool",
     'description': 'Displays odoo apps report in the menu and as a PDF report.',
@@ -38,6 +38,7 @@
             'bandit',
             'radon',
             'pylint',
+            'pylint-odoo',
             'flake8'
         ],
     },
@@ -50,7 +51,6 @@
     'assets': {
         'web.assets_backend': [
             'https://cdn.jsdelivr.net/npm/chart.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/iconify/2.0.0/iconify.min.js',
             'https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap.css',
             'odoo_health_report/static/src/css/main.css',
             'odoo_health_report/static/src/js/module_quality.js',

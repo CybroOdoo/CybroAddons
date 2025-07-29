@@ -88,7 +88,7 @@ def check_style_lint(module):
     Returns:
         list of dictionaries for the violations with the file name and line number.
     """
-    excluded_files = ['__init__.py', '__manifest__.py', '__pycache__', '*.pyc', '.git']
+    excluded_files = ['__init__.py', '__manifest__.py', '__pycache__', '*.pyc', '.git', 'tests']
     ignored_violations = ['E501', 'E301', 'E302']
 
     venv_python = sys.executable
@@ -131,6 +131,7 @@ def check_code_quality(module):
         '--load-plugins=pylint_odoo',
         '-d all',
         '-e odoolint',
+        '--ignore=tests',
         '--ignore-patterns=__init__.py,__manifest__.py',
         get_module_path(module)
     ],
@@ -182,6 +183,8 @@ def check_maintainability_index(module):
             rec = rec.split(' - ')
             if len(rec) >= 2:
                 file_path = f"{module}/{rec[0].split(f'/{module}/')[1]}"
+                if file_path.startswith(f'{module}/tests/'):
+                    continue
                 mi_list.append({'file': file_path, 'grade': rec[1]})
     return mi_list
 
@@ -200,6 +203,7 @@ def check_import_sort(module):
         '--check-only',
         '--skip', '__init__.py',
         '--skip', '__manifest__.py',
+        '--skip', 'tests',
         get_module_path(module),
     ],
         stdout=subprocess.PIPE,
@@ -245,7 +249,7 @@ def check_code_format(module):
     result = subprocess.run([
         sys.executable, '-m', 'black',
         '--check',
-        '--exclude', '__init__.py|__manifest__.py',
+        '--exclude', '__init__.py|__manifest__.py|tests',
         get_module_path(module),
     ],
         stdout=subprocess.PIPE,
@@ -287,6 +291,11 @@ def check_code_complexity(module):
     if result.returncode == 0 and result.stdout:
         clean_stdout = re.sub(r'\x1b\[[0-9;]*m', '', result.stdout)
         cc_dict = json.loads(clean_stdout.strip())
+        cc_dict = {
+            k: v for k, v in cc_dict.items()
+            if '/tests/' not in k
+        }
+
         return cc_dict
     return {}
 
@@ -303,8 +312,8 @@ def scan_code_security(module):
     result = subprocess.run([
         sys.executable, '-m', 'bandit',
         '-r', get_module_path(module),
-        '-x', '__init__.py,__manifest__.py',
-        '-f', 'json'
+        '-x', '__init__.py,__manifest__.py,tests',
+        '-f', 'json', '--quiet'
     ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

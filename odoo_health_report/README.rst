@@ -2,7 +2,7 @@
     :target: https://www.odoo.com/documentation/18.0/legal/licenses.html#odoo-apps
     :alt: License: OPL-1
 
-Odoo Health Report
+Odoo Module Health Report
 =================
 This module allows you to display Odoo app module details and print them as a PDF report.
 

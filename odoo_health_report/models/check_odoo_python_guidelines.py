@@ -433,8 +433,8 @@ def check_manifest_file(file_path):
             results.append({
                 "file": file_path_shorten,
                 "line": version.lineno if hasattr(version, "lineno") else 1,
-                "issue": f"Version '{version_val}' does not follow '16.0.1.0.0' format",
-                "suggestion": "Use 5-level semantic versioning like '16.0.1.0.0'"
+                "issue": f"Version '{version_val}' does not follow '18.0.1.0.0' format",
+                "suggestion": "Use 5-level semantic versioning like '18.0.1.0.0'"
             })
 
     # Depends check
@@ -684,6 +684,8 @@ def scan_directory(directory):
     """
     for root, _, files in os.walk(directory):
         for file in files:
+            if file.startswith("test_"):
+                continue
             if file == "__manifest__.py":
                 check_manifest_file(os.path.join(root, file))
             if file.endswith(".py") and file not in {"__init__.py", "__manifest__.py"}:

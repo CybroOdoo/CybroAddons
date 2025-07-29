@@ -128,8 +128,7 @@ class ModuleQuality(models.AbstractModel):
         is_updated.update_module()
 
         for module in get_modules():
-            module_path = get_module_path(module)
-            if 'addons' not in module_path.split(os.sep) and module != 'odoo_health_report':
+            if module != 'odoo_health_report':
                 module_name = self.env.ref(f'base.module_{module}').display_name
                 module_icon = modules.module.get_module_icon(module)
                 module_and_icon[module] = [module_name, module_icon]
