@@ -191,8 +191,7 @@ class CashBookReport(models.TransientModel):
                 lambda x: x.account_id.id == account['id'])
             move_line_data = move_lines.read(
                 ['date', 'journal_id', 'partner_id', 'move_name', 'debit',
-                 'move_id',
-                 'credit', 'name', 'ref'])
+                 'move_id', 'credit', 'name', 'ref'])
             data[move_lines.mapped('account_id').display_name] = move_line_data
             currency_id = self.env.company.currency_id.symbol
             move_lines_total[move_lines.mapped('account_id').display_name] = {

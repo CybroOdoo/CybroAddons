@@ -140,7 +140,7 @@ class BankBook extends owl.Component {
         var self = this;
         let totals = {
             'total_debit':this.state.total_debit,
-            'total_debit_display':this.state.total_debit_display ,
+            'total_debit_display':this.state.total_debit_display,
             'total_credit':this.state.total_credit,
             'total_credit_display':this.state.total_credit_display,
             'currency':this.state.currency,

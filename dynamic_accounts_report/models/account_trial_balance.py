@@ -115,6 +115,7 @@ class AccountTrialBalance(models.TransientModel):
         :return: List of dictionaries representing the financial report.
         :rtype: list
         """
+
         if options == {}:
             options = None
         if options is None:
@@ -207,7 +208,7 @@ class AccountTrialBalance(models.TransientModel):
                         domain = [('date', '>=', com_start_date),
                                   ('account_id', '=', account_id.id),
                                   ('date', '<=', com_end_date),
-                                  ('parent_state', 'in', option_domain), ]
+                                  ('parent_state', 'in', option_domain)]
                         if journal_list:
                             domain.append(
                                 ('journal_id', 'in', journal_list), )
@@ -243,15 +244,14 @@ class AccountTrialBalance(models.TransientModel):
                                   ('parent_state', 'in', option_domain), ]
                         if journal_list:
                             domain.append(
-                                ('journal_id', 'in', journal_list), )
+                                ('journal_id', 'in', journal_list))
                         if analytic:
                             domain.append(
                                 ('analytic_line_ids', 'in', analytic))
                         if method is not None and 'cash' in method:
                             domain.append(('journal_id', 'in',
                                            self.env.company.tax_cash_basis_journal_id.ids))
-                        move_lines = self.env['account.move.line'].search(
-                            domain)
+                        move_lines = self.env['account.move.line'].search(domain)
                         dynamic_date_num[
                             f"dynamic_date_num{i}"] = 'Q' + ' ' + str(
                             get_quarter_number(com_start_date)) + ' ' + str(
@@ -265,7 +265,7 @@ class AccountTrialBalance(models.TransientModel):
             domain = [('date', '>=', start_date),
                       ('account_id', '=', account_id.id),
                       ('date', '<=', end_date),
-                      ('parent_state', 'in', option_domain), ]
+                      ('parent_state', 'in', option_domain)]
             if journal_list:
                 domain.append(
                     ('journal_id', 'in', journal_list), )

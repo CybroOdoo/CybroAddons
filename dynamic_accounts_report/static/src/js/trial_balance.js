@@ -2,7 +2,7 @@
 const { Component } = owl;
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-import { useRef, useState } from "@odoo/owl";
+import { useRef, useState, useEffect } from "@odoo/owl";
 import { BlockUI } from "@web/core/ui/block_ui";
 import { download } from "@web/core/network/download";
 const actionRegistry = registry.category("actions");
@@ -23,6 +23,7 @@ class TrialBalance extends owl.Component {
         this.unfoldButton = useRef('unfoldButton');
         this.state = useState({
             move_line: null,
+            default_report: true,
             data: null,
             total: null,
             journals: null,
@@ -43,6 +44,7 @@ class TrialBalance extends owl.Component {
                     },
         });
         this.load_data(self.initial_render = true);
+
     }
     async load_data() {
         /**
@@ -243,23 +245,8 @@ class TrialBalance extends owl.Component {
             }
         }
         this.state.data = await this.orm.call("account.trial.balance", "get_filter_values", [this.start_date.el.value, this.end_date.el.value, this.state.comparison_number, this.state.comparison_type, this.state.selected_journal_list, this.state.selected_analytic, this.state.options,this.state.method,]);
+        this.state.default_report = false
         var date_viewed = []
-//        this.state.data.forEach((value, index) => {
-//        console.log(index)
-//            if (index == 'journal_ids') {
-//                this.state.journals = value
-//                console.log(this.state.journals)
-//            }
-//            if (value.dynamic_date_num) {
-//            let iterable = Array.isArray(value.dynamic_date_num) ? value.dynamic_date_num
-//               : Object.values(value.dynamic_date_num);
-//                for (const date_num of iterable) {
-//                     if (!date_viewed.includes(date_num)) {
-//                         date_viewed.push(date_num);
-//                     }
-//                }
-//            }
-//        })
         if (date_viewed.length !== 0) {
             this.state.date_viewed = date_viewed.reverse()
         }
@@ -451,6 +438,7 @@ class TrialBalance extends owl.Component {
         }
         return filters
     }
+
     async print_xlsx() {
         /**
          * Asynchronously generates and downloads an XLSX report.

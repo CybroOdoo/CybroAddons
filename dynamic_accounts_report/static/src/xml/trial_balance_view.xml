@@ -310,116 +310,190 @@
                                     </tr>
                                 </thead>
                                 <tbody t-ref="tbody">
-                                    <t t-if="state.data">
-                                        <t t-set="i" t-value="0"/>
-                                        <t t-foreach="state.accounts"
-                                           t-as="move_line"
-                                           t-key="move_line_index">
-                                            <t t-set="i" t-value="i + 1"/>
-                                            <tr class="border-bottom"
-                                                style="border-spacing: 0 10px;">
-                                                <th colspan="6">
-                                                    <span class="dropdown">
-                                                        <a class="dropdown-toggle"
-                                                           data-bs-toggle="dropdown"
-                                                           style="color: black;">
-                                                            <span>
-                                                                <t t-esc="move_line['account']"/>
+                                    <t t-set="show" t-value="True"/>
+                                    <t t-if="this.state.default_report == false">
+                                        <t t-if="state.data">
+                                            <t t-foreach="state.data" t-as="each" t-key="each.account_id">
+                                                <t t-set="show" t-value="False"/>
+                                                <tr class="border-bottom"
+                                                    style="border-spacing: 0 10px;">
+                                                    <th colspan="6">
+                                                        <span class="dropdown">
+                                                            <a class="dropdown-toggle"
+                                                               data-bs-toggle="dropdown"
+                                                               style="color: black;">
+                                                                <span>
+                                                                    <t t-esc="each['account']"/>
+                                                                </span>
+                                                            </a>
+                                                            <span class="dropdown-menu">
+                                                                <a role="menuitem"
+                                                                   t-on-click="show_gl"
+                                                                   class="show_gl">
+                                                                    General Ledger
+                                                                </a>
+                                                                <div role="separator"
+                                                                     class="dropdown-divider"/>
+                                                                <a role="menuitem"
+                                                                   t-att-data-id="each['account_id']"
+                                                                   t-on-click="gotoJournalItem"
+                                                                   class="show_gl">
+                                                                    Journal Items
+                                                                </a>
                                                             </span>
-                                                        </a>
-                                                        <span class="dropdown-menu">
-                                                            <a role="menuitem"
-                                                               t-on-click="show_gl"
-                                                               class="show_gl">
-                                                                General Ledger
-                                                            </a>
-                                                            <div role="separator"
-                                                                 class="dropdown-divider"/>
-                                                            <a role="menuitem"
-                                                               t-att-data-id="move_line['account_id']"
-                                                               t-on-click="gotoJournalItem"
-                                                               class="show_gl">
-                                                                Journal Items
-                                                            </a>
                                                         </span>
-                                                    </span>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="each['initial_total_credit']"
+                                                           t-esc="each['initial_total_credit']"/>
+                                                    </th>
+                                                    <t t-if="state.apply_comparison == true">
+                                                        <t t-set="number_of_periods"
+                                                           t-value="comparison_number_range"/>
+                                                        <t t-foreach="number_of_periods"
+                                                           t-as="num" t-key="num">
+                                                            <th style="text-align:center;">
+                                                                <t t-if="each['dynamic_total_debit_' + num]"
+                                                                   t-esc="each['dynamic_total_debit_' + num]"/>
+                                                            </th>
+                                                            <th style="text-align:center;">
+                                                                <t t-if="each['dynamic_total_credit_' + num]"
+                                                                   t-esc="each['dynamic_total_credit_' + num]"/>
+                                                            </th>
+                                                        </t>
+                                                    </t>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="each['total_debit']"
+                                                           t-esc="each['total_debit']"/>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="each['total_credit']"
+                                                           t-esc="each['total_credit']"/>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="each['end_total_debit']"
+                                                           t-esc="each['end_total_debit']"/>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="each['end_total_credit']"
+                                                           t-esc="each['end_total_credit']"/>
+                                                    </th>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                    </t>
+                                    <t t-if="this.state.default_report == true">
+                                        <t t-if="state.data">
+                                            <t t-set="i" t-value="0"/>
+                                            <t t-foreach="state.accounts"
+                                               t-as="move_line"
+                                               t-key="move_line_index">
+                                                <t t-set="i" t-value="i + 1"/>
+                                                <tr class="border-bottom"
+                                                    style="border-spacing: 0 10px;">
+                                                    <th colspan="6">
+                                                        <span class="dropdown">
+                                                            <a class="dropdown-toggle"
+                                                               data-bs-toggle="dropdown"
+                                                               style="color: black;">
+                                                                <span>
+                                                                    <t t-esc="move_line['account']"/>
+                                                                </span>
+                                                            </a>
+                                                            <span class="dropdown-menu">
+                                                                <a role="menuitem"
+                                                                   t-on-click="show_gl"
+                                                                   class="show_gl">
+                                                                    General Ledger
+                                                                </a>
+                                                                <div role="separator"
+                                                                     class="dropdown-divider"/>
+                                                                <a role="menuitem"
+                                                                   t-att-data-id="move_line['account_id']"
+                                                                   t-on-click="gotoJournalItem"
+                                                                   class="show_gl">
+                                                                    Journal Items
+                                                                </a>
+                                                            </span>
+                                                        </span>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="move_line['initial_total_debit']"
+                                                           t-esc="move_line['initial_total_debit']"/>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="move_line['initial_total_credit']"
+                                                           t-esc="move_line['initial_total_credit']"/>
+                                                    </th>
+                                                    <t t-if="state.apply_comparison == true">
+                                                        <t t-set="number_of_periods"
+                                                           t-value="comparison_number_range"/>
+                                                        <t t-foreach="number_of_periods"
+                                                           t-as="num" t-key="num">
+                                                            <th style="text-align:center;">
+                                                                <t t-if="move_line['dynamic_total_debit_' + num]"
+                                                                   t-esc="move_line['dynamic_total_debit_' + num]"/>
+                                                            </th>
+                                                            <th style="text-align:center;">
+                                                                <t t-if="move_line['dynamic_total_credit_' + num]"
+                                                                   t-esc="move_line['dynamic_total_credit_' + num]"/>
+                                                            </th>
+                                                        </t>
+                                                    </t>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="move_line['total_debit']"
+                                                           t-esc="move_line['total_debit']"/>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="move_line['total_credit']"
+                                                           t-esc="move_line['total_credit']"/>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="move_line['end_total_debit']"
+                                                           t-esc="move_line['end_total_debit']"/>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="move_line['end_total_credit']"
+                                                           t-esc="move_line['end_total_credit']"/>
+                                                    </th>
+                                                </tr>
+                                            </t>
+                                            <tr class="border-bottom"
+                                                style="border-spacing: 0 10px;color:#000">
+                                                <th colspan="6">Total</th>
+                                                <th style="text-align:center;">
+                                                    <t t-esc="sumByKey(state.accounts, 'initial_total_debit')"/>
                                                 </th>
                                                 <th style="text-align:center;">
-                                                    <t t-if="move_line['initial_total_debit']"
-                                                       t-esc="move_line['initial_total_debit']"/>
-                                                </th>
-                                                <th style="text-align:center;">
-                                                    <t t-if="move_line['initial_total_credit']"
-                                                       t-esc="move_line['initial_total_credit']"/>
+                                                    <t t-esc="sumByKey(state.accounts, 'initial_total_credit')"/>
                                                 </th>
                                                 <t t-if="state.apply_comparison == true">
                                                     <t t-set="number_of_periods"
                                                        t-value="comparison_number_range"/>
                                                     <t t-foreach="number_of_periods"
-                                                       t-as="num" t-key="num">
+                                                       t-as="nb" t-key="nb">
                                                         <th style="text-align:center;">
-                                                            <t t-if="move_line['dynamic_total_debit_' + num]"
-                                                               t-esc="move_line['dynamic_total_debit_' + num]"/>
+                                                            <t t-esc="sumByKey(state.accounts, 'dynamic_total_debit_' + nb)"/>
                                                         </th>
                                                         <th style="text-align:center;">
-                                                            <t t-if="move_line['dynamic_total_credit_' + num]"
-                                                               t-esc="move_line['dynamic_total_credit_' + num]"/>
+                                                            <t t-esc="sumByKey(state.accounts, 'dynamic_total_credit_' + nb)"/>
                                                         </th>
                                                     </t>
                                                 </t>
                                                 <th style="text-align:center;">
-                                                    <t t-if="move_line['total_debit']"
-                                                       t-esc="move_line['total_debit']"/>
+                                                    <t t-esc="sumByKey(state.accounts, 'total_debit')"/>
                                                 </th>
                                                 <th style="text-align:center;">
-                                                    <t t-if="move_line['total_credit']"
-                                                       t-esc="move_line['total_credit']"/>
+                                                    <t t-esc="sumByKey(state.accounts, 'total_credit')"/>
                                                 </th>
                                                 <th style="text-align:center;">
-                                                    <t t-if="move_line['end_total_debit']"
-                                                       t-esc="move_line['end_total_debit']"/>
+                                                    <t t-esc="sumByKey(state.accounts, 'end_total_debit')"/>
                                                 </th>
                                                 <th style="text-align:center;">
-                                                    <t t-if="move_line['end_total_credit']"
-                                                       t-esc="move_line['end_total_credit']"/>
+                                                    <t t-esc="sumByKey(state.accounts, 'end_total_credit')"/>
                                                 </th>
                                             </tr>
                                         </t>
-                                        <tr class="border-bottom"
-                                            style="border-spacing: 0 10px;color:#000">
-                                            <th colspan="6">Total</th>
-                                            <th style="text-align:center;">
-                                                <t t-esc="sumByKey(state.accounts, 'initial_total_debit')"/>
-                                            </th>
-                                            <th style="text-align:center;">
-                                                <t t-esc="sumByKey(state.accounts, 'initial_total_credit')"/>
-                                            </th>
-                                            <t t-if="state.apply_comparison == true">
-                                                <t t-set="number_of_periods"
-                                                   t-value="comparison_number_range"/>
-                                                <t t-foreach="number_of_periods"
-                                                   t-as="nb" t-key="nb">
-                                                    <th style="text-align:center;">
-                                                        <t t-esc="sumByKey(state.accounts, 'dynamic_total_debit_' + nb)"/>
-                                                    </th>
-                                                    <th style="text-align:center;">
-                                                        <t t-esc="sumByKey(state.accounts, 'dynamic_total_credit_' + nb)"/>
-                                                    </th>
-                                                </t>
-                                            </t>
-                                            <th style="text-align:center;">
-                                                <t t-esc="sumByKey(state.accounts, 'total_debit')"/>
-                                            </th>
-                                            <th style="text-align:center;">
-                                                <t t-esc="sumByKey(state.accounts, 'total_credit')"/>
-                                            </th>
-                                            <th style="text-align:center;">
-                                                <t t-esc="sumByKey(state.accounts, 'end_total_debit')"/>
-                                            </th>
-                                            <th style="text-align:center;">
-                                                <t t-esc="sumByKey(state.accounts, 'end_total_credit')"/>
-                                            </th>
-                                        </tr>
                                     </t>
                                 </tbody>
                             </table>

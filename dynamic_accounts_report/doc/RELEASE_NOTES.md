@@ -18,4 +18,10 @@
 #### 16.05.2025
 #### Version 18.0.1.2.3
 #### UPDT
-- Bug Fixing and added thousand seperators
+- Bug Fixing and added thousand separators
+
+#### 28.07.2025
+#### Version 18.0.1.2.4
+#### UPDT
+- Bug Fixing in the accounting report (Trial Balance).
+- 
