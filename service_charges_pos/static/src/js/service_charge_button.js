@@ -44,7 +44,7 @@ odoo.define('service_charges_pos.ServiceChargeButton', function(require) {
                     isInputSelected: true
                 });
                 if (confirmed)
-                    if (payload > 0) {
+                    if (payload > 0 && global_selection) {
                         if (global_selection == 'amount') {
                             order.add_product(product, {
                                 price: payload
