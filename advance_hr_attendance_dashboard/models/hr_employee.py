@@ -17,6 +17,8 @@
 #    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
 #    (AGPL v3) along with this program.
 ###############################################################################
+import re
+
 import pandas
 from datetime import date, timedelta
 from odoo import api, fields, models
@@ -57,8 +59,10 @@ class HrEmployee(models.Model):
         elif option == 'last_15_days':
             dates = [str(date.today() - timedelta(days=day))
                      for day in range(15)]
-        cids = request.httprequest.cookies.get('cids')
-        allowed_company_ids = [int(cid) for cid in cids.split(',')]
+
+        cids = request.httprequest.cookies.get('cids', '')
+        split_cids = re.split(r'[,-]', cids)
+        allowed_company_ids = [int(cid) for cid in split_cids if cid.isdigit()]
         for employee in self.env['hr.employee'].search(
                 [('company_id', '=', allowed_company_ids)]):
             leave_data = []
