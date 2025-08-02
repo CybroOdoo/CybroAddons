@@ -52,7 +52,7 @@
         'report/mrp_production_cost_reports.xml',
         'report/mrp_production_cost_report_templates.xml',
     ],
-    'images': ['/static/description/banner.jpg'],
+    'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
