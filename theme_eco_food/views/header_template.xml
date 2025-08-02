@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Enhanced template for header with better active menu highlighting -->
+    <template id="header_eco_food" inherit_id="website.template_header_default"
+              name="Template Header Theme EcoFood" active="True">
+        <xpath expr="//header" position="replace">
+            <header id="eco_food_header" class="header_modern_light">
+                <section class="nav_modern sticker">
+                    <div>
+                        <div class="top_bar1 bg-dark">
+                            <div class="left">
+                                <span>Welcome you to Eco-life store!</span>
+                            </div>
+                            <div class="right">
+                                <ul class="d-flex align-items-center mb-0">
+                                    <li>
+                                        <t t-set="_classes" t-valuef="ms-2 float-end"/>
+                                        <div t-attf-class="o_pricelist_dropdown dropdown #{'' if hasPricelistDropdown else 'd-none'} #{_classes}">
+                                            <t t-set="curr_pl" t-value="website.pricelist_id"/>
+                                            <a role="button" href="#"
+                                               t-attf-class="dropdown-toggle -{{navClass}}"
+                                               data-bs-toggle="dropdown">
+                                                <t t-esc="curr_pl and curr_pl.name or ' - '"/>
+                                            </a>
+                                            <div class="dropdown-menu bg-dark" role="menu">
+                                                <t t-foreach="website_sale_pricelists" t-as="pl">
+                                                    <a role="button"
+                                                       t-att-href="'/shop/change_pricelist/%s' % pl.id"
+                                                       class="dropdown-item dropdown-pricelist">
+                                                        <span class="switcher_pricelist" t-att-data-pl_id="pl.id"
+                                                              t-esc="pl.name"/>
+                                                    </a>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <!-- Sign In -->
+                                    <t t-call="portal.placeholder_user_sign_in">
+                                        <t t-set="_item_class" t-value="'nav-item user ml-auto'"/>
+                                        <t t-set="_link_class" t-value="'nav-link font-weight-bold'"/>
+                                    </t>
+                                    <!-- User Dropdown -->
+                                    <t t-call="portal.user_dropdown">
+                                        <t t-set="_user_name" t-value="true"/>
+                                        <t t-set="_item_class" t-value="'nav-item dropdown ml-lg-auto'"/>
+                                        <t t-set="_link_class" t-value="'nav-link font-weight-bold'"/>
+                                        <t t-set="_dropdown_menu_class" t-value="'bg-dark'"/>
+                                    </t>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <section class="topbar">
+                            <nav class="navbar navbar-expand-lg navbar-light">
+                                <a class="navbar-brand pb-2 d-none d-md-none d-lg-block" href="/">
+                                    <span t-field="website.logo"
+                                          t-options="{'widget': 'image', 'width': 95, 'height': 40}" role="img"
+                                          t-att-aria-label="'Logo of %s' % website.name"
+                                          t-att-title="website.name"/>
+                                </a>
+
+                                <a class="navbar-toggler collapsed border-0 x" type="button" data-toggle="collapse"
+                                   data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown"
+                                   aria-expanded="false" aria-label="Toggle navigation">
+                                    <span class="span_color"/>
+                                    <span class="span_color"/>
+                                    <span class="span_color"/>
+                                </a>
+
+                                <div class="collapse navbar-collapse p-3 p-lg-0 px-sm-0 mt-0 mt-lg-0 d-flex flex-column flex-lg-row flex-xl-row justify-content-lg-center mobileMenu"
+                                     id="navbarNavDropdown">
+                                    <a class="navbar-toggler collapsed border-0 x mobile_toggler"
+                                       type="button" data-toggle="collapse"
+                                       data-target="#navbarNavDropdown"
+                                       aria-controls="navbarNavDropdown"
+                                       aria-expanded="false"
+                                       aria-label="Toggle navigation">
+                                        <span class="span_color"/>
+                                        <span class="span_color"/>
+                                        <span class="span_color"/>
+                                    </a>
+
+                                    <ul class="navbar-nav align-self-stretch">
+                                        <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                            <!-- Enhanced active menu detection -->
+                                            <t t-set="is_menu_active" t-value="submenu._is_active()"/>
+                                            <t t-set="has_active_child"
+                                               t-value="any(child._is_active() for child in submenu.child_id if child.is_visible)"/>
+                                            <t t-set="menu_active_class"
+                                               t-value="'active' if (is_menu_active or has_active_child) else ''"/>
+
+                                            <t t-set="item_class" t-valuef="nav-item"/>
+                                            <t t-set="link_class" t-valuef="nav-link"/>
+                                            <t t-set="show_dropdown"
+                                               t-value="(submenu.is_mega_menu and submenu.is_visible) or submenu.child_id.filtered(lambda menu: menu.is_visible)"/>
+
+                                            <!-- Simple menu item (no dropdown) -->
+                                            <li t-if="submenu.is_visible and not (submenu.child_id or submenu.is_mega_menu)"
+                                                t-attf-class="#{item_class} #{menu_active_class}">
+                                                <a t-att-href="submenu._clean_url()"
+                                                   t-attf-class="#{link_class} #{menu_active_class}"
+                                                   role="menuitem"
+                                                   t-ignore="true"
+                                                   t-att-target="'_blank' if submenu.new_window else None">
+                                                    <span t-field="submenu.name"/>
+                                                </a>
+                                            </li>
+
+                                            <!-- Dropdown menu item -->
+                                            <li t-elif="show_dropdown"
+                                                t-attf-class="#{item_class} dropdown #{menu_active_class} #{submenu.is_mega_menu and 'position-static'}">
+                                                <a t-attf-class="#{link_class} dropdown-toggle #{menu_active_class} #{submenu.is_mega_menu and 'o_mega_menu_toggle'}"
+                                                   data-bs-toggle="dropdown"
+                                                   href="#"
+                                                   t-att-aria-expanded="'true' if (is_menu_active or has_active_child) else 'false'">
+                                                    <span t-field="submenu.name"/>
+                                                </a>
+
+                                                <!-- Mega menu -->
+                                                <div t-if="submenu.is_mega_menu"
+                                                     t-attf-class="dropdown-menu o_mega_menu #{submenu.mega_menu_classes}"
+                                                     data-name="Mega Menu"
+                                                     t-field="submenu.mega_menu_content"/>
+
+                                                <!-- Regular dropdown -->
+                                                <ul t-else="" class="dropdown-menu" role="menu">
+                                                    <t t-foreach="submenu.child_id" t-as="child_menu">
+                                                        <t t-set="child_active_class"
+                                                           t-value="'active' if child_menu._is_active() else ''"/>
+                                                        <li t-if="child_menu.is_visible and not child_menu.child_id"
+                                                            t-attf-class="#{child_active_class}">
+                                                            <a t-att-href="child_menu._clean_url()"
+                                                               t-attf-class="dropdown-item #{child_active_class}"
+                                                               role="menuitem"
+                                                               t-att-target="'_blank' if child_menu.new_window else None">
+                                                                <span t-field="child_menu.name"/>
+                                                            </a>
+                                                        </li>
+                                                        <!-- Nested dropdown support -->
+                                                        <li t-elif="child_menu.is_visible and child_menu.child_id"
+                                                            t-attf-class="dropdown-submenu #{child_active_class}">
+                                                            <a t-att-href="child_menu._clean_url()"
+                                                               t-attf-class="dropdown-item dropdown-toggle #{child_active_class}"
+                                                               role="menuitem">
+                                                                <span t-field="child_menu.name"/>
+                                                            </a>
+                                                            <ul class="dropdown-menu">
+                                                                <t t-foreach="child_menu.child_id"
+                                                                   t-as="grandchild_menu">
+                                                                    <li t-if="grandchild_menu.is_visible">
+                                                                        <a t-att-href="grandchild_menu._clean_url()"
+                                                                           t-attf-class="dropdown-item #{('active' if grandchild_menu._is_active() else '')}"
+                                                                           role="menuitem"
+                                                                           t-att-target="'_blank' if grandchild_menu.new_window else None">
+                                                                            <span t-field="grandchild_menu.name"/>
+                                                                        </a>
+                                                                    </li>
+                                                                </t>
+                                                            </ul>
+                                                        </li>
+                                                    </t>
+                                                </ul>
+                                            </li>
+                                        </t>
+                                    </ul>
+                                    <t t-if="request.httprequest.path.startswith('/shop')">
+                                        <div class="d-flex d-lg-none me-2">
+                                            <!-- Wishlist -->
+                                            <div class="me-2">
+                                                <t t-call="website_sale_wishlist.header_wishlist_link">
+                                                    <t t-set="_icon" t-value="True"/>
+                                                    <t t-set="_link_class"
+                                                       t-value="'eco_food o_navlink_background_hover btn position-relative p-2'"/>
+                                                    <t t-set="_badge_class"
+                                                       t-value="'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary'"/>
+                                                </t>
+                                            </div>
+                                            <!-- Cart -->
+                                            <div>
+                                                <t t-call="website_sale.header_cart_link">
+                                                    <t t-set="_icon" t-value="True"/>
+                                                    <t t-set="_link_class" t-value="'btn position-relative p-2'"/>
+                                                    <t t-set="_badge_class"
+                                                       t-value="'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary'"/>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </t>
+                                    <!-- Mobile pricelist dropdown -->
+                                    <ul class="navbar-nav align-self-stretch">
+                                        <li class="d-xl-none d-lg-none d-flex justify-content-around mt-4">
+                                            <a href="#" class="mr-5">
+                                                <select class="form-select" id="pricelistDropdown"
+                                                        aria-label="Default select example">
+                                                    <t t-foreach="website_sale_pricelists" t-as="pl">
+                                                        <option t-att-value="pl.id"
+                                                                t-att-selected="pl.id == website.pricelist_id.id">
+                                                            <a role="button"
+                                                               t-att-href="'/shop/change_pricelist/%s' % pl.id"
+                                                               class="dropdown-item dropdown-pricelist">
+                                                                <span class="switcher_pricelist"
+                                                                      t-att-data-pl_id="pl.id" t-esc="pl.name"/>
+                                                            </a>
+                                                        </option>
+                                                    </t>
+                                                </select>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <a class="navbar-brand navbar-brand2 pb-2 under_line d-block d-lg-none"
+                                   href="/">EcoFood
+                                </a>
+
+                                <!-- Shop-specific icons -->
+                                <t t-if="request.httprequest.path.startswith('/shop')">
+                                    <ul class="navbar-icons navbar-nav d-none d-lg-flex">
+                                        <!-- Wishlist -->
+                                        <li class="nav-item ml-lg-3">
+                                            <t t-call="website_sale_wishlist.header_wishlist_link">
+                                                <t t-set="_icon" t-value="True"/>
+                                                <t t-set="_link_class"
+                                                   t-value="'eco_food o_navlink_background_hover btn position-relative rounded-circle border-0 p-1 text-reset'"/>
+                                                <t t-set="_badge_class"
+                                                   t-value="'position-absolute bg-transparent top-0 end-0 mt-n1 me-n1 rounded-pill'"/>
+                                            </t>
+                                        </li>
+
+                                        <!-- Cart -->
+                                        <li class="nav-item ml-lg-3">
+                                            <t t-call="website_sale.header_cart_link">
+                                                <t t-set="_icon" t-value="True"/>
+                                                <t t-set="_link_class"
+                                                   t-value="'o_navlink_background_hover btn position-relative border-0 p-1 rounded-circle text-reset'"/>
+                                                <t t-set="_badge_class"
+                                                   t-value="'position-absolute bg-transparent top-0 end-0 rounded-pill mt-n1 me-n1'"/>
+                                            </t>
+                                        </li>
+                                    </ul>
+                                </t>
+                            </nav>
+                            <div class="overlay"/>
+                        </section>
+                    </div>
+                </section>
+            </header>
+        </xpath>
+    </template>
+</odoo>
