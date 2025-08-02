@@ -22,7 +22,7 @@
 
 {
     'name': 'Image Capture Widget',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Extra Tools',
     'sequence': '20',
     'summary': 'Image Capture Widget for Image Field. '

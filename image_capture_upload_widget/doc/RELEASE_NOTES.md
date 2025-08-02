@@ -11,3 +11,9 @@
 #### Fix
 
 - Bug fixes for the new records.
+
+#### 31.07.2025
+#### Version 16.0.1.1.0
+#### Fix
+
+- Updated the code to safer version.
