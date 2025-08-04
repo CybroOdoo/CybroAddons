@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <t t-name="PurchaseReport" owl="1">
+        <!-- Section contains a structure for the purchase report, including a filter
+        view and a table view. It has div elements for the filter view and table view,
+        with respective classes for styling. -->
+        <div class="">
+            <div>
+                <center>
+                    <h1 style="margin: 20px;">Purchase Report</h1>
+                </center>
+            </div>
+        </div>
+        <div class="print-btns">
+            <div class="sub_container_left"
+                 style="width: 285px; margin-left: 36px;">
+                <div class="report_print">
+                    <button type="button" class="btn btn-primary" id="pdf"
+                            style="float: left; margin-right: 9px;"
+                            t-on-click="printPdf">
+                        Print (PDF)
+                    </button>
+                    <button type="button" class="btn btn-primary" id="xlsx"
+                            t-on-click="print_xlsx">
+                        Export (XLSX)
+                    </button>
+                </div>
+            </div>
+            <br/>
+            <div class="sub_container_right">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle time_range_pr"
+                            type="button" id="date_chose"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="fa fa-calendar" title="Dates" role="img"
+                              aria-label="Dates"/>
+                        Date Range
+                    </button>
+                    <div class="dropdown-menu my_custom_dropdown" role="menu"
+                         aria-labelledby="date_chose">
+                        <div class="form-group">
+                            <label class="" for="date_from">Start Date :</label>
+                            <div class="input-group date" id="date_from"
+                                 data-target-input="nearest" t-on-change="onchangeFromDate">
+                                <input type="date" name="date_from"
+                                       t-ref="date_from"
+                                       class="form-control datetimepicker-input"
+                                       data-target="#date_from"
+                                       t-att-name="prefix"/>
+                                <div class="input-group-append"
+                                     data-target="#date_from"
+                                     data-toggle="datetimepicker"
+                                     style="pointer-events: none;">
+                                </div>
+                            </div>
+                            <label class="" for="date_to">End Date :</label>
+                            <div class="input-group date" id="date_to"
+                                 data-target-input="nearest" t-on-change="onchangeEndDate">
+                                <input type="date" name="date_to"
+                                       t-ref="date_to"
+                                       class="form-control datetimepicker-input"
+                                       data-target="#date_to"
+                                       t-att-name="prefix"/>
+                                <div class="input-group-append"
+                                     data-target="#date_to"
+                                     data-toggle="datetimepicker"
+                                     style="pointer-events: none;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="search-Result-Selection">
+                    <div class="dropdown">
+                        <a class="btn btn-secondary dropdown-togglereport-type"
+                           href="#" role="button" id="dropdownMenuLink"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="fa fa-book"/>
+                            <span class="low_case dropdown-toggle">Report Type
+                                :
+                            </span>
+                        </a>
+                        <select id="selection" class="dropdown-menu report_type"
+                                aria-labelledby="dropdownMenuLink"
+                                t-ref="order_by"
+                                name="states[]">
+                            <div role="separator" class="dropdown-divider"/>
+                            <option value="report_by_order" selected="">Report
+                                By Order
+                            </option>
+                            <option value="report_by_order_detail">Report By
+                                Order Detail
+                            </option>
+                            <option value="report_by_product">Report By
+                                Product
+                            </option>
+                            <option value="report_by_categories">Report By
+                                Categories
+                            </option>
+                            <option value="report_by_purchase_representative">
+                                Report By Purchase Representative
+                            </option>
+                            <option value="report_by_state">Report By
+                                State
+                            </option>
+                        </select>
+                        <span id="report_res" t-out="reportLabel"/>
+                    </div>
+                </div>
+                <div class="apply_filter">
+                    <button type="button" id="apply_filter"
+                            class="btn btn-primary" t-on-click="applyFilter">
+                        Apply
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="overflow-auto" style="height: 70vh; padding:10px">
+            <div t-if="state.order_by == 'report_by_order'">
+                <div class="table_main_view">
+                    <table cellspacing="0" width="100%">
+                        <thead>
+                            <tr class="table_pr_head">
+                                <th>Order</th>
+                                <th class="mon_fld">Date Order</th>
+                                <th class="mon_fld">Customer</th>
+                                <th class="mon_fld">Purchase Representative</th>
+                                <th class="mon_fld">Total Qty</th>
+                                <th class="mon_fld">Amount Total</th>
+                                <th class="mon_fld">Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.order_line"
+                               t-as="dynamic_purchase_report"
+                               t-key="dynamic_purchase_report_index">
+                                <tr style="border: 1.5px solid black;"
+                                    class="pr-line"
+                                    t-att-data-account-id="dynamic_purchase_report['id']"
+                                    t-attf-data-target=".a{{dynamic_purchase_report['id']}}">
+                                    <td>
+                                        <t t-if="dynamic_purchase_report['id']">
+                                            <div class="dropdown dropdown-toggle">
+                                                <a data-toggle="dropdown"
+                                                   href="#"
+                                                   id="table_toggle_btn"
+                                                   data-bs-toggle="dropdown"
+                                                   aria-expanded="false">
+                                                    <span class="caret"/>
+                                                    <span>
+                                                        <t t-esc="dynamic_purchase_report['name']"/>
+                                                    </span>
+                                                </a>
+                                                <ul class="dropdown-menu"
+                                                    role="menu"
+                                                    aria-labelledby="table_toggle_btn">
+                                                    <li>
+                                                        <a class="view_purchase_order"
+                                                           tabindex="-1"
+                                                           href="#"
+                                                           t-att-id="dynamic_purchase_report['id']"
+                                                           t-on-click="viewPurchaseOrder">
+                                                            View Purchase Order
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </t>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['date_order']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['partner']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['salesman']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['sum']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['amount_total']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['notes']"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!--Report for order detail-->
+            <div t-if="state.order_by == 'report_by_order_detail'">
+                <div class="table_main_view">
+                    <table cellspacing="0" width="100%">
+                        <thead>
+                            <tr class="table_pr_head">
+                                <th>Order</th>
+                                <th class="mon_fld">Date Order</th>
+                                <th class="mon_fld">Customer</th>
+                                <th class="mon_fld">Purchase Representative</th>
+                                <th class="mon_fld">Product Code</th>
+                                <th class="mon_fld">Product Name</th>
+                                <th class="mon_fld">Price unit</th>
+                                <th class="mon_fld">Qty</th>
+                                <th class="mon_fld">Price Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-log="state.order_line"/>
+                            <t t-foreach="state.order_line"
+                               t-as="dynamic_purchase_report"
+                               t-key="dynamic_purchase_report_index">
+                                <tr style="border: 1.5px solid black;"
+                                    class="pr-line"
+                                    t-att-data-account-id="dynamic_purchase_report['id']"
+                                    t-attf-data-target=".a{{dynamic_purchase_report['id']}}">
+                                    <td>
+                                        <div class="dropdown dropdown-toggle">
+                                            <a data-toggle="dropdown" href="#"
+                                               id="table_toggle_btn"
+                                               data-bs-toggle="dropdown"
+                                               aria-expanded="false">
+                                                <span class="caret"/>
+                                                <span>
+                                                    <t t-esc="dynamic_purchase_report['name']"/>
+                                                </span>
+                                            </a>
+                                            <ul class="dropdown-menu"
+                                                role="menu"
+                                                aria-labelledby="table_toggle_btn">
+                                                <li>
+                                                    <a class="view_purchase_order"
+                                                       tabindex="-1" href="#"
+                                                       t-att-id="dynamic_purchase_report['id']">
+                                                        View Purchase Order
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['date_order']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['partner']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['salesman']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['default_code']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['product']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['price_unit']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['sum']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['price_subtotal']"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Report for product -->
+            <div t-if="state.order_by == 'report_by_product'">
+                <div class="table_main_view">
+                    <table cellspacing="0" width="100%">
+                        <thead>
+                            <tr class="table_pr_head">
+                                <th>Category</th>
+                                <th class="mon_fld">Product Code</th>
+                                <th class="mon_fld">Product Name</th>
+                                <th class="mon_fld">Qty</th>
+                                <th class="mon_fld">Amount Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.order_line"
+                               t-as="dynamic_purchase_report"
+                               t-key="dynamic_purchase_report_index">
+                                <tr style="border: 1.5px solid black;"
+                                    class="pr-line"
+                                    t-att-data-account-id="dynamic_purchase_report['id']"
+                                    t-attf-data-target=".a{{dynamic_purchase_report['id']}}">
+                                    <td>
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['name']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['default_code']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['product']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['qty']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['amount_total']"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Report for Categories -->
+            <div t-if="state.order_by == 'report_by_categories'">
+                <div class="table_main_view">
+                    <table cellspacing="0" width="100%">
+                        <thead>
+                            <tr class="table_pr_head">
+                                <th>Category</th>
+                                <th class="mon_fld">Qty</th>
+                                <th class="mon_fld">Amount Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.order_line"
+                               t-as="dynamic_purchase_report"
+                               t-key="dynamic_purchase_report_index">
+                                <tr style="border: 1.5px solid black;"
+                                    class="pr-line"
+                                    t-att-data-account-id="dynamic_purchase_report['id']"
+                                    t-attf-data-target=".a{{dynamic_purchase_report['id']}}">
+                                    <td style="border: 0px solid black;">
+                                        <t t-esc="dynamic_purchase_report['name']"/>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['qty']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['amount_total']"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Report for purchase_representative -->
+            <div t-if="state.order_by == 'report_by_purchase_representative'">
+                <div class="table_main_view">
+                    <table cellspacing="0" width="100%">
+                        <thead>
+                            <tr class="table_pr_head">
+                                <th>Purchase Representative</th>
+                                <th class="mon_fld">Total Order</th>
+                                <th class="mon_fld">Total Qty</th>
+                                <th class="mon_fld">Total Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.order_line"
+                               t-as="dynamic_purchase_report"
+                               t-key="dynamic_purchase_report_index">
+                                <tr style="border: 1.5px solid black;"
+                                    class="pr-line"
+                                    data-toggle="collapse"
+                                    t-att-data-account-id="dynamic_purchase_report['id']"
+                                    t-attf-data-target=".a{{dynamic_purchase_report['id']}}">
+                                    <td style="border: 0px solid black;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['name']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['order']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['qty']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['amount']"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Report for State -->
+            <div t-if="state.order_by == 'report_by_state'">
+                <div class="table_main_view">
+                    <table cellspacing="0" width="100%">
+                        <thead>
+                            <tr class="table_pr_head">
+                                <th>State</th>
+                                <th class="mon_fld">Total Count</th>
+                                <th class="mon_fld">Quantity</th>
+                                <th class="mon_fld">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.order_line"
+                               t-as="dynamic_purchase_report"
+                               t-key="dynamic_purchase_report_index">
+                                <tr style="border: 1.5px solid black;"
+                                    class="pr-line"
+                                    data-toggle="collapse"
+                                    t-att-data-account-id="dynamic_purchase_report['id']"
+                                    t-attf-data-target=".a{{dynamic_purchase_report['id']}}">
+                                    <td style="border: 0px solid black;">
+                                        <span>
+                                            <t t-if="dynamic_purchase_report['state'] == 'sent'">
+                                                RFQ Sent
+                                            </t>
+                                            <t t-if="dynamic_purchase_report['state'] == 'purchase'">
+                                                Purchase Order
+                                            </t>
+                                            <t t-if="dynamic_purchase_report['state'] == 'draft'">
+                                                RFQ
+                                            </t>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['order']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['qty']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="dynamic_purchase_report['amount']"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
