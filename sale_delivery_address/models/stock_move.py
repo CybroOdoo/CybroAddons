@@ -21,7 +21,6 @@
 #############################################################################
 from odoo import models
 from odoo.tools.float_utils import float_compare
-from odoo.tools.misc import groupby
 
 
 class StockMove(models.Model):
@@ -50,8 +49,6 @@ class StockMove(models.Model):
                         address.append(line.delivery_addr_id.id)
                 elif rec.partner_id.id not in address:
                     address.append(rec.partner_id.id)
-            # if no delivery address is selected for order lines,
-            # only one transfer will be created
             if len(address) <= 1:
                 res = super(StockMove, self)._get_new_picking_values()
                 return res
@@ -68,62 +65,30 @@ class StockMove(models.Model):
         }
 
     def _assign_picking(self):
-        """ Extending _assign_picking function to create new pickings for
-        order lines having different delivery addresses. """
+        """Create separate deliveries per address, ensuring all products are included."""
         picking_obj = self.env['stock.picking']
-        grouped_moves = groupby(self, key=lambda m: m._key_assign_picking())
-        for group, moves in grouped_moves:
-            moves = self.env['stock.move'].concat(*moves)
-            picking = moves[0]._search_picking_for_assignation()
-            if picking:
-                vals = {}
-                if any(picking.partner_id.id != move.partner_id.id for move in
-                       moves):
-                    vals['partner_id'] = False
-                if any(picking.origin != move.origin for move in moves):
-                    vals['origin'] = False
-                if vals:
-                    picking.write(vals)
-            else:
-                moves = moves.filtered(
-                    lambda m: float_compare(
-                        m.product_uom_qty, 0.0,
-                        precision_rounding=m.product_uom.rounding) >= 0)
-                if not moves:
-                    continue
-                new_picking = True
-                origins = moves[0].origin
-                orders = self.env['sale.order'].search(
-                    [('name', '=', origins)])
-                for rec in orders:
-                    addr = [rec.partner_id.id]
-                    for line in rec.order_line:
-                        if line.delivery_addr_id and line.delivery_addr_id.id \
-                                not in addr:
-                            addr.append(line.delivery_addr_id.id)
-                        elif line.delivery_addr_id and rec.partner_id.id not \
-                                in addr:
-                            addr.append(rec.partner_id.id)
-                    if len(addr) <= 1:
-                        return super(StockMove, self)._assign_picking()
-                    else:
-                        for mov in moves:
-                            mov.write({
-                                'partner_id':
-                                    mov.sale_line_id.delivery_addr_id.id
-                                    or mov.sale_line_id.order_id.partner_id.id
-                            })
-                        move_ids = []
-                        for index, value in enumerate(addr):
-                            for mov in moves:
-                                if mov.partner_id.id == value:
-                                    move_ids.append(mov.id)
-                            mvs = self.env['stock.move'].search(
-                                [('id', 'in', move_ids)])
-                            move_ids = []
-                            if mvs:
-                                picking = picking_obj.create(
-                                    mvs._get_new_picking_values())
-                                mvs.write({'picking_id': picking.id})
-                            mvs._assign_picking_post_process(new=new_picking)
+        moves_by_address = {}
+        for move in self:
+            if not move.sale_line_id:
+                continue
+            partner_id = move.sale_line_id.delivery_addr_id.id or move.sale_line_id.order_id.partner_id.id
+
+            if partner_id not in moves_by_address:
+                moves_by_address[partner_id] = self.env['stock.move']
+            moves_by_address[partner_id] += move
+
+        for partner_id, moves in moves_by_address.items():
+            moves = moves.filtered(
+                lambda m: float_compare(
+                    m.product_uom_qty, 0.0,
+                    precision_rounding=m.product_uom.rounding) >= 0
+            )
+            if not moves:
+                continue
+
+            picking_vals = moves._get_new_picking_values()
+            picking = picking_obj.create(picking_vals)
+            moves.write({'picking_id': picking.id})
+            moves._assign_picking_post_process(new=True)
+
         return True
