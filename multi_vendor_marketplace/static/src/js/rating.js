@@ -44,7 +44,6 @@ odoo.define('multi_vendor_marketplace.rating', function(require) {
                         'message': message_id
                     }],
                 }).then(function(data) {
-                    console.log(data);
                 });
                 swal({
                     title: "Rated!",

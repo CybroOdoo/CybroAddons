@@ -178,7 +178,7 @@ class ProductTemplate(models.Model):
         self.is_published = not self.is_published
 
 
-    def _group_expand_states(self):
+    def _group_expand_states(self, states, domain, order):
         """Expands the selection options for the 'state' field in a group-by
          operation."""
         return [key for key, val in type(self).state.selection]

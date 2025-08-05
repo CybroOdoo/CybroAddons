@@ -126,7 +126,7 @@ class ResPartner(models.Model):
             'name': 'My Profile',
             'res_model': 'res.partner',
             'view_mode': 'form',
-            'res_id': self.env['res.users'].broswe(
+            'res_id': self.env['res.users'].browse(
                 self.env.user.id).partner_id.id,
             'target': 'new',
         }
@@ -176,7 +176,7 @@ class ResPartner(models.Model):
         """ Seller approve state also changed """
         self.state = 'Approved'
 
-    def _group_expand_states(self):
+    def _group_expand_states(self,states, domain, order):
         """Returns a list of states"""
         return [key for key, val in type(self).state.selection]
 
@@ -277,10 +277,9 @@ class ResPartner(models.Model):
             'target': 'new',
         }
 
-    def _group_expand_states(self):
+    def _group_expand_states(self, states, domain, order):
         """ For expanding the values for selection field """
-        return [key for
-                key, val in type(self).state.selection]
+        return [key for key, val in type(self).state.selection]
 
     def _compute_sale_count(self):
         """ count seller sale count and display in the profile """

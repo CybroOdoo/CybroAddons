@@ -11,9 +11,7 @@ var CustomDashBoard = AbstractAction.extend({
    //Set the seller dashboard
    start: function() {
         var self = this;
-        console.log("started")
         ajax.rpc('/seller_dashboard').then(function (res) {
-        console.log("ajax done")
         $('#pending').text(res.pending)
         $('#approved').text(res.approved)
         $('#rejected').text(res.rejected)
@@ -21,7 +19,6 @@ var CustomDashBoard = AbstractAction.extend({
         $('#check_user_type').hide()
         }
         $("#product_pending").click(function(){
-        console.log("product pending")
         self.do_action({
             name:'Product Pending',
             type: 'ir.actions.act_window',
@@ -32,7 +29,6 @@ var CustomDashBoard = AbstractAction.extend({
         })
         })
         $("#product_approved").click(function(){
-        console.log("product approved")
         self.do_action({
             name:'Product Approved',
             type: 'ir.actions.act_window',
@@ -43,7 +39,6 @@ var CustomDashBoard = AbstractAction.extend({
         })
         })
         $("#product_rejected").click(function(){
-        console.log("product rejetced")
         self.do_action({
             name:'Product Rejected',
             type: 'ir.actions.act_window',
@@ -67,7 +62,6 @@ var CustomDashBoard = AbstractAction.extend({
         $("#order_shipped").text(res.order_shipped)
         $("#order_cancel").text(res.order_cancel)
         $("#divseller_rejected").click(function(){
-        console.log("seller rejetced")
         self.do_action({
             name:'Seller Rejected',
             type: 'ir.actions.act_window',
@@ -78,7 +72,6 @@ var CustomDashBoard = AbstractAction.extend({
         })
         })
         $("#divseller_approved").click(function(){
-        console.log("seller approved")
         self.do_action({
             name:'Seller Approved',
             type: 'ir.actions.act_window',
@@ -89,7 +82,6 @@ var CustomDashBoard = AbstractAction.extend({
         })
         })
         $("#divseller_pending").click(function(){
-        console.log("Seller pending")
         self.do_action({
             name:'Seller Pending',
             type: 'ir.actions.act_window',
