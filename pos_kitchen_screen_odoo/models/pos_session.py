@@ -30,8 +30,8 @@ class PosSession(models.Model):
         """Pos ui models to load"""
         result = super()._pos_ui_models_to_load()
         result += {
-            'pos.order', 'pos.order.line'
-        }
+                    'pos.order', 'pos.order.line'
+                }
         return result
 
     def _loader_params_pos_order(self):

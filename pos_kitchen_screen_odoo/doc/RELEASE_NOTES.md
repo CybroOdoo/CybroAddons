@@ -22,3 +22,10 @@
 #### Version 18.0.1.1.2
 #### BUG FIX
 - Fixed issue where order reference in order list become mistmatch/wrong, get order ref from other POS.
+
+#### 25.07.2025
+#### Version 18.0.1.1.3
+#### BUG FIX
+- Fixed issue where latest orders disappearing from kitchen screen when plan button is clicked from POS.
+- Fixed issue where orders in kitchen screen required manual refresh.
+- Fixed issue when adding items to the order and quantity defaults to one. 

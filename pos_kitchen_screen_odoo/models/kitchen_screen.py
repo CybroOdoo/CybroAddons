@@ -50,6 +50,12 @@ class KitchenScreen(models.Model):
     shop_number = fields.Integer(related='pos_config_id.id', string='Customer',
                                  help="Id of the POS")
 
+    is_preparation_complete = fields.Boolean(
+        string='Change Stage',
+        default=False,
+        help='Change the cooking stage when completing the preparation time',
+    )
+
     def kitchen_screen(self):
         """Redirect to corresponding kitchen screen for the cook"""
         return {

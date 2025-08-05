@@ -22,3 +22,4 @@
 from . import kitchen_screen
 from . import pos_orders
 from . import pos_session
+from . import product_product

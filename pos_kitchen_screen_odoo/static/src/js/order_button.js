@@ -38,25 +38,27 @@ setup() {
         if (!this.clicked) {
             this.clicked = true;
             try {
-                var order_name=this.pos.selectedOrder.name
                 await self.orm.call("pos.order", "check_order_status", ["", this.pos.get_order().pos_reference]).then(function(result){
-                    if (result==false){
-                        self.kitchen_order_status=false
+                    if (result == false){
+                        self.kitchen_order_status = false
                         self.env.services.dialog.add(AlertDialog, {
                             title: _t("Order is Completed"),
                             body: _t("This Order is Completed. Please create a new Order"),
                         });
                     }
                     else{
-                         self.kitchen_order_status=true
+                         self.kitchen_order_status = true
                     }
                 });
-                if ( self.kitchen_order_status){
 
-                await this.pos.sendOrderInPreparationUpdateLastChange(this.currentOrder);
-                for (const orders of this.pos.get_order().lines) {
+                if (self.kitchen_order_status){
+                    await this.pos.sendOrderInPreparationUpdateLastChange(this.currentOrder);
+
+                    for (const orders of this.pos.get_order().lines) {
+                        let actualQty = orders.qty || orders.quantity || orders.get_quantity() || 1;
+
                         line.push([0, 0, {
-                            'qty': orders.quantity,
+                            'qty': actualQty,
                             'price_unit': orders.price_unit,
                             'price_subtotal': orders.price_subtotal,
                             'price_subtotal_incl': orders.price_subtotal_incl,
@@ -69,15 +71,16 @@ setup() {
                             'pack_lot_ids': [],
                             'full_product_name': orders.product_id.display_name,
                             'price_extra': orders.price_extra,
-                            'name': 'newsx/0031',
+                            'name': orders.product_id.display_name,
                             'is_cooking': true,
-                            'note':orders.note
+                            'note': orders.note
                         }])
                     }
+
                     const date = new Date(self.currentOrder.date_order.replace(' ', 'T'));
                     var orders = [{
                         'pos_reference': this.pos.get_order().pos_reference,
-                        'session_id':this.pos.get_order().session_id.id,
+                        'session_id': this.pos.get_order().session_id.id,
                         'amount_total': this.pos.get_order().amount_total,
                         'amount_paid': this.pos.get_order().amount_paid,
                         'amount_return': this.pos.get_order().amount_return,
@@ -86,14 +89,16 @@ setup() {
                         'is_cooking': true,
                         'order_status': 'draft',
                         'company_id': this.pos.company.id,
-                        'hour':date.getHours(),
-                        'minutes':date.getMinutes(),
-                        'table_id':this.pos.get_order().table_id.id,
-                        'floor':this.pos.get_order().table_id.floor_id.name,
-                        'config_id':this.pos.get_order().config_id.id
+                        'hour': date.getHours(),
+                        'minutes': date.getMinutes(),
+                        'table_id': this.pos.get_order().table_id.id,
+                        'floor': this.pos.get_order().table_id.floor_id.name,
+                        'config_id': this.pos.get_order().config_id.id
                     }]
-                await self.orm.call("pos.order", "get_details", ["", self.pos.config.id, orders])
-            }
+
+                    await self.orm.call("pos.order", "create_or_update_kitchen_order", [orders]);
+                    this.env.bus.trigger('pos-kitchen-screen-update');
+                }
             } finally {
                 this.clicked = false;
             }

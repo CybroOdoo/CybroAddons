@@ -21,7 +21,7 @@
 ############################################################################
 {
     'name': 'POS Kitchen Screen',
-    'version': '18.0.1.1.2',
+    'version': '18.0.1.1.3',
     'category': 'Point Of Sale',
     'summary': 'POS Kitchen Screen facilitates sending certain orders '
                'automatically to the kitchen.The POS Kitchen Screen allows for '
@@ -51,6 +51,7 @@
         "views/kitchen_screen_views.xml",
         "views/pos_kitchen_screen_odoo_menus.xml",
         "views/pos_order_views.xml",
+        "views/product_product_views.xml",
     ],
     'assets': {
         'point_of_sale._assets_pos': [
