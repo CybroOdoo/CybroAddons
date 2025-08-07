@@ -19,7 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from odoo import models
+from odoo import models, _
+from odoo.exceptions import UserError
 
 
 class SurveyUserInput(models.Model):
@@ -37,21 +38,9 @@ class SurveyUserInput(models.Model):
     """
     _inherit = "survey.user_input"
 
-    def _save_lines(self, question, answer, comment=None,
-                    overwrite_existing=False):
-        """Save the user's answer for the given question."""
-        old_answers = self.env['survey.user_input.line'].search([
-            ('user_input_id', '=', self.id),
-            ('question_id', '=', question.id), ])
-        if question.question_type in 'upload_file':
-            res = self._save_line_simple_answer(question, old_answers, answer)
-        else:
-            res = super()._save_lines(question, answer, comment,
-                                      overwrite_existing)
-        return res
-
-    def _save_line_simple_answer(self, question, old_answers, answer):
+    def _save_line_file_upload(self, question, old_answers, answer):
         """ Save the user's file upload answer for the given question."""
+        print('old_answers', old_answers)
         vals = self._get_line_answer_file_upload_values(question,
                                                         'upload_file', answer)
         if old_answers:
@@ -60,27 +49,71 @@ class SurveyUserInput(models.Model):
         else:
             return self.env['survey.user_input.line'].create(vals)
 
+    def _save_lines(self, question, answer, comment=None,
+                    overwrite_existing=True):
+        """ Save answers to questions, depending on question type.
+
+        :param bool overwrite_existing: if an answer already exists for question and user_input_id
+        it will be overwritten (or deleted for 'choice' questions) in order to maintain data consistency.
+        :raises UserError: if line exists and overwrite_existing is False
+        """
+        old_answers = self.env['survey.user_input.line'].search([
+            ('user_input_id', '=', self.id),
+            ('question_id', '=', question.id)
+        ])
+        if old_answers and not overwrite_existing:
+            raise UserError(_("This answer cannot be overwritten."))
+
+        if question.question_type in ['char_box', 'text_box', 'numerical_box',
+                                      'date', 'datetime']:
+            self._save_line_simple_answer(question, old_answers, answer)
+            if question.save_as_email and answer:
+                self.write({'email': answer})
+            if question.save_as_nickname and answer:
+                self.write({'nickname': answer})
+
+        elif question.question_type in ['simple_choice', 'multiple_choice']:
+            self._save_line_choice(question, old_answers, answer, comment)
+        elif question.question_type == 'matrix':
+            self._save_line_matrix(question, old_answers, answer, comment)
+        elif question.question_type == 'upload_file':
+            self._save_line_file_upload(question, old_answers, answer)
+        else:
+            raise AttributeError(
+                question.question_type + ": This type of question has no saving function")
+
     def _get_line_answer_file_upload_values(self, question, answer_type,
                                             answer):
-        """Get the values to use when creating or updating a user input line
-        for a file upload answer."""
+        answer = answer[0]
         vals = {
             'user_input_id': self.id,
             'question_id': question.id,
             'skipped': False,
             'answer_type': answer_type,
+            'display_name': 'Upload File',
         }
+
         if answer_type == 'upload_file':
-            attachment_ids = []
-            if len(answer) >= 2:
-                file_data = answer[0]
-                file_name = answer[1]
-                for file in range(len(answer[1])):
+            # Parse JSON if needed
+
+            attachments = []
+            for file_info in answer:
+                if not isinstance(file_info, dict):
+                    raise UserError("Each uploaded file must be a dictionary.")
+
+                file_data = file_info.get('data')
+                file_name = file_info.get('name')
+
+                if file_data and file_name:
                     attachment = self.env['ir.attachment'].create({
-                        'name': file_name[file],
+                        'name': file_name,
                         'type': 'binary',
-                        'datas': file_data[file],
+                        'datas': file_data,
                     })
-                    attachment_ids.append(attachment.id)
-            vals['value_file_data_ids'] = attachment_ids
+                    attachments.append((4, attachment.id))
+                else:
+                    raise UserError("Missing file name or data.")
+
+            vals['value_file_data_ids'] = attachments
+
         return vals
