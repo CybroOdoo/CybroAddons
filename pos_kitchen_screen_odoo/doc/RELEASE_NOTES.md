@@ -29,3 +29,8 @@
 - Fixed issue where latest orders disappearing from kitchen screen when plan button is clicked from POS.
 - Fixed issue where orders in kitchen screen required manual refresh.
 - Fixed issue when adding items to the order and quantity defaults to one. 
+
+#### 07.08.2025
+#### Version 18.0.1.1.4
+#### BUG FIX
+-Fixed the issue where a completed kitchen order reverted to 'Cooking' status after the payment was processed.

@@ -25,6 +25,7 @@ import pytz
 
 
 class PosOrder(models.Model):
+    """Inheriting the pos order model """
     _inherit = "pos.order"
 
     order_status = fields.Selection(string="Order Status",
@@ -40,10 +41,9 @@ class PosOrder(models.Model):
                                 help='To identify the order is kitchen orders')
     hour = fields.Char(string="Order Time", readonly=True,
                        help='To set the time of each order')
-    minutes = fields.Char(string='order time')
+    minutes = fields.Char(string='Order time')
     floor = fields.Char(string='Floor time')
     avg_prepare_time = fields.Float(string="Avg Prepare Time", store=True)
-
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -52,30 +52,35 @@ class PosOrder(models.Model):
         for vals in vals_list:
             product_ids = [item[2]['product_id'] for item in vals.get('lines')]
             if product_ids:
-                prepare_times = self.env['product.product'].search([('id', 'in', product_ids)]).mapped(
+                prepare_times = self.env['product.product'].search(
+                    [('id', 'in', product_ids)]).mapped(
                     'prepair_time_minutes')
                 vals['avg_prepare_time'] = max(prepare_times)
 
-            existing_order = self.search([("pos_reference", "=", vals.get("pos_reference"))], limit=1)
+            existing_order = self.search(
+                [("pos_reference", "=", vals.get("pos_reference"))], limit=1)
             if existing_order:
                 continue
 
             if not vals.get("order_status"):
                 vals["order_status"] = 'draft'
 
-            if vals.get('order_id') and not vals.get('name'):
-                config = self.env['pos.order'].browse(vals['order_id']).session_id.config_id
-                if config.sequence_line_id:
-                    vals['name'] = config.sequence_line_id._next()
-            elif not vals.get('name'):
-                vals['name'] = self.env['ir.sequence'].next_by_code('pos.order')
-
-
-
+            # Ensure name is always set
+            if not vals.get('name'):
+                if vals.get('order_id'):
+                    config = self.env['pos.order'].browse(
+                        vals['order_id']).session_id.config_id
+                    vals[
+                        'name'] = config.sequence_line_id._next() if config.sequence_line_id else \
+                    self.env['ir.sequence'].next_by_code('pos.order') or '/'
+                else:
+                    vals['name'] = self.env['ir.sequence'].next_by_code(
+                        'pos.order') or '/'
 
             processed_vals_to_create.append(vals)
 
-        res = super().create(processed_vals_to_create) if processed_vals_to_create else self.browse()
+        res = super().create(
+            processed_vals_to_create) if processed_vals_to_create else self.browse()
 
         orders_to_notify = []
         for order in res:
@@ -86,13 +91,14 @@ class PosOrder(models.Model):
                 has_kitchen_items = False
                 for order_line in order.lines:
                     if order_line.product_id.pos_categ_ids and any(
-                            cat.id in kitchen_screen.pos_categ_ids.ids for cat in order_line.product_id.pos_categ_ids):
+                            cat.id in kitchen_screen.pos_categ_ids.ids for cat
+                            in order_line.product_id.pos_categ_ids):
                         order_line.is_cooking = True
                         has_kitchen_items = True
 
                 if has_kitchen_items:
                     order.is_cooking = True
-                    order.order_ref = order.name
+                    order.order_ref = order.name  # Set order_ref here
                     if order.order_status != 'draft':
                         order.order_status = 'draft'
                     orders_to_notify.append(order)
@@ -103,7 +109,9 @@ class PosOrder(models.Model):
                 'res_model': self._name,
                 'message': 'pos_order_created',
                 'order_id': order.id,
-                'config_id': order.config_id.id
+                'config_id': order.config_id.id,
+                'order_ref': order.order_ref
+                # Include order_ref in notification
             }
             channel = f'pos_order_created_{order.config_id.id}'
             self.env["bus.bus"]._sendone(channel, "notification", message)
@@ -113,40 +121,59 @@ class PosOrder(models.Model):
     def write(self, vals):
         """Override write function for adding order status in vals"""
         original_statuses = {order.id: order.order_status for order in self}
-        res = super(PosOrder, self).write(vals)
+
+        message = {
+            'res_model': self._name,
+            'message': 'pos_order_created'
+        }
+        self.env["bus.bus"]._sendone('pos_order_created', "notification",
+                                     message)
 
         for order in self:
+            if order.order_status == "waiting" and vals.get(
+                    "order_status") != "ready":
+                vals["order_status"] = order.order_status
+            if vals.get("state") == "paid" and order.name == "/":
+                vals["name"] = self._compute_order_name()
+
             kitchen_screen = self.env["kitchen.screen"].search(
                 [("pos_config_id", "=", order.config_id.id)], limit=1
             )
-
             if kitchen_screen:
                 has_kitchen_items = False
                 for line_data in order.lines:
                     if line_data.product_id.pos_categ_ids and any(
-                            cat.id in kitchen_screen.pos_categ_ids.ids for cat in line_data.product_id.pos_categ_ids):
+                            cat.id in kitchen_screen.pos_categ_ids.ids
+                            for cat in line_data.product_id.pos_categ_ids
+                    ):
                         has_kitchen_items = True
                         break
 
+                # Update vals instead of direct assignment to avoid recursive write
                 if has_kitchen_items and not order.is_cooking:
-                    order.is_cooking = True
-                    if order.order_status not in ['waiting', 'ready', 'cancel']:
-                        order.order_status = 'draft'
+                    vals.update({
+                        'is_cooking': True,
+                        'order_status': vals.get('order_status',
+                                                 'draft') if not order.order_status else order.order_status
+                    })
                 elif not has_kitchen_items and order.is_cooking:
-                    order.is_cooking = False
+                    vals.update({'is_cooking': False})
 
-                if order.is_cooking and order.id in original_statuses:
-                    if original_statuses[order.id] != order.order_status:
+                # Send notification only if order_status changed
+                if has_kitchen_items and order.id in original_statuses and 'order_status' in vals:
+                    if original_statuses[order.id] != vals.get('order_status'):
                         message = {
                             'res_model': self._name,
                             'message': 'pos_order_updated',
                             'order_id': order.id,
                             'config_id': order.config_id.id,
-                            'new_status': order.order_status
+                            'new_status': vals.get('order_status')
                         }
                         channel = f'pos_order_created_{order.config_id.id}'
-                        self.env["bus.bus"]._sendone(channel, "notification", message)
-        return res
+                        self.env["bus.bus"]._sendone(channel, "notification",
+                                                     message)
+
+        return super(PosOrder, self).write(vals)
 
     @api.model
     def get_details(self, shop_id, *args, **kwargs):
@@ -160,13 +187,17 @@ class PosOrder(models.Model):
         pos_orders = self.env["pos.order"].search([
             ("is_cooking", "=", True),
             ("config_id", "=", shop_id),
-            ("state", "!=", "cancel"),
+            ("state", "not in", ["cancel", "paid"]),
             ("order_status", "!=", "cancel"),
             "|", "|",
             ("order_status", "=", "draft"),
             ("order_status", "=", "waiting"),
             ("order_status", "=", "ready")
         ], order="date_order")
+
+        # Additional filtering to exclude paid orders with 'ready' status
+        pos_orders = pos_orders.filtered(lambda order: not (
+                    order.state == "paid" and order.order_status == "ready"))
 
         pos_lines = pos_orders.lines.filtered(
             lambda line: line.is_cooking and any(
@@ -207,22 +238,28 @@ class PosOrder(models.Model):
     def action_pos_order_paid(self):
         """Inherited method called when a POS order transitions to 'paid' state."""
         res = super().action_pos_order_paid()
+
         kitchen_screen = self.env["kitchen.screen"].search(
             [("pos_config_id", "=", self.config_id.id)], limit=1
         )
         if kitchen_screen:
+            vals = {}
             has_kitchen_items = False
             for order_line in self.lines:
                 if order_line.product_id.pos_categ_ids and any(
-                        cat.id in kitchen_screen.pos_categ_ids.ids for cat in order_line.product_id.pos_categ_ids):
-                    order_line.is_cooking = True
+                        cat.id in kitchen_screen.pos_categ_ids.ids for cat in
+                        order_line.product_id.pos_categ_ids):
+                    order_line.write({'is_cooking': True})
                     has_kitchen_items = True
 
             if has_kitchen_items:
-                self.is_cooking = True
-                self.order_ref = self.name
-                if not self.order_status or self.order_status == 'draft':
-                    self.order_status = 'draft'
+                vals.update({
+                    'is_cooking': True,
+                    'order_ref': self.name,
+                    # Only set order_status to 'draft' if it’s not already set
+                    'order_status': self.order_status or 'draft'
+                })
+                self.write(vals)
 
                 message = {
                     'res_model': self._name,
@@ -330,7 +367,8 @@ class PosOrder(models.Model):
         """Create new kitchen order or update existing one with new items."""
         for order_data in orders_data:
             pos_reference = order_data.get('pos_reference')
-            existing_order = self.search([('pos_reference', '=', pos_reference)], limit=1)
+            existing_order = self.search(
+                [('pos_reference', '=', pos_reference)], limit=1)
             kitchen_screen = self.env["kitchen.screen"].search([
                 ("pos_config_id", "=", order_data.get('config_id'))
             ], limit=1)
@@ -342,6 +380,7 @@ class PosOrder(models.Model):
                 if existing_order.order_status in ['ready', 'cancel']:
                     continue
 
+                current_status = existing_order.order_status or 'draft'
                 existing_line_products = {line.product_id.id: line for line in existing_order.lines}
                 for line_data in order_data.get('lines', []):
                     line_vals = line_data[2]
@@ -370,7 +409,7 @@ class PosOrder(models.Model):
                             'discount': line_vals.get('discount', 0),
                             'full_product_name': line_vals.get('full_product_name'),
                             'is_cooking': True,
-                            'order_status': 'draft',
+                            'order_status': current_status,
                             'note': line_vals.get('note', ''),
                         })
 
@@ -399,7 +438,7 @@ class PosOrder(models.Model):
                             'discount': line_vals.get('discount', 0),
                             'full_product_name': line_vals.get('full_product_name'),
                             'is_cooking': True,
-                            'order_status': 'draft',
+                            'order_status': order_data.get('order_status', 'draft'),
                             'note': line_vals.get('note', ''),
                         }])
 
@@ -413,7 +452,7 @@ class PosOrder(models.Model):
                         'amount_tax': order_data.get('amount_tax'),
                         'lines': kitchen_lines,
                         'is_cooking': True,
-                        'order_status': 'draft',
+                        'order_status': order_data.get('order_status', 'draft'),
                         'company_id': order_data.get('company_id'),
                         'table_id': order_data.get('table_id'),
                         'config_id': order_data.get('config_id'),
@@ -440,11 +479,7 @@ class PosOrder(models.Model):
 
         if not pos_order:
             return True
-
-        if pos_order.order_status in ['draft', 'waiting']:
-            return True
-        else:
-            return False
+        return pos_order.order_status in ['draft', 'waiting']
 
 
 class PosOrderLine(models.Model):
