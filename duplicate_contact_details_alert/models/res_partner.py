@@ -33,6 +33,7 @@ class ResPartner(models.Model):
         unique_contact_ids = self.env[
             'ir.config_parameter'].sudo().get_param(
             'duplicate_contact_details_alert.unique_contact_ids')
+        partner_list = []
         for vals in vals_list:
             if unique_contact_ids:
                 fields_list = ast.literal_eval(unique_contact_ids)
@@ -47,12 +48,9 @@ class ResPartner(models.Model):
                                 _("The %s is already"
                                   " used for contact %s.") %
                                 (contact_fields.name, partner.name))
-                else:
-                    res = super(ResPartner, self).create(vals)
-                    return res
-            else:
-                res = super(ResPartner, self).create(vals)
-                return res
+            res = super(ResPartner, self).create(vals)
+            partner_list.append(res)
+        return self.browse([p.id for p in partner_list])
 
     def write(self, vals):
         """For checking fields is unique while updating a records in
