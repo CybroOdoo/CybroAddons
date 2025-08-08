@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Point of Sale Logo',
-    'version': '18.0.1.0.0',
+    'version': '18.0.2.1.1',
     'category': 'Point of Sale',
     'summary': "Logo For Every Point of Sale (Screen & Receipt)",
     'description': "This module helps you to set a logo for every POS"
@@ -36,7 +36,8 @@
     'assets': {
         'point_of_sale._assets_pos': [
             'point_of_sale_logo/static/src/xml/navbar_logo.xml',
-            'point_of_sale_logo/static/src/xml/receipt_logo.xml'
+            'point_of_sale_logo/static/src/xml/receipt_header_logo.xml',
+            'point_of_sale_logo/static/src/xml/receipt_screen_logo.xml',
         ],
     },
     'images': ['static/description/banner.jpg'],

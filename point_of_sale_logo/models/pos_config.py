@@ -28,3 +28,11 @@ class PosConfig(models.Model):
 
     image = fields.Binary(string='Image', help="Set logo image for viewing it"
                                                "in POS Screen and Receipt")
+    logo_option = fields.Selection(
+        selection=[
+            ('pos', 'Show POS Logo Only'),
+            ('company', 'Show Company Logo Only'),
+            ('both', 'Show Both POS and Company Logos')],
+        string="Receipt Logo Option",
+        default='pos',
+        help="Choose which logo(s) to display on the printed POS receipt.")
