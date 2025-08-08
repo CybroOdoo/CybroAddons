@@ -265,3 +265,27 @@ class CRMDynamicFields(models.TransientModel):
                     query = """delete FROM ir_model_fields WHERE name = %s"""
                     self.env.cr.execute(query, [field.name])
         return super(CRMDynamicFields, self).unlink()
+
+    def write(self, vals):
+        res = super().write(vals)
+        for record in self:
+            base_field = self.env['ir.model.fields'].sudo().search([
+                ('name', '=', record.name),
+                ('model_id', '=', record.model_id.id)
+            ], limit=1)
+
+            if base_field:
+                update_vals = {}
+                for field in [
+                    'field_description', 'required', 'readonly', 'help',
+                    'index', 'store', 'copied', 'translate', 'selection'
+                ]:
+                    if field in vals:
+                        update_vals[field] = vals[field]
+                if update_vals:
+                    base_field.write(update_vals)
+
+                if record.form_view_id:
+                    record.form_view_id.write(
+                        {'arch_base': record.form_view_id.arch_base})
+        return res
