@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Sales commission form view-->
+    <record id="sales_commission_view_form" model="ir.ui.view">
+        <field name="name">sales.commission.view.form</field>
+        <field name="model">sales.commission</field>
+        <field name="arch" type="xml">
+            <form string="Sales Commission">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="sales_person_ids"
+                                   widget='many2many_tags'/>
+                        </group>
+                        <group>
+                            <field name="commission_type"/>
+                            <field name="std_commission_perc"
+                                   invisible="commission_type != 'standard'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="affiliated_commission_perc"
+                                   invisible="commission_type != 'partner_based'"/>
+                        </group>
+                        <group>
+                            <field name="non_affiliated_commission_perc"
+                                   invisible="commission_type != 'partner_based'"/>
+                        </group>
+                    </group>
+                    <notebook invisible ="commission_type != 'product_based'">
+                        <page string="Product Commissions">
+                            <field name="product_based_ids">
+                                <tree editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="commission"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                    <notebook
+                            invisible ="commission_type != 'discount_based'">
+                        <page string="Commission Rules">
+                            <field name="discount_based_ids">
+                                <tree editable="bottom">
+                                    <field name="discount"/>
+                                    <field name="commission"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--    Sales commission tree view-->
+    <record id="sales_commission_view_tree" model="ir.ui.view">
+        <field name="name">sales.commission.view.tree</field>
+        <field name="model">sales.commission</field>
+        <field name="arch" type="xml">
+            <tree string="Sales Commission">
+                <field name="commission_type"/>
+                <field name="sales_person_ids" widget='many2many_tags'/>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <!--    Action for sales commission-->
+    <record id="sales_commission_action" model="ir.actions.act_window">
+        <field name="name">Sales Commission</field>
+        <field name="res_model">sales.commission</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
