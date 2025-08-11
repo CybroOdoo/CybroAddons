@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree view definition for Quality Alerts -->
+    <record id="quality_alert_view_tree" model="ir.ui.view">
+        <field name="name">quality.alert.view.tree</field>
+        <field name="model">quality.alert</field>
+        <field name="arch" type="xml">
+            <tree string="Quality Alerts">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="origin"/>
+                <field name="date"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Form view definition for Quality Alerts -->
+    <record id="quality_alert_view_form" model="ir.ui.view">
+        <field name="name">quality.alert.form</field>
+        <field name="model">quality.alert</field>
+        <field name="arch" type="xml">
+            <form string="Quality Alert">
+                <header>
+                    <button name="action_generate_tests" string="Generate Tests" type="object" class="oe_highlight"
+                            groups="quality_assurance.group_quality_user"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h2>
+                            <field name="name" placeholder="Name" readonly="1"/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="picking_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Tests">
+                            <field name="tests" nolabel="1">
+                                <tree create="false" editable="1">
+                                    <field name="name"/>
+                                    <field name="test_type" column_invisible="1"/>
+                                    <field name="quantity_min" column_invisible="1"/>
+                                    <field name="quantity_max" column_invisible="1"/>
+                                    <field name="test_user_id"/>
+                                    <field name="test_result" string="Quantitative Result"
+                                           readonly="test_type == 'quality'"/>
+                                    <field name="test_result2" string="Qualitative Result"
+                                           readonly="test_type == 'quantity'"/>
+                                    <field name="test_status"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!-- Search view definition for Quality Alerts -->
+    <record id="quality_alert_view_search" model="ir.ui.view">
+        <field name="name">quality.alert.view.search</field>
+        <field name="model">quality.alert</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="origin"/>
+                <field name="product_id"/>
+                <group expand="0" string="Group By">
+                    <filter string="Source Document" name="groupby_origin" domain="[]"
+                            context="{'group_by':'origin'}"/>
+                    <filter string="Product" name="groupby_product_id" domain="[]"
+                            context="{'group_by':'product_id'}"/>
+                    <filter string="Creation Date" name="groupby_createmonth" domain="[]"
+                            context="{'group_by':'date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Action definition for Quality Alerts -->
+    <record model="ir.actions.act_window" id="quality_alert_action">
+        <field name="name">Quality Alerts</field>
+        <field name="res_model">quality.alert</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="quality_alert_view_search"/>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click here to add a new Quality Alert
+            </p>
+            <p>
+                Quality alerts will be created automatically when your inventory team try to process inventory
+                operations.
+            </p>
+        </field>
+    </record>
+    <!-- Menu item for Quality Assurance module. -->
+    <menuitem id="menu_quality_assurance" name="Quality Assurance" parent="quality_assurance.menu_quality_root"/>
+    <!-- Menu item for accessing Quality Alerts -->
+    <menuitem id="menu_quality_alert" name="Quality Alerts" parent="quality_assurance.menu_quality_assurance"  sequence="1" action="quality_alert_action"/>
+</odoo>
