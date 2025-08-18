@@ -4,6 +4,7 @@
  */
 import { KanbanController } from '@web/views/kanban/kanban_controller';
 import { patch} from "@web/core/utils/patch";
+import { useService } from "@web/core/utils/hooks";
 var rpc = require('web.rpc');
 const {onWillStart} = owl;
 patch(KanbanController.prototype, 'model_access_rights/static/src/js/list_controller.js.KanbanController', {
@@ -12,6 +13,7 @@ patch(KanbanController.prototype, 'model_access_rights/static/src/js/list_contro
  */
     setup() {
         this._super();
+        this.user = useService("user");
         onWillStart(async () => {
             var self = this
             var result;
@@ -24,14 +26,28 @@ patch(KanbanController.prototype, 'model_access_rights/static/src/js/list_contro
             for (var i = 0; i < result.length; i++) {
                 var group = result[i].module + "." + result[i].group_name
                 if (self.props.resModel == result[i].model) {
-                    if (await self.model.user.hasGroup(group)) {
-                        if (!self.model.user.isAdmin) {
-                            if (result[i].is_create_or_update) {
-                                self.props.archInfo.activeActions.create=false
-                                self.props.archInfo.activeActions.edit=false
+                    if (result[i].restriction_type == "group") {
+                        if (await self.user.hasGroup(group)) {
+                            if (!self.user.isAdmin) {
+                                if (result[i].is_create_or_update) {
+                                    self.props.archInfo.activeActions.create = false
+                                    self.props.archInfo.activeActions.edit = false
+                                }
+                                if (result[i].is_delete) {
+                                    self.props.archInfo.activeActions.delete = false
+                                }
                             }
-                            if (result[i].is_delete) {
-                            self.props.archInfo.activeActions.delete=false
+                        }
+                    } else {
+                        if (await self.user.userId == result[i].user[0]) {
+                            if (!self.user.isAdmin) {
+                                if (result[i].is_create_or_update) {
+                                    self.props.archInfo.activeActions.create = false
+                                    self.props.archInfo.activeActions.edit = false
+                                }
+                                if (result[i].is_delete) {
+                                    self.props.archInfo.activeActions.delete = false
+                                }
                             }
                         }
                     }
