@@ -153,24 +153,33 @@ def _create(self, data_list):
         [('model', '=', self._name)]).id
     access_right_rec = self.env['access.right'].sudo().search_read(
         [('model_id', '=', current_model_id)],
-        ['model_id', 'is_create_or_update',
+        ['model_id', 'is_create_or_update','restriction_type','user_id',
          'groups_id'])
     if access_right_rec and not self.env.is_admin():
         for rec in access_right_rec:
-            group_name = self.env['ir.model.data'].sudo().search([
-                ('model', '=', 'res.groups'),
-                ('res_id', '=', rec['groups_id'][0])
-            ]).name
-            module_name = self.env['ir.model.data'].sudo().search([
-                ('model', '=', 'res.groups'),
-                ('res_id', '=', rec['groups_id'][0])
-            ]).module
-            group = module_name + "." + group_name
-            if self.env.user.has_group(group):
-                if rec['is_create_or_update']:
-                    raise UserError('You are restricted from performing this'
-                                      ' operation. Please contact the'
-                                      ' administrator.')
+            if rec['restriction_type']=='group':
+                group_name = self.env['ir.model.data'].sudo().search([
+                    ('model', '=', 'res.groups'),
+                    ('res_id', '=', rec['groups_id'][0])
+                ]).name
+                module_name = self.env['ir.model.data'].sudo().search([
+                    ('model', '=', 'res.groups'),
+                    ('res_id', '=', rec['groups_id'][0])
+                ]).module
+                group = module_name + "." + group_name
+                if self.env.user.has_group(group):
+                    if rec['is_create_or_update']:
+                        raise UserError(
+                            'You are restricted from performing this'
+                            ' operation. Please contact the'
+                            ' administrator.')
+            if rec['restriction_type']=='user':
+                if self.env.user.id == rec['user_id'][0]:
+                    if rec['is_create_or_update']:
+                        raise UserError(
+                            'You are restricted from performing this'
+                            ' operation. Please contact the'
+                            ' administrator.')
     return records
 
 
@@ -283,25 +292,34 @@ def unlink(self):
         [('model', '=', self._name)]).id
     access_right_rec = self.env['access.right'].sudo().search_read(
         [('model_id', '=', current_model_id)], ['model_id', 'is_delete',
+                                                'restriction_type','user_id',
                                                 'groups_id'])
     if access_right_rec and not self.env.is_admin():
         for rec in access_right_rec:
-            group_name = self.env['ir.model.data'].sudo().search([
-                ('model', '=', 'res.groups'),
-                ('res_id', '=', rec['groups_id'][0])
-            ]).name
-            module_name = self.env['ir.model.data'].sudo().search([
-                ('model', '=', 'res.groups'),
-                ('res_id', '=', rec['groups_id'][0])
-            ]).module
-            group = module_name + "." + group_name
-            if self.env.user.has_group(group):
-                if rec['is_delete']:
-                    raise UserError(_('You are restricted from performing this'
-                                      ' operation. Please contact the'
-                                      ' administrator.'))
+            if rec['restriction_type'] == 'group':
+                group_name = self.env['ir.model.data'].sudo().search([
+                    ('model', '=', 'res.groups'),
+                    ('res_id', '=', rec['groups_id'][0])
+                ]).name
+                module_name = self.env['ir.model.data'].sudo().search([
+                    ('model', '=', 'res.groups'),
+                    ('res_id', '=', rec['groups_id'][0])
+                ]).module
+                group = module_name + "." + group_name
+                if self.env.user.has_group(group):
+                    if rec['is_delete']:
+                        raise UserError(
+                            _('You are restricted from performing this'
+                              ' operation. Please contact the'
+                              ' administrator.'))
+            if rec['restriction_type']=='user':
+                if self.env.user.id == rec['user_id'][0]:
+                    if rec['is_delete']:
+                        raise UserError(
+                            'You are restricted from performing this'
+                            ' operation. Please contact the'
+                            ' administrator.')
     return True
-
 
 BaseModel._create = _create
 BaseModel.unlink = unlink
