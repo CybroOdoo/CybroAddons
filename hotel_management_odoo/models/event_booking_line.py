@@ -76,14 +76,14 @@ class EventBookingLine(models.Model):
                              string="Order Status",
                              help="State of Room Booking", copy=False)
 
-    @api.depends('uom_qty', 'price_unit', 'tax_ids')
+    @api.depends('uom_qty', 'price_unit', 'tax_ids','currency_id')
     def _compute_price_subtotal(self):
         """Compute the amounts of the room booking line."""
         for line in self:
             base_line = line._prepare_base_line_for_taxes_computation()
             self.env['account.tax']._add_tax_details_in_base_line(base_line, self.env.company)
-            line.price_subtotal = base_line['tax_details']['total_excluded_currency']
-            line.price_total = base_line['tax_details']['total_included_currency']
+            line.price_subtotal = base_line['tax_details']['raw_total_excluded_currency']
+            line.price_total = base_line['tax_details']['raw_total_included_currency']
             line.price_tax = line.price_total - line.price_subtotal
             if self.env.context.get('import_file',
                                     False) and not self.env.user. \

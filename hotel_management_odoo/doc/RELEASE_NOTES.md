@@ -19,3 +19,8 @@
 #### Version 18.0.1.1.1
 #### UPDT
 - Added copy=false in some fields of room_booking model
+
+#### 19.08.2025
+#### Version 18.0.1.1.2
+#### UPDT
+- Fixed the error shown while click Add Line in Food, Service or any extra Services

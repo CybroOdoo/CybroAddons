@@ -86,8 +86,8 @@ class ServiceBookingLine(models.Model):
         for line in self:
             base_line = line._prepare_base_line_for_taxes_computation()
             self.env['account.tax']._add_tax_details_in_base_line(base_line, self.env.company)
-            line.price_subtotal = base_line['tax_details']['total_excluded_currency']
-            line.price_total = base_line['tax_details']['total_included_currency']
+            line.price_subtotal = base_line['tax_details']['raw_total_excluded_currency']
+            line.price_total = base_line['tax_details']['raw_total_included_currency']
             line.price_tax = line.price_total - line.price_subtotal
             if self.env.context.get('import_file',
                                     False) and not self.env.user. \
