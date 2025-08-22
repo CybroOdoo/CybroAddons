@@ -25,7 +25,6 @@ from collections import defaultdict
 from odoo.exceptions import UserError
 
 
-
 class StockLandedCost(models.Model):
     """Inherits 'stock.landed.cost' model to add additional functionality
     related to cancelling and resetting landed cost records.
@@ -83,12 +82,13 @@ class StockLandedCost(models.Model):
                 # batch standard price computation avoid recompute quantity_svl at each iteration
                 products = self.env['product.product'].browse(p.id for p in cost_to_add_byproduct.keys()).with_company(
                     cost.company_id)
-                for product in products:  # iterate on recordset to prefetch efficiently quantity_svl
+                for product in products:
                     if not float_is_zero(product.quantity_svl, precision_rounding=product.uom_id.rounding):
                         product.sudo().with_context(disable_auto_svl=True).standard_price += cost_to_add_byproduct[
                                                                                                  product] / product.quantity_svl
 
     def action_landed_cost_cancel(self):
+        print('action_landed_cost_cancel')
         """Cancels the landed cost record by deleting its associated
         accounting entries, stock valuation, and changes state to 'cancelled'.
 
@@ -96,25 +96,50 @@ class StockLandedCost(models.Model):
          entries, which are also deleted in the process.
         """
         for rec in self:
+            print('rec', rec)
             for line in rec.valuation_adjustment_lines.filtered(
                     lambda line: line.move_id):
                 product = line.move_id.product_id
                 if product.cost_method == 'average':
                     self.calculate_avco_price()
 
-            if rec.account_move_id:
-                account_id = rec.account_move_id
-                account_move_ids = account_id.line_ids
-                if account_move_ids:
-                    account_id.sudo().write(
-                        {'state': 'draft', 'name': 'Delete Sequence Number'})
-                    account_move_ids.sudo().unlink()
-                    account_id.sudo().unlink()
-            if rec.valuation_adjustment_lines:
-                rec.valuation_adjustment_lines.unlink()
-            if rec.stock_valuation_layer_ids:
-                rec.stock_valuation_layer_ids.sudo().unlink()
-            rec.write({'state': 'cancel'})
+
+
+            if rec.vendor_bill_id and rec.vendor_bill_id.mapped('line_ids'):
+                rec.vendor_bill_id.button_draft()
+                rec.vendor_bill_id.sudo().write(
+                    {'name': 'Delete Sequence Number'})
+                landed_cost_line = rec.vendor_bill_id.mapped('line_ids').filtered(
+                    lambda x: x.is_landed_costs_line is True)
+                if landed_cost_line :
+                    landed_cost_line.unlink()
+                if rec.valuation_adjustment_lines:
+                    rec.valuation_adjustment_lines.unlink()
+                for layer in rec.stock_valuation_layer_ids:
+                    rec.env['stock.valuation.layer.revaluation'].create([{
+                        'product_id': layer.product_id.id,
+                        'company_id': layer.company_id.id,
+                        'added_value': - layer.value
+                    }]).action_validate_revaluation()
+                rec.write({'state': 'cancel'})
+
+
+
+
+            # if rec.account_move_id:
+            #     print('journal')
+            #     account_id = rec.account_move_id
+            #     print('account_id',account_id)
+            #     account_move_ids = account_id.line_ids
+            #     print('account_move_ids',account_move_ids)
+            #     if account_move_ids:
+            #         print('if account_move_ids')
+            #         account_id.sudo().write(
+            #             {'state': 'draft', 'name': 'Delete Sequence Number'})
+            #         print('account_id2',account_id)
+            #         account_move_ids.sudo().unlink()
+            #         account_id.sudo().unlink()
+
 
     def action_landed_cost_reset_and_cancel(self):
         """Resets the landed cost record by deleting its associated accounting
@@ -130,19 +155,23 @@ class StockLandedCost(models.Model):
                 if product.cost_method == 'average':
                     self.calculate_avco_price()
 
-            if rec.account_move_id:
-                account_id = rec.account_move_id
-                account_move_ids = account_id.line_ids
-                if account_move_ids:
-                    account_id.sudo().write(
-                        {'state': 'draft', 'name': 'Delete Sequence Number'})
-                    account_move_ids.sudo().unlink()
-                    account_id.sudo().unlink()
-            if rec.valuation_adjustment_lines:
-                rec.valuation_adjustment_lines.unlink()
-            if rec.stock_valuation_layer_ids:
-                rec.sudo().stock_valuation_layer_ids.unlink()
-            rec.write({'state': 'draft'})
+            if rec.vendor_bill_id and rec.vendor_bill_id.mapped('line_ids'):
+                rec.vendor_bill_id.button_draft()
+                rec.vendor_bill_id.sudo().write(
+                    {'name': 'Delete Sequence Number'})
+                landed_cost_line = rec.vendor_bill_id.mapped('line_ids').filtered(
+                    lambda x: x.is_landed_costs_line is True)
+                if landed_cost_line:
+                    landed_cost_line.unlink()
+                if rec.valuation_adjustment_lines:
+                    rec.valuation_adjustment_lines.unlink()
+                for layer in rec.stock_valuation_layer_ids:
+                    rec.env['stock.valuation.layer.revaluation'].create([{
+                        'product_id': layer.product_id.id,
+                        'company_id': layer.company_id.id,
+                        'added_value': - layer.value
+                    }]).action_validate_revaluation()
+                rec.write({'state': 'draft'})
 
     def action_landed_cost_cancel_and_delete(self):
         """Deletes the landed cost record by deleting its associated accounting
@@ -157,21 +186,39 @@ class StockLandedCost(models.Model):
                 product = line.move_id.product_id
                 if product.cost_method == 'average':
                     self.calculate_avco_price()
-            if rec.account_move_id:
-                account_id = rec.account_move_id
-                account_move_ids = account_id.line_ids
-                if account_move_ids:
-                    account_id.sudo().write(
-                        {'state': 'draft', 'name': 'Delete Sequence Number'})
-                    account_move_ids.sudo().unlink()
-                    account_id.sudo().unlink()
-            if rec.valuation_adjustment_lines:
-                rec.valuation_adjustment_lines.unlink()
-            if rec.stock_valuation_layer_ids:
-                rec.sudo().stock_valuation_layer_ids.unlink()
-            rec.write({'state': 'cancel'})
-            rec.unlink()
 
+            if rec.vendor_bill_id and rec.vendor_bill_id.mapped('line_ids'):
+                rec.vendor_bill_id.button_draft()
+                rec.vendor_bill_id.sudo().write(
+                    {'name': 'Delete Sequence Number'})
+                landed_cost_line = rec.vendor_bill_id.mapped('line_ids').filtered(
+                    lambda x: x.is_landed_costs_line is True)
+                if landed_cost_line:
+                    landed_cost_line.unlink()
+                if rec.valuation_adjustment_lines:
+                    rec.valuation_adjustment_lines.unlink()
+                for layer in rec.stock_valuation_layer_ids:
+                    rec.env['stock.valuation.layer.revaluation'].create([{
+                        'product_id': layer.product_id.id,
+                        'company_id': layer.company_id.id,
+                        'added_value': - layer.value
+                    }]).action_validate_revaluation()
+                rec.unlink()
+
+            # if rec.account_move_id:
+            #     account_id = rec.account_move_id
+            #     account_move_ids = account_id.line_ids
+            #     if account_move_ids:
+            #         account_id.sudo().write(
+            #             {'state': 'draft', 'name': 'Delete Sequence Number'})
+            #         account_move_ids.sudo().unlink()
+            #         account_id.sudo().unlink()
+            # if rec.valuation_adjustment_lines:
+            #     rec.valuation_adjustment_lines.unlink()
+            # if rec.stock_valuation_layer_ids:
+            #     rec.sudo().stock_valuation_layer_ids.unlink()
+            # rec.write({'state': 'cancel'})
+            # rec.unlink()
 
     def action_landed_cost_cancel_form(self):
         """Cancels the landed cost record and deletes its associated
@@ -196,18 +243,38 @@ class StockLandedCost(models.Model):
                 if product.cost_method == 'average':
                     self.calculate_avco_price()
 
-        if self.account_move_id:
-            account_id = self.account_move_id
-            account_move_ids = account_id.line_ids
-            if account_move_ids:
-                account_id.sudo().write(
-                    {'state': 'draft', 'name': 'Delete Sequence Number'})
-                account_move_ids.sudo().unlink()
-                account_id.sudo().unlink()
-        if self.valuation_adjustment_lines:
-            self.valuation_adjustment_lines.unlink()
-        if self.stock_valuation_layer_ids:
-            self.sudo().stock_valuation_layer_ids.unlink()
+        if self.vendor_bill_id and self.vendor_bill_id.mapped('line_ids'):
+            self.vendor_bill_id.button_draft()
+            self.vendor_bill_id.sudo().write(
+                {'name': 'Delete Sequence Number'})
+            landed_cost_line = self.vendor_bill_id.mapped('line_ids').filtered(
+                lambda x: x.is_landed_costs_line is True)
+            if landed_cost_line :
+                landed_cost_line.unlink()
+            if self.valuation_adjustment_lines:
+                self.valuation_adjustment_lines.unlink()
+            for layer in self.stock_valuation_layer_ids:
+                self.env['stock.valuation.layer.revaluation'].create([{
+                    'product_id': layer.product_id.id,
+                    'company_id': layer.company_id.id,
+                    'added_value': - layer.value
+                }]).action_validate_revaluation()
+            #     layer.product_id.with_context(disable_auto_svl=True).standard_price -= layer.value / layer.quantity if layer.quantity else layer.value
+            # if self.stock_valuation_layer_ids:
+            #     self.stock_valuation_layer_ids.sudo().unlink()
+        #
+        # if self.account_move_id:
+        #     account_id = self.account_move_id
+        #     account_move_ids = account_id.line_ids
+        #     if account_move_ids:
+        #         account_id.sudo().write(
+        #             {'state': 'draft', 'name': 'Delete Sequence Number'})
+        #         account_move_ids.sudo().unlink()
+        #         account_id.sudo().unlink()
+        # if self.valuation_adjustment_lines:
+        #     self.valuation_adjustment_lines.unlink()
+        # if self.stock_valuation_layer_ids:
+        #     self.sudo().stock_valuation_layer_ids.unlink()
 
         landed_mode = self.env['ir.config_parameter'].sudo().get_param(
             'cancel_landed_cost_odoo.land_cost_cancel_modes')
