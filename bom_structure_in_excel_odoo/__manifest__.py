@@ -21,7 +21,7 @@
 ##############################################################################
 {
     'name': "BOM Structure & Cost Report in Excel",
-    'version': "18.0.1.0.0",
+    'version': "18.0.1.0.1",
     'category': 'Manufacturing, Warehouse',
     'summary': """Effortlessly export BOM Structure & Cost Reports to Excel
     format""",

@@ -27,7 +27,7 @@ from odoo.tools import date_utils
 from odoo.tools import json_default
 
 
-class AccountMove(models.Model):
+class MrpBom(models.Model):
     """ Inherits the mrp.bom model """
     _inherit = 'mrp.bom'
 
@@ -84,6 +84,36 @@ class AccountMove(models.Model):
             row_start = 9  # Starting row for data
             currency_symbol = self.env.user.company_id.currency_id.symbol
             # Iterate through lines in the data
+            print(data)
+            sheet.merge_range('A8:C8', data['name'], format6)
+            sheet.merge_range('D8:E8', data['quantity'], format4)
+            sheet.merge_range('F8:G8', data['uom_name'] if data['uom_name'] else '', format4)
+            sheet.merge_range('H8:I8', data['producible_qty'], format4)
+            sheet.merge_range(
+                'J8:K8', f"{data['quantity_available']} / "
+                         f"{data['quantity_on_hand']}", format4)
+            availability_main_text = data['availability_display']
+            color_format_main = format7 if (
+                    availability_main_text == 'Available') \
+                else (
+                format8 if availability_main_text == 'Not Available'
+                else format9)
+            sheet.merge_range(
+                'L8:M8', availability_main_text, color_format_main)
+            lead_time_day = f"{int(data.get('lead_time'))} days" if data.get('lead_time') != 0.0 else "0 days"
+            sheet.merge_range(
+                f'N8:O8',
+                lead_time_day, format4)
+            route_info = f"{data['route_name']} {data['route_detail']}"
+            sheet.merge_range(
+                'P8:Q8',
+                route_info, format4)
+            bom_cost_with_symbol = f" {currency_symbol} {data['bom_cost']}"
+            sheet.merge_range(
+                'T8:U8', bom_cost_with_symbol, format4)
+            prod_cost_with_symbol = f"{currency_symbol} {data['prod_cost']} "
+            sheet.merge_range(
+                'R8:S8', prod_cost_with_symbol, format4)
             for index, value in enumerate(data.get('lines')):
                 # Calculate leading spaces based on the level
                 if value['level'] != 0:
@@ -91,8 +121,6 @@ class AccountMove(models.Model):
                 else:
                     space_td = '    '
                 # Merge and format cells for product name
-                sheet.merge_range('A8:C8', data['name'], format6)
-                sheet.merge_range('D8:E8', data['quantity'], format4)
                 sheet.merge_range(f'A{index + row_start}:C{index + row_start}',
                                   space_td + value['name'], format4)
                 # Merge and format cells for quantity
@@ -105,50 +133,32 @@ class AccountMove(models.Model):
                         value['uom'], format4)
                 # Merge and format cells for 'Ready to Produce'
                 if 'producible_qty' in value:
-                    sheet.merge_range('H8:I8', data['producible_qty'], format4)
                     sheet.merge_range(
                         f'H{index + row_start}:I{index + row_start}',
-                        value['producible_qty'], format4)
+                        value['producible_qty'] if value['producible_qty'] else 0, format4)
                 # Merge and format cells for 'Quantity Available / On Hand'
                 if 'quantity_available' in value:
                     quantity_available_on_hand = \
                         f"{value['quantity_available']} / {value['quantity_on_hand']}"
                     sheet.merge_range(
-                        'J8:K8', f"{data['quantity_available']} / "
-                                 f"{data['quantity_on_hand']}", format4)
-                    sheet.merge_range(
                         f'J{index + row_start}:K{index + row_start}',
                         quantity_available_on_hand, format4)
                 # Merge and format cells for 'Availability'
                 if 'availability_display' in value:
-                    availability_main_text = data['availability_display']
                     availability_text = value['availability_display']
-                    color_format_main = format7 if (
-                            availability_main_text == 'Available') \
-                        else (
-                        format8 if availability_main_text == 'Not Available'
-                        else format9)
                     color_format = format7 if availability_text == 'Available' \
                         else (format8 if availability_text == 'Not Available'
                               else format9)
-                    sheet.merge_range(
-                        'L8:M8', availability_main_text, color_format_main)
                     sheet.merge_range(
                         f'L{index + row_start}:M{index + row_start}',
                         availability_text, color_format)
                 # Merge and format cells for 'Product Cost'
                 if 'prod_cost' in value:
-                    prod_cost_with_symbol = f"{currency_symbol} {data['prod_cost']} "
-                    sheet.merge_range(
-                        'R8:S8', prod_cost_with_symbol, format4)
                     sheet.merge_range(
                         f'R{index + row_start}:S{index + row_start}',
                         f"{currency_symbol} {value['prod_cost']}", format4)
                 # Merge and format cells for 'BOM Cost'
                 if 'bom_cost' in value:
-                    bom_cost_with_symbol = f" {currency_symbol} {data['bom_cost']}"
-                    sheet.merge_range(
-                        'T8:U8', bom_cost_with_symbol, format4)
                     sheet.merge_range(
                         f'T{index + row_start}:U{index + row_start}',
                         f" {currency_symbol} {value['bom_cost']}", format4)
@@ -166,18 +176,14 @@ class AccountMove(models.Model):
                         f'N{index + row_start}:O{index + row_start}',
                         lead_time_days, format4)
                 # Check if 'prod_cost' is present in the data dictionary
-                if 'prod_cost' in data:
-                    prod_cost_with_symbol = f"{currency_symbol} {data['prod_cost']}"
-                    bom_cost_with_symbol = f" {currency_symbol} {data['bom_cost']}"
-                    sheet.merge_range(
-                        f'D{index + row_start + 1}:E{index + row_start + 1}',
-                        'UnitCost', format6)
-                    sheet.merge_range(
-                        f'T{index + row_start + 1}:U{index + row_start + 1}',
-                        bom_cost_with_symbol, format4)
-                    sheet.merge_range(
-                        f'R{index + row_start + 1}:S{index + row_start + 1}',
-                        prod_cost_with_symbol, format4)
+            if 'prod_cost' in data:
+                sheet.merge_range(f'D{index + row_start + 1}:E{index + row_start + 1}', 'UnitCost', format6)
+                sheet.merge_range(
+                    f'R{index + row_start + 1}:S{index + row_start + 1}', f"{currency_symbol} {data['prod_cost']}", format4
+                )
+                sheet.merge_range(
+                    f'T{index + row_start + 1}:U{index + row_start + 1}', f"{currency_symbol} {data['bom_cost']}", format4
+                )
         # Close the workbook, seek to the beginning, and stream the output
         workbook.close()
         output.seek(0)
