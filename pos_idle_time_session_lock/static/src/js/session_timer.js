@@ -46,9 +46,11 @@ const PosTimerChrome = (Chrome) =>
                             clearInterval(x);
                             if (self.env.pos.config.module_pos_hr) {
                                 self.showTempScreen('LoginScreen');
+                                location.reload();
                             }
                             else{
                                 self.showTempScreen('LogoutScreen');
+                                location.reload();
                             }
                         }
                     }, 1000);

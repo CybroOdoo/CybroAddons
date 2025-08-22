@@ -9,3 +9,8 @@
 #### Version 16.0.1.0.1
 #### UPDT
 - Bug fix in PosTimerChrome class.Fixed an issue that occurred while loading the POS session.
+
+#### 20.08.2025
+#### Version 16.0.1.0.2
+#### UPDT
+- Bug fix in PosTimerChrome class.Fixed an issue that occurred when same employee tries to log in again after completing the time session.

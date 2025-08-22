@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "POS Idle Session Lock",
-    'version': '16.0.1.0.1',
+    'version': '16.0.1.0.2',
     'category': 'Point of Sale',
     'summary': """The Module Allows the POS User to Set Screen Lock for POS 
     Screen""",
