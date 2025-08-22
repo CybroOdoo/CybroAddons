@@ -18,3 +18,10 @@
 
 - Updated the module: Encountered a null case when no customer is selected. Fixed the error by checking null case in
   receipt and payment screen.
+
+## Module <pos_receipt_invoice_send_whatsapp>
+#### 19.08.2025
+#### Version 17.0.1.0.1
+##### BUGFIX
+- Updated the module: Encountered a null case when a customer was selected. Fixed the error by 
+  handling the null case in the receipt and payment screens.

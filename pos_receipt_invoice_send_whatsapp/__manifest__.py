@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Send POS Receipt and Invoice via WhatsApp',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Point of Sale',
     'summary': 'This module facilitates sending POS receipts and invoices '
                'through WhatsApp during POS sessions.',
