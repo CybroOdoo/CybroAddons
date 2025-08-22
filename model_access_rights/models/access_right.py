@@ -33,7 +33,7 @@ class AccessRight(models.Model):
     model_id = fields.Many2one('ir.model', ondelete='cascade',
                                required=True, string="Model",
                                help="Select the model")
-    groups_id = fields.Many2one('res.groups', required=True,
+    groups_id = fields.Many2one('res.groups',
                                 string="Groups", help="Select the group")
     is_delete = fields.Boolean(string="Delete", help="Hide the delete option")
     is_export = fields.Boolean(string="Export",
@@ -43,30 +43,45 @@ class AccessRight(models.Model):
                                          help="Hide the create option "
                                               "from list as well as form view")
     is_archive = fields.Boolean(string="Archive/UnArchive",
-                                help="Hide the archive option")
+                                help="hide the archive option")
+    restriction_type = fields.Selection([
+        ('user', 'User Wise'),
+        ('group', 'Group Wise')
+    ], 'Restriction Type', required=True, default="group")
+    user_id = fields.Many2one('res.users',
+                              help="select the user")
 
     @api.model
-    def hide_buttons(self, args):
-        """Returns the visibility settings for buttons per model and group."""
-        user = self.env['res.users'].browse(args[0])
-        model_name = args[1]
-        access_right_rec = self.sudo().search_read([
-            ('model_id.model', '=', model_name),
-            ('groups_id', 'in', user.groups_id.ids)
-        ], ['is_delete', 'is_export', 'is_create_or_update', 'is_archive'])
+    def hide_buttons(self):
+        """This function contains a query  that detects which all options want
+        to hide, in which model,and to which user groups"""
+        access_right_rec = self.sudo().search_read([], ['model_id', 'is_delete',
+                                                        'is_export',
+                                                        'is_create_or_update',
+                                                        'is_archive',
+                                                        'restriction_type',
+                                                        'user_id',
+                                                        'groups_id'])
+        for dic in access_right_rec:
+            model = self.env['ir.model'].sudo().browse(dic['model_id'][0]).model
+            if dic['restriction_type'] == "group":
+                group_name = self.env['ir.model.data'].sudo().search([
+                    ('model', '=', 'res.groups'),
+                    ('res_id', '=', dic['groups_id'][0])
+                ]).name
 
-        if access_right_rec:
-            rec = access_right_rec[0]  # If multiple, first match wins
-            return {
-                'is_delete': rec['is_delete'],
-                'is_export': rec['is_export'],
-                'is_create_or_update': rec['is_create_or_update'],
-                'is_archive': rec['is_archive']
-            }
-        return {
-            'is_delete': False,
-            'is_export': False,
-            'is_create_or_update': False,
-            'is_archive': False
-        }
-
+                module_name = self.env['ir.model.data'].sudo().search([
+                    ('model', '=', 'res.groups'),
+                    ('res_id', '=', dic['groups_id'][0])
+                ]).module
+            else:
+                group_name=False
+                module_name=False
+            dic.update({
+                'model': model,
+                'group_name': group_name,
+                'module': module_name,
+                'restriction_type': dic['restriction_type'],
+                'user':  dic['user_id']
+            })
+        return access_right_rec
