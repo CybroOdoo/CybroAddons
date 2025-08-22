@@ -180,8 +180,8 @@ class StockReport(models.TransientModel):
         sheet.write(9, 6, 'Cost Price', format21)
         p_col_no1 = 7
         for record in self.get_warehouse(self.browse(data['ids']))[0]:
-            w_col_no = w_col_no + 11
-            sheet.merge_range(8, w_col_no1, 8, w_col_no, record, format11)
+            # w_col_no = w_col_no + 11
+            # sheet.merge_range(8, w_col_no1, 8, w_col_no, record, format11)
             sheet.write(9, p_col_no1, 'Available', format21)
             sheet.write(9, p_col_no1 + 1, 'Virtual', format21)
             sheet.write(9, p_col_no1 + 2, 'Incoming', format21)
