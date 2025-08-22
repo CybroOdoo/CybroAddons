@@ -18,6 +18,8 @@
 #    (AGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
+from pyexpat.errors import messages
+
 from odoo import http
 from odoo.http import request
 
@@ -38,21 +40,31 @@ class SystrayController(http.Controller):
 
     @http.route('/pos_systray/message_data', auth='public', type='json')
     def get_data_pos_systray(self):
-        """
-        Summary:
-            Getting data to the Message chatter list.
-        Return:
-            it contains details about chatter list.
-        """
-        return [{'id': mail_channel_id.id,
-                 'type': mail_channel_id.channel_type,
-                 'name': mail_channel_id.name,
-                 'message_body': request.env['mail.message'].search(
-                     [('model', '=', 'discuss.channel'),
-                      ('res_id', '=', mail_channel_id.id)], limit=1).body
-                 } for mail_channel_id in request.env['discuss.channel'].search([])
-                for partner_id in mail_channel_id.channel_partner_ids
-                if partner_id.id == request.env.user.partner_id.id]
+        channels = request.env['discuss.channel'].search([])
+        partner_id = request.env.user.partner_id.id
+
+        data = []
+        for mail_channel in channels:
+            if partner_id in mail_channel.channel_partner_ids.ids:
+                message = request.env['mail.message'].search(
+                    [('model', '=', 'discuss.channel'),
+                     ('res_id', '=', mail_channel.id)],
+                    limit=1, order="id desc"
+                )
+                messages = request.env['mail.message'].search_count(
+                    [('model', '=', 'discuss.channel'),
+                     ('res_id', '=', mail_channel.id),
+                     ('is_read', '=', False)]
+                )
+                data.append({
+                    'message_id' : message.id,
+                    'id': mail_channel.id,
+                    'type': mail_channel.channel_type,
+                    'name': mail_channel.name,
+                    'message_body': message.body if message else "",
+                    'count': messages
+                })
+        return data
 
     @http.route('/pos_systray/chat_message', auth='public', type='json')
     def get_data_chat_box(self, **kw):
@@ -105,6 +117,7 @@ class SystrayController(http.Controller):
             'model': 'discuss.channel',
             'res_id': int(data['res_id']),
             'message_type': 'comment',
+            'is_read':True,
             'author_id': request.env.user.partner_id.id
         })
         return True
