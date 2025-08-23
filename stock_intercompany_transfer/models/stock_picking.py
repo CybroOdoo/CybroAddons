@@ -135,6 +135,7 @@ class StockPickingInherit(models.Model):
                         'location_id': location_id,
                         'location_dest_id': location_dest_id,
                         'company_id': company_id.id,
+                        'price_unit': move.product_id.standard_price
                     }
                     self.env['stock.move'].sudo().create(move_vals)
                 if picking_id:
