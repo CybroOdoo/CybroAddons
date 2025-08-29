@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Invoice Format Editor',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Accounting',
     'summary': 'Invoice Report, Report Editor, Customise Invoice Report, '
                'Invoice Report Templates, Account Reports, Odoo18, '
