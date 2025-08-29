@@ -116,10 +116,10 @@ class Theme(models.TransientModel):
                     'crm.png')
                 menu.write({'web_icon_data': base64.b64encode(
                     open(img_path, "rb").read())})
-            if menu.name == 'Note':
+            if menu.name == 'Notes':
                 img_path = get_module_resource(
                     'vista_backend_theme', 'static', 'src', 'img', 'icons',
-                    'note.png')
+                    'notes.png')
                 menu.write({'web_icon_data': base64.b64encode(
                     open(img_path, "rb").read())})
             if menu.name == 'Website':
@@ -333,11 +333,11 @@ class Theme(models.TransientModel):
                     'crm.png')
                 menu.write({'web_icon_data': base64.b64encode(
                     open(img_path, "rb").read())})
-            if menu.name == 'Note':
+            if menu.name == 'Notes':
                 img_path = get_module_resource(
                     'vista_backend_theme', 'static', 'src', 'img',
                     'icons_green',
-                    'note.png')
+                    'notes.png')
                 menu.write({'web_icon_data': base64.b64encode(
                     open(img_path, "rb").read())})
             if menu.name == 'Website':
