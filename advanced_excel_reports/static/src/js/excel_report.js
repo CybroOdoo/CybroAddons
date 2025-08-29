@@ -2,7 +2,7 @@
 import { registry } from "@web/core/registry";
 import { BlockUI } from "@web/core/ui/block_ui";
 import { download } from "@web/core/network/download";
-registry.category("ir.actions.report handlers").add("xlsx", async(action)=> {
+registry.category("ir.actions.report handlers").add("advanced_excel_reports_xlsx", async(action)=> {
     //Passing data to the controller to print the excel file
    if (action.report_type === 'xlsx') {
            BlockUI;

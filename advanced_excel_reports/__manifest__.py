@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Advanced Excel Reports",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0.1",
     "category": "Sale,Accounting,Warehouse",
     "summary": """For printing excel reports of multiple records""",
     "description": "Print the excel report of the sale,invoice,picking"
