@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--    This template is used to display a purchase order report in an
+            old standard format. It includes the header section with the company logo
+            and details, such as partner information, address, and VAT number. -->
+    <template id="old_std_report_purchaseorder_document">
+        <t t-call="web.external_layout">
+            <t t-if="o and 'company_id' in o">
+                <t t-set="company" t-value="o.company_id"/>
+            </t>
+            <t t-if="not o or not 'company_id' in o">
+                <t t-set="company" t-value="res_company"/>
+            </t>
+
+            <!-- Header -->
+            <div class="row">
+                <div class="col-6">
+                    <img t-if="company.logo"
+                         t-att-src="'data:image/png;base64,%s' % company.logo"
+                         style="max-height: 80px;" />
+                </div>
+            </div>
+
+            <!-- Partner Info -->
+            <div class="mt32">
+                <span t-field="o.partner_id.name"/><br/>
+                <span t-field="o.partner_id.street"/><br/>
+                <span t-field="o.partner_id.city"/>
+                <span t-field="o.partner_id.state_id"/><br/>
+                <span t-field="o.partner_id.country_id"/><br/>
+            </div>
+
+            <!-- Purchase Order Info Box -->
+            <div style="background-color: #f26522; color: white; padding: 15px; margin-top: 30px;">
+                <h3>Purchase Order# <span t-field="o.name"/></h3>
+                <p><strong>Order Date:</strong> <span t-field="o.date_order"/></p>
+                <p><strong>Order Deadline:</strong> <span t-field="o.date_approve"/></p>
+                <p><strong>Purchase Representative:</strong> <span t-field="o.user_id"/></p>
+            </div>
+
+            <!-- Order Lines Table -->
+            <table class="table table-sm mt32">
+                <thead style="background-color: #f26522; color: white;">
+                    <tr>
+                        <th>Product</th>
+                        <th>Description</th>
+                        <th class="text-right">Quantity</th>
+                        <th class="text-right">Unit Price</th>
+                        <th class="text-right">Taxes</th>
+                        <th class="text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="o.order_line" t-as="line">
+                        <tr>
+                            <td>
+                                <span t-field="line.product_id"/>
+                            </td>
+                            <td>
+                                <span t-field="line.name"/>
+                            </td>
+                            <td class="text-right">
+                                <span t-field="line.product_qty"/>
+                            </td>
+                            <td class="text-right">
+                                <span t-field="line.price_unit"/>
+                            </td>
+                            <td class="text-right">
+                                <t t-set="tax_names" t-value="' ,'.join([tax.name for tax in line.taxes_id])"/>
+                                <span t-esc="tax_names"/>
+                            </td>
+                            <td class="text-right">
+                                <span t-field="line.price_subtotal"/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+
+            <!-- Totals Section -->
+            <div class="row justify-content-end">
+                    <div class="col-4">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Subtotal</strong></td>
+                                <td class="text-right">
+                                    <span t-field="o.amount_untaxed" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tax 15%</strong></td>
+                                <td class="text-right">
+                                    <span t-field="o.amount_tax" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total</strong></td>
+                                <td class="text-right">
+                                    <span t-field="o.amount_total" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                </td>
+
+                            </tr>
+                        </table>
+                    </div>
+            </div>
+        </t>
+    </template>
+</odoo>
