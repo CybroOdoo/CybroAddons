@@ -21,6 +21,7 @@
 #############################################################################
 import json
 import logging
+import base64
 from odoo import http
 from odoo.http import request
 from datetime import datetime, date
@@ -46,21 +47,65 @@ class RestApi(http.Controller):
                         "!</h2></body></html>")
         return response
 
-    def generate_response(self, method, model, rec_id):
+    def generate_response(self, method, model, rec_id, request_params=None):
         """This function is used to generate the response based on the type
         of request and the parameters given"""
         option = request.env['connection.api'].search(
             [('model_id', '=', model)], limit=1)
         model_name = option.model_id.model
-        if method != 'DELETE':
-            data = json.loads(request.httprequest.data)
+
+        # Handle data based on method
+        if method == 'GET':
+            # For GET requests, check both JSON body and query parameters
+            data = request_params or {}
+            fields = []
+
+            # First, try to get fields from JSON body
+            try:
+                if request.httprequest.data:
+                    json_data = json.loads(request.httprequest.data)
+                    if 'fields' in json_data:
+                        fields = json_data['fields']
+            except json.JSONDecodeError:
+                pass  # If JSON is invalid, continue with query params
+
+            # If no fields from JSON, try query parameters
+            if not fields:
+                fields_param = data.get('fields', '')
+                if fields_param:
+                    fields = [field.strip() for field in fields_param.split(',')]
+
+            # If still no fields, use defaults based on record type
+            if not fields:
+                if rec_id != 0:
+                    # For specific record, get all fields
+                    fields = None  # This will get all available fields
+                else:
+                    # For all records, use minimal fields
+                    fields = ['id', 'display_name']
+        elif method != 'DELETE':
+            # For POST/PUT requests, parse JSON from body
+            try:
+                if request.httprequest.data:
+                    data = json.loads(request.httprequest.data)
+                else:
+                    data = {}
+            except json.JSONDecodeError:
+                return ("<html><body><h2>Invalid JSON Data"
+                        "</h2></body></html>")
         else:
+            # DELETE method
             data = {}
-        fields = []
-        if data:
-            for field in data['fields']:
-                fields.append(field)
-        if not fields and method != 'DELETE':
+            fields = []
+
+        # Extract fields for POST/PUT methods
+        if method in ['POST', 'PUT'] and data:
+            fields = []
+            if 'fields' in data:
+                for field in data['fields']:
+                    fields.append(field)
+
+        if not fields and method != 'DELETE' and method != 'GET':
             return ("<html><body><h2>No fields selected for the model"
                     "</h2></body></html>")
         if not option:
@@ -68,34 +113,55 @@ class RestApi(http.Controller):
                     "</h2></body></html>")
         try:
             if method == 'GET':
-                fields = []
-                for field in data['fields']:
-                    fields.append(field)
                 if not option.is_get:
                     return ("<html><body><h2>Method Not Allowed"
                             "</h2></body></html>")
                 else:
                     datas = []
                     if rec_id != 0:
+                        # For specific record
+                        search_fields = fields if fields is not None else []
                         partner_records = request.env[
                             str(model_name)].search_read(
                             domain=[('id', '=', rec_id)],
-                            fields=fields
+                            fields=search_fields
                         )
                         for record in partner_records:
                             for key, value in record.items():
                                 if isinstance(value, (datetime, date)):
                                     record[key] = value.isoformat()
+                                elif isinstance(value, bytes):
+                                    # Convert bytes to base64 string for JSON serialization
+                                    import base64
+                                    record[key] = base64.b64encode(value).decode('utf-8')
+                                elif hasattr(value, '__iter__') and not isinstance(value, (str, dict)):
+                                    # Handle other non-serializable iterables
+                                    try:
+                                        record[key] = list(value) if value else []
+                                    except:
+                                        record[key] = str(value)
+                                elif isinstance(value, bytes):
+                                    # Convert bytes to base64 string for JSON serialization
+                                    import base64
+                                    record[key] = base64.b64encode(value).decode('utf-8')
+                                elif hasattr(value, '__iter__') and not isinstance(value, (str, dict)):
+                                    # Handle other non-serializable iterables
+                                    try:
+                                        record[key] = list(value) if value else []
+                                    except:
+                                        record[key] = str(value)
                         data = json.dumps({
                             'records': partner_records
                         })
                         datas.append(data)
                         return request.make_response(data=datas)
                     else:
+                        # For all records
+                        search_fields = fields if fields is not None else ['id', 'display_name']
                         partner_records = request.env[
                             str(model_name)].search_read(
                             domain=[],
-                            fields=fields
+                            fields=search_fields
                         )
                         for record in partner_records:
                             for key, value in record.items():
@@ -106,16 +172,17 @@ class RestApi(http.Controller):
                         })
                         datas.append(data)
                         return request.make_response(data=datas)
-        except:
-            return ("<html><body><h2>Invalid JSON Data"
+        except Exception as e:
+            _logger.error(f"Error in GET method: {str(e)}")
+            return ("<html><body><h2>Error processing request"
                     "</h2></body></html>")
+
         if method == 'POST':
             if not option.is_post:
                 return ("<html><body><h2>Method Not Allowed"
                         "</h2></body></html>")
             else:
                 try:
-                    data = json.loads(request.httprequest.data)
                     datas = []
                     new_resource = request.env[str(model_name)].create(
                         data['values'])
@@ -128,12 +195,34 @@ class RestApi(http.Controller):
                         for key, value in record.items():
                             if isinstance(value, (datetime, date)):
                                 record[key] = value.isoformat()
+                            elif isinstance(value, bytes):
+                                # Convert bytes to base64 string for JSON serialization
+                                import base64
+                                record[key] = base64.b64encode(value).decode('utf-8')
+                            elif hasattr(value, '__iter__') and not isinstance(value, (str, dict)):
+                                # Handle other non-serializable iterables
+                                try:
+                                    record[key] = list(value) if value else []
+                                except:
+                                    record[key] = str(value)
+                            elif isinstance(value, bytes):
+                                # Convert bytes to base64 string for JSON serialization
+                                import base64
+                                record[key] = base64.b64encode(value).decode('utf-8')
+                            elif hasattr(value, '__iter__') and not isinstance(value, (str, dict)):
+                                # Handle other non-serializable iterables
+                                try:
+                                    record[key] = list(value) if value else []
+                                except:
+                                    record[key] = str(value)
                     new_data = json.dumps({'New resource': partner_records, })
                     datas.append(new_data)
                     return request.make_response(data=datas)
-                except:
+                except Exception as e:
+                    _logger.error(f"Error in POST method: {str(e)}")
                     return ("<html><body><h2>Invalid JSON Data"
                             "</h2></body></html>")
+
         if method == 'PUT':
             if not option.is_put:
                 return ("<html><body><h2>Method Not Allowed"
@@ -151,7 +240,6 @@ class RestApi(http.Controller):
                     else:
                         try:
                             datas = []
-                            data = json.loads(request.httprequest.data)
                             resource.write(data['values'])
                             partner_records = request.env[
                                 str(model_name)].search_read(
@@ -162,15 +250,37 @@ class RestApi(http.Controller):
                                 for key, value in record.items():
                                     if isinstance(value, (datetime, date)):
                                         record[key] = value.isoformat()
+                                    elif isinstance(value, bytes):
+                                        # Convert bytes to base64 string for JSON serialization
+                                        import base64
+                                        record[key] = base64.b64encode(value).decode('utf-8')
+                                    elif hasattr(value, '__iter__') and not isinstance(value, (str, dict)):
+                                        # Handle other non-serializable iterables
+                                        try:
+                                            record[key] = list(value) if value else []
+                                        except:
+                                            record[key] = str(value)
+                                    elif isinstance(value, bytes):
+                                        # Convert bytes to base64 string for JSON serialization
+                                        import base64
+                                        record[key] = base64.b64encode(value).decode('utf-8')
+                                    elif hasattr(value, '__iter__') and not isinstance(value, (str, dict)):
+                                        # Handle other non-serializable iterables
+                                        try:
+                                            record[key] = list(value) if value else []
+                                        except:
+                                            record[key] = str(value)
                             new_data = json.dumps(
                                 {'Updated resource': partner_records,
                                  })
                             datas.append(new_data)
                             return request.make_response(data=datas)
 
-                        except:
+                        except Exception as e:
+                            _logger.error(f"Error in PUT method: {str(e)}")
                             return ("<html><body><h2>Invalid JSON Data "
                                     "!</h2></body></html>")
+
         if method == 'DELETE':
             if not option.is_delete:
                 return ("<html><body><h2>Method Not Allowed"
@@ -186,7 +296,6 @@ class RestApi(http.Controller):
                         return ("<html><body><h2>Resource not found"
                                 "</h2></body></html>")
                     else:
-
                         records = request.env[
                             str(model_name)].search_read(
                             domain=[('id', '=', resource.id)],
@@ -227,7 +336,8 @@ class RestApi(http.Controller):
                 rec_id = 0
             else:
                 rec_id = int(kw.get('Id'))
-            result = self.generate_response(http_method, model_id.id, rec_id)
+            # Pass the query parameters for GET requests
+            result = self.generate_response(http_method, model_id.id, rec_id, kw)
             return result
         else:
             return auth_api
@@ -252,6 +362,7 @@ class RestApi(http.Controller):
                                 "User": user.name,
                                 "api-key": api_key})
             return request.make_response(data=datas)
-        except:
+        except Exception as e:
+            _logger.error(f"Error in authentication: {str(e)}")
             return ("<html><body><h2>wrong login credentials"
                     "</h2></body></html>")
