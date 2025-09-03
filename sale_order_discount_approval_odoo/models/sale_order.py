@@ -35,19 +35,46 @@ class SaleOrder(models.Model):
                                        help='The discount approver')
 
     def action_confirm(self):
-        """Method for confirming the sale order discount and sending mail for
-        the approver if approval limit crossed"""
+        """Confirm sale order with discount approval check.
+           - If line/global discount exceeds user limit → set 'waiting_for_approval'
+           - Else → proceed normally.
+        """
+        self.ensure_one()
         res = super().action_confirm()
+
         to_approve = False
-        discount_vals = self.order_line.mapped('discount')
+        user_discount = self.env.user.allow_discount
+        discount_product = self.env.company.sale_discount_product_id
         approval_users = self.env.ref(
             'sale_order_discount_approval_odoo.sale_order_discount_approval_odoo_group_manager').users
-        user_discount = self.env.user.allow_discount
-        if self.env.user.is_discount_control == True:
-            for rec in discount_vals:
-                if rec > user_discount:
+
+        # -------------------------------
+        # 1. Line-based discount check
+        # -------------------------------
+        if self.env.user.is_discount_control:
+            for line in self.order_line:
+                if line.discount > user_discount:
                     to_approve = True
                     break
+
+        # -------------------------------
+        # 2. Global discount check
+        # -------------------------------
+        if not to_approve and discount_product:
+            discount_line = self.order_line.filtered(lambda l: l.product_id == discount_product)
+            if discount_line:
+                discount_amount = abs(discount_line.price_unit)
+                # base total before discount
+                base_total = sum(
+                    l.product_uom_qty * l.price_unit for l in self.order_line if l.product_id != discount_product)
+                if base_total > 0:
+                    global_discount_pct = (discount_amount / base_total) * 100
+                    if global_discount_pct > user_discount:
+                        to_approve = True
+
+        # -------------------------------
+        # 3. Apply result
+        # -------------------------------
         if to_approve:
             action_id = self.env.ref(
                 'sale.action_quotations_with_onboarding').id
@@ -56,13 +83,13 @@ class SaleOrder(models.Model):
             url = self.env['ir.config_parameter'].sudo().get_param(
                 'web.base.url') + redirect_link
             for user in approval_users:
-                mail_body = f"""<p>Hello,</p> <p>New sale order '{self.name}' 
-                created with Discount by '{self.env.user.name}' need your approval
-                 on it.</p> <p>To Approve, Cancel Order, Click on the Following 
-                 Link: <a href='{url}' style="display: inline-block; 
-                 padding: 10px; text-decoration: none; font-size: 12px; 
-                 background-color: #875A7B; color: #fff; border-radius: 5px;
-                 "><strong>Click Me</strong></a> </p> <p>Thank You.</p>"""
+                mail_body = f"""<p>Hello,</p> <p>New sale order '{self.name}'
+                           created with Discount by '{self.env.user.name}' need your approval
+                            on it.</p> <p>To Approve, Cancel Order, Click on the Following
+                            Link: <a href='{url}' style="display: inline-block;
+                            padding: 10px; text-decoration: none; font-size: 12px;
+                            background-color: #875A7B; color: #fff; border-radius: 5px;
+                            "><strong>Click Me</strong></a> </p> <p>Thank You.</p>"""
                 mail_values = {
                     'subject': f"{self.name} Discount Approval Request",
                     'body_html': mail_body,
@@ -74,6 +101,8 @@ class SaleOrder(models.Model):
                 mail_id.send()
             self.state = 'waiting_for_approval'
         return res
+
+
 
     def action_waiting_approval(self):
         """Method for approving the sale order discount"""
