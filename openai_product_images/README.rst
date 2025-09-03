@@ -23,6 +23,7 @@ Company
 Credits
 -------
 * Developer: Rosmy John @ cybrosys
+* Developer: Nisarudheen @ cybrosys
 
 Contacts
 --------
