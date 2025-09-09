@@ -1,322 +1,535 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Health Report</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>GitHub Odoo Integration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap"
+          rel="stylesheet"/>
+    <style>
+        body {
+          font-family: "Inter", sans-serif;
+          background: #fff;
+          color: #111;
+        }
+        h1, h2 {
+          font-family: "Plus Jakarta Sans", sans-serif;
+          font-weight: 700;
+          color: #111;
+        }
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-        rel="stylesheet">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+        /* Hero */
+        .hero {
+          text-align: center;
+          padding: 80px 20px 60px;
+        }
+        .hero h1 {
+          font-size: 3rem;
+          font-weight: 700;
+          letter-spacing: -0.5px;
+        }
+        .hero h1 span {
+          color: #3B82F6;
+        }
+        .hero p {
+          font-size: 1.2rem;
+          color: #555;
+          margin-top: 10px;
+        }
+        .cta-btn {
+          margin-top: 25px;
+          padding: 12px 28px;
+          font-size: 1rem;
+          font-weight: 600;
+          border-radius: 30px;
+          border: none;
+          background: #111;
+          color: #fff;
+          text-decoration: none;
+          display: inline-block;
+          transition: all .3s ease;
+        }
+        .cta-btn:hover {
+          background: #333;
+          transform: translateY(-3px);
+        }
 
-  <style>
-    .accordion-item:first-of-type .accordion-button {
-      border-top-left-radius: 3rem;
-      border-top-right-radius: 3rem;
-    }
+        /* Section */
+        .section {
+          padding: 70px 0;
+        }
+        .section h2 {
+          font-size: 1.8rem;
+          margin-bottom: 16px;
+        }
+        .section p {
+          font-size: 1rem;
+          color: #444;
+        }
 
-    .accordion-item:last-of-type .accordion-button.collapsed {
-      border-bottom-right-radius: 3rem;
-      border-bottom-left-radius: 3rem;
-    }
+        /* Screenshot Box */
+        .screenshot-box {
+          border-radius: 14px;
+          padding: 10px;
+          background: #f9f9f9;
+        }
+        .screenshot-box img {
+          border-radius: 10px;
+          width: 100%;
+          height: auto;
+          cursor: zoom-in;
+          transition: transform .3s;
+        }
+        .screenshot-box img:hover {
+          transform: scale(1.02);
+        }
 
-    .accordion-item:last-of-type {
-      border-bottom-right-radius: 3rem;
-      border-bottom-left-radius: 3rem;
-    }
+        /* Workflow */
+        .workflow-menu .nav-link {
+          font-weight: 600;
+          color: #444;
+          padding: 12px 16px;
+          border-radius: 8px;
+          margin-bottom: 6px;
+          transition: .3s;
+        }
+        .workflow-menu .nav-link.active {
+          background: #111;
+          color: #fff !important;
+        }
+        .workflow-menu .nav-link:hover { background: #f5f5f5; }
+        .workflow-menu .active:hover { background: #6b6060 !important; }
+        .workflow-content {
+          border-radius: 12px;
+          padding: 20px;
+          background: #fff;
+          box-shadow: 0 4px 14px rgba(0,0,0,.08);
+          height: 570px !important;
+        }
 
-    .accordion-item:first-of-type {
-      border-top-left-radius: 3rem;
-      border-top-right-radius: 3rem;
-    }
+        /* Lightbox */
+        .lightbox {
+          display: none;
+          position: fixed;
+          z-index: 1050;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0,0,0,0.9);
+          justify-content: center;
+          align-items: center;
+        }
+        .lightbox img {
+          max-width: 90%;
+          max-height: 90%;
+          border-radius: 10px;
+          box-shadow: 0 8px 20px rgba(0,0,0,.4);
+        }
+        .lightbox:target { display: flex; }
+        .lightbox-close {
+          position: absolute;
+          top: 20px; right: 30px;
+          font-size: 2rem;
+          color: #fff;
+          text-decoration: none;
+          font-weight: bold;
+        }
 
-    .accordion-button:focus {
-      border-color: unset;
-      box-shadow: unset;
-    }
+        /* Carousel Arrows */
+        .carousel-control-prev-icon,
+        .carousel-control-next-icon {
+          background-image: none !important;
+        }
+        .carousel-control-prev-icon::after,
+        .carousel-control-next-icon::after {
+          font-family: "Font Awesome 6 Free";
+          font-weight: 900;
+          font-size: 28px;
+          color: #111;
+        }
+        .carousel-control-prev-icon::after { content: "\f104"; }
+        .carousel-control-next-icon::after { content: "\f105"; }
 
-    .accordion-button:not(.collapsed) {
-      background-color: #0480e1;
-      color: white;
-      border-radius: 0;
-      box-shadow: unset;
-    }
+        /* Related Products */
+        .product-overlay {
+          position: relative;
+          border-radius: 14px;
+          overflow: hidden;
+          box-shadow: 0 6px 18px rgba(0,0,0,.1);
+        }
+        .product-overlay img {
+          width: 100%;
+          height: auto;
+          display: block;
+          transition: transform .4s ease;
+        }
+        .product-overlay:hover img {
+          transform: scale(1.08);
+        }
+        .product-overlay .overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(to top,rgba(0,0,0,0.7),rgba(0,0,0,0));
+          color: #fff;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+          padding: 20px;
+          opacity: 0;
+          transition: opacity .4s ease;
+        }
+        .product-overlay:hover .overlay { opacity: 1; }
+        .overlay h5 { font-weight: 600; margin-bottom: 10px; }
 
-    .accordion-item:not(:first-of-type) {
-      border-top: 1px solid black;
-    }
-
-    .accordion-button:not(.collapsed) .head {
-      border-bottom: 1px solid white;
-    }
-
-    .accordion-button::after {
-      position: relative;
-      top: -10px;
-      background-color: #ffffff;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background-position: center;
-      border: 1px solid black;
-      background-image: url(./assets/img/plus.svg);
-    }
-
-    .accordion-button:not(.collapsed)::after {
-      background-image: url(./assets/img/minus.svg);
-    }
-  </style>
+        /* Footer */
+        .footer {
+          margin-top: 60px;
+          text-align: center;
+          font-size: 14px;
+          color: #666;
+          padding: 20px 0;
+          border-top: 1px solid #eee;
+        }
+    </style>
 </head>
+<body>
 
-<body style="font-family: Poppins, sans-serif; background: linear-gradient(180deg, #dcebf9, #faecff);">
-  <!-- Heading -->
-  <div class="oe_container container-fluid py-5" style="max-width:1526.4px; margin-left:auto; margin-right:auto; padding-left:54px; padding-right:54px;">
-    <div class="header" style="background-image: url('/odoo_health_report/static/description/assets/img/header.jpg'); background-position: center; background-size: cover; height: 130px; border-radius: 3rem; box-shadow: 0px 5px #0480e1; display: flex; align-items: center; justify-content: center; border: 1px solid #0480e1;">
-      <h1 style="font-size: 3rem; font-weight: 700; margin-bottom: 0;">Health Report</h1>
-    </div>
-  </div>
+<!-- Hero -->
+<section class="hero">
+    <h1>GitHub <span>Odoo Integration</span></h1>
+    <p>Seamlessly connect GitHub with Odoo – manage repositories, branches, commits, issues & PRs from one place.</p>
+    <a href="#" class="cta-btn">Try Now</a>
+</section>
 
-  <!-- Overview -->
-  <div class="container-fluid py-5" style="max-width:1526.4px; margin-left:auto; margin-right:auto; padding-left:54px; padding-right:54px;">
-    <div class="banner" style="background-image: url('/odoo_health_report/static/description/assets/img/banner.jpg'); background-position: top; background-size: cover; border-radius: 3rem; display: flex; align-items: center; justify-content: center; color: white; overflow: hidden; position: relative;">
-      <img src="./assets/img/cybro.jpg" alt="" class="cybro" style="position: absolute; right: -5px; bottom: -3px; width: 115px; border-radius: 10px; max-width: 100%;">
-      <div class="row">
-        <div class="col-md-6 p-5 d-flex flex-column justify-content-center">
-          <h2 style="font-size: 3rem; font-weight: 700;color: white;">Analyze. Audit. Improve.</h2>
-          <p style="font-size: 1.2rem; color: rgb(255 255 255 / 80%); line-height: 28px;">Odoo Module Health Report is a powerful developer tool designed to help Odoo developers and technical teams
-            maintain high-quality code standards across custom modules. It offers deep analysis and visual insights on
-            code health, along with a PDF report for audits or documentation.</p>
-          <ul style="list-style: none; padding-left: 0;">
-            <li style="font-size: 1.3rem; font-weight: 600; padding: 1rem 0; display: flex; align-items: center; gap: 1rem;">
-              <img src="./assets/img/icon1.svg" alt="" style="width: 40px;">
-              Comprehensive Code Checks
-            </li>
-            <li style="font-size: 1.3rem; font-weight: 600; padding: 1rem 0; display: flex; align-items: center; gap: 1rem;">
-              <img src="./assets/img/icon2.svg" alt="" style="width: 40px;">
-              Odoo Code Standards Check
-            </li>
-            <li style="font-size: 1.3rem; font-weight: 600; padding: 1rem 0; display: flex; align-items: center; gap: 1rem;">
-              <img src="./assets/img/icon3.svg" alt="" style="width: 40px;">
-              Interactive Dashboard & PDF Report
-            </li>
-            <li style="font-size: 1.3rem; font-weight: 600; padding: 1rem 0; display: flex; align-items: center; gap: 1rem;">
-              <img src="./assets/img/icon4.svg" alt="" style="width: 40px;">
-              Compatible with V18 CE & EE
-            </li>
-          </ul>
-        </div>
-        <div class="col-md-6 position-relative d-flex justify-content-center align-items-center">
-          <img src="./assets/img/banner-img.png" alt="" class="banner-img" style="margin-left: 13rem; width: 100%;">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Featured Categories -->
-  <div class="container-fluid py-5" style="max-width:1526.4px; margin-left:auto; margin-right:auto; padding-left:54px; padding-right:54px;">
-    <h2 class="headmain" style="font-family: sans-serif; background-color: #b9ff66; width: max-content; padding: 5px 10px; margin-bottom: 1rem; border-radius: 8px; font-size: 2.3rem;">Featured Categories</h2>
-    <div class="row row-cols-lg-2 row-cols-1 g-xl-4 g-3 ">
-      <div class="col">
-        <div class="box box1" style="padding: 3rem; border-radius: 2rem; position: relative; min-height: 300px; border: 1px solid black; box-shadow: 0px 5px #000000; background: white;">
-          <img src="./assets/img/box1.png" alt="" width="150" style="max-width: 100%; position: absolute; right: 2rem; bottom: 2rem;">
-          <h3 class="head" style="width: max-content; padding: 8px 10px; margin-bottom: 2rem; border-radius: 8px; background: #0480e1; color: white;">Clean Code is Beautiful Code</h3>
-          <p style="max-width: 350px; font-size: 1.1rem; font-weight: 500;">Detect spacing, indentation, and unused code issues to maintain clean and readable code.</p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="box box2" style="padding: 3rem; border-radius: 2rem; position: relative; min-height: 300px; border: 1px solid black; box-shadow: 0px 5px #000000; background: black;">
-          <img src="./assets/img/box2.png" alt="" width="150" style="max-width: 100%;position: absolute; right: 2rem; bottom: 2rem;">
-          <h3 class="head" style="width: max-content; padding: 8px 10px; margin-bottom: 2rem; border-radius: 8px;background: white; color: black;">Built to Work, Not Break</h3>
-          <p style="max-width: 350px; font-size: 1.1rem; font-weight: 500; color: white;">Catch logic issues and unsafe patterns early to improve code quality.</p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="box box3" style="padding: 3rem; border-radius: 2rem; position: relative; min-height: 300px; border: 1px solid 0480e1; box-shadow: 0px 5px #0480e1; background: #0480e1;">
-          <img src="./assets/img/box3.png" alt="" width="150" style="max-width: 100%; position: absolute; right: 2rem; bottom: 2rem;">
-          <h3 class="head" style="width: max-content; padding: 8px 10px; margin-bottom: 2rem; border-radius: 8px; background: white; color: black;">Code Safe. Business Safer.</h3>
-          <p style="max-width: 350px; font-size: 1.1rem; font-weight: 500;color: white;">Spot security risks early, like unsafe access and weak encryption, to write safer code from the star</p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="box box1" style="padding: 3rem; border-radius: 2rem; position: relative; min-height: 300px; border: 1px solid black; box-shadow: 0px 5px #000000; background: white;">
-          <img src="./assets/img/box4.png" alt="" width="200" style="max-width: 100%; position: absolute; right: 2rem; bottom: 2rem;">
-          <h3 class="head mb-0" style="width: max-content; padding: 8px 10px; margin-bottom: 2rem; border-radius: 8px; background: #0480e1; color: white;">Complex Code? Simplify </h3>
-          <h3 class="head" style="width: max-content; padding: 8px 10px; margin-bottom: 2rem; border-radius: 8px; background: #0480e1; color: white;">Like a Pro</h3>
-          <p style="max-width: 350px; font-size: 1.1rem; font-weight: 500;">Analyze function complexity and simplify code for better reliability.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Stay Odoo-official! -->
-  <div class="container-fluid py-5" style="max-width:1526.4px; margin-left:auto; margin-right:auto; padding-left:54px; padding-right:54px;">
-    <div class="section" style="box-shadow: 0px 5px black; border: 1px solid black; background-color: #b9ff66; border-radius: 3rem; padding: 3rem;">
-      <div class="row">
-        <div class="col-md-6 d-flex flex-column justify-content-center">
-          <h5 style="font-size: 1.5rem;">Stay Odoo-official!</h5>
-          <p>Ensure your custom modules follow Odoo’s official coding standards, from proper naming to a clean
-            structure.
-            Build confidently with fully compliant code.</p>
-        </div>
-        <div class="col-md-6 position-relative">
-          <img src="./assets/img/section.png" alt="" width="200" style="max-width: 100%;position: absolute; top: 0; bottom: 0; margin: auto; right: 3rem;">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Installation -->
-  <div class="container-fluid py-5" style="max-width:1526.4px; margin-left:auto; margin-right:auto; padding-left:54px; padding-right:54px;">
-    <div class="d-flex gap-3">
-      <h2 class="headmain" style="font-family: sans-serif; background-color: #b9ff66; width: max-content; padding: 5px 10px; margin-bottom: 1rem; border-radius: 8px; font-size: 2.3rem;">Installation</h2>
-      <p>To install the Odoo Module Health Report, follow these<br> standard Odoo module steps:</p>
-    </div>
-    <div class="row row-cols-lg-4 row-cols-1 g-xl-4 g-3 ">
-      <div class="col">
-        <div class="box box2" style="padding: 3rem; border-radius: 2rem; position: relative; min-height: 300px; border: 1px solid black; box-shadow: 0px 5px #000000; background: black;">
-          <span class="num" style="width: 50px; height: 50px; background-color: white; color: black; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; font-size: 1.2rem; font-weight: 600; border-radius: 50%;">01</span>
-          <p style="max-width: 350px; font-size: 1.1rem; font-weight: 500;color: white;">Place the module folder inside your <span style="color: #b9ff66;">Odoo custom_addons/</span> directory.</p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="box box2" style="padding: 3rem; border-radius: 2rem; position: relative; min-height: 300px; border: 1px solid black; box-shadow: 0px 5px #000000; background: black;">
-          <span class="num" style="width: 50px; height: 50px; background-color: white; color: black; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; font-size: 1.2rem; font-weight: 600; border-radius: 50%;">02</span>
-          <p style="max-width: 350px; font-size: 1.1rem; font-weight: 500;color: white;">
-            Install the required Python dependencies using the provided requirements.txt file: <span
-              style="color: #b9ff66;">pip install -r requirements.txt</span></p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="box box2" style="padding: 3rem; border-radius: 2rem; position: relative; min-height: 300px; border: 1px solid black; box-shadow: 0px 5px #000000; background: black;">
-          <span class="num" style="width: 50px; height: 50px; background-color: white; color: black; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; font-size: 1.2rem; font-weight: 600; border-radius: 50%;">03</span>
-          <p style="max-width: 350px; font-size: 1.1rem; font-weight: 500;color: white;">In Odoo, go to Apps > Update App List to refresh available modules.</p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="box box2" style="padding: 3rem; border-radius: 2rem; position: relative; min-height: 300px; border: 1px solid black; box-shadow: 0px 5px #000000; background: black;">
-          <span class="num" style="width: 50px; height: 50px; background-color: white; color: black; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; font-size: 1.2rem; font-weight: 600; border-radius: 50%;">04</span>
-          <p style="max-width: 350px; font-size: 1.1rem; font-weight: 500;color: white;">Search for Odoo Module Health Report in the Apps menu and click Install</p>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!--  Frequently Asked Questions -->
-  <div class="container-fluid py-5" style="max-width:1526.4px; margin-left:auto; margin-right:auto; padding-left:54px; padding-right:54px;">
-    <h2 class="headmain" style="font-family: sans-serif; background-color: #b9ff66; width: max-content; padding: 5px 10px; margin-bottom: 1rem; border-radius: 8px; font-size: 2.3rem;">Frequently Asked Questions </h2>
-    <div class="accordion myaccordion" id="accordionExample">
-      <div class="accordion-item" style="margin-bottom: 1rem; border-radius: 3rem; box-shadow: 0px 5px black; border: 1px solid black; overflow: hidden;">
-        <h2 class="accordion-header" id="headingOne">
-          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
-            aria-expanded="true" aria-controls="collapseOne" style="background-color: #f3f3f3; padding: 2rem; font-size: 1.3rem; padding-bottom: 0;">
-            <div class="head" style="width: 100%; border: transparent; display: flex; align-items: center; padding-bottom: 2rem;">
-              <span style="font-size: 3rem; margin-right: 2.5rem;">01</span> What does this module actually check?
+<!-- Section 1 - Configuration Settings -->
+<section class="section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <h2>Configuration Settings</h2>
+                <p>Easily configure GitHub API credentials, webhook secrets, and access tokens directly from Odoo’s
+                    settings menu.</p>
             </div>
-          </button>
-        </h2>
-        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
-          data-bs-parent="#accordionExample">
-          <div class="accordion-body" style="padding: 3rem; background: #0480e1; color: white;">
-            This module analyzes Odoo custom modules for code quality, maintainability, and structure. It checks naming
-            conventions, code style, formatting, complexity, security risks, and overall code health.
-          </div>
-        </div>
-      </div>
-      <div class="accordion-item" style="margin-bottom: 1rem; border-radius: 3rem; box-shadow: 0px 5px black; border: 1px solid black; overflow: hidden;">
-        <h2 class="accordion-header" id="headingTwo">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-            data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo" style="background-color: #f3f3f3; padding: 2rem; font-size: 1.3rem; padding-bottom: 0;">
-            <div class="head" style="width: 100%; border: transparent; display: flex; align-items: center; padding-bottom: 2rem;">
-              <span style="font-size: 3rem; margin-right: 2.5rem;">02</span> Will it make changes to my code automatically?
+            <div class="col-md-8">
+                <div class="screenshot-box">
+                    <a href="#lightbox1"><img src="./assets/screenshots/config_settings.png"
+                                              alt="Configuration Settings"/></a>
+                </div>
             </div>
-          </button>
-        </h2>
-        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
-          data-bs-parent="#accordionExample">
-          <div class="accordion-body" style="padding: 3rem; background: #0480e1; color: white;">
-            No, it only detects and reports issues. It does not modify your files. You will receive a dashboard view and
-            optional PDF reports to take action manually.
-          </div>
         </div>
-      </div>
-      <div class="accordion-item" style="margin-bottom: 1rem; border-radius: 3rem; box-shadow: 0px 5px black; border: 1px solid black; overflow: hidden;">
-        <h2 class="accordion-header" id="headingThree">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-            data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree" style="background-color: #f3f3f3; padding: 2rem; font-size: 1.3rem; padding-bottom: 0;">
-            <div class="head" style="width: 100%; border: transparent; display: flex; align-items: center; padding-bottom: 2rem;">
-              <span style="font-size: 3rem; margin-right: 2.5rem;">03</span> Does this work with Odoo.sh or Docker setups?
-            </div>
-          </button>
-        </h2>
-        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree"
-          data-bs-parent="#accordionExample">
-          <div class="accordion-body" style="padding: 3rem; background: #0480e1; color: white;">
-            Yes, it can be used in Odoo.sh or Docker environments as long as the required Python dependencies are
-            installed using the provided <code>requirements.txt</code>.
-          </div>
-        </div>
-      </div>
-      <div class="accordion-item" style="margin-bottom: 1rem; border-radius: 3rem; box-shadow: 0px 5px black; border: 1px solid black; overflow: hidden;">
-        <h2 class="accordion-header" id="headingFour">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-            data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour" style="background-color: #f3f3f3; padding: 2rem; font-size: 1.3rem; padding-bottom: 0;">
-            <div class="head" style="width: 100%; border: transparent; display: flex; align-items: center; padding-bottom: 2rem;">
-              <span style="font-size: 3rem; margin-right: 2.5rem;">04</span> Can I export reports?
-            </div>
-          </button>
-        </h2>
-        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour"
-          data-bs-parent="#accordionExample">
-          <div class="accordion-body" style="padding: 3rem; background: #0480e1; color: white;">
-            Yes! You can generate and download a PDF report containing code violations, field counts, line-of-code
-            summaries, and maintainability scores for selected modules.
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
+</section>
 
-  <!-- Who Is This Module For? -->
-  <div class="container-fluid py-5 mb-5" style="max-width:1526.4px; margin-left:auto; margin-right:auto; padding-left:54px; padding-right:54px;">
-    <h2 class="headmain" style="font-family: sans-serif; background-color: #b9ff66; width: max-content; padding: 5px 10px; margin-bottom: 1rem; border-radius: 8px; font-size: 2.3rem;">Who Is This Module For? </h2>
-    <div class="row row-cols-lg-3 row-cols-1 g-xl-4 g-3 ">
-      <div class="col">
-        <div class="box box2 w-box" style="padding: 3rem; border-radius: 2rem; position: relative; min-height: 300px; border: 1px solid black; box-shadow: 0px 5px #000000; background-color: white !important; color: black !important;">
-          <h3 style="border-bottom: 1px solid black !important; font-size: 1.5rem; padding-bottom: 1rem; margin-bottom: 1rem;">Odoo Developers</h3>
-          <p style="max-width: 350px; font-size: 1.1rem; font-weight: 500;color: black !important;"> Identify code issues early, follow best practices, and deliver cleaner, more maintainable modules.</p>
+<!-- Section 2 - Repository Setup -->
+<section class="section bg-light">
+    <div class="container">
+        <div class="row align-items-center flex-md-row-reverse">
+            <div class="col-md-4">
+                <h2>Repository Setup</h2>
+                <p>Link one or more GitHub repositories with Odoo projects, sync metadata, and manage forks within
+                    Odoo.</p>
+            </div>
+            <div class="col-md-8">
+                <div class="screenshot-box">
+                    <a href="#lightbox2"><img src="./assets/screenshots/repository_setup.png"
+                                              alt="Repository Setup"/></a>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="col">
-        <div class="box box2 w-box" style="padding: 3rem; border-radius: 2rem; position: relative; min-height: 300px; border: 1px solid black; box-shadow: 0px 5px #000000; background-color: white !important; color: black !important;">
-          <h3 style="border-bottom: 1px solid black !important; font-size: 1.5rem; padding-bottom: 1rem; margin-bottom: 1rem;">Code Reviewers</h3>
-          <p style="max-width: 350px; font-size: 1.1rem; font-weight: 500;color: black !important;"> Save time with automated insights into code quality, structure, and violations during reviews</p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="box box2 w-box" style="padding: 3rem; border-radius: 2rem; position: relative; min-height: 300px; border: 1px solid black; box-shadow: 0px 5px #000000; background-color: white !important; color: black !important;">
-          <h3 style="border-bottom: 1px solid black !important; font-size: 1.5rem; padding-bottom: 1rem; margin-bottom: 1rem;">Technical Team Leads</h3>
-          <p style="max-width: 350px; font-size: 1.1rem; font-weight: 500;color: black !important;"> Ensure consistency across the team’s codebase and reduce long-term maintenance overhead</p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="box box2 w-box" style="padding: 3rem; border-radius: 2rem; position: relative; min-height: 300px; border: 1px solid black; box-shadow: 0px 5px #000000; background-color: white !important; color: black !important;">
-          <h3 style="border-bottom: 1px solid black !important; font-size: 1.5rem; padding-bottom: 1rem; margin-bottom: 1rem;">QA and DevOps Teams</h3>
-          <p style="max-width: 350px; font-size: 1.1rem; font-weight: 500;color: black !important;">Validate module quality before deployment, catch risks early, and maintain stable environments.</p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="box box2 w-box" style="padding: 3rem; border-radius: 2rem; position: relative; min-height: 300px; border: 1px solid black; box-shadow: 0px 5px #000000; background-color: white !important; color: black !important;">
-          <h3 style="border-bottom: 1px solid black !important; font-size: 1.5rem; padding-bottom: 1rem; margin-bottom: 1rem;">Clients and End Users</h3>
-          <p style="max-width: 350px; font-size: 1.1rem; font-weight: 500;color: black !important;">Gain confidence that installed modules meet quality standards and follow proper development practices,
-            reducing issues and improving reliability.</p>
-        </div>
-      </div>
     </div>
-  </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <h2>Branch Management</h2>
+                <p>Easily configure GitHub API credentials, webhook secrets, and access tokens directly from Odoo’s
+                    settings menu.</p>
+            </div>
+            <div class="col-md-8">
+                <div class="screenshot-box">
+                    <a href="#lightbox22"><img src="./assets/screenshots/branch_management.png" alt="Branch Management"/></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section bg-light">
+    <div class="container">
+        <div class="row align-items-center flex-md-row-reverse">
+            <div class="col-md-4">
+                <h2>Commits Tracking</h2>
+                <p>Track commits linked to tasks and manage real-time updates via GitHub webhooks.</p>
+            </div>
+            <div class="col-md-8">
+                <div class="screenshot-box">
+                    <a href="#lightbox23"><img src="./assets/screenshots/commits.png" alt="Commits & PR Tracking"/></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Workflow Section -->
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-5">Workflow Demo</h2>
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <ul class="nav flex-column nav-pills workflow-menu" id="workflow-tabs">
+                    <li><a class="nav-link active" data-bs-toggle="pill" href="#wf-config"><i
+                            class="fa-solid fa-gear me-2"></i> Configuration</a></li>
+                    <li><a class="nav-link" data-bs-toggle="pill" href="#wf-repo"><i
+                            class="fa-solid fa-database me-2"></i> Repositories</a></li>
+                    <li><a class="nav-link" data-bs-toggle="pill" href="#wf-branch"><i
+                            class="fa-solid fa-code-branch me-2"></i> Branches</a></li>
+                    <li><a class="nav-link" data-bs-toggle="pill" href="#wf-commit"><i
+                            class="fa-solid fa-clock-rotate-left me-2"></i> Commits</a></li>
+                    <li><a class="nav-link" data-bs-toggle="pill" href="#wf-pr"><i
+                            class="fa-solid fa-code-pull-request me-2"></i> Pull Requests</a></li>
+                    <li><a class="nav-link" data-bs-toggle="pill" href="#wf-issue"><i class="fa-solid fa-bug me-2"></i>
+                        Issues</a></li>
+                </ul>
+            </div>
+
+            <!-- Content -->
+            <div class="col-md-9">
+                <div class="tab-content workflow-content">
+                    <div class="tab-pane fade show active" id="wf-config">
+                        <h4>Configuration</h4>
+                        <div id="carousel-config" class="carousel slide mt-3" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div class="carousel-item active"><p>1.Choose the github user access rights from the
+                                    user settings.</p>
+                                    <div class="screenshot-box"><a href="#lightbox3"><img
+                                            src="./assets/screenshots/config_settings_3.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                                <div class="carousel-item active"><p>2.Open the github configuration settings to setup
+                                    the API tokens and webhooks</p>
+                                    <div class="screenshot-box"><a href="#lightbox9"><img
+                                            src="./assets/screenshots/config_settings_1.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                                <div class="carousel-item"><p>3.Set up API tokens and webhooks easily inside Odoo.</p>
+                                    <div class="screenshot-box"><a href="#lightbox10"><img
+                                            src="./assets/screenshots/config_settings.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carousel-config"
+                                    data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carousel-config"
+                                    data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="wf-repo">
+                        <h4>Repositories</h4>
+                        <div id="carousel-repo" class="carousel slide mt-3" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div class="carousel-item active"><p>1.Enter the repository name and owner in the form
+                                    view, then click the <strong>Setup Webhook</strong> button to configure the webhook
+                                    in the GitHub repository.</p>
+                                    <div class="screenshot-box"><a href="#lightbox4"><img
+                                            src="./assets/screenshots/repository_setup_1.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                                <div class="carousel-item"><p>2.If the webhook is created successfully, a success
+                                    message will appear in the chatter, and the webhook URL will be generated.</p>
+                                    <div class="screenshot-box"><a href="#lightbox11"><img
+                                            src="./assets/screenshots/repository_setup_2.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                                <div class="carousel-item"><p>3.Click on the <strong>Sync Repository</strong> button to
+                                    synchronize all GitHub repository data into the Odoo repository.</p>
+                                    <div class="screenshot-box"><a href="#lightbox12"><img
+                                            src="./assets/screenshots/repository_setup_3.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                                <div class="carousel-item"><p>4. After the repository is successfully synced, the state
+                                    will change to <strong>Success</strong>, and all other details will be fetched.</p>
+                                    <div class="screenshot-box"><a href="#lightbox13"><img
+                                            src="./assets/screenshots/repository_setup_4.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carousel-repo"
+                                    data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carousel-repo"
+                                    data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="wf-branch">
+                        <h4>Branches</h4>
+                        <div id="carousel-branch" class="carousel slide mt-3" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div class="carousel-item active"><p>1.By clicking on the Branches, you can view all the
+                                    corresponding branches linked to each repository.</p>
+                                    <div class="screenshot-box"><a href="#lightbox5"><img
+                                            src="./assets/screenshots/branch_management_1.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                                <div class="carousel-item"><p>2.From the Branch form view, you can see all the details
+                                    related to the corresponding branch.</p>
+                                    <div class="screenshot-box"><a href="#lightbox14"><img
+                                            src="./assets/screenshots/branch_management_2.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                                <div class="carousel-item"><p>3.Click on the <strong>Sync Branch</strong> button to
+                                    synchronise the branch details from the github.</p>
+                                    <div class="screenshot-box"><a href="#lightbox15"><img
+                                            src="./assets/screenshots/branch_management_3.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                                <div class="carousel-item"><p>4.From the repository record, you can create a new branch
+                                    in GitHub directly from Odoo.</p>
+                                    <div class="screenshot-box"><a href="#lightbox16"><img
+                                            src="./assets/screenshots/branch_management_4.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-box"><a href="#lightbox17"><img
+                                            src="./assets/screenshots/branch_management_5.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-box"><a href="#lightbox18"><img
+                                            src="./assets/screenshots/branch_management_6.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carousel-branch"
+                                    data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carousel-branch"
+                                    data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="wf-commit">
+                        <h4>Commits</h4>
+                        <p>Track commits per branch and auto-link with tasks.</p>
+                        <div id="carousel-commit" class="carousel slide mt-3" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <div class="screenshot-box"><a href="#lightbox6"><img
+                                            src="./assets/screenshots/commits.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-box"><a href="#lightbox19"><img
+                                            src="./assets/screenshots/commit_1.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carousel-commit"
+                                    data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carousel-commit"
+                                    data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="wf-pr">
+                        <h4>Pull Requests</h4>
+                        <p>Monitor open, closed, and merged pull requests.</p>
+                        <div id="carousel-pr" class="carousel slide mt-3" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <div class="screenshot-box"><a href="#lightbox7"><img
+                                            src="./assets/screenshots/pr_view_1.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-box"><a href="#lightbox20"><img
+                                            src="./assets/screenshots/pr_view_2.png"
+                                            class="d-block w-100"/></a></div>
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carousel-pr"
+                                    data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carousel-pr"
+                                    data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="wf-issue">
+                        <h4>Issues</h4>
+                        <p>Track issues per repositories and auto-link with tasks.</p>
+                        <div id="carousel-is" class="carousel slide mt-3" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <div class="screenshot-box"><a href="#lightbox8"><img src="./assets/screenshots/is_view_1.png"
+                                                                                           class="d-block w-100"/></a></div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-box"><a href="#lightbox21"><img src="./assets/screenshots/is_view_2.png"
+                                                                                           class="d-block w-100"/></a></div>
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carousel-is"
+                                    data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carousel-is"
+                                    data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</section>
+
+<!-- Lightbox Modals -->
+<div id="lightbox1" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/config_settings.png"/></div>
+<div id="lightbox2" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/repository_setup.png"/></div>
+<div id="lightbox3" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/config_settings_3.png"/></div>
+<div id="lightbox9" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/config_settings_1.png"/></div>
+<div id="lightbox10" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/config_settings.png"/></div>
+<div id="lightbox4" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/repository_setup_1.png"/></div>
+<div id="lightbox11" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/repository_setup_2.png"/></div>
+<div id="lightbox12" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/repository_setup_3.png"/></div>
+<div id="lightbox13" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/repository_setup_4.png"/></div>
+<div id="lightbox5" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/branch_management_1.png"/></div>
+<div id="lightbox14" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/branch_management_2.png"/></div>
+<div id="lightbox15" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/branch_management_3.png"/></div>
+<div id="lightbox16" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/branch_management_4.png"/></div>
+<div id="lightbox17" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/branch_management_5.png"/></div>
+<div id="lightbox18" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/branch_management_6.png"/></div>
+<div id="lightbox6" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/commits.png"/></div>
+<div id="lightbox19" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/commit_1.png"/></div>
+<div id="lightbox7" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/pr_view_1.png"/></div>
+<div id="lightbox20" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/pr_view_2.png"/></div>
+<div id="lightbox8" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/is_view_1.png"/></div>
+<div id="lightbox21" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/is_view_2.png"/></div>
+<div id="lightbox22" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/branch_management.png"/></div>
+<div id="lightbox23" class="lightbox"><a href="#" class="lightbox-close">&times;</a><img
+        src="./assets/screenshots/commits.png"/></div>
+
+<!-- Footer -->
+<div class="footer">
+    <p>© 2025 Your Company | GitHub Odoo Integration</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
