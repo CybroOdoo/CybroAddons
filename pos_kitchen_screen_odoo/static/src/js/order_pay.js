@@ -20,6 +20,7 @@ import {
 patch(PosStore.prototype, {
     async setup(env) {
         await super.setup(...arguments);
+        console.log("PosStore",PosStore)
 
         this.kitchen = true;
 
