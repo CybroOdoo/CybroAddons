@@ -19,6 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from . import exercise_for
 from . import gym_exercise
 from . import gym_membership
@@ -33,3 +34,6 @@ from . import trainer_skill
 from . import workout_days
 from . import workout_plan
 from . import workout_plan_option
+from . import account_move
+from . import account_payment
+from . import gym_attendance
