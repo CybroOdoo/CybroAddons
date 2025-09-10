@@ -15,6 +15,11 @@ patch(PosStore.prototype, {
         this.pos_orders = loadedData['pos.order'];
         this.pos_order_lines = loadedData['pos.order.line'];
     },
+
+    createNewOrder() {
+        const order = super.createNewOrder(...arguments);
+        return order
+        }
 });
 
 

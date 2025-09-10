@@ -34,3 +34,8 @@
 #### Version 18.0.1.1.4
 #### BUG FIX
 -Fixed the issue where a completed kitchen order reverted to 'Cooking' status after the payment was processed.
+
+#### 03.09.2025
+#### Version 18.0.1.2.0
+#### BUG FIX
+-Fixed the issue where, after completing an order and selecting the same floor again, the previously submitted order was duplicated in the POS order line.

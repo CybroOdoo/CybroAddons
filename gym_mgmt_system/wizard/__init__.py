@@ -20,3 +20,4 @@
 #
 #############################################################################
 from . import assign_workout
+from . import gym_membership_extension

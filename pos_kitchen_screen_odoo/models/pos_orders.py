@@ -56,16 +56,12 @@ class PosOrder(models.Model):
                     [('id', 'in', product_ids)]).mapped(
                     'prepair_time_minutes')
                 vals['avg_prepare_time'] = max(prepare_times)
-
             existing_order = self.search(
                 [("pos_reference", "=", vals.get("pos_reference"))], limit=1)
             if existing_order:
                 continue
-
             if not vals.get("order_status"):
                 vals["order_status"] = 'draft'
-
-            # Ensure name is always set
             if not vals.get('name'):
                 if vals.get('order_id'):
                     config = self.env['pos.order'].browse(
@@ -76,12 +72,9 @@ class PosOrder(models.Model):
                 else:
                     vals['name'] = self.env['ir.sequence'].next_by_code(
                         'pos.order') or '/'
-
             processed_vals_to_create.append(vals)
-
         res = super().create(
             processed_vals_to_create) if processed_vals_to_create else self.browse()
-
         orders_to_notify = []
         for order in res:
             kitchen_screen = self.env["kitchen.screen"].search(
@@ -95,14 +88,12 @@ class PosOrder(models.Model):
                             in order_line.product_id.pos_categ_ids):
                         order_line.is_cooking = True
                         has_kitchen_items = True
-
                 if has_kitchen_items:
                     order.is_cooking = True
                     order.order_ref = order.name  # Set order_ref here
                     if order.order_status != 'draft':
                         order.order_status = 'draft'
                     orders_to_notify.append(order)
-
         self.env.cr.commit()
         for order in orders_to_notify:
             message = {
@@ -115,107 +106,71 @@ class PosOrder(models.Model):
             }
             channel = f'pos_order_created_{order.config_id.id}'
             self.env["bus.bus"]._sendone(channel, "notification", message)
-
         return res
 
     def write(self, vals):
         """Override write function for adding order status in vals"""
-        original_statuses = {order.id: order.order_status for order in self}
-
-        message = {
-            'res_model': self._name,
-            'message': 'pos_order_created'
-        }
-        self.env["bus.bus"]._sendone('pos_order_created', "notification",
-                                     message)
-
+        res = super(PosOrder, self).write(vals)
         for order in self:
-            if order.order_status == "waiting" and vals.get(
-                    "order_status") != "ready":
-                vals["order_status"] = order.order_status
-            if vals.get("state") == "paid" and order.name == "/":
-                vals["name"] = self._compute_order_name()
-
             kitchen_screen = self.env["kitchen.screen"].search(
                 [("pos_config_id", "=", order.config_id.id)], limit=1
             )
             if kitchen_screen:
                 has_kitchen_items = False
-                for line_data in order.lines:
-                    if line_data.product_id.pos_categ_ids and any(
+                for line in order.lines:
+                    if line.product_id.pos_categ_ids and any(
                             cat.id in kitchen_screen.pos_categ_ids.ids
-                            for cat in line_data.product_id.pos_categ_ids
-                    ):
+                            for cat in line.product_id.pos_categ_ids):
+                        if not line.is_cooking:
+                            line.write({
+                                'is_cooking': True,
+                                'order_status': line.order_status or 'draft'
+                            })
                         has_kitchen_items = True
-                        break
-
-                # Update vals instead of direct assignment to avoid recursive write
                 if has_kitchen_items and not order.is_cooking:
-                    vals.update({
+                    order.write({
                         'is_cooking': True,
-                        'order_status': vals.get('order_status',
-                                                 'draft') if not order.order_status else order.order_status
+                        'order_status': order.order_status or 'draft'
                     })
-                elif not has_kitchen_items and order.is_cooking:
-                    vals.update({'is_cooking': False})
-
-                # Send notification only if order_status changed
-                if has_kitchen_items and order.id in original_statuses and 'order_status' in vals:
-                    if original_statuses[order.id] != vals.get('order_status'):
-                        message = {
-                            'res_model': self._name,
-                            'message': 'pos_order_updated',
-                            'order_id': order.id,
-                            'config_id': order.config_id.id,
-                            'new_status': vals.get('order_status')
-                        }
-                        channel = f'pos_order_created_{order.config_id.id}'
-                        self.env["bus.bus"]._sendone(channel, "notification",
-                                                     message)
-
-        return super(PosOrder, self).write(vals)
+                message = {
+                    'res_model': self._name,
+                    'message': 'pos_order_updated',
+                    'order_id': order.id,
+                    'config_id': order.config_id.id,
+                    'lines': order.lines.read([
+                        'id', 'product_id', 'qty', 'order_status', 'is_cooking'
+                    ])
+                }
+                channel = f'pos_order_created_{order.config_id.id}'
+                self.env["bus.bus"]._sendone(channel, "notification", message)
+        return res
 
     @api.model
     def get_details(self, shop_id, *args, **kwargs):
         """Method to fetch kitchen orders for display on the kitchen screen."""
         kitchen_screen = self.env["kitchen.screen"].sudo().search(
             [("pos_config_id", "=", shop_id)])
-
         if not kitchen_screen:
             return {"orders": [], "order_lines": []}
-
         pos_orders = self.env["pos.order"].search([
             ("is_cooking", "=", True),
             ("config_id", "=", shop_id),
-            ("state", "not in", ["cancel", "paid"]),
-            ("order_status", "!=", "cancel"),
-            "|", "|",
-            ("order_status", "=", "draft"),
-            ("order_status", "=", "waiting"),
-            ("order_status", "=", "ready")
+            ("state", "not in", ["cancel"]),
+            ("order_status", "in", ["draft", "waiting", "ready"])
         ], order="date_order")
-
-        # Additional filtering to exclude paid orders with 'ready' status
-        pos_orders = pos_orders.filtered(lambda order: not (
-                    order.state == "paid" and order.order_status == "ready"))
-
         pos_lines = pos_orders.lines.filtered(
             lambda line: line.is_cooking and any(
                 categ.id in kitchen_screen.pos_categ_ids.ids
                 for categ in line.product_id.pos_categ_ids
             )
         )
-
         values = {"orders": pos_orders.read(), "order_lines": pos_lines.read()}
-
         user_tz_str = self.env.user.tz or 'UTC'
         user_tz = pytz.timezone(user_tz_str)
         utc = pytz.utc
-
         for value in values['orders']:
             if value.get('table_id'):
                 value['floor'] = value['table_id'][1].split(',')[0].strip()
-
             date_str = value['date_order']
             try:
                 if isinstance(date_str, str):
@@ -223,7 +178,6 @@ class PosOrder(models.Model):
                     utc_dt = utc.localize(utc_dt)
                 else:
                     utc_dt = utc.localize(value['date_order'])
-
                 local_dt = utc_dt.astimezone(user_tz)
                 value['hour'] = local_dt.hour
                 value['formatted_minutes'] = f"{local_dt.minute:02d}"
@@ -232,13 +186,11 @@ class PosOrder(models.Model):
                 value['hour'] = 0
                 value['minutes'] = 0
                 value['formatted_minutes'] = "00"
-
         return values
 
     def action_pos_order_paid(self):
         """Inherited method called when a POS order transitions to 'paid' state."""
         res = super().action_pos_order_paid()
-
         kitchen_screen = self.env["kitchen.screen"].search(
             [("pos_config_id", "=", self.config_id.id)], limit=1
         )
@@ -251,16 +203,13 @@ class PosOrder(models.Model):
                         order_line.product_id.pos_categ_ids):
                     order_line.write({'is_cooking': True})
                     has_kitchen_items = True
-
             if has_kitchen_items:
                 vals.update({
                     'is_cooking': True,
                     'order_ref': self.name,
-                    # Only set order_status to 'draft' if it’s not already set
-                    'order_status': self.order_status or 'draft'
+                    'order_status': 'ready'
                 })
                 self.write(vals)
-
                 message = {
                     'res_model': self._name,
                     'message': 'pos_order_created',
@@ -269,7 +218,6 @@ class PosOrder(models.Model):
                 }
                 channel = f'pos_order_created_{self.config_id.id}'
                 self.env["bus.bus"]._sendone(channel, "notification", message)
-
         return res
 
     @api.onchange("order_status")
@@ -303,7 +251,6 @@ class PosOrder(models.Model):
         self.order_status = "cancel"
         for line in self.lines:
             line.order_status = "cancel"
-
         message = {
             'res_model': self._name,
             'message': 'pos_order_cancelled',
@@ -324,7 +271,6 @@ class PosOrder(models.Model):
                 if line.product_id.pos_categ_ids and any(
                         cat.id in kitchen_screen.pos_categ_ids.ids for cat in line.product_id.pos_categ_ids):
                     line.order_status = "ready"
-
         message = {
             'res_model': self._name,
             'message': 'pos_order_completed',
@@ -341,13 +287,10 @@ class PosOrder(models.Model):
             [('pos_reference', '=', str(order_name))], limit=1)
         if not pos_order:
             return False
-
         kitchen_screen = self.env['kitchen.screen'].sudo().search(
             [("pos_config_id", "=", pos_order.config_id.id)], limit=1)
-
         if not kitchen_screen:
             return False
-
         unhandled_categories = []
         for line in pos_order.lines:
             if line.product_id.pos_categ_ids and not any(
@@ -356,119 +299,122 @@ class PosOrder(models.Model):
                     [c.name for c in line.product_id.pos_categ_ids if c.id not in kitchen_screen.pos_categ_ids.ids])
         if unhandled_categories:
             return {'category': ", ".join(list(set(unhandled_categories)))}
-
         if pos_order.order_status not in ['ready', 'cancel']:
             return True
         else:
             return False
 
     @api.model
-    def create_or_update_kitchen_order(self, orders_data):
-        """Create new kitchen order or update existing one with new items."""
-        for order_data in orders_data:
-            pos_reference = order_data.get('pos_reference')
-            existing_order = self.search(
-                [('pos_reference', '=', pos_reference)], limit=1)
-            kitchen_screen = self.env["kitchen.screen"].search([
-                ("pos_config_id", "=", order_data.get('config_id'))
-            ], limit=1)
+    def process_order_for_kitchen(self, order_data):
+        """Process already created POS order for kitchen screen display."""
+        pos_reference = order_data.get('pos_reference')
+        config_id = order_data.get('config_id')
+        pos_order = self.search([
+            ('name', '=', f"Order {pos_reference}"),
+            ('config_id', '=', config_id)
+        ], limit=1)
+        if not pos_order:
+            return False
+        kitchen_screen = self.env["kitchen.screen"].search([
+            ("pos_config_id", "=", config_id)
+        ], limit=1)
+        if not kitchen_screen:
+            return False
+        kitchen_lines = []
+        for line in pos_order.lines:
+            product = line.product_id
+            if product.pos_categ_ids and any(
+                    cat.id in kitchen_screen.pos_categ_ids.ids
+                    for cat in product.pos_categ_ids):
+                kitchen_lines.append(line)
+        if not kitchen_lines:
+            return False
+        for line in kitchen_lines:
+            line.write({
+                'is_cooking': True,
+                'order_status': 'draft'
+            })
+        pos_order.write({
+            'is_cooking': True,
+            'order_status': 'draft'
+        })
+        message = {
+            'res_model': 'pos.order',
+            'message': 'pos_order_updated',
+            'config_id': config_id,
+            'order_id': pos_order.id,
+            'pos_reference': pos_reference
+        }
+        channel = f'pos_order_created_{config_id}'
+        self.env["bus.bus"]._sendone(channel, "notification", message)
+        return True
 
-            if not kitchen_screen:
-                continue
-
-            if existing_order:
-                if existing_order.order_status in ['ready', 'cancel']:
-                    continue
-
-                current_status = existing_order.order_status or 'draft'
-                existing_line_products = {line.product_id.id: line for line in existing_order.lines}
-                for line_data in order_data.get('lines', []):
-                    line_vals = line_data[2]
-                    product_id = line_vals.get('product_id')
-                    qty = line_vals.get('qty', 1)
-
-                    product = self.env['product.product'].browse(product_id)
-                    if not (product.pos_categ_ids and any(
-                            cat.id in kitchen_screen.pos_categ_ids.ids
-                            for cat in product.pos_categ_ids
-                    )):
-                        continue
-
-                    if product_id in existing_line_products:
-                        existing_line = existing_line_products[product_id]
-                        if existing_line.qty != qty:
-                            existing_line.write({'qty': qty})
-                    else:
-                        self.env['pos.order.line'].create({
-                            'order_id': existing_order.id,
-                            'product_id': product_id,
-                            'qty': qty,
-                            'price_unit': line_vals.get('price_unit'),
-                            'price_subtotal': line_vals.get('price_subtotal'),
-                            'price_subtotal_incl': line_vals.get('price_subtotal_incl'),
-                            'discount': line_vals.get('discount', 0),
-                            'full_product_name': line_vals.get('full_product_name'),
-                            'is_cooking': True,
-                            'order_status': current_status,
-                            'note': line_vals.get('note', ''),
-                        })
-
-                existing_order.write({
-                    'amount_total': order_data.get('amount_total'),
-                    'amount_tax': order_data.get('amount_tax'),
-                })
-
-            else:
-                kitchen_lines = []
-                for line_data in order_data.get('lines', []):
-                    line_vals = line_data[2]
-                    product_id = line_vals.get('product_id')
-
-                    product = self.env['product.product'].browse(product_id)
-                    if product.pos_categ_ids and any(
-                            cat.id in kitchen_screen.pos_categ_ids.ids
-                            for cat in product.pos_categ_ids
-                    ):
-                        kitchen_lines.append([0, 0, {
-                            'product_id': product_id,
-                            'qty': line_vals.get('qty', 1),
-                            'price_unit': line_vals.get('price_unit'),
-                            'price_subtotal': line_vals.get('price_subtotal'),
-                            'price_subtotal_incl': line_vals.get('price_subtotal_incl'),
-                            'discount': line_vals.get('discount', 0),
-                            'full_product_name': line_vals.get('full_product_name'),
-                            'is_cooking': True,
-                            'order_status': order_data.get('order_status', 'draft'),
-                            'note': line_vals.get('note', ''),
-                        }])
-
-                if kitchen_lines:
-                    self.create({
-                        'pos_reference': pos_reference,
-                        'session_id': order_data.get('session_id'),
-                        'amount_total': order_data.get('amount_total'),
-                        'amount_paid': order_data.get('amount_paid', 0),
-                        'amount_return': order_data.get('amount_return', 0),
-                        'amount_tax': order_data.get('amount_tax'),
-                        'lines': kitchen_lines,
-                        'is_cooking': True,
-                        'order_status': order_data.get('order_status', 'draft'),
-                        'company_id': order_data.get('company_id'),
-                        'table_id': order_data.get('table_id'),
-                        'config_id': order_data.get('config_id'),
-                        'state': 'draft',
-                        'name': self.env['ir.sequence'].next_by_code('pos.order') or '/',
+    @api.model
+    def get_kitchen_orders(self, config_id):
+        """Get all orders that have kitchen items for the kitchen screen."""
+        kitchen_screen = self.env["kitchen.screen"].search([
+            ("pos_config_id", "=", config_id)
+        ], limit=1)
+        if not kitchen_screen:
+            return []
+        kitchen_orders = self.search([
+            ('config_id', '=', config_id),
+            ('is_cooking', '=', True),
+            ('order_status', 'not in', ['ready', 'cancel'])
+        ])
+        orders_data = []
+        for order in kitchen_orders:
+            # Get only kitchen lines
+            kitchen_lines = order.lines.filtered(lambda l:
+                                                 l.product_id.pos_categ_ids and any(
+                                                     cat.id in kitchen_screen.pos_categ_ids.ids
+                                                     for cat in
+                                                     l.product_id.pos_categ_ids
+                                                 )
+                                                 )
+            if kitchen_lines:
+                line_data = []
+                for line in kitchen_lines:
+                    line_data.append({
+                        'id': line.id,
+                        'product_id': line.product_id.id,
+                        'product_name': line.product_id.name,
+                        'qty': line.qty,
+                        'note': line.note or '',
+                        'order_status': line.order_status or 'draft'
                     })
+                orders_data.append({
+                    'id': order.id,
+                    'pos_reference': order.pos_reference,
+                    'name': order.name,
+                    'table_id': order.table_id.id if order.table_id else False,
+                    'table_name': order.table_id.name if order.table_id else '',
+                    'order_status': order.order_status,
+                    'lines': line_data,
+                    'date_order': order.date_order,
+                    'amount_total': order.amount_total
+                })
+        return orders_data
 
+    @api.model
+    def update_kitchen_order_status(self, order_id, status):
+        """Update kitchen order status."""
+        order = self.browse(order_id)
+        if order.exists():
+            order.write({'order_status': status})
+            kitchen_lines = order.lines.filtered(lambda l: l.is_cooking)
+            kitchen_lines.write({'order_status': status})
             message = {
                 'res_model': 'pos.order',
-                'message': 'pos_order_updated',
-                'config_id': order_data.get('config_id')
+                'message': 'kitchen_order_status_updated',
+                'config_id': order.config_id.id,
+                'order_id': order.id,
+                'status': status
             }
-            channel = f'pos_order_created_{order_data.get("config_id")}'
+            channel = f'pos_order_created_{order.config_id.id}'
             self.env["bus.bus"]._sendone(channel, "notification", message)
-
-        return True
+            return True
+        return False
 
     @api.model
     def check_order_status(self, dummy_param, order_reference):
@@ -476,7 +422,6 @@ class PosOrder(models.Model):
         pos_order = self.env['pos.order'].sudo().search([
             ('pos_reference', '=', str(order_reference))
         ], limit=1)
-
         if not pos_order:
             return True
         return pos_order.order_status in ['draft', 'waiting']
