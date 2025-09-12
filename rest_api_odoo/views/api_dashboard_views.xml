@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Modelo para el dashboard de la API -->
+    <record id="api_dashboard_action" model="ir.actions.client">
+        <field name="name">API Dashboard</field>
+        <field name="tag">api_dashboard</field>
+    </record>
+
+    <!-- Template para el dashboard de la API -->
+    <template id="api_dashboard_template">
+        <div class="container-fluid">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="card-title mb-0">
+                                <i class="fa fa-code"/> Odoo REST API Dashboard
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h4>Bienvenido a la REST API de Odoo</h4>
+                                    <p class="lead">
+                                        Esta API te permite integrar aplicaciones externas con Odoo
+                                        usando estándares REST y autenticación basada en API Keys.
+                                    </p>
+
+                                    <div class="row mt-4">
+                                        <div class="col-md-6">
+                                            <div class="card border-success">
+                                                <div class="card-body text-center">
+                                                    <i class="fa fa-book fa-3x text-success mb-3"/>
+                                                    <h5>Documentación Interactiva</h5>
+                                                    <p>Explora y prueba todos los endpoints disponibles</p>
+                                                    <a href="/api/v1/docs" target="_blank" class="btn btn-success">
+                                                        Ver Swagger UI
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card border-info">
+                                                <div class="card-body text-center">
+                                                    <i class="fa fa-cogs fa-3x text-info mb-3"/>
+                                                    <h5>Configuración de Modelos</h5>
+                                                    <p>Gestiona qué modelos están disponibles en la API</p>
+                                                    <a href="/web#action=rest_api_root_action" class="btn btn-info">
+                                                        Configurar API
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5><i class="fa fa-info-circle"/> Información Rápida</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-unstyled">
+                                                <li><strong>Base URL:</strong> <code id="base-url">/api/v1</code></li>
+                                                <li><strong>Autenticación:</strong> API Key</li>
+                                                <li><strong>Formato:</strong> JSON</li>
+                                                <li><strong>Versión:</strong> 1.0.0</li>
+                                            </ul>
+
+                                            <hr/>
+
+                                            <h6><i class="fa fa-external-link"/> Enlaces Útiles</h6>
+                                            <div class="list-group list-group-flush">
+                                                <a href="/api" target="_blank" class="list-group-item list-group-item-action">
+                                                    <i class="fa fa-home"/> API Root
+                                                </a>
+                                                <a href="/api/v1/openapi.json" target="_blank" class="list-group-item list-group-item-action">
+                                                    <i class="fa fa-file-code-o"/> OpenAPI Spec
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fa fa-rocket"/> Comenzar Rápidamente</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>1. Obtener API Key</h6>
+                                    <pre class="bg-light p-3"><code>curl -X POST <span id="auth-url">/api/v1/auth</span> \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "tu_usuario",
+    "password": "tu_contraseña"
+  }'</code></pre>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>2. Usar la API</h6>
+                                    <pre class="bg-light p-3"><code>curl -X GET <span id="models-url">/api/v1/models</span> \
+  -H "X-API-Key: tu_api_key_aqui"</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Actualizar URLs con la URL base actual
+            document.addEventListener('DOMContentLoaded', function() {
+                const baseUrl = window.location.origin;
+                document.getElementById('base-url').textContent = baseUrl + '/api/v1';
+                document.getElementById('auth-url').textContent = baseUrl + '/api/v1/auth';
+                document.getElementById('models-url').textContent = baseUrl + '/api/v1/models';
+            });
+        </script>
+    </template>
+
+    <!-- Acción para el dashboard principal -->
+    <record id="api_main_dashboard_action" model="ir.actions.act_url">
+        <field name="name">API Documentation</field>
+        <field name="url">/api/v1/docs</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Vista para estadísticas de la API -->
+    <record id="api_stats_view" model="ir.ui.view">
+        <field name="name">api.stats.view</field>
+        <field name="model">connection.api</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false" delete="false">
+                <field name="display_name"/>
+                <field name="model_id"/>
+                <field name="active"/>
+                <field name="is_get"/>
+                <field name="is_post"/>
+                <field name="is_put"/>
+                <field name="is_delete"/>
+                <field name="max_records_limit"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Acción para estadísticas -->
+    <record id="api_stats_action" model="ir.actions.act_window">
+        <field name="name">API Statistics</field>
+        <field name="res_model">connection.api</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="api_stats_view"/>
+        <field name="context">{'search_default_active': 1}</field>
+    </record>
+
+    <!-- Menú principal actualizado con el dashboard -->
+    <menuitem id="rest_api_dashboard_menu"
+              name="API Dashboard"
+              parent="rest_api_root"
+              action="api_main_dashboard_action"
+              sequence="50"/>
+
+    <menuitem id="rest_api_stats_menu"
+              name="API Statistics"
+              parent="rest_api_root"
+              action="api_stats_action"
+              sequence="35"
+              groups="base.group_system"/>
+</odoo>

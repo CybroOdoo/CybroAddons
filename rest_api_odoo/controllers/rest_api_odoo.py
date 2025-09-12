@@ -81,6 +81,9 @@ class RestApi(http.Controller):
             request.session.uid = user.id
             request.env.user = user
 
+            # Actualizar estadísticas de uso
+            user.update_api_key_usage()
+
             return True, user.id, None
 
         except Exception as e:
@@ -118,7 +121,8 @@ class RestApi(http.Controller):
             return None, "Modelo no encontrado"
 
         api_config = request.env['connection.api'].sudo().search([
-            ('model_id', '=', model_obj.id)
+            ('model_id', '=', model_obj.id),
+            ('active', '=', True)
         ], limit=1)
 
         if not api_config:
@@ -387,7 +391,7 @@ class RestApi(http.Controller):
             return self._error_response(error_msg, 401)
 
         try:
-            api_configs = request.env['connection.api'].sudo().search([])
+            api_configs = request.env['connection.api'].sudo().search([('active', '=', True)])
             models_data = []
 
             for config in api_configs:
@@ -403,10 +407,16 @@ class RestApi(http.Controller):
                 }
                 models_data.append(model_info)
 
+            # Agregar información de documentación
+            base_url = request.env['ir.config_parameter'].sudo().get_param('web.base.url', 'http://localhost:8069')
             response_data = {
                 "success": True,
                 "count": len(models_data),
-                "data": models_data
+                "data": models_data,
+                "documentation": {
+                    "swagger_ui": f"{base_url}/api/v1/docs",
+                    "openapi_spec": f"{base_url}/api/v1/openapi.json"
+                }
             }
 
             return self._json_response(response_data)
@@ -414,3 +424,22 @@ class RestApi(http.Controller):
         except Exception as e:
             _logger.error(f"Error listando modelos: {str(e)}")
             return self._error_response("Error interno del servidor", 500)
+
+    @http.route(['/api', '/api/'], type='http', auth='none', methods=['GET'], csrf=False)
+    def api_root(self, **kw):
+        """Endpoint raíz de la API que redirige a la documentación"""
+        base_url = request.env['ir.config_parameter'].sudo().get_param('web.base.url', 'http://localhost:8069')
+
+        api_info = {
+            "message": "Bienvenido a la REST API de Odoo",
+            "version": "1.0.0",
+            "documentation": f"{base_url}/api/v1/docs",
+            "endpoints": {
+                "auth": f"{base_url}/api/v1/auth",
+                "models": f"{base_url}/api/v1/models",
+                "docs": f"{base_url}/api/v1/docs",
+                "openapi": f"{base_url}/api/v1/openapi.json"
+            }
+        }
+
+        return self._json_response(api_info)
