@@ -31,12 +31,6 @@ _logger = logging.getLogger(__name__)
 
 
 class ResConfigSettings(models.TransientModel):
-    """
-    This model represents the configuration settings for the OneDrive
-    integration in Odoo.It allows users to configure various parameters for
-    OneDrive integration, including client ID, client secret, access token,
-    and folder ID.
-    """
     _inherit = 'res.config.settings'
 
     onedrive_client = fields.Char(
@@ -53,22 +47,29 @@ class ResConfigSettings(models.TransientModel):
     onedrive_tenant_id = fields.Char(
         string="Onedrive Tenant Id",
         config_parameter='onedrive_integration_odoo.tenant_id',
-        help="Director (tenant) id for accessing OneDrive API")
+        help="Directory (tenant) id for accessing OneDrive API")
     onedrive_refresh_token = fields.Char(
         string='Onedrive Refresh Token',
         help="Refresh Token for refreshing the access token")
-    onedrive_folder = fields.Char(
-        string='Folder ID', help="ID of the folder in OneDrive",
-        config_parameter='onedrive_integration_odoo.folder_id')
+
+    onedrive_folder_name = fields.Char(
+        string='Folder Name',
+        help="Name of the folder in OneDrive (ex: ODOO16_onedrive_integration_odoo)",
+        config_parameter='onedrive_integration_odoo.folder_name'
+    )
+    onedrive_folder_id = fields.Char(
+        string='Folder ID',
+        help="Fetched Folder ID from OneDrive API",
+        config_parameter='onedrive_integration_odoo.folder_id'
+    )
+
     is_onedrive_enabled = fields.Boolean(
-        string="Synchronize Onedrive with odoo",
+        string="Synchronize Onedrive with Odoo",
         config_parameter='onedrive_integration_odoo.onedrive_button',
         help="Enable/Disable OneDrive integration")
 
     def action_get_onedrive_auth_code(self):
-        """
-        Generate onedrive authorization code
-        """
+        """ Generate onedrive authorization code """
         data = {
             'client_id': self.env['ir.config_parameter'].get_param(
                 'onedrive_integration_odoo.client_id', ''),
@@ -117,3 +118,4 @@ class ResConfigSettings(models.TransientModel):
                 'target': 'self',
                 'url': "%s?%s" % (authority, encoded_params),
             }
+

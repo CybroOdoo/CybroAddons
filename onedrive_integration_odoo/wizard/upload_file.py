@@ -42,35 +42,62 @@ class UploadFile(models.TransientModel):
         attachment = self.env["ir.attachment"].search(
             ['|', ('res_field', '!=', False), ('res_field', '=', False),
              ('res_id', '=', self.id),
-             ('res_model', '=', 'upload.file')])
+             ('res_model', '=', 'upload.file')]
+        )
         token = self.env['onedrive.dashboard'].search([], order='id desc',
                                                       limit=1)
         folder = self.env['ir.config_parameter'].get_param(
-            'onedrive_integration_odoo.folder_id', '')
+            'onedrive_integration_odoo.folder_id', ''
+        )
         if not token or not folder:
             raise exceptions.UserError(
-                _('Please setup Access Token and Folder Id.'))
+                _('Please setup Access Token and Folder Id.')
+            )
         if token.token_expiry_date <= str(fields.Datetime.now()):
             token.generate_onedrive_refresh_token()
+
         try:
-            url = "http://graph.microsoft.com/v1.0/me/drive/items/%s:/%s:/" \
-                  "createUploadSession" % (folder, self.file_name)
+            url = f"https://graph.microsoft.com/v1.0/me/drive/items/{folder}:/{self.file_name}:/createUploadSession"
+
             upload_session = requests.post(url, headers={
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer "' + token.onedrive_access_token + '"'
-            })
-            requests.put(upload_session.json().get('uploadUrl'), data=open(
-                (attachment._full_path(attachment.store_fname)), 'rb'))
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'type': 'success',
-                    'message': 'File has been uploaded successfully. '
-                               'Please refresh.',
-                    'next': {'type': 'ir.actions.act_window_close'},
-                }
+                'Authorization': f'Bearer {token.onedrive_access_token}'
+            }).json()
+
+            if "uploadUrl" not in upload_session:
+                raise exceptions.UserError(
+                    _('Failed to create upload session: %s' % upload_session))
+
+            upload_url = upload_session.get('uploadUrl')
+
+            file_path = attachment._full_path(attachment.store_fname)
+            with open(file_path, 'rb') as f:
+                file_data = f.read()
+
+            file_size = len(file_data)
+
+            headers = {
+                'Content-Length': str(file_size),
+                'Content-Range': f'bytes 0-{file_size - 1}/{file_size}'
             }
+
+            response = requests.put(upload_url, headers=headers, data=file_data)
+
+            if response.status_code in (200, 201):
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'type': 'success',
+                        'message': 'File uploaded successfully to OneDrive.',
+                        'next': {'type': 'ir.actions.act_window_close'},
+                    }
+                }
+            else:
+                raise exceptions.UserError(
+                    _('Upload failed: %s' % response.content)
+                )
+
         except Exception as error:
             return {
                 'type': 'ir.actions.client',
@@ -81,3 +108,4 @@ class UploadFile(models.TransientModel):
                     'next': {'type': 'ir.actions.act_window_close'},
                 }
             }
+

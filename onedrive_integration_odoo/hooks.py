@@ -35,3 +35,5 @@ def uninstall_hook(cr, registry):
         [('key', '=', 'onedrive_integration_odoo.folder_id')]).unlink()
     env['ir.config_parameter'].sudo().search(
         [('key', '=', 'onedrive_integration_odoo.onedrive_button')]).unlink()
+    env['ir.config_parameter'].sudo().search(
+        [('key', '=', 'onedrive_integration_odoo.folder_id')]).unlink()

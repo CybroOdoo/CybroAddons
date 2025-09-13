@@ -59,7 +59,6 @@ odoo.define('onedrive_integration_odoo.dashboard', function (require) {
                         }
                     });
                 } else if (result[0] === 'error') {
-                    console.log(result);
                     if (result[1] === 'itemNotFound') {
                         // Display a notification if the folder is not found
                         self.do_action({

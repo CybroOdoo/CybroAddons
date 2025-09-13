@@ -53,9 +53,7 @@ class OneDriveDashboard(models.Model):
         help="Binary field to store the uploaded file.")
 
     def get_tokens(self, authorize_code):
-        """
-        Generate onedrive tokens from authorization code
-        """
+        """ Generate onedrive tokens from authorization code """
         data = {
             'code': authorize_code,
             'client_id': self.env['ir.config_parameter'].get_param(
@@ -76,12 +74,26 @@ class OneDriveDashboard(models.Model):
             response = res.content and res.json() or {}
             if response:
                 expires_in = response.get('expires_in')
-                self.env['onedrive.dashboard'].create({
+                record = self.env['onedrive.dashboard'].create({
                     'onedrive_access_token': response.get('access_token'),
                     'onedrive_refresh_token': response.get('refresh_token'),
                     'token_expiry_date': fields.Datetime.now() + timedelta(
                         seconds=expires_in) if expires_in else False,
                 })
+
+                folder_name = self.env['ir.config_parameter'].get_param(
+                    'onedrive_integration_odoo.folder_name', '')
+                if folder_name:
+                    url = f"https://graph.microsoft.com/v1.0/me/drive/root:/{folder_name}"
+                    res_folder = requests.get(url, headers={
+                        'Authorization': f'Bearer {response.get("access_token")}'
+                    }).json()
+
+                    if "id" in res_folder:
+                        self.env['ir.config_parameter'].set_param(
+                            'onedrive_integration_odoo.folder_id',
+                            res_folder["id"]
+                        )
         except requests.HTTPError as error:
             _logger.exception("Bad microsoft onedrive request : %s !",
                               error.response.content)
@@ -131,20 +143,35 @@ class OneDriveDashboard(models.Model):
             return False
         if record.token_expiry_date <= str(fields.Datetime.now()):
             record.generate_onedrive_refresh_token()
+
         folder = self.env['ir.config_parameter'].get_param(
-            'onedrive_integration_odoo.folder_id', '')
-        if not folder: return False
-        url = "https://graph.microsoft.com/v1.0/me/drive/items/%s/children" \
-              "?Content-Type=application/json" % folder
-        response = requests.request("GET", url, headers={
-            'Authorization': 'Bearer "' + record.onedrive_access_token + '"'},
-                                    data={})
+            'onedrive_integration_odoo.folder_id', ''
+        )
+        if not folder:
+            url = f"https://graph.microsoft.com/v1.0/me/drive/root:/{folder_name}"
+            response = requests.get(url, headers={
+                'Authorization': f'Bearer {record.onedrive_access_token}'
+            })
+            folder_data = response.json()
+            if "id" in folder_data:
+                folder = folder_data["id"]
+                self.env['ir.config_parameter'].set_param(
+                    'onedrive_integration_odoo.folder_id', folder
+                )
+            else:
+                return ['error', 'itemNotFound', 'Folder not found in OneDrive']
+
+        url = f"https://graph.microsoft.com/v1.0/me/drive/items/{folder}/children"
+        response = requests.get(url, headers={
+            'Authorization': f'Bearer {record.onedrive_access_token}'
+        })
         message = json.loads(response.content)
         if 'error' in message:
             return ['error', message['error']['code'],
                     message['error']['message']]
         files = {}
-        for file in response.json().get('value'):
-            if list(file.keys())[0] == '@microsoft.graph.downloadUrl':
+        for file in response.json().get('value', []):
+            if '@microsoft.graph.downloadUrl' in file:
                 files[file['name']] = file['@microsoft.graph.downloadUrl']
         return files
+
