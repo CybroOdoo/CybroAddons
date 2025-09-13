@@ -64,7 +64,6 @@ odoo.define('pos_access_right_hr.CustomOrdrScreen', function(require) {
         }
         else { return false;}
     }
-
     /**
      * Disable the back button on the POS
      */
