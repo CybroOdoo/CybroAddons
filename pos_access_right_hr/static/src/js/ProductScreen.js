@@ -25,16 +25,30 @@ patch(ProductScreen.prototype, {
             { value: "-", text: "+/-", disabled: this.pos.cashier?.disable_plus_minus },
             { value: "0", disabled: this.pos.cashier?.disable_numpad },
             { value: this.env.services.localization.decimalPoint, disabled: this.pos.cashier?.disable_numpad },
-//             Unicode: https://www.compart.com/en/unicode/U+232B
             { value: "Backspace", text: "⌫", disabled: this.pos.cashier?.disable_remove_button },
         ].map((button) => ({
             ...button,
             class: this.pos.numpadMode === button.value ? "active border-primary" : "",
         }));
     },
+
+    async updateSelectedOrderline({ buffer, key }) {
+        const cashier = this.pos?.cashier;
+        if (key === '-' && cashier?.disable_plus_minus) {
+            return; // Block minus key
+        } else if (key === '+' && cashier?.disable_plus_minus) {
+            return; // Block + key
+        }
+        else if (key === 'Backspace' && cashier?.disable_remove_button) {
+            return; // Block remove/backspace key
+        } else if (/^[0-9]$/.test(key) && cashier?.disable_numpad) {
+            return; // Block numpad input
+        }
+        return super.updateSelectedOrderline({ buffer, key });
+    },
+
     disable_payment() {
         if (this.pos.cashier?.disable_payment) {
-
             return true;
         } else {
             return false;

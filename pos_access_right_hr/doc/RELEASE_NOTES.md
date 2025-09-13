@@ -20,3 +20,8 @@
 #### Version 17.0.2.1.3
 ##### BUG_FIX
 - Bug fix: POS Restaurant session failed to load correctly.
+
+#### 10.09.2025
+#### Version 17.0.2.1.4
+##### BUG_FIX
+- Bug fix: Updated module with restricted keyboard events.

@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'POS Access Right',
-    'version': '17.0.2.1.2',
+    'version': '17.0.2.1.4',
     "category": 'Point of Sale',
     'summary': 'To Restrict POS features for cashiers',
     'description': 'This app allows you to enable or disable POS features '
@@ -30,7 +30,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com/',
-    'depends': ['pos_hr'],
+    'depends': ['point_of_sale','pos_hr', 'pos_restaurant'],
     'data': [
         'views/hr_employee_views.xml',
     ],
@@ -39,7 +39,7 @@
             'pos_access_right_hr/static/src/js/PosStore.js',
             'pos_access_right_hr/static/src/js/ActionpadWidget.js',
             'pos_access_right_hr/static/src/js/ProductScreen.js',
-            'pos_access_right_hr/static/src/xml/ActionpadWidget.xml'
+            'pos_access_right_hr/static/src/xml/ActionpadWidget.xml',
         ],
     },
     'images': ['static/description/banner.jpg'],
