@@ -1,5 +1,5 @@
 /** @odoo-module **/
-import { _t } from "@web/core/l10n/translation";
+
 import { patch } from "@web/core/utils/patch";
 import { Order } from "@point_of_sale/app/store/models";
 import { roundPrecision as round_pr } from "@web/core/utils/numbers";
@@ -39,11 +39,7 @@ patch(Order.prototype,{
         const discountProduct = reward.discount_line_product_id;
         const rewardCode = _newRandomRewardCode();
         const points = this._getRealCouponPoints(args["coupon_id"])
-        const cost = reward.clear_wallet ? this._getRealCouponPoints(args["coupon_id"]) :reward.pointsToRedeem
-        if (!discount || discount <= 0) {
-        console.error("Invalid redemption discount:", { reward });
-        return [];
-    }
+        const cost = reward.clear_wallet ? points :reward.pointsToRedeem
         return[
         {
             product: discountProduct,
@@ -137,7 +133,6 @@ patch(Order.prototype,{
     },
 
     export_as_JSON() {
-        const json = super.export_as_JSON(...arguments);
         //when change is converted the amount returned is changed
         var orderLines, paymentLines;
         orderLines = [];
@@ -151,31 +146,31 @@ patch(Order.prototype,{
                 return paymentLines.push([0, 0, itemAsJson]);
             }
         });
-         json.name = this.get_name();
-         json.amount_paid = this.get_total_paid() - this.get_change();
-         json.amount_total = this.get_total_with_tax();
-         json.amount_tax = this.get_total_tax();
-         json.amount_return = this.get_total_paid() - this.get_total_with_tax() - this.get_rounding_applied();
-         json.lines = orderLines;
-         json.statement_ids = paymentLines;
-         json.pos_session_id = this.pos_session_id;
-         json.pricelist_id = this.pricelist ? this.pricelist.id : false;
-         json.partner_id = this.get_partner() ? this.get_partner().id : false;
-         json.user_id = this.pos.user.id;
-         json.uid = this.uid;
-         json.sequence_number = this.sequence_number;
-         json.date_order = serializeDateTime(this.date_order);
-         json.fiscal_position_id = this.fiscal_position ? this.fiscal_position.id : false;
-         json.server_id = this.server_id ? this.server_id : false;
-         json.to_invoice = this.to_invoice ? this.to_invoice : false;
-         json.shipping_date = this.shippingDate ? this.shippingDate : false;
-         json.is_tipped = this.is_tipped || false;
-         json.tip_amount = this.tip_amount || 0;
-         json.access_token = this.access_token || "";
-         json.last_order_preparation_change = JSON.stringify(this.lastOrderPrepaChange);
-         json.ticket_code = this.ticketCode || "";
-
-
+        var json = {
+            name: this.get_name(),
+            amount_paid: this.get_total_paid() - this.get_change(),
+            amount_total: this.get_total_with_tax(),
+            amount_tax: this.get_total_tax(),
+            amount_return: this.get_total_paid() - this.get_total_with_tax() - this.get_rounding_applied(),
+            lines: orderLines,
+            statement_ids: paymentLines,
+            pos_session_id: this.pos_session_id,
+            pricelist_id: this.pricelist ? this.pricelist.id : false,
+            partner_id: this.get_partner() ? this.get_partner().id : false,
+            user_id: this.pos.user.id,
+            uid: this.uid,
+            sequence_number: this.sequence_number,
+            date_order: serializeDateTime(this.date_order),
+            fiscal_position_id: this.fiscal_position ? this.fiscal_position.id : false,
+            server_id: this.server_id ? this.server_id : false,
+            to_invoice: this.to_invoice ? this.to_invoice : false,
+            shipping_date: this.shippingDate ? this.shippingDate : false,
+            is_tipped: this.is_tipped || false,
+            tip_amount: this.tip_amount || 0,
+            access_token: this.access_token || "",
+            last_order_preparation_change: JSON.stringify(this.lastOrderPrepaChange),
+            ticket_code: this.ticketCode || "",
+        };
         if (!this.is_paid && this.user_id) {
             json.user_id = this.user_id;
         }

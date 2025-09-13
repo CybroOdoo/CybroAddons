@@ -11,13 +11,10 @@ patch(PaymentScreen.prototype, {
             const order = this.pos.get_order()
             const coupon = order.selectedCoupon
             let pointsOfPartner = 0
-             if (order.partner && Array.isArray(order.partner.loyalty_cards)) {
-            const loyaltyCard = order.partner.loyalty_cards[coupon];
-            if (loyaltyCard && loyaltyCard.points !== undefined) {
-                pointsOfPartner += loyaltyCard.points;
+            if(order.partner.loyalty_cards.length != undefined){
+                pointsOfPartner += order.partner.loyalty_cards[coupon].points
             }
-        }
-            const pointsWon = order.couponPointChanges?.[coupon]?.points || 0;
+            const pointsWon = order.couponPointChanges[coupon].points
             const pointsSpent = order.pointsCost
             const balance = pointsOfPartner + pointsWon - pointsSpent
             const token = order.access_token

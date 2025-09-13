@@ -7,6 +7,7 @@ patch(Order.prototype, {
     export_for_printing() {
     //--------to show the deducted loyalty points details in the order receipt
         const result = super.export_for_printing(...arguments);
+        result.RefundOrder = this.paymentlines[0].order._isRefundOrder()
         result.pointsDeducted = this.pos.lostPoints
         return result;
     },

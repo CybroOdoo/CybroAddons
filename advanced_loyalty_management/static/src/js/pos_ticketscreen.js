@@ -13,6 +13,7 @@ patch(TicketScreen.prototype, {
             triggerAtInput: (event) => this._onUpdateSelectedOrderline(event),
         });
         super.setup(...arguments);
+
     },
     async onDoRefund() {
     //---------to get the points cost from the reward lines

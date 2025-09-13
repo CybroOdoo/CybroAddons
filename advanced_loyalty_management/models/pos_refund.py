@@ -30,7 +30,6 @@ class PosOrder(models.Model):
 
     def _compute_order_name(self):
         """Compute the loyalty points when order is refunded"""
-
         res = super()._compute_order_name()
         partner_id = self.partner_id
         li = [line.mapped('price_subtotal_incl') for line

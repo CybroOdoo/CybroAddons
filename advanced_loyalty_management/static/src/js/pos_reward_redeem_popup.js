@@ -10,18 +10,16 @@ export class RewardPopup extends AbstractAwaitablePopup {
     setup(){
         this.orm = useService("orm");
         this.popup = useService("popup");
-        this.action = useService("action");
         this.state = useState({
             value:'' ,
             redeemPoints:''
         })
         this.points = useRef("points");
-
     }
 
     toRedeem(ev){
     //---validation for popup---
-        ev.state.redeemPoints = ev.points.el.value
+            ev.state.redeemPoints = ev.points.el.value
         if (isNaN(ev.state.redeemPoints)) {
             ev.popup.add(ErrorPopup, {
                 body: _t(
@@ -38,12 +36,9 @@ export class RewardPopup extends AbstractAwaitablePopup {
     }
 
     save(props,ev){
+    //---after giving the points to redeem, the reward is added to orderliness
         const selectedReward = props.selected_reward
-        const couponCacheValues = Object.values(props.order.pos.couponCache);
-        const filteredCoupons = couponCacheValues.filter(
-            (item) => item.partner_id === props.order.partner.id
-        );
-        const pointsOfPartner = filteredCoupons[0].balance
+        const pointsOfPartner = props.order.partner.loyalty_cards[selectedReward.coupon_id].points
         const pointsWon = props.order.couponPointChanges[selectedReward.coupon_id].points
         const balance = pointsOfPartner + pointsWon - parseInt(ev.state.redeemPoints)
         const order = props.order.access_token

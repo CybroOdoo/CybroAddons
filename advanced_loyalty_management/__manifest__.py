@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Advanced Loyalty Management',
-    'version': '17.0.1.0.2',
+    'version': '17.0.1.0.3',
     'category': 'Point of Sale',
     'summary': 'Advanced loyalty Management',
     'description': """When an order is refunded, any loyalty points gained from 
