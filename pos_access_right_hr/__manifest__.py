@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'POS Access Right',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     "category": 'Point of Sale',
     'summary': 'To Restrict POS features for cashiers',
     'description': 'This app allows you to enable or disable POS features '
@@ -39,6 +39,7 @@
             'pos_access_right_hr/static/src/js/models.js',
             'pos_access_right_hr/static/src/js/NumpadWidget.js',
             'pos_access_right_hr/static/src/js/ActionpadWidget.js',
+            'pos_access_right_hr/static/src/js/product_screen.js',
         ],
         'web.assets_qweb': [
             'pos_access_right_hr/static/src/xml/NumpadWidget.xml',
