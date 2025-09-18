@@ -14,3 +14,8 @@
 #### Version 18.0.1.0.2
 ##### FIX
 - Updated issue related to the filtering
+
+#### 18.09.2025
+#### Version 18.0.1.0.3
+##### FIX
+- Updated issue while saving the dashboard menu

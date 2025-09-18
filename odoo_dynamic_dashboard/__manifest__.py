@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Advanced Dynamic Dashboard Odoo18",
-    'version': '18.0.1.0.2',
+    'version': '18.0.1.0.3',
     'category': 'Productivity',
     'summary': """Odoo Dynamic Dashboard, Dynamic Dashboard, Odoo AI, Odoo18, Odoo18 Dashboards, Dashboard with AI, AI Dashboard, Odoo Dashboard,Graph View,""",
     'description': """Create Configurable Odoo Dynamic Dashboard to get the 

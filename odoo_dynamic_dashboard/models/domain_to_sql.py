@@ -26,6 +26,7 @@ def get_query(self, args, operation, field, start_date=None, end_date=None,
               group_by=False, apply_ir_rules=False):
     """ Dashboard block Query Creation """
     query = self._where_calc(args)
+    print("query", query)
     if apply_ir_rules:
         self._apply_ir_rules(query, 'read')
     if operation and field:
