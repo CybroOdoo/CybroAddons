@@ -1,61 +1,237 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Form view for 'connection.api' model.  -->
+    <!-- Form view para 'connection.api' -->
     <record id="connection_api_view_form" model="ir.ui.view">
         <field name="name">connection.api.view.form</field>
         <field name="model">connection.api</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <button name="toggle_active" type="object"
+                            string="Activate" class="btn-primary"
+                            invisible="active"/>
+                    <button name="toggle_active" type="object"
+                            string="Deactivate" class="btn-secondary"
+                            invisible="not active"/>
+                    <button name="action_test_api_endpoint" type="object"
+                            string="Test Endpoint" class="btn-info"
+                            invisible="not model_id"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </header>
                 <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="display_name" readonly="1"/>
+                        </h1>
+                        <h3>
+                            <field name="api_endpoint" readonly="1"
+                                   widget="url" invisible="not api_endpoint"/>
+                        </h3>
+                    </div>
+
                     <group>
-                        <group string="Resource">
-                            <field name="model_id" string="Model"/>
+                        <group string="Model Configuration">
+                            <field name="model_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="description" placeholder="Describe the purpose of this API configuration..."/>
                         </group>
-                        <group string="Methods">
-                            <field name="is_get"/>
-                            <field name="is_post"/>
-                            <field name="is_put"/>
-                            <field name="is_delete"/>
+                        <group string="HTTP Methods">
+                            <field name="is_get" string="GET (Read)"/>
+                            <field name="is_post" string="POST (Create)"/>
+                            <field name="is_put" string="PUT (Update)"/>
+                            <field name="is_delete" string="DELETE"/>
                         </group>
                     </group>
+
+                    <notebook>
+                        <page string="Field Configuration" name="fields">
+                            <group>
+                                <group string="Allowed Fields">
+                                    <field name="allowed_fields"
+                                           placeholder="field1, field2, field3... (leave empty for all fields)"
+                                           widget="text" nolabel="1"/>
+                                    <div class="text-muted">
+                                        <small>Lista de campos permitidos separados por comas.</small>
+                                    </div>
+                                </group>
+                                <group string="Forbidden Fields">
+                                    <field name="forbidden_fields" widget="text" nolabel="1"/>
+                                    <div class="text-muted">
+                                        <small>Lista de campos prohibidos separados por comas.</small>
+                                    </div>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Security &amp; Limits" name="security">
+                            <group>
+                                <group string="Request Limits">
+                                    <field name="max_records_limit"/>
+                                    <field name="require_record_id_for_write"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="API Information" name="api_info">
+                            <group>
+                                <group string="Endpoint Information">
+                                    <field name="api_endpoint" readonly="1" widget="url"/>
+                                </group>
+                                <group string="Documentation">
+                                    <div>
+                                        <a href="/api/v1/docs" target="_blank" class="btn btn-info">
+                                            <i class="fa fa-book"/> View Swagger Documentation
+                                        </a>
+                                        <br/><br/>
+                                        <a href="/api/v1/openapi.json" target="_blank" class="btn btn-secondary">
+                                            <i class="fa fa-file-code-o"/> View OpenAPI Spec
+                                        </a>
+                                    </div>
+                                </group>
+                            </group>
+
+                            <div class="alert alert-info" role="alert" invisible="not api_endpoint">
+                                <h4>Usage Examples:</h4>
+                                <p><strong>Get all records:</strong><br/>
+                                   <code>GET <field name="api_endpoint" readonly="1" nolabel="1"/></code></p>
+                                <p><strong>Get specific record:</strong><br/>
+                                   <code>GET <field name="api_endpoint" readonly="1" nolabel="1"/>/123</code></p>
+                                <p><strong>Create record:</strong><br/>
+                                   <code>POST <field name="api_endpoint" readonly="1" nolabel="1"/></code></p>
+                                <p><strong>Update record:</strong><br/>
+                                   <code>PUT <field name="api_endpoint" readonly="1" nolabel="1"/>/123</code></p>
+                                <p><strong>Delete record:</strong><br/>
+                                   <code>DELETE <field name="api_endpoint" readonly="1" nolabel="1"/>/123</code></p>
+                                <p><em>Remember to include your API Key in the header: <code>X-API-Key: your_api_key_here</code></em></p>
+                            </div>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
     </record>
-    <!-- List view for 'connection.api' model.  -->
+
+    <!-- List view para 'connection.api' -->
     <record id="connection_api_view_list" model="ir.ui.view">
         <field name="name">connection.api.view.list</field>
         <field name="model">connection.api</field>
         <field name="arch" type="xml">
-            <list>
-                <field name="model_id" string="Model"/>
-                <field name="is_get"/>
-                <field name="is_post"/>
-                <field name="is_put"/>
-                <field name="is_delete"/>
+            <list decoration-muted="not active" create="true" edit="true" delete="true">
+                <field name="active" column_invisible="1"/>
+                <field name="display_name"/>
+                <field name="model_id"/>
+                <field name="is_get" widget="boolean_toggle"/>
+                <field name="is_post" widget="boolean_toggle"/>
+                <field name="is_put" widget="boolean_toggle"/>
+                <field name="is_delete" widget="boolean_toggle"/>
+                <field name="max_records_limit"/>
+                <field name="active" widget="boolean_toggle"/>
+                <button name="action_test_api_endpoint" type="object"
+                        string="Test" icon="fa-external-link"
+                        title="Test API Endpoint"/>
+                <button name="toggle_active" type="object"
+                        string="Toggle Active" icon="fa-toggle-on"
+                        title="Activate/Deactivate"/>
             </list>
         </field>
     </record>
-    <!-- Action  for 'connection.api' model with List and form views.  -->
+
+    <!-- Vista de búsqueda -->
+    <record id="connection_api_view_search" model="ir.ui.view">
+        <field name="name">connection.api.view.search</field>
+        <field name="model">connection.api</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="model_id" string="Model"/>
+                <field name="display_name" string="Name"/>
+                <separator/>
+                <filter name="active" string="Active" domain="[('active', '=', True)]"/>
+                <filter name="inactive" string="Inactive" domain="[('active', '=', False)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_model" string="Model" context="{'group_by': 'model_id'}"/>
+                    <filter name="group_by_active" string="Status" context="{'group_by': 'active'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción principal -->
     <record id="rest_api_root_action" model="ir.actions.act_window">
-        <field name="name">Rest API Records</field>
-        <field name="type">ir.actions.act_window</field>
+        <field name="name">REST API Configuration</field>
         <field name="res_model">connection.api</field>
         <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_active': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Create!
+                Configure your first REST API endpoint!
+            </p>
+            <p>
+                Create API configurations to expose Odoo models through REST endpoints.
+            </p>
+            <p>
+                <a href="/api/v1/docs" target="_blank" class="btn btn-primary">
+                    <i class="fa fa-book"/> View API Documentation
+                </a>
             </p>
         </field>
     </record>
-    <!-- Menu items for the REST API.  -->
-    <menuitem id="rest_api_root"
-              name="Rest API"
-              sequence="10"
-              web_icon="rest_api_odoo,static/description/icon.png"/>
-    <menuitem id="rest_api_details_root"
-              name="Rest API"
+
+    <!-- Server action SIN f-strings -->
+    <record id="action_create_default_api_configs" model="ir.actions.server">
+        <field name="name">Create Default API Configurations</field>
+        <field name="model_id" ref="model_connection_api"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Crear configuraciones básicas sin f-strings
+default_models = ['res.partner', 'product.product', 'sale.order']
+created = []
+
+for model_name in default_models:
+    model_obj = env['ir.model'].search([('model', '=', model_name)], limit=1)
+    if model_obj:
+        existing = model.search([('model_id', '=', model_obj.id)])
+        if not existing:
+            config = model.create({
+                'model_id': model_obj.id,
+                'description': 'Default API configuration for ' + model_obj.name,
+                'is_get': True,
+                'is_post': True,
+                'is_put': True,
+                'is_delete': False
+            })
+            created.append(config)
+
+if created:
+    message = "Created " + str(len(created)) + " default configurations"
+    msg_type = 'success'
+else:
+    message = "Default configurations already exist"
+    msg_type = 'info'
+
+action = {
+    'type': 'ir.actions.client',
+    'tag': 'display_notification',
+    'params': {
+        'message': message,
+        'type': msg_type,
+        'sticky': False,
+    }
+}
+        ]]></field>
+    </record>
+
+    <!-- Menús -->
+    <menuitem id="rest_api_root" name="REST API" sequence="10"/>
+
+    <menuitem id="rest_api_config_menu"
+              name="API Configuration"
               parent="rest_api_root"
               action="rest_api_root_action"
               sequence="10"/>
+
+    <menuitem id="rest_api_create_defaults_menu"
+              name="Create Default Configs"
+              parent="rest_api_root"
+              action="action_create_default_api_configs"
+              sequence="20"/>
 </odoo>
