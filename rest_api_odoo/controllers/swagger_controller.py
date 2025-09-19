@@ -220,7 +220,7 @@ Esta API utiliza **JWT Bearer Tokens** para autenticación:
 ```bash
 curl -X POST {base_url}/api/v1/auth \\
   -H "Content-Type: application/json" \\
-  -d '{{"username": "admin", "password": "admin"}}'
+  -d '{{"username": "DontFucking", "password": "UseTheseCredentials"}}'
 ```
 
 2. **Usar token en requests:**
@@ -286,11 +286,12 @@ Todas las respuestas siguen un formato consistente:
                 "type": "object",
                 "required": ["username", "password"],
                 "properties": {
-                    "username": {"type": "string", "example": "admin"},
-                    "password": {"type": "string", "format": "password", "example": "admin"},
+                    "username": {"type": "string", "example": "DontFucking"},
+                    "password": {"type": "string", "format": "password", "example": "UseTheseCredentials"},
                     "database": {"type": "string", "example": "odoo"},
                     "expires_in_hours": {"type": "integer", "minimum": 1, "maximum": 168, "default": 24, "example": 24}
                 }
+
             },
             "AuthResponse": {
                 "type": "object",
@@ -301,7 +302,7 @@ Todas las respuestas siguen un formato consistente:
                         "type": "object",
                         "properties": {
                             "user_id": {"type": "integer", "example": 2},
-                            "username": {"type": "string", "example": "admin"},
+                            "username": {"type": "string", "example": "DontFucking"},
                             "name": {"type": "string", "example": "Administrator"},
                             "access_token": {"type": "string", "example": "eyJ0eXAiOiJKV1QiLCJhbGc..."},
                             "token_type": {"type": "string", "example": "Bearer"},
