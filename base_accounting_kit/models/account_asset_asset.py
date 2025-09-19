@@ -49,13 +49,13 @@ class AccountAssetAsset(models.Model):
                                  required=True,
                                  default=lambda self: self.env.company)
     note = fields.Text()
-    category_id = fields.Many2one('account.asset.category', string='Category',
-                                  required=True, change_default=True
+    category_id = fields.Many2one('account.asset.category', string='Asset Model',
+                                  required=False, change_default=True
                                   )
     date = fields.Date(string='Date', required=True,
                        default=fields.Date.context_today)
     state = fields.Selection(
-        [('draft', 'Draft'), ('open', 'Running'), ('close', 'Close')],
+        [('draft', 'Draft'), ('open', 'Running'), ('close', 'Close'),('cancelled','Cancelled')],
         'Status', required=True, copy=False, default='draft',
         help="When an asset is created, the status is 'Draft'.\n"
              "If the asset is confirmed, the status goes in 'Running' and the depreciation lines can be posted in the accounting.\n"
@@ -63,7 +63,7 @@ class AccountAssetAsset(models.Model):
     active = fields.Boolean(default=True)
     partner_id = fields.Many2one('res.partner', string='Partner')
     method = fields.Selection(
-        [('linear', 'Linear'), ('degressive', 'Degressive')],
+        [('linear', 'Straight Line'), ('degressive', 'Declining')],
         string='Computation Method', required=True,default='linear',
         help="Choose the method to use to compute the amount of depreciation lines.\n  * Linear: Calculated on basis of: Gross Value / Number of Depreciations\n"
              "  * Degressive: Calculated on basis of: Residual Value * Degressive Factor")
@@ -95,8 +95,34 @@ class AccountAssetAsset(models.Model):
                                  help="It is the amount you plan to have that you cannot depreciate.")
     invoice_id = fields.Many2one('account.move', string='Invoice',
                                  copy=False)
-    type = fields.Selection(related="category_id.type", string='Type',
-                            required=True)
+    type = fields.Selection([('sale', 'Sale: Revenue Recognition'),
+                             ('purchase', 'Purchase: Asset')], required=True, index=True, default='purchase')
+
+
+    #asset category
+    account_analytic_id = fields.Many2one('account.analytic.account',
+                                          string='Analytic Account',
+                                          domain="[('company_id', '=', company_id)]")
+    account_asset_id = fields.Many2one('account.account',
+                                       string='Asset Account', required=True,
+                                       domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=', 'liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=', 'liability_credit_card'),('active', '=', True)]",
+                                       help="Account used to record the purchase of the asset at its original price.")
+    account_depreciation_id = fields.Many2one(
+        'account.account', string='Depreciation Account',
+        required=True,
+        domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=', 'liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=', 'liability_credit_card'),('active', '=', True)]",
+        help="Account used in the depreciation entries, to decrease the asset value.")
+    account_depreciation_expense_id = fields.Many2one(
+        'account.account', string='Expense Account',
+        required=True,
+        domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=','liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=','liability_credit_card'),('active', '=', True)]",
+        help="Account used in the periodical entries, to record a part of the asset as expense.")
+    journal_id = fields.Many2one('account.journal', string='Journal',
+                                 required=True)
+    open_asset = fields.Boolean(string='Auto-confirm Assets',
+                                help="Check this if you want to automatically confirm the assets of this category when created by invoices.")
+    group_entries = fields.Boolean(string='Group Journal Entries',
+                                   help="Check this if you want to group the generated entries by categories.")
 
     def unlink(self):
         """ Prevents deletion of assets in 'open' or 'close' state or with posted depreciation entries."""
@@ -130,6 +156,11 @@ class AccountAssetAsset(models.Model):
     def gross_value(self):
         """Update the 'value' field based on the 'price' of the selected 'category_id'."""
         self.value = self.category_id.price
+    @api.onchange('method')
+    def onchange_method(self):
+        if self.depreciation_line_ids:
+            self.depreciation_line_ids = [(fields.Command.clear())]
+
 
     @api.model
     def compute_generated_entries(self, date, asset_type=None):
@@ -342,6 +373,8 @@ class AccountAssetAsset(models.Model):
             'invoice_id',
         ]
         ref_tracked_fields = self.env['account.asset.asset'].fields_get(field)
+        if not self.depreciation_line_ids:
+            self.compute_depreciation_board()
         for asset in self:
             tracked_fields = ref_tracked_fields.copy()
             if asset.method == 'linear':
@@ -501,6 +534,11 @@ class AccountAssetAsset(models.Model):
                     'method_progress_factor': category.method_progress_factor,
                     'method_end': category.method_end,
                     'prorata': category.prorata,
+                    'journal_id':category.journal_id.id,
+                    'account_asset_id':category.account_asset_id.id,
+                    'account_depreciation_id':category.account_depreciation_id.id,
+                    'account_depreciation_expense_id':category.account_depreciation_expense_id.id,
+                    'account_analytic_id':category.account_analytic_id.id
                 }
             }
 
@@ -526,22 +564,6 @@ class AccountAssetAsset(models.Model):
             return depreciation_ids.create_grouped_move()
         return depreciation_ids.create_move()
 
-    @api.model
-    def create(self, vals):
-        """Create a new asset record using the provided values and compute its depreciation schedule."""
-        asset = super(AccountAssetAsset,
-                      self.with_context(mail_create_nolog=True)).create(vals)
-        asset.sudo().compute_depreciation_board()
-        return asset
-
-    def write(self, vals):
-        """Updates the records with the provided values and computes the depreciation board if necessary."""
-        res = super(AccountAssetAsset, self).write(vals)
-        if 'depreciation_line_ids' not in vals and 'state' not in vals:
-            for rec in self:
-                rec.compute_depreciation_board()
-        return res
-
     def open_entries(self):
         """Return a dictionary to open journal entries related to the asset."""
         move_ids = []
@@ -558,3 +580,44 @@ class AccountAssetAsset(models.Model):
             'type': 'ir.actions.act_window',
             'domain': [('id', 'in', move_ids)],
         }
+
+    def action_save_model(self):
+        return{
+            'type': 'ir.actions.act_window',
+            'name': _('Asset Model'),
+            'res_model': 'account.asset.category',
+            'view_mode': 'form',
+            'target': 'current',
+            'context': {'default_price': self.value,
+                        'default_method_time':self.method_time,
+                        'default_method_end':self.method_end,
+                        'default_method_number':self.method_number,
+                        'default_method_period':self.method_period,
+                        'default_method':self.method,
+                        'default_company_id':self.company_id.id,
+                        'default_method_progress_factor':self.method_progress_factor,
+                        'default_prorata':self.prorata,
+                        'default_group_entries':self.group_entries,
+                        'default_open_asset':self.open_asset,
+                        'default_account_analytic_id':self.account_analytic_id.id,
+                        'default_account_depreciation_expense_id':self.account_depreciation_expense_id.id,
+                        'default_account_depreciation_id':self.account_depreciation_id.id,
+                        'default_account_asset_id':self.account_asset_id.id,
+                        'default_journal_id':self.journal_id.id,
+                        'default_asset_id': self.id,
+                        }
+        }
+
+    def action_cancel_assets(self):
+        for asset in self:
+            for move in asset.depreciation_line_ids.mapped('move_id'):
+                if move.state == 'posted':
+                    # Force to draft
+                    move.button_draft()  # or move.state = 'draft' if button_draft is restricted
+                move.unlink()
+
+            # Delete all depreciation lines
+            asset.depreciation_line_ids.unlink()
+
+            # Reset state
+            asset.state = 'cancelled'

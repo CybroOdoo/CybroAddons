@@ -4,7 +4,7 @@
 
 Odoo 19 Full Accounting Kit for Community
 =========================================
-Full accounting kit for Odoo 18 community editions
+Full accounting kit for Odoo 19 community editions
 
 Configuration
 =============

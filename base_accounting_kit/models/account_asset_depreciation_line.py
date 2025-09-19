@@ -70,12 +70,12 @@ class AccountAssetDepreciationLine(models.Model):
             raise UserError(_(
                 'This depreciation is already linked to a journal entry! Please post or delete it.'))
         for line in self:
-            category_id = line.asset_id.category_id
+            asset_id = line.asset_id
             depreciation_date = self.env.context.get(
                 'depreciation_date') or line.depreciation_date or fields.Date.context_today(
                 self)
-            company_currency = line.asset_id.company_id.currency_id
-            current_currency = line.asset_id.currency_id
+            company_currency = asset_id.company_id.currency_id
+            current_currency = asset_id.currency_id
             amount = current_currency._convert(line.amount, company_currency,
                                       line.asset_id.company_id,
                                       depreciation_date)
@@ -83,35 +83,35 @@ class AccountAssetDepreciationLine(models.Model):
             partner = self.env['res.partner']._find_accounting_partner(line.asset_id.partner_id)
             move_line_1 = {
                 'name': asset_name,
-                'account_id': category_id.account_depreciation_id.id,
+                'account_id': asset_id.account_depreciation_id.id,
                 'debit': 0.0 if float_compare(amount, 0.0,
                                               precision_digits=prec) > 0 else -amount,
                 'credit': amount if float_compare(amount, 0.0,
                                                   precision_digits=prec) > 0 else 0.0,
-                'journal_id': category_id.journal_id.id,
+                'journal_id': asset_id.journal_id.id,
                 'partner_id': partner.id,
                 'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
                 'amount_currency': company_currency != current_currency and - 1.0 * line.amount or 0.0,
             }
             move_line_2 = {
                 'name': asset_name,
-                'account_id': category_id.account_depreciation_expense_id.id,
+                'account_id': asset_id.account_depreciation_expense_id.id,
                 'credit': 0.0 if float_compare(amount, 0.0,
                                                precision_digits=prec) > 0 else -amount,
                 'debit': amount if float_compare(amount, 0.0,
                                                  precision_digits=prec) > 0 else 0.0,
-                'journal_id': category_id.journal_id.id,
+                'journal_id': asset_id.journal_id.id,
                 'partner_id': partner.id,
                 'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
                 'amount_currency': company_currency != current_currency and line.amount or 0.0,
             }
             line_ids = [(0, 0, {
-                'account_id': category_id.account_depreciation_id.id,
+                'account_id': asset_id.account_depreciation_id.id,
                 'partner_id': partner.id,
                 'credit': amount if float_compare(amount, 0.0,
                                                   precision_digits=prec) > 0 else 0.0,
             }), (0, 0, {
-                'account_id': category_id.account_depreciation_expense_id.id,
+                'account_id': asset_id.account_depreciation_expense_id.id,
                 'partner_id': partner.id,
                 'debit': amount if float_compare(amount, 0.0,
                                                  precision_digits=prec) > 0 else 0.0,
@@ -119,7 +119,7 @@ class AccountAssetDepreciationLine(models.Model):
             move = self.env['account.move'].create({
                 'ref': line.asset_id.code,
                 'date': depreciation_date or False,
-                'journal_id': category_id.journal_id.id,
+                'journal_id': asset_id.journal_id.id,
                 'line_ids': line_ids,
             })
             for move_line in move.line_ids:
@@ -139,7 +139,7 @@ class AccountAssetDepreciationLine(models.Model):
         if post_move and created_moves:
             created_moves.filtered(lambda m: any(
                 m.asset_depreciation_ids.mapped(
-                    'asset_id.category_id.open_asset'))).post()
+                    'asset_id.open_asset'))).post()
         return [x.id for x in created_moves]
 
     def create_grouped_move(self, post_move=True):
@@ -235,13 +235,13 @@ class AccountAssetDepreciationLine(models.Model):
             for msg in messages:
                 asset.message_post(body=msg)
 
-    def unlink(self):
-        """Check if the depreciation line is linked to a posted move before deletion."""
-        for record in self:
-            if record.move_check:
-                if record.asset_id.category_id.type == 'purchase':
-                    msg = _("You cannot delete posted depreciation lines.")
-                else:
-                    msg = _("You cannot delete posted installment lines.")
-                raise UserError(msg)
-        return super(AccountAssetDepreciationLine, self).unlink()
+    # def unlink(self):
+    #     """Check if the depreciation line is linked to a posted move before deletion."""
+    #     for record in self:
+    #         if record.move_check:
+    #             if record.asset_id.category_id.type == 'purchase':
+    #                 msg = _("You cannot delete posted depreciation lines.")
+    #             else:
+    #                 msg = _("You cannot delete posted installment lines.")
+    #             raise UserError(msg)
+    #     return super(AccountAssetDepreciationLine, self).unlink()

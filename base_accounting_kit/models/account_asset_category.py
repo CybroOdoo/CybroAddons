@@ -42,22 +42,22 @@ class AccountAssetCategory(models.Model):
                                           domain="[('company_id', '=', company_id)]")
     account_asset_id = fields.Many2one('account.account',
                                        string='Asset Account', required=True,
-                                       domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=', 'liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=', 'liability_credit_card'),('active', '=', False)]",
+                                       domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=', 'liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=', 'liability_credit_card'),('active', '=', True)]",
                                        help="Account used to record the purchase of the asset at its original price.")
     account_depreciation_id = fields.Many2one(
         'account.account', string='Depreciation Account',
         required=True,
-        domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=', 'liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=', 'liability_credit_card'),('active', '=', False)]",
+        domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=', 'liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=', 'liability_credit_card'),('active', '=', True)]",
         help="Account used in the depreciation entries, to decrease the asset value.")
     account_depreciation_expense_id = fields.Many2one(
         'account.account', string='Expense Account',
         required=True,
-        domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=','liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=','liability_credit_card'),('active', '=', False)]",
+        domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=','liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=','liability_credit_card'),('active', '=', True)]",
         help="Account used in the periodical entries, to record a part of the asset as expense.")
     journal_id = fields.Many2one('account.journal', string='Journal',
                                  required=True)
     method = fields.Selection(
-        [('linear', 'Linear'), ('degressive', 'Degressive')],
+        [('linear', 'Straight Line'), ('degressive', 'Declining')],
         string='Computation Method', required=True, default='linear',
         help="Choose the method to use to compute the amount of depreciation lines.\n"
              "  * Linear: Calculated on basis of: Gross Value / Number of Depreciations\n"
@@ -109,3 +109,12 @@ class AccountAssetCategory(models.Model):
         Set 'prorata' to False if 'method_time' is not equal to 'number'."""
         if self.method_time != 'number':
             self.prorata = False
+
+    @api.model
+    def create(self, vals):
+        record = super().create(vals)
+        asset_id = self.env.context.get('default_asset_id')
+        if asset_id:
+            asset = self.env['account.asset.asset'].browse(asset_id)
+            asset.category_id = record.id
+        return record

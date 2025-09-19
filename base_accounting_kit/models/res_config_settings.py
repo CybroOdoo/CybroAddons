@@ -31,6 +31,12 @@ class ResConfigSettings(models.TransientModel):
 
     use_anglo_saxon_accounting = fields.Boolean(string="Use Anglo-Saxon accounting", readonly=False,
                                                 related='company_id.anglo_saxon_accounting')
+    fiscalyear_last_day = fields.Integer(
+        related='company_id.fiscalyear_last_day', readonly=False
+    )
+    fiscalyear_last_month = fields.Selection(
+        related='company_id.fiscalyear_last_month', readonly=False
+    )
 
     @api.model
     def get_values(self):
