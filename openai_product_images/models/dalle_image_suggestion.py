@@ -49,3 +49,4 @@ class DalleImageSuggestion(models.Model):
             'domain': [('id', '=', self.product_tmpl_id.id)],
             'target': 'current',
         }
+

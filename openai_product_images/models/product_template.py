@@ -50,7 +50,7 @@ class ProductTemplate(models.Model):
         """
         return {
             'name': self.name,
-            'view_mode': 'list,form',
+            'view_mode': 'tree,form',
             'res_model': 'dalle.image.suggestion',
             'type': 'ir.actions.act_window',
             'domain': [('product_tmpl_id', '=', self.id)],
