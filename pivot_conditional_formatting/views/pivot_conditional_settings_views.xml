@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This XML configuration file defines views and menus for the Pivot Conditional module in Odoo. It includes view definitions for conditional rules and settings, as well as menu items to access the settings. The views are used to customize the appearance and behavior of pivot tables in Odoo.
+-->
+<odoo>
+<!--	Form view for conditional.rules Model-->
+	<record id="conditional_rules_view_form" model="ir.ui.view">
+		<field name="name">conditional.rules.view.form</field>
+		<field name="model">conditional.rules</field>
+		<field name="arch" type="xml">
+			<form>
+				<sheet>
+					<group>
+						<field name="rule"/>
+						<field name="value"
+                               invisible="rule == 'is_empty'"/>
+						<field name="second_value"
+                               invisible="rule != 'in_between'"/>
+						<field name="color" widget="color"/>
+						<field name="text_color" widget="color"/>
+					</group>
+				</sheet>
+			</form>
+		</field>
+	</record>
+
+	<!--	List view for conditional.rules Model-->
+	<record id="conditional_rules_view_list" model="ir.ui.view">
+		<field name="name">conditional.rule.view.list</field>
+		<field name="model">conditional.rules</field>
+		<field name="arch" type="xml">
+			<list>
+				<field name="rule"/>
+				<field name="value" required="True"
+                       invisible="rule == 'is_empty'"/>
+				<field name="second_value"
+                       invisible="rule != 'in_between'"/>
+				<field name="color" widget="color"/>
+				<field name="text_color" widget="color"/>
+			</list>
+		</field>
+	</record>
+
+	<!--	List view for pivot.conditional.settings Model-->
+	<record id="pivot_conditional_settings_view_list" model="ir.ui.view">
+		<field name="name">pivot.conditional.settings.view.list</field>
+		<field name="model">pivot.conditional.settings</field>
+		<field name="arch" type="xml">
+			<list>
+				<field name="model_id"/>
+				<field name="view_id"/>
+			</list>
+		</field>
+	</record>
+
+	<!--	Form view for pivot.conditional.settings Model-->
+	<record id="pivot_conditional_settings_view_form" model="ir.ui.view">
+		<field name="name">pivot.conditional.settings.view.form</field>
+		<field name="model">pivot.conditional.settings</field>
+		<field name="arch" type="xml">
+			<form>
+				<sheet>
+					<group>
+						<field name="model_id" required="True"/>
+						<field name="view_id_domain" invisible="True"/>
+						<field name="view_id" required="True"
+                               invisible="model_id == False"
+                               options='{"no_open": True, "no_create": True}'
+							   domain="view_id_domain"/>
+						<field name="rules_ids">
+							<list editable="bottom">
+								<field name="rule"/>
+								<field name="value"
+                                       invisible="rule == 'is_empty'"/>
+								<field name="second_value"
+                                       invisible = "rule != 'in_between'"/>
+								<field name="color" widget="color"
+                                       string="Cell Color"/>
+								<field name="text_color" widget="color"
+                                       string="Text Color"/>
+							</list>
+						</field>
+					</group>
+				</sheet>
+			</form>
+		</field>
+	</record>
+
+	<!--	Action for pivot.conditional.settings Model-->
+	<record id="pivot_conditional_settings_action"
+            model="ir.actions.act_window">
+		<field name="name">Pivot Conditional Settings Action</field>
+		<field name="res_model">pivot.conditional.settings</field>
+		<field name="view_mode">list,form</field>
+	</record>
+
+	<!--	Menu for pivot.conditional.settings Model-->
+	<menuitem id="pivot_conditional_settings_menu" name="Pivot Settings"
+              parent="base.menu_administration" sequence="1"/>
+	<menuitem id="pivot_conditional_settings_sub_menu" name="Settings"
+              parent="pivot_conditional_settings_menu"
+              action="pivot_conditional_settings_action"/>
+</odoo>
