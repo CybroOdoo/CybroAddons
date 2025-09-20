@@ -14,3 +14,8 @@
 #### Version 18.0.1.0.2
 ##### ADD
 - Issue resolved in computing the amount due by considering only posted invoices.
+
+#### 20.09.2025
+#### Version 18.0.1.0.3
+##### ADD
+- Issue resolved while clicking view from payment info.

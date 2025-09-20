@@ -105,6 +105,7 @@ class SaleOrder(models.Model):
                     total_invoiced -= invoice.amount_total
                     total_paid -= (
                                 invoice.amount_total - invoice.amount_residual)
+
             rec.amount_due = total_invoiced - total_paid
 
     def action_open_business_doc(self):
@@ -117,7 +118,10 @@ class SaleOrder(models.Model):
         name = _("Journal Entry")
         move = self.env['account.move'].browse(self.id)
         res_model = 'account.payment'
-        res_id = move.payment_id.id
+        payments = move.payment_ids
+        res_id = payments.id
+
+        # res_id = move.payment_id.id
         return {
             'name': name,
             'type': 'ir.actions.act_window',
