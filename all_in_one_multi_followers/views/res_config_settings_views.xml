@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--
+        This view extends the `res.config.settings` form to add a new section for
+        managing dynamic followers within the system configuration. It inherits
+        the default settings view and adds a new app block specifically for "Dynamic
+        Followers," providing configuration options.
+
+        Key Features:
+        - Adds a new app section titled "Dynamic Followers" to the settings.
+        - Displays a button labeled "Go to Model" within this section, allowing
+          users with the appropriate permissions (group_user) to quickly navigate
+          to the "multi.follower" model action.
+        - The button triggers the `multi_follower_action`, defined elsewhere in
+          the system, for easy management of follower actions from the settings
+          interface.
+
+        This extension integrates the management of dynamic followers into the
+        configuration settings, providing a user-friendly interface for administrators.
+    -->
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.all.in.one.multi.followers</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Dynamic Followers" string="Dynamic Followers" name="all_in_one_multi_followers">
+                    <block title="Dynamic Followers" name="Dynamic Followers">
+                        <setting id="dynamic_followers_settings">
+                            <div class="content-group mt16">
+                                <span class="fw-bold">Create a Dynamic
+                                    Action
+                                </span>
+                                <div class="mt8"
+                                     groups="base.group_user">
+                                    <button name="%(all_in_one_multi_followers.multi_follower_action)d"
+                                            icon="fa-arrow-right"
+                                            type="action"
+                                            string="Go to Model"
+                                            class="btn-link"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+    <!--
+        This action is used to open the configuration settings window for the
+        "res.config.settings" model, specifically focusing on the "all_in_one_multi_followers"
+        module settings.
+
+        Key Features:
+        - Opens the form view of `res.config.settings` with the view mode set to "form" to
+          allow users to configure settings.
+        - The `target` is set to "inline," which means the form will be displayed within the
+          same window (not as a pop-up or a new tab).
+        - The `context` passes the module name 'all_in_one_multi_followers' and disables
+          binary file size computations (`bin_size: False`), ensuring relevant settings for
+          this module are displayed and handled appropriately.
+
+        This action integrates the dynamic follower settings into the broader configuration
+        options of the system, allowing administrators to manage them seamlessly.
+    -->
+    <record id="res_config_settings_action"
+            model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'all_in_one_multi_followers',
+            'bin_size': False}
+        </field>
+    </record>
+</odoo>
