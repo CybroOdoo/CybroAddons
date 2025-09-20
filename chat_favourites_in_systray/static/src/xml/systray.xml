@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<template>
+    <!-- Patch NotificationItem to add a star icon for marking favourites -->
+    <t t-inherit="mail.NotificationItem" t-inherit-mode="extension">
+        <xpath expr="//t[@t-if='props.slots and props.slots.requestContent']" position="after">
+            <t t-if="state.thread">
+                <t t-set="thread" t-value="state.thread" />
+                <span
+                    class="o_NotificationGroup_favourites fa fa-star"
+                    t-att-id="'star_icon_' + thread.id"
+                    t-att-class="{'text-danger': (state.channels || []).includes(thread.id)}"
+                    title="favourite"
+                    t-on-click.stop="_onClickMarkFavourite"
+                />
+            </t>
+        </xpath>
+    </t>
+
+    <!-- Patch MessagingMenu to add a "Favourite" tab and display matched favourite chats -->
+    <t t-inherit="mail.MessagingMenu.content" t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('o-mail-MessagingMenu-headerFilter')]" position="after">
+            <button
+                class="o-mail-MessagingMenu-headerFilter btn btn-link px-2 py-1 m-1 lh-1"
+                t-att-class="store.discuss.activeTab === 'favourite' ? 'fw-bold o-active' : 'text-muted'"
+                type="button"
+                role="tab"
+                t-on-click="onClickFavouriteTab"
+            >
+                Favourite
+            </button>
+        </xpath>
+        <xpath expr="//t[@t-if=&quot;store.channels.status === 'fetching'&quot;]" position="replace">
+            <t t-if="store.discuss.activeTab !== 'favourite'">
+                <div class="d-flex align-items-center justify-content-center gap-2 py-4 px-2">
+                    <span class="o-visible-short-delay">
+                        <i class="fa fa-circle-o-notch fa-spin me-1"/> Loading…
+                    </span>
+                </div>
+            </t>
+        </xpath>
+
+
+        <!-- Add favourite chat list rendering -->
+        <xpath expr="//div[hasclass('o-mail-MessagingMenu-list')]" position="inside">
+            <t t-if="store.discuss.activeTab === 'favourite' and !env.inDiscussApp and !store.discuss.searchTerm">
+                <div class="o-mail-FavouriteList p-0 m-0">
+                    <t t-if="state.favoriteChannels.length > 0">
+                        <t t-set="itemIndex" t-value="0" />
+                        <t t-foreach="state.matchedFavouriteChats" t-as="channel" t-key="channel.id">
+                            <t t-set="message"
+                               t-value="channel.isChatChannel or (channel.channel_type === 'channel' and channel.needactionMessages.length === 0)
+                                        ? channel.newestPersistentNotEmptyOfAllMessage
+                                        : channel.needactionMessages.at(-1)" />
+
+                            <NotificationItem
+                                isActive="state.activeIndex === itemIndex"
+                                body="message?.inlineBody or message?.subtype_description"
+                                iconSrc="channel.avatarUrl"
+                                counter="channel.needactionCounter"
+                                datetime="message?.datetime"
+                                onClick="(isMarkAsRead) => this.onClickThread(isMarkAsRead, channel)"
+                            >
+                                <t t-set-slot="name">
+                                    <div t-if="channel.parent_channel_id" class="d-flex align-items-center">
+                                        <span class="text-truncate flex-shrink-0 opacity-75 mw-50" t-esc="channel.parent_channel_id.displayName" />
+                                        <i class="oi oi-chevron-right o-xsmaller mx-1" />
+                                        <span class="text-truncate min-w-0" t-esc="channel.displayName" />
+                                    </div>
+                                    <t t-else="">
+                                        <span class="text-truncate" t-esc="channel.displayName" />
+                                    </t>
+                                </t>
+                            </NotificationItem>
+                            <t t-set="itemIndex" t-value="itemIndex + 1" />
+                        </t>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+
+    </t>
+</template>
