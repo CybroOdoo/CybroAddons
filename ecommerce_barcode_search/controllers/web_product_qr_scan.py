@@ -35,10 +35,14 @@ class WebsiteProductBarcode(WebsiteSale):
         input_data = kwargs.get('last_code')
         slug = request.env['ir.http']._slug
         barcode_product = request.env['product.product'].search([('barcode', '=', input_data)])
+        request.session['barcode'] = input_data
+        request.session['barcode_product'] = barcode_product.id
         if barcode_product:
             return {
                         'type': 'ir.actions.act_url',
-                        'url': '/shop/%s' % slug(barcode_product.product_tmpl_id)
+                        'url': '/shop/%s?extra_param=true' % slug(barcode_product.product_tmpl_id)
                     }
         else:
             return False
+
+

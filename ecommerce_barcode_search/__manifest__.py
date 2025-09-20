@@ -22,7 +22,7 @@
 ###################################################################################
 {
     'name': 'Ecommerce Barcode Search',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.1.0',
     'category': 'Website',
     'summary': 'Ecommerce Barcode Search',
     'description': 'This module enables users to search for products on the website using barcodes.'
