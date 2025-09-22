@@ -20,3 +20,5 @@
 #
 #############################################################################
 from . import rest_api_odoo
+from . import swagger_controller
+from . import jwt_auth
