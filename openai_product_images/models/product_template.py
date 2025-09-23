@@ -33,7 +33,6 @@ class ProductTemplate(models.Model):
            Returns:
                returns the  image of corresponding product
         """
-
         return {
             'name': self.name,
             'view_mode': 'form',
@@ -49,7 +48,6 @@ class ProductTemplate(models.Model):
            Returns:
                returns the created  image of corresponding product
         """
-
         return {
             'name': self.name,
             'view_mode': 'tree,form',

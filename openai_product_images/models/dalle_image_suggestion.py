@@ -39,7 +39,6 @@ class DalleImageSuggestion(models.Model):
            Returns:
                returns the  product form view image of corresponding product
         """
-
         self.product_tmpl_id.image_1920 = self.product_image
         return {
             'name': self.product_tmpl_id.name,
