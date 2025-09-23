@@ -25,3 +25,8 @@
 #### Version 17.0.2.1.4
 ##### BUG_FIX
 - Bug fix: Updated module with restricted keyboard events.
+
+#### 20.09.2025
+#### Version 17.0.2.1.5
+##### BUG_FIX
+- Bug fix: Fixed the blank page redirecting issue while clicking on split button.
