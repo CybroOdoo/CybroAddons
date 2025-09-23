@@ -21,9 +21,12 @@
 ################################################################################
 from . import models
 
+
 def post_init_hook(env):
     rec = env.ref("mail.mail_activity_rule_user")
     rec.write({'perm_read': True, 'perm_create': True})
+    activities = env['mail.activity'].search([('state', '=', False)])
+    activities._compute_state()
 
 def uninstall_hook(env):
     rec = env.ref("mail.mail_activity_rule_user")

@@ -9,3 +9,8 @@
 #### Version 17.0.1.0.1
 ##### UPDT
 - Updated the record rule for the mail.activity model
+
+#### 16.09.2025
+#### Version 17.0.1.0.2
+##### BUG_FIX
+- Updated the post_init_hook in the model
