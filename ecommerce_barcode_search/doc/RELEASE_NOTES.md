@@ -9,3 +9,8 @@
 #### Version 18.0.1.1.0
 #### BUG_FIX
 - Enabled variant selection on the product page via barcode scanning
+
+#### 23.09.2025
+#### Version 18.0.1.2.0
+#### BUG_FIX
+- Enabled multiple variant selection on the product page via barcode scanning

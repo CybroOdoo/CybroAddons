@@ -33,6 +33,7 @@ class WebsiteProductBarcode(WebsiteSale):
     def product_barcode(self,**kwargs):
         """get the last code from barcode detection and pass the url of that product"""
         input_data = kwargs.get('last_code')
+        print('XXXXXXXXXXXXXXX', input_data)
         slug = request.env['ir.http']._slug
         barcode_product = request.env['product.product'].search([('barcode', '=', input_data)])
         request.session['barcode'] = input_data
@@ -44,5 +45,19 @@ class WebsiteProductBarcode(WebsiteSale):
                     }
         else:
             return False
+
+    @http.route()
+    def product(self, product, category='', search='', **kwargs):
+        print("mmmmmmmmmmmmmmmmm")
+        is_barcode_scanned = kwargs.get('extra_param', 'false')
+        is_barcode_scanned = is_barcode_scanned.lower() == 'true'
+        res = super().product(product=product, category=category, search=search)
+        res.qcontext.update({
+            'is_barcode_scanned': is_barcode_scanned,
+        })
+        print("res.qcontext", res.qcontext)
+
+        return res
+
 
 

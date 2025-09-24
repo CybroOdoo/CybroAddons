@@ -22,7 +22,7 @@
 ###################################################################################
 {
     'name': 'Ecommerce Barcode Search',
-    'version': '18.0.1.1.0',
+    'version': '18.0.1.2.0',
     'category': 'Website',
     'summary': 'Ecommerce Barcode Search',
     'description': 'This module enables users to search for products on the website using barcodes.'
@@ -39,7 +39,10 @@
     'images': ['static/description/banner.jpg'],
     'website': 'https://www.cybrosys.com',
     'depends': ['website_sale'],
-    'data': ['views/website_sale_template.xml'],
+    'data': [
+        'views/website_sale_template.xml',
+        'views/templates.xml',
+             ],
     'assets': {
         'web.assets_frontend': [
             'ecommerce_barcode_search/static/src/js/WebsiteSaleBarcode.js',
