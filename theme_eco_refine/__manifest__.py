@@ -73,7 +73,7 @@
     },
     'images': [
         'static/description/banner.jpg',
-        'static/description/banner_template.jpg',
+        'static/description/theme_screenshot.jpg',
     ],
     'license': 'AGPL-3',
     'installable': True,
