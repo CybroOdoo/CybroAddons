@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Remove Order Line In POS",
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Point of Sale',
     'summary': """Remove Individual Orderlines In Point Of Sale. """,
     'description': """Remove each lines from selected order by simply 
@@ -37,6 +37,7 @@
             'pos_delete_orderline/static/src/app/control_buttons/control_buttons.xml',
             'pos_delete_orderline/static/src/app/screens/product_screen/product_screen.js',
             'pos_delete_orderline/static/src/app/screens/product_screen/product_screen.xml',
+            'pos_delete_orderline/static/src/scss/style.scss',
         ],
     },
     'images': ['static/description/banner.jpg'],
