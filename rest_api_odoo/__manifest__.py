@@ -23,9 +23,9 @@
     "name": "Odoo rest API",
     "version": "18.0.1.0.1",
     "category": "Tools",
-    "summary": """This app helps to interact with odoo, backend with help of 
+    "summary": """This app helps to interact with odoo, backend with help of
      rest api requests""",
-    "description": """The odoo Rest API module allow us to connect to database 
+    "description": """The odoo Rest API module allow us to connect to database
      with the help of GET , POST , PUT and DELETE requests""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
@@ -35,7 +35,8 @@
     "data": [
         'security/ir.model.access.csv',
         'views/res_users_views.xml',
-        'views/connection_api_views.xml'
+        'views/connection_api_views.xml',
+        'views/api_dashboard_views.xml',
     ],
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
