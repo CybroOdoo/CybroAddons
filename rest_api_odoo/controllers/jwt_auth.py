@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-import jwt
+try:
+    import jwt
+except ImportError:
+    raise ImportError("PyJWT is required for REST API authentication. Install with: pip install PyJWT")
+
 import base64
 import secrets
 import logging
@@ -102,10 +106,9 @@ class JWTAuthMixin:
             if not user.active:
                 return False, None, "Usuario inactivo"
 
-            # Configurar contexto de sesión
+            # Configurar contexto de sesión - Método correcto para Odoo 18.0
             request.session.uid = user_id
-            if hasattr(request, 'env'):
-                request.env.user = user
+            request.env = request.env(user=user)
 
             # Log successful authentication
             _logger.debug(f"JWT authentication successful for user {user_id} ({user.login})")

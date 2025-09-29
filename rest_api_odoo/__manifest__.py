@@ -32,6 +32,9 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     "depends": ['base', 'web'],
+    "external_dependencies": {
+        "python": ["PyJWT"],
+    },
     "data": [
         'security/ir.model.access.csv',
         'views/res_users_views.xml',

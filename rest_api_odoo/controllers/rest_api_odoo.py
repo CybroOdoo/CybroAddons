@@ -15,11 +15,20 @@ class RestApi(http.Controller, JWTAuthMixin):
     """Controlador API REST mejorado con JWT y filtrado avanzado"""
 
     def _json_response(self, data, status=200):
-        """Genera respuesta JSON estandarizada"""
+        """Genera respuesta JSON estandarizada con soporte CORS"""
         try:
+            cors_headers = [
+                ('Content-Type', 'application/json; charset=utf-8'),
+                ('Access-Control-Allow-Origin', '*'),
+                ('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'),
+                ('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key, api-key'),
+                ('Access-Control-Expose-Headers', 'Content-Type, Authorization'),
+                ('Access-Control-Max-Age', '86400')
+            ]
+
             response = request.make_response(
                 json.dumps(data, ensure_ascii=False, indent=2, default=str),
-                headers=[('Content-Type', 'application/json; charset=utf-8')]
+                headers=cors_headers
             )
             response.status_code = status
             return response
@@ -30,10 +39,16 @@ class RestApi(http.Controller, JWTAuthMixin):
                 'message': 'Error interno creando respuesta JSON',
                 'status_code': 500
             }
+            cors_headers = [
+                ('Content-Type', 'application/json; charset=utf-8'),
+                ('Access-Control-Allow-Origin', '*'),
+                ('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'),
+                ('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key, api-key')
+            ]
             return request.make_response(
                 json.dumps(fallback_data, indent=2),
                 status=500,
-                headers=[('Content-Type', 'application/json; charset=utf-8')]
+                headers=cors_headers
             )
 
     def _error_response(self, message, status=400, error_code=None):
@@ -179,9 +194,13 @@ class RestApi(http.Controller, JWTAuthMixin):
             _logger.error(f"Error parsing request data: {str(e)}")
             return None, None, None, None, None, None, f"Error procesando datos de la request: {str(e)}"
 
-    @http.route(['/api/v1/auth'], type='http', auth='none', methods=['POST'], csrf=False)
+    @http.route(['/api/v1/auth'], type='http', auth='none', methods=['POST', 'OPTIONS'], csrf=False)
     def authenticate(self, **kw):
         """Endpoint de autenticación que genera JWT token"""
+        # Manejar peticiones OPTIONS para CORS preflight
+        if request.httprequest.method == 'OPTIONS':
+            return self._handle_cors_preflight()
+
         try:
             if request.httprequest.data:
                 data = json.loads(request.httprequest.data.decode('utf-8'))
@@ -203,15 +222,8 @@ class RestApi(http.Controller, JWTAuthMixin):
             expires_in = 24
 
         try:
-            # Autenticar credenciales
-            credential = {'login': username, 'password': password, 'type': 'password'}
-
-            auth_result = request.session.authenticate(database, credential)
-            if not auth_result:
-                return self._error_response("Credenciales inválidas", 401)
-
-            uid = auth_result['uid']
-
+            # Autenticar credenciales - Método correcto para Odoo 18.0
+            uid = request.session.authenticate(database, username, password)
             if not uid:
                 return self._error_response("Credenciales inválidas", 401)
 
@@ -301,10 +313,14 @@ class RestApi(http.Controller, JWTAuthMixin):
         return self._validate_jwt_token(auth_header)
 
     @http.route(['/api/v1/<model_name>', '/api/v1/<model_name>/<int:record_id>'],
-                type='http', auth='none', methods=['GET', 'POST', 'PUT', 'DELETE'], csrf=False)
+                type='http', auth='none', methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], csrf=False)
     def api_handler(self, model_name, record_id=None, **kw):
         """Endpoint principal de la API REST con JWT y filtrado avanzado"""
         method = request.httprequest.method
+
+        # Manejar peticiones OPTIONS para CORS preflight
+        if method == 'OPTIONS':
+            return self._handle_cors_preflight()
 
         # Autenticación usando JWT
         success, user_id, error_msg = self._authenticate_request()
@@ -655,3 +671,16 @@ class RestApi(http.Controller, JWTAuthMixin):
         except Exception as e:
             _logger.error(f"Error en api_root: {str(e)}")
             return self._error_response("Error interno del servidor", 500)
+
+    def _handle_cors_preflight(self):
+        """Maneja peticiones OPTIONS para CORS preflight"""
+        cors_headers = [
+            ('Content-Type', 'application/json; charset=utf-8'),
+            ('Access-Control-Allow-Origin', '*'),
+            ('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'),
+            ('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key, api-key'),
+            ('Access-Control-Expose-Headers', 'Content-Type, Authorization'),
+            ('Access-Control-Max-Age', '86400')
+        ]
+
+        return request.make_response('', headers=cors_headers, status=200)
