@@ -12,15 +12,18 @@ class TestRestApiAuth(HttpCase):
 
     def setUp(self):
         super().setUp()
-        self.base_url = '/api/v1'
+        self.api_base_url = '/api/v1'
         self.admin_user = self.env.ref('base.user_admin')
         self.demo_user = self.env.ref('base.user_demo')
 
-        # Crear configuración de API para res.users
-        self.env['ir.model'].search([('model', '=', 'res.users')], limit=1)
+        # Limpiar configuraciones existentes de API para res.users
         model_users = self.env['ir.model'].search([('model', '=', 'res.users')], limit=1)
+        existing_configs = self.env['connection.api'].search([('model_id', '=', model_users.id)])
+        if existing_configs:
+            existing_configs.unlink()
+
+        # Crear configuración de API para res.users
         self.api_config = self.env['connection.api'].create({
-            'name': 'Test Users API',
             'model_id': model_users.id,
             'active': True,
             'is_get': True,
@@ -40,7 +43,7 @@ class TestRestApiAuth(HttpCase):
         }
 
         response = self.url_open(
-            f'{self.base_url}/auth',
+            f'{self.api_base_url}/auth',
             data=json.dumps(auth_data).encode('utf-8'),
             headers={'Content-Type': 'application/json'}
         )
@@ -64,7 +67,7 @@ class TestRestApiAuth(HttpCase):
         }
 
         response = self.url_open(
-            f'{self.base_url}/auth',
+            f'{self.api_base_url}/auth',
             data=json.dumps(auth_data).encode('utf-8'),
             headers={'Content-Type': 'application/json'}
         )
@@ -83,7 +86,7 @@ class TestRestApiAuth(HttpCase):
         }
 
         response = self.url_open(
-            f'{self.base_url}/auth',
+            f'{self.api_base_url}/auth',
             data=json.dumps(auth_data).encode('utf-8'),
             headers={'Content-Type': 'application/json'}
         )
@@ -97,7 +100,7 @@ class TestRestApiAuth(HttpCase):
     def test_auth_endpoint_invalid_json(self):
         """Test autenticación con JSON inválido"""
         response = self.url_open(
-            f'{self.base_url}/auth',
+            f'{self.api_base_url}/auth',
             data=b'invalid json data',
             headers={'Content-Type': 'application/json'}
         )
@@ -118,7 +121,7 @@ class TestRestApiAuth(HttpCase):
         }
 
         auth_response = self.url_open(
-            f'{self.base_url}/auth',
+            f'{self.api_base_url}/auth',
             data=json.dumps(auth_data).encode('utf-8'),
             headers={'Content-Type': 'application/json'}
         )
@@ -128,7 +131,7 @@ class TestRestApiAuth(HttpCase):
 
         # Usar el token para hacer una petición
         response = self.url_open(
-            f'{self.base_url}/res.users',
+            f'{self.api_base_url}/res.users',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -160,7 +163,7 @@ class TestRestApiAuth(HttpCase):
         expired_token = jwt.encode(expired_payload, secret, algorithm='HS256')
 
         response = self.url_open(
-            f'{self.base_url}/res.users',
+            f'{self.api_base_url}/res.users',
             headers={
                 'Authorization': f'Bearer {expired_token}',
                 'Content-Type': 'application/json'
@@ -182,7 +185,7 @@ class TestRestApiAuth(HttpCase):
         }
 
         auth_response = self.url_open(
-            f'{self.base_url}/auth',
+            f'{self.api_base_url}/auth',
             data=json.dumps(auth_data).encode('utf-8'),
             headers={'Content-Type': 'application/json'}
         )
@@ -194,7 +197,7 @@ class TestRestApiAuth(HttpCase):
         refresh_data = {'expires_in_hours': 48}
 
         refresh_response = self.url_open(
-            f'{self.base_url}/refresh',
+            f'{self.api_base_url}/refresh',
             data=json.dumps(refresh_data).encode('utf-8'),
             headers={
                 'Authorization': f'Bearer {original_token}',
@@ -214,7 +217,7 @@ class TestRestApiAuth(HttpCase):
 
     def test_health_check_endpoint(self):
         """Test endpoint de health check"""
-        response = self.url_open(f'{self.base_url}/health')
+        response = self.url_open(f'{self.api_base_url}/health')
 
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.content.decode('utf-8'))
@@ -235,7 +238,7 @@ class TestRestApiAuth(HttpCase):
         }
 
         auth_response = self.url_open(
-            f'{self.base_url}/auth',
+            f'{self.api_base_url}/auth',
             data=json.dumps(auth_data).encode('utf-8'),
             headers={'Content-Type': 'application/json'}
         )
@@ -245,7 +248,7 @@ class TestRestApiAuth(HttpCase):
 
         # Obtener lista de modelos
         response = self.url_open(
-            f'{self.base_url}/models',
+            f'{self.api_base_url}/models',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'

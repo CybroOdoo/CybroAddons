@@ -11,12 +11,16 @@ class TestRestApiErrors(HttpCase):
 
     def setUp(self):
         super().setUp()
-        self.base_url = '/api/v1'
+        self.api_base_url = '/api/v1'
+
+        # Limpiar configuraciones existentes de API para res.partner
+        model_partner = self.env['ir.model'].search([('model', '=', 'res.partner')], limit=1)
+        existing_configs = self.env['connection.api'].search([('model_id', '=', model_partner.id)])
+        if existing_configs:
+            existing_configs.unlink()
 
         # Crear configuración de API para res.partner
-        model_partner = self.env['ir.model'].search([('model', '=', 'res.partner')], limit=1)
         self.api_config = self.env['connection.api'].create({
-            'name': 'Test Partners API',
             'model_id': model_partner.id,
             'active': True,
             'is_get': True,
@@ -35,7 +39,7 @@ class TestRestApiErrors(HttpCase):
         }
 
         response = self.url_open(
-            f'{self.base_url}/auth',
+            f'{self.api_base_url}/auth',
             data=json.dumps(auth_data).encode('utf-8'),
             headers={'Content-Type': 'application/json'}
         )
@@ -45,7 +49,7 @@ class TestRestApiErrors(HttpCase):
 
     def test_authentication_failed_no_token(self):
         """Test acceso sin token de autenticación"""
-        response = self.url_open(f'{self.base_url}/res.partner')
+        response = self.url_open(f'{self.api_base_url}/res.partner')
 
         self.assertEqual(response.status_code, 401)
         response_data = json.loads(response.content.decode('utf-8'))
@@ -57,7 +61,7 @@ class TestRestApiErrors(HttpCase):
     def test_authentication_failed_invalid_token(self):
         """Test con token inválido"""
         response = self.url_open(
-            f'{self.base_url}/res.partner',
+            f'{self.api_base_url}/res.partner',
             headers={
                 'Authorization': 'Bearer invalid_token_here',
                 'Content-Type': 'application/json'
@@ -73,7 +77,7 @@ class TestRestApiErrors(HttpCase):
     def test_authentication_failed_malformed_token(self):
         """Test con token mal formado"""
         response = self.url_open(
-            f'{self.base_url}/res.partner',
+            f'{self.api_base_url}/res.partner',
             headers={
                 'Authorization': 'InvalidFormat token_here',
                 'Content-Type': 'application/json'
@@ -91,7 +95,7 @@ class TestRestApiErrors(HttpCase):
         token = self._get_auth_token()
 
         response = self.url_open(
-            f'{self.base_url}/non.existent.model',
+            f'{self.api_base_url}/non.existent.model',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -110,7 +114,7 @@ class TestRestApiErrors(HttpCase):
 
         # res.country no tiene configuración de API en este test
         response = self.url_open(
-            f'{self.base_url}/res.country',
+            f'{self.api_base_url}/res.country',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -139,7 +143,7 @@ class TestRestApiErrors(HttpCase):
         }
 
         response = self.url_open(
-            f'{self.base_url}/res.partner',
+            f'{self.api_base_url}/res.partner',
             data=json.dumps(create_data).encode('utf-8'),
             headers={
                 'Authorization': f'Bearer {token}',
@@ -161,7 +165,7 @@ class TestRestApiErrors(HttpCase):
         token = self._get_auth_token()
 
         response = self.url_open(
-            f'{self.base_url}/res.partner',
+            f'{self.api_base_url}/res.partner',
             data=b'{"invalid": json syntax}',
             headers={
                 'Authorization': f'Bearer {token}',
@@ -184,7 +188,7 @@ class TestRestApiErrors(HttpCase):
         }
 
         response = self.url_open(
-            f'{self.base_url}/res.partner',
+            f'{self.api_base_url}/res.partner',
             data=json.dumps(invalid_data).encode('utf-8'),
             headers={
                 'Authorization': f'Bearer {token}',
@@ -213,7 +217,7 @@ class TestRestApiErrors(HttpCase):
         }
 
         response = self.url_open(
-            f'{self.base_url}/res.partner/{test_partner.id}',
+            f'{self.api_base_url}/res.partner/{test_partner.id}',
             data=json.dumps(invalid_data).encode('utf-8'),
             headers={
                 'Authorization': f'Bearer {token}',
@@ -241,7 +245,7 @@ class TestRestApiErrors(HttpCase):
         }
 
         response = self.url_open(
-            f'{self.base_url}/res.partner',  # Sin ID
+            f'{self.api_base_url}/res.partner',  # Sin ID
             data=json.dumps(update_data).encode('utf-8'),
             headers={
                 'Authorization': f'Bearer {token}',
@@ -268,7 +272,7 @@ class TestRestApiErrors(HttpCase):
         non_existent_id = 999999
 
         response = self.url_open(
-            f'{self.base_url}/res.partner/{non_existent_id}',
+            f'{self.api_base_url}/res.partner/{non_existent_id}',
             data=json.dumps(update_data).encode('utf-8'),
             headers={
                 'Authorization': f'Bearer {token}',
@@ -287,7 +291,7 @@ class TestRestApiErrors(HttpCase):
         token = self._get_auth_token()
 
         response = self.url_open(
-            f'{self.base_url}/res.partner',  # Sin ID
+            f'{self.api_base_url}/res.partner',  # Sin ID
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -307,7 +311,7 @@ class TestRestApiErrors(HttpCase):
         non_existent_id = 999999
 
         response = self.url_open(
-            f'{self.base_url}/res.partner/{non_existent_id}',
+            f'{self.api_base_url}/res.partner/{non_existent_id}',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -329,7 +333,7 @@ class TestRestApiErrors(HttpCase):
         params = f'domain={invalid_domain}'
 
         response = self.url_open(
-            f'{self.base_url}/res.partner?{params}',
+            f'{self.api_base_url}/res.partner?{params}',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -349,7 +353,7 @@ class TestRestApiErrors(HttpCase):
         params = 'limit=100'
 
         response = self.url_open(
-            f'{self.base_url}/res.partner?{params}',
+            f'{self.api_base_url}/res.partner?{params}',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -372,7 +376,7 @@ class TestRestApiErrors(HttpCase):
         params = 'limit=invalid'
 
         response = self.url_open(
-            f'{self.base_url}/res.partner?{params}',
+            f'{self.api_base_url}/res.partner?{params}',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -397,7 +401,7 @@ class TestRestApiErrors(HttpCase):
         }
 
         response = self.url_open(
-            f'{self.base_url}/res.partner',
+            f'{self.api_base_url}/res.partner',
             data=json.dumps(invalid_data).encode('utf-8'),
             headers={
                 'Authorization': f'Bearer {token}',
@@ -414,7 +418,7 @@ class TestRestApiErrors(HttpCase):
     def test_cors_headers_in_error_responses(self):
         """Test que las respuestas de error incluyen headers CORS"""
         # Test con error 401
-        response = self.url_open(f'{self.base_url}/res.partner')
+        response = self.url_open(f'{self.api_base_url}/res.partner')
 
         self.assertEqual(response.status_code, 401)
 
@@ -432,7 +436,7 @@ class TestRestApiErrors(HttpCase):
             mock_env.__getitem__.side_effect = Exception("Simulated internal error")
 
             response = self.url_open(
-                f'{self.base_url}/res.partner',
+                f'{self.api_base_url}/res.partner',
                 headers={
                     'Authorization': f'Bearer {token}',
                     'Content-Type': 'application/json'

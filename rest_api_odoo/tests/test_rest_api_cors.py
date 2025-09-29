@@ -8,12 +8,16 @@ class TestRestApiCors(HttpCase):
 
     def setUp(self):
         super().setUp()
-        self.base_url = '/api/v1'
+        self.api_base_url = '/api/v1'
+
+        # Limpiar configuraciones existentes de API para res.partner
+        model_partner = self.env['ir.model'].search([('model', '=', 'res.partner')], limit=1)
+        existing_configs = self.env['connection.api'].search([('model_id', '=', model_partner.id)])
+        if existing_configs:
+            existing_configs.unlink()
 
         # Crear configuración de API para res.partner
-        model_partner = self.env['ir.model'].search([('model', '=', 'res.partner')], limit=1)
         self.api_config = self.env['connection.api'].create({
-            'name': 'Test Partners API',
             'model_id': model_partner.id,
             'active': True,
             'is_get': True,
@@ -32,7 +36,7 @@ class TestRestApiCors(HttpCase):
         }
 
         response = self.url_open(
-            f'{self.base_url}/auth',
+            f'{self.api_base_url}/auth',
             data=json.dumps(auth_data).encode('utf-8'),
             headers={'Content-Type': 'application/json'}
         )
@@ -49,7 +53,7 @@ class TestRestApiCors(HttpCase):
         }
 
         response = self.url_open(
-            f'{self.base_url}/auth',
+            f'{self.api_base_url}/auth',
             data=json.dumps(auth_data).encode('utf-8'),
             headers={'Content-Type': 'application/json'}
         )
@@ -67,7 +71,7 @@ class TestRestApiCors(HttpCase):
 
     def test_options_preflight_auth_endpoint(self):
         """Test petición OPTIONS al endpoint de autenticación"""
-        response = self.opener.options(f'{self.base_url}/auth')
+        response = self.opener.options(f'{self.api_base_url}/auth')
 
         self.assertEqual(response.status_code, 200)
 
@@ -89,7 +93,7 @@ class TestRestApiCors(HttpCase):
 
     def test_options_preflight_api_endpoint(self):
         """Test petición OPTIONS a endpoint de API"""
-        response = self.opener.options(f'{self.base_url}/res.partner')
+        response = self.opener.options(f'{self.api_base_url}/res.partner')
 
         self.assertEqual(response.status_code, 200)
 
@@ -110,7 +114,7 @@ class TestRestApiCors(HttpCase):
         token = self._get_auth_token()
 
         response = self.url_open(
-            f'{self.base_url}/res.partner',
+            f'{self.api_base_url}/res.partner',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -129,7 +133,7 @@ class TestRestApiCors(HttpCase):
     def test_cors_headers_in_error_responses(self):
         """Test que las respuestas de error incluyen headers CORS"""
         # Petición sin token (debe fallar con 401)
-        response = self.url_open(f'{self.base_url}/res.partner')
+        response = self.url_open(f'{self.api_base_url}/res.partner')
 
         self.assertEqual(response.status_code, 401)
 
@@ -142,7 +146,7 @@ class TestRestApiCors(HttpCase):
         token = self._get_auth_token()
 
         response = self.url_open(
-            f'{self.base_url}/res.partner',
+            f'{self.api_base_url}/res.partner',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json',
@@ -170,7 +174,7 @@ class TestRestApiCors(HttpCase):
         }
 
         response = self.url_open(
-            f'{self.base_url}/res.partner',
+            f'{self.api_base_url}/res.partner',
             headers=axios_headers
         )
 
@@ -184,7 +188,7 @@ class TestRestApiCors(HttpCase):
 
         # Test con X-API-Key
         response1 = self.url_open(
-            f'{self.base_url}/res.partner',
+            f'{self.api_base_url}/res.partner',
             headers={
                 'X-API-Key': token,
                 'Content-Type': 'application/json'
@@ -195,7 +199,7 @@ class TestRestApiCors(HttpCase):
 
         # Test con api-key
         response2 = self.url_open(
-            f'{self.base_url}/res.partner',
+            f'{self.api_base_url}/res.partner',
             headers={
                 'api-key': token,
                 'Content-Type': 'application/json'
@@ -212,7 +216,7 @@ class TestRestApiCors(HttpCase):
             'Origin': 'https://example.com'
         }
 
-        response = self.opener.options(f'{self.base_url}/auth', headers=headers)
+        response = self.opener.options(f'{self.api_base_url}/auth', headers=headers)
 
         self.assertEqual(response.status_code, 200)
 
@@ -226,7 +230,7 @@ class TestRestApiCors(HttpCase):
         token = self._get_auth_token()
 
         response = self.url_open(
-            f'{self.base_url}/res.partner',
+            f'{self.api_base_url}/res.partner',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'

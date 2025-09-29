@@ -8,12 +8,16 @@ class TestRestApiCrud(HttpCase):
 
     def setUp(self):
         super().setUp()
-        self.base_url = '/api/v1'
+        self.api_base_url = '/api/v1'
+
+        # Limpiar configuraciones existentes de API para res.partner
+        model_partner = self.env['ir.model'].search([('model', '=', 'res.partner')], limit=1)
+        existing_configs = self.env['connection.api'].search([('model_id', '=', model_partner.id)])
+        if existing_configs:
+            existing_configs.unlink()
 
         # Crear configuración de API para res.partner
-        model_partner = self.env['ir.model'].search([('model', '=', 'res.partner')], limit=1)
         self.api_config = self.env['connection.api'].create({
-            'name': 'Test Partners API',
             'model_id': model_partner.id,
             'active': True,
             'is_get': True,
@@ -47,7 +51,7 @@ class TestRestApiCrud(HttpCase):
         }
 
         response = self.url_open(
-            f'{self.base_url}/auth',
+            f'{self.api_base_url}/auth',
             data=json.dumps(auth_data).encode('utf-8'),
             headers={'Content-Type': 'application/json'}
         )
@@ -60,7 +64,7 @@ class TestRestApiCrud(HttpCase):
         token = self._get_auth_token()
 
         response = self.url_open(
-            f'{self.base_url}/res.partner',
+            f'{self.api_base_url}/res.partner',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -81,7 +85,7 @@ class TestRestApiCrud(HttpCase):
         token = self._get_auth_token()
 
         response = self.url_open(
-            f'{self.base_url}/res.partner/{self.test_partner1.id}',
+            f'{self.api_base_url}/res.partner/{self.test_partner1.id}',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -104,7 +108,7 @@ class TestRestApiCrud(HttpCase):
         # Solo solicitar campos específicos
         params = 'fields=id,name,email'
         response = self.url_open(
-            f'{self.base_url}/res.partner?{params}',
+            f'{self.api_base_url}/res.partner?{params}',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -133,7 +137,7 @@ class TestRestApiCrud(HttpCase):
         params = f'domain={domain}'
 
         response = self.url_open(
-            f'{self.base_url}/res.partner?{params}',
+            f'{self.api_base_url}/res.partner?{params}',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -154,7 +158,7 @@ class TestRestApiCrud(HttpCase):
         # Primera página
         params = 'limit=1&offset=0'
         response = self.url_open(
-            f'{self.base_url}/res.partner?{params}',
+            f'{self.api_base_url}/res.partner?{params}',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -185,7 +189,7 @@ class TestRestApiCrud(HttpCase):
         }
 
         response = self.url_open(
-            f'{self.base_url}/res.partner',
+            f'{self.api_base_url}/res.partner',
             data=json.dumps(new_partner_data).encode('utf-8'),
             headers={
                 'Authorization': f'Bearer {token}',
@@ -226,7 +230,7 @@ class TestRestApiCrud(HttpCase):
         }
 
         response = self.url_open(
-            f'{self.base_url}/res.partner/{test_partner.id}',
+            f'{self.api_base_url}/res.partner/{test_partner.id}',
             data=json.dumps(update_data).encode('utf-8'),
             headers={
                 'Authorization': f'Bearer {token}',
@@ -263,7 +267,7 @@ class TestRestApiCrud(HttpCase):
         partner_id = test_partner.id
 
         response = self.url_open(
-            f'{self.base_url}/res.partner/{partner_id}',
+            f'{self.api_base_url}/res.partner/{partner_id}',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -287,7 +291,7 @@ class TestRestApiCrud(HttpCase):
         # Ordenar por nombre descendente
         params = 'order=name desc&limit=5'
         response = self.url_open(
-            f'{self.base_url}/res.partner?{params}',
+            f'{self.api_base_url}/res.partner?{params}',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -313,7 +317,7 @@ class TestRestApiCrud(HttpCase):
         self.api_config.is_delete = False
 
         response = self.url_open(
-            f'{self.base_url}/res.partner/{self.test_partner1.id}',
+            f'{self.api_base_url}/res.partner/{self.test_partner1.id}',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -337,7 +341,7 @@ class TestRestApiCrud(HttpCase):
         non_existent_id = 999999
 
         response = self.url_open(
-            f'{self.base_url}/res.partner/{non_existent_id}',
+            f'{self.api_base_url}/res.partner/{non_existent_id}',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
@@ -358,7 +362,7 @@ class TestRestApiCrud(HttpCase):
 
         # Intentar acceder a un modelo que no tiene configuración de API
         response = self.url_open(
-            f'{self.base_url}/res.country',
+            f'{self.api_base_url}/res.country',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
