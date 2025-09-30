@@ -1,3 +1,5 @@
+/** @odoo-module **/
+
 import { patch } from "@web/core/utils/patch";
 import { ViewButton } from "@web/views/view_button/view_button";
 import { SettingsConfirmationDialog } from "@web/webclient/settings_form_view/settings_confirmation_dialog";
@@ -9,95 +11,70 @@ patch(ViewButton.prototype, {
     setup() {
         super.setup(...arguments);
         this.dialogService = useService("dialog");
+        this.actionService = useService("action");   // use this instead of old DOM
     },
 
     async onClick(ev) {
-        const proceed = await this._confirmSave();
+        const model = this.props.record || this.props.model;
+        const hasUnsavedChanges =
+            model && typeof model.isDirty === "function" && (await model.isDirty());
 
-        if (!proceed) {
-            return;
+        if (hasUnsavedChanges) {
+            const proceed = await this._confirmSave(model);
+            if (!proceed) return;
         }
 
+        // Normal button behavior
         if (this.props.tag === "a") {
             ev.preventDefault();
         }
-
         if (this.props.onClick) {
             return this.props.onClick();
         }
-    },
-
-    discard() {
-        const model = this.props.record || this.props.model;
-
-        if (!model) {
-            console.warn("No model available to discard or save.");
-            return;
+        if (this.props.clickParams) {
+            return this.env.onClickViewButton({
+                clickParams: this.props.clickParams,
+                getResParams: () =>
+                    pick(model, "context", "evalContext", "resModel", "resId", "resIds"),
+            });
         }
-
-        this.env.onClickViewButton({
-            clickParams: {
-                name: "cancel",
-                type: "object",
-                special: "cancel",
-            },
-            getResParams: () =>
-                pick(model, "context", "evalContext", "resModel", "resId", "resIds"),
-        });
     },
 
-    async _confirmSave() {
-        let _continue = true;
+    async _confirmSave(model) {
+        let proceed = true;
 
         await new Promise((resolve) => {
             this.dialogService.add(SettingsConfirmationDialog, {
                 body: _t("Would you like to save your changes?"),
                 confirm: async () => {
-                    // Check if `clickParams` is available
-                    const clickParams = this.clickParams || {
-                        name: "execute",
-                        type: "object",
-                    };
-
-                    const model = this.props.record || this.props.model;
-                    if (model) {
-                        await this.env.onClickViewButton({
-                            clickParams,
-                            getResParams: () =>
-                                pick(
-                                    model,
-                                    "context",
-                                    "evalContext",
-                                    "resModel",
-                                    "resId",
-                                    "resIds"
-                                ),
-                        });
-                    } else {
-                        console.warn("No model available to execute save.");
+                    try {
+                        await model.save();
+                        //  use Action Service instead of onClickViewButton (avoids `el=null`)
+                        if (this.props.clickParams) {
+                            this.actionService.doActionButton({
+                                name: this.props.clickParams.name,
+                                type: "object",
+                                resModel: model.resModel,
+                                resId: model.resId,
+                                context: model.context,
+                            });
+                        }
+                    } catch (e) {
+                        console.error("Save failed:", e);
                     }
-
-                    _continue = true;
                     resolve();
                 },
                 cancel: async () => {
-                    const model = this.props.record || this.props.model;
-                    if (model) {
-                        await model?.discard?.();
-                        await model?.save?.();
-                    } else {
-                        console.warn("No model available to discard or save.");
-                    }
-                    _continue = true;
+                    if (model?.discard) await model.discard();
                     resolve();
                 },
                 stayHere: () => {
-                    _continue = false;
+                    proceed = false;
                     resolve();
                 },
             });
         });
 
-        return _continue;
+        return proceed;
     },
 });
