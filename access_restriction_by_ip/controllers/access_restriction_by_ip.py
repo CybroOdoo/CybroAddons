@@ -22,102 +22,92 @@
 import odoo
 from odoo import http
 from odoo.addons.web.controllers import home
-from odoo.addons.web.controllers.utils import ensure_db, _get_login_redirect_url, is_user_internal
+from odoo.addons.web.controllers.utils import ensure_db
 from odoo.http import request, route
 from odoo.tools.translate import _
+from odoo.exceptions import AccessDenied
+# reuse helpers from session module
+from .session import _check_user_ip, _get_client_ip
 
-SIGN_UP_REQUEST_PARAMS = {'db', 'login', 'debug', 'token', 'message', 'error',
-                          'scope', 'mode',
-                          'redirect', 'redirect_hostname', 'email', 'name',
-                          'partner_id',
-                          'password', 'confirm_password', 'city', 'country_id',
-                          'lang', 'signup_email'}
-LOGIN_SUCCESSFUL_PARAMS = set()
+SIGN_UP_REQUEST_PARAMS = {
+    'db', 'login', 'debug', 'token', 'message', 'error',
+    'scope', 'mode', 'redirect', 'redirect_hostname', 'email',
+    'name', 'partner_id', 'password', 'confirm_password', 'city',
+    'country_id', 'lang', 'signup_email'
+}
 CREDENTIAL_PARAMS = ['login', 'password', 'type']
 
-class Home(home.Home):
-    """Custom Home class for handling web login and authentication.
-    Extends the base Home class.
-    Methods:
-        web_login(self, redirect=None, **kw): Handles web login and
-        authentication."""
 
-    @route('/web/login', type='http', auth="none", readonly=False)
+class Home(home.Home):
+    """Custom Home controller that enforces IP restriction on web login."""
+
+    @route('/web/login', type='http', auth="none", methods=['GET', 'POST'], csrf=False)
     def web_login(self, redirect=None, **kw):
-        """Handle web login and authentication.
-        Args:
-            redirect (str): URL to redirect after successful login.
-            **kw: Additional keyword arguments.
-        Returns:
-            http.Response: The HTTP response."""
         ensure_db()
         request.params['login_success'] = False
+
+        # If already logged in, and GET with redirect, go there
         if request.httprequest.method == 'GET' and redirect and request.session.uid:
             return request.redirect(redirect)
+
+        # prepare env for public
         if request.env.uid is None:
             if request.session.uid is None:
                 request.env["ir.http"]._auth_method_public()
             else:
                 request.update_env(user=request.session.uid)
-        values = {k: v for k, v in request.params.items() if
-                  k in SIGN_UP_REQUEST_PARAMS}
+
+        values = {k: v for k, v in request.params.items() if k in SIGN_UP_REQUEST_PARAMS}
         try:
             values['databases'] = http.db_list()
         except odoo.exceptions.AccessDenied:
             values['databases'] = None
+
         if request.httprequest.method == 'POST':
             old_uid = request.uid
-            ip_address = request.httprequest.environ['REMOTE_ADDR']
-            if request.params['login']:
-                user_rec = request.env['res.users'].sudo().search(
-                    [('login', '=', request.params['login'])])
-                if user_rec.allowed_ip_ids:
-                    ip_list = []
-                    for rec in user_rec.allowed_ip_ids:
-                        ip_list.append(rec.ip_address)
-                    if ip_address in ip_list:
-                        try:
-                            credential = {key: value for key, value in
-                                          request.params.items() if
-                                          key in CREDENTIAL_PARAMS}
-                            credential.setdefault('type', 'password')
-                            auth_info = request.session.authenticate(request.db, credential)
-                            request.params['login_success'] = True
-                            return request.redirect(self._login_redirect(auth_info['uid'], redirect=redirect))
-                        except odoo.exceptions.AccessDenied as e:
-                            request.update_env = old_uid
-                            if e.args == odoo.exceptions.AccessDenied().args:
-                                values['error'] = _("Wrong login/password")
-                    else:
-                        request.update_env = old_uid
-                        values['error'] = _("Not allowed to login from this IP")
-                else:
-                    try:
-                        credential = {key: value for key, value in
-                                      request.params.items() if
-                                      key in CREDENTIAL_PARAMS}
-                        credential.setdefault('type', 'password')
-                        auth_info = request.session.authenticate(request.db,
-                                                                 credential)
-                        request.params['login_success'] = True
-                        return request.redirect(
-                            self._login_redirect(auth_info['uid'],
-                                                 redirect=redirect))
-                    except odoo.exceptions.AccessDenied as e:
-                        if e.args == odoo.exceptions.AccessDenied().args:
-                            values['error'] = _("Wrong login/password")
-                        else:
-                            values['error'] = e.args[0]
+
+            # get client ip in a proxy-safe way
+            ip_address = _get_client_ip(request)
+            login = request.params.get('login')
+            password = request.params.get('password')
+
+            if login and password:
+                user = request.env['res.users'].sudo().search([('login', '=', login)], limit=1)
+
+                try:
+                    # check IP restriction
+                    _check_user_ip(user, ip_address)
+
+                    # collect credentials dict
+                    credential = {k: v for k, v in request.params.items() if k in CREDENTIAL_PARAMS}
+                    credential.setdefault('type', 'password')
+
+                    auth_info = request.session.authenticate(request.db, credential)
+                    uid = auth_info.get('uid')
+
+                    # successful login, redirect
+                    request.params['login_success'] = True
+                    return request.redirect(self._login_redirect(uid, redirect=redirect))
+
+                except AccessDenied as e:
+                    request.update_env(user=old_uid)
+                    values['error'] = str(e) if str(e) else _("Not allowed to login from this IP")
+                except odoo.exceptions.AccessDenied as e:
+                    request.update_env(user=old_uid)
+                    # generic wrong credentials message
+                    values['error'] = _("Wrong login/password") if e.args == odoo.exceptions.AccessDenied().args else e.args[0]
+
         else:
-            if 'error' in request.params and request.params.get(
-                    'error') == 'access':
+            if request.params.get('error') == 'access':
                 values['error'] = _(
-                    'Only employees can access this database.'
-                    'Please contact the administrator.')
+                    'Only employees can access this database. Please contact the administrator.'
+                )
+
         if 'login' not in values and request.session.get('auth_login'):
             values['login'] = request.session.get('auth_login')
         if not odoo.tools.config['list_db']:
             values['disable_database_manager'] = True
+
         response = request.render('web.login', values)
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
         response.headers['Content-Security-Policy'] = "frame-ancestors 'self'"
