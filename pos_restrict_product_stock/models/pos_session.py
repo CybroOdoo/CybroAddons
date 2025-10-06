@@ -33,4 +33,20 @@ class PosSession(models.Model):
         result = super()._loader_params_product_product()
         result['search_params']['fields'].append('qty_available')
         result['search_params']['fields'].append('virtual_available')
+        # ❌ DO NOT add pos_stock_qty here (not a real field)
         return result
+
+    def _get_pos_ui_product_product(self, params):
+        """Inject warehouse-specific stock"""
+        products = super()._get_pos_ui_product_product(params)
+        pos_location = self.config_id.picking_type_id.default_location_src_id or \
+                       self.config_id.picking_type_id.warehouse_id.lot_stock_id
+
+        for product in products:
+            product_id = product['id']
+            product_record = self.env['product.product'].browse(product_id)
+            product['pos_stock_qty'] = product_record.with_context(
+                location=pos_location.id,
+                compute_child=True
+            ).qty_available
+        return products

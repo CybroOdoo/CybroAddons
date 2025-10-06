@@ -17,7 +17,7 @@ patch(PosStore.prototype, {
             order_quantity = selected_orderline.quantity + 1;
         }
 
-        const qty_available = product.qty_available;
+        const qty_available = product.pos_stock_qty ?? product.qty_available;
         const virtual_qty = product.virtual_available;
 
         const should_restrict =

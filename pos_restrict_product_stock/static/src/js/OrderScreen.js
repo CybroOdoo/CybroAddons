@@ -25,7 +25,7 @@ patch(Order.prototype, {
 
         for (const { product, total_qty, name } of Object.values(productQuantities)) {
             if (is_restrict) {
-                const qty_available = product.qty_available;
+                const qty_available = product.pos_stock_qty ?? product.qty_available;
                 const virtual_qty = product.virtual_available;
 
                 const should_restrict = (
