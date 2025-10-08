@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--        Subscription portal     -->
+    <template id="portal_my_home_menu_subscription"
+              name="Portal layout : subscription menu entries"
+              inherit_id="portal.portal_breadcrumbs" priority="20">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'Subscription'"
+                t-attf-class="breadcrumb-item #{'active ' if not subscriptions else ''}">
+                <a t-if="subscriptions"
+                   t-attf-href="/my/subscription_order?{{ keep_query() }}">
+                    Subscription
+                </a>
+                <t t-else="">Subscription</t>
+            </li>
+            <li t-if="subscription" class="breadcrumb-item active">
+                <a t-att-href="default_url">
+                    <span t-field="subscription.name"/>
+                    <t t-out="subscription.name"/>
+                </a>
+            </li>
+        </xpath>
+    </template>
+    <!--   Subscription Order in home -->
+    <template id="portal_my_home_subscription_order" name="Show Subscription"
+              inherit_id="portal.portal_my_home" customize_show="True"
+              priority="30">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Subscription</t>
+                <t t-set="url" t-value="'/my/subscription_order'"/>
+                <t t-set="placeholder_count" t-value="'subscription_count'"/>
+            </t>
+        </xpath>
+    </template>
+    <!-- Users subscription orders on Portal -->
+    <template id="portal_my_subscriptions" name="My Subscriptions">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Sbscriptions</t>
+            </t>
+            <t t-if="subscriptions" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Subscription #</th>
+                        <th class="text-end">Start Date</th>
+                        <th class="text-end">Next Invoice Date</th>
+                        <th class="text-center"/>
+                        <th class="text-end">Total</th>
+                    </tr>
+                </thead>
+                <t t-foreach="subscriptions" t-as="subscription">
+                    <tr>
+                        <td>
+                            <a t-att-href="'/my/subscription_order/'+str(subscription.id)">
+                                <t t-out="subscription.name"/>
+                            </a>
+                        </td>
+                        <td class="text-end">
+                            <span t-field="subscription.start_date"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-field="subscription.next_invoice_date"/>
+                        </td>
+                        <td class="text-center">
+                            <span t-field="subscription.stage_id"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-field="subscription.total_recurring_price"/>
+                        </td>
+                    </tr>
+                </t>
+            </t>
+            <p t-else="">There are currently no Subscription for your account.
+            </p>
+        </t>
+    </template>
+    <!-- Subscription page for subscription order   -->
+    <template id="subscription_page" name="Subscription Detail Page">
+        <t t-call="portal.portal_layout">
+            <t t-set="wrapwrap_classes" t-value="'o_portal_bg_dark'"/>
+            <div class="row mt16 o_portal_sidebar">
+                <!--  Subscription detail page  -->
+                <div class="col-12 col-lg">
+                    <div class="card">
+                        <div class="card-header bg-white pb-2 pt-3"
+                             style="background: white;">
+                            <div>
+                                <div class="row">
+                                    <div class="col-md-9">
+                                        <h1>
+                                            <span t-esc="subscription.name"/>
+                                        </h1>
+                                    </div>
+                                    <t t-if="subscription.stage_id.name == 'Draft'">
+                                        <a t-att-href="'/my/subscription_order/id=%s/state=%s' % (subscription.id,subscription.stage_id.name)">
+                                            <button type="button"
+                                                    t-att-id="subscription.id"
+                                                    class="btn btn-primary">
+                                                <i class="fa fa-caret-left">
+                                                </i>
+                                                Start
+                                            </button>
+                                        </a>
+                                    </t>
+                                    <div class="subscription_state">
+                                        <span class="badge rounded-pill bg-info text-white float-end fs-6"
+                                              t-field="subscription.stage_id.name">
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div>
+                                            <strong>Reference:</strong>
+                                            <span t-field="subscription.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div>
+                                            <strong>Start date:</strong>
+                                            <span t-field="subscription.start_date"/>
+                                        </div>
+                                        <div>
+                                            <strong>Close date:</strong>
+                                            <span t-field="subscription.close_date"/>
+                                        </div>
+                                        <div>
+                                            <strong>Billing:</strong>
+                                            Every:
+                                            <span t-field="subscription.plan_id.renewal_value"/>
+                                            <span t-field="subscription.plan_id.renewal_period"/>
+                                        </div>
+                                        <div>
+                                            <strong>Next invoice:</strong>
+                                            <span t-field="subscription.next_invoice_date"/>
+                                        </div>
+                                        <div>
+                                            <strong>Recurrence Period:</strong>
+                                            <span t-field="subscription.recurrence_period_id.name"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr/>
+                                <t t-call="website_subscription_package.subscription_lines"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    <!-- Subscription lines  -->
+    <template id="subscription_lines" name="Subscription Items">
+        <section id="subscription_items">
+            <t t-if="subscription.product_line_ids">
+                <div class="card-body">
+                    <h5>Contract details</h5>
+                    <table class="table table-sm table-responsive-lg">
+                        <thead>
+                            <tr>
+                                <th>Subscription Product</th>
+                                <th class="text-right">Quantity</th>
+                                <th class="text-right">Unit Price</th>
+                                <th class="text-right">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="subscription.product_line_ids"
+                               t-as="lines">
+                                <tr>
+                                    <td class="line-product">
+                                        <span t-field="lines.product_id.display_name"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="lines.product_qty"/>
+                                        <span t-field="lines.uom_catg_id"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="lines.unit_price"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="lines.total_amount"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </section>
+    </template>
+</odoo>

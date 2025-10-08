@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'POS Booking Order',
-    'version': '16.0.1.0.1',
+    'version': '16.0.1.0.2',
     'summary': """From a POS session, users can create pickup or 
                 delivery orders, which they can then confirm as POS orders.""",
     'description': """The module helps you to book orders from Shop,
@@ -47,6 +47,7 @@
             '/pos_book_order/static/src/xml/BookedOrdersScreen.xml',
             '/pos_book_order/static/src/xml/OrderReceipt.xml',
             '/pos_book_order/static/src/js/BookOrderPopup.js',
+            '/pos_book_order/static/src/js/TicketScreen.js',
             '/pos_book_order/static/src/js/BookOrderButton.js',
             '/pos_book_order/static/src/js/BookedOrdersButton.js',
             '/pos_book_order/static/src/js/BookedOrdersScreen.js',

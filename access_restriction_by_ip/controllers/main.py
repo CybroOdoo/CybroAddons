@@ -39,7 +39,6 @@ class Home(home.Home):
         request.params['login_success'] = False
         if request.httprequest.method == 'GET' and redirect and request.session.uid:
             return request.redirect(redirect)
-
         # simulate hybrid auth=user/auth=public, despite using auth=none to be able
         # to redirect users when no db is selected - cfr ensure_db()
         if request.env.uid is None:
@@ -49,7 +48,6 @@ class Home(home.Home):
             else:
                 # auth=user
                 request.update_env(user=request.session.uid)
-
         values = {k: v for k, v in request.params.items() if k in SIGN_UP_REQUEST_PARAMS}
         try:
             values['databases'] = http.db_list()
@@ -103,7 +101,6 @@ class Home(home.Home):
 
         if not odoo.tools.config['list_db']:
             values['disable_database_manager'] = True
-
         response = request.render('web.login', values)
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
         response.headers['Content-Security-Policy'] = "frame-ancestors 'self'"

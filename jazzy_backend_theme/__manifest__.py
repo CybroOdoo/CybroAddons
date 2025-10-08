@@ -26,7 +26,7 @@
                     Backend Theme, Theme""",
     "summary": "Jazzy backed Theme V16 is an attractive theme for backend",
     "category": "Themes/Backend",
-    "version": "16.0.1.1.0",
+    "version": "16.0.1.2.0",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

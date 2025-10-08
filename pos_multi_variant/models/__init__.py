@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,6 +20,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from . import product_template
 from . import pos_session
 from . import variants_tree

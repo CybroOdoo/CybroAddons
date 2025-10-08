@@ -33,3 +33,6 @@ from . import trainer_skill
 from . import workout_days
 from . import workout_plan
 from . import workout_plan_option
+from . import account_payment
+from . import account_move
+from . import gym_attendance

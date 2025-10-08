@@ -30,7 +30,7 @@ class ResUsers(models.Model):
     check_user = fields.Boolean(string="Check", compute='_compute_check_user',
                                 help="Check the field is true or false")
     journal_ids = fields.Many2many(
-        'account.journal',
+        'account.journal', 'account_restrict_journal_journal_ids_rel',
         string='Restricted Journals',
         help='Only the selected journal will be visible'
              ' to the particular user')

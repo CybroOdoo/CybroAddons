@@ -37,7 +37,7 @@
         'wizard/sign_send_request_views.xml',
     ],
     'images': ['static/description/banner.jpg'],
-    'license': 'OPL-3',
+    'license': 'OPL-1',
     'installable': True,
     'application': False,
     'auto_install': False

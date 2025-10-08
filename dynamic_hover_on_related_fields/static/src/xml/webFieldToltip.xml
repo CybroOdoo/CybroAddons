@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- Inherit and extend the web.FieldTooltip template -->
+    <t t-inherit="web.FieldTooltip" t-inherit-mode="extension" owl="1">
+        <!-- Add content after the existing <ul> element -->
+        <xpath expr="//ul" position="after">
+            <!-- If requiredData is truthy and not an empty array -->
+            <div t-if="requiredData and requiredData.length !== 0" style="color: #111;">
+                <h6 style="color: #111;">Field Data</h6>
+                <!-- Iterate over each data object in requiredData -->
+                <t t-foreach="requiredData" t-as="data" t-key="data_index">
+                    <ul class="o-tooltip--technical">
+                        <!-- If requiredData has more than one item, display a record index -->
+                        <span t-if="requiredData.length > 1">--> Record - <t t-esc="data_index+1"/> </span>
+                        <t t-foreach="data" t-as="line" t-key="line.id">
+                            <!-- Iterate over each line in the current data object -->
+                            <li t-if="line.ttype === 'binary'">
+                                <!-- Handle binary data -->
+                                <span class="o-tooltip--technical--title" t-esc="line.field"/><span>:</span>
+                                <img t-attf-src="data:image/png;base64,#{line.value}" style="width:40px; padding:5px;" t-att-alt="line.field"/>
+                            </li>
+                            <!-- Handle other data types -->
+                            <li t-else="">
+                                <span class="o-tooltip--technical--title" t-esc="line.field"/><span>:</span>
+                                <t t-esc="line.value"/>
+                            </li>
+                        </t>
+                    </ul>
+                </t>
+            </div>
+            <!-- If requiredData is falsy or an empty array -->
+            <div t-else="">
+                <h6 style="color: #111;">No Data Available !!!</h6>
+            </div>
+        </xpath>
+    </t>
+</templates>

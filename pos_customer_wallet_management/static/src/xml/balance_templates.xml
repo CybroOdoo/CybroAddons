@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Wallet balance of customer in set partner button-->
+<templates id="template_id" xml:space="preserve">
+    <t t-name="ActionpadWidget" t-inherit="point_of_sale.ActionpadWidget"
+       t-inherit-mode="extension" owl="1">
+       <xpath expr="//div[hasclass('actionpad')]/button[1]" position="replace">
+          <button class="button set-partner"
+                  t-att-class="{'decentered': isLongName}"
+                  t-on-click="() => this.trigger('click-partner')">
+                <t t-if="!env.isMobile"><i class="fa fa-user" role="img" aria-label="Customer" title="Customer" /></t>
+              <t t-if="props.partner">
+                    <t t-esc="props.partner.name"/>
+                  <h5>WALLET[<t t-esc="props.partner.wallet_balance.toFixed(2)"/>]</h5>
+                </t>
+              <t t-else="">
+                    Customer
+                </t>
+            </button>
+       </xpath>
+    </t>
+    <t t-name="PaymentScreen" t-inherit="point_of_sale.PaymentScreen"
+       t-inherit-mode="extension" owl="1">
+         <xpath expr="//div[hasclass('partner-button')]" position="replace">
+             <div class="button"
+                  t-att-class="{ highlight: currentOrder.get_partner() }"
+                  t-on-click="selectPartner">
+                                    <i class="fa fa-user" role="img"
+                                       title="Customer"/>
+                 <t t-set="partner" t-value="currentOrder.get_partner()"/>
+                 <span>
+                                        <t t-if="partner">
+                                            <t t-esc="partner.name"/>
+                                            <br/>WALLET[
+                                            <t t-esc="partner.wallet_balance"/>
+                                            ]
+                                        </t>
+                     <t t-if="!partner">
+                                            Customer
+                                        </t>
+                                    </span>
+             </div>
+         </xpath>
+    </t>
+</templates>

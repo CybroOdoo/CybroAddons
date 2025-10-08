@@ -1,140 +1,150 @@
-odoo.define('user_password_strength.signup_user', function (require) {
-"use strict";
-    // Extending the public widget of the signup form for checking the user
-    // password strength conditions on key up function of the password field in
-    // the sign up form,Based on the conditions from configuration settings.
+odoo.define('user_password_strength.reset_user', function (require) {
+    "use strict";
+
     var PublicWidget = require('web.public.widget');
     var ajax = require("web.ajax");
-    var password = document.getElementById("password");
 
-    var MySignUpForm = PublicWidget.registry.SignUpForm.extend({
-        selector: '.oe_signup_form',
+    var ResetForm = PublicWidget.Widget.extend({
+        selector: '.oe_website_login_container',
         events: {
-            'keyup': '_onKeyup',
+            'input input[type="password"]': '_onPasswordInput',
         },
-        _onKeyup: function () {
-            // Rendering ajax Rpc call from controller through route
-            ajax.jsonRpc('/web/config_params', 'call', {
-            }).then(function (data) {
-                var list=[]
-                for (let x in data) {
-                list.push(data[x]);
+
+        _onPasswordInput: function () {
+            var passwordField = document.getElementById("password");
+            var confirmPasswordField = document.getElementById("confirm_password");
+
+            // Call function to update password strength progress for both password and confirm password fields
+            this._updateProgress(passwordField);
+            this._updateProgress(confirmPasswordField);
+        },
+
+        _updateProgress: function (passwordField) {
+            var current_pwd = passwordField ? passwordField.value : "";
+
+            // Reset if password length is zero
+            if (current_pwd.length === 0) {
+                var progressBar = document.getElementById("progress");
+                if (progressBar) {
+                    progressBar.value = "0";
+                    progressBar.style.backgroundColor = "#FF0000"; // Red for no input
                 }
-                var flag = 0
-                for(var i=0;i<=list.length;i++){
-                    if(list[i] == 'True'){
-                     flag +=1
+                return;
+            }
+
+            // AJAX call to get configuration settings
+            ajax.jsonRpc('/web/config_params', 'call', {}).then(function (data) {
+                var list = [];
+                for (let x in data) {
+                    list.push(data[x]);
+                }
+
+                // Count the number of enabled password conditions
+                var flag = 0;
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i] === 'True') {
+                        flag++;
                     }
                 }
+                // Check how many conditions the current password satisfies
                 var prog = [/[$@$!%*#?&]/, /[A-Z]/, /[0-9]/, /[a-z]/]
-                        .reduce((memo, test) => memo + test.test(current_pwd),
-                         0);
-                if(prog > 2 && current_pwd.length > 7){
+                    .reduce((memo, test) => memo + test.test(current_pwd), 0);
+
+                // Increase progress if password length is greater than 7 characters
+                if (prog > 2 && current_pwd.length > 7) {
                     prog++;
                 }
+
                 var progress = "";
-                var colors = ['#FF0000', '#00FF00','#0000FF'];
-                var currentColor = 0;
-                //When 5 conditions are enabled in config settings
-                if (flag == 5){
+                var colors = ['#FF0000', '#00FF00', '#0000FF'];
+                var currentColor = colors[0]; // Default to red
+
+                // Update progress and color based on the number of conditions (flag)
+                if (flag === 5) {
                     switch (prog) {
                         case 0:
                         case 1:
-                          progress = "20";
-                          currentColor = colors[0];
-                          break;
+                            progress = "20";
+                            currentColor = colors[0];
+                            break;
                         case 2:
-                          progress = "25";
-                          currentColor = colors[0];
-                          break;
+                            progress = "25";
+                            currentColor = colors[0];
+                            break;
                         case 3:
-                          progress = "50";
-                          currentColor = colors[1];
-                          break;
+                            progress = "50";
+                            currentColor = colors[1]; // Green
+                            break;
                         case 4:
-                          progress = "75";
-                          currentColor = colors[1];
-                          break;
+                            progress = "75";
+                            currentColor = colors[1];
+                            break;
                         case 5:
-                          progress = "100";
-                          currentColor = colors[1];
-                          break;
+                            progress = "100";
+                            currentColor = colors[1];
+                            break;
                     }
-                }
-                //When 4 conditions are enabled in config settings
-                if (flag == 4){
+                } else if (flag === 4) {
                     switch (prog) {
                         case 0:
                         case 1:
                         case 2:
-                          progress = "25";
-                          currentColor = colors[0];
-                          break;
+                            progress = "25";
+                            currentColor = colors[0];
+                            break;
                         case 3:
-                          progress = "50";
-                          currentColor = colors[0];
-                          break;
+                            progress = "50";
+                            currentColor = colors[0];
+                            break;
                         case 4:
-                          progress = "75";
-                          currentColor = colors[1];
-                          break;
+                            progress = "75";
+                            currentColor = colors[1];
+                            break;
                         case 5:
-                          progress = "100";
-                          currentColor = colors[1];
-                          break;
+                            progress = "100";
+                            currentColor = colors[1];
+                            break;
                     }
-                }
-                //When 3 conditions are enabled in config settings
-                if (flag == 3){
+                } else if (flag === 3) {
                     switch (prog) {
                         case 0:
                         case 1:
                         case 2:
                         case 3:
-                          progress = "33.33";
-                          currentColor = colors[0];
-                          break;
+                            progress = "33.33";
+                            currentColor = colors[0];
+                            break;
                         case 4:
-                          progress = "66.66";
-                          currentColor = colors[1];
-                          break;
+                            progress = "66.66";
+                            currentColor = colors[1];
+                            break;
                         case 5:
-                          progress = "100";
-                          currentColor = colors[1];
-                          break;
+                            progress = "100";
+                            currentColor = colors[1];
+                            break;
                     }
-                }
-                //When 2 conditions are enabled in config settings
-                if (flag == 2) {
-                    if (prog != 5) {
+                } else if (flag === 2) {
+                    if (prog !== 5) {
                         progress = "50";
                         currentColor = colors[0];
-                    } else{
+                    } else {
                         progress = "100";
-                            currentColor = colors[1];
+                        currentColor = colors[1];
                     }
-                }
-                //When only 1 condition is enabled in config settings
-                if (flag == 1){
+                } else if (flag === 1) {
                     progress = "100";
-                    currentColor = colors[1];
+                    currentColor = colors[1]; // Green for fully satisfied
                 }
-                var val = document.getElementById("progress")
-                    if(val!== null){
-                        document.getElementById("progress").value = progress;
-                        document.getElementById("progress").style
-                        .backgroundColor = currentColor;
-                    }
-                });
-            // Reset if password length is zero
-                var current_pwd = password.value
-                if (current_pwd.length === 0) {
-                document.getElementById("progress").value = "0";
-                return;
+                // Update the progress bar
+                var progressBar = document.getElementById("progress");
+                if (progressBar) {
+                    progressBar.value = progress;
+                    progressBar.style.backgroundColor = currentColor;
                 }
-            },
+            });
+        },
     });
 
-    PublicWidget.registry.MySignUpForm = MySignUpForm;
-    return MySignUpForm;
+    PublicWidget.registry.ResetForm = ResetForm;
+    return ResetForm;
 });

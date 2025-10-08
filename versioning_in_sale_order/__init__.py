@@ -21,4 +21,15 @@
 ################################################################################
 
 from . import models
+from odoo import api, SUPERUSER_ID
+
+
+def uninstall_hook(cr, registry):
+    """Uninstall hook to update the domain of the window action
+       created by the Sale Order Versions module"""
+    env = api.Environment(cr, SUPERUSER_ID, {})
+    action = env.ref('sale.action_quotations_with_onboarding')
+    if action:
+        action.write({'domain': '[]'})
+
 

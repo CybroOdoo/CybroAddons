@@ -32,7 +32,7 @@ class ProductAutoBarcode(models.Model):
         """generate barcode when create new product"""
         res = super(ProductAutoBarcode, self).create(vals)
         ean = generate_ean(str(res.id))
-        res.barcode = '21' + ean[2:]
+        res.barcode = '21' + ean
         return res
 
 
@@ -89,5 +89,5 @@ class ProductTemplateAutoBarcode(models.Model):
         """generate barcode number when create new product"""
         templates = super(ProductTemplateAutoBarcode, self).create(vals_list)
         ean = generate_ean(str(templates.id))
-        templates.barcode = '22' + ean[2:]
+        templates.barcode = '22' + ean
         return templates

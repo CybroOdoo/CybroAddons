@@ -5,15 +5,20 @@ import { registry } from "@web/core/registry";
 const { fuzzyLookup } = require('@web/core/utils/search');
 import { computeAppsAndMenuItems } from "@web/webclient/menus/menu_helpers";
 import core from 'web.core';
+
 const commandProviderRegistry = registry.category("command_provider");
 const { onMounted } = owl;
+
 import { patch } from 'web.utils';
 var rpc = require('web.rpc');
 
 patch(NavBar.prototype, 'responsive_web/static/src/components/apps_menu/apps_menu.js', {
+
+
     //--------------------------------------------------------------------------
     // Public
     //--------------------------------------------------------------------------
+
     /**
      * @override
      */
@@ -103,3 +108,5 @@ patch(NavBar.prototype, 'responsive_web/static/src/components/apps_menu/apps_men
         return this._super(menu);
     }
 });
+
+

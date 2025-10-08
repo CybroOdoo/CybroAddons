@@ -78,7 +78,6 @@ class SubscriptionPackageProductLine(models.Model):
                                                     line.product_qty,
                                                     product=line.product_id,
                                                     partner=line.subscription_id._origin.partner_id)
-            print(taxes)
             line.write({
                 'price_tax': sum(
                     t.get('amount', 0.0) for t in taxes.get('taxes', [])),
@@ -384,7 +383,6 @@ class SubscriptionPackage(models.Model):
         pending_subscriptions = self.env['subscription.package'].search(
             [('stage_category', '=', 'progress')])
         today_date = fields.Date.today()
-        # today_date = datetime.datetime.strptime('05102023', '%d%m%Y').date()
         pending_subscription = False
         for pending_subscription in pending_subscriptions:
             get_dates = self.find_renew_date(
@@ -393,7 +391,6 @@ class SubscriptionPackage(models.Model):
                 pending_subscription.plan_id.days_to_end)
             renew_date = get_dates['renew_date']
             end_date = get_dates['end_date']
-            # print(renew_date)
             pending_subscription.close_date = get_dates['close_date']
             if today_date == pending_subscription.next_invoice_date:
                 if pending_subscription.plan_id.invoice_mode == 'draft_invoice':
@@ -462,7 +459,6 @@ class SubscriptionPackage(models.Model):
             total_recurring = 0
             total_tax = 0.0
             for line in record.product_line_ids:
-                # print(line.tax_id._origin)
                 if line.total_amount != line.price_total:
                     line_tax = line.price_total - line.total_amount
                     total_tax += line_tax

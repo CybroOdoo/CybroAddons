@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Athira P S (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'e-Invoicing For Saudi | Saudi VAT Invoice | Saudi Electronic Invoice | Saudi Zatca',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Accounting',
     'summary': "Module for e-Invoicing For Saudi | Saudi VAT Invoice | Saudi Electronic Invoice | Saudi Zatca",
     'description': "e-Invoicing For Saudi,Saudi VAT Invoice,Saudi Electronic Invoice,Saudi Zatca,Zatca,Saudi,e-Invoicing",

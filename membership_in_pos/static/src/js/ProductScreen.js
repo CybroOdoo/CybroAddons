@@ -34,6 +34,9 @@ odoo.define('membership_in_pos.customer', function (require) {
                     });
                 }
              }
+
+
+
         }
     Registries.Component.extend(ProductScreen, PosCustomer);
     return ProductScreen;

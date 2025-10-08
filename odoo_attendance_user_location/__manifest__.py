@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Geolocation in HR Attendance',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': "The attendance location of the employee",
     'description': "This module helps to identify the checkin/out location of the employee",
     'author': 'Cybrosys Techno Solutions',

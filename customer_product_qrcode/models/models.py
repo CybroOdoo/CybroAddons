@@ -37,7 +37,7 @@ class Partners(models.Model):
     """Extends the res.partner model to include QR code functionality."""
     _inherit = 'res.partner'
 
-    sequence = fields.Char(string="QR Sequence", readonly=True)
+    sequences = fields.Char(string="QR Sequence", readonly=True)
     qr = fields.Binary(string="QR Code")
 
     def init(self):
@@ -46,7 +46,10 @@ class Partners(models.Model):
         for record in self.env['res.partner'].search(
                 [('customer_rank', '=', True)]):
             name = record.name.replace(" ", "")
-            record.sequence = 'DEF' + name.upper() + str(record.id)
+            print(name,'ssssssssssssssssssssss')
+            print(str(record.id),type(record.id),'cxxxxxxxxxxxxxxxxxxxx')
+            record.sequences = 'DEF' + name.upper() + str(record.id)
+            print(record.sequences,'ccccccccccccccc',type(record.sequences))
 
     @api.model
     def create(self, vals):
@@ -58,22 +61,22 @@ class Partners(models.Model):
         prefix = str(prefix)
         seq = prefix + self.env['ir.sequence'].next_by_code(
             'res.partner') or '/'
-        vals['sequence'] = seq
+        vals['sequences'] = seq
         return super(Partners, self).create(vals)
 
-    @api.depends('sequence')
+    @api.depends('sequences')
     def generate_qr(self):
         """Generate a QR code based on the partner's sequence and store it in
         the 'qr' field of the partner record."""
         if qrcode and base64:
-            if not self.sequence:
+            if not self.sequences:
                 prefix = self.env['ir.config_parameter'].sudo().get_param(
                     'customer_product_qr.config.customer_prefix')
                 if not prefix:
                     raise UserError(
                         _('Set A Customer Prefix In General Settings'))
                 prefix = str(prefix)
-                self.sequence = prefix + self.env['ir.sequence'].next_by_code(
+                self.sequences = prefix + self.env['ir.sequence'].next_by_code(
                     'res.partner') or '/'
             qr = qrcode.QRCode(
                 version=1,
@@ -81,7 +84,7 @@ class Partners(models.Model):
                 box_size=10,
                 border=4,
             )
-            qr.add_data(self.sequence)
+            qr.add_data(self.sequences)
             qr.make(fit=True)
             img = qr.make_image()
             temp = BytesIO()
@@ -96,7 +99,7 @@ class Partners(models.Model):
                 _('Necessary Requirements To Run This Operation Is Not Satisfied'))
 
     def get_partner_by_qr(self, **args):
-        return self.env['res.partner'].search([('sequence', '=', self.id), ],
+        return self.env['res.partner'].search([('sequences', '=', self.id), ],
                                               limit=1).id
 
 
@@ -104,7 +107,7 @@ class Products(models.Model):
     """Extends the product.product model to include QR code functionality."""
     _inherit = 'product.product'
 
-    sequence = fields.Char(string="QR Sequence", readonly=True)
+    sequences = fields.Char(string="QR Sequence", readonly=True)
     qr = fields.Binary(string="QR Code")
 
     @api.model
@@ -118,14 +121,14 @@ class Products(models.Model):
         prefix = str(prefix)
         seq = prefix + self.env['ir.sequence'].next_by_code(
             'product.product') or '/'
-        vals['sequence'] = seq
+        vals['sequences'] = seq
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
             box_size=10,
             border=4,
         )
-        qr.add_data(vals['sequence'])
+        qr.add_data(vals['sequences'])
         qr.make(fit=True)
         img = qr.make_image()
         temp = BytesIO()
@@ -134,19 +137,19 @@ class Products(models.Model):
         vals.update({'qr': qr_image})
         return super(Products, self).create(vals)
 
-    @api.depends('sequence')
+    @api.depends('sequences')
     def generate_qr(self):
         """Generate a QR code based on the product's sequence and store it in
         the 'qr' field of the product."""
         if qrcode and base64:
-            if not self.sequence:
+            if not self.sequences:
                 prefix = self.env['ir.config_parameter'].sudo().get_param(
                     'customer_product_qr.config.product_prefix')
                 if not prefix:
                     raise UserError(
                         _('Set A Customer Prefix In General Settings'))
                 prefix = str(prefix)
-                self.sequence = prefix + self.env['ir.sequence'].next_by_code(
+                self.sequences = prefix + self.env['ir.sequence'].next_by_code(
                     'product.product') or '/'
             qr = qrcode.QRCode(
                 version=1,
@@ -154,7 +157,7 @@ class Products(models.Model):
                 box_size=10,
                 border=4,
             )
-            qr.add_data(self.sequence)
+            qr.add_data(self.sequences)
             qr.make(fit=True)
             img = qr.make_image()
             temp = BytesIO()
@@ -171,7 +174,7 @@ class Products(models.Model):
     def get_product_by_qr(self, **args):
         """Retrieve a product based on the provided QR sequence."""
         return self.env['product.product'].search(
-            [('sequence', '=', self.id), ], limit=1).id
+            [('sequences', '=', self.id), ], limit=1).id
 
 
 class ProductTemplate(models.Model):

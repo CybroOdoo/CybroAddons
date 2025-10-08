@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--    This record modifies the view form for CRM leads to include a field for indicating duplicate leads in real-time search.-->
+    <record id="crm_lead_view_form" model="ir.ui.view">
+        <field name="name">crm.lead.view.form.inherit.crm.duplicates.real.time.search</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='lead']/group" position="inside">
+                    <field name="is_duplicate_lead" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+<!--    his record extends the filter options in the CRM opportunities view to include a filter for duplicate leads.-->
+    <record id="view_crm_case_opportunities_filter" model="ir.ui.view">
+        <field name="name">crm.lead.view.filter.inherit.crm.duplicates.real.time.search</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='assigned_to_me']" position="before">
+                <filter string="Duplicate-Leads" name="duplicate-leads"
+                        domain="[('is_duplicate_lead','!=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

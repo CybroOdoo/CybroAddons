@@ -22,7 +22,7 @@
 ###########################################################################
 
 {
-    'name': "User Password Strength",
+    'name': "User Password Strength - Restrict Weak Password",
     'version': "16.0.1.0.0",
     'summary': """ User password strength - restrict weak password""",
     'description': """  User password strength - restrict weak password""",
@@ -39,7 +39,9 @@
     ],
     'images': ['static/description/banner.png'],
     'assets': {
-            'web.assets_frontend': ['user_password_strength/static/src/js/signup_user.js', ],
+            'web.assets_frontend': [
+                'user_password_strength/static/src/js/signup_user.js',
+            ],
     },
     'license': "AGPL-3",
     'installable': True,

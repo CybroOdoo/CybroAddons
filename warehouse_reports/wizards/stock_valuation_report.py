@@ -23,6 +23,7 @@ import io
 import json
 import xlsxwriter
 from odoo import fields, models
+from odoo.exceptions import ValidationError
 from odoo.tools import date_utils
 
 
@@ -75,31 +76,31 @@ class StockValuationReport(models.TransientModel):
         if self.product_id and self.company_id:
             self.env.cr.execute(
                 """{}where product_product.id='{}' and stock_valuation_layer.company_id
-                 ='{}' and stock_valuation_layer.create_date >='{}' 
-                 and stock_valuation_layer.create_date<'{}'""".format(
+                 ='{}'""".format(
                     query, product_id, company_id,
-                    from_date,
-                    to_date))
+                ))
         elif self.product_id and self.company_id:
             self.env.cr.execute(
                 """{}where product_product.id='{}' and 
-                stock_valuation_layer.company_id ='{}' and 
-                stock_valuation_layer.create_date >='{}' and 
-                stock_valuation_layer.create_date<'{}'""".format(
-                    query, product_id, company_id, from_date,
-                    to_date))
+                stock_valuation_layer.company_id ='{}'""".format(
+                    query, product_id, company_id))
         elif self.product_id:
             self.env.cr.execute(
-                """{}where product_product.id='{}' and 
-                stock_valuation_layer.create_date >='{}' and 
-                stock_valuation_layer.create_date<'{}'""".format(
-                    query, product_id, from_date, to_date))
+                """{}where product_product.id='{}'""".format(
+                    query, product_id))
         elif self.company_id:
             self.env.cr.execute(
-                """{} where stock_valuation_layer.company_id='{}' and 
-                stock_valuation_layer.create_date >='{}' and 
-                stock_valuation_layer.create_date<'{}'""".format(
-                    query, company_id, from_date, to_date))
+                """{} where stock_valuation_layer.company_id='{}' """.format(
+                    query, company_id))
+        elif self.from_Date:
+            self.env.cr.execute(
+                """{} where stock_valuation_layer.create_date >= '{}' """.format(query, from_date))
+        elif self.to_date:
+            self.env.cr.execute(
+                """{} where stock_valuation_layer.create_date <= '{}' """.format(query, to_date))
+        if from_date and to_date:
+            if to_date < from_date:
+                raise ValidationError('Sorry, To Date Must be greater Than From Date...')
         else:
             self.env.cr.execute("""{}""".format(query))
         stock_valuation = self.env.cr.dictfetchall()
@@ -146,31 +147,31 @@ class StockValuationReport(models.TransientModel):
         if self.product_id and self.company_id:
             self.env.cr.execute(
                 """{}where product_product.id='{}' and stock_valuation_layer.company_id
-                 ='{}' and stock_valuation_layer.create_date >='{}' 
-                 and stock_valuation_layer.create_date<'{}'""".format(
+                 ='{}'""".format(
                     query, product_id, company_id,
-                    from_date,
-                    to_date))
+                ))
         elif self.product_id and self.company_id:
             self.env.cr.execute(
                 """{}where product_product.id='{}' and 
-                stock_valuation_layer.company_id ='{}' and 
-                stock_valuation_layer.create_date >='{}' and 
-                stock_valuation_layer.create_date<'{}'""".format(
-                    query, product_id, company_id, from_date,
-                    to_date))
+                stock_valuation_layer.company_id ='{}'""".format(
+                    query, product_id, company_id))
         elif self.product_id:
             self.env.cr.execute(
-                """{}where product_product.id='{}' and 
-                stock_valuation_layer.create_date >='{}' and 
-                stock_valuation_layer.create_date<'{}'""".format(
-                    query, product_id, from_date, to_date))
+                """{}where product_product.id='{}'""".format(
+                    query, product_id))
         elif self.company_id:
             self.env.cr.execute(
-                """{} where stock_valuation_layer.company_id='{}' and 
-                stock_valuation_layer.create_date >='{}' and 
-                stock_valuation_layer.create_date<'{}'""".format(
-                    query, company_id, from_date, to_date))
+                """{} where stock_valuation_layer.company_id='{}' """.format(
+                    query, company_id))
+        elif self.from_Date:
+            self.env.cr.execute(
+                """{} where stock_valuation_layer.create_date >= '{}' """.format(query, from_date))
+        elif self.to_date:
+            self.env.cr.execute(
+                """{} where stock_valuation_layer.create_date <= '{}' """.format(query, to_date))
+        if from_date and to_date:
+            if to_date < from_date:
+                raise ValidationError('Sorry, To Date Must be greater Than From Date...')
         else:
             self.env.cr.execute("""{}""".format(query))
         stock_valuation = self.env.cr.dictfetchall()

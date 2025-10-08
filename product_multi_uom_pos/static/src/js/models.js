@@ -31,17 +31,17 @@ const ProductUom = (Orderline) => class ProductUom extends Orderline {
 
     // Override the get_unit method to get selected UoM from POS
     get_unit() {
-    if (this.product_uom_id){
-        var unit_id = this.product_uom_id[0];
-        if(!unit_id){
-            return undefined;
+        if (this.product_uom_id){
+            var unit_id = this.product_uom_id[0];
+            if(!unit_id){
+                return undefined;
+            }
+            if(!this.pos){
+                return undefined;
+            }
+            return this.pos.units_by_id[unit_id];
         }
-        if(!this.pos){
-            return undefined;
-        }
-        return this.pos.units_by_id[unit_id];
-    }
-    return this.product.get_unit();
+        return this.product.get_unit();
 	}
 }
 Registries.Model.extend(Orderline, ProductUom);

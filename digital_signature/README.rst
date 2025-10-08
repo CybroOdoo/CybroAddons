@@ -1,29 +1,35 @@
+.. image:: https://img.shields.io/badge/licence-LGPL--3-green.svg
+    :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
+    :alt: License: LGPL-3
+
 Digital Signature In Purchase Order, Invoice, Inventory
 =======================================================
-* Digital Signature in Purchase Order, Invoice, Inventory
+* This module provide feature to add the digital signature and company stamp on
+  purchase order, invoice, and inventory.
 
 Installation
 ============
-	- www.odoo.com/documentation/15.0/setup/install.html
-	- Install our custom addon
+    - www.odoo.com/documentation/16.0/setup/install.html
+    - Install our custom addon
 
 License
 -------
-General Public License, Version 3 (LGPL v3).
-(https://www.odoo.com/documentation/user/13.0/legal/licenses/licenses.html)
+General Public License, Version 3 (LGPL-3).
+(https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
 
 Company
 -------
-* 'Cybrosys Techno Solutions <https://cybrosys.com/>`__
+* `Cybrosys Techno Solutions <https://cybrosys.com/>`__
 
 Credits
 -------
-* Developer:
-(V15) Noorjahan @ Cybrosys
+* Developers: (V16) LAJINA,Ranjith R Contact : odoo@cybrosys.com
 
 Contacts
 --------
 * Mail Contact : odoo@cybrosys.com
+* Website : https://cybrosys.com
+
 
 Bug Tracker
 -----------
@@ -31,11 +37,12 @@ Bugs are tracked on GitHub Issues. In case of trouble, please check there if you
 
 Maintainer
 ==========
-This module is maintained by Cybrosys Technologies.
+.. image:: https://cybrosys.com/images/logo.png
+   :target: https://cybrosys.com
 
-For support and more information, please visit https://www.cybrosys.com
+This module is maintained by Cybrosys Technologies.
+For support and more information, please visit `Our Website <https://cybrosys.com/>`__
 
 Further information
 ===================
 HTML Description: `<static/description/index.html>`__
-

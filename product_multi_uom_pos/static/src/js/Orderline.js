@@ -12,7 +12,10 @@ odoo.define('product_multi_uom_pos.multi_uom_pos', function(require) {
 
         // Retrieve the available unit of measure options based on the product's multi_uom_ids
         getUom() {
-            const filteredData = this.props.line.pos.pos_multi_uom.filter(obj => this.props.line.product.pos_multi_uom_ids.includes(obj.id));
+            console.log(this)
+            console.log("this",this.props.line.product.pos_multi_uom_ids)
+            const filteredData = this.props.line.pos.units.filter(obj => this.props.line.product.pos_multi_uom_ids.includes(obj.id))
+            console.log("filtereddata",filteredData)
             return filteredData
         }
 
@@ -35,7 +38,6 @@ odoo.define('product_multi_uom_pos.multi_uom_pos', function(require) {
         // Reset the unit of measure to the default uom_id of the product
         resetUom(ev) {
             var lineId = this.props.line.id
-            console.log(this)
             this.el.querySelector('#change_uom').disabled = false;
             this.el.querySelector('#select_uom').value = 'change_uom';
             this.el.querySelector('#change_uom').disabled = true;

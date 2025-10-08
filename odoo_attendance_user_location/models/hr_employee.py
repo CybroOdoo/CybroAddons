@@ -68,6 +68,7 @@ class HrEmployee(models.AbstractModel):
         action_message['hours_today'] = employee.hours_today
         action_message['kiosk_delay'] = \
             employee.company_id.attendance_kiosk_delay * 1000
+
         if employee.user_id:
             modified_attendance = employee.with_user(employee.user_id).sudo()._attendance_action_change(longitudes,
                                                                                                         latitudes)
@@ -102,7 +103,8 @@ class HrEmployee(models.AbstractModel):
                 'checkin_address': location.address,
                 'checkin_latitude': latitudes,
                 'checkin_longitude': longitudes,
-                'checkin_location': 'https://www.google.com/maps/place/' + location.address,
+                'checkin_location': "https://www.google.com/maps/search/?api=1&query=%s,%s" % (
+            latitudes, longitudes),
             }
             return self.env['hr.attendance'].create(vals)
         attendance = self.env['hr.attendance'].search(
@@ -112,8 +114,8 @@ class HrEmployee(models.AbstractModel):
                 'checkout_address': location.address,
                 'checkout_latitude': latitudes,
                 'checkout_longitude': longitudes,
-                'checkout_location': 'https://www.google.com/maps/place/'
-                                     + location.address,
+                'checkout_location': "https://www.google.com/maps/search/?api=1&query=%s,%s" % (
+            latitudes, longitudes),
             })
             attendance.check_out = action_date
         else:

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+	<t  t-inherit="hr_attendance.HrAttendanceMyMainMenu"
+       t-inherit-mode="extension">
+		<xpath expr="//t[@t-set='bodyContent']" position="replace">
+			<t t-set="bodyContent">
+				<div class="justify-content-between mt-2 d-flex small oe_qr_login" style="position:absolute;">
+					<div class="qr_video_kiosk">
+						<div class="close_button d-none position-absolute"
+                         t-ref="close_button">
+							<button id="close_qr_scanner_kiosk" t-on-click="stopWebcamAndDetection"
+                               style="position: absolute; right: 5px; z-index: 111;top:-15px;">
+                            X
+                        	</button>
+							<div class="video-container">
+								<video id="video" width="" height="" autoplay="true"
+                               style="margin-left:-150px;margin-top:-24px;"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<t t-if="widget.employee">
+					<t t-set="checked_in"
+                       t-value="widget.employee.attendance_state == 'checked_in'"/>
+					<!-- Custom Badge Section -->
+					<t t-call="HrAttendanceUserBadge">
+						<t t-set="userId" t-value="widget.employee.id"/>
+						<t t-set="userName" t-value="widget.employee.name"/></t>
+					<div class="flex-grow-1">
+						<h1 class="mt-5" t-esc="widget.employee.name"/>
+						<h3>
+							<t t-if="!checked_in">Welcome!</t>
+							<t t-else="">Want to check out?</t>
+						</h3>
+						<h4 class="mt0 mb0 text-muted" t-if="checked_in">Today's work hours:
+							<span
+                                t-esc="widget.hours_today"/>
+						</h4>
+					</div>
+					<t t-call="HrAttendanceCheckInOutButtons"/></t>
+				<div class="alert alert-warning" t-else="">
+					<b>Warning</b>: Your user should be linked to an employee to
+                    use attendance.
+					<br/>
+                    Please contact your administrator.
+				</div>
+			</t>
+		</xpath>
+	</t>
+</templates>

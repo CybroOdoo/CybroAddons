@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 #############################################################################
-#
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2022-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -19,8 +18,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
-from . import res_config_settings
+from . import account_move
 from . import purchase_order
-from . import inventory
-from . import invoice
+from . import res_company
+from . import res_config_settings
+from . import stock_picking

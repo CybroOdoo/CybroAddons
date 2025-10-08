@@ -26,8 +26,9 @@ class ResConfigSettings(models.TransientModel):
     """Used to add new fields and sets and gets the value for that fields"""
     _inherit = 'res.config.settings'
 
-    select_fastest_methode = fields.Selection(
+    select_fastest_method = fields.Selection(
         [('chrome', 'Google Chrome(Fastest Way)'),
          ('all_browser', 'All Browser(May occur buffering)')],
+        default='all_browser',
         string="Select the Method", help="The fastest method",
         config_parameter='voice_to_text.select_fastest_method')

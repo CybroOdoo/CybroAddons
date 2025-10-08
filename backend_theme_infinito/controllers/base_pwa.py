@@ -26,10 +26,6 @@ from odoo.http import request
 
 class BasePwa(http.Controller):
     def pwa_data(self):
-        # pwa_enable = request.env[
-        #     "ir.config_parameter"].sudo().get_param(
-        #     "base_pwa.pwa_enable")
-        # if pwa_enable:
         return {
             'short_name': 'Odoo',
             'name': 'Odoo-infinito',

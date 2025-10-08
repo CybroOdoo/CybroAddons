@@ -31,7 +31,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['pos_sale', 'sale', 'pos_loyalty', 'pos_discount'],
+    'depends': ['pos_sale', 'sale', 'pos_loyalty', 'pos_discount','point_of_sale'],
     'data': {
         'security/ir.model.access.csv',
         'views/res_config_settings_views.xml',

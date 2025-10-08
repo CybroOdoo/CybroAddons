@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies (<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies (<https://www.cybrosys.com>)
 #    Author: Jumana jabin MP (odoo@cybrosys.com)
 #
 #    This program is free software: you can modify

@@ -1,11 +1,11 @@
-.. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
+.. image:: https://img.shields.io/badge/license-AGPL--3-blue.svg
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
 All in One Custom Dynamic Fields
 ================================
-
-All in One Custom Dynamic Fields
+The features of module facilitates the addition of fields to any view within a model,
+allowing users to specify attributes and properties at their preferred location.
 
 Installation
 ============

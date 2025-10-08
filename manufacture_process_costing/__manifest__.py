@@ -41,6 +41,7 @@
     'depends': ['base', 'mrp'],
     'data': [
         'security/ir.model.access.csv',
+        'data/material_data.xml',
         'views/res_config_settings_views.xml',
         'views/mrp_bom_views.xml',
         'views/mrp_production_views.xml',
@@ -51,7 +52,7 @@
         'report/mrp_production_cost_reports.xml',
         'report/mrp_production_cost_report_templates.xml',
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['/static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- Define the RelatedFieldTooltip template -->
+    <t t-name="dynamic_hover_on_related_fields.RelatedFieldTooltip" owl="1">
+        <!-- If requiredData is an object with at least one element -->
+        <div t-if="requiredData and requiredData.length > 0 and typeof requiredData === 'object'" style="color: #111;">
+            <h6 style="color: #111;">Field Data</h6>
+                <ul class="o-tooltip--technical">
+                    <!-- Iterate over each line in requiredData -->
+                    <t t-foreach="requiredData" t-as="line" t-key="line_index">
+                        <!-- Handle binary data -->
+                        <li t-if="line.ttype === 'binary'">
+                            <span class="o-tooltip--technical--title" t-esc="line.field"/><span>:</span>
+                            <img t-attf-src="data:image/png;base64,#{line.value}" style="width:40px; padding:5px;" t-att-alt="line.field"/>
+                        </li>
+                        <!-- Handle HTML data -->
+                        <li t-elif="line.ttype === 'html'">
+                            <span class="o-tooltip--technical--title" t-esc="line.field"/><span>:</span>
+                            <br/>
+                            <div style="background:#111;">
+                                <iframe t-att-srcdoc="line.value" style="width: auto;; height: auto;"></iframe>
+                            </div>
+                        </li>
+                        <!-- Handle other data types -->
+                        <li t-else="">
+                            <span class="o-tooltip--technical--title" t-esc="line.field"/><span>:</span>
+                            <t t-esc="line.value"/>
+                        </li>
+                    </t>
+                </ul>
+        </div>
+        <!-- If requiredData is not an object -->
+        <div t-elif="typeof requiredData !== 'object'">
+            <span t-esc="requiredData"/>
+        </div>
+        <!-- If requiredData is falsy or an empty object -->
+        <div t-else="">
+            <h6 style="color: #111;">No Data Available !!!</h6>
+        </div>
+    </t>
+</templates>

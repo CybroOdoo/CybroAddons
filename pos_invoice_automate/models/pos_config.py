@@ -47,6 +47,7 @@ class PosConfig(models.Model):
 
     def start_cron(self):
         """Start the cron scheduler"""
+        print("............start cron............")
         if self.interval >= 0:
             self.is_started = True
             self.is_stopped = False
@@ -75,6 +76,7 @@ class PosConfig(models.Model):
 
     def _send_mail(self, config):
         """Send invoice by Email"""
+        print("sentmail.....................")
         point_of_sale = self.env['pos.config'].browse(config)
         for order in point_of_sale.session_ids.order_ids.filtered(
                 lambda x: x.state == 'invoiced' and not x.is_send):

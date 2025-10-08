@@ -20,7 +20,7 @@
 #
 #############################################################################
 import speech_recognition as sr
-from odoo import models, _
+from odoo import api,models, _
 
 
 class VoiceRecognition(models.Model):
@@ -31,9 +31,10 @@ class VoiceRecognition(models.Model):
     def get_the_browser(self):
         """Used to retrieve the browser/fastest method tht the user choose."""
         methode_browser = self.env['ir.config_parameter'].sudo().get_param(
-            'voice_to_text.select_fastest_methode')
+            'voice_to_text.select_fastest_method')
         return methode_browser
 
+    @api.model
     def recognize_speech(self):
         """This is used to recognizes the voice"""
         r = sr.Recognizer()
@@ -45,6 +46,7 @@ class VoiceRecognition(models.Model):
         except sr.UnknownValueError:
             return 0
 
+    @api.model
     def update_field(self, field, model, script, id):
         """This is used to write the voice text into the field"""
         if script:

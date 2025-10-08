@@ -23,7 +23,6 @@
 import logging
 from odoo import fields, models
 
-
 _logger = logging.getLogger(__name__)
 
 
@@ -36,3 +35,10 @@ class BranchPosOrder(models.Model):
                                 related='session_id.branch_id',
                                 string='Branch', help='Branches allowed',
                                 store=True)
+
+    def _generate_pos_order_invoice(self):
+        res = super(BranchPosOrder, self)._generate_pos_order_invoice()
+        if self.account_move:
+            self.account_move.write({'branch_id': self.branch_id})
+
+        return res

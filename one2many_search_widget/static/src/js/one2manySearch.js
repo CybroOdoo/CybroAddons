@@ -13,8 +13,7 @@ export class One2ManySearch extends X2ManyField {
      */
     onInputKeyUp() {
             var value = $(event.currentTarget).val().toLowerCase();
-            var table_id = $(event.currentTarget)[0].id
-            $('.o_field_widget.o_field_one2many_search[name="'+ table_id +'"]').find(".o_list_table tr:not(:lt(1))").filter(function() {
+            $(".o_list_table tr:not(:lt(1))").filter(function() {
                 $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
             });
         }

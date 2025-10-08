@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "POS Product Multi variant",
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Point of Sale',
     'summary': """POS Multi-variant module is an advanced way for managing 
     product variants from the point of sale application""",

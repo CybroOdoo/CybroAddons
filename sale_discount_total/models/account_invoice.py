@@ -152,7 +152,7 @@ class AccountInvoice(models.Model):
     @api.onchange('discount_type', 'discount_rate', 'invoice_line_ids')
     def _supply_rate(self):
         for inv in self:
-            if inv.discount_type == 'percent':
+            if inv.discount_type == 'percent' and inv.discount_rate > 0:
                 discount_totals = 0
                 for line in inv.invoice_line_ids:
                     line.discount = inv.discount_rate
@@ -161,7 +161,7 @@ class AccountInvoice(models.Model):
                     discount_totals = discount_totals + discount_total
                     inv.amount_discount = discount_totals
                     line._compute_totals()
-            else:
+            elif inv.discount_rate > 0:
                 total = discount = 0.0
                 for line in inv.invoice_line_ids:
                     total += (line.quantity * line.price_unit)

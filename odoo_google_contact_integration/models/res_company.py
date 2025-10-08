@@ -21,8 +21,9 @@
 ##############################################################################
 import logging
 import requests
-from odoo import fields, models, _
+from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
+from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ class ResCompany(models.Model):
         string="Client Secret", help='People API Client Secret')
     contact_redirect_uri = fields.Char(
         string="Authorized redirect URIs",
-        default="http://localhost:8016/google_contact_authentication",
+        compute="_compute_contact_redirect_uri",
         help='People API Authorized redirect URIs')
     contact_company_access_token = fields.Char(
         string="Access Token", copy=False,
@@ -50,6 +51,14 @@ class ResCompany(models.Model):
         string="Refresh Token", copy=False, help='People API Refresh Token')
     contact_company_authorization_code = fields.Char(
         string="Authorization Code", help='People API Authorization Code')
+
+    @api.depends('contact_redirect_uri')
+    def _compute_contact_redirect_uri(self):
+        """Compute the redirect URI for onedrive and Google Drive"""
+        for rec in self:
+            base_url = request.env['ir.config_parameter'].get_param(
+                'web.base.url')
+            rec.contact_redirect_uri = base_url + '/google_contact_authentication'
 
     def action_google_contact_authenticate(self):
         """Authenticate the connection to Google."""

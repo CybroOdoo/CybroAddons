@@ -1,18 +1,32 @@
-.. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
-    :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
+.. image:: https://img.shields.io/badge/license-AGPL--3-blue.svg
+    :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
-Login By QR Code
-======================
+Login using Qr code
+=============
 Internal users can login by scanning QR Code.
+
+Configuration
+=============
+* No additional configurations needed
 
 Company
 -------
 * `Cybrosys Techno Solutions <https://cybrosys.com/>`__
 
+License
+-------
+General Public License, Version 3 (AGPL v3).
+(https://www.gnu.org/licenses/agpl-3.0-standalone.html)
+
+
 Credits
 -------
-Developer: (v16) muzammil @ cybrosys
+Developer:
+   (V15) Mohamed Muzammil VP,
+   (v16) muzammil,
+   (v17) Anjhana A K,
+Contact: odoo@cybrosys.com
 
 Contacts
 --------

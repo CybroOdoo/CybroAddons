@@ -23,6 +23,8 @@ import os
 
 import requests
 
+from odoo.modules.module import get_module_resource
+
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
@@ -65,8 +67,7 @@ class GoogleFont(models.Model):
 
     def set_css(self):
         """open the file write the style in to the css file"""
-        working_dir = os.path.dirname(os.path.realpath(__file__))
-        working_dir = working_dir.replace('/models', '/static/src/css/font.css')
+        working_dir = get_module_resource('backend_theme_infinito_plus', 'static', 'src', 'css', 'font.css')
         # open the file in write mode
         with open(working_dir, 'w') as file:
             style = f"""
@@ -84,7 +85,6 @@ class GoogleFont(models.Model):
     @staticmethod
     def remove_fonts():
         """remove the style when changing the font"""
-        working_dir = os.path.dirname(os.path.realpath(__file__))
-        working_dir = working_dir.replace('/models', '/static/src/css/font.css')
+        working_dir = get_module_resource('backend_theme_infinito_plus', 'static', 'src', 'css', 'font.css')
         with open(working_dir, 'w') as file:
             file.write('')

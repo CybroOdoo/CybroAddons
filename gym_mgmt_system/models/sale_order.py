@@ -27,17 +27,18 @@ class SaleOrder(models.Model):
     _inherit = "sale.order"
 
     def action_confirm(self):
-        """ Membership  created directly from sale order confirmed """
+        """Membership created directly from sale order confirmed"""
         product = self.env['product.product'].search([
             ('membership_date_from', '!=', False),
-            ('id', '=', self.order_line.product_id.id)])
+            ('id', 'in', self.order_line.product_id.ids)
+        ])
         for record in product:
-            self.env['gym.membership'].create([
-                {'member_id': self.partner_id.id,
-                 'membership_date_from': record.membership_date_from,
-                 'membership_scheme_id': self.order_line.product_id.id,
-                 'sale_order_id': self.id,
-                 }])
-
-        res = super(SaleOrder, self).action_confirm()
-        return res
+            membership = self.env['gym.membership'].create({
+                'member_id': self.partner_id.id,
+                'membership_date_from': record.membership_date_from,
+                'membership_scheme_id': record.id,
+                'sale_order_id': self.id,
+                'state': 'confirm',
+            })
+            self.partner_id.gym_member = True
+        return super().action_confirm()

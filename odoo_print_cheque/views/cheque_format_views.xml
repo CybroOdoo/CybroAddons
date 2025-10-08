@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Cheque details format configuration view-->
+    <record id="cheque_format_action" model="ir.actions.act_window">
+        <field name="name">Check Models</field>
+        <field name="res_model">cheque.format</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--Tree view-->
+    <record id="cheque_format_view_tree" model="ir.ui.view">
+        <field name="name">cheque.format.view.tree</field>
+        <field name="model">cheque.format</field>
+        <field name="arch" type="xml">
+            <tree string="Check format table">
+                <field name="bank_name"/>
+                <field name="is_account_payee"/>
+            </tree>
+        </field>
+    </record>
+    <!--Form view-->
+    <record id="cheque_format_view_form" model="ir.ui.view">
+        <field name="name">cheque.format.view.form</field>
+        <field name="model">cheque.format</field>
+        <field name="arch" type="xml">
+            <form string="Check format">
+                <header>
+                    <!--Button for test print-->
+                    <button name="action_print_test" type="object"
+                            string="Test Print"
+                            class="oe_highlight" style="float:left;"/>
+                </header>
+                <sheet>
+                    <group>
+                        <!-- Configure bank name-->
+                        <group>
+                            <field name="bank_name"/>
+                            <field name="font_size"/>
+                        </group>
+                        <!-- Configure the cheque size-->
+                        <group>
+                            <field name="cheque_width"/>
+                            <field name="cheque_height"/>
+                        </group>
+                    </group>
+                    <!--Configure for the cheque format-->
+                    <notebook>
+                        <!-- To print account payee-->
+                        <page string="Crossed Account Payee cheque Format"
+                              name="account_payee_page">
+                            <group>
+                                <field name="is_account_payee"/>
+                            </group>
+                            <group attrs="{'invisible':[('is_account_payee','=',False)]}">
+                                <field name="a_c_payee_top_margin"/>
+                                <field name="a_c_payee_left_margin"/>
+                                <field name="a_c_payee_width"/>
+                                <field name="a_c_payee_height"/>
+                            </group>
+                        </page>
+                        <!--To print sequence number-->
+                        <page string="Cheque Sequence Number Format"
+                              name="cheque_sequence_page">
+                            <group>
+                                <field name="print_cheque_number"/>
+                            </group>
+                            <group attrs="{'invisible':[('print_cheque_number','=',False)]}">
+                                <field name="cheque_no_tm"/>
+                                <field name="cheque_no_lm"/>
+                            </group>
+                        </page>
+                        <!--To print date-->
+                        <page string="Date Format" name="date_format_page">
+                            <group>
+                                <field name="date_remove_slashes"/>
+                                <field name="date_top_margin"/>
+                                <field name="date_left_margin"/>
+                                <field name="date_letter_spacing"/>
+                            </group>
+                        </page>
+                        <!--To print beneficiary name-->
+                        <page string="Beneficiary Format"
+                              name="Beneficiary_format_page">
+                            <group>
+                                <field name="beneficiary_top_margin"/>
+                                <field name="beneficiary_left_margin"/>
+                            </group>
+                        </page>
+                        <!--To print amount in words-->
+                        <page string="Amount in word Format"
+                              name="word_format_page">
+                            <group>
+                                <field name="amount_word_tm"/>
+                                <field name="amount_word_lm"/>
+                                <field name="amount_word_ls"/>
+                            </group>
+                        </page>
+                        <!--To print amount in digits-->
+                        <page string="Amount in digit Format"
+                              name="digit_format_page">
+                            <group>
+                                <field name="print_currency"/>
+                                <field name="amount_digit_tm"/>
+                                <field name="amount_digit_lm"/>
+                                <field name="amount_digit_ls"/>
+                                <field name="amount_digit_size"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <menuitem
+            id="cheque_format_menu"
+            name='Configure Cheques'
+            parent="account.account_banks_menu"
+            sequence="3"
+            action="cheque_format_action"/>
+</odoo>

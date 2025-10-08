@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="product_ar_view" name="Product View"
+              inherit_id="website_sale.shop_product_carousel">
+        <!-- Created a div for the AR model on the website-->
+        <xpath expr="//div[hasclass('o_carousel_product_outer')]"
+               position="after">
+            <div id="product_main"
+                 t-attf-class="carousel-item h-100#{' active' if product_image_first else ''}"
+                 style="text-align: center; position: relative; display:none;">
+            </div>
+            <script type="module"
+                    src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js">
+            </script>
+        </xpath>
+    </template>
+    <!--  Replaced the carousel_product_indicator and added a new one for the AR model-->
+    <template id="product_extra_images" name="Product Extra Images View"
+              inherit_id="website_sale.carousel_product_indicators">
+        <xpath expr="//div[contains(@t-attf-class, 'o_carousel_product_indicators')]"
+               position="replace">
+            <div t-ignore="True"
+                 t-attf-class="o_carousel_product_indicators {{indicators_div_class}}">
+                <ol t-attf-class="carousel-indicators {{indicators_list_class}} position-static pt-2 pt-lg-0 mx-auto my-0 text-start">
+                    <li t-foreach="product_images" t-as="product_image"
+                        t-attf-class="align-top position-relative {{'active' if product_image_first else ''}} product_images"
+                        data-bs-target="#o-carousel-product"
+                        t-att-data-bs-slide-to="str(product_image_index)">
+                        <div t-field="product_image.image_128"
+                             t-options='{"widget": "image", "qweb_img_responsive": False, "class": "o_image_64_cover", "alt-field": "name"}'/>
+                        <i t-if="product_image._name == 'product.image' and product_image.embed_code"
+                           class="fa fa-2x fa-play-circle o_product_video_thumb bg-black-50 text-center"/>
+                    </li>
+                    <t t-if="product.enable_ar_images">
+                        <li class="product_images" data-type="3d"
+                            t-attf-class="align-top position-relative product_images"
+                            data-bs-target="#o-carousel-product"
+                            t-att-id="product.id"
+                            t-att-data-bs-slide-to="str(product_image_index+1)">
+                            <t t-if="product.poster_image">
+                                <div t-field="product.poster_image"
+                                     data-type="3d" t-att-data-type="'3d'"
+                                     t-options='{"widget": "image","data-type":"3d", "qweb_img_responsive": False, "class": "o_image_64_cover", "alt-field": "name"}'/>
+                            </t>
+                            <t t-else="">
+                                <img data-type="3d"
+                                     src="/website_webar_product/static/src/img/hand.png"
+                                     style="height: 100%; width: 100%; object-fit: contain;"/>
+                            </t>
+                        </li>
+                    </t>
+                </ol>
+            </div>
+        </xpath>
+    </template>
+</odoo>

@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Import Product variant',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Sales',
     'summary': """This module is used to import the product and product 
      variants.""",

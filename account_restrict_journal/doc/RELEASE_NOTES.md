@@ -9,3 +9,8 @@
 #### Version 16.0.2.1.1
 #### UPDT
 - Bug Fix and Change Functionality
+
+#### 12.07.2024
+#### Version 16.0.2.1.2
+#### UPDT
+- Bug Fix for Invoice restriction

@@ -9,3 +9,8 @@
 #### Version 16.0.1.0.1
 ##### FIX
 - Resolved the server error that occurs when creating the POS order.
+- 
+#### 16.05.2024
+#### Version 16.0.1.0.2
+##### FIX
+- Resolved issue of duplicating pos order.

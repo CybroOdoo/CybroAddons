@@ -1,10 +1,19 @@
 .. image:: https://img.shields.io/badge/licence-LGPL--3-blue.svg
-    :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
+    :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 
 Theme Coffee Shop
 =================
 This is a theme for Coffee Shop.
+
+Configuration
+=============
+No configuration
+
+License
+-------
+General Public License, Version 3 (LGPL v3).
+(https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
 
 Company
 -------
@@ -12,7 +21,7 @@ Company
 
 Credits
 -------
-Developer: Ayisha Sumayya K and Abbas P @cybrosys, Contact: odoo@cybrosys.com
+Developer: (V16) Ayisha Sumayya K, Abbas P, ASWIN A K, Contact: odoo@cybrosys.com
 
 Contacts
 --------

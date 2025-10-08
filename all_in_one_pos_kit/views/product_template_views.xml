@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="product_template_only_form_view" model="ir.ui.view">
+        <!-- Inherit the product_template form view to add field -->
+        <field name='name'>
+            product.template.view.form.inherit.all.in.one.pos.kit
+        </field>
+        <field name='model'>product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Define the position to insert the new elements in the view -->
+            <field name="detailed_type" position="after">
+                <field name="is_age_restrict"/>
+            </field>
+            <!-- Define the position to insert the new elements in the view -->
+            <xpath expr="//page[@name='general_information']" position="after">
+                <page string="Barcodes"
+                      attrs="{'invisible':[('product_variant_count', '>', 1)]}">
+                    <field name="product_template_ids">
+                        <tree editable="bottom">
+                            <field name="multi_barcode"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+            <xpath expr="//field[@name='to_weight']" position="after">
+               <field name="to_make_mrp"
+                      attrs="{'invisible': [('available_in_pos', '=', False)]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

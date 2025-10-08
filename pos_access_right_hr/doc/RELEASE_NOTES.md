@@ -9,3 +9,8 @@
 #### Version 16.0.1.0.1
 ##### FIX
 - Fix the keyboard event handling issue
+
+#### 10.09.2025
+#### Version 16.0.1.0.2
+##### FIX
+- Updated the keyboard event handling issue for all keys.

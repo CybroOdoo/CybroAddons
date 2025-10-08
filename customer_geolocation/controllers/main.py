@@ -36,7 +36,6 @@ class PortalGeolocation(CustomerPortal):
     def account(self, **post):
         """ Super CustomerPortal class function and pass the api key value
         from settings using params to website view file"""
-
         res = super(PortalGeolocation, self).account(**post)
         params = request.env['ir.config_parameter'].sudo()
         values = params.get_param('base_geolocalize.google_map_api_key')
@@ -58,9 +57,8 @@ class PortalGeolocation(CustomerPortal):
         the converted Latitude and longitude
         """
         res = json.loads(coordinates)
-        geolocator = Nominatim(user_agent="geoapiExercises")
-        location = geolocator.reverse(
-            str(res.get('lat')) + "," + str(res.get('lng')))
+        geolocator = Nominatim(user_agent="my-app")
+        location = geolocator.reverse(f'{res.get("lat")},{res.get("lng")}')
         city = "Undefined"
         suburb = "Undefined"
         state = "Undefined"
@@ -98,11 +96,9 @@ class PortalGeolocation(CustomerPortal):
         Pass the value to website view and set required fields and map
 
         """
-        locator = Nominatim(user_agent="myGeocoder")
+        locator = Nominatim(user_agent='my-app')
         location = locator.geocode(address)
-        geolocator = Nominatim(user_agent="geoapiExercises")
-        location_country = geolocator.reverse(
-            str(location.latitude) + "," + str(location.longitude))
+        location_country = locator.reverse(f'{location.latitude},{location.longitude}')
         addresses = location_country.raw['address']
         country_code = addresses.get('country_code')
         country = pytz.country_names[country_code]

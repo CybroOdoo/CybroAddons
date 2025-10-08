@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': "Website Sale Address Management",
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Website',
     'summary': """This module helps you to show or hide fields by switching 
     on/off toggles,set fields as mandatory or not and  set default country.""",

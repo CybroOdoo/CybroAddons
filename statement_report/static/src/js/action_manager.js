@@ -6,6 +6,7 @@ var framework = require('web.framework')
 var session = require('web.session')
 
 //action manager for xlsx report
+if (!registry.category('ir.actions.report handlers').contains('xlsx')) {
 registry.category('ir.actions.report handlers').add('xlsx', async (action) => {
     if (action.report_type === 'xlsx'){
         framework.blockUI();
@@ -20,3 +21,4 @@ registry.category('ir.actions.report handlers').add('xlsx', async (action) => {
         return def;
     }
 })
+}

@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "POS Product Multiple UOM",
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.2',
     'category': 'Point of Sale',
     'summary': """A module to manage multiple UoM in POS""",
     'description': """This app allows you to change UoM of product in POS.""",
@@ -29,7 +29,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['base', 'point_of_sale'],
+    'depends': ['base', 'point_of_sale', 'uom'],
     'data':
         [
             'security/ir.model.access.csv',

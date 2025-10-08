@@ -68,6 +68,7 @@ class PosOrder(models.Model):
         }
 
     def download_invoice(self):
+        print("mmmmmmmmmmmmmmmmmmm")
         if not self.account_move:
             self.action_pos_order_invoice()
         template = self.env.ref('pos_invoice_automate.send_mail_template')

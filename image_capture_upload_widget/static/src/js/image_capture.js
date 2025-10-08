@@ -110,24 +110,32 @@ export class ImageCapture extends Component {
         captureButton.classList.remove('d-none');
         camera.classList.add('d-none');
         let stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        console.log("stream", stream)
 	    player.srcObject = stream;
     }
+
     async OnClickCaptureImage() {
-        // Capture the image from webcam and close the webcam
-        var context = snapshot.getContext('2d');
-        var canvas = document.getElementById('snapshot')
-        var save_image = document.getElementById('save_image')
+        var player = document.getElementById('player');
+        var snapshot = document.getElementById('snapshot');
+        var save_image = document.getElementById('save_image');
         var image = document.getElementById('image');
-        var video = document.getElementById('video')
         var camera = document.getElementById('camera');
+        var canvas = document.getElementById('snapshot');
+
+        if (!player || !snapshot || !canvas || !save_image || !image) {
+            this.notification.add(_lt("Camera or canvas element not found. Please check widget setup."), { type: "danger" });
+            return;
+
+        }
+
+        var context = snapshot.getContext('2d');
         save_image.classList.remove('d-none');
         context.drawImage(player, 0, 0, 320, 240);
         image.value = context.canvas.toDataURL();
         canvas.classList.remove('d-none');
         this.url = context.canvas.toDataURL();
         console.log(context.canvas.toDataURL());
-        console.log(context);
-        console.log(context.getImageData);
+
     }
     async OnClickSaveImage(){
         // Saving the image to that field
@@ -158,6 +166,7 @@ export class ImageCapture extends Component {
         var camera = document.getElementById('camera')
         camera.classList.remove('d-none');
     }
+
     onLoadFailed() {
         this.state.isValid = false;
         this.notification.add(this.env._t("Could not display the selected image"), {

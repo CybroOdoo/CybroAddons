@@ -71,3 +71,19 @@
 ### UPDT
 
 - Automatic Asset Creation Bug Fix
+
+### 13.04.2024
+
+### Version 16.0.2.0.13
+
+### UPDT
+
+- Invalid Field Attributes Bug Fix
+
+### 26.11.2024
+
+### Version 16.0.2.0.14
+
+### UPDT
+
+- Invalid print statments

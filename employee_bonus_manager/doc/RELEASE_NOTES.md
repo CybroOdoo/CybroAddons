@@ -5,3 +5,9 @@
 #### ADD
 
 Initial Commit for Employee Bonus
+
+#### 27.0.2024
+#### Version 16.0.2.1.0
+#### UPDT
+
+Add functionality of calculate payslip based on the employee bonus

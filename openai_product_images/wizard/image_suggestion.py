@@ -19,72 +19,89 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from odoo import fields, models
-import requests
-from requests.structures import CaseInsensitiveDict
-import json
+from odoo import fields, models, _
+from odoo.exceptions import UserError, ValidationError
+from urllib.request import urlopen
+from openai import OpenAI
 import base64
-
-from odoo.exceptions import ValidationError
 
 
 class ImageSuggestion(models.TransientModel):
-    """image for product from dalle"""
+    """Image generator for product from OpenAI DALL·E 3"""
     _name = 'image.suggestion'
     _rec_name = 'product_tmpl_id'
-    _description = 'model for creation of dalle image '
+    _description = 'Model for creation of product images using DALL·E'
 
-    image_prompt = fields.Char(string="Prompt for image",
-                               help="field to fill prompt", required=True)
-    product_tmpl_id = fields.Many2one('product.template', string="Product",
-                                      help="field to store product",
-                                      required=True)
-    num_image = fields.Integer(string="Number of image needed",
-                               help="field to store  number of image",
-                               required=True,
-                               default=1)
+    image_prompt = fields.Char(
+        string="Prompt for Image",
+        help="Describe the image you want to generate",
+        required=True
+    )
+    product_tmpl_id = fields.Many2one(
+        'product.template',
+        string="Product",
+        help="Select the product for which image needs to be generated",
+        required=True
+    )
+    num_image = fields.Integer(
+        string="Number of Images",
+        help="Number of images to generate",
+        required=True,
+        default=1
+    )
     size_image = fields.Selection(
-        [('256x256', '256x256'), ('512x512', '512x512')], string="Resolution",
-        help="field to store image size", required=True)
+        [
+            ('1024x1024', '1024x1024'),
+            ('1024x1792', '1024x1792 (Portrait)'),
+            ('1792x1024', '1792x1024 (Landscape)')
+        ],
+        string="Resolution",
+        help="Resolution of generated images",
+        required=True,
+        default='1024x1024'
+    )
+    quality = fields.Selection(
+        [
+            ('standard', 'Standard'),
+            ('hd', 'High Definition')
+        ],
+        string="Quality",
+        help="Image quality setting for DALL·E 3",
+        required=True,
+        default='standard'
+    )
 
     def action_search(self):
-        """Summary:
-              Function to search  image suggestion from dalle
-           Returns:
-               returns the created media image of corresponding product
-        """
+        """Generate product images from OpenAI DALL·E 3"""
+        # Hardcoded API key as requested
+        api_key = self.env['ir.config_parameter'].sudo().get_param('openai_api_key')
 
-        api_key = self.env['ir.config_parameter'].sudo().get_param(
-            'openai_api_key')
-        headers = CaseInsensitiveDict()
-        headers["Content-Type"] = "application/json"
-        headers["Authorization"] = f"Bearer {api_key}"
-        data = '{"model": "image-alpha-001",' \
-               ' "prompt": "' + self.image_prompt + '", "num_images": ' +\
-               str(self.num_image) + ', "size": "' \
-               + self.size_image + '", "response_format": "url"}'
+        client = OpenAI(api_key=api_key)
+        try:
+            response = client.images.generate(
+                model="dall-e-3",
+                prompt=self.image_prompt,  # Use image_prompt field
+                size=self.size_image,
+                quality=self.quality,
+                n=self.num_image,
+            )
+            # Process the first image (DALL-E 3 typically returns one image)
+            image_url = response.data[0].url
+            image_content = urlopen(image_url).read()
+            image_b64_encoded = base64.b64encode(image_content)
 
-        resp = requests.post("https://api.openai.com/v1/images/generations",
-                             headers=headers, data=data)
-        if resp.status_code != 200:
-            raise ValidationError("Failed to generate image")
-        response_text = json.loads(resp.text)
-        for url in response_text['data']:
-            image_url = url['url']
-            # Get image data and encode it in base64
-            image_resp = requests.get(image_url)
-            if image_resp.status_code != 200:
-                raise ValidationError("Failed to retrieve image")
-            image_b64 = base64.b64encode(image_resp.content)
-            # Store encoded image as binary field on model
-            self.env['dalle.image.suggestion'].create(
-                    {'product_image': image_b64,
-                     'product_tmpl_id': self.product_tmpl_id.id, })
-        return {
-            'name': self.product_tmpl_id.name,
-            'view_mode': 'tree,form',
-            'res_model': 'dalle.image.suggestion',
-            'type': 'ir.actions.act_window',
-            'domain': [('product_tmpl_id', '=', self.product_tmpl_id.id)],
-            'target': 'current',
-        }
+            # Update the product's image_1920 field
+            self.product_tmpl_id.write({'image_1920': image_b64_encoded})
+
+            # Optionally store in dalle.image.suggestion (if needed for history)
+            self.env['dalle.image.suggestion'].create({
+                'product_image': image_b64_encoded,
+                'product_tmpl_id': self.product_tmpl_id.id,
+            })
+
+            # Return action to close wizard or refresh product form
+            return {
+                'type': 'ir.actions.act_window_close',
+            }
+        except Exception as e:
+            raise UserError(f"Error generating image: {str(e)}")

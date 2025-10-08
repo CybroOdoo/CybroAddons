@@ -42,8 +42,8 @@ class MrpBom(models.Model):
         """Compute total cost per unit"""
         for rec in self:
             cost_mapp = rec.bom_line_ids.mapped('cost')
-            rec.bom_cost = sum(cost_mapp)
-            rec.total_bom_cost = rec.bom_cost * rec.product_qty
+            rec.bom_cost = sum(cost_mapp)/ rec.product_qty
+            rec.total_bom_cost = sum(cost_mapp)
 
 
 class MrpBomLine(models.Model):

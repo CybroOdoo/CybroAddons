@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Rental order contract tree view-->
+    <record id="rental_order_contract_view_tree" model="ir.ui.view">
+        <field name="name">rental.order.contract.view.tree</field>
+        <field name="model">rental.order.contract</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="reference_no"/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <field name="company_id" invisible="1"/>
+                <field name="qty"/>
+                <field name="unit_price"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="rental_order_id"/>
+                <field name="sale_order_id"/>
+                <field name="contract_status"/>
+            </tree>
+        </field>
+    </record>
+    <!--Rental order contract form view-->
+    <record id="rental_contract_view_form" model="ir.ui.view">
+        <field name="name">rental.order.contract.view.form</field>
+        <field name="model">rental.order.contract</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button string="Confirm" name="action_confirm_contract"
+                            class="oe_highlight"
+                            type="object"
+                            attrs="{'invisible':[('contract_status','!=','new')]}"/>
+                    <button string="Cancel" name="action_cancel_contract"
+                            class="btn-primary"
+                            type="object"
+                            attrs="{'invisible':[('contract_status','=','cancel')]}"/>
+                    <button string="Reset To Draft" name="action_reset_contract"
+                            class="btn-primary"
+                            type="object"
+                            attrs="{'invisible':[('contract_status','!=','cancel')]}"/>
+                    <field name="contract_status" widget="statusbar"
+                           nolabel="1"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="reference_no"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id" attrs="{'readonly':[('contract_status','!=','new')]}"/>
+                            <field name="product_id" attrs="{'readonly':[('contract_status','!=','new')]}"/>
+                            <field name="company_id" attrs="{'readonly':[('contract_status','!=','new')]}"/>
+                            <field name="qty" attrs="{'readonly':[('contract_status','!=','new')]}"/>
+                            <field name="unit_price" attrs="{'readonly':[('contract_status','!=','new')]}"/>
+                        </group>
+                        <group>
+                            <field name="create_date" attrs="{'readonly':[('contract_status','!=','new')]}"/>
+                            <field name="date_start" attrs="{'readonly':[('contract_status','!=','new')]}"/>
+                            <field name="date_end" attrs="{'readonly':[('contract_status','!=','new')]}"/>
+                            <field name="rental_order_id" attrs="{'readonly':[('contract_status','!=','new')]}"/>
+                            <field name="sale_order_id" attrs="{'readonly':[('contract_status','!=','new')]}"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--    Rental order contract action-->
+    <record id="rental_order_contract_action" model="ir.actions.act_window">
+        <field name="name">Rental Contract</field>
+        <field name="res_model">rental.order.contract</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--    Rental contract menu-->
+    <menuitem id="rental_order_contract_menu"
+              name="Rental Contract"
+              parent="odoo_rental_sales.rental_sales_menu"
+              action="rental_order_contract_action"/>
+
+</odoo>

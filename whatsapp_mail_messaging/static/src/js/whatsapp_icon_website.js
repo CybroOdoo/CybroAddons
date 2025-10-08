@@ -14,7 +14,7 @@ odoo.define('whatsapp_mail_messaging.whatsapp_icon_website.js', function (requir
             this._super.apply(this, arguments);
         },
         _onClickWhatsappIcon: function (ev) {
-                $('#ModalWhatsapp').css('display', 'block');
+            $('#ModalWhatsapp').css('display', 'block');
         },
     });
 });

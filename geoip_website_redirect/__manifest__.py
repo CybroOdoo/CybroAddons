@@ -20,9 +20,9 @@
 #
 #############################################################################
 {
-    'name': 'Website GeoIP Based Language and Currency',
+    'name': 'Website Geolocation Based Language and Currency',
     'version': '16.0.1.0.0',
-    'summary': 'Website GeoIP Based Language and Currency Application '
+    'summary': 'Website Geolocation Based Language and Currency Application '
                'for Odoo 16',
     'description': """The module helps you to map currency and language
                     based on Customer's IP address""",

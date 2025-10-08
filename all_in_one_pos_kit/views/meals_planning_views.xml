@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Search view records used in the Product planning-->
+    <record id="meals_planning_view_search" model="ir.ui.view">
+        <field name="name">meals.planning.view.search</field>
+        <field name="model">meals.planning</field>
+        <field name="arch" type="xml">
+            <search string="Product Planning">
+                <field name="name" string="Name"/>
+                <field name="pos_ids" string="Session"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Session" name="session"
+                            context="{'group_by':'pos_ids'}"/>
+                    <filter string="Time To" name="time_to"
+                            context="{'group_by':'time_to'}"/>
+                    <filter string="Time From" name="time_from"
+                            context="{'group_by':'time_from'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Tree view of Product Planning -->
+    <record id="meals_planning_view_tree" model="ir.ui.view">
+        <field name="name">meals.planning.view.tree</field>
+        <field name="model">meals.planning</field>
+        <field name="arch" type="xml">
+            <tree string="Meals Planning">
+                <field name="name"/>
+                <field name="pos_ids" widget="many2many_tags"/>
+                <field name="time_from"/>
+                <field name="time_to"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Form view of Product Planning -->
+    <record id="meals_planning_view_form" model="ir.ui.view">
+        <field name="name">meals.planning.view.form</field>
+        <field name="model">meals.planning</field>
+        <field name="arch" type="xml">
+            <form string="Product Planning">
+                <header>
+                    <button string="Activate" type="object"
+                            name="action_activate_meals_plan"
+                            class="oe_highlight"
+                            attrs="{ 'invisible': [('state', '=', 'activated')] }"
+                            groups="point_of_sale.group_pos_manager"/>
+                    <button string="Deactivate" type="object"
+                            name="action_deactivate_meals_plan"
+                            class="oe_highlight"
+                            attrs="{ 'invisible': [('state', '=', 'deactivated')] }"
+                            groups="point_of_sale.group_pos_manager"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="activated,deactivated"
+                           readonly="1"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="time_from"/>
+                        </group>
+                        <group>
+                            <field name="pos_ids" widget="many2many_tags"/>
+                            <field name="time_to"/>
+                            <field name="company_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Product Items">
+                            <field name="product_ids">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"
+                           options="{'post_refresh': 'recipients'}"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!-- This Menu Item must have a parent and an action -->
+    <record id='meals_planning_view_action' model='ir.actions.act_window'>
+        <field name="name">Product planning</field>
+        <field name="res_model">meals.planning</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="meals_planning_menu_action" name="Product Planning"
+              parent="point_of_sale.pos_config_menu_catalog" sequence="6"
+              action="meals_planning_view_action"/>
+</odoo>

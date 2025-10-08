@@ -9,6 +9,7 @@ odoo.define('pos_kitchen_screen_odoo.ReceiptScreen', function(require) {
         //@Override the method to set the order count in the pos session
         orderDone() {
                 this.env.pos.removeOrder(this.currentOrder);
+                this.env.pos.add_new_order();
                 const { name, props } = this.nextScreen;
                 this.showScreen(name, props);
                 if (this.env.pos.config.iface_customer_facing_display) {

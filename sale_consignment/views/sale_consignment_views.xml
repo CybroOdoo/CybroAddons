@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Action-->
+    <record id="sale_consignment_action" model="ir.actions.act_window">
+        <field name="name">Consignment</field>
+        <field name="res_model">sale.consignment</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record model="ir.ui.view" id="sale_consignment_view_form">
+        <field name="name">sale.consignment</field>
+        <field name="model">sale.consignment</field>
+        <field name="arch" type="xml">
+            <form string="Consignment">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button name="action_order_confirm" string="Confirm"
+                            type="object" class="btn-primary"
+                            attrs="{'invisible': [('state', '!=', 'draft')]}"
+                            />
+                    <button name="create_sale_order" string="Create Sale Order"
+                            type="object" class="btn-primary"
+                            attrs="{'invisible': [('state', '!=', 'confirm')]}"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_order"
+                                attrs="{'invisible': [('sale_count', '=', 0)]}"
+                                string="Sale order"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-pencil-square-o">
+                            <field name="sale_count" widget="statinfo"
+                                   attrs="{'invisible': [('sale_count', '=', 0)]}"
+                                   string=" Sale order"> </field>
+                        </button>
+                        <button name="action_view_pickings"
+                                attrs="{'invisible': [('picking_count', '=', 0)]}"
+                                string="Pickings"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-pencil-square-o">
+                            <field name="picking_count" widget="statinfo"
+                                   attrs="{'invisible': [('picking_count', '=', 0)]}"
+                                   string=" Pickings"> </field>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group col="4">
+                            <field name="partner_id"/>
+                            <field name="user_id"/>
+                            <field name="company_id"/>
+                            <field name="location_id"/>
+                            <field name="customer_domain" invisible="1"/>
+                        </group>
+                        <group col="4">
+                            <field name="date"/>
+                            <field name="price_list_id"/>
+                            <field name="end_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Order line" name="Order line">
+                            <field name="consignment_line_ids" attrs="{'readonly': [('state', '=', 'confirm')]}">
+                                <tree string="Order lines" editable="bottom" >
+                                    <field name="product_id"/>
+                                    <field name="demand_quantity"/>
+                                    <field name="done_quantity"/>
+                                    <field name="remaining_quantity"/>
+                                    <field name="product_domain"
+                                           invisible="1"/>
+                                    <field name="price"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Other Info" name="Other Info">
+                            <group>
+                                <field name="location_dest_id"/>
+                                <field name="ware_house_id"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"
+                           options="{'post_refresh': 'recipients'}"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="sale_consignment_view_tree">
+        <field name="name">sale.consignment</field>
+        <field name="model">sale.consignment</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="partner_id"/>
+                <field name="date"/>
+                <field name="end_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <menuitem
+            name="Consignment"
+            id="sale_consignment_menu"
+            parent="sale.sale_menu_root"
+            action="sale_consignment_action"
+            groups="sale_consignment.group_consignment_order"
+            sequence="20"/>
+</odoo>

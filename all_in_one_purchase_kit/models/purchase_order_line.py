@@ -39,8 +39,11 @@ class PurchaseOrderLine(models.Model):
         string='Product Barcode',
         help="Here you can provide the barcode for the product")
     discount = fields.Float(
-        string="Discount (%)", editable=True, help="Total Discount"
-    )
+        string="Discount (%)",
+        compute='_compute_price_unit_and_date_planned_and_name',
+        digits='Discount',
+        store=True, readonly=False)
+
     _sql_constraints = [
         (
             "maximum_discount",
@@ -88,22 +91,26 @@ class PurchaseOrderLine(models.Model):
         vals.update({"price_unit": self._get_discounted_price()})
         return vals
 
-    @api.onchange('product_id')
-    def calculate_discount_percentage(self):
-        """Calculate the discount percentage"""
+    def _compute_price_unit_and_date_planned_and_name(self):
+        result = super(PurchaseOrderLine, self)._compute_price_unit_and_date_planned_and_name()
+
+        if not self.product_id or not self.order_id.partner_id:
+            return result
+
         vendor = self.order_id.partner_id
         sellers = self.product_id.product_tmpl_id.seller_ids
-        for rec in sellers:
-            if rec.partner_id.id == vendor.id:
-                if rec.discount:
-                    self.write({'discount': rec.discount})
-                    self.update({'price_unit': rec.price})
-                    break
-            elif rec.partner_id.id != vendor.id:
-                self.update({'discount': vendor.default_discount})
+
+        # Initialize with default discount first
+        self.discount = vendor.default_discount or 0
+
+        # Override with specific vendor discount if found
+        for seller in sellers:
+            if seller.partner_id == vendor and seller.discount:
+                self.discount = seller.discount
+                self.price_unit = seller.price
                 break
-            else:
-                self.write({'discount': None})
+
+        return result
 
     @api.depends('discount')
     def _get_discounted_price(self):

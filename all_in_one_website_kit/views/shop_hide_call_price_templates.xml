@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- This template is used for hiding price from shop grid and list view-->
+    <template id="shop_hide_price" inherit_id="website_sale.products_item">
+        <xpath expr="//div[hasclass('product_price')]" position="replace">
+            <t t-if="product.price_call">
+            </t>
+            <t t-else="">
+                <div class="product_price" itemprop="offers"
+                     itemscope="itemscope" itemtype="http://schema.org/Offer">
+                    <t t-if="'base_price' in template_price_vals">
+                        <del t-attf-class="text-muted me-1 h6 mb-0"
+                             style="white-space: nowrap;">
+                            <em class="small"
+                                t-esc="template_price_vals['base_price']"
+                                t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        </del>
+                    </t>
+                    <span class="h6 mb-0"
+                          t-if="template_price_vals['price_reduce'] or not website.prevent_zero_price_sale"
+                          t-esc="template_price_vals['price_reduce']"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    <span class="h6 mb-0" t-else=""
+                          t-field="website.prevent_zero_price_sale_text"/>
+                    <span itemprop="price" style="display:none;"
+                          t-esc="template_price_vals['price_reduce']"/>
+                    <span itemprop="priceCurrency" style="display:none;"
+                          t-esc="website.currency_id.name"/>
+                </div>
+            </t>
+        </xpath>
+    </template>
+    <!-- This template is used for hiding product price and add to cart button from each product and show button for requesting price-->
+    <template id="shop_product_hide_price" inherit_id="website_sale.product">
+        <xpath expr="//div[hasclass('js_main_product')]" position="replace">
+            <t t-if="product.price_call">
+                <div class="alert alert-success" id="alert_message"
+                     style="display:none">
+                    Thank you for information, we will get back to you asap.
+                </div>
+                <a role="button" class="btn btn-primary" href="#"
+                   data-bs-toggle="modal"
+                   data-bs-target="#call_for_price">
+                    Call for Price
+                </a>
+                <div id="o_wsale_cta_wrapper"
+                     class="d-flex flex-wrap align-items-center">
+                    <t t-set="hasQuantities" t-value="false"/>
+                    <t t-set="hasBuyNow" t-value="false"/>
+                    <t t-set="ctaSizeBig"
+                       t-value="not hasQuantities or not hasBuyNow"/>
+                    <div id="product_option_block"
+                         class="d-flex flex-wrap w-100"/>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="js_product js_main_product mb-3">
+                    <div>
+                        <t t-call="website_sale.product_price"/>
+                        <small t-if="combination_info['base_unit_price']"
+                               class="ms-1 text-muted o_base_unit_price_wrapper d-none"
+                               groups="website_sale.group_show_uom_price">
+                            <t t-call='website_sale.base_unit_price'/>
+                        </small>
+                    </div>
+                    <t t-placeholder="select">
+                        <input type="hidden" class="product_id"
+                               name="product_id"
+                               t-att-value="product_variant.id"/>
+                        <input type="hidden" class="product_template_id"
+                               name="product_template_id"
+                               t-att-value="product.id"/>
+                        <input t-if="product.public_categ_ids.ids" type="hidden"
+                               class="product_category_id"
+                               name="product_category_id"
+                               t-att-value="product.public_categ_ids.ids[0]"/>
+                        <input t-if="product.product_tag_ids.ids" type="hidden"
+                               class="product_tag_id"
+                               name="product_tag_id"
+                               t-att-value="product.product_tag_ids.ids[0]"/>
+                        <t t-if="combination" t-call="sale.variants">
+                            <t t-set="ul_class" t-valuef="flex-column"/>
+                            <t t-set="parent_combination" t-value="None"/>
+                        </t>
+                        <t t-else="">
+                            <ul class="d-none js_add_cart_variants mb-0"
+                                t-att-data-attribute_exclusions="{'exclusions: []'}"/>
+                        </t>
+                    </t>
+                    <p t-if="True"
+                       class="css_not_available_msg alert alert-warning">This
+                        combination does not exist.
+                    </p>
+                    <div id="o_wsale_cta_wrapper"
+                         class="d-flex flex-wrap align-items-center">
+                        <t t-set="hasQuantities" t-value="false"/>
+                        <t t-set="hasBuyNow" t-value="false"/>
+                        <t t-set="ctaSizeBig"
+                           t-value="not hasQuantities or not hasBuyNow"/>
+
+                        <div id="add_to_cart_wrap"
+                             t-attf-class="{{'d-none' if combination_info['prevent_zero_price_sale'] else 'd-inline-flex'}} align-items-center mb-2 me-auto">
+                            <a role="button" id="add_to_cart"
+                               t-attf-class="btn btn-primary js_check_product a-submit flex-grow-1 #{'btn-lg' if ctaSizeBig else ''}"
+                               href="#">
+                                <i class="fa fa-shopping-cart me-2"/>
+                                <span style="font-weight: bold">ADD TO CART
+                                </span>
+                            </a>
+                        </div>
+                        <div id="product_option_block"
+                             class="d-flex flex-wrap w-100"/>
+                    </div>
+                    <div id="contact_us_wrapper"
+                         t-attf-class="{{'d-flex' if combination_info['prevent_zero_price_sale'] else 'd-none'}} oe_structure oe_structure_solo #{_div_classes}">
+                        <section class="s_text_block"
+                                 data-snippet="s_text_block" data-name="Text">
+                            <div class="container">
+                                <a t-att-href="website.contact_us_button_url"
+                                   class="btn btn-primary btn_cta">Contact Us
+                                </a>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//div[@id='o_product_terms_and_share']" position="before">
+            <div id="call_for_price" class="modal fade">
+                <div class="modal-dialog modal-content" style="height:auto">
+                    <div class="page">
+                        <h3 style="text-align:-webkit-center;">Call For
+                            Price
+                        </h3>
+                    </div>
+                    <input type="hidden" name="product_id" id="product_id"
+                           t-att-value="product.id"/>
+                    <hr/>
+                    <center>
+                        <table style="width:500px">
+                            <tr style="height:60px">
+                                <td style="width:100px">
+                                    <label for="first_name"
+                                           class="control-label">First Name:
+                                    </label>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control"
+                                           name="first_name"
+                                           id="first_name"/>
+                                </td>
+                            </tr>
+                            <tr style="height:60px">
+                                <td>
+                                    <label for="last_name"
+                                           class="control-label">Last Name:
+                                    </label>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control"
+                                           name="last_name"
+                                           id="last_name"/>
+                                </td>
+                            </tr>
+                            <tr style="height:60px">
+                                <td>
+                                    <label for="email">Email</label>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control"
+                                           name="email"
+                                           id="email"/>
+                                </td>
+                            </tr>
+                            <tr style="height:60px">
+                                <td>
+                                    <label for="phone">Contact No.</label>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control"
+                                           id="phone" name="phone"/>
+                                </td>
+                            </tr>
+                            <tr style="height:60px">
+                                <td>
+                                    <label>Quantity</label>
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control"
+                                           name="quantity" id="quantity"/>
+                                </td>
+                            </tr>
+                            <tr style="height:60px">
+                                <td>
+                                    <label>Message</label>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control"
+                                           name="message" id="message"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <hr/>
+                        <button id="send_btn" type="button"
+                                class="btn btn-primary">
+                            Send
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">
+                            Close
+                        </button>
+                    </center>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

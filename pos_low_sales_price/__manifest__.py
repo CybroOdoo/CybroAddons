@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Pos Alert in Low Sales Price',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Point of Sale',
     'summary': 'Helps to get alert message at the time of validation, '
                'when sales price is lower than cost price for corresponding '

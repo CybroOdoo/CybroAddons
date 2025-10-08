@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Template for the Search Bar in the Systray -->
+<templates xml:space="preserve">
+    <t t-name="master_search_systray.MasterSearchDialog" owl="1">
+            <div class="master-onboard_modal-container master_modal-container">
+                <div class="modal-dialog  w-100 dashboard_modal-box">
+                    <div class="modal-content modal_content"
+                         t-on-click="(ev) => this.onCLickMasterModal(ev)">
+                        <div class="modal-body py-0">
+                            <div class="search_div">
+                                <input type="text"
+                                       class="custom-search"
+                                       accesskey="Q"
+                                       placeholder="Search..."
+                                       role="searchbox"
+                                       t-ref="autofocus"
+                                />
+                                <button class="search-button"
+                                        t-on-click="onSearchInput"><i class="fa fa-search"/></button>
+                            </div>
+                            <div class="rounded-0 dropdown-menu master_searchview_autocomplete dropdown-menu show search_bar_style"
+                                 t-att-style="items.length ? 'height:50vh;': ''">
+                                <div t-if="state.items"
+                                     class="modal-body search_modal-body px-3 pt-0"
+                                     style="border-right:1px solid #dfdfdf">
+                                        <t t-if="state.items.length > 0">
+                                            <p class="small-heading dropdown-item">Related Menus</p>
+                                            <ul class="nav flex-column"
+                                                t-foreach="state.items"
+                                                t-as="item" t-key="item.id">
+                                            <li class="o_menu_item dropdown-item">
+                                                <a class="nav-link d-flex align-items-center justify-content-between gap-2 sidebar-nav search_suggestion-list"
+                                                   t-attf-class="search-item-{{item.id}}"
+                                                   t-att-id="item.id"
+                                                   t-attf-href="#menu_id={{item.id}}"
+                                                   t-att-title="item.title"
+                                                   t-on-click="onClickMenu"
+                                                >
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <i class="icons-class"
+                                                           t-att-class="item.webIcon"
+                                                           t-if="item.webIcon"/>
+                                                        <t t-esc="item.name"/>
+                                                    </div>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        </t>
+                                    </div>
+                                <t t-if="items">
+                                     <t t-foreach="items" t-as="content"
+                                        t-key="content[0]['title']">
+                                                <div class="w-100"
+                                                     style="border-right:1px solid #dfdfdf">
+                                                <ul role="menu px-0"
+                                                    style="padding-left: 1rem; padding-right : 1rem;">
+                                                    <t t-if="content.length!=0">
+                                                        <t t-foreach="content"
+                                                           t-as="item"
+                                                           t-key="item.id">
+                                                            <li class="o_menu_item dropdown-item"
+                                                                t-att-class="{ o_indent: item.isChild, focus: item_index === state.focusedIndex}"
+                                                                t-on-click="() => this.selectItem(item)"
+                                                                t-att-id="item.id">
+                                                                <t t-if="item.isParent">
+                                                                    <t t-esc="item.title"/>
+                                                                </t>
+                                                                <t t-if="item.isChild">
+                                                                    <t t-esc="item.name"/>
+                                                                </t>
+                                                            </li>
+                                                        </t>
+                                                    </t>
+                                                </ul>
+                                            </div>
+                                        </t>
+                                    </t>
+                                <t t-else="">
+                                        <div class="d-flex justify-content-center align-items-center flex-column w-100">
+                                            <h1>
+                                                No records Found
+                                            </h1>
+                                        </div>
+                                    </t>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </t>
+</templates>

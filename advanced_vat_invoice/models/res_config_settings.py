@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Athira P S (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -36,7 +36,7 @@ class ResConfigSettings(models.TransientModel):
     @api.model
     def get_values(self):
         """Get the current configuration values."""
-        res = super(ResConfigSettings, self).get_values()
+        res = super().get_values()
         res.update(
             generate_qr=self.env['ir.config_parameter'].sudo().get_param(
                 'advanced_vat_invoice.generate_qr'),
@@ -47,7 +47,7 @@ class ResConfigSettings(models.TransientModel):
 
     def set_values(self):
         """Set the configuration values."""
-        super(ResConfigSettings, self).set_values()
+        super().set_values()
         param = self.env['ir.config_parameter'].sudo()
         generate_qr = self.generate_qr and self.generate_qr or False
         is_qr = self.is_qr and self.is_qr or False

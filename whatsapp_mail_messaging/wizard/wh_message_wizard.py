@@ -28,8 +28,6 @@ class WhatsappSendMessage(models.TransientModel):
     partner_id = fields.Many2one('res.partner', string="Recipient")
     mobile = fields.Char(required=True, string="Contact Number")
     message = fields.Text(string="Message", required=True)
-    message_name_id = fields.Many2one('selection.messages', string="Message Template")
-    type_message = fields.Selection([('custom', 'Custom'), ('default', 'Default')], 'Message Type', default='custom')
     image_1920 = fields.Binary(readonly=1)
 
     @api.onchange('partner_id')
@@ -38,18 +36,6 @@ class WhatsappSendMessage(models.TransientModel):
         in Odoo"""
         self.mobile = self.partner_id.mobile
         self.image_1920 = self.partner_id.image_1920
-
-    @api.onchange('message_name_id')
-    def _onchange_type_message(self):
-        """Function to set the default message based on type_message"""
-        if self.message_name_id:
-            self.message = self.message_name_id.message
-
-    @api.onchange('type_message')
-    def _onchange_type_message_type(self):
-        """Function to set the default message based on type_message"""
-        if self.type_message == 'default':
-            self.message = self.message_name_id.message
 
     def send_message(self):
         """In this function we are redirecting to the whatsapp web
@@ -62,7 +48,7 @@ class WhatsappSendMessage(models.TransientModel):
             message_string = message_string[:(len(message_string) - 3)]
             message_post_content = message_string
             if self.partner_id:
-            	self.partner_id.message_post(body=message_post_content)
+                self.partner_id.message_post(body=message_post_content)
             return {
                 'type': 'ir.actions.act_url',
                 'url': "https://api.whatsapp.com/send?phone=" + self.mobile + "&text=" + message_string,

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree view for document approvals -->
+    <record id="document_approval_view_tree" model="ir.ui.view">
+        <field name="name">document.approval.view.tree</field>
+        <field name="model">document.approval</field>
+        <field name="arch" type="xml">
+            <tree decoration-danger="state == 'reject'"
+                  decoration-warning="state  == 'waiting'"
+                  decoration-primary="state  == 'draft'"
+                  decoration-success="state  == 'approved'">
+                <field name="name"
+                       attrs="{'readonly':[('state', '!=', 'draft')]}"/>
+                <field name="approve_initiator_id"/>
+                <field name="company_id"
+                       attrs="{'readonly':[('state', '!=', 'draft')]}"/>
+                <field name="state"
+                       decoration-success="state == 'approved'"
+                       decoration-danger="state == 'reject'"
+                       decoration-primary="state  == 'draft'"
+                       decoration-warning="state  == 'waiting'"
+                       widget="badge" optional="show"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Form view for document approvals -->
+    <record id="document_approval_view_form" model="ir.ui.view">
+        <field name="name">document.approval.view.form</field>
+        <field name="model">document.approval</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button string="Send for Approval"
+                            name="action_send_for_approval" type="object"
+                            states="draft" class="oe_highlight"/>
+                    <button string="Approve" name="action_approve_sign"
+                            type="object"
+                            class="oe_highlight"
+                            attrs="{'invisible':['|', '|',  ('state', 'not in', ('waiting' )),('method', '=', 'button'), ('show_approve', '=', False)]}"/>
+                    <button string="Approve"
+                            name="action_approve"
+                            type="object"
+                            class="oe_highlight"
+                            attrs="{'invisible': ['|', '|',  ('state', 'not in', ('waiting' )),('method', '=', 'sign'), ('show_approve', '=', False)]}"/>
+                    <button string="Reject" name="action_reject"
+                            type="object"
+                            attrs="{'invisible':['|',('state', 'not in', ('waiting' )),('show_approve', '=', False)]}"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,waiting,approved,reject"/>
+                </header>
+                <sheet>
+                    <h1>
+                        <field name="name"
+                               attrs="{'readonly':[('state', '!=', 'draft')]}"/>
+                    </h1>
+                    <group>
+                        <group name="description"
+                               string="Description"/>
+                        <field name="description"/>
+                        <group name="document" string="Document">
+                            <field name="file_ids" nolabel="1"
+                                   attrs="{'readonly':[('state', '=', 'approved')]}"
+                                   colspan="4">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                    <field name="file_name" invisible="1"/>
+                                    <field name="file"
+                                           filename="file_name"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </group>
+                    <group>
+                        <group name="visibility" string="Visibility">
+                            <field name="company_id"
+                                   attrs="{'readonly':[('state', '!=', 'draft')]}"/>
+                            <field name="visibility"/>
+                        </group>
+                        <group name="approval" string="Approval">
+                            <field name="team_id"
+                                   attrs="{'readonly':[('state', '=', 'approved')]}"/>
+                            <field name="method"
+                                   attrs="{'readonly':[('state', '!=', 'draft')]}"/>
+                            <field name="step_count"/>
+                            <field name="show_approve" invisible="1"/>
+                            <field name="approver_ids" widget="many2many_tags"
+                                   invisible="1"/>
+                            <field name="approval_ids" widget="many2many_tags"
+                                   invisible="1"/>
+                        </group>
+                    </group>
+                    <group name="approvers" string="Approvers">
+                        <field name="step_ids"
+                               nolabel="1" colspan="2">
+                            <tree editable="bottom">
+                                <field name="steps"/>
+                                <field name="approver_id"/>
+                                <field name="role"/>
+                                <field name="state" optional="hide"/>
+                                <field name="current_state"
+                                       decoration-success="current_state == 'approved'"
+                                       decoration-primary="current_state  == 'pending'"
+                                       decoration-warning="current_state  == 'upcoming'"
+                                       decoration-danger="current_state  == 'rejected'"
+                                       attrs="{'column_invisible': [('parent.state', '=', 'draft')]}"/>
+                                <field name="note"/>
+                            </tree>
+                        </field>
+                    </group>
+                    <group>
+                        <field name="approve_initiator_id"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                    <field name="activity_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!-- window action for document approvals -->
+    <record id="document_approval_action" model="ir.actions.act_window">
+        <field name="name">Document Approval</field>
+        <field name="res_model">document.approval</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create Document Approval
+            </p>
+        </field>
+    </record>
+    <!-- Tree view for document approval steps -->
+    <record id="document_approval_step_view_tree" model="ir.ui.view">
+        <field name="name">document.approval.step.view.tree</field>
+        <field name="model">document.approval.step</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="steps"/>
+                <field name="approver_id"/>
+                <field name="role"/>
+                <field name="document_approve_id"/>
+            </tree>
+        </field>
+    </record>
+    <!--Form view for the files -->
+    <record id="document_approval_file_view_form" model="ir.ui.view">
+        <field name="name">document.approval.file.view.form</field>
+        <field name="model">document.approval.file</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                    <group>
+                        <field name="file" filename="file_name"/>
+                    </group>
+                </group>
+            </form>
+        </field>
+    </record>
+</odoo>

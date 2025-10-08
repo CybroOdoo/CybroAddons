@@ -59,7 +59,7 @@ class StockPicking(models.Model):
         if vals.get('barcode') and self.move_ids_without_package:
             for line in self.move_ids_without_package:
                 if line.product_id.barcode == vals['barcode']:
-                    line.quantity_done += 1
+                    # line.quantity_done += 1
                     self.barcode = None
         return res
 

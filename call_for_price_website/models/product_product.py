@@ -27,6 +27,14 @@ class ProductTemplate(models.Model):
     the combination_info"""
     _inherit = 'product.template'
 
+    def _website_show_quick_add(self):
+        self.ensure_one()
+        product= self.env['product.product'].search([('product_tmpl_id', '=', self.id)],limit=1)
+        if product:
+            if product.price_call:
+                return False
+        return  super()._website_show_quick_add()
+
     def _get_combination_info(self, combination=False, product_id=False,
                               add_qty=1, pricelist=False,
                               parent_combination=False,
@@ -55,3 +63,10 @@ class ProductProduct(models.Model):
                                 help="This will hide the price and cart button"
                                      "from shop and customer can request by "
                                      "calling for price")
+
+    def _website_show_quick_add(self):
+        self.ensure_one()
+        if self.price_call:
+            return False
+        else:
+            return super()._website_show_quick_add()

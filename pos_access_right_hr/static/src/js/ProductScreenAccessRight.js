@@ -22,6 +22,17 @@ odoo.define('pos_access_right_hr.ProductScreenAccessRight', function(require) {
             if ((event.detail.key === "Backspace" || event.detail.key === "Delete" ) && this.check_remove_access()){
                 return;
             }
+            const cashierId = this.env.pos.get_cashier().id;
+            const sessionAccess = this.env.pos.session_access.find(access => access.id === cashierId);
+            if (/^[0-9]$/.test(event.detail.key) && sessionAccess?.disable_numpad) {
+                return;
+            }
+            else if (event.detail.key === '-' && sessionAccess?.disable_plus_minus) {
+                return; // Block + key
+            }
+            else if (event.detail.key === '+' && sessionAccess?.disable_plus_minus) {
+                return; // Block + key
+            }
             return super._updateSelectedOrderline(...arguments);
         }
     }

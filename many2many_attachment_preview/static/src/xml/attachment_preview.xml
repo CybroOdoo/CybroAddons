@@ -1,0 +1,151 @@
+<template>
+    <!--
+   This template defines a Many2ManyImageField component used to display a list of image attachments
+   with an option to upload additional files. The component utilizes the Odoo Owl framework.
+
+   Structure:
+   - The outermost `div` has a dynamic class that includes `oe_fileupload` and optionally
+     a custom class if provided in `props.className`.
+   - Inside this `div`, there's a container `div` with the class `o_attachments o_attachments_widget`
+     which holds the list of attached files.
+   - The files are iterated over using `t-foreach`, where each `file` is rendered using the
+     `many2many_attachment_preview.image_preview` template.
+   - If the `readonly` property is not set, an upload section is rendered, allowing the user to
+     attach more files. The upload button triggers the `FileInput` component with the following attributes:
+       - `acceptedFileExtensions`: Defines the types of files allowed for upload.
+       - `multiUpload`: Enables multiple file uploads at once.
+       - `onUpload.bind`: Binds the `onFileUploaded` method for handling the upload process.
+       - `resModel`: Specifies the model associated with the uploaded files.
+       - `resId`: Specifies the record ID. If no ID is provided, it defaults to 0.
+   - The upload button has a tooltip "Attach" and displays a paperclip icon with a label and upload text.
+   -->
+    <t t-name="many2many_attachment_preview.Many2ManyImageField" owl="1">
+        <div t-attf-class="oe_fileupload {{ props.className ? props.className : ''}}"
+             aria-atomic="true">
+            <div class="o_attachments o_attachments_widget">
+                <t t-foreach="files" t-as="file" t-key="file_index">
+                    <t t-call="many2many_attachment_preview.image_preview"/>
+                </t>
+            </div>
+            <div t-if="!props.readonly" class="oe_add">
+                <FileInput
+                        acceptedFileExtensions="props.acceptedFileExtensions"
+                        multiUpload="true"
+                        onUpload.bind="onFileUploaded"
+                        resModel="props.record.resModel"
+                        resId="props.record.data.id or 0">
+                    <button class="btn btn-secondary o_attach o_attach_wiget"
+                            data-tooltip="Attach">
+                        <span class="fa fa-paperclip" aria-label="Attach"/>
+                        <t t-esc="uploadText"/>
+                    </button>
+                </FileInput>
+            </div>
+        </div>
+    </t>
+    <!--
+   This template defines the `image_preview` component used to display individual file attachments
+   in a many-to-many relationship field within Odoo. It handles various file types such as images,
+   PDFs, and videos, and provides functionalities for viewing, downloading, and deleting files.
+
+   Structure:
+   - A variable `editable` is set based on the `readonly` property from `props`, determining whether the file is editable.
+   - The outer `div` uses dynamic classes based on the `editable` state and upload status to provide appropriate styling.
+   - The inner `div` wraps the file attachment and displays the content based on the file extension:
+       - For image files (`png`, `jpg`, `jpeg`), an image preview is displayed. The image is wrapped in a link that uses Fancybox to allow zooming.
+       - For PDF files, the link is set to open in an iframe using Fancybox.
+       - For video files (`mkv`), the link is configured to play the video in an HTML5 video player using Fancybox.
+   - The `caption` section displays the file name and extension. Clicking the file name triggers a download.
+   - If the file is editable, a progress bar is shown during the upload process, and a delete button is provided to remove the file.
+   - Once the file is uploaded, a checkmark icon indicates successful upload.
+   - The delete button allows the user to remove the file, triggering the `onFileRemove` function with the file's ID.
+   -->
+    <t t-name="many2many_attachment_preview.image_preview" owl="1">
+        <t t-set="editable" t-value="!props.readonly"/>
+        <div t-attf-class="o_attachment_widget o_attachment_many2many #{ editable ? 'o_attachment_editable' : '' } #{upload ? 'o_attachment_uploading' : ''}"
+             t-att-title="file.name">
+            <div t-attf-class="o_attachment o_attachment_many2many #{ editable ? 'o_attachment_editable' : '' } #{upload ? 'o_attachment_uploading' : ''}"
+                 t-att-title="file.name">
+                <div class="o_attachment_wrap">
+                    <t t-set="ext" t-value="getExtension(file)"/>
+                    <t t-if="ext=='png' or ext=='jpg' or ext=='jpeg'">
+                        <div class="o_image_box float-start"
+                             t-att-data-tooltip="'Download ' + file.name">
+                            <a t-att-href="getUrl(file.id)"
+                               aria-label="Download"
+                               style="cursor: zoom-in;" data-fancybox="gallery"
+                               data-options="Toolbar">
+                                <span class="o_image o_hover"
+                                      t-att-data-mimetype="file.mimetype"
+                                      t-att-data-ext="ext" role="img"
+                                      t-attf-data-src="/web/content/{{file.id}}"/>
+                            </a>
+                        </div>
+                    </t>
+                    <t t-if="ext=='pdf'">
+                        <div class="o_image_box float-start"
+                             t-att-data-tooltip="'Download ' + file.name">
+                            <a t-att-href="getUrl(file.id)"
+                               aria-label="Download"
+                               style="cursor: zoom-in;" data-fancybox=""
+                               data-type="iframe">
+                                <span class="o_image o_hover"
+                                      t-att-data-mimetype="file.mimetype"
+                                      t-att-data-ext="ext" role="img"
+                                      t-attf-data-src="/web/content/{{file.id}}"/>
+                            </a>
+                        </div>
+                    </t>
+                    <t t-if="ext=='mkv'">
+                        <div class="o_image_box float-start"
+                             t-att-data-tooltip="'Download ' + file.name">
+                            <a t-att-href="getUrl(file.id)"
+                               aria-label="Download"
+                               style="cursor: zoom-in;" data-fancybox=""
+                               data-type="html5video" data-width="640"
+                               data-height="360">
+                                <span class="o_image o_hover"
+                                      t-att-data-mimetype="file.mimetype"
+                                      t-att-data-ext="ext" role="img"
+                                      t-attf-data-src="/web/content/{{file.id}}"/>
+                            </a>
+                        </div>
+                    </t>
+
+                    <div class="caption">
+                        <a class="ml4"
+                           t-att-data-tooltip="'Download ' + file.name"
+                           t-att-href="getUrl(file.id)">
+                            <t t-esc='file.name'/>
+                        </a>
+                    </div>
+                    <div class="caption small">
+                        <a class="ml4 small text-uppercase"
+                           t-att-href="getUrl(file.id)">
+                            <b>
+                                <t t-esc='ext'/>
+                            </b>
+                        </a>
+                        <div t-if="editable"
+                             class="progress o_attachment_progress_bar">
+                            <div class="progress-bar progress-bar-striped active"
+                                 style="width: 100%">Uploading
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="o_attachment_uploaded">
+                        <i class="text-success fa fa-check" role="img"
+                           aria-label="Uploaded" title="Uploaded"/>
+                    </div>
+                    <div t-if="editable" class="o_attachment_delete"
+                         t-on-click.stop="() => this.onFileRemove(file.id)">
+                        <span class="text-white" role="img" aria-label="Delete"
+                              title="Delete">×
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</template>

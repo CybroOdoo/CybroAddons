@@ -21,3 +21,4 @@
 ###############################################################################
 from . import bonus_reason
 from . import bonus_request
+from . import hr_payslip

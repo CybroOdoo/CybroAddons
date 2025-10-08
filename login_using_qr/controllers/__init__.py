@@ -3,8 +3,8 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Mohamed Muzammil VP (odoo@cybrosys.com)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#     Author: Anjhana A K (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
@@ -19,4 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-from . import qr_scanner
+from . import login_using_qr

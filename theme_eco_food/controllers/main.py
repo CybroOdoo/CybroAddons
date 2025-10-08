@@ -20,18 +20,36 @@
 #
 #############################################################################
 from datetime import datetime
-from werkzeug.exceptions import Forbidden, NotFound
-from odoo import fields, http, SUPERUSER_ID, tools, _
+from werkzeug.exceptions import NotFound
+from odoo.addons.website.models.ir_http import sitemap_qs2dom
+from odoo import fields, tools, _
 from odoo.addons.http_routing.models.ir_http import slug
 from odoo.addons.website.controllers.main import QueryURL
 from odoo import http
 from odoo.http import request
 from odoo.addons.website_sale.controllers import main
-
 from odoo.tools import lazy
 
 
 class WebsiteSale(main.WebsiteSale):
+    def sitemap_shop(env, rule, qs):
+        if not qs or qs.lower() in '/shop':
+            yield {'loc': '/shop'}
+
+        Category = env['product.public.category']
+        dom = sitemap_qs2dom(qs, '/shop/category', Category._rec_name)
+        dom += env['website'].get_current_website().website_domain()
+        for cat in Category.search(dom):
+            loc = '/shop/category/%s' % slug(cat)
+            if not qs or qs.lower() in loc:
+                yield {'loc': loc}
+
+    @http.route([
+        '/shop',
+        '/shop/page/<int:page>',
+        '/shop/category/<model("product.public.category"):category>',
+        '/shop/category/<model("product.public.category"):category>/page/<int:page>',
+    ], type='http', auth="public", website=True, sitemap=sitemap_shop)
     def shop(self, page=0, category=None, search='', min_price=0.0,
              max_price=0.0, ppg=False, **post):
         """This function helps to override the functionalites of a website shop"""
@@ -245,8 +263,9 @@ class WebsiteEcoFoodNewArrivals(http.Controller):
     def add_to_cart(self, id):
         """this function is used for adding to cart"""
         product = \
-        request.env['product.product'].search([('product_tmpl_id', '=', id)])[
-            0]
+            request.env['product.product'].search(
+                [('product_tmpl_id', '=', id)])[
+                0]
         so = request.website.sale_get_order(force_create=True)
         so._cart_update(
             product_id=product.id,
@@ -367,7 +386,8 @@ class WebsiteEcoFoodNewArrivals(http.Controller):
     @http.route('/get_recently_added_products', auth="public", type='json',
                 website=True)
     def get_recently_added_products(self):
-        """this is the function that will return the most recently added products"""
+        """this is the function that will return the most recently added
+        products"""
         recently_added_prod = request.env[
             'recently_added.products'].sudo().search([], order='id desc',
                                                      limit=16)

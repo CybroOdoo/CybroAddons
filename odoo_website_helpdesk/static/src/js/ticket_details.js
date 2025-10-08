@@ -4,6 +4,7 @@ odoo.define("odoo_website_helpdesk.ticket_details", function (require) {
   $(document).on("mouseover", "#popover", function (event) {
     var self = this;
     var item_text = "";
+    var element = $(this);
     if (self.parentElement.parentElement.children[3]) {
       item_text =
         "Ticket : " +
@@ -22,8 +23,7 @@ odoo.define("odoo_website_helpdesk.ticket_details", function (require) {
         self.parentElement.parentElement.children[3].outerText +
         "<br/>";
     }
-
-    $(this).popover({
+    element.popover({
       html: true,
       placement: "right",
       trigger: "hover",

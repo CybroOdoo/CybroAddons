@@ -35,15 +35,22 @@ class BrevoRequest(http.Controller):
     def sent(self):
         """Function for getting statuses into odoo"""
         data = json.loads(request.httprequest.data)
-        _logger.info(data)
-        message_id = request.env['mail.message'].sudo().search(
-            [('message_id', 'ilike', data['message-id'])], limit=1)
+        # Define subtypes to exclude (Notes)
+        excluded_subtypes = [
+            request.env.ref('mail.mt_note').id,
+        ]
+        message_id = request.env['mail.message'].sudo().search([
+            ('message_id', '=', data['message-id']),
+            ('message_type', 'in', ['email', 'comment', 'user_notification', 'auto_comment']),
+            ('subtype_id', 'not in', excluded_subtypes)], limit=1)
         if message_id:
+            # Update the mail.message with status and receiver
             message_id.write({
                 'status': data.get('event'),
                 'receiver': data.get('email'),
             })
-        if data.get('event') == 'click':
-            data.get('link')
-        else:
-            return 'ok', 200
+            # Handle click events (log the clicked link)
+            if data.get('event') == 'click' and data.get('link'):
+                _logger.info("Click event recorded for message %s: Link %s",
+                             message_id.id, data.get('link'))
+        return {'status': 'ok'}

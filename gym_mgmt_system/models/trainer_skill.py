@@ -28,8 +28,8 @@ class TrainerSkill(models.Model):
     _inherit = ["mail.thread", "mail.activity.mixin"]
     _description = "Trainer Skill"
 
-    name = fields.Char(string="Name", help="Name")
-    code = fields.Char(string="Code", help="Code")
+    name = fields.Char(string="Name", help="Name of the trainer", required=True)
+    code = fields.Char(string="Code", help="Code for the trainer")
     company_id = fields.Many2one('res.company', string='Company',
                                  default=lambda self: self.env.company,
                                  help="This field hold company id")

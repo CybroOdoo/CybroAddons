@@ -1,10 +1,10 @@
 .. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
+
 Automatic Invoice And Post
 ==============================
 This module generates and post invoice  while validating the delivery.
-
 
 Configuration
 =============
@@ -21,7 +21,6 @@ Company
 Credits
 -------
 * Developers: Version 16: Akhil @cybrosys
-
 
 Contacts
 --------

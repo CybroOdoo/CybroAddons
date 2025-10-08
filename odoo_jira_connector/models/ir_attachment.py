@@ -36,6 +36,8 @@ class IrAttachment(models.Model):
     @api.model_create_multi
     def create(self, values_list):
         """ For creating attachment in  Jira and attachment in the chatter """
+        if not values_list:
+            return super(IrAttachment, self).create(values_list)
         attachment = super(IrAttachment, self).create(values_list)
         if not values_list[0].get('attachment_id_jira'):
             ir_config_parameter = self.env['ir.config_parameter'].sudo()

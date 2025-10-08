@@ -3,8 +3,8 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Ayisha Sumayya K(odoo@cybrosys.com)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author:  Ayisha Sumayya K (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -20,20 +20,27 @@
 #
 #############################################################################
 {
-    'name': 'Coffee Shop',
-    'description': 'Theme Coffee Shop',
-    'summary': 'Theme Coffee Shop',
+    'name': 'Theme Coffee Shop',
     'version': '16.0.1.0.0',
+    'category': 'Theme',
+    'summary': 'A Captivating and Practical E-Commerce Theme for Coffee Shops',
+    'description': 'Theme Coffee Shop brings a captivating and highly '
+                   'practical theme crafted exclusively for e-Commerce'
+                   ' websites specializing in coffee shops. With its blend of '
+                   'aesthetic appeal and user-centric design, this theme '
+                   'provides an exceptional browsing and shopping experience '
+                   'for coffee enthusiasts and customers.It encapsulates the'
+                   ' essence of a cozy coffee shop, translating it into an '
+                   'engaging online platform for your coffee products and '
+                   'accessories.',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
     'maintainer': 'Cybrosys Techno Solutions',
-    'category': 'Theme/Creative',
-    'depends': ['website_sale', 'website_sale_wishlist','auth_oauth', ],
+    'website': 'https://www.cybrosys.com',
+    'depends': ['website_sale_wishlist', 'auth_oauth'],
     'data': [
-        'data/menu.xml',
+        'data/website_menu_data.xml',
         'views/header.xml',
-        'views/login.xml',
         'views/footer.xml',
         'views/contact_us.xml',
         'views/cart.xml',
@@ -52,14 +59,13 @@
     'assets': {
         'web.assets_frontend': [
             'theme_coffee_shop/static/src/css/style.css',
-            'theme_coffee_shop/static/src/js/action.js',
+            'theme_coffee_shop/static/src/js/map_snippet.js',
         ],
     },
     'images': ['static/description/banner.png',
-               'static/description/theme_screenshot.jpeg'],
+               'static/description/theme_screenshot.png'],
     'license': 'LGPL-3',
-    'auto_install': False,
     'installable': True,
+    'auto_install': False,
     'application': False
 }
-

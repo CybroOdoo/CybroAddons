@@ -4,4 +4,11 @@
 #### Version 16.0.1.0.0
 #### ADD
 
-- Initial Commit for Animated Snippets
+- Initial commit for Animated Snippets
+
+#### 31.07.2024
+#### Version 16.0.1.1.0
+#### ADD
+
+- Added some snippet Supports annual and monthly pricing.
+

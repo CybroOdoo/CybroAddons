@@ -26,13 +26,13 @@ class ResPartner(models.Model):
     """Inherited the partner model for adding gym related fields."""
     _inherit = 'res.partner'
 
-    gym_member = fields.Boolean(string='Gym Member', default=True,
-                                help='This field define the whether is member'
-                                     'of gym')
-    membership_count = fields.Integer('membership_count',
+    gym_member = fields.Boolean(string='Gym Member', default=False,
+                                   help='This field define the whether is '
+                                        'member of gym')
+    membership_count = fields.Integer(string='Membership Count',
                                       compute='_compute_membership_count',
                                       help='This help to count the membership')
-    measurement_count = fields.Integer('measurement_count',
+    measurement_count = fields.Integer(string='Measurement Count',
                                        compute='_compute_measurement_count',
                                        help='This helps to get the umber of '
                                             'measurements for gym members')

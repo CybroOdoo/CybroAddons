@@ -54,7 +54,15 @@ class MrpWorkorder(models.Model):
 
         project = self.env['project.project'].search(
             [('name', '=', ("MO: {}".format(self.production_id.name)))])
-
+        minutes = int(self.duration_expected)
+        seconds = int((self.duration_expected - minutes) * 60)
+        time_str = f"{minutes:02d}:{seconds:02d}"
+        minutes_str, seconds_str = time_str.split(":")
+        minutes = int(minutes_str)
+        seconds = int(seconds_str)
+        if seconds % 30 == 0:
+            minutes += (seconds // 30)
+        total_hours = minutes / 60
         if project:
             task_id = project.task_ids.search([('name', '=', (
                 "{} in {} for {} on {}".format(self.name,
@@ -70,7 +78,7 @@ class MrpWorkorder(models.Model):
                     'project_id': project.id,
                     'date_assign': self.date_planned_start,
                     'date_deadline': self.date_planned_finished,
-                    'planned_hours': self.duration_expected,
+                    'planned_hours': total_hours
                 })
                 self.env['account.analytic.line'].create({
                     'task_id': task_id.id,
@@ -99,7 +107,7 @@ class MrpWorkorder(models.Model):
                     'project_id': project_id.id,
                     'date_assign': self.date_planned_start,
                     'date_deadline': self.date_planned_finished,
-                    'planned_hours': self.duration_expected,
+                    'planned_hours': total_hours,
                 })
                 self.env['account.analytic.line'].create({
                     'task_id': task_id.id,

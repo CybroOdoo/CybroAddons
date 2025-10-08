@@ -24,7 +24,8 @@ General Public License, Version 3 (AGPL v3).
 
 Credits
 -------
-* Developers:	(V16)Farhana Jahan PT @ cybrosys, Contact: odoo@cybrosys.com
+* Developers:	(V16)Farhana Jahan PT,
+Contact: odoo@cybrosys.com
 
 Contacts
 --------

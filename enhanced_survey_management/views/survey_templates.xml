@@ -1,0 +1,666 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Templates for the custom question type. -->
+    <template id="question_container" name="Survey: question container"
+              inherit_id="survey.question_container">
+        <xpath expr="//div[@role='alert']" position="before">
+            <t t-if="question.question_type == 'time'">
+                <t t-call="enhanced_survey_management.question_time"/>
+            </t>
+            <t t-if="question.question_type == 'month'">
+                <t t-call="enhanced_survey_management.question_month"/>
+            </t>
+            <t t-if="question.question_type == 'name'">
+                <t t-call="enhanced_survey_management.question_name"/>
+            </t>
+            <t t-if="question.question_type == 'address'">
+                <t t-call="enhanced_survey_management.question_address"/>
+            </t>
+            <t t-if="question.question_type == 'signature'">
+                <t t-call="enhanced_survey_management.question_signature"/>
+            </t>
+            <t t-if="question.question_type == 'qr'">
+                <t t-call="enhanced_survey_management.question_qr"/>
+            </t>
+            <t t-if="question.question_type == 'email'">
+                <t t-call="enhanced_survey_management.question_email"/>
+            </t>
+            <t t-if="question.question_type == 'password'">
+                <t t-call="enhanced_survey_management.question_password"/>
+            </t>
+            <t t-if="question.question_type == 'url'">
+                <t t-call="enhanced_survey_management.question_url"/>
+            </t>
+            <t t-if="question.question_type == 'week'">
+                <t t-call="enhanced_survey_management.question_week"/>
+            </t>
+            <t t-if="question.question_type == 'color'">
+                <t t-call="enhanced_survey_management.question_color"/>
+            </t>
+            <t t-if="question.question_type == 'range'">
+                <t t-call="enhanced_survey_management.question_range"/>
+            </t>
+            <t t-if="question.question_type == 'many2one'">
+                <t t-call="enhanced_survey_management.question_many2one"/>
+            </t>
+            <t t-if="question.question_type == 'matrix' and question.matrix_subtype == 'custom'">
+                <t t-call="enhanced_survey_management.question_matrix_custom"/>
+            </t>
+            <t t-if="question.question_type == 'file'">
+                <t t-call="enhanced_survey_management.question_file"/>
+            </t>
+            <t t-if="question.question_type == 'many2many'">
+                <t t-call="enhanced_survey_management.question_many2many"/>
+            </t>
+            <t t-if="question.question_type == 'selection'">
+                <t t-call="enhanced_survey_management.question_selection_choice"/>
+            </t>
+            <t t-if="question.question_type == 'barcode'">
+                <t t-call="enhanced_survey_management.question_barcode"/>
+            </t>
+        </xpath>
+    </template>
+    <!-- Question: Time Template -->
+    <template id="question_time" name="Question: Time">
+        <div>
+            <input type="time"
+                   class="form-control datetimepicker-input o_survey_question_date o_survey_question_time bg-transparent text-dark rounded-0 p-0"
+                   t-att-name="question.id"
+                   t-att-value="answer_lines.get_value_time()"
+                   t-att-data-question-type="question.question_type"/>
+        </div>
+    </template>
+    <!-- Question: Month Template -->
+    <template id="question_month" name="Question: Month">
+        <div>
+            <input type="month"
+                   class="form-control datetimepicker-input o_survey_question_date o_survey_question_time bg-transparent text-dark rounded-0 p-0"
+                   t-att-name="question.id"
+                   t-att-value="answer_lines[0].value_month if answer_lines else None"
+                   t-att-data-question-type="question.question_type"/>
+        </div>
+    </template>
+    <!-- Question: Name Template -->
+    <template id="question_name" name="Question: Name">
+        <div>
+            <input type="text"
+                   class="form-control datetimepicker-input o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                   t-attf-name="{{question.id}}-first" placeholder="First Name"
+                   t-att-value="answer_lines.get_value_name('first') if answer_lines else None"
+                   style="width:33%;float:left;"
+                   t-att-data-question-type="question.question_type"/>
+            <input type="text"
+                   class="form-control datetimepicker-input o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                   t-attf-name="{{question.id}}-middle"
+                   placeholder="Middle Name"
+                   t-att-value="answer_lines.get_value_name('middle') if answer_lines else None"
+                   style="width:32%;float:left;margin-left:10px;"
+                   t-att-data-question-type="question.question_type"/>
+            <input type="text"
+                   class="form-control datetimepicker-input o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                   t-attf-name="{{question.id}}-last" placeholder="Last Name"
+                   t-att-value="answer_lines.get_value_name('last') if answer_lines else None"
+                   style="width:33%;float:left;margin-left:10px;"
+                   t-att-data-question-type="question.question_type"/>
+        </div>
+    </template>
+    <!-- Question: Address Template -->
+    <template id="question_address" name="Question: Address">
+        <div>
+            <input type="text" class="form-control datetimepicker-input
+            o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                   t-attf-name="{{question.id}}-adders" placeholder="Address"
+                   t-att-value="answer_lines.get_value_address('adders') if answer_lines else None"
+                   t-att-data-question-type="question.question_type"/>
+            <input type="text" class="form-control datetimepicker-input
+            o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                   t-attf-name="{{question.id}}-street" placeholder="Street"
+                   t-att-value="answer_lines.get_value_address('street') if answer_lines else None"
+                   t-att-data-question-type="question.question_type"/>
+            <input type="text" style="width:32%;float:left;"
+                   class="form-control datetimepicker-input
+            o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                   t-attf-name="{{question.id}}-city" placeholder="City"
+                   t-att-value="answer_lines.get_value_address('city') if answer_lines else None"
+                   t-att-data-question-type="question.question_type"/>
+            <select style="width:33%;float:left;margin-left:10px;"
+                    class="o_select_Country form-control datetimepicker-input
+                    o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                    t-attf-name="{{question.id}}-country"
+                    t-att-data-id="question.id"
+                    t-attf-id="{{question.id}}-country">
+                <option value="" selected="1">
+                    <t t-esc="answer_lines.get_value_address('country') if answer_lines else Country"/>
+                </option>
+            </select>
+            <select style="width:33%;float:left;margin-left:10px;"
+                    class="o_select_State form-control datetimepicker-input
+            o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                    t-attf-name="{{question.id}}-state"
+                    t-attf-id="{{question.id}}-state">
+                <option value="" selected="1">
+                    <t t-esc="answer_lines.get_value_address('state') if answer_lines else State"/>
+                </option>
+            </select>
+            <input type="text" style="width:33%;" class="form-control datetimepicker-input
+            o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                   t-attf-name="{{question.id}}-pin" placeholder="PIN"
+                   t-att-value="answer_lines.get_value_address('pin') if answer_lines else None"
+                   t-att-data-question-type="question.question_type"/>
+        </div>
+    </template>
+    <!-- Question: Signature Template -->
+    <template id="question_signature" name="Question: Signature">
+        <div class="reload_sign_form alert alert-danger" role="alert"
+             onclick="location.reload()">
+            Form not Loaded Please Refresh
+            <i class="fa fa-refresh"/>
+        </div>
+        <t t-call="portal.signature_form">
+            <t t-set="call_url" t-value="hi"/>
+            <t t-set="default_name" t-value=""/>
+        </t>
+    </template>
+    <!-- Question: QR Template -->
+    <template id="question_qr" name="Question: QR">
+        <t t-if="question.qrcode and not answer_line">
+            <img t-att-src="'/report/barcode/?barcode_type=QR&amp;value=%s&amp;width=110&amp;height=110&amp;humanreadable=1' %(question.qrcode)"
+            />
+        </t>
+        <t t-else="">
+            <div>
+                <input type="text" style="width:33%;float:left; " class="form-control datetimepicker-input
+                o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                       t-att-name="question.id" placeholder="Qrcode"
+                       t-att-data-question-type="question.question_type"
+                       readonly="1"/>
+                <button type="button" style="margin-left: 10px;"
+                        class="btn btn-info fa fa-qrcode"/>
+            </div>
+        </t>
+    </template>
+    <!-- Question: Email Template -->
+    <template id="question_email" name="Question: Email">
+        <div>
+            <input type="email"
+                   class="form-control o_survey_question_text_box bg-transparent text-dark rounded-0 p-0"
+                   t-att-name="question.id"
+                   t-att-data-question-type="question.question_type"
+                   placeholder="example@mail.com" required="True"
+                   t-att-value="answer_lines[0].value_email if answer_lines else None"/>
+        </div>
+    </template>
+    <!-- Question: Password Template -->
+    <template id="question_password" name="Question: Password">
+        <div>
+            <input type="password"
+                   class="form-control o_survey_question_text_box bg-transparent text-dark rounded-0 p-0"
+                   t-att-name="question.id"
+                   t-att-data-question-type="question.question_type"
+                   t-att-value="answer_lines[0].value_password if answer_lines else None"/>
+
+        </div>
+    </template>
+    <!-- Question: URL Template -->
+    <template id="question_url" name="Question: URL">
+        <div>
+            <input type="url"
+                   class="form-control o_survey_question_text_box bg-transparent text-dark rounded-0 p-0"
+                   t-att-name="question.id"
+                   t-att-data-question-type="question.question_type"
+                   t-att-value="answer_lines[0].value_url if answer_lines else None"
+            />
+        </div>
+    </template>
+    <!-- Question: Week Template -->
+    <template id="question_week" name="Question: Week">
+        <div>
+            <input type="week"
+                   class="form-control datetimepicker-input o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                   t-att-name="question.id"
+                   t-att-value="answer_lines[0].value_week if answer_lines else None"
+                   t-att-data-question-type="question.question_type"/>
+        </div>
+    </template>
+    <!-- Question: Color Template -->
+    <template id="question_color" name="Question: Color">
+        <div>
+            <input type="color"
+                   class="form-control o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                   t-att-name="question.id"
+                   t-att-value="answer_lines[0].value_color if answer_lines else None"
+                   t-att-data-question-type="question.question_type"/>
+        </div>
+    </template>
+    <!-- Question: Range Template -->
+    <template id="question_range" name="Question: Range">
+        <div>
+            <input type="range" name="weight" id="range_weight"
+                   t-att-min="question.range_min"
+                   t-att-max="question.range_max"
+                   t-att-name="question.id"
+                   oninput="range_weight_disp.value = range_weight.value"
+                   t-att-value="answer_lines[0].value_range if answer_lines else None"
+                   t-att-data-question-type="question.question_type"
+            />
+            <output id="range_weight_disp"/>
+            <t t-if="answer_lines">
+                <t t-esc="answer_lines[0].value_range"/>
+            </t>
+        </div>
+    </template>
+    <!-- Question: Many2one Template -->
+    <template id="question_many2one" name="Question: Many2one">
+        <div class="col-sm oe_empty">
+            <select t-attf-class="form-control o_select_many2one"
+                    t-att-data-question-type="question.question_type"
+                    t-att-value="answer_lines[0].value_many2one if answer_lines else None"
+                    t-att-name="question.id"
+                    required="1">
+                <t t-if="not answer_lines">
+                    <t t-foreach="question.prepare_model_id(False)"
+                       t-as="option">
+                        <option t-att-value="list(option.values())[0]"
+                                t-att-data-value="list(option.values())[1]">
+                            <t t-esc="list(option.values())[1]"/>
+                        </option>
+                    </t>
+                </t>
+                <t t-if="answer_lines">
+                    <option t-att-value="answer_lines[0].value_many2one"
+                            selected="1">
+                        <t t-esc="answer_lines[0].value_many2one_option"/>
+                    </option>
+                </t>
+            </select>
+        </div>
+    </template>
+    <!-- Default Matrix hide Template -->
+    <template id="question_matrix_hide" name="Question: matrix"
+              inherit_id="survey.question_matrix">
+        <xpath expr="//table" position="attributes">
+            <attribute name="t-att-hidden">None if question.matrix_subtype !=
+                'custom' else 'hidden'
+            </attribute>
+        </xpath>
+    </template>
+    <!-- Custom Matrix Template -->
+    <template id="question_matrix_custom" name="Question: matrix custom">
+        <t t-set="comment_line"
+           t-value="answer_lines.filtered(lambda line: line.value_char_box)"/>
+        <t t-if="question.matrix_subtype == 'custom'">
+            <table class="table table-borderless o_survey_question_matrix text-white text-center mb-0"
+                   t-att-data-name="question.id"
+                   t-att-data-question-type="question.matrix_subtype"
+                   t-att-hidden="None if question.matrix_subtype == 'custom' else 'hidden'"
+                   t-att-data-matrix-type="question.matrix_subtype"
+                   t-att-data-sub-questions="question.matrix_row_ids.ids">
+                <thead>
+                    <tr>
+                        <th/>
+                        <th class="fw-normal"
+                            t-foreach="question.suggested_answer_ids"
+                            t-as="col_label">
+                            <span t-field="col_label.value"/>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-set="item_idx" t-value="0"/>
+                    <!-- For matrix, we have an extra check because we have rows * columns total options -->
+                    <t t-set="useKeySelection"
+                       t-value="useKeySelection and (len(question.suggested_answer_ids) * len(question.matrix_row_ids)) &lt; len(letters)"/>
+                    <tr class="bg-white text-white"
+                        t-foreach="question.matrix_row_ids" t-as="row_label"
+                        t-att-id="row_label.id">
+                        <th class="fw-normal text-start">
+                            <span t-field="row_label.value"/>
+                        </th>
+                        <t t-foreach="question.suggested_answer_ids"
+                           t-as="col_label">
+                            <t t-set="answer"
+                               t-value="answer_lines.filtered(lambda line: line.suggested_answer_id == col_label and line.matrix_row_id == row_label)"/>
+                            <td t-att-class="'o_survey_matrix_btn text-primary position-relative %s'
+                        % ('o_survey_selected' if answer else '')">
+                                <t t-if="col_label.answer_type == 'char_box'">
+                                    <div style="padding-left:30px; width : max-content;">
+                                        <input t-att-type="'email' if question.validation_email else 'text'"
+                                               class="form-control o_survey_question_text_box bg-transparent text-dark rounded-0 p-0"
+                                               t-att-name="'%s-%s' % (item_idx, question.id)"
+                                               t-att-placeholder="question.question_placeholder"
+                                               t-att-data-matrix-type="question.matrix_subtype"
+                                               t-att-value="answer_lines.get_value_matrix(item_idx) if answer_lines else None"
+                                               t-att-data-selection-key="letters[item_idx] if useKeySelection else ''"
+                                               t-att-data-row-id="row_label.id"
+                                               t-att-data-question-type="question.matrix_subtype"
+                                               t-att-data-validation-length-min="question.validation_length_min if question.validation_required else False"
+                                               t-att-data-validation-length-max="question.validation_length_max if question.validation_required else False"/>
+                                    </div>
+                                </t>
+                                <t t-if="col_label.answer_type == 'numerical_box'">
+                                    <div style="padding-left:30px">
+                                        <input type="number" step="any"
+                                               class="form-control o_survey_question_numerical_box bg-transparent text-dark rounded-0 p-0"
+                                               t-att-name="'%s-%s' % (item_idx, question.id)"
+                                               t-att-placeholder="question.question_placeholder"
+                                               t-att-value='answer_lines.get_value_matrix(item_idx) if answer_lines else None'
+                                               t-att-data-matrix-type="question.matrix_subtype"
+                                               t-att-data-selection-key="letters[item_idx] if useKeySelection else ''"
+                                               t-att-data-row-id="row_label.id"
+                                               t-att-data-question-type="question.matrix_subtype"
+                                               t-att-data-validation-float-min="question.validation_min_float_value if question.validation_required else False"
+                                               t-att-data-validation-float-max="question.validation_max_float_value if question.validation_required else False"/>
+                                    </div>
+                                </t>
+                                <t t-if="col_label.answer_type == 'text_box'">
+                                    <div style="padding-left:30px; width: max-content;">
+                                        <textarea
+                                                class="form-control o_survey_question_text_box bg-transparent text-dark rounded-0 p-0"
+                                                rows="3"
+                                                t-att-data-row-id="row_label.id"
+                                                t-att-data-matrix-type="question.matrix_subtype"
+                                                t-att-data-selection-key="letters[item_idx] if useKeySelection else ''"
+                                                t-att-name="'%s-%s' % (item_idx, question.id)"
+                                                t-att-placeholder="question.question_placeholder"
+                                                t-att-data-question-type="question.matrix_subtype">
+                                            <t t-if="answer_lines"
+                                               t-esc="answer_lines.get_value_matrix(item_idx) if answer_lines else None"/>
+                                        </textarea>
+                                    </div>
+                                </t>
+                                <t t-if="col_label.answer_type == 'date'">
+                                    <div style="padding-left:30px">
+                                        <input type="date"
+                                               class="form-control datetimepicker-input o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                                               t-attf-data-target="#datetimepicker_#{question.id}"
+                                               t-att-name="'%s-%s' % (item_idx, question.id)"
+                                               t-att-placeholder="question.question_placeholder"
+                                               t-att-data-matrix-type="question.matrix_subtype"
+                                               t-att-data-selection-key="letters[item_idx] if useKeySelection else ''"
+                                               t-att-value='answer_lines.get_value_matrix(item_idx) if answer_lines else None'
+                                               t-att-data-row-id="row_label.id"
+                                               t-att-data-question-type="question.matrix_subtype"/>
+                                    </div>
+                                </t>
+                                <t t-if="col_label.answer_type == 'datetime'">
+                                    <div class="input-group"
+                                         style="padding-left:30px">
+                                        <input type="datetime-local"
+                                               class="form-control datetimepicker-input o_survey_question_datetime bg-transparent text-dark rounded-0 p-0"
+                                               t-attf-data-target="#datetimepicker_#{question.id}"
+                                               t-att-name="'%s-%s' % (item_idx, question.id)"
+                                               t-att-placeholder="question.question_placeholder"
+                                               t-att-value='answer_lines.get_value_matrix(item_idx) if answer_lines else None'
+                                               t-att-data-matrix-type="question.matrix_subtype"
+                                               t-att-data-selection-key="letters[item_idx] if useKeySelection else ''"
+                                               t-att-data-row-id="row_label.id"
+                                               t-att-data-question-type="question.matrix_subtype"/>
+                                    </div>
+                                </t>
+                                <t t-if="col_label.answer_type == 'time'">
+                                    <div style="padding-left:30px">
+                                        <input type="time"
+                                               data-input=""
+                                               class="form-control datetimepicker-input o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                                               t-att-name="'%s-%s' % (item_idx, question.id)"
+                                               t-att-value='answer_lines.get_value_matrix(item_idx) if answer_lines else None'
+                                               t-att-data-selection-key="letters[item_idx] if useKeySelection else ''"
+                                               t-att-data-matrix-type="question.matrix_subtype"
+                                               t-att-data-row-id="row_label.id"
+                                               t-att-data-question-type="question.matrix_subtype"/>
+                                    </div>
+                                </t>
+                                <t t-if="col_label.answer_type == 'month'">
+                                    <div style="padding-left:30px">
+                                        <input type="month"
+                                               class="form-control datetimepicker-input o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                                               t-att-name="'%s-%s' % (item_idx, question.id)"
+                                               t-att-value='answer_lines.get_value_matrix(item_idx) if answer_lines else None'
+                                               t-att-data-selection-key="letters[item_idx] if useKeySelection else ''"
+                                               t-att-data-row-id="row_label.id"
+                                               t-att-data-matrix-type="question.matrix_subtype"
+                                               t-att-data-question-type="question.matrix_subtype"/>
+                                    </div>
+                                </t>
+                                <t t-if="col_label.answer_type == 'password'">
+                                    <div style="width : max-content;">
+                                        <input type="password"
+                                               class="form-control o_survey_question_text_box bg-transparent text-dark rounded-0 p-0"
+                                               t-att-name="'%s-%s' % (item_idx, question.id)"
+                                               t-att-data-matrix-type="question.matrix_subtype"
+                                               t-att-data-question-type="question.matrix_subtype"
+                                               t-att-value='answer_lines.get_value_matrix(item_idx) if answer_lines else None'
+                                        />
+                                    </div>
+                                </t>
+                                <t t-if="col_label.answer_type == 'many2one'">
+                                    <div class="col-sm oe_empty"
+                                         style="width : max-content; padding-left: 30px;">
+                                        <select t-attf-class="form-control o_select_many2one"
+                                                t-att-data-matrix-field="question.matrix_subtype"
+                                                id="select"
+                                                t-att-data-question-type="question.matrix_subtype"
+                                                t-att-name="'%s-%s' % (item_idx, question.id)"
+                                                required="1">
+                                            <t t-if="not answer_lines">
+                                                <t t-foreach="question.prepare_model_id(col_label.model_id)"
+                                                   t-as="option">
+                                                    <option t-att-value="list(option.values())[0]"
+                                                            t-att-data-value="list(option.values())[1]">
+                                                        <t t-esc="list(option.values())[1]"/>
+                                                    </option>
+                                                </t>
+                                            </t>
+                                            <t t-if="answer_lines">
+                                                <option t-att-value="answer_lines.get_value_matrix(item_idx) if answer_lines else None"
+                                                        selected="1">
+                                                    <t t-esc="answer_lines.get_value_matrix(item_idx) if answer_lines else None"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
+                                </t>
+                                <t t-if="col_label.answer_type == 'email'">
+                                    <div style="width : max-content;">
+                                        <input type="email"
+                                               class="form-control o_survey_question_text_box bg-transparent text-dark rounded-0 p-0"
+                                               t-att-name="'%s-%s' % (item_idx, question.id)"
+                                               placeholder="example@mail.com"
+                                               t-att-data-matrix-type="question.matrix_subtype"
+                                               t-att-data-question-type="question.matrix_subtype"
+                                               t-att-value='answer_lines.get_value_matrix(item_idx) if answer_lines else None'
+                                        />
+                                    </div>
+                                </t>
+                                <t t-if="col_label.answer_type == 'url'">
+                                    <div style="padding-left:30px;width : max-content;">
+                                        <input type="url"
+                                               class="form-control o_survey_question_text_box bg-transparent text-dark rounded-0 p-0"
+                                               t-att-name="'%s-%s' % (item_idx, question.id)"
+                                               t-att-value='answer_lines.get_value_matrix(item_idx) if answer_lines else None'
+                                               t-att-data-selection-key="item_idx if useKeySelection else ''"
+                                               t-att-data-matrix-type="question.matrix_subtype"
+                                               t-att-data-question-type="question.matrix_subtype"/>
+                                    </div>
+                                </t>
+                                <t t-if="col_label.answer_type == 'week'">
+                                    <div style="padding-left:30px">
+                                        <input type="week"
+                                               class="form-control datetimepicker-input o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                                               t-att-name="'%s-%s' % (item_idx, question.id)"
+                                               t-att-value='answer_lines.get_value_matrix(item_idx) if answer_lines else None'
+                                               t-att-data-row-id="row_label.id"
+                                               t-att-data-matrix-type="question.matrix_subtype"
+                                               t-att-data-selection-key="letters[item_idx] if useKeySelection else ''"
+                                               t-att-data-question-type="question.matrix_subtype"
+                                        />
+                                    </div>
+                                </t>
+                                <t t-if="col_label.answer_type == 'color'">
+                                    <div style="padding-left:30px">
+                                        <input type="color"
+                                               class="form-control o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                                               t-att-name="'%s-%s' % (item_idx,question.id)"
+                                               t-att-value='answer_lines.get_value_matrix(item_idx) if answer_lines else None'
+                                               t-att-data-row-id="row_label.id"
+                                               t-att-data-matrix-type="question.matrix_subtype"
+                                               t-att-data-selection-key="letters[item_idx] if useKeySelection else ''"
+                                               t-att-data-question-type="question.matrix_subtype"/>
+                                    </div>
+                                </t>
+                                <t t-call="survey.survey_selection_key">
+                                    <t t-set="selection_key_class"
+                                       t-value="'position-absolute float-end fw-bold %s' % ('o_survey_radio_btn' if question.matrix_subtype != 'multiple' else '')"/>
+                                </t>
+                                <t t-set="item_idx" t-value="item_idx + 1"/>
+                            </td>
+                        </t>
+                    </tr>
+                </tbody>
+            </table>
+            <input type="hidden" class="o_survey_custom_matrix"
+                   name="matrix-end"
+                   t-att-id="question.id"
+                   t-att-data-matrix-type="question.matrix_subtype"
+                   t-att-data-question-type="question.matrix_subtype"
+                   readonly="1"/>
+        </t>
+        <div t-if='question.comments_allowed'>
+            <textarea type="text"
+                      class="form-control o_survey_question_text_box o_survey_comment bg-transparent text-dark rounded-0 p-0 mt-3"
+                      t-att-placeholder="question.comments_message or default_comments_message if not survey_form_readonly else ''"
+                      t-att-name="'%s_%s' % (question.id, 'comment')">
+                <t t-esc="comment_line.value_char_box if comment_line else ''"/>
+            </textarea>
+        </div>
+    </template>
+    <!-- Question: File Template -->
+    <template id="question_file" name="Question: File">
+        <t t-if="not answer_lines">
+            <input type="file"
+                   class="form-control-file bg-transparent text-dark rounded-0 p-0 o_file"
+                   t-att-data-question-type="question.question_type"
+                   t-att-data-file="question.id"
+                   t-att-data-file-name="question.id"
+                   t-att-name="question.id"/>
+        </t>
+        <t t-if="answer_lines">
+            <t t-if="answer_lines[0].value_file">
+                <div>
+                    <a t-attf-href="/web/content?model=ir.attachment&amp;id={{answer_lines[0].value_file.id}}&amp;filename_field=name&amp;field=datas&amp;download=true&amp;filename={{answer_lines[0].value_file.name}}">
+                        Download File
+                    </a>
+                    -
+                    <t t-esc="answer_lines[0].value_file.name"/>
+                    <br/>
+                </div>
+            </t>
+        </t>
+    </template>
+    <!-- Question: Many2many Template -->
+    <template id="question_many2many" name="Question: Many2many">
+        <div class="col-sm oe_empty">
+            <input type="Text" name="o_select_many2many_text"
+                   t-attf-class="form-control o_select_many2many_text {{question.id}}"
+                   readonly="1"/>
+            <select t-att-data-question-type="question.question_type"
+                    t-att-name="question.id" multiple="multiple"
+                    t-attf-class="form-control o_select_many2many">
+                <t t-if="not answer_lines">
+                    <t t-foreach="question.prepare_model_id(False)" t-as="item">
+                        <option t-att-value="list(item.values())[1]">
+                            <t t-esc="list(item.values())[1]"/>
+                        </option>
+                    </t>
+                </t>
+                <t t-if="answer_lines">
+                    <option t-att-value="answer_lines[0].value_many2many"
+                            selected="1">
+                        <t t-esc="answer_lines[0].value_many2many"/>
+                    </option>
+                </t>
+            </select>
+        </div>
+    </template>
+    <!-- Question: Selection Template -->
+    <template id="question_selection_choice" name="Question: Selection">
+        <div class="dropdown">
+            <select t-att-name="question.id"
+                    placeholder="Select here"
+                    class="form-control"
+                    t-att-data-question-type="question.question_type">
+                <t t-if="not answer_lines and question.get_selection_values()">
+                    <t t-foreach="question.get_selection_values()"
+                       t-as="value">
+                        <option t-att-value="value.name">
+                            <t t-esc="value.name"/>
+                        </option>
+                    </t>
+                </t>
+                <t t-if="answer_lines">
+                    <option t-att-value="answer_lines[0].value_selection"
+                            selected="1">
+                        <t t-esc="answer_lines[0].value_selection"/>
+                    </option>
+                </t>
+            </select>
+        </div>
+    </template>
+    <!-- Question: Barcode Template -->
+    <template id="question_barcode" name="Question: Barcode">
+        <t t-if="question.barcode">
+            <img t-att-src="'/report/barcode/EAN13/%s' %(question.barcode)"
+                 height="110px"/>
+        </t>
+        <t t-else="">
+            <div>
+                <input type="text" style="width:33%;float:left; "
+                       class="form-control datetimepicker-input
+                o_survey_question_date bg-transparent text-dark rounded-0 p-0"
+                       t-att-name="question.id" placeholder="Barcode"
+                       t-att-data-question-type="question.question_type"
+                       readonly="1"/>
+                <button type="button" style="margin-left: 10px;"
+                        class="btn btn-info fa fa-barcode"/>
+            </div>
+        </t>
+    </template>
+    <!-- Template for the "Survey" menu in website -->
+    <template id="survey_visibility" name="Survey Visibility">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Survey</t>
+            </t>
+            <t t-if="not survey_list">
+                <p>At the moment, no surveys have been published.</p>
+            </t>
+            <t t-foreach="survey_list" t-as="data">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <strong>
+                                        <t t-esc="data['title']"/>
+                                    </strong>
+                                </h5>
+                                <p class="card-text">Created Date:
+                                    <t t-esc="data['date']"/>
+                                    <br/>
+                                    <t t-esc="data['attempts']"/>
+                                    Answered
+                                </p>
+                                <a t-att-href="'/survey/start/%s' % data['access_token']"
+                                   class="btn btn-primary">
+                                    Participate
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br/>
+            </t>
+        </t>
+    </template>
+</odoo>

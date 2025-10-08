@@ -1,9 +1,7 @@
 odoo.define('odoo_website_helpdesk.helpdesk_dashboard_action', function (require){
 "use strict";
 var AbstractAction = require('web.AbstractAction');
-var ControlPanel = require('web.ControlPanel');
 var core = require('web.core');
-var QWeb = core.qweb;
 var rpc = require('web.rpc');
 var ajax = require('web.ajax');
 var CustomDashBoard = AbstractAction.extend({
@@ -12,12 +10,13 @@ var CustomDashBoard = AbstractAction.extend({
    start: function() {
         var self = this;
         ajax.rpc('/helpdesk_dashboard').then(function (res) {
-        $("#new_state_value").text(res.new)
-        $("#inprogress_value").text(res.in_progress)
-        $("#canceled_value").text(res.canceled)
-        $("#done_value").text(res.done)
-        $("#closed_value").text(res.closed)
-        $("#new_state").click(function(){
+        self.$el.find("#new_state_value").text(res.new)
+        self.$el.find("#inprogress_value").text(res.in_progress)
+        self.$el.find("#canceled_value").text(res.canceled)
+        self.$el.find("#done_value").text(res.done)
+        self.$el.find("#closed_value").text(res.closed)
+//        Update the dashboard new state value
+        self.$el.find("#new_state").click(function(){
         self.do_action({
             name:'New Tickets',
             type: 'ir.actions.act_window',
@@ -27,7 +26,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.new_id]],
         })
         })
-        $("#in_progress_state").click(function(){
+//         Update the dashboard in progress state value
+        self.$el.find("#in_progress_state").click(function(){
         self.do_action({
             name:'In progress Tickets',
             type: 'ir.actions.act_window',
@@ -37,7 +37,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.in_progress_id]],
         })
         })
-        $("#cancelled_state").click(function(){
+//         Update the dashboard cancel state value
+        self.$el.find("#cancelled_state").click(function(){
         self.do_action({
             name:'Canceled Tickets',
             type: 'ir.actions.act_window',
@@ -47,7 +48,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.canceled_id]],
         })
         })
-        $("#done_state").click(function(){
+//         Update the dashboard done state value
+        self.$el.find("#done_state").click(function(){
         self.do_action({
             name:'Done Tickets',
             type: 'ir.actions.act_window',
@@ -57,7 +59,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.done_id]],
         })
         })
-        $("#closed_state").click(function(){
+//         Update the dashboard closed state value
+        self.$el.find("#closed_state").click(function(){
         self.do_action({
             name:'Closed Tickets',
             type: 'ir.actions.act_window',
@@ -67,19 +70,19 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.closed_id]],
         })
         })
-
 //        week function start
-        $("#filter_selection").change(function(e){
+        self.$el.find("#filter_selection").change(function(e){
         var target = $(e.target)
         var value = target.val()
         if (value == "this_week") {
         ajax.rpc('/helpdesk_dashboard_week').then(function (res) {
-        $("#new_state_value").text(res.new)
-        $("#inprogress_value").text(res.in_progress)
-        $("#canceled_value").text(res.canceled)
-        $("#done_value").text(res.done)
-        $("#closed_value").text(res.closed)
-        $("#new_state").click(function(){
+        self.$el.find("#new_state_value").text(res.new)
+        self.$el.find("#inprogress_value").text(res.in_progress)
+        self.$el.find("#canceled_value").text(res.canceled)
+        self.$el.find("#done_value").text(res.done)
+        self.$el.find("#closed_value").text(res.closed)
+//        Week function new state updation
+        self.$el.find("#new_state").click(function(){
         self.do_action({
             name:'New Tickets',
             type: 'ir.actions.act_window',
@@ -89,7 +92,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.new_id]],
         })
         })
-        $("#in_progress_state").click(function(){
+//        Week function in progress state update
+        self.$el.find("#in_progress_state").click(function(){
         self.do_action({
             name:'In progress Tickets',
             type: 'ir.actions.act_window',
@@ -99,7 +103,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.in_progress_id]],
         })
         })
-        $("#cancelled_state").click(function(){
+//         Week function in cancel state update
+        self.$el.find("#cancelled_state").click(function(){
         self.do_action({
             name:'Canceled Tickets',
             type: 'ir.actions.act_window',
@@ -109,7 +114,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.canceled_id]],
         })
         })
-        $("#done_state").click(function(){
+//         Week function in done state update
+        self.$el.find("#done_state").click(function(){
         self.do_action({
             name:'Done Tickets',
             type: 'ir.actions.act_window',
@@ -119,7 +125,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.done_id]],
         })
         })
-        $("#closed_state").click(function(){
+//         Week function in closed state update
+        self.$el.find("#closed_state").click(function(){
         self.do_action({
             name:'Closed Tickets',
             type: 'ir.actions.act_window',
@@ -130,14 +137,17 @@ var CustomDashBoard = AbstractAction.extend({
              })
           })
         })
-        }else if (value == "this_month") {
+        }
+//        Month function start
+        else if (value == "this_month") {
         ajax.rpc('/helpdesk_dashboard_month').then(function (res) {
-        $("#new_state_value").text(res.new)
-        $("#inprogress_value").text(res.in_progress)
-        $("#canceled_value").text(res.canceled)
-        $("#done_value").text(res.done)
-        $("#closed_value").text(res.closed)
-        $("#new_state").click(function(){
+        self.$el.find("#new_state_value").text(res.new)
+        self.$el.find("#inprogress_value").text(res.in_progress)
+        self.$el.find("#canceled_value").text(res.canceled)
+        self.$el.find("#done_value").text(res.done)
+        self.$el.find("#closed_value").text(res.closed)
+//        Month searching new state update
+        self.$el.find("#new_state").click(function(){
         self.do_action({
             name:'New Tickets',
             type: 'ir.actions.act_window',
@@ -147,7 +157,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.new_id]],
         })
         })
-        $("#in_progress_state").click(function(){
+//        Month searching in progress state update
+        self.$el.find("#in_progress_state").click(function(){
         self.do_action({
             name:'In progress Tickets',
             type: 'ir.actions.act_window',
@@ -157,7 +168,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.in_progress_id]],
         })
         })
-        $("#cancelled_state").click(function(){
+//        Month searching cancel state update
+        self.$el.find("#cancelled_state").click(function(){
         self.do_action({
             name:'Canceled Tickets',
             type: 'ir.actions.act_window',
@@ -167,7 +179,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.canceled_id]],
         })
         })
-        $("#done_state").click(function(){
+//        Month searching done state update
+        self.$el.find("#done_state").click(function(){
         self.do_action({
             name:'Done Tickets',
             type: 'ir.actions.act_window',
@@ -177,7 +190,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.done_id]],
         })
         })
-        $("#closed_state").click(function(){
+//        Month searching closed state update
+        self.$el.find("#closed_state").click(function(){
         self.do_action({
             name:'Closed Tickets',
             type: 'ir.actions.act_window',
@@ -188,14 +202,17 @@ var CustomDashBoard = AbstractAction.extend({
              })
           })
           })
-        }else if (value == "this_year") {
+        }
+//        Year filtering start
+        else if (value == "this_year") {
         ajax.rpc('/helpdesk_dashboard_year').then(function (res) {
-             $("#new_state_value").text(res.new)
-        $("#inprogress_value").text(res.in_progress)
-        $("#canceled_value").text(res.canceled)
-        $("#done_value").text(res.done)
-        $("#closed_value").text(res.closed)
-        $("#new_state").click(function(){
+             self.$el.find("#new_state_value").text(res.new)
+        self.$el.find("#inprogress_value").text(res.in_progress)
+        self.$el.find("#canceled_value").text(res.canceled)
+        self.$el.find("#done_value").text(res.done)
+        self.$el.find("#closed_value").text(res.closed)
+//        Year filtering new state update
+        self.$el.find("#new_state").click(function(){
         self.do_action({
             name:'New Tickets',
             type: 'ir.actions.act_window',
@@ -205,7 +222,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.new_id]],
         })
         })
-        $("#in_progress_state").click(function(){
+//        Year filtering in progress state update
+        self.$el.find("#in_progress_state").click(function(){
         self.do_action({
             name:'In progress Tickets',
             type: 'ir.actions.act_window',
@@ -215,7 +233,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.in_progress_id]],
         })
         })
-        $("#cancelled_state").click(function(){
+//        Year filtering cancel state update
+        self.$el.find("#cancelled_state").click(function(){
         self.do_action({
             name:'Canceled Tickets',
             type: 'ir.actions.act_window',
@@ -225,7 +244,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.canceled_id]],
         })
         })
-        $("#done_state").click(function(){
+//        Year filtering done state update
+        self.$el.find("#done_state").click(function(){
         self.do_action({
             name:'Done Tickets',
             type: 'ir.actions.act_window',
@@ -235,7 +255,8 @@ var CustomDashBoard = AbstractAction.extend({
             domain: [['id', '=', res.done_id]],
         })
         })
-        $("#closed_state").click(function(){
+//        Year filtering closed state update
+        self.$el.find("#closed_state").click(function(){
         self.do_action({
             name:'Closed Tickets',
             type: 'ir.actions.act_window',
@@ -251,11 +272,6 @@ var CustomDashBoard = AbstractAction.extend({
    })
   },
 })
-
-
-
-
 core.action_registry.add('helpdesk_dashboard_tag', CustomDashBoard);
-
 return CustomDashBoard
 })

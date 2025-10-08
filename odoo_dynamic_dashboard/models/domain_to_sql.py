@@ -69,6 +69,4 @@ def get_query(self, args, operation, field, group_by=False, apply_ir_rules=False
     where_clause_params = map(lambda x: "'" + str(x) + "'", where_clause_params)
 
     return query_str % tuple(where_clause_params)
-
-
 models.BaseModel.get_query = get_query

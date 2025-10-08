@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Inherits the laundry order form view  also the id inherits from
+    the dependent module Laundry_management-->
+    <record id="laundry_order_form_view" model="ir.ui.view">
+        <field name="name">laundry.order.view.form.inherit.laundry.management.pos</field>
+        <field name="inherit_id" ref="laundry_management.laundry_order_form_view"/>
+        <field name="model">laundry.order</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_date']" position="before">
+                <field name="pos_reference"
+                       attrs="{'invisible':[('is_invoiced', '=', False)]}"/>
+            </xpath>
+            <xpath expr="//field[@name='pos_reference']" position="before">
+                <field name="is_invoiced" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='order_lines']/tree/field[@name='extra_work']"
+                   position="after">
+                <field name="tax_ids" widget="many2many_tags"/>
+            </xpath>
+            <xpath expr="//button[@name='create_invoice']"
+                   position="attributes">
+                <attribute name="attrs">{'invisible': ['|', ('is_invoiced', '=', True), ('state', 'in', ('draft', 'order', 'process'))]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="before">
+                <field name="pos_order_id"
+                       attrs="{'invisible':[('is_invoiced', '=', False)]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Franchise Dealer form_view.-->
+    <record id="franchise_dealer_view_form" model="ir.ui.view">
+        <field name="name">franchise.dealer.view.form</field>
+        <field name="model">franchise.dealer</field>
+        <field name="arch" type="xml">
+            <form string="Dealer Requests">
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="a_draft,b_to_approve,c_approve,
+                           d_cancel,e_contract,g_declined,f_signed"/>
+                    <button name="action_confirm" class="oe_highlight"
+                            states="a_draft" string="Accept" type="object"/>
+                    <button name="action_cancel" class="oe_highlight"
+                            states="a_draft" string="Cancel" type="object"/>
+                    <button name="action_approve" class="oe_highlight"
+                            states="b_to_approve" string="Approve"
+                            type="object"/>
+                    <button name="action_cancel" class="oe_highlight"
+                            states="b_to_approve" string="Reject"
+                            type="object"/>
+                    <button name="action_send_contract" class="oe_highlight"
+                            states="c_approve" string="Send Contract"
+                            type="object"/>
+                    <button name="action_send_feedback" class="oe_highlight"
+                            states="f_signed" string="Request Sale Feedback"
+                            type="object"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_preview_dealer_order" type="object"
+                                class="oe_stat_button" icon="fa-globe icon">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Customer</span>
+                                <span class="o_stat_text">Preview</span>
+                            </div>
+                        </button>
+                        <button name="action_dealer_feedback" type="object"
+                                class="oe_stat_button" icon="fa-check"
+                                attrs="{'invisible': [('state', '!=', 'f_signed')]}">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Franchise</span>
+                                <span class="o_stat_text">Sale Feedback</span>
+                            </div>
+                        </button>
+                    </div>
+                    <br/>
+                    <h1>
+                        <b>
+                            <field name="serial_no" readonly="1"/>
+                        </b>
+                    </h1>
+                    <br/>
+                    <group>
+                        <group>
+                            <field name="dealer_name"/>
+                            <label for="street" string="Address"/>
+                            <div class="o_address_format">
+                                <field name="street" placeholder="Street..."
+                                       class="o_address_street"/>
+                                <field name="street2" placeholder="Street 2..."
+                                       class="o_address_street"/>
+                                <field name="city" placeholder="City"
+                                       class="o_address_city"/>
+                                <field name="state_id" class="o_address_state"
+                                       placeholder="State"
+                                       options="{'no_open': True, 'no_quick_create': True}"
+                                       context="{'default_country_id': country_id}"/>
+                                <field name="zip" placeholder="ZIP"
+                                       class="o_address_zip"/>
+                                <field name="country_id" placeholder="Country"
+                                       class="o_address_country"
+                                       options='{"no_open": True, "no_create": True}'/>
+                            </div>
+                            <field name="contract_type_id"
+                                   options="{'no_quick_create': True}"/>
+                            <field name="monthly_target_amount" required="1"/>
+                            <field name="contract_renewal_date"/>
+                            <field name="dealer_portal_user"/>
+                        </group>
+                        <group>
+                            <field name="dealer_phone"/>
+                            <field name="dealer_mobile"/>
+                            <field name="dealer_mail"/>
+                            <field name="dealer_website"/>
+                            <field name="company_id"/>
+                            <field name="dealer_qualification"/>
+                            <field name="dealer_occupation"/>
+                            <field name="priority" widget="priority"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name='contract_template' string="Contract">
+                            <group>
+                                <field name="body_html" widget="html"
+                                       class="oe-bordered-editor" force_save="1"
+                                       options="{'style-inline': true,
+                                       'codeview': true,
+                                       'dynamic_placeholder': true}"/>
+                            </group>
+                        </page>
+                        <page name='advertisement_details'
+                              string="Advertisement Details">
+                            <group>
+                                <field name="advertisement"
+                                       string="Dealer Vacancy Known Through"/>
+                            </group>
+                        </page>
+                        <page name='business_details' string="Business Details">
+                            <group>
+                                <field name="business_city"/>
+                                <field name="business_country"/>
+                                <field name="experience"/>
+                            </group>
+                        </page>
+                        <page name='business_experience'
+                              string="Business Experience">
+                            <field name="business_experience_ids">
+                                <tree editable="bottom">
+                                    <field name="experience_name"/>
+                                    <field name="from_date"/>
+                                    <field name="to_date"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page name='site_location' string="Site Location">
+                            <group>
+                                <field name="site_location"/>
+                                <field name="site_type"/>
+                                <field name="site_area"/>
+                            </group>
+                        </page>
+                        <page name='investment_details'
+                              string="Investment Capacity">
+                            <group>
+                                <field name="investment_from"/>
+                                <field name="investment_to"/>
+                            </group>
+                        </page>
+                        <page string="Dealer Signature" name="dealer_signature">
+                            <group>
+                                <field name="signed_by"/>
+                                <field name="signed_on"/>
+                                <field name="signature" widget="image"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!-- Franchise Dealer Tree_view-->
+    <record id="franchise_dealer_view_tree" model="ir.ui.view">
+        <field name="name">franchise.dealer.view.tree</field>
+        <field name="model">franchise.dealer</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="serial_no"/>
+                <field name="dealer_name"/>
+                <field name="contract_type_id"/>
+                <field name="monthly_target_amount"/>
+                <field name="dealer_phone"/>
+                <field name="investment_from"/>
+                <field name="investment_to"/>
+                <field name="business_country"/>
+                <field name="priority" widget="priority"/>
+                <field name="state" readonly="1" widget="badge"
+                       decoration-primary="state == 'c_approve'"
+                       decoration-danger="state in ('g_declined','d_cancel')"
+                       decoration-info="state == 'b_to_approve'"
+                       decoration-success="state == 'f_signed'"
+                       decoration-warning="state == 'e_contract'"/>
+            </tree>
+        </field>
+    </record>
+    <!--Franchise Dealer Kanban_view-->
+    <record id="franchise_dealer_view_kanban" model="ir.ui.view">
+        <field name="name">franchise.dealer.view.kanban</field>
+        <field name="model">franchise.dealer</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state">
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_content oe_kanban_global_click">
+                            <div class="row">
+                                <div class="col-15">
+                                    <field name="dealer_name"/>
+                                </div>
+                                <div class="col-12">
+                                    <field name="contract_type_id"/>
+                                </div>
+                                <div class="col-12">
+                                    <field name="monthly_target_amount"/>
+                                </div>
+                                <div class="col-12">
+                                    <field name="signed_on"/>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <field name="priority"
+                                               widget="priority"/>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <field name="user_id"
+                                               widget="many2one_avatar_user"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!--Franchise Dealer graph_view.-->
+    <record id="franchise_dealer_view_graph" model="ir.ui.view">
+        <field name="name">franchise.dealer.view.graph</field>
+        <field name="model">franchise.dealer</field>
+        <field name="arch" type="xml">
+            <graph string="Registrations" sample="1">
+                <field name="dealer_name"/>
+                <field name="contract_type_id"/>
+                <field name="monthly_target_amount"/>
+                <field name="investment_to" type="measure"/>
+                <field name="investment_from" type="measure"/>
+            </graph>
+        </field>
+    </record>
+    <!--Franchise Dealer Pivot_view.-->
+    <record id="franchise_dealer_view_pivot" model="ir.ui.view">
+        <field name="name">franchise.dealer.view.pivot</field>
+        <field name="model">franchise.dealer</field>
+        <field name="arch" type="xml">
+            <pivot string="Registrations" sample="1">
+                <field name="dealer_name" type="row"/>
+                <field name="contract_type_id" type="row"/>
+                <field name="monthly_target_amount" type="measure"/>
+                <field name="investment_to" type="measure"/>
+                <field name="investment_from" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+    <!--Franchise Dealer Search_filter_view.-->
+    <record id="franchise_dealer_view_search" model="ir.ui.view">
+        <field name="name">franchise.dealer.view.search</field>
+        <field name="model">franchise.dealer</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="dealer_name"/>
+                <group expand="0" string="Group By">
+                    <filter string="Registrations" name="dealer_name"
+                            context="{'group_by': 'dealer_name'}"/>
+                    <filter string="My Dealers" name="my_dealer"
+                            domain="[('user_id', '=', uid)]"/>
+                    <filter string="Draft Registrations" name="dealer_name"
+                            domain="[('state','=','a_draft')]"/>
+                    <filter string="Approved Registrations" name="dealer_name"
+                            domain="[('state','=','c_approve')]"/>
+                    <filter string="Signed Registrations" name="dealer_name"
+                            domain="[('state','=','f_signed')]"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!--Franchise Dealer Action -->
+    <record id="franchise_dealer_model_action" model="ir.actions.act_window">
+        <field name="name">Franchise Registration</field>
+        <field name="res_model">franchise.dealer</field>
+        <field name="view_mode">tree,kanban,form,graph,pivot</field>
+    </record>
+</odoo>

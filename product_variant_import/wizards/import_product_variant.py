@@ -1,4 +1,3 @@
-""""Import product variant"""
 # -*- coding: utf-8 -*-
 #############################################################################
 #
@@ -44,589 +43,427 @@ class ImportVariant(models.TransientModel):
                          help="The file to upload")
 
     def action_import_product_variant(self):
-        """This is used to import/export the product """
+        """This is used to import/export the product"""
         try:
-            global list, detailed, invoicing_type
-            link = False
             if self.import_file == 'excel':
+                # Handle Excel file
                 try:
                     file_pointer = tempfile.NamedTemporaryFile(delete=False,
                                                                suffix=".xlsx")
                     file_pointer.write(binascii.a2b_base64(self.file))
                     file_pointer.seek(0)
-                    workbook = xlrd.open_workbook(file_pointer.name)
-                    sheet = workbook.sheet_by_index(0)
-                except:
-                    raise UserError(_("File not Valid"))
-                for rec in range(sheet.nrows):
-                    if rec >= 1:
-                        row_vals = sheet.row_values(rec)
-                        if len(row_vals) < int(24):
-                            raise UserError(
-                                _("Please ensure that you selected "
-                                  "the correct file"))
-                        product_category = self.env['product.category'].search(
-                            [('complete_name', '=', row_vals[6])]).id
-                        if product_category:
-                            category = product_category
-                        else:
-                            category = self.env['product.category'].create({
-                                'name': row_vals[6].split('/')[0],
-                                'complete_name': row_vals[6]
-                            })
-                            category = category.id
-                        product_uom = self.env['uom.uom'].search(
-                            [('name', '=', row_vals[7])]).id
-                        if product_uom:
-                            uom = product_uom
-                        else:
-                            raise UserError(_("Invalid uom"))
-                        pro_uom = self.env['uom.uom'].search(
-                            [('name', '=', row_vals[8])]).id
-                        if pro_uom:
-                            po_uom = pro_uom
-                        else:
-                            raise UserError(_("Invalid Purchase uom"))
-                        account_tax = self.env['account.tax'].search(
-                            [('name', '=', row_vals[9])]).id
-                        supp_tax = self.env['account.tax'].search(
-                            [('name', '=', row_vals[10])]).id
-                        if account_tax:
-                            tax = account_tax
-                        else:
-                            account = self.env['account.tax'].create({
-                                'name': row_vals[9].split(' ')[0],
-                                'amount': row_vals[9].split(' ')[1],
-                            })
-                            tax = account.id
-                        if supp_tax:
-                            supplier_tax = supp_tax
-                        else:
-                            supplier_account_tax = self.env[
-                                'account.tax'].create({
-                                'name': row_vals[10].split(' ')[0],
-                                'amount': row_vals[10].split(' ')[1],
-                            })
-                            supplier_tax = supplier_account_tax.id
-                        kay_val_dict = dict(
-                            self.env['product.template']._fields[
-                                'detailed_type'].selection)
-                        # here 'type' is field name
-                        for key, val in kay_val_dict.items():
-                            if val == row_vals[5]:
-                                detailed = key
-                        kay_val_dict = dict(
-                            self.env['product.template']._fields[
-                                'invoice_policy'].selection)
-                        # here 'type' is field name
-                        for key, val in kay_val_dict.items():
-                            if val == row_vals[12]:
-                                invoicing_type = key
-                        if "http://" in row_vals[23] or "https://" in row_vals[
-                            23]:
-                            link = base64.b64encode(
-                                requests.get(
-                                    row_vals[23].strip()).content).replace(
-                                b"\n", b"")
-                        elif "/home" in row_vals[23]:
-                            if os.path.exists(row_vals[23]):
-                                with open(row_vals[23], 'rb') as image_file:
-                                    link = base64.b64encode(image_file.read())
-                        if not row_vals[2] or not row_vals[18]:
-                            raise UserError(_("File Must  Contain Internal "
-                                              "Reference or Barcode of the "
-                                              "Product"))
-                        if self.method == 'update':
-                            vals = {
-                                'default_code': row_vals[2],
-                                'name': row_vals[1],
-                                'image_1920': link,
-                                'sale_ok': row_vals[3],
-                                'purchase_ok': row_vals[4],
-                                'detailed_type': detailed,
-                                'categ_id': category,
-                                'uom_id': uom,
-                                'uom_po_id': po_uom,
-                                'taxes_id': [tax],
-                                'supplier_taxes_id': [supplier_tax],
-                                'description_sale': row_vals[11],
-                                'invoice_policy': invoicing_type,
-                                'list_price': row_vals[13],
-                                'standard_price': row_vals[14],
-                                'weight': row_vals[19],
-                                'volume': row_vals[20],
-                            }
-                            if link:
-                                vals.update({'image_1920': link})
-                            product = self.env['product.template'].search(
-                                [('barcode', '=', row_vals[18])])
-                            if product:
-                                product.write(vals)
-                            else:
-                                product = self.env['product.template'].search(
-                                    [('default_code', '=', row_vals[2])])
-                                if product:
-                                    product.write(vals)
-                                else:
-                                    raise UserError(
-                                        _("Please ensure that product "
-                                              "having the"
-                                              "contains Internal reference or "
-                                              "Barcode to with your file"))
-                        else:
-                            if self.method == 'update_product':
-                                vals = {
-                                    'default_code': row_vals[2],
-                                    'name': row_vals[1],
-                                    'image_1920': link,
-                                    'sale_ok': row_vals[3],
-                                    'purchase_ok': row_vals[4],
-                                    'detailed_type': detailed,
-                                    'categ_id': category,
-                                    'uom_id': uom,
-                                    'uom_po_id': po_uom,
-                                    'taxes_id': [tax],
-                                    'supplier_taxes_id': [supplier_tax],
-                                    'description_sale': row_vals[11],
-                                    'invoice_policy': invoicing_type,
-                                    'lst_price': row_vals[13],
-                                    'standard_price': row_vals[14],
-                                    'weight': row_vals[19],
-                                    'volume': row_vals[20],
-                                }
-                                if link:
-                                    vals.update({'image_1920': link})
-                                product = self.env['product.product'].search(
-                                    [('barcode', '=', row_vals[18])])
-                                if product:
-                                    product.write(vals)
-                                else:
-                                    product = self.env[
-                                        'product.product'].search(
-                                        [('default_code', '=', row_vals[2])])
-                                    if product:
-                                        product.write(vals)
-                                    else:
-                                        raise UserError(
-                                            _("Please ensure that product "
-                                              "having the"
-                                              "contains Internal reference or "
-                                              "Barcode to with your file."))
-                            else:
-                                vals = {
-                                    'default_code': row_vals[2],
-                                    'name': row_vals[1],
-                                    'image_1920': link,
-                                    'sale_ok': row_vals[3],
-                                    'purchase_ok': row_vals[4],
-                                    'detailed_type': detailed,
-                                    'categ_id': category,
-                                    'uom_id': uom,
-                                    'uom_po_id': po_uom,
-                                    'taxes_id': [tax],
-                                    'supplier_taxes_id': [supplier_tax],
-                                    'description_sale': row_vals[11],
-                                    'invoice_policy': invoicing_type,
-                                    'list_price': row_vals[13],
-                                    'standard_price': row_vals[14],
-                                    'weight': row_vals[19],
-                                    'volume': row_vals[20],
 
-                                }
-                                product = self.env['product.template'].create(
-                                    vals)
-                        values = []
-                        for row_val in row_vals[15].split(','):
-                            pr_attribute = self.env['product.attribute'].search(
-                                [('name', '=', row_val)]).id
-                            if pr_attribute:
-                                attribute = pr_attribute
-                            else:
-                                raise UserError(
-                                    _("Please update a valid attribute and "
-                                      "values"))
-                            values.append({'attribute': attribute})
-                            for row in row_vals[16].split(','):
-                                attri_values = self.env[
-                                    'product.attribute.value'].search(
-                                    [('attribute_id', '=', attribute),
-                                     ('name', '=', row)]).ids
-                                if len(attri_values) != 0:
-                                    values.extend({attri_values[0]})
-                        variant = {}
-                        mylist = []
-                        for val in values:
-                            if isinstance(val, dict):
-                                variant = val
-                                variant['attribut_value'] = []
-                            else:
-                                variant['attribut_value'].extend([val])
-                            if variant in mylist:
-                                pass
-                            else:
-                                mylist.append(variant)
-                        for lst in mylist:
-                            val = {
-                                'product_tmpl_id': product.id,
-                                'attribute_id': lst['attribute'],
-                                'value_ids': lst['attribut_value'],
-                            }
-                            self.env['product.template.attribute.line'].create(
-                                val)
+                    book = xlrd.open_workbook(file_pointer.name)
+                    sheet = book.sheet_by_index(0)
+
+                    if sheet.nrows < 2:
+                        raise UserError(
+                            _("Excel file is empty or contains only headers"))
+
+                    headers = [str(cell.value).strip() for cell in sheet.row(0)]
+
+                    for row_index in range(1, sheet.nrows):
+                        row = sheet.row(row_index)
+                        values = {}
+
+                        for col_index, cell in enumerate(row):
+                            if col_index < len(headers):
+                                cell_value = cell.value
+                                if isinstance(cell_value,
+                                              str) and cell_value.replace('.',
+                                                                          '').isdigit():
+                                    try:
+                                        cell_value = float(cell_value)
+                                    except ValueError:
+                                        pass
+                                values[headers[col_index]] = cell_value
+
+                        if not values.get(
+                                'Internal Reference') and not values.get(
+                            'Barcode'):
+                            raise UserError(
+                                _("Row %d: Must contain either Internal Reference or Barcode") % row_index)
+
+                        vals = {
+                            'name': values.get('Name'),
+                            'default_code': str(
+                                values.get('Internal Reference', '')).strip(),
+                            'barcode': str(values.get('Barcode', '')).strip(),
+                            'sale_ok': str(
+                                values.get('Can be sold', 'True')).lower() in (
+                                           'true', 't', '1', 'yes'),
+                            'purchase_ok': str(
+                                values.get('Purchase_ok', 'True')).lower() in (
+                                               'true', 't', '1', 'yes'),
+                        }
+
+                        if values.get('Category'):
+                            category = self._get_or_create_category(
+                                str(values['Category']))
+                            vals['categ_id'] = category
+
+                        if values.get('Unit of Measure'):
+                            uom = self._get_uom(str(values['Unit of Measure']))
+                            vals['uom_id'] = uom
+
+                        if values.get('Purchase Unit of Measure'):
+                            po_uom = self._get_uom(
+                                str(values['Purchase Unit of Measure']))
+                            vals['uom_po_id'] = po_uom
+
+                        if values.get('Description for customers'):
+                            vals['description_sale'] = str(
+                                values['Description for customers'])
+
+                        numeric_fields = {
+                            'Sales Price': 'list_price',
+                            'Cost': 'standard_price',
+                            'Weight': 'weight',
+                            'Volume': 'volume'
+                        }
+
+                        for excel_field, odoo_field in numeric_fields.items():
+                            if values.get(excel_field):
+                                try:
+                                    if isinstance(values[excel_field],
+                                                  (int, float)):
+                                        vals[odoo_field] = float(
+                                            values[excel_field])
+                                    else:
+                                        vals[odoo_field] = float(
+                                            str(values[excel_field]).replace(
+                                                ',', ''))
+                                except ValueError:
+                                    raise UserError(_(
+                                        "Row %d: Invalid numeric value for %s: %s"
+                                    ) % (row_index, excel_field,
+                                         values[excel_field]))
+
+                        if values.get('Customer Taxes'):
+                            customer_tax = self._get_or_create_tax(
+                                str(values['Customer Taxes']))
+                            if customer_tax:
+                                vals['taxes_id'] = [(6, 0, [customer_tax])]
+
+                        if values.get('Vendor Taxes'):
+                            vendor_tax = self._get_or_create_tax(
+                                str(values['Vendor Taxes']))
+                            if vendor_tax:
+                                vals['supplier_taxes_id'] = [
+                                    (6, 0, [vendor_tax])]
+
+                        if values.get('Product Type'):
+                            product_type = self._get_selection_field_value(
+                                'detailed_type', str(values['Product Type']))
+                            if product_type:
+                                vals['detailed_type'] = product_type
+
+                        if values.get('Invoicing Policy'):
+                            invoice_policy = self._get_selection_field_value(
+                                'invoice_policy',
+                                str(values['Invoicing Policy']))
+                            if invoice_policy:
+                                vals['invoice_policy'] = invoice_policy
+
+                        if self.method == 'create':
+                            product = self.env['product.template'].create(vals)
+                        else:
+                            product = self._update_existing_product(vals,
+                                                                    values)
+
+                        if values.get('Variant Attributes') and values.get(
+                                'Attribute Values'):
+                            variant_attrs = str(values['Variant Attributes'])
+                            variant_values = str(values['Attribute Values'])
+                            self._create_product_variants(product, {
+                                'Variant Attributes': variant_attrs,
+                                'Attribute Values': variant_values
+                            })
+
+                    os.unlink(file_pointer.name)
+
+                    return {
+                        'type': 'ir.actions.client',
+                        'tag': 'display_notification',
+                        'params': {
+                            'title': _('Success'),
+                            'message': _(
+                                'Products imported successfully from Excel file'),
+                            'type': 'success',
+                            'sticky': False,
+                        }
+                    }
+
+                except xlrd.XLRDError:
+                    raise UserError(
+                        _("Invalid Excel file format. Please make sure you're using a valid .xlsx file"))
+                except Exception as e:
+                    raise UserError(
+                        _("Error processing Excel file: %s") % str(e))
+
             elif self.import_file == 'csv':
-                keys = ['Unique Identifier', 'Name', 'Internal Reference',
-                        'Can be sold', 'Can be Purchased', 'Product Type',
-                        'Category', 'Unit of Measure',
-                        'Purchase Unit of Measure',
-                        'Customer Taxes', 'Vendor Taxes',
-                        'Description for customers', 'Invoicing Policy',
-                        'Sales Price', 'Cost', 'Variant Attributes',
-                        'Attribute Values', 'Internal Reference', 'Barcode',
-                        'Weight', 'Volume', 'Qty On hand',
-                        'Responsible', 'image', 'Char', 'Many2many', 'Many2one',
-                        'Integer']
-                try:
-                    files = base64.b64decode(self.file)
-                    data = io.StringIO(files.decode("utf-8"))
-                    data.seek(0)
-                    file_reader = []
-                    csv_reader = csv.reader(data, delimiter=',')
-                    file_reader.extend(csv_reader)
-                except:
-                    raise UserError(_("File not Valid"))
-                for file in range(len(file_reader)):
-                    field = list(map(str, file_reader[file]))
-                    values = dict(zip(keys, field))
-                    if file >= 1:
-                        pro_categ = self.env['product.category'].search(
-                            [('complete_name', '=', values['Category'])]).id
-                        if pro_categ:
-                            pro_category = pro_categ
-                        else:
-                            category = self.env['product.category'].create({
-                                'name': values['Category']
-                            })
-                            pro_category = category.id
-                        unit_uom = self.env['uom.uom'].search(
-                            [('name', '=', values['Unit of Measure'])]).id
-                        if unit_uom:
-                            uom = unit_uom
-                        else:
-                            raise UserError(_("Invalid uom"))
-                        po_uoms = self.env['uom.uom'].search(
-                            [('name', '=',
-                              values['Purchase Unit of Measure'])]).id
-                        if po_uoms:
-                            po_uom = po_uoms
-                        else:
-                            raise UserError(_("Invalid Product Uom"))
-                        account_taxs = self.env['account.tax'].search(
-                            [('name', '=', values['Customer Taxes'])]).id
-                        supp_tax = self.env['account.tax'].search(
-                            [('name', '=', values['Vendor Taxes'])]).id
-                        if account_taxs:
-                            tax = account_taxs
-                        else:
-                            account_tax = self.env['account.tax'].create({
-                                'name': values['Customer Taxes'].split(' ')[0],
-                                'amount': values['Customer Taxes'].split(' ')[
-                                    1],
-                            })
-                            tax = account_tax.id
-                        if supp_tax:
-                            supplier_tax = supp_tax
-                        else:
-                            supplier_account_tax = self.env[
-                                'account.tax'].create({
-                                'name': values['Vendor Taxes'].split(' ')[0],
-                                'amount': values['Vendor Taxes'].split(' ')[1],
-                            })
-                            supplier_tax = supplier_account_tax.id
-                        kay_val_dict = dict(
-                            self.env['product.template']._fields[
-                                'detailed_type'].selection)  # here 'type' is field name
-                        for key, val in kay_val_dict.items():
-                            if val == values['Product Type']:
-                                detailed = key
-                        kay_val_dict = dict(
-                            self.env['product.template']._fields[
-                                'invoice_policy'].selection)  # here 'type' is field name
-                        for key, val in kay_val_dict.items():
-                            if val == values['Invoicing Policy']:
-                                invoicing_type = key
-                        if "http://" in values['image'] or "https://" in values[
-                            'image']:
-                            link = base64.b64encode(requests.get(
-                                values['image'].strip()).content).replace(b"\n",
-                                                                          b"")
-                        elif "/home" in values['image']:
-                            if os.path.exists(values['image']):
-                                with open(values['image'], 'rb') as file_image:
-                                    link = base64.b64encode(file_image.read())
-                        if file_reader[0][24] or file_reader[0][25] or \
-                                file_reader[0][26]:
-                            model = self.env['ir.model']._get_id(
-                                'product.template')
-                            self.env['ir.model.fields'].create({
-                                'model_id': model,
-                                'name': file_reader[0][24],
-                                'field_description':
-                                    file_reader[0][24].split('_')[
-                                        2].upper(),
-                                'ttype': file_reader[0][24].split('_')[1],
-                            })
-                            inherit_id = self.env.ref(
-                                'product.product_template_only_form_view')
-                            arch_base = _('<?xml version="1.0"?>'
-                                          '<data>'
-                                          '<field name="%s" position="%s">'
-                                          '<field name="%s"/>'
-                                          '</field>'
-                                          '</data>') % (
-                                            'detailed_type', 'after',
-                                            file_reader[0][24])
-                            self.env['ir.ui.view'].sudo().create(
-                                {'name': 'product.dynamic.fields',
-                                 'type': 'form',
-                                 'model': 'product.template',
-                                 'mode': 'extension',
-                                 'inherit_id': inherit_id.id,
-                                 'arch_base': arch_base,
-                                 'active': True})
-                            self.env['ir.model.fields'].create({
-                                'model_id': model,
-                                'name': file_reader[0][25],
-                                'field_description':
-                                    file_reader[0][25].split('_')[
-                                        2].upper(),
-                                'relation': values['Many2many'].split(':')[0],
-                                'ttype': file_reader[0][25].split('_')[1],
-                            })
-                            inherit_id = self.env.ref(
-                                'product.product_template_only_form_view')
-                            arch_base = _('<?xml version="1.0"?>'
-                                          '<data>'
-                                          '<field name="%s" position="%s">'
-                                          '<field name="%s" widget="%s"/>'
-                                          '</field>'
-                                          '</data>') % (
-                                            'list_price', 'after',
-                                            file_reader[0][25],
-                                            'many2many_tags')
-                            self.env['ir.ui.view'].sudo().create(
-                                {'name': 'product.many2many.fields',
-                                 'type': 'form',
-                                 'model': 'product.template',
-                                 'mode': 'extension',
-                                 'inherit_id': inherit_id.id,
-                                 'arch_base': arch_base,
-                                 'active': True})
-                            val = values['Many2many'].split(':')[0]
-                            partner = [
-                                values['Many2many'].split(':')[1].split(',')]
-                            vals_many = []
-                            for part in partner[0]:
-                                many2many = self.env[val].search(
-                                    [('name', '=', part)]).id
-                                if many2many:
-                                    vals_many.append(many2many)
-                                else:
-                                    partner = self.env[val].create({
-                                        'name': part,
-                                    })
-                                    vals_many.append(partner)
-                            self.env['ir.model.fields'].create({
-                                'model_id': model,
-                                'name': file_reader[0][26],
-                                'field_description':
-                                    file_reader[0][26].split('_')[
-                                        2].upper(),
-                                'relation': values['Many2one'].split(':')[0],
-                                'ttype': file_reader[0][26].split('_')[1],
-                            })
-                            inherit_id = self.env.ref(
-                                'product.product_template_only_form_view')
-                            arch_base = _('<?xml version="1.0"?>'
-                                          '<data>'
-                                          '<field name="%s" position="%s">'
-                                          '<field name="%s" widget="%s"/>'
-                                          '</field>'
-                                          '</data>') % (
-                                            'standard_price', 'after',
-                                            file_reader[0][26],
-                                            'many2one_tags')
-                            self.env['ir.ui.view'].sudo().create(
-                                {'name': 'product.many2one.fields',
-                                 'type': 'form',
-                                 'model': 'product.template',
-                                 'mode': 'extension',
-                                 'inherit_id': inherit_id.id,
-                                 'arch_base': arch_base,
-                                 'active': True})
-                            many2one = values['Many2one'].split(':')[0]
-                            value = [values['Many2one'].split(':')[1]]
-                            vals_one = []
-                            for vals in value:
-                                many2one_value = self.env[many2one].search(
-                                    [('name', '=', vals)]).id
-                                if many2one_value:
-                                    vals_one.append(many2one_value)
-                                else:
-                                    value = self.env[many2one].create({
-                                        'name': vals,
-                                    })
-                                    vals_one.append(value)
-                            if not values['Internal Reference'] or not values[
-                                'Barcode']:
+                if self.import_file == 'csv':
+                    try:
+                        files = base64.b64decode(self.file)
+                        data = io.StringIO(files.decode("utf-8"))
+                        data.seek(0)
+                        file_reader = []
+                        csv_reader = csv.reader(data, delimiter=',')
+                        file_reader.extend(csv_reader)
+                    except:
+                        raise UserError(
+                            _("Invalid file format. Please check your CSV file."))
+
+                    if len(file_reader) < 2:
+                        raise UserError(
+                            _("File is empty or contains only headers"))
+
+                    header = file_reader[0]
+
+                    for row_index, row in enumerate(file_reader[1:], 1):
+                        try:
+                            values = {}
+                            for i, cell in enumerate(row):
+                                if i < len(
+                                        header):
+                                    values[header[i]] = cell
+
+                            if not values.get(
+                                    'Internal Reference') and not values.get(
+                                'Barcode'):
                                 raise UserError(
-                                    _("File Must  Contain Internal Reference "
-                                      "or Barcode of the Product"))
-                            if self.method == 'update':
-                                vals = {
-                                    'default_code': values[
-                                        'Internal Reference'] if
-                                    values['Internal Reference'] else False,
-                                    'name': values['Name'],
-                                    'image_1920': link,
-                                    'sale_ok': values['Can be sold'],
-                                    'purchase_ok': values['Can be Purchased'],
-                                    'detailed_type': detailed,
-                                    'categ_id': pro_category,
-                                    'uom_id': uom,
-                                    'uom_po_id': po_uom,
-                                    'barcode': values['Barcode'] if values[
-                                        'Barcode'] else False,
-                                    'taxes_id': [tax],
-                                    'supplier_taxes_id': [supplier_tax],
-                                    'description_sale': values[
-                                        'Description for customers'],
-                                    'invoice_policy': invoicing_type,
-                                    'list_price': values['Sales Price'],
-                                    'standard_price': values['Cost'],
-                                    'weight': values['Weight'],
-                                    'volume': values['Volume'],
-                                }
-                                if link:
-                                    vals.update({'image_1920': link})
-                                product = self.env[
-                                    'product.template'].search(
-                                    [('barcode', '=', values['Barcode'])])
-                                if len(product):
-                                    product.write(vals)
-                                else:
-                                    product = self.env[
-                                        'product.template'].search(
-                                        [('default_code', '=',
-                                          values['Internal Reference'])])
-                                    if product:
-                                        product.write(vals)
-                                    else:
-                                        raise UserError(
-                                            _("Please ensure that product "
-                                              "having the"
-                                              "contains Internal reference or "
-                                              "Barcode to with your file."))
-                            elif self.method == 'update_product':
-                                vals = {
-                                    'default_code': values[
-                                        'Internal Reference'] if
-                                    values['Internal Reference'] else False,
-                                    'name': values['Name'],
-                                    'image_1920': link,
-                                    'sale_ok': values['Can be sold'],
-                                    'purchase_ok': values['Can be Purchased'],
-                                    'detailed_type': detailed,
-                                    'categ_id': pro_category,
-                                    'uom_id': uom,
-                                    'uom_po_id': po_uom,
-                                    'barcode': values['Barcode'] if values[
-                                        'Barcode'] else False,
-                                    'taxes_id': [tax],
-                                    'supplier_taxes_id': [supplier_tax],
-                                    'description_sale': values[
-                                        'Description for customers'],
-                                    'invoice_policy': invoicing_type,
-                                    'lst_price': values['Sales Price'],
-                                    'standard_price': values['Cost'],
-                                    'weight': values['Weight'],
-                                    'volume': values['Volume'],
-                                }
-                                if link:
-                                    vals.update({'image_1920': link})
-                                product = self.env[
-                                    'product.product'].search(
-                                    [('barcode', '=', values['Barcode'])])
-                                if len(product):
-                                    product.write(vals)
-                                else:
-                                    product = self.env[
-                                        'product.product'].search(
-                                        [('default_code', '=',
-                                          values['Internal Reference'])])
-                                    if product:
-                                        product.write(vals)
-                                    else:
-                                        raise UserError(
-                                            _("Please ensure that product "
-                                              "having the"
-                                              "contains Internal reference or "
-                                              "Barcode to with your file."))
-                            else:
+                                    _("Row %d: Must contain either Internal Reference or Barcode") % row_index)
+
+                            vals = {
+                                'name': values.get('Name'),
+                                'default_code': values.get(
+                                    'Internal Reference'),
+                                'barcode': values.get('Barcode'),
+                                'sale_ok': values.get('Can be sold',
+                                                      'True').lower() in (
+                                               'true', 't', '1', 'yes'),
+                                'purchase_ok': values.get('Purchase_ok',
+                                                          'True').lower() in (
+                                                   'true', 't', '1', 'yes'),
+                                'categ_id': self._get_or_create_category(
+                                    values.get('Category', '')),
+                                'uom_id': self._get_uom(
+                                    values.get('Unit of Measure')),
+                                'uom_po_id': self._get_uom(
+                                    values.get('Purchase Unit of Measure')),
+                                'description_sale': values.get(
+                                    'Description for customers'),
+                            }
+
+                            for field, value in [
+                                ('list_price', values.get('Sales Price')),
+                                ('standard_price', values.get('Cost')),
+                                ('weight', values.get('Weight')),
+                                ('volume', values.get('Volume'))
+                            ]:
+                                try:
+                                    if value:
+                                        vals[field] = float(value)
+                                except ValueError:
+                                    raise UserError(
+                                        _("Row %d: Invalid numeric value for %s: %s") %
+                                        (row_index, field, value))
+
+                            customer_tax = self._get_or_create_tax(
+                                values.get('Customer Taxes', ''))
+                            vendor_tax = self._get_or_create_tax(
+                                values.get('Vendor Taxes', ''))
+
+                            if customer_tax:
+                                vals['taxes_id'] = [(6, 0, [customer_tax])]
+                            if vendor_tax:
+                                vals['supplier_taxes_id'] = [
+                                    (6, 0, [vendor_tax])]
+
+                            if values.get('Product Type'):
+                                product_type = self._get_selection_field_value(
+                                    'detailed_type',
+                                    values['Product Type'])
+                                if product_type:
+                                    vals['detailed_type'] = product_type
+
+                            if values.get('Invoicing Policy'):
+                                invoice_policy = self._get_selection_field_value(
+                                    'invoice_policy',
+                                    values['Invoicing Policy'])
+                                if invoice_policy:
+                                    vals['invoice_policy'] = invoice_policy
+
+                            if values.get('image'):
+                                image_data = self._process_image(
+                                    values['image'])
+                                if image_data:
+                                    vals['image_1920'] = image_data
+
+                            if self.method == 'create':
                                 product = self.env['product.template'].create(
                                     vals)
-                                product.write({
-                                    file_reader[0][24]: values['Char'],
-                                    file_reader[0][25]: vals_many,
-                                    file_reader[0][26]: vals_one[0],
-                                })
-                            attribute_values = []
-                            for val_attribute in values[
-                                'Variant Attributes'].split(','):
-                                attributes = self.env[
-                                    'product.attribute'].search(
-                                    [('name', '=', val_attribute)]).id
-                                if attributes:
-                                    attribute = attributes
-                                else:
-                                    raise UserError(
-                                        _("Please add a valid attribute and "
-                                          "their values"))
-                                attribute_values.append(
-                                    {'attribute': attribute})
-                                for value in values['Attribute Values'].split(
-                                        ','):
-                                    attri_values = self.env[
-                                        'product.attribute.value'].search(
-                                        [('attribute_id', '=', attribute),
-                                         ('name', '=', value)]).ids
-                                    if len(attri_values) != 0:
-                                        attribute_values.extend(
-                                            {attri_values[0]})
-                            variant = {}
-                            mylist = []
-                            for attribute in attribute_values:
-                                if isinstance(attribute, dict):
-                                    variant = attribute
-                                    variant['attribut_value'] = []
-                                else:
-                                    variant['attribut_value'].extend(
-                                        [attribute])
-                                if variant in mylist:
-                                    pass
-                                else:
-                                    mylist.append(variant)
-                            for list in mylist:
-                                val = {
-                                    'product_tmpl_id': product.id,
-                                    'attribute_id': list['attribute'],
-                                    'value_ids': list['attribut_value'],
-                                }
-                                self.env[
-                                    'product.template.attribute.line'].create(
-                                    val)
-                            return {
-                                'type': 'ir.actions.client',
-                                'tag': 'reload',
-                            }
-        except UserError as e:
+                            else:
+                                product = self._update_existing_product(vals,
+                                                                        values)
+
+                            if values.get('Variant Attributes') and values.get(
+                                    'Attribute Values'):
+                                self._create_product_variants(product, values)
+
+                        except Exception as e:
+                            raise UserError(_("Error processing row %d: %s") % (
+                                row_index, str(e)))
+
+                    return {
+                        'type': 'ir.actions.client',
+                        'tag': 'display_notification',
+                        'params': {
+                            'title': _('Success'),
+                            'message': _('Products imported successfully'),
+                            'type': 'success',
+                            'sticky': False,
+                        }
+                    }
+
+                pass
+
+        except Exception as e:
             raise UserError(str(e))
+
+    def _get_or_create_category(self, category_name):
+        """Get existing category or create new one"""
+        if not category_name:
+            return self.env.ref('product.product_category_all').id
+
+        category = self.env['product.category'].search(
+            [('name', '=', category_name)], limit=1)
+        if not category:
+            category = self.env['product.category'].create(
+                {'name': category_name})
+        return category.id
+
+    def _get_uom(self, uom_name):
+        """Get UoM by name"""
+        if not uom_name:
+            return self.env.ref('uom.product_uom_unit').id
+
+        uom = self.env['uom.uom'].search([('name', '=', uom_name)], limit=1)
+        if not uom:
+            raise UserError(_("Invalid UoM: %s") % uom_name)
+        return uom.id
+
+    def _get_or_create_tax(self, tax_string):
+        """Get existing tax or create new one"""
+        if not tax_string or not tax_string.strip():
+            return False
+
+        try:
+            tax = self.env['account.tax'].search([('name', '=', tax_string)],
+                                                 limit=1)
+            if tax:
+                return tax.id
+
+            if ' ' in tax_string:
+                parts = tax_string.rsplit(' ',
+                                          1)
+                if len(parts) == 2:
+                    name, amount = parts
+                    try:
+                        amount = float(
+                            amount.replace('%', ''))
+                        tax = self.env['account.tax'].create({
+                            'name': name,
+                            'amount': amount,
+                            'type_tax_use': 'sale'
+                        })
+                        return tax.id
+                    except ValueError:
+                        tax = self.env['account.tax'].create({
+                            'name': tax_string,
+                            'amount': 0.0,
+                            'type_tax_use': 'sale'
+                        })
+                        return tax.id
+
+            tax = self.env['account.tax'].create({
+                'name': tax_string,
+                'amount': 0.0,
+                'type_tax_use': 'sale'
+            })
+            return tax.id
+        except Exception as e:
+            raise UserError(
+                _("Error processing tax '%s': %s") % (tax_string, str(e)))
+
+
+
+
+    def _get_selection_field_value(self, field_name, value):
+        """Get the technical value for selection fields"""
+        if not value:
+            return False
+
+        field = self.env['product.template']._fields[field_name]
+        for key, val in field.selection:
+            if val == value:
+                return key
+        return False
+
+    def _process_image(self, image_path):
+        """Process image from URL or file path"""
+        try:
+            if image_path.startswith(('http://', 'https://')):
+                response = requests.get(image_path.strip())
+                return base64.b64encode(response.content)
+            elif os.path.exists(image_path):
+                with open(image_path, 'rb') as image_file:
+                    return base64.b64encode(image_file.read())
+            return False
+        except:
+            return False
+
+    def _update_existing_product(self, vals, values):
+        """Update existing product based on reference or barcode"""
+        product = False
+        if values.get('Barcode'):
+            product = self.env['product.template'].search(
+                [('barcode', '=', values['Barcode'])], limit=1)
+        if not product and values.get('Internal Reference'):
+            product = self.env['product.template'].search(
+                [('default_code', '=', values['Internal Reference'])], limit=1)
+
+        if not product:
+            raise UserError(
+                _("No product found with the given barcode or internal reference"))
+
+        product.write(vals)
+        return product
+
+    def _create_product_variants(self, product, values):
+        """Create product variants from attributes and values"""
+        for attr_name in values['Variant Attributes'].split(','):
+            attribute = self.env['product.attribute'].search(
+                [('name', '=', attr_name.strip())], limit=1)
+            if not attribute:
+                raise UserError(_("Invalid attribute: %s") % attr_name)
+
+            value_names = [v.strip() for v in
+                           values['Attribute Values'].split(',')]
+            value_ids = []
+            for value_name in value_names:
+                value = self.env['product.attribute.value'].search([
+                    ('name', '=', value_name),
+                    ('attribute_id', '=', attribute.id)
+                ], limit=1)
+                if not value:
+                    raise UserError(
+                        _("Invalid attribute value: %s for attribute: %s") % (
+                        value_name, attr_name))
+                value_ids.append(value.id)
+
+            self.env['product.template.attribute.line'].create({
+                'product_tmpl_id': product.id,
+                'attribute_id': attribute.id,
+                'value_ids': [(6, 0, value_ids)]
+            })

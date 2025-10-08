@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Custom List View',
-    'version': '16.0.1.1.0',
+    'version': '16.0.1.2.0',
     'category': 'Extra Tools',
     'summary': 'Helps to Show Row Number, Fixed Header, Duplicate Record, '
                'Highlight Selected Record, Print and Copy Listview items',

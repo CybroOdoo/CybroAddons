@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies (<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies (<https://www.cybrosys.com>)
 #    Author: Jumana Jabin MP (odoo@cybrosys.com)
 #
 #    This program is free software: you can modify
@@ -44,7 +44,7 @@ class SalePack(models.Model):
                     self.order_line)
                 if not product_already_added:
                     new_order_lines.append((0, 0, {
-                        'product_id': rec.id,
+                        'product_id': rec._origin.id,
                         'name': rec.name,
                         'product_uom_qty': 1,
                         'price_unit': rec.pack_price,

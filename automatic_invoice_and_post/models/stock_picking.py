@@ -48,12 +48,13 @@ class StockPicking(models.Model):
             'automatic_invoice_and_post.is_create_invoice_delivery_validate')
         auto_send_invoice = self.env['ir.config_parameter'].sudo().get_param(
             'automatic_invoice_and_post.is_auto_send_invoice')
-        if auto_validate_invoice:
+        if auto_validate_invoice and res is True:
             if any(rec.product_id.invoice_policy == 'delivery' for rec in
                    self.move_ids) or not self.sale_id.invoice_ids:
                 # Call the _create_invoices function on the associated sale
                 # to create the invoice
-                invoice_created = self.sale_id._create_invoices(
+                invoice_created = self.sale_id.with_context(
+                    raise_if_nothing_to_invoice=False)._create_invoices(
                     self.sale_id) if self.sale_id else False
                 # Post the created invoice
                 if invoice_created:

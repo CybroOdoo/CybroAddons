@@ -64,14 +64,12 @@ class Home(WebHome):
             values['databases'] = None
 
         if request.httprequest.method == 'POST':
-            old_uid = request.uid
             try:
                 uid = request.session.authenticate(request.session.db, request.params['login'],
                                                    request.params['password'])
                 request.params['login_success'] = True
                 return request.redirect(self._login_redirect(uid, redirect=redirect))
             except odoo.exceptions.AccessDenied as e:
-                request.uid = old_uid
                 if e.args == odoo.exceptions.AccessDenied().args:
                     values['error'] = _("Wrong login/password")
                 else:
@@ -125,7 +123,6 @@ class Home(WebHome):
             encode = hashlib.md5(pycompat.to_text(attachments.url).encode("utf-8")).hexdigest()[0:7]
             encode_url = "/web/image/{}-{}".format(attachments.id, encode)
             values['bg_img'] = encode_url or ''
-
         if orientation == 'right':
             response = request.render('web_login_styles.login_template_right', values)
         elif orientation == 'left':

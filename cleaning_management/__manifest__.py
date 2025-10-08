@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Cleaning Management',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     "category": "Industries",
     'summary': """Cleaning Management with Online Booking System""",
     'description': """This module facilitates the booking of cleaning processes 

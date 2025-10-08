@@ -23,7 +23,7 @@
 
 {
     'name': 'POS Receipt Design',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': """Option to select the customised Receipts for each POS""",
     'description': "Option to select the customised Receipts for each POS",
     'category': 'Point of Sale',

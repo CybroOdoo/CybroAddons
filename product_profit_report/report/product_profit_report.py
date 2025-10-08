@@ -20,7 +20,7 @@
 #
 ################################################################################
 import datetime
-from odoo import api, models, _
+from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
 
@@ -53,6 +53,16 @@ class ProductProfitReport(models.AbstractModel):
                 dic_name = str(order.product_id.id)
                 quantity = order.quantity
                 price = quantity * (order.price_unit - order.discount)
+                if order.currency_id != order.company_currency_id:
+                    currency_rate = self.env[
+                        'res.currency']._get_conversion_rate(
+                        from_currency=order.currency_id,
+                        to_currency=order.company_currency_id,
+                        company=order.company_id,
+                        date=order.move_id.invoice_date or order.move_id.date or fields.Date.context_today(
+                            order))
+                    price = order.company_currency_id.round(
+                        price * currency_rate)
                 expense = order.product_id.get_history_price(
                     order.company_id.id,
                     date=order.move_id.invoice_date) * quantity

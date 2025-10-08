@@ -3,7 +3,7 @@
     :alt: License: AGPL-3
 
 WEB RESPONSIVE
-==============
+=======================
 This module adds responsiveness to web backend.
 
 Configuration
@@ -14,14 +14,9 @@ Company
 -------
 * `Cybrosys Techno Solutions <https://cybrosys.com/>`__
 
-License
--------
-General Public License, Version 3 (AGPL v3).
-(https://www.gnu.org/licenses/agpl-3.0-standalone.html)
-
 Credits
 -------
-Developer: (V16): Ramees Jaman KT @cybrosys,Contact : odoo@cybrosys.com
+Developer: (V16): Ramees Jaman KT @cybrosys,
 
 Contacts
 --------
@@ -38,6 +33,7 @@ Maintainer
    :target: https://cybrosys.com
 
 This module is maintained by Cybrosys Technologies.
+
 For support and more information, please visit `Our Website <https://cybrosys.com/>`__
 
 Further information

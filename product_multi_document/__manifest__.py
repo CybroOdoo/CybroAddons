@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Product Multi Document',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Purchases,Discuss',
     'summary': """Multiple documents can be added to a product with the help of 
                this module.""",

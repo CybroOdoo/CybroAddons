@@ -56,6 +56,12 @@ class ProductTemplate(models.Model):
                         self.env['ir.config_parameter'].sudo().get_param(
                             'low_stocks_product_alert.min_low_stock_alert')) \
                     else (True, '#fdc6c673')
+        elif self.env['ir.config_parameter'].sudo().get_param(
+                'low_stocks_product_alert.is_low_stock_alert_individual') and self.filtered(lambda x: x.product_variant_id.is_low_stock_alert):
+            for rec in self:
+                rec.alert_state, rec.color_field = (False, 'white') if \
+                    rec.detailed_type != 'product' or rec.qty_available > int(rec.product_variant_id.min_low_stock_alert) \
+                    else (True, '#fdc6c673')
         else:
             self.alert_state = False
             self.color_field = 'white'

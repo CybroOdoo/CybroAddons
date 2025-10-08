@@ -4,3 +4,8 @@
 #### Version 16.0.1.0.0
 #### ADD
 - Initial Commit for Infinito Plus Backend Theme
+
+#### 30.06.2025
+#### Version 16.0.1.0.1
+#### UPDT
+- Changed how files are accessed in controller's and model's, used a generalised method to fetch the files.

@@ -40,7 +40,7 @@ class ConfSettings(models.TransientModel):
                                                'is_upper')
     is_lower = fields.Boolean(string="Should have at least one "
                                      "lowercase character",
-                              config_parameter='user_password_strength.'
+                               config_parameter='user_password_strength.'
                                                'is_lower')
     is_special_symbol = fields.Boolean(string="Should have at least one "
                                               "special symbol",

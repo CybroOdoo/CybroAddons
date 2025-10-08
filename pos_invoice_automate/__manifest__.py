@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'POS Automate Invoice',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': """To manage the POS Invoice Automatically""",
     'description': """This module facilitates the automated sending of invoices
      to customers, along with the ability to schedule emails at specific 

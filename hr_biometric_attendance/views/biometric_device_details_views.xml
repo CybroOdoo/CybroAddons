@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Biometric device configuration tree view-->
+    <record id="biometric_device_details_view_tree" model="ir.ui.view">
+        <field name="name">biometric.device.details.view.tree</field>
+        <field name="model">biometric.device.details</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="device_ip"/>
+                <field name="port_number"/>
+            </tree>
+        </field>
+    </record>
+    <!--Biometric device configuration tree view-->
+    <record id="biometric_device_details_view_form" model="ir.ui.view">
+        <field name="name">biometric.device.details.view.form</field>
+        <field name="model">biometric.device.details</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_download_attendance"
+                            string="Download Data"
+                            type="object" class="oe_highlight" attrs="{'invisible':[('is_live_capture','=',True)]}"/>
+                    <button name="action_clear_attendance" string="Clear Data"
+                            type="object" class="oe_highlight"
+                            attrs="{'invisible':[('is_live_capture','=',True)]}"/>
+                    <button name="action_restart_device" string="Restart"
+                            type="object" class="oe_highlight"
+                            confirm="Are you sure you want Restart the Biometric Device?"/>
+                    <button name="action_live_capture" string="Live Capture"
+                            type="object" class="oe_highlight" attrs="{'invisible':[('is_live_capture','=',True)]}"/>
+                    <button name="action_stop_live_capture" string=" Stop Live Capture"
+                            type="object" class="btn btn-secondary" attrs="{'invisible':[('is_live_capture','=',False)]}"/>
+                    <button name="action_set_timezone" string=" Set Time"
+                            type="object" class="oe_highlight"/>
+                    <button name="%(hr_biometric_attendance.action_view_zk_user_management)d" string="User Management"
+                            type="action" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <div>
+                        <label for="is_live_capture" name="is_live_capture" string="Live Capture"/>
+                        <field name="is_live_capture" widget="boolean_toggle" string="Live Capture"/>
+                        <field name="stopwatch_time" widget="stopwatch" readonly="True"
+                               style="font-size: 15px; font-weight: 600;font-family: monospace;"
+                               attrs="{'invisible':[('is_live_capture','=',False)]}"/>
+                        <field name="live_capture_start_time" invisible="1"/>
+
+                    </div>
+                    <group>
+                        <field name="name"/>
+                        <field name="device_ip"/>
+                        <field name="port_number"/>
+                        <field name="address_id"/>
+
+                    </group>
+                    <button name="action_test_connection"
+                            type="object" class="btn btn-secondary">
+                        <i class="fa fa-fw o_button_icon fa-television"/>
+                        Test Connection
+                    </button>
+                    <notebook>
+                        <page string="Device Information">
+                            <group>
+                                <field name="device_name"/>
+                                <field name="device_firmware"/>
+                                <field name="device_serial_no"/>
+                                <field name="device_platform"/>
+                                <field name="device_mac"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--	Action for the biometric device-->
+    <record id="biometric_device_details_action" model="ir.actions.act_window">
+        <field name="name">Biometric Device</field>
+        <field name="res_model">biometric.device.details</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
