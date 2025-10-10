@@ -5,3 +5,9 @@
 #### ADD
 
 - Initial commit for Screen Positions in POS
+
+#### 07.10.2025
+#### Version 18.0.1.0.1
+#### ADD
+
+- Fixed bug in the Product Screen.

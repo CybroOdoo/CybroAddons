@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Screen Positions in POS',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Point of Sale',
     'summary': """To choose the position of the product screen""",
     'description': 'Using this module the cashier can change '
