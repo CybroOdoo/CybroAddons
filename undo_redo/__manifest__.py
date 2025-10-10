@@ -44,7 +44,7 @@
     },
     'post_init_hook': 'post_init_hook',
     'uninstall_hook': 'uninstall_hook',
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
