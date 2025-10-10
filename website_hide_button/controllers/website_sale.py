@@ -26,6 +26,30 @@ from odoo.addons.website_sale.controllers.main import WebsiteSale
 class WebsiteSaleInherit(WebsiteSale):
     """class to hide price, add to cart and quantity"""
 
+    def should_show_price_for_current_website(self):
+        """
+        Check if price should be SHOWN for the current website
+        Returns: True if price should be shown, False if should be hidden
+        """
+        # If hide_price setting is not enabled, show price
+        if not request.env['ir.config_parameter'].sudo().get_param('website_hide_button.hide_price'):
+            return True
+
+        hide_type = request.env['ir.config_parameter'].sudo().get_param('website_hide_button.hide_type')
+        website_ids_param = request.env['ir.config_parameter'].sudo().get_param('website_hide_button.website_ids') or ''
+        website_ids = [int(w) for w in website_ids_param.split(',') if w]
+        current_website = request.env['website'].get_current_website()
+
+        if hide_type == 'all':
+            # Hide price on ALL websites
+            return False
+        else:
+            # Hide price only on specific websites
+            if current_website.id in website_ids:
+                return False  # Hide on this website
+            else:
+                return True  # Show on other websites
+
     @http.route([
         '''/shop''',
         '''/shop/page/<int:page>''',
@@ -39,9 +63,9 @@ class WebsiteSaleInherit(WebsiteSale):
         res = super().shop(page, category, search, min_price,
                            max_price, ppg, **post)
         res.qcontext.update({
-            'login_user': True if request.env.user._is_public() and request.env[
-                'ir.config_parameter'].sudo().get_param(
-                'website_hide_button.hide_cart') else False
+            'login_user': request.env.user._is_public() and request.env[
+                'ir.config_parameter'].sudo().get_param('website_hide_button.hide_cart'),
+            'show_price': self.should_show_price_for_current_website()  # True = show, False = hide
         })
         return res
 
@@ -51,6 +75,7 @@ class WebsiteSaleInherit(WebsiteSale):
                                                                       category,
                                                                       search,
                                                                       **kwargs)
+        res['show_price'] =self.should_show_price_for_current_website()
         res['login_user'] = True if request.env.user._is_public() and \
                                     request.env[
                                         'ir.config_parameter'].sudo().get_param(
@@ -63,10 +88,7 @@ class WebsiteSaleInherit(WebsiteSale):
         creation will be disabled   """
         user = http.request.env.user
         if (
-                not user._is_public() or user._is_public() and not request.env.user._is_public() and not
-        request.env[
-            'ir.config_parameter'].sudo().get_param(
-            'website_hide_button.hide_cart')) and user.has_group(
+                not user._is_public() or user._is_public() and not request.env.user._is_public() and self.should_show_price_for_current_website()) and user.has_group(
             'base.group_portal') or \
                 user.has_group('base.group_user'):
             res = super(WebsiteSaleInherit, self).shop_payment(**post)

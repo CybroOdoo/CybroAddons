@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': "Hide Price, Add To Cart And Quantity Button In Website",
-    'version': '18.0.1.0.1',
+    'version': '18.0.1.0.2',
     'category': 'Website',
     'summary': """Hide Price, Add To Cart and Quantity button for guest
      users""",
@@ -32,7 +32,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['website_sale'],
+    'depends': ['website_sale','website_sale_comparison'],
     'data': [
         'views/product_templates.xml',
         'views/shop_templates.xml',

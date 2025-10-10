@@ -14,3 +14,8 @@
 #### Version 18.0.1.0.2
 #### UPDT
 - Commit for bug fix
+
+####  07.10.2025
+#### Version 18.0.1.0.3
+#### UPDT
+- Updated the workflow to include new options in Website Settings, with support for multiple websites.
