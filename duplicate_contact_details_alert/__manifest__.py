@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Duplicate Contact Details Alert",
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     "category": 'Extra Tools',
     'summary': """Duplicate Contact Details Alert""",
     'description': """Duplicate Contact Details Alert""",

@@ -36,7 +36,7 @@ class ResPartner(models.Model):
         if unique_contact_ids:
             fields_list = ast.literal_eval(unique_contact_ids)
             for x in fields_list:
-                contact_fields = self.env['ir.model.fields'].browse(x)
+                contact_fields = self.env['ir.model.fields'].sudo().browse(x)
                 field_vals = contact_fields.name
                 if vals.get(field_vals):
                     partner = self.env['res.partner'].search(
