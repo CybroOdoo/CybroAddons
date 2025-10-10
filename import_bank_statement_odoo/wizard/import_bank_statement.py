@@ -46,8 +46,7 @@ class ImportBankStatement(models.TransientModel):
     def action_statement_import(self):
         """Function to import csv, xlsx, ofx and qif file format"""
         split_tup = os.path.splitext(self.file_name)
-        if split_tup[1] == '.csv' or split_tup[1] == '.xlsx' or split_tup[
-            1] == '.ofx' or split_tup[1] == '.qif':
+        if split_tup[1] in ['.csv', '.xlsx', '.ofx', '.qif']:
             if split_tup[1] == '.csv':
                 # Reading csv file
                 try:
@@ -64,12 +63,11 @@ class ImportBankStatement(models.TransientModel):
                         continue
                     # Reading the content from csv file
                     if file_item.split(',') != ['']:
-                        if file_item.split(',')[0] and file_item.split(',')[1] \
-                                and file_item.split(',')[4]:
+                        if file_item.split(',')[0] and file_item.split(',')[
+                            1] and file_item.split(',')[4]:
                             date_obj = str(fields.date.today()) if not \
                                 file_item.split(',')[3] else \
-                                file_item.split(',')[
-                                    3]
+                            file_item.split(',')[3]
                             transaction_date = datetime.strptime(date_obj,
                                                                  "%Y-%m-%d")
                             partner = self.env['res.partner'].search(
@@ -78,8 +76,8 @@ class ImportBankStatement(models.TransientModel):
                             if partner:
                                 statement = self.env[
                                     'account.bank.statement'].create({
-                                     'name': file_item.split(',')[0],
-                                     'line_ids': [
+                                    'name': file_item.split(',')[0],
+                                    'line_ids': [
                                         (0, 0, {
                                             'date': transaction_date,
                                             'payment_ref': 'csv file',
@@ -98,16 +96,13 @@ class ImportBankStatement(models.TransientModel):
                                 raise ValidationError(
                                     _("Account name is not set"))
                             elif not file_item.split(',')[1]:
-                                raise ValidationError(
-                                    _("Amount is not set"))
+                                raise ValidationError(_("Amount is not set"))
                             elif not file_item.split(',')[4]:
                                 date_obj = str(fields.date.today()) if not \
                                     file_item.split(',')[3] else \
-                                    file_item.split(',')[
-                                        3]
+                                    file_item.split(',')[3]
                                 transaction_date = datetime.strptime(date_obj,
                                                                      "%Y-%m-%d")
-                                # Creating a record in account.bank.statement model
                                 statement = self.env[
                                     'account.bank.statement'].create({
                                     'name': file_item.split(',')[0],
@@ -116,8 +111,7 @@ class ImportBankStatement(models.TransientModel):
                                             'date': transaction_date,
                                             'payment_ref': 'csv file',
                                             'journal_id': self.journal_id.id,
-                                            'amount': file_item.split(',')[
-                                                1],
+                                            'amount': file_item.split(',')[1],
                                             'amount_currency':
                                                 file_item.split(',')[2],
                                         }),
@@ -130,6 +124,7 @@ class ImportBankStatement(models.TransientModel):
                     'res_model': 'account.bank.statement',
                     'res_id': statement.id,
                 }
+
             elif split_tup[1] == '.xlsx':
                 # Reading xlsx file
                 try:
@@ -138,23 +133,39 @@ class ImportBankStatement(models.TransientModel):
                     xl_order = order.active
                 except:
                     raise ValidationError(_("Choose correct file"))
+
                 for record in xl_order.iter_rows(min_row=2, max_row=None,
-                                                 min_col=None,
-                                                 max_col=None,
+                                                 min_col=None, max_col=None,
                                                  values_only=True):
                     line = list(record)
                     # Reading the content from file
                     if line[0] and line[1] and line[3]:
                         partner = self.env['res.partner'].search(
                             [('name', '=', line[3])])
-                        date_obj = fields.date.today() if not line[2] else \
-                            line[2].date()
+
+                        if not line[2]:
+                            date_obj = fields.Date.today()
+                        else:
+                            if isinstance(line[2], str):
+                                # Try multiple date formats (e.g. 2025-09-20 or 20/09/2025)
+                                try:
+                                    date_obj = datetime.strptime(line[2],
+                                                                 "%Y-%m-%d").date()
+                                except ValueError:
+                                    date_obj = datetime.strptime(line[2],
+                                                                 "%d/%m/%Y").date()
+                            else:
+                                # If it's datetime/datetime64
+                                date_obj = line[2] if isinstance(line[2],
+                                                                 date) else \
+                                    line[2].date()
+
                         # Creating record
                         if partner:
                             statement = self.env[
                                 'account.bank.statement'].create({
-                                 'name': line[0],
-                                 'line_ids': [
+                                'name': line[0],
+                                'line_ids': [
                                     (0, 0, {
                                         'date': date_obj,
                                         'payment_ref': 'xlsx file',
@@ -162,21 +173,30 @@ class ImportBankStatement(models.TransientModel):
                                         'journal_id': self.journal_id.id,
                                         'amount': line[1],
                                     }),
-                                 ],
-                                })
+                                ],
+                            })
                         else:
                             raise ValidationError(_("Partner not exist"))
                     else:
                         if not line[0]:
-                            raise ValidationError(
-                                _("Account name is not set"))
+                            raise ValidationError(_("Account name is not set"))
                         elif not line[1]:
-                            raise ValidationError(
-                                _("Amount is not set"))
+                            raise ValidationError(_("Amount is not set"))
                         elif not line[3]:
-                            date_obj = fields.date.today() if not line[2] else \
-                                line[2].date()
-                            # Creating record
+                            if not line[2]:
+                                date_obj = fields.Date.today()
+                            else:
+                                if isinstance(line[2], str):
+                                    try:
+                                        date_obj = datetime.strptime(line[2],
+                                                                     "%Y-%m-%d").date()
+                                    except ValueError:
+                                        date_obj = datetime.strptime(line[2],
+                                                                     "%d/%m/%Y").date()
+                                else:
+                                    date_obj = line[2] if isinstance(line[2],
+                                                                     date) else \
+                                        line[2].date()
                             statement = self.env[
                                 'account.bank.statement'].create({
                                 'name': line[0],
@@ -196,6 +216,7 @@ class ImportBankStatement(models.TransientModel):
                     'res_model': 'account.bank.statement',
                     'res_id': statement.id,
                 }
+
             elif split_tup[1] == '.ofx':
                 # Searching the path of the file
                 file_attachment = self.env["ir.attachment"].search(
@@ -218,34 +239,21 @@ class ImportBankStatement(models.TransientModel):
                 if not ofx_file.account.statement:
                     raise ValidationError(
                         _("No statement information found in OFX file."))
+
                 statement_list = []
-                # Reading the content from file
                 for transaction in ofx_file.account.statement.transactions:
-                    if transaction.type == "debit" and transaction.amount != 0:
+                    if transaction.type in ["debit",
+                                            "credit"] and transaction.amount != 0:
                         payee = transaction.payee
                         amount = transaction.amount
-                        date = transaction.date
-                        if not date:
-                            date = fields.date.today()
+                        date = transaction.date or fields.Date.today()
                         partner = self.env['res.partner'].search(
                             [('name', '=', payee)])
                         if partner:
                             statement_list.append([partner.id, amount, date])
                         else:
                             raise ValidationError(_("Partner not exist"))
-                    if transaction.type == "credit" and transaction.amount != 0:
-                        payee = transaction.payee
-                        amount = transaction.amount
-                        date = transaction.date
-                        if not date:
-                            date = fields.date.today()
-                        partner = self.env['res.partner'].search(
-                            [('name', '=', payee)])
-                        if partner:
-                            statement_list.append([partner.id, amount, date])
-                        else:
-                            raise ValidationError(_("Partner not exist"))
-                # Creating record
+
                 if statement_list:
                     for item in statement_list:
                         statement = self.env['account.bank.statement'].create({
@@ -269,6 +277,7 @@ class ImportBankStatement(models.TransientModel):
                     }
                 else:
                     raise ValidationError(_("There is no data to import"))
+
             elif split_tup[1] == '.qif':
                 # Searching the path of qif file
                 file_attachment = self.env["ir.attachment"].search(
@@ -286,23 +295,24 @@ class ImportBankStatement(models.TransientModel):
                         qif = parser.parse(qiffile)
                 except:
                     raise ValidationError(_("Wrong file format"))
+
                 file_string = str(qif)
                 file_item = file_string.split('^')
                 file_item[-1] = file_item[-1].rstrip('\n')
                 if file_item[-1] == '':
                     file_item.pop()
+
                 statement_list = []
                 for item in file_item:
                     if not item.startswith('!Type:Bank'):
                         item = '!Type:Bank' + item
                     data = item.split('\n')
-                    # Reading the file content
                     date_entry = data[1][1:]
                     amount = float(data[2][1:])
                     payee = data[3][1:]
                     if amount and payee:
                         if not date_entry:
-                            date_entry = str(fields.date.today())
+                            date_entry = str(fields.Date.today())
                         date_object = datetime.strptime(date_entry, '%d/%m/%Y')
                         date = date_object.strftime('%Y-%m-%d')
                         statement_list.append([payee, amount, date])
@@ -311,7 +321,7 @@ class ImportBankStatement(models.TransientModel):
                             raise ValidationError(_("Amount is not set"))
                         elif not payee:
                             raise ValidationError(_("Payee is not set"))
-                # Creating record
+
                 if statement_list:
                     for item in statement_list:
                         statement = self.env['account.bank.statement'].create({
