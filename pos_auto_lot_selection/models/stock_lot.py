@@ -30,30 +30,89 @@ class StockLot(models.Model):
                               help='If enables this lot number is taken')
 
     @api.model
-    def get_available_lots_for_pos(self, product_id):
-        """Get available lots for a product suitable for the Point of Sale
-        (PoS).This method retrieves the available lots for a specific product
-        that are suitable for the Point of Sale (PoS) based on the configured
-        removal strategy. The lots are sorted based on the expiration date or
-        creation date,depending on the removal strategy."""
-        company_id = self.env.company.id
-        removal_strategy_id = (self.env['product.template'].browse(
-            self.env['product.product'].browse(product_id).product_tmpl_id.id)
-                               .categ_id.removal_strategy_id.method)
-        if removal_strategy_id == 'fefo':
-            lots = self.sudo().search(
-                ["&", ["product_id", "=", product_id],"&",["is_taken","=",False],
-                 "|", ["company_id", "=", company_id],
-                 ["company_id", "=", False]],
-                order='expiration_date asc')
+    def check_product_stock_in_location(self, product_id, location_id):
+        """Check if product has positive stock in the given location"""
+        product = self.env['product.product'].browse(product_id)
+
+        # Get on hand quantity using Odoo's built-in method
+        stock_quant = self.env['stock.quant'].search([
+            ('product_id', '=', product_id),
+            ('location_id', '=', location_id)
+        ])
+
+        total_qty = sum(stock_quant.mapped('quantity'))
+
+        return {
+            'has_positive_stock': total_qty > 0,
+            'total_quantity': total_qty
+        }
+
+    @api.model
+    def get_available_lots_for_pos(self, product_id, pos_config_id=None):
+        """Get available lots for a product in POS location"""
+
+        # Get POS location
+        if pos_config_id:
+            pos_config = self.env['pos.config'].browse(pos_config_id)
+            location_id = pos_config.picking_type_id.default_location_src_id.id
         else:
-            lots = self.sudo().search(
-                ["&", ["product_id", "=", product_id], "|",
-                 ["company_id", "=", company_id],
-                 ["company_id", "=", False], ],
-                order='create_date asc')
-        lots = lots.filtered(lambda l: float_compare(
-            l.product_qty, 0,
-            precision_digits=l.product_uom_id.rounding) > 0)[:1]
-        lots.is_taken = True
-        return lots.mapped("name")
+            pos_session = self.env['pos.session'].search([
+                ('state', '=', 'opened'),
+                ('user_id', '=', self.env.uid)
+            ], limit=1)
+            if pos_session:
+                location_id = pos_session.config_id.picking_type_id.default_location_src_id.id
+            else:
+                return {'has_positive_stock': False, 'lots': []}
+
+        # Check total stock in location
+        stock_check = self.check_product_stock_in_location(product_id, location_id)
+
+        # If no positive stock, return immediately
+        if not stock_check['has_positive_stock']:
+            return {
+                'has_positive_stock': False,
+                'total_quantity': stock_check['total_quantity'],
+                'lots': []
+            }
+
+        # Stock is positive, get lots with FEFO/FIFO
+        product = self.env['product.product'].browse(product_id)
+        company_id = self.env.company.id
+        removal_strategy = product.product_tmpl_id.categ_id.removal_strategy_id.method or 'fifo'
+
+        # Get all lots for this product
+        lot_domain = [
+            ('product_id', '=', product_id),
+            '|', ('company_id', '=', company_id), ('company_id', '=', False)
+        ]
+
+        if removal_strategy == 'fefo':
+            lots = self.sudo().search(lot_domain, order='expiration_date asc')
+        else:
+            lots = self.sudo().search(lot_domain, order='create_date asc')
+
+        # Get lots with positive quantity in the location
+        available_lots = []
+        for lot in lots:
+            quants = self.env['stock.quant'].sudo().search([
+                ('lot_id', '=', lot.id),
+                ('location_id', '=', location_id),
+                ('product_id', '=', product_id)
+            ])
+
+            lot_qty = sum(quants.mapped('quantity'))
+
+            if lot_qty > 0:
+                available_lots.append({
+                    'lot_name': lot.name,
+                    'lot_id': lot.id,
+                    'available_qty': lot_qty,
+                    'expiration_date': str(lot.expiration_date) if lot.expiration_date else False,
+                })
+
+        return {
+            'has_positive_stock': True,
+            'total_quantity': stock_check['total_quantity'],
+            'lots': available_lots
+        }
