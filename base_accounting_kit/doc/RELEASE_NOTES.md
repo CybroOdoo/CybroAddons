@@ -44,3 +44,8 @@
 #### Version 18.0.4.0.6
 #### FIX
 - Updated the generation of asset entry when the compute depreciation button click.
+
+#### 13.10.2025
+#### Version 18.0.5.0.6
+#### UPDT
+- Added Customer Statement feature.
