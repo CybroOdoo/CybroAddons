@@ -6,16 +6,13 @@ import { useService } from "@web/core/utils/hooks";
 
 patch(OrderReceipt.prototype, {
     setup(){
-        console.log('setupp')
         super.setup();
         this.state = useState({
             template: true,
         })
         this.pos = useState(useService("pos"));
-
     },
     get templateProps() {
-            console.log('templateProps')
         return {
             data: this.props.data,
             order: this.pos.get_order(),
@@ -25,7 +22,6 @@ patch(OrderReceipt.prototype, {
         };
     },
     get templateComponent() {
-                console.log('templateComponent')
         var mainRef = this;
         return class extends Component {
             setup() {}
@@ -33,10 +29,9 @@ patch(OrderReceipt.prototype, {
         };
     },
     get isTrue() {
-                console.log('isTrue')
         if (this.env.services.pos.config.is_custom_receipt == false) {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 });
