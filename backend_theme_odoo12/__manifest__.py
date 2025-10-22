@@ -21,7 +21,7 @@
 #############################################################################
 {
     "name": "Blueberry Backend Theme",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0.1",
     "category": "Themes/Backend",
     "summary": """Backend theme for Odoo 18.0 community edition""",
     "description": "Blueberry Backend Theme Is A Ultimate Theme for Odoo 17."
@@ -34,7 +34,6 @@
         'web.assets_backend': [
             '/backend_theme_odoo12/static/src/scss/theme_style_backend.scss',
             '/backend_theme_odoo12/static/src/js/search_apps.js',
-            '/backend_theme_odoo12/static/src/js/sidebar_menu.js',
             '/backend_theme_odoo12/static/src/xml/sidebar_menu_templates.xml',
         ],
         'web.assets_frontend': [

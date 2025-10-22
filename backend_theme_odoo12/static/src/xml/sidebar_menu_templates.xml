@@ -3,7 +3,7 @@
     <t t-inherit="web.NavBar" t-inherit-mode="extension" owl="1">
         <xpath expr="//nav[hasclass('o_main_navbar')]" position="after">
             <!-- Advanced Sidebar for app search  -->
-            <div class="sidebar_panel" id="sidebar_panel" t-ref="side_root">
+            <div class="sidebar_panel" id="sidebar_panel">
                 <div class="sidebar">
                     <div class="search-container form-row align-items-center m-auto mb-5 col-12"
                          style="padding-top: 32px;">
@@ -18,9 +18,25 @@
                                 <input type="search"
                                        autocomplete="off"
                                        placeholder="Search menus..."
+                                       t-ref="searchInput"
                                        class="form-control"/>
                             </div>
                         </div>
+
+                        <div class="search-results col-md-12 ml-auto mr-auto"
+                             t-attf-class="{{ !searchState.showResults ? 'o_hidden' : '' }}"
+                            >
+                            <t t-foreach="searchState.searchResults" t-as="result" t-key="result.id">
+                                <p class="search-items">
+                                    <a t-att-data-tooltip-info="result.name"
+                                       style="color: #ffffff !important"
+                                       t-att-href="getMenuUrl(result.actionID, result.id)"
+                                       t-on-click="clickSidebar"
+                                       t-esc="result.name"/>
+                                </p>
+                            </t>
+                        </div>
+
                         <div class="search-results col-md-10 ml-auto mr-auto"/></div>
                     <ul class="sidebar_menu">
                         <t t-foreach="menuService.getApps()" t-as="app"
@@ -32,7 +48,8 @@
                                    t-att-data-menu-id="app.menuID"
                                    t-att-data-menu-xmlid="app.xmlID"
                                    t-att-data-action-id="app.actionID">
-                                    <img t-att-title="app.name" style="height: 3em;" t-if="app.webIconData" class="o_app_icon me-2" t-attf-src="{{app.webIconData}}"/>
+                                    <img t-att-title="app.name" style="height: 3em;" t-if="app.webIconData"
+                                         class="o_app_icon me-2" t-attf-src="{{app.webIconData}}"/>
                                     <b class="a_app_menu_title">
                                         <t t-esc="app.name"/>
                                     </b>
@@ -57,20 +74,5 @@
                 </a>
             </li>
         </xpath>
-    </t>
-    <!--    view for search result -->
-    <t t-name="backend_theme_odoo12.SearchResults">
-        <t t-foreach="results" t-as="result">
-            <t t-log="this"/>
-            <div class="search_icons">
-                <a t-attf-class="o-menu-search-result dropdown-item
-                   col-12 ml-auto mr-auto #{result_first ? 'active' : ''}"
-                   t-attf-style="background-image:url('data:image/png;base64,#{result.webIconData}')"
-                   t-att-data-menu-id="result.id"
-                   t-att-data-action-id="result.actionID"
-                   t-raw="result.name"
-                />
-            </div>
-        </t>
     </t>
 </templates>
