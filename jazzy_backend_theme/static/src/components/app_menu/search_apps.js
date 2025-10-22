@@ -14,6 +14,7 @@ patch(NavBar.prototype, {
         this._search_def = this.createDeferred();
         this.search_container = useRef("search-container");
         this.search_input = useRef("search-input");
+        this.menuServices = useService("menu");
         this.search_result = useRef("search-results");
         this.app_menu = useRef("app-menu");
         this.sidebar_panel = useRef("sidebar_panel");
@@ -144,16 +145,8 @@ patch(NavBar.prototype, {
                 navChild[i].classList.add('d-block');
             }
         }
-
         if (menu) {
-            this.menuService.selectMenu(menu)
-                .then(() => {
-                    // Trigger page refresh after the menu is loaded
-                    location.reload();
-                })
-                .catch(err => {
-                    console.error('Menu navigation failed:', err);
-                });
+            this.menuServices.selectMenu(menu.id);
         }
     },
     OnClickMainMenu() {

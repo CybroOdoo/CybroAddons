@@ -21,7 +21,7 @@
 #############################################################################
 {
     "name": "Jazzy Backend Theme",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0.1",
     "category": "Themes/Backend",
     "summary": "Jazzy backed Theme is an attractive theme for backend",
     "description": """Minimalist and elegant backend theme for Odoo Backend""",
