@@ -11,7 +11,6 @@ let monthNamesShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "
 
 class TrialBalance extends owl.Component {
     async setup() {
-        super.setup(...arguments);
         this.initial_render = true;
         this.orm = useService('orm');
         this.action = useService('action');
@@ -44,7 +43,6 @@ class TrialBalance extends owl.Component {
                     },
         });
         this.load_data(self.initial_render = true);
-
     }
     async load_data() {
         /**
@@ -341,6 +339,27 @@ class TrialBalance extends owl.Component {
     getDomain() {
         return [];
     }
+
+    normalizeReportData(rawData) {
+        // 1️⃣ If rawData is nested (like [[{...}, {...}], {...}]), flatten it
+        let accounts = Array.isArray(rawData) && Array.isArray(rawData[0])
+            ? rawData[0]  // extract the inner array
+            : rawData;
+
+        // 2️⃣ Ensure numeric fields are actual numbers, not strings
+        accounts = accounts.map(acc => ({
+            ...acc,
+            initial_total_debit: Number(acc.initial_total_debit) || 0,
+            initial_total_credit: Number(acc.initial_total_credit) || 0,
+            total_debit: Number(acc.total_debit) || 0,
+            total_credit: Number(acc.total_credit) || 0,
+            end_total_debit: Number(acc.end_total_debit) || 0,
+            end_total_credit: Number(acc.end_total_credit) || 0
+        }));
+
+        return accounts;
+    }
+
     async printPdf(ev) {
         /**
          * Asynchronously generates and prints a PDF report.
@@ -366,7 +385,7 @@ class TrialBalance extends owl.Component {
             'report_name': 'dynamic_accounts_report.trial_balance',
             'report_file': 'dynamic_accounts_report.trial_balance',
             'data': {
-                'data': self.state.data,
+                'data': this.normalizeReportData(self.state.data),
                 'date_viewed': data_viewed,
                 'filters': this.filter(),
                 'apply_comparison': self.state.apply_comparison,
@@ -381,25 +400,25 @@ class TrialBalance extends owl.Component {
     var self=this;
     let startDate, endDate;
     let startYear, startMonth, startDay, endYear, endMonth, endDay;
-        if (self.state.date_range){
+        if (self.state.date_type){
             const today = new Date();
-            if (self.state.date_range === 'year') {
+            if (self.state.date_type === 'year') {
                 startDate = new Date(today.getFullYear(), 0, 1);
                 endDate = new Date(today.getFullYear(), 11, 31);
-            } else if (self.state.date_range === 'quarter') {
+            } else if (self.state.date_type === 'quarter') {
                 const currentQuarter = Math.floor(today.getMonth() / 3);
                 startDate = new Date(today.getFullYear(), currentQuarter * 3, 1);
                 endDate = new Date(today.getFullYear(), (currentQuarter + 1) * 3, 0);
-            } else if (self.state.date_range === 'month') {
+            } else if (self.state.date_type === 'month') {
                 startDate = new Date(today.getFullYear(), today.getMonth(), 1);
                 endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-            } else if (self.state.date_range === 'last-month') {
+            } else if (self.state.date_type === 'last-month') {
                 startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
                 endDate = new Date(today.getFullYear(), today.getMonth(), 0);
-            } else if (self.state.date_range === 'last-year') {
+            } else if (self.state.date_type === 'last-year') {
                 startDate = new Date(today.getFullYear() - 1, 0, 1);
                 endDate = new Date(today.getFullYear() - 1, 11, 31);
-            } else if (self.state.date_range === 'last-quarter') {
+            } else if (self.state.date_type === 'last-quarter') {
                 const lastQuarter = Math.floor((today.getMonth() - 3) / 3);
                 startDate = new Date(today.getFullYear(), lastQuarter * 3, 1);
                 endDate = new Date(today.getFullYear(), (lastQuarter + 1) * 3, 0);
@@ -450,7 +469,7 @@ class TrialBalance extends owl.Component {
         var self = this;
         var action_title = self.props.action.display_name;
         var datas = {
-            'data': self.state.data,
+            'data': this.normalizeReportData(self.state.data),
             'date_viewed': self.state.date_viewed,
             'filters': this.filter(),
             'apply_comparison': self.state.apply_comparison,

@@ -421,7 +421,7 @@ class AccountTrialBalance(models.TransientModel):
         if data:
             if report_action == 'dynamic_accounts_report.action_trial_balance':
                 row = 11
-                for move_line in data['data'][0]:
+                for move_line in data['data']:
                     sheet.write(row, col, move_line['account'],
                                 side_heading_sub)
                     sheet.write(row, col + 1, move_line['initial_total_debit'],

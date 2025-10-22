@@ -24,4 +24,8 @@
 #### Version 18.0.1.2.4
 #### UPDT
 - Bug Fixing in the accounting report (Trial Balance).
-- 
+
+#### 15.10.2025
+#### Version 18.0.1.2.5
+#### UPDT
+- Bug Fixing in the accounting report (Trial Balance).
