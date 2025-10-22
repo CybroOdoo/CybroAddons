@@ -1,5 +1,5 @@
 .. image:: https://img.shields.io/badge/license-OPL--1-red.svg
-    :target: https://www.odoo.com/documentation/16.0/legal/licenses.html#odoo-apps
+    :target: https://www.odoo.com/documentation/18.0/legal/licenses.html#odoo-apps
     :alt: License: OPL-1
 
 Account Report Send By Mail

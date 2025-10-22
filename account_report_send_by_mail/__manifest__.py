@@ -22,7 +22,7 @@
 ################################################################################
 {
     'name': 'Account Report Send By Mail',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.1.0',
     'category': 'Accounting',
     'summary': "Create account report based on user requirements and send it "
                "by mail",
