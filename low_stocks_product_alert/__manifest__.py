@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Product Low Stock Alert",
-    'version': '18.0.1.0.0',
+    'version': '18.0.2.0.1',
     "category": 'Warehouse,Point of Sale',
     'summary': """Product Low Stock Alert Display in Point of Sale and 
     Product Views""",

@@ -53,7 +53,7 @@ class ProductTemplate(models.Model):
         for rec in self:
             if stock_alert:
                 rec.alert_state, rec.color_field = (False, 'white') if \
-                    rec.type != 'consu' or rec.qty_available > int(
+                    not rec.is_storable or rec.qty_available > int(
                         rec.env['ir.config_parameter'].sudo().get_param(
                             'low_stocks_product_alert.min_low_stock_alert')) \
                     else (True, '#fdc6c673')

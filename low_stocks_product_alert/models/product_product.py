@@ -46,7 +46,7 @@ class ProductProduct(models.Model):
             'low_stocks_product_alert.is_low_stock_alert')
         for rec in self:
             if stock_alert:
-                is_low_stock = True if rec.type == 'consu' and rec.qty_available <= int(
+                is_low_stock = True if rec.is_storable and rec.qty_available <= int(
                     self.env['ir.config_parameter'].sudo().get_param(
                         'low_stocks_product_alert.min_low_stock_alert')) else False
                 rec.alert_tag = rec.qty_available if is_low_stock else False
