@@ -47,76 +47,55 @@ class ImportBankStatement(models.TransientModel):
         """Function to import csv, xlsx, ofx and qif file format"""
         split_tup = os.path.splitext(self.file_name)
         if split_tup[1] in ['.csv', '.xlsx', '.ofx', '.qif']:
+            # ----------------------- CSV Import -----------------------
             if split_tup[1] == '.csv':
-                # Reading csv file
                 try:
                     file = base64.b64decode(self.attachment)
                     file_string = file.decode('utf-8')
                     file_string = file_string.split('\n')
                 except:
                     raise ValidationError(_("Choose correct file"))
-                # Skipping the first line
                 firstline = True
                 for file_item in file_string:
                     if firstline:
                         firstline = False
                         continue
-                    # Reading the content from csv file
                     if file_item.split(',') != ['']:
-                        if file_item.split(',')[0] and file_item.split(',')[
-                            1] and file_item.split(',')[4]:
-                            date_obj = str(fields.date.today()) if not \
-                                file_item.split(',')[3] else \
-                            file_item.split(',')[3]
+                        cols = file_item.split(',')
+                        # Expected columns:
+                        # Reference, Amount, Date, Partner Name, Start Bal, End Bal
+                        if len(cols) < 6:
+                            continue
+                        ref, amount, date_str, partner_name, start_bal, end_bal = cols[
+                                                                                  :6]
+                        if ref and amount and partner_name:
+                            date_obj = str(
+                                fields.date.today()) if not date_str else date_str
                             transaction_date = datetime.strptime(date_obj,
                                                                  "%Y-%m-%d")
                             partner = self.env['res.partner'].search(
-                                [('name', '=', file_item.split(',')[4])])
-                            # Creating a record in account.bank.statement model
+                                [('name', '=', partner_name)])
+                            start_balance = float(
+                                start_bal) if start_bal else 0.0
+                            end_balance = float(end_bal) if end_bal else 0.0
                             if partner:
                                 statement = self.env[
                                     'account.bank.statement'].create({
-                                    'name': file_item.split(',')[0],
+                                    'name': ref,
+                                    'balance_start': start_balance,
+                                    'balance_end_real': end_balance,
                                     'line_ids': [
                                         (0, 0, {
                                             'date': transaction_date,
                                             'payment_ref': 'csv file',
                                             'partner_id': partner.id,
                                             'journal_id': self.journal_id.id,
-                                            'amount': file_item.split(',')[1],
-                                            'amount_currency':
-                                                file_item.split(',')[2],
+                                            'amount': amount,
                                         }),
                                     ],
                                 })
                             else:
                                 raise ValidationError(_("Partner not exist"))
-                        else:
-                            if not file_item.split(',')[0]:
-                                raise ValidationError(
-                                    _("Account name is not set"))
-                            elif not file_item.split(',')[1]:
-                                raise ValidationError(_("Amount is not set"))
-                            elif not file_item.split(',')[4]:
-                                date_obj = str(fields.date.today()) if not \
-                                    file_item.split(',')[3] else \
-                                    file_item.split(',')[3]
-                                transaction_date = datetime.strptime(date_obj,
-                                                                     "%Y-%m-%d")
-                                statement = self.env[
-                                    'account.bank.statement'].create({
-                                    'name': file_item.split(',')[0],
-                                    'line_ids': [
-                                        (0, 0, {
-                                            'date': transaction_date,
-                                            'payment_ref': 'csv file',
-                                            'journal_id': self.journal_id.id,
-                                            'amount': file_item.split(',')[1],
-                                            'amount_currency':
-                                                file_item.split(',')[2],
-                                        }),
-                                    ],
-                                })
                 return {
                     'type': 'ir.actions.act_window',
                     'name': 'Statements',
@@ -125,8 +104,8 @@ class ImportBankStatement(models.TransientModel):
                     'res_id': statement.id,
                 }
 
+            # ----------------------- XLSX Import -----------------------
             elif split_tup[1] == '.xlsx':
-                # Reading xlsx file
                 try:
                     order = openpyxl.load_workbook(
                         filename=BytesIO(base64.b64decode(self.attachment)))
@@ -134,81 +113,52 @@ class ImportBankStatement(models.TransientModel):
                 except:
                     raise ValidationError(_("Choose correct file"))
 
-                for record in xl_order.iter_rows(min_row=2, max_row=None,
-                                                 min_col=None, max_col=None,
-                                                 values_only=True):
+                for record in xl_order.iter_rows(min_row=2, values_only=True):
+                    # Expected columns:
+                    # Reference, Amount, Date, Partner Name, Start Bal, End Bal
                     line = list(record)
-                    # Reading the content from file
-                    if line[0] and line[1] and line[3]:
-                        partner = self.env['res.partner'].search(
-                            [('name', '=', line[3])])
+                    ref, amount, date_val, partner_name, start_bal, end_bal = \
+                        line + [None] * (6 - len(line))  # ensure 6 items
 
-                        if not line[2]:
+                    if ref and amount and partner_name:
+                        partner = self.env['res.partner'].search(
+                            [('name', '=', partner_name)])
+                        # Handle date formats
+                        if not date_val:
                             date_obj = fields.Date.today()
                         else:
-                            if isinstance(line[2], str):
-                                # Try multiple date formats (e.g. 2025-09-20 or 20/09/2025)
+                            if isinstance(date_val, str):
                                 try:
-                                    date_obj = datetime.strptime(line[2],
+                                    date_obj = datetime.strptime(date_val,
                                                                  "%Y-%m-%d").date()
                                 except ValueError:
-                                    date_obj = datetime.strptime(line[2],
+                                    date_obj = datetime.strptime(date_val,
                                                                  "%d/%m/%Y").date()
                             else:
-                                # If it's datetime/datetime64
-                                date_obj = line[2] if isinstance(line[2],
-                                                                 date) else \
-                                    line[2].date()
+                                date_obj = date_val if isinstance(date_val,
+                                                                  date) else date_val.date()
 
-                        # Creating record
+                        start_balance = float(start_bal) if start_bal else 0.0
+                        end_balance = float(end_bal) if end_bal else 0.0
+
                         if partner:
                             statement = self.env[
                                 'account.bank.statement'].create({
-                                'name': line[0],
+                                'name': ref,
+                                'balance_start': start_balance,
+                                'balance_end_real': end_balance,
                                 'line_ids': [
                                     (0, 0, {
                                         'date': date_obj,
                                         'payment_ref': 'xlsx file',
                                         'partner_id': partner.id,
                                         'journal_id': self.journal_id.id,
-                                        'amount': line[1],
+                                        'amount': amount,
                                     }),
                                 ],
                             })
                         else:
                             raise ValidationError(_("Partner not exist"))
-                    else:
-                        if not line[0]:
-                            raise ValidationError(_("Account name is not set"))
-                        elif not line[1]:
-                            raise ValidationError(_("Amount is not set"))
-                        elif not line[3]:
-                            if not line[2]:
-                                date_obj = fields.Date.today()
-                            else:
-                                if isinstance(line[2], str):
-                                    try:
-                                        date_obj = datetime.strptime(line[2],
-                                                                     "%Y-%m-%d").date()
-                                    except ValueError:
-                                        date_obj = datetime.strptime(line[2],
-                                                                     "%d/%m/%Y").date()
-                                else:
-                                    date_obj = line[2] if isinstance(line[2],
-                                                                     date) else \
-                                        line[2].date()
-                            statement = self.env[
-                                'account.bank.statement'].create({
-                                'name': line[0],
-                                'line_ids': [
-                                    (0, 0, {
-                                        'date': date_obj,
-                                        'payment_ref': 'xlsx file',
-                                        'journal_id': self.journal_id.id,
-                                        'amount': line[1],
-                                    }),
-                                ],
-                            })
                 return {
                     'type': 'ir.actions.act_window',
                     'name': 'Statements',
@@ -217,8 +167,8 @@ class ImportBankStatement(models.TransientModel):
                     'res_id': statement.id,
                 }
 
+            # ----------------------- OFX Import -----------------------
             elif split_tup[1] == '.ofx':
-                # Searching the path of the file
                 file_attachment = self.env["ir.attachment"].search(
                     ['|', ('res_field', '!=', False),
                      ('res_field', '=', False),
@@ -227,20 +177,19 @@ class ImportBankStatement(models.TransientModel):
                     limit=1)
                 file_path = file_attachment._full_path(
                     file_attachment.store_fname)
-                # Parsing the file
                 try:
                     with codecs.open(file_path) as fileobj:
                         ofx_file = OfxParser.parse(fileobj)
                 except:
                     raise ValidationError(_("Wrong file format"))
-                if not ofx_file.account:
+                if not ofx_file.account or not ofx_file.account.statement:
                     raise ValidationError(
-                        _("No account information found in OFX file."))
-                if not ofx_file.account.statement:
-                    raise ValidationError(
-                        _("No statement information found in OFX file."))
+                        _("OFX file missing account or statement info"))
 
                 statement_list = []
+                start_balance = ofx_file.account.statement.balance or 0.0
+                end_balance = ofx_file.account.statement.balance_end or 0.0
+
                 for transaction in ofx_file.account.statement.transactions:
                     if transaction.type in ["debit",
                                             "credit"] and transaction.amount != 0:
@@ -258,6 +207,8 @@ class ImportBankStatement(models.TransientModel):
                     for item in statement_list:
                         statement = self.env['account.bank.statement'].create({
                             'name': ofx_file.account.routing_number,
+                            'balance_start': start_balance,
+                            'balance_end_real': end_balance,
                             'line_ids': [
                                 (0, 0, {
                                     'date': item[2],
@@ -278,8 +229,8 @@ class ImportBankStatement(models.TransientModel):
                 else:
                     raise ValidationError(_("There is no data to import"))
 
+            # ----------------------- QIF Import -----------------------
             elif split_tup[1] == '.qif':
-                # Searching the path of qif file
                 file_attachment = self.env["ir.attachment"].search(
                     ['|', ('res_field', '!=', False),
                      ('res_field', '=', False),
@@ -288,7 +239,6 @@ class ImportBankStatement(models.TransientModel):
                     limit=1)
                 file_path = file_attachment._full_path(
                     file_attachment.store_fname)
-                # Parsing the qif file
                 try:
                     parser = QifParser()
                     with open(file_path, 'r') as qiffile:
@@ -296,13 +246,16 @@ class ImportBankStatement(models.TransientModel):
                 except:
                     raise ValidationError(_("Wrong file format"))
 
+                statement_list = []
+                start_balance = 0.0
+                end_balance = 0.0
+
                 file_string = str(qif)
                 file_item = file_string.split('^')
                 file_item[-1] = file_item[-1].rstrip('\n')
                 if file_item[-1] == '':
                     file_item.pop()
 
-                statement_list = []
                 for item in file_item:
                     if not item.startswith('!Type:Bank'):
                         item = '!Type:Bank' + item
@@ -326,6 +279,8 @@ class ImportBankStatement(models.TransientModel):
                     for item in statement_list:
                         statement = self.env['account.bank.statement'].create({
                             'name': item[0],
+                            'balance_start': start_balance,
+                            'balance_end_real': end_balance,
                             'line_ids': [
                                 (0, 0, {
                                     'date': item[2],
