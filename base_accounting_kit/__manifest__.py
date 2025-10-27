@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Odoo 19 Full Accounting Kit for Community',
-    'version': '19.0.1.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Accounting',
     'live_test_url': 'https://kit.easyinstance.com/web/login?redirect=/odoo/accounting',
     'summary': """Odoo 19 Accounting, Odoo 19 Accounting Reports, Odoo18 Accounting, Odoo Accounting, Odoo19 Financial Reports, Odoo19 Asset, Odoo19 Profit and Loss, PDC, Followups, Odoo19, Accounting, Odoo Apps, Reports""",
@@ -34,7 +34,7 @@
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'depends': ['account', 'sale', 'account_check_printing', 'analytic',
-                'base_account_budget'],
+                'base_account_budget', 'contacts'],
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
@@ -62,6 +62,7 @@
         'views/multiple_invoice_layout_view.xml',
         'views/multiple_invoice_form.xml',
         'views/account_journal_views.xml',
+        'views/res_partner_views.xml',
         'wizard/financial_report_views.xml',
         'wizard/account_report_general_ledger_views.xml',
         'wizard/account_report_partner_ledger_views.xml',
@@ -88,6 +89,8 @@
         'report/report.xml',
         'report/multiple_invoice_layouts.xml',
         'report/multiple_invoice_report_template.xml',
+        'report/res_partner_reports.xml',
+        'report/res_partner_templates.xml',
         'views/account_recurring_payments_view.xml',
         'views/account_move_line_views.xml',
         'views/account_bank_statement_views.xml',
@@ -107,6 +110,7 @@
             'base_accounting_kit/static/src/js/KanbanController.js',
             'base_accounting_kit/static/src/js/ListController.js',
             'base_accounting_kit/static/src/js/bank_reconcile_form_lines_widget.js',
+            'base_accounting_kit/static/src/js/action_manager.js',
             'base_accounting_kit/static/src/xml/bank_rec_widget.xml',
             'base_accounting_kit/static/src/xml/bank_reconcile_widget.xml',
         ]
