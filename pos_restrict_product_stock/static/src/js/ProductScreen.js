@@ -12,7 +12,13 @@ setup() {
         this.dialog = useService("dialog");
         },
     async addProductToOrder(...args) {
-        var type = this.pos.config.stock_type
+        const product = args[0];
+        const stock_type = this.pos.config.stock_type;
+        const product_type = product.type || null;
+        if (product_type === 'service' || product_type === 'consu') {
+            console.log('Cybro Ignorando stock para tipo:', product_type);
+            super.addProductToOrder(...args);
+        }
         if (this.pos.config.is_restrict_product && ((type == 'qty_on_hand') && (args['0'].qty_available <= 0)) | ((type == 'virtual_qty') && (args['0'].virtual_available <= 0)) |
             ((args['0'].qty_available <= 0) && (args['0'].virtual_available <= 0))) {
             // If the product restriction is activated in the settings and quantity is out stock, it show the restrict popup.
@@ -20,7 +26,6 @@ setup() {
             body: _t("%s is out of stock. Do you want to proceed?", args['0'].display_name),
                 confirmLabel: _t("Order"),
                 confirm: () => {
-                    const product = args['0'];
                     product.order_status = true;
                     super.addProductToOrder(...args)
                 },
