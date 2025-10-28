@@ -70,51 +70,39 @@ class SaleOrder(models.Model):
         else:
             order_line = self.env['sale.order.line']
         try:
-            if add_qty:
-                pass
-        except ValueError:
-            add_qty = 1
+            add_qty = float(add_qty)
+        except (ValueError, TypeError):
+            add_qty = 0.0
         try:
-            if set_qty:
-                pass
-        except ValueError:
-            set_qty = 0
-        quantity = 0
-        if set_qty:
+            set_qty = float(set_qty)
+        except (ValueError, TypeError):
+            set_qty = 0.0
+
+        if set_qty == 0 and not add_qty:
+            quantity = 0.0
+        elif set_qty:
             quantity = set_qty
         elif add_qty is not None:
-            if order_line:
-                quantity = int(order_line.product_uom_qty) + int(add_qty or 0)
-            else:
-                quantity = add_qty or 0
-        if float(quantity) > 0:
-            quantity, warning = self._verify_updated_quantity(
-                order_line,
-                product_id,
-                float(quantity),
-                **kwargs,
-            )
-
+            quantity = (order_line.product_uom_qty if order_line else 0.0) + add_qty
         else:
-            # If the line will be removed anyway, there is no need to verify
-            # the requested quantity update.
+            quantity = 0.0
+
+        if quantity > 0:
+            quantity, warning = self._verify_updated_quantity(order_line, product_id, quantity, **kwargs)
+        else:
             warning = ''
-        if order_line and int(quantity) <= 0:
-            # Remove zero or negative lines
+
+        if order_line and quantity == 0:
             order_line.unlink()
             order_line = self.env['sale.order.line']
         elif order_line:
-            # Update existing line
-            update_values = self._prepare_order_line_update_values(
-                order_line, quantity, **kwargs)
+            update_values = self._prepare_order_line_update_values(order_line, quantity, **kwargs)
             if update_values:
                 self._update_cart_line_values(order_line, update_values)
-        elif int(quantity) >= 0:
-            # Create new line
-            order_line_values = self._prepare_order_line_values(
-                product_id, quantity, **kwargs)
-            order_line = self.env['sale.order.line'].sudo().create(
-                order_line_values)
+        elif quantity > 0:
+            order_line_values = self._prepare_order_line_values(product_id, quantity, **kwargs)
+            order_line = self.env['sale.order.line'].sudo().create(order_line_values)
+
         return {
             'line_id': order_line.id,
             'quantity': quantity,
