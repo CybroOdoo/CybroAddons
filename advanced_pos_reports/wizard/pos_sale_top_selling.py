@@ -47,26 +47,84 @@ class PosSaleTopSelling(models.TransientModel):
                                      help="Number of customers")
 
     def action_generate_report(self):
-        """Generate top_selling product,category,customer report from pos"""
+        """Generate top_selling product, category, or customer report"""
         if self.start_date > self.end_date:
-            raise ValidationError(_("The End Date must be greater than the "
-                                    "Start Date"))
+            raise ValidationError(_("The End Date must be greater than the Start Date"))
+
         data = {
-            'start_date': self.start_date, 'end_date': self.end_date,
-            'top_selling': self.top_selling
+            'start_date': self.start_date,
+            'end_date': self.end_date,
+            'top_selling': self.top_selling,
         }
+
+        # POS Orders within date range
+        orders = self.env['pos.order'].search([
+            ('date_order', '>=', self.start_date),
+            ('date_order', '<=', self.end_date),
+            ('state', 'in', ['paid', 'invoiced', 'done'])
+        ])
+
+        if not orders:
+            raise ValidationError(_("No POS orders found in the selected date range."))
+
+        # -------------------------
+        # Top Selling Products
+        # -------------------------
         if self.top_selling == 'products':
+            product_sales = {}
+            for order in orders:
+                for line in order.lines:
+                    product_name = line.product_id.display_name
+                    product_sales[product_name] = product_sales.get(product_name, 0.0) + line.price_subtotal
+
+            sorted_products = sorted(product_sales.items(), key=lambda x: x[1], reverse=True)
+            top_products = sorted_products[:self.no_of_products or 10]
+            products_list = [{'name': p[0], 'amount': p[1]} for p in top_products]
+
+            data['products'] = products_list
             data['no_of_products'] = self.no_of_products
+
             return self.env.ref(
                 'advanced_pos_reports.pos_top_selling_products_report'
             ).report_action([], data=data)
+
+        # -------------------------
+        # Top Selling Categories
+        # -------------------------
         elif self.top_selling == 'category':
+            category_sales = {}
+            for order in orders:
+                for line in order.lines:
+                    category_name = line.product_id.categ_id.display_name or _('Uncategorized')
+                    category_sales[category_name] = category_sales.get(category_name, 0.0) + line.price_subtotal
+
+            sorted_categories = sorted(category_sales.items(), key=lambda x: x[1], reverse=True)
+            top_categories = sorted_categories[:self.no_of_categories or 10]
+            categories_list = [{'name': c[0], 'amount': c[1]} for c in top_categories]
+
+            data['categories'] = categories_list
             data['no_of_categories'] = self.no_of_categories
+
             return self.env.ref(
                 'advanced_pos_reports.pos_top_selling_category_report'
             ).report_action([], data=data)
+
+        # -------------------------
+        # Top Customers
+        # -------------------------
         elif self.top_selling == 'customers':
+            customer_sales = {}
+            for order in orders.filtered(lambda o: o.partner_id):
+                customer_name = order.partner_id.name
+                customer_sales[customer_name] = customer_sales.get(customer_name, 0.0) + order.amount_total
+
+            sorted_customers = sorted(customer_sales.items(), key=lambda x: x[1], reverse=True)
+            top_customers = sorted_customers[:self.no_of_customers or 10]
+            customers_list = [{'name': c[0], 'amount': c[1]} for c in top_customers]
+
+            data['customers'] = customers_list
             data['no_of_customers'] = self.no_of_customers
+
             return self.env.ref(
                 'advanced_pos_reports.pos_top_selling_customer_report'
             ).report_action([], data=data)

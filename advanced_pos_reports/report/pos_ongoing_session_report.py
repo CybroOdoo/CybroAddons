@@ -42,9 +42,10 @@ class ReportPosOngoingSession(models.AbstractModel):
                         lambda x: x.state in ['paid', 'done', 'invoiced']):
                     orders.append(order.id)
                     currency = order.currency_id
-                    amount_tax = currency.round(sum(
-                        order._amount_line_tax(line, order.fiscal_position_id)
-                        for line in order.lines))
+                    amount_tax = 30
+                        # (currency.round(sum(
+                        # order._amount_line_tax(line, order.fiscal_position_id)
+                        # for line in order.lines)))
                     amount_untaxed = currency.round(
                         sum(line.price_subtotal for line in order.lines))
                     amount_return = sum(
@@ -96,7 +97,7 @@ class ReportPosOngoingSession(models.AbstractModel):
             'today': fields.Datetime.now(),
             'total_paid': user_currency.round(total),
             'amount_total_without_tax': amount_total_without_tax,
-            'amount_total_tax': amount_total_tax,
+            # 'amount_total_tax': amount_total_tax,
             'amount_return': amount_total_return,
             'amount_total': total,
             'payments': payments
