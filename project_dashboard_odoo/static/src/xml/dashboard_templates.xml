@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="ProjectDashboard">
+        <div class="oh_dashboards container-fluid p-0">
+            <!-- Header -->
+            <div class="dashboard-header bg-primary text-white p-3 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0 fw-semibold">Project Performance Dashboard</h2>
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-light btn-sm"
+                                onclick="location.reload()">
+                            <i class="fa fa-refresh me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content (Scrollable Area) -->
+            <div class="dashboard-content p-4"
+                 style="max-height: calc(100vh - 80px); overflow-y: auto;">
+                <!-- Filter Section -->
+                <div class="card mb-4 shadow-sm rounded-3 border-0">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0 fw-semibold text-dark">
+                            <i class="fa fa-filter me-2 text-primary"></i>Filter
+                            Options
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center g-3">
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold small text-muted mb-1">Start Date</label>
+                                <input type="date"
+                                       class="form-control form-control-sm"
+                                       id="start_date"
+                                       t-ref="start_date"
+                                       t-on-change="(ev) => this._onchangeFilter(ev)"/>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold small text-muted mb-1">End Date</label>
+                                <input type="date"
+                                       class="form-control form-control-sm"
+                                       id="end_date"
+                                       t-ref="end_date"
+                                       t-on-change="(ev) => this._onchangeFilter(ev)"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold small text-muted mb-1">Project</label>
+                                <select class="form-select form-select-sm"
+                                        id="project_selection"
+                                        t-ref="project_selection"
+                                        t-on-change="(ev) => this._onchangeFilter(ev)">
+                                    <option value="null">All Projects</option>
+                                    <option t-foreach="state.projects"
+                                            t-as="project" t-key="project.index"
+                                            t-att-value="project.id">
+                                        <t t-esc="project.name"/>
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold small text-muted mb-1">Employees</label>
+                                <select class="form-select form-select-sm"
+                                        id="employee_selection"
+                                        t-ref="employee_selection"
+                                        t-on-change="(ev) => this._onchangeFilter(ev)">
+                                    <option value="null">All Employees</option>
+                                    <option t-foreach="state.employees"
+                                            t-as="employee" t-key="employee.index"
+                                            t-att-value="employee.id">
+                                        <t t-esc="employee.name"/>
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end justify-content-end">
+                                <button t-on-click="resetFilters" class="btn btn-outline-secondary btn-sm reset-btn" style="min-width: 100px;">
+                                    <i class="fa fa-undo me-1"></i>Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-2"
+                         t-on-click="(e) => this.tot_projects(e)">
+                        <div class="card shadow-sm rounded-3 border-0 text-center p-3 h-100 kpi-card">
+                            <div class="card-icon bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2">
+                                <i class="fa fa-puzzle-piece fs-4"></i>
+                            </div>
+                            <h6 class="text-muted mb-2">Total Projects</h6>
+                            <h4 class="fw-bold text-dark mb-0"
+                                t-ref="tot_project"><t t-esc="total_projects"/></h4>
+                            <div class="mt-2 text-primary small">
+                                <i class="fa fa-arrow-up me-1"></i>View Details
+                            </div>
+                        </div>
+                    </div>
+                    <t t-if="flag_user == 1">
+                        <div class="col-md-2"
+                             t-on-click="(e) => this.tot_emp(e)">
+                            <div class="card shadow-sm rounded-3 border-0 text-center p-3 h-100 kpi-card">
+                                <div class="card-icon bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2">
+                                    <i class="fa fa-user fs-4 text-success"></i>
+                                </div>
+                                <h6 class="text-muted mb-2">Total Employees</h6>
+                                <h4 class="fw-bold text-dark mb-0"
+                                    t-ref="tot_employee"><t t-esc="total_employees"/></h4>
+                                <div class="mt-2 text-primary small">
+                                    <i class="fa fa-arrow-up me-1"></i>View
+                                    Details
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                    <div class="col-md-2" t-on-click="(e) => this.tot_tasks(e)">
+                        <div class="card shadow-sm rounded-3 border-0 text-center p-3 h-100 kpi-card">
+                            <div class="card-icon bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2">
+                                <i class="fa fa-tasks fs-4 text-warning"></i>
+                            </div>
+                            <h6 class="text-muted mb-2">Total Tasks</h6>
+                            <h4 class="fw-bold text-dark mb-0" t-ref="tot_task"><t t-esc="total_tasks"/></h4>
+                            <div class="mt-2 text-primary small">
+                                <i class="fa fa-arrow-up me-1"></i>View Details
+                            </div>
+                        </div>
+                    </div>
+                    <t t-if="flag_user == 1">
+                        <div class="col-md-2"
+                             t-on-click="(e) => this.hr_recorded(e)">
+                            <div class="card shadow-sm rounded-3 border-0 text-center p-3 h-100 kpi-card">
+                                <div class="card-icon bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2">
+                                    <i class="fa fa-clock-o fs-4 text-info"></i>
+                                </div>
+                                <h6 class="text-muted mb-2">Hours Recorded</h6>
+                                <h4 class="fw-bold text-dark mb-0"
+                                    t-ref="tot_hrs"><t t-esc="total_hours"/></h4>
+                                <div class="mt-2 text-primary small">
+                                    <i class="fa fa-arrow-up me-1"></i>View
+                                    Details
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-if="flag_user == 1">
+                        <div class="col-md-2"
+                             t-on-click="(e) => this.total_margin(e)">
+                            <div class="card shadow-sm rounded-3 border-0 text-center p-3 h-100 kpi-card">
+                                <div class="card-icon bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2">
+                                    <i class="fa fa-dollar fs-4 text-success"></i>
+                                </div>
+                                <h6 class="text-muted mb-2">Total Margin</h6>
+                                <h4 class="fw-bold text-dark mb-0"
+                                    t-ref="tot_margin"><t t-esc="total_profitability"/></h4>
+                                <div class="mt-2 text-primary small">
+                                    <i class="fa fa-arrow-up me-1"></i>View
+                                    Details
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                    <div class="col-md-2" t-on-click="(e) => this.tot_sale(e)">
+                        <div class="card shadow-sm rounded-3 border-0 text-center p-3 h-100 kpi-card">
+                            <div class="card-icon bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2">
+                                <i class="fa fa-ticket fs-4 "></i>
+                            </div>
+                            <h6 class="text-muted mb-2">Total Sale Orders</h6>
+                            <h4 class="fw-bold text-dark mb-0" t-ref="tot_so"><t t-esc="total_sale_orders"/></h4>
+                            <div class="mt-2 text-primary small">
+                                <i class="fa fa-arrow-up me-1"></i>View Details
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts & Task Details -->
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <!-- Donut Chart - Reduced Size -->
+                        <div class="card shadow-sm rounded-3 border-0 mb-3">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="card-title mb-0 fw-semibold text-dark">
+                                    <i class="fa fa-pie-chart me-2 text-primary"></i>
+                                    Project Task Analysis
+                                </h5>
+                            </div>
+                            <div class="card-body py-2"> <!-- Reduced padding -->
+                                <canvas id="project_doughnut"
+                                        t-ref="project_doughnut"
+                                        height="180"></canvas> <!-- Reduced from 250 to 180 -->
+                            </div>
+                        </div>
+
+                        <div class="card shadow-lg rounded-3 border-0 mb-3">
+                            <div class="card-header bg-white text-dark py-3 ">
+                                <h5 class="card-title mb-0 fw-semibold shadow-sm">
+                                    <i class="fa fa-list-alt me-2"></i>Project
+                                    Task Details
+                                </h5>
+                            </div>
+                            <div class="card-body p-0"
+                                 style="max-height:400px;overflow-y:auto;">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="ps-3">Project Name</th>
+                                                <th>Task Name</th>
+                                                <th class="pe-3">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="task_data" t-as="proj" t-key="proj[1]">
+                                                <tr>
+                                                    <td class="ps-3"><t t-esc="proj[2].en_US"/></td>
+                                                    <td><t t-esc="proj[0]"/></td>
+                                                    <td class="pe-3">
+                                                        <span class="rounded-pill" t-att-class="'badge ' +
+                                                            (proj[3].en_US == 'Done' ? 'bg-success' : '') +
+                                                            (proj[3].en_US == 'In Progress' ? 'bg-warning text-dark' : '') +
+                                                            (proj[3].en_US == 'New' ? 'bg-secondary' : '')">
+                                                            <t t-esc="proj[3].en_US"/>
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <!-- Bar Chart - Also reduced for consistency -->
+                        <div class="card shadow-sm rounded-3 border-0 mb-3">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="card-title mb-0 fw-semibold text-dark">
+                                    <i class="fa fa-bar-chart me-2 text-primary"></i>
+                                    Top Employees
+                                </h5>
+                            </div>
+                            <div class="card-body py-2"> <!-- Reduced padding -->
+                                <canvas class="top_selling_employees"
+                                        t-ref="top_selling_employees"
+                                        height="180"></canvas> <!-- Reduced from 250 to 180 -->
+                            </div>
+                        </div>
+
+                        <!-- Stage-wise totals -->
+                        <div class="card shadow-lg rounded-3 border-0">
+                            <div class="card-header bg-white text-dark py-3 shadow-sm">
+                                <h5 class="card-title mb-0 fw-semibold">
+                                    <i class="fa fa-sitemap me-2"></i>Stage Wise
+                                    Total Projects
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm mb-0">
+                                        <t t-foreach="project_stage_list"
+                                           t-as="data" t-key="data['id']">
+                                            <tr>
+                                                <td class="ps-3"><t t-esc="data['name']"/></td>
+                                                <td class="pe-3 text-end"><span class="badge bg-primary text-white rounded-pill"><t t-esc="data['projects']"/></span></td>
+                                            </tr>
+                                        </t>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
