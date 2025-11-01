@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="web.JsonWidget">
+        <div class="o_field_json d-inline-flex flex-wrap w-100"
+             t-att-class="{'o_tags_input o_input': !props.readonly}"
+             t-ref="jsonWidget"
+             t-on-keydown="onWidgetKeydown"
+             t-on-click="openJsonEditor">
+            <TagsList tags="jsonSummaryTags()"/>
+            <div class="o_input_dropdown d-inline-flex w-100"
+                 t-att-class="{'cursor-pointer': !props.readonly}"
+                 t-on-click="openJsonEditor">
+                <div class="d-flex align-items-center w-100 px-2">
+                    <t t-if="!state.entries.length">
+                        <span class="text-muted">Click to add data</span>
+                    </t>
+                </div>
+                <t t-call="web.JsonWidgetPopup"/>
+            </div>
+        </div>
+    </t>
+    <t t-name="web.JsonWidgetPopup">
+        <div class="json_widget_popup dropdown-menu o-dropdown--menu show rounded py-0 overflow-hidden"
+             style="width: 500px;overflow-y:scroll !important;"
+             t-if="state.showDropdown"
+             t-on-mounted="onDropdownMounted"
+             t-ref="jsonDropdown">
+            <div class="popover-header sticky-top border-bottom">
+                <div class="d-flex align-items-center p-2">
+                    <div class="h5 mb-0 me-auto">
+                        JSON Data Editor
+                    </div>
+                    <button class="btn btn-link p-0"
+                            t-on-click.stop="closeJsonEditor"
+                            title="Close">
+                        <i class="fa fa-times"/>
+                    </button>
+                </div>
+            </div>
+            <div class="table-container p-2">
+                <div class="table-responsive">
+                    <table class="o_list_table table table-sm table-hover o_json_table mb-2 table-striped"
+                           style="table-layout: fixed;">
+                        <colgroup>
+                            <col style="width: 45%"/>
+                            <col style="width: 45%"/>
+                            <col style="width: 10%"/>
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th class="border-bottom">Key</th>
+                                <th class="border-bottom">Value</th>
+                                <th class="border-bottom" aria-hidden="true">
+                                    <span class="d-none">Actions</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="state.entries"
+                                t-as="entry"
+                                t-key="entry.id">
+                                <Record t-props="recordProps(entry)"
+                                        t-slot-scope="scope">
+                                    <td class="align-middle text-truncate entry-key">
+                                        <Field name="'key'"
+                                               record="scope.record"/>
+                                    </td>
+                                    <td class="align-middle text-truncate">
+                                        <Field name="'value'"
+                                               record="scope.record"/>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <button class="btn btn-link text-danger p-0"
+                                                t-on-click.stop="() => this.deleteLine(entry.index)"
+                                                title="Delete">
+                                            <i class="fa fa-trash-o"/>
+                                        </button>
+                                    </td>
+                                </Record>
+                            </tr>
+                            <tr t-if="!props.readonly">
+                                <td colspan="3">
+                                    <button class="btn btn-link p-0"
+                                            t-on-click.stop="() => this.addLine()"
+                                            t-ref="addLineButton">
+                                        Add a Line
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
