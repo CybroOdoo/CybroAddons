@@ -43,6 +43,7 @@ export class DynamicDashboardTile extends Component {
     // Function for getting records by double click
     async getRecords(){
         var model_name = this.props.widget.model_name;
+        console.log("Model Name:",this.props);
         if (model_name){
             await this.doAction({
               type: 'ir.actions.act_window',
@@ -50,7 +51,7 @@ export class DynamicDashboardTile extends Component {
               view_mode: 'list',
               views: [[false, "list"]],
               domain: this.props.widget.domain,
-          });
+            });
         }
     }
 }
