@@ -23,4 +23,4 @@
 #### 05.12.2025
 #### Version 18.0.1.0.3
 ##### ADD
-- Added multi company and user access support for dashboards
+- Added multi company and user access support for dashboards.
