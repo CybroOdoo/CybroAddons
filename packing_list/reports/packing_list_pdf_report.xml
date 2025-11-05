@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+         <report
+            id="action_packing_list_report"
+            model="stock.picking"
+            string="Packing List Report"
+            report_type="qweb-pdf"
+            name="packing_list.report_packing_list"
+            file="packing_list.report_packing_list"
+        />
+
+        <template id="report_packing_list">
+             <t t-foreach="docs" t-as="o">
+                 <t t-call="packing_list.internal_layout">
+                     <div class="page" >
+                         <link rel='stylesheet' href='/broc_quality_controls/static/src/css/report.css'/>
+                         <t t-if="o and 'company_id' in o">
+                            <t t-set="company" t-value="o.company_id"> </t>
+                        </t>
+                        <t t-if="not o or not 'company_id' in o">
+                            <t t-set="company" t-value="res_company" style="border:1px solid black;"> </t>
+                        </t>
+                         <h3 class="text-center"><b>PACKING LIST</b></h3>
+                         <div class="row">
+                             <table class="table table-condensed table table-striped" style=" table-layout:fixed;" width="100%">
+                                 <thead style=" background-color: #3d3d3d   ;">
+                                     <tr>
+                                         <th class="text-center" width="30px" style="border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;font-size:18px; ">Delivery Address</th>
+                                         <th class="text-center" width="20px" style="border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;font-size:18px; ">Origin</th>
+                                         <th class="text-center" width="20px" style="border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;font-size:18px; ">Scheduled Date</th>
+                                         <th class="text-center" width="20px" style="border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;font-size:18px; ">Packages</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody>
+                                     <tr>
+                                         <td style="border: 1px !important; border-style: solid !important; border-color: #fff !important;font-size:18px;">
+                                             <div t-field="o.partner_id"
+                                                  t-field-options='{"widget": "contact", "fields": ["address", "name", "phone", "fax"], "no_marker": true, "phone_icons": true}'/>
+                                             <div t-field="o.partner_id.vat"/>
+                                         </td>
+                                         <td class="text-center" style="border: 1px !important; border-style: solid !important; border-color: #fff !important;font-size:18px;">
+                                             <span t-esc="o.origin"/>
+                                         </td>
+                                         <td class="text-center" style="border: 1px !important; border-style: solid !important; border-color: #fff !important;font-size:18px;">
+                                             <span t-esc="o.scheduled_date"/>
+                                         </td>
+                                         <td class="text-center" style="border: 1px !important; border-style: solid !important; border-color: #fff !important;font-size:18px;">
+                                             <span t-esc="o.total_package"/>
+                                         </td>
+                                     </tr>
+                                 </tbody>
+                             </table>
+                         </div>
+                         <table  style="border:1px solid black;padding-left:1.16cm;font-size:18px;">
+                             <thead>
+                                 <th style="border:2px solid black;color: #000000;vertical-align: middle" width="21%" class="td4 text-center" height="35">Product</th>
+                                 <t t-if="o.product_ref == True">
+                                     <th style="border:2px solid black;color: #000000;vertical-align: middle" width="20%" class="td4 text-center">Product Ref</th>
+                                 </t>
+                                 <th style="border:2px solid black;color: #000000;vertical-align: middle" width="13%" class="td4 text-center">Qty Ordered</th>
+                                 <th style="border:2px solid black;color: #000000;vertical-align: middle" width="13%" class="td4 text-center">Qty Packaged</th>
+                                 <th style="border:2px solid black;color: #000000;vertical-align: middle" width="13%" class="td4 text-center">Package Number</th>
+                                 <th style="border:2px solid black;color: #000000;vertical-align: middle" width="20%" class="td4 text-center">Remarks </th>
+                             </thead>
+                             <tbody>
+                                 <t t-foreach="o.move_lines.sorted(key=lambda x: x.pack_number)" t-as="l">
+                                     <tr>
+                                         <td style="border:2px solid black;color: #000000;vertical-align: middle" class="td5" height="30"><span t-esc="l.product_id.name" style="font-size:18px;"/></td>
+                                         <t t-if="o.product_ref == True">
+                                             <td style="border:2px solid black;color: #000000;vertical-align: middle" class="td5"><span t-esc="l.product_id.default_code" style="font-size:18px;"/></td>
+                                         </t>
+                                         <td style="border:2px solid black;color: #000000;vertical-align: middle" class="td5 text-center"><span t-esc="l.product_uom_qty" style="font-size:18px;"/></td>
+                                         <td style="border:2px solid black;color: #000000;vertical-align: middle" class="td5 text-center"><span t-esc="l.reserved_availability" style="font-size:18px;"/></td>
+                                         <td style="border:2px solid black;color: #000000;vertical-align: middle" class="td5 text-center"><span t-esc="l.pack_number" style="font-size:18px;"/></td>
+                                         <td style="border:2px solid black;color: #000000;vertical-align: middle; margin-left:15px;" class="td5"><span t-esc="l.remarks" style="font-size:18px;margin-left:10px;"/></td>
+                                     </tr>
+                                 </t>
+                             </tbody>
+                         </table>
+                         <br/>
+                         <br/>
+                     </div>
+                     <p style="page-break-after:always"> </p>
+                 </t>
+             </t>
+        </template>
+        <template id="internal_layout">
+            <div class="header o_boxed_header">
+                <div class="row mb8">
+                    <div class="col-xs-6">
+                        <img t-if="company.logo" t-att-src="'data:image/png;base64,%s' % to_text(company.logo)"/>
+                    </div>
+                    <div class="col-xs-6 text-right mb4">
+                        <h4 class="mt0" t-field="company.report_header"/>
+                        <div name="company_address" class="mb4">
+                            <span style="font-color:#000000;" class="company_address" t-field="company.partner_id"
+                                  t-field-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": true}'/>
+                        </div>
+                    </div>
+                </div>
+                <div style="border-bottom: 1px solid black;"/>
+            </div>
+            <div class="article o_report_layout_background">
+                <t t-raw="0" />
+            </div>
+            <div class="footer">
+                <div class="text-center" style="border-top: 1px solid black;">
+                    <ul class="list-inline mb4">
+                        <li t-if="company.phone">Phone: <span t-field="company.phone"/></li>
+                        <li t-if="company.email">Email: <span t-field="company.email"/></li>
+                        <li t-if="company.website">Web: <span t-field="company.website"/></li>
+                        <li t-if="company.vat"><t t-esc="company.country_id.vat_label or 'TIN'"/>: <span t-field="company.vat"/></li>
+                    </ul>
+                    <div name="financial_infos">
+                        <span t-field="company.report_footer"/>
+                    </div>
+                    <div class="text-muted">
+                        Page: <span class="page"/> / <span class="topage"/>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </data>
+</odoo>

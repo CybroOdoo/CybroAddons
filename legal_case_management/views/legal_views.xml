@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_case_tree" model="ir.ui.view">
+            <field name="name">case.case.tree</field>
+            <field name="model">case.case</field>
+            <field name="priority" eval="8" />
+            <field name="arch" type="xml">
+                <tree string="Register Case">
+                    <field name="case_client" />
+                    <field name="case_lawyer" />
+                    <field name="case_category" />
+                    <field name="case_court" />
+                    <field name="case_details" placeholder="eg: IPC 376/13" />
+                    <field name="case_next" />
+                </tree>
+            </field>
+        </record>
+        <record id="view_case_form" model="ir.ui.view">
+            <field name="name">case.case.form</field>
+            <field name="model">case.case</field>
+            <field name="priority" eval="8" />
+            <field name="arch" type="xml">
+                <form string="Register Case">
+                    <header>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,invoiced"/>
+                    </header>
+                    <sheet>
+                    <button name="make_payment" string="Make Payment" type="object" class="btn-primary"
+                        attrs="{'invisible':[('state','!=','draft')]}"/>
+                        <button name="add_sittings" string="Add Sittings" type="object" class="btn-primary"
+                        attrs="{'invisible':[('state','!=','invoiced')]}"/>
+                        <button name="mark_done" string="Mark As Done" type="object" class="oe_stat_button"
+                        attrs="{'invisible':[('state','!=','invoiced')]}"/>
+                        <div class="oe_button_box" name="button_box">
+                        <button name="count_attachments" type="object" class="oe_stat_button" icon="fa-pencil-square-o" >
+                            <field name="obj_attachment" widget="statinfo" string="Attachments"/>
+                        </button>
+                        </div>
+                        <group col="4" colspan="4">
+                          <field name="case_client" placeholder="Select Client"/>
+                          <field name="case_lawyer" placeholder="Select Lawyer"/>
+                            <field name="case_category" />
+                             <field name="name" invisible="1"/>
+                        </group>
+                        <notebook colspan="4">
+                            <page name="personal_information"
+                                string="Case Information">
+                                <group col="4" colspan="4"
+                                    name="personal_detail">
+                                    <field name="case_court" placeholder="eg:High Court" />
+                                    <field name="case_details" placeholder="eg: IPC 376/13" />
+                                    <field name="case_next" />
+                                </group>
+                            </page>
+                            <page name="case" string="Sittings">
+                                <field name="case_menu" mode="tree">
+                                    <form string="Sittings">
+                                        <group>
+                                            <field name="case_description" />
+                                            <field name="case_date"/>
+                                            <field name="connect_id" invisible="1"/>
+                                        </group>
+                                    </form>
+                                    <tree string="Sittings" editable="bottom">
+                                        <field name="case_description" />
+                                        <field name="case_date"/>
+                                    </tree>
+                                </field>
+                            </page>
+                             <page name="Notes" string="Internal Notes">
+                                <field name="case_note" mode="tree">
+                                    <form string="Internal Notes">
+                                        <group>
+                                            <field name="case_internal" />
+                                            <field name="connect_id1" invisible="1"/>
+                                        </group>
+                                    </form>
+                                    <tree string="Internal Notes" editable="bottom">
+                                        <field name="case_internal" />
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+                </form>
+            </field>
+         </record>
+
+        <record model="ir.actions.act_window" id="action_view_cases">
+            <field name="name">Register</field>
+            <field name="res_model">case.case</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,kanban</field>
+            <field name="domain">[]</field>
+            <field name="help" type="html">
+                <p class="oe_view_no_content_create">Register new case
+                </p>
+            </field>
+        </record>
+
+
+         <record model="ir.actions.act_window" id="action_view_lawyers">
+            <field name="name">Lawyers</field>
+            <field name="res_model">hr.employee</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{"default_x_hide": 1}</field>
+            <field name="help" type="html">
+                <p class="oe_view_no_content_create">Create new Lawyer
+                </p>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="action_view_clients">
+            <field name="name">Clients</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="domain">[['customer', '=', 1]]</field>
+            <field name="help" type="html">
+                <p class="oe_view_no_content_create">Create new client
+                </p>
+            </field>
+        </record>
+
+
+        <record id="projection_view_pivot" model="ir.ui.view">
+            <field name="name">pivot</field>
+            <field name="model">case.case</field>
+            <field name="type">pivot</field>
+            <field name="arch" type="xml">
+                <pivot string="Pivot View">
+                     <field name="case_category" type="row"/>
+                     <field name="case_lawyer" type="row"/>
+                     <field name="case_client" type="row"/>
+                     <field name="case_court" type="row"/>
+                </pivot>
+         </field>
+        </record>
+
+        <record id="action_view_pivot" model="ir.actions.act_window">
+            <field name="name">View Pivot</field>
+            <field name="res_model">case.case</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">pivot</field>
+            <field name="domain">[]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">Enter the target
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_legal_firm" name="Legal Firm"/>
+        <menuitem id="menu_masters" name="Master Data" parent="menu_legal_firm"/>
+        <menuitem id="menu_operations" name="Operations" parent="menu_legal_firm"/>
+        <menuitem id="menu_master_data" name="Master Data" parent="menu_legal_firm"/>
+        <menuitem id="menu_pivot_report" name="Reporting" parent="menu_legal_firm"/>
+         <menuitem id="legal_firm_report" name="Pivot Report" parent="legal_case_management.menu_pivot_report"
+                  action="action_view_pivot" />
+        <menuitem id="legal_firm_case" name="Case Register" parent="legal_case_management.menu_operations"
+                  action="action_view_cases" />
+        <menuitem id="legal_firm_lawyer" name="Lawyers" parent="legal_case_management.menu_master_data"
+                  action="action_view_lawyers"/>
+        <menuitem id="legal_firm_client" name="Clients" parent="legal_case_management.menu_master_data"
+		          action="action_view_clients"/>
+
+
+    </data>
+</odoo>

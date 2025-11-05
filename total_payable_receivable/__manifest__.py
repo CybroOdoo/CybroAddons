@@ -6,10 +6,7 @@
 #    Author: Niyas Raphy(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
-#
-#    It is forbidden to publish, distribute, sublicense, or sell copies
-#    of the Software or modified copies of the Software.
-#
+
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -23,13 +20,13 @@
 {
     'name': 'Payable And Receivable Amount',
     'summary': """Amount Payable & Receivable In Partner Form""",
-    'version': '11.0.1.0.0',
+    'version': '11.0.1.0.1',
     'description': """Amount Payable & Receivable In Partner Form""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'category': 'Accounting',
-    'depends': ['base'],
+    'depends': ['base', 'account'],
     'license': 'LGPL-3',
     'data': [
         'views/total_payable_receivable_view.xml',

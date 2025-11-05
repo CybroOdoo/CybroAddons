@@ -1,0 +1,109 @@
+<odoo>
+    <data>
+<record model="ir.ui.view" id="cab_log_form_view">
+            <field name="name">Cab Details</field>
+            <field name="model">cab.log</field>
+            <field name="arch" type="xml">
+                <form string="Cab Log">
+                    <header>
+                        <button name="action_cancel"
+                                string="Cancel Booking"
+                                type="object"
+                                state="'draft"
+                                class="oe_highlight"
+                                attrs = "{'invisible': [('state', 'in', ('approved','draft','discard','cancel'))]}"/>
+
+                        <button name="action_approve"
+                                string="Approve"
+                                type="object"
+                                state="'draft"
+                                class="oe_highlight"
+                                attrs = "{'invisible': [('state', 'in', ('discard','approved','cancel','done'))]}"/>
+                        <button name="action_sent"
+                                string="Send Mail"
+                                type="object"
+                                class="oe_highlight"
+                                context="{'send_rfq':True }"
+                                attrs = "{'invisible': [('state', 'in', ('discard','draft','cancel','done'))]}" />
+                        <button name="action_discard"
+                                string="Discard"
+                                type="object"
+                                class="oe_highlight"
+                                attrs = "{'invisible': [('state', 'in', ('approved','discard','cancel','sent','done'))]}" />
+                        <field name="state"
+                               widget="statusbar"
+                               statusbar_visible="draft,approved,sent,discard,cancel"
+                               statusbar_colors='{"approved":"red"}'/>
+                    </header>
+                    <sheet>
+                        <field name="cab_image"
+                               widget="image"
+                               class="oe_avatar"/>
+                        <div class="oe_title">
+                            <label for="name"/>
+                            <h1>
+                                <field name="name" placeholder=" Cab Name" style="width:50%%" />
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="cab_log_date"/>
+                                <field name="partner_id"/>
+                                <field name="cab_log_timing" style="width:50%%"/>
+                                <field name="cab_location_from" style="width:50%%"/>
+                                <field name="cab_location" style="width:50%%"/>
+                                <field name="seat_capacity" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="seat_available"/>
+                                <field name="seat_booked"/>
+                                <field name="fuel_used"/>
+                                <field name="odo_metre"/>
+                                <field name="cab_expense"/>
+                                <field name="total_passenger" invisible="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="cab_log_tree_view">
+            <field name="name">Log Details</field>
+            <field name="model">cab.log</field>
+            <field name="arch" type="xml">
+                <tree string="Cab Log">
+                    <field name="name"/>
+                    <field name="seat_available"/>
+                    <field name="cab_log_date"/>
+                    <field name="cab_log_timing"/>
+                    <field name="cab_location_from"/>
+                    <field name="cab_location"/>
+                    <field name="odo_metre"/>
+                    <field name="fuel_used"/>
+                    <field name="cab_expense"/>
+                    <field name="partner_id"/>
+                    <field name="seat_booked"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="cab_log_action">
+            <field name="name">Log Details</field>
+            <field name="res_model">cab.log</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,calender</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">Create Your First Trip
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="main_cab_management_menu" name="Cab Management"/>
+        <menuitem id="cab_management_menu" name="Cab Management" parent="main_cab_management_menu"/>
+        <menuitem id="cabs_log_menu" name="Cab Trip" parent="cab_management_menu" action="cab_log_action"
+                  groups="base.group_user" sequence="30"/>
+
+    </data>
+</odoo>

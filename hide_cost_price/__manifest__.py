@@ -6,10 +6,7 @@
 #    Author: Niyas Raphy(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
-#
-#    It is forbidden to publish, distribute, sublicense, or sell copies
-#    of the Software or modified copies of the Software.
-#
+
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -23,7 +20,7 @@
 {
     'name': 'Hide Product Cost Price',
     'summary': """Product Cost Price Will be Visible Only for Specified Group""",
-    'version': '11.0.1.0.0',
+    'version': '11.0.1.1.0',
     'description': """Product cost price will be visible only for specified group""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',

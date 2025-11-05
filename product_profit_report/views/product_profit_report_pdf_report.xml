@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_product_profit_report">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <center>
+                        <h2><span style="color:#a24689 !important;">Product Profit Report</span></h2>
+                        <div>
+                            <span style="font-size: 18px;">Company</span> : <t t-if="data['company']"> <span style="font-size: 16px;" t-esc="data['company'][1]"/></t>
+                        </div>
+                    </center>
+                    <br></br>
+                    <table border="1" style="width:99%;">
+                        <tr></tr>
+                        <tr>
+                            <t t-if="data['from_date']"><td><span style="color:#a24689 !important; font-size: 16px;">From Date: </span> <span t-esc="data['from_date']"/></td></t>
+                            <t t-if="data['to_date']"><td><span style="color:#a24689 !important; font-size: 16px;">To Date: </span> <span t-esc="data['to_date']"/></td></t>
+                            <t t-if="report_date"><td><span style="color:#a24689 !important; font-size: 16px;">Report Date: </span> <span t-esc="report_date"/></td></t>
+                        </tr>
+                        <tr>
+                            <td colspan="3"> </td>
+                        </tr>
+                        <tr>
+                            <t t-if="data['categ_id']"><td><span style="color:#a24689 !important; font-size: 16px;">Product Category: </span> <span t-esc="data['categ_id'][1]"/></td></t>
+                            <t t-if="data['product_id']"><td><span style="color:#a24689 !important; font-size: 16px;">Product: </span> <span t-esc="data['product_id'][1]"/></td></t>
+                        </tr>
+                        <tr></tr>
+                    </table>
+                    <br></br><br></br>
+                    <t t-if="groups">
+                        <table class="table table-condensed">
+                            <thead>
+                                <tr>
+                                    <th class="text-left" style="color:#a24689 !important;">No</th>
+                                    <th class="text-center" style="color:#a24689 !important;">Product</th>
+                                    <th class="text-right" style="color:#a24689 !important;">Qty</th>
+                                    <th class="text-center" style="color:#a24689 !important;">Unit</th>
+                                    <th class="text-right" style="color:#a24689 !important;">Cost</th>
+                                    <th class="text-right" style="color:#a24689 !important;">Sale Amount</th>
+                                    <th class="text-right" style="color:#a24689 !important;">Profit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="i" t-value="1"/>
+                                <t t-set="sum_espense" t-value="0.00"/>
+                                <t t-set="sum_sales" t-value="0.00"/>
+                                <t t-set="sum_profit" t-value="0.00"/>
+                                <t t-foreach="groups" t-as="group">
+                                    <tr t-if="groups[group]['qty'] != 0.0">
+                                        <td class="text-left"><span t-esc="i" /></td>
+                                        <td class="text-left"><span t-esc="groups[group]['name']"/></td>
+                                        <td class="text-right"><span t-esc="groups[group]['qty']"/></td>
+                                        <td class="text-left"><span t-esc="groups[group]['unit']"/></td>
+                                        <td class="text-right">
+                                            <t t-if="groups[group]['expense'] == 0.0">
+                                                <span style="color: #e60000 !important;" t-esc="groups[group]['expense']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </t>
+                                            <t t-if="groups[group]['expense'] != 0.0">
+                                                <span t-esc="groups[group]['expense']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </t>
+                                        </td>
+                                        <td class="text-right">
+                                            <t t-if="groups[group]['sales'] == 0.0">
+                                                <span style="color: #0000ff !important;" t-esc="groups[group]['sales']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </t>
+                                            <t t-if="groups[group]['sales'] != 0.0">
+                                                <span t-esc="groups[group]['sales']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </t>
+                                        </td>
+                                        <td class="text-right">
+                                            <t t-if="groups[group]['profit'] &lt; 1">
+                                                <span style="color: #FF0000 !important;" t-esc="groups[group]['profit']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </t>
+                                            <t t-if="groups[group]['profit'] &gt; 0.0">
+                                                <span t-esc="groups[group]['profit']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </t>
+                                        </td>
+                                        <t t-set="i" t-value="i+1"/>
+                                        <t t-set="sum_espense" t-value="sum_espense + groups[group]['expense'] "/>
+                                        <t t-set="sum_sales" t-value="sum_sales + groups[group]['sales']"/>
+                                        <t t-set="sum_profit" t-value="sum_profit + groups[group]['profit']"/>
+                                    </tr>
+                                </t>
+                                <tr>
+                                    <td style="font-weight: bold;" colspan="5" class="text-right"><span t-esc="sum_espense" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                                    <td style="font-weight: bold;" class="text-right"><span t-esc="sum_sales" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                                    <td style="font-weight: bold;" class="text-right"><span t-esc="sum_profit" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+                    <t t-if="not groups">
+                        <span style="font-size: 20px;">No Data to Display...!!!</span>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

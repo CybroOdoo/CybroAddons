@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+    <template id="report_invoice_document_inherit_update" inherit_id="account.report_invoice_document">
+        <xpath expr="//tbody[@class='invoice_tbody']" position="replace">
+            <tbody class="invoice_tbody">
+                <tr t-foreach="o.invoice_line_ids" t-as="l">
+                    <t t-if="'~' not in l.name">
+                        <td><span t-field="l.name"/></td>
+                        <td class="hidden"><span t-field="l.origin"/></td>
+                        <td class="text-right">
+                            <span t-field="l.quantity"/>
+                            <span t-field="l.uom_id"  groups="product.group_uom"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-field="l.price_unit"/>
+                        </td>
+                        <td t-if="display_discount" class="text-right">
+                            <span t-field="l.discount"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="', '.join(map(lambda x: (x.description or x.name), l.invoice_line_tax_ids))"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-field="l.price_subtotal"
+                                t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                        </td>
+                    </t>
+                    <t t-if="'~' in l.name">
+                        <td><i><span t-field="l.name"/></i></td>
+                        <td class="hidden"></td>
+                        <td class="text-right">
+                        </td>
+                        <td class="text-right">
+                        </td>
+                        <td t-if="display_discount" class="text-right">
+                        </td>
+                        <td class="text-right">
+                        </td>
+                        <td class="text-right">
+                        </td>
+                    </t>
+                </tr>
+            </tbody>
+        </xpath>
+    </template>
+</data>
+</odoo>

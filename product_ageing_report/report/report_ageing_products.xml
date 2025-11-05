@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_ageing_analysis">
+        <t t-call="web.external_layout">
+            <t t-foreach="docs" t-as="o">
+                <div class="page">
+                    <div class="row">
+                        <div class="mt32 mb32">
+                            <h3 style="text-align:center;" >Stock Ageing Analysis</h3>
+                        </div>
+                        <div class="mt32 mb32">
+                            <t t-if="categ">
+                                <b>Product Category:</b> <span t-esc="categ" />
+                            </t>
+                            <br /><br />
+                            <b>Date :</b> <span t-esc="docs.from_date" />
+                            <div>
+                                <t t-if="loc">
+                                    <b>Location:</b> <span t-esc="loc" style="float:left;"/>
+                                 </t>
+                                <br />
+                                <br />
+                             </div>
+                            <div>
+                                <b>Interval(Days):</b> <span t-esc="docs.interval" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                      <div class="mt32 mb32">
+                          <table style="border:1px solid;width:100%;">
+                                <thead>
+                                    <tr style="height:35px;border:1px solid;">
+                                        <th style="vertical-align:middle;text-align:center;border:1px solid;">Product</th>
+                                        <t t-foreach="interval" t-as="i">
+                                            <th style="vertical-align:middle;text-align:center;border:1px solid;">
+                                                <t t-esc="i" />
+                                            </th>
+                                        </t>
+                                        <th style="vertical-align:middle;text-align:center;border:1px solid;">Total</th>
+                                    </tr>
+                                </thead>
+                              <tbody>
+                                  <t t-foreach="products" t-as="p">
+                                      <tr style="width:100%;height:30px;border:1px solid">
+                                          <td style="vertical-align:middle;text-align:center;border:1px solid;">
+                                              <span t-esc="products[p]['product']"/>
+                                          </td>
+                                          <t t-foreach="products[p]['quantity']" t-as="quantity">
+                                              <td style="vertical-align:middle;text-align:center;border:1px solid;">
+                                                 <span t-esc="quantity"/>
+                                              </td>
+                                          </t>
+                                          <td style="vertical-align:middle;text-align:center;border:1px solid;">
+                                              <span t-esc="products[p]['total_qty']"/>
+                                          </td>
+                                    </tr>
+
+                                  </t>
+                              </tbody>
+                          </table>
+                      </div>
+                  </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <report
+        id="report_product_ageing"
+        model="stock.quant"
+        report_type="qweb-pdf"
+        string="Ageing Analysis"
+        name="product_ageing_report.report_ageing_analysis"
+        file="product_ageing_report.report_ageing_analysis"
+        menu="False"
+    />
+</odoo>

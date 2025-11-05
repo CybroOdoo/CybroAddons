@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <data>
+        <record model='ir.ui.view' id='wizard_form'>
+            <field name="name">wizard.stock.history.form</field>
+            <field name="model">wizard.stock.history</field>
+            <field name="arch" type="xml">
+                <form string="Wizard">
+                        <group string="Warehouse">
+                            <field name="warehouse" widget="many2many_tags"/>
+                        </group>
+                        <notebook>
+                            <page string="Category">
+                                <field name="category">
+                                    <tree>
+                                        <field name="name"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    <footer>
+                        <button name="export_xls" type="object" default_focus="1"
+                                string="Export Product with Stock Info" class="oe_highlight"
+                                context="{'xls_export':1}" icon="fa-download"/>
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model='ir.actions.act_window' id='wizard_act'>
+            <field name="name">Export product stock in Excel</field>
+            <field name="res_model">wizard.stock.history</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="wizard_form"/>
+            <field name="target">new</field>
+        </record>
+
+        <report
+            id="stock_xlsx"
+            model="wizard.stock.history"
+            string="Product Stock Info"
+            report_type="xlsx"
+            name="export_stockinfo_xls.stock_report_xls.xlsx"
+            file="export_stockinfo_xls.stock_report_xls.xlsx"
+            menu="False"
+            attachment_use="False"/>
+
+        <menuitem name="Current stock in Excel"
+                  parent="stock.menu_warehouse_report"
+                  id="export_excel"
+                  action="wizard_act"
+                  sequence="3"/>
+    </data>
+</odoo>

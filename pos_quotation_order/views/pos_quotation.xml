@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_pos_pos_quotation_form" model="ir.ui.view">
+        <field name="name">pos.order.form</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="quot_ref"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="seq_pos_quotation" model="ir.sequence">
+        <field name="name">POS Quotation</field>
+        <field name="code">pos.quotation</field>
+        <field name="prefix">POS/QUOT/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False" />
+    </record>
+
+    <record id="view_pos_quotation_form" model="ir.ui.view">
+        <field name="name">pos.quotation.form</field>
+        <field name="model">pos.quotation</field>
+        <field name="arch" type="xml">
+            <form string="Point of Sale Quotations" create="false">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed" />
+                </header>
+                <sheet>
+                <group col="4" colspan="4" name="order_fields">
+                    <field name="name"/>
+                    <field name="date_order"/>
+                    <field name="partner_id" domain="[('customer', '=', True)]" context="{'search_default_customer':1}" />
+                    <field name="date_quotation"/>
+                    <field name="pricelist_id" />
+                </group>
+                <notebook colspan="4">
+                    <page string="Products">
+                        <field name="lines" colspan="4" nolabel="1">
+                            <tree string="Order lines" editable="bottom">
+                                <field name="product_id"/>
+                                <field name="qty"/>
+                                <field name="price_unit" widget="monetary"/>
+                                <field name="discount" widget="monetary"/>
+                                <field name="tax_ids_after_fiscal_position" widget="many2many_tags"/>
+                                <field name="tax_ids" invisible="1"/>
+                                <field name="price_subtotal" widget="monetary"/>
+                                <field name="price_subtotal_incl" widget="monetary"/>
+                            </tree>
+                            <form string="Order lines">
+                                <group col="4">
+                                    <field name="product_id"/>
+                                    <field name="qty"/>
+                                    <field name="discount" widget="monetary"/>
+                                    <field name="price_unit" widget="monetary"/>
+                                    <field name="price_subtotal" invisible="1" widget="monetary"/>
+                                    <field name="price_subtotal_incl" invisible="1" widget="monetary"/>
+                                    <field name="tax_ids_after_fiscal_position" widget="many2many_tags"/>
+                                    <field name="tax_ids" invisible="1"/>
+                                    <field name="notice"/>
+                                </group>
+                            </form>
+                        </field>
+                        <group class="oe_subtotal_footer oe_right" colspan="2" name="order_total">
+                            <field name="amount_tax" widget="monetary"/>
+                            <div class="oe_subtotal_footer_separator oe_inline">
+                                <label for="amount_total" />
+                                <button name="button_dummy" string="(update)" class="oe_edit_only oe_link"/>
+                            </div>
+                            <field name="amount_total" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary"/>
+                        </group>
+                        <div class="oe_clear"/>
+                    </page>
+                    <page string="Notes" >
+                        <field name="note"/>
+                    </page>
+                </notebook>
+            </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_pos_quotation_tree" model="ir.ui.view">
+        <field name="name">pos.quotation.tree</field>
+        <field name="model">pos.quotation</field>
+        <field name="arch" type="xml">
+            <tree string="Point of Sale Quotations" create="false" decoration-danger="state == 'draft'" decoration-success="state == 'confirmed'" >
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="amount_total"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_pos_quotation_form" model="ir.actions.act_window">
+        <field name="name">Quotations</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">pos.quotation</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" eval="False"/>
+        <field name="domain">[]</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to create a new order.
+            </p><p>
+                Use this menu to browse previous quotations. To record new
+                quotations, you may use the menu <i>Your Session</i> for
+                the touchscreen interface.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_pos_quotation"
+              name="Quotation"
+              parent="point_of_sale.menu_point_of_sale"
+              action="action_pos_quotation_form"
+              sequence="0"
+              groups="point_of_sale.group_pos_manager,point_of_sale.group_pos_user"/>
+
+    <record id="view_pos_quotation_config_form" model="ir.ui.view">
+        <field name="name">pos.config.form.view</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='receipt']" position="after">
+                <h2 name="order">Quotation</h2>
+                <div class="row mt16 o_settings_container">
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_left_pane">
+                            <field name="enable_quotation"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="enable_quotation"/>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

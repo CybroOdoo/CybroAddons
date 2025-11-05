@@ -6,10 +6,7 @@
 #    Author: Niyas Raphy(<https://www.cybrosys.com>)
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
-#
-#    It is forbidden to publish, distribute, sublicense, or sell copies
-#    of the Software or modified copies of the Software.
-#
+
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -20,7 +17,10 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import httpagentparser
+try:
+    import httpagentparser
+except ImportError:
+    pass
 from time import gmtime, strftime
 from odoo.addons.web.controllers import main
 from odoo.http import request

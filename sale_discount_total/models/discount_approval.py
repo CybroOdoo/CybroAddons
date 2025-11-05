@@ -20,10 +20,11 @@
 #
 ###################################################################################
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 
-class sale_discount(models.Model):
+class SaleDiscount(models.Model):
     _inherit = 'sale.order'
 
     state = fields.Selection([
@@ -37,17 +38,20 @@ class sale_discount(models.Model):
 
     @api.multi
     def action_confirm(self):
+        if self._get_forbidden_state_confirm() & set(self.mapped('state')):
+            raise UserError(_("It is not allowed to confirm an order in the following states: %s")
+                            % (", ".join(self._get_forbidden_state_confirm())))
         discnt = 0.0
         no_line = 0.0
         for order in self:
-            if self.company_id.so_double_validation == 'two_step':
+            if order.company_id.so_double_validation == 'two_step':
                 for line in order.order_line:
                     no_line += 1
                     discnt += line.discount
                 discnt = (discnt / no_line)
                 if order.company_id.so_double_validation_limit and discnt > order.company_id.so_double_validation_limit:
                     order.state = 'waiting'
-                    return True
+                    continue
             order._action_confirm()
             if order.env['ir.config_parameter'].sudo().get_param('sale.auto_done_setting'):
                 order.action_done()
@@ -55,6 +59,9 @@ class sale_discount(models.Model):
 
     @api.multi
     def action_approve(self):
+        if self._get_forbidden_state_confirm() & set(self.mapped('state')):
+            raise UserError(_("It is not allowed to approve an order in the following states: %s")
+                            % (", ".join(self._get_forbidden_state_confirm())))
         self._action_confirm()
         if self.env['ir.config_parameter'].sudo().get_param('sale.auto_done_setting'):
             self.action_done()
