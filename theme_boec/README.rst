@@ -3,7 +3,7 @@
     :alt: License: AGPL-3
 
 Theme Boec
-===========
+=========================
 * Attractive and modern eCommerce Website theme for Odoo 18
 
 Configuration

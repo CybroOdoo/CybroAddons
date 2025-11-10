@@ -49,7 +49,8 @@
     <template id="boec_product_view" name="Boec Product View"
               inherit_id="website_sale.product">
         <xpath expr="//section[@id='product_detail']" position="replace">
-            <section t-attf-class="container py-4 oe_website_sale #{'discount' if combination_info['has_discounted_price'] else ''}"
+            <section
+                    t-attf-class="container py-4 oe_website_sale #{'discount' if combination_info['has_discounted_price'] else ''}"
                     id="product_detail"
                     t-att-data-view-track="view_track and '1' or '0'"
                     t-att-data-product-tracking-info="'product_tracking_info' in combination_info and json.dumps(combination_info['product_tracking_info'])">
@@ -85,8 +86,7 @@
                                              data-interval="0">
                                             <div class="carousel-outer position-relative">
                                                 <div class="carousel-inner h-100">
-                                                    <t t-foreach="product_images"
-                                                       t-as="product_image">
+                                                    <t t-foreach="product_images" t-as="product_image">
                                                         <div t-attf-class="carousel-item h-100#{' active' if product_image_first else ''}">
                                                             <div t-if="product_image._name == 'product.image' and product_image.embed_code"
                                                                  class="d-flex align-items-center justify-content-center h-100 embed-responsive embed-responsive-16by9">
@@ -99,51 +99,61 @@
                                                         </div>
                                                     </t>
                                                 </div>
+
+
                                                 <t t-if="len(product_images) > 1">
-                                                    <a class="carousel-control-prev"
-                                                       href="#o-carousel-product"
-                                                       role="button"
-                                                       data-slide="prev">
-                                                        <svg width="15%"
-                                                             height="15%"
-                                                             viewBox="0 0 11 20">
-                                                            <path style="fill:none;stroke-width: 1px;stroke: #000;"
-                                                                  d="M9.554,1.001l-8.607,8.607l8.607,8.606"/>
-                                                        </svg>
-                                                    </a>
-                                                    <a class="carousel-control-next"
-                                                       href="#o-carousel-product"
-                                                       role="button"
-                                                       data-slide="next">
-                                                        <svg width="15%"
-                                                             height="15%"
-                                                             viewBox="0 0 11 20"
-                                                             version="1.1">
-                                                            <path style="fill:none;stroke-width: 1px;stroke: #000;"
-                                                                  d="M1.054,18.214l8.606,-8.606l-8.606,-8.607"/>
-                                                        </svg>
-                                                    </a>
+                                                    <button class="carousel-control-prev"
+                                                            type="button"
+                                                            data-bs-target="#o-carousel-product"
+                                                            data-bs-slide="prev"
+                                                            style="position: absolute; top: 50%; transform: translateY(-50%); left: 20px; z-index: 5; background: rgba(255,255,255,0.8); border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
+                                                        <i class="oi oi-chevron-left text-dark"
+                                                           style="font-size: 20px;"></i>
+                                                        <span class="visually-hidden">Previous</span>
+                                                    </button>
+
+                                                    <button class="carousel-control-next"
+                                                            type="button"
+                                                            data-bs-target="#o-carousel-product"
+                                                            data-bs-slide="next"
+                                                            style="position: absolute; top: 50%; transform: translateY(-50%); right: 20px; z-index: 5; background: rgba(255,255,255,0.8); border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
+                                                        <i class="oi oi-chevron-right text-dark"
+                                                           style="font-size: 20px;"></i>
+                                                        <span class="visually-hidden">Next</span>
+                                                    </button>
                                                 </t>
+
                                             </div>
-                                            <div t-ignore="True"
-                                                 class="sync2 d-md-block text-center">
-                                                <ol t-if="len(product_images) > 1"
-                                                    class="carousel-indicators d-inline-block position-static mx-auto my-0">
-                                                    <t t-foreach="product_images"
-                                                       t-as="product_image">
-                                                        <li t-attf-class="d-inline-block m-1 align-top {{'active' if product_image_first else ''}}"
-                                                            data-target="#o-carousel-product"
-                                                            t-att-data-slide-to="str(product_image_index)">
-                                                            <div class="item"
-                                                                 t-field="product_image.image_128"
-                                                                 t-options='{"widget": "image", "qweb_img_responsive": False, "class": "o_image_64_contain", "alt-field": "name"}'/>
-                                                            <i t-if="product_image._name == 'product.image' and product_image.embed_code"
-                                                               class="fa fa-2x fa-play-circle-o o_product_video_thumb"/>
-                                                        </li>
-                                                    </t>
+                                            <div
+                                                    t-if="len(product_images) > 1"
+                                                    t-ignore="True"
+                                                    t-attf-class="o_carousel_product_indicators {{indicators_div_class}}"
+                                            >
+                                                <ol
+                                                        t-att-class="'carousel-indicators '
+                    + (indicators_list_class or '')
+                    + ('justify-content-center ' if website.product_page_image_width == '100_pc' else '')
+                    + ' position-static pt-2 pt-lg-0 mx-auto my-0'"
+                                                >
+                                                    <li
+                                                            t-foreach="product_images" t-as="product_image"
+                                                            t-attf-class="align-top position-relative {{'active' if product_image_first else ''}}"
+                                                            data-bs-target="#o-carousel-product"
+                                                            t-att-data-bs-slide-to="str(product_image_index)"
+                                                    >
+                                                        <div
+                                                                t-field="product_image.image_128"
+                                                                t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'object-fit-cover w-100 h-100', 'alt-field': 'name'}"
+                                                        />
+                                                        <i
+                                                                t-if="product_image._name == 'product.image' and product_image.embed_code"
+                                                                class="fa fa-2x fa-play-circle o_product_video_thumb bg-black-50 text-center"
+                                                        />
+                                                    </li>
                                                 </ol>
                                             </div>
                                         </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -346,7 +356,7 @@
                     </div>
                     <div class="description">
                         <nav>
-                            <div class="nav nav-tabs" id="nav-tab"  role="tablist">
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
                                 <button class="nav-link active"
                                         id="nav-home-tab" data-bs-toggle="tab"
                                         data-bs-target="#nav-home"
