@@ -1,20 +1,27 @@
-/** @odoo-module **/
-/** Xlsx report action manager */
-import {registry} from "@web/core/registry";
-import { BlockUI } from "@web/core/ui/block_ui";
+/** @event_management/static/src/js/action_manager.js **/
+import { registry } from "@web/core/registry";
+import { BlockUI, unblockUI } from "@web/core/ui/block_ui";
 import { download } from "@web/core/network/download";
-/**XLSX HandlerThis handler is responsible for generating XLSX reports.
-It sends a request to the server to generate the report in XLSX format and
-downloads the generated file.@param {Object} action - The action object
-containing the report details.@returns {Promise} - A promise that resolves
-when the report generation is complete.*/
-registry.category("ir.actions.report handlers").add("xlsx", async (action) => {
+
+const reportHandlers = registry.category("ir.actions.report handlers");
+
+if (reportHandlers.contains("xlsx")) {
+    reportHandlers.remove("xlsx");
+}
+reportHandlers.add("xlsx", async (action) => {
     if (action.report_type === 'xlsx') {
         BlockUI;
         await download({
             url: '/event_xlsx_reports',
             data: action.data,
             complete: () => unblockUI,
-            error: (error) => self.call('crash_manager', 'rpc_error', error),
+            error: (error) => {
+                // Use Odoo's crash manager properly if in OWL context
+                const env = owl.Component.env;
+                if (env && env.services && env.services.crash_manager) {
+                    env.services.crash_manager.rpc_error(error);
+                }
+            },
         });
-}});
+    }
+});

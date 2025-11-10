@@ -59,38 +59,55 @@ export class TimeOffEmpOrgChart extends Component {
         this.lastRecord = this.props.record;
         await this.fetchEmployeeData(this.state.employee_id, forceReload);
     }
-    async fetchEmployeeData(employeeId, force = false) {
-    employeeId = this.props.id
-        if (!employeeId) {
-            this.managers = [];
-            this.children = [];
-            if (this.view_employee_id) {
-                this.render(true);
-            }
-            this.view_employee_id = null;
-        } else if (employeeId !== this.view_employee_id || force) {
-            this.view_employee_id = employeeId;
-            var orgData = await this.rpc(
-                '/hr/get_org_chart',
-                {
-                    employee_id: employeeId,
-                    context: session.user_context,
-                }
-            );
-            if (Object.keys(orgData).length === 0) {
-                orgData = {
-                    managers: [],
-                    children: [],
-                }
-            }
-            this.managers = orgData.managers;
+async fetchEmployeeData(employeeId, force = false) {
+    employeeId = this.props.id;
 
+    if (!employeeId) {
+        this.managers = [];
+        this.children = [];
+        if (this.view_employee_id) {
+            this.render(true);
+        }
+        this.view_employee_id = null;
+    } else if (employeeId !== this.view_employee_id || force) {
+        this.view_employee_id = employeeId;
+
+        try {
+            // Force create a proper context object
+            const safeContext = {
+                new_parent_id: null,
+                lang: 'en_US',
+                max_level: 2, // ADD THIS LINE
+
+                uid: user.userId,
+                ...(session.user_context || {})
+            };
+
+            const orgData = await this.rpc('/hr/get_org_chart', {
+                employee_id: employeeId,
+                context: safeContext,
+            });
+
+            if (Object.keys(orgData).length === 0) {
+                orgData = { managers: [], children: [] };
+            }
+
+            this.managers = orgData.managers;
             this.children = orgData.children;
             this.managers_more = orgData.managers_more;
             this.self = orgData.self;
             this.render(true);
+
+        } catch (error) {
+            console.error("Error:", error);
+            this.managers = [];
+            this.children = [];
+            this.managers_more = false;
+            this.self = null;
+            this.render(true);
         }
     }
+}
 
     _onOpenPopover(event, employee) {
         this.popover.open(event.currentTarget, { employee });

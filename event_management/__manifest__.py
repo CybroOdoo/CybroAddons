@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Event Management and Catering',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     "category": "Industries",
     'summary': """Comprehensive event management with integrated catering 
      service.""",

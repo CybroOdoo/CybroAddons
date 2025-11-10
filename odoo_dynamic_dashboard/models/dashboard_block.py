@@ -122,6 +122,12 @@ class DashboardBlock(models.Model):
             domain = []
             if rec.filter:
                 domain = expression.AND([literal_eval(rec.filter)])
+            if 'company_id' in self.env[rec.model_name]._fields:
+                domain = expression.AND([[('company_id', '=', self.env.company.id)], domain])
+                # ✅ Add current user domain (if relevant)
+            if 'user_id' in self.env[rec.model_name]._fields:
+                domain = expression.AND([[('user_id', '=', self.env.user.id)], domain])
+            vals.update({'domain': domain})
             if rec.model_name:
                 if rec.type == 'graph':
                     self._cr.execute(self.env[rec.model_name].get_query(domain,
