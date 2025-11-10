@@ -49,3 +49,8 @@
 #### Version 18.0.5.0.6
 #### UPDT
 - Added Customer Statement feature.
+
+#### 10.11.2025
+#### Version 18.0.5.0.7
+#### FIX
+- Fixed Transactions button redirection for bank and cash journals to display journal-specific transactions, and added reconciliation filter for the To Reconcile action.
