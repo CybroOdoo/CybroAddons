@@ -32,7 +32,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['base'],
+    'depends': ['base','sale'],
     'assets': {
         'web.assets_backend': [
             'auto_save_restrict/static/src/js/form_controller.js',
