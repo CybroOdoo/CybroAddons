@@ -12,8 +12,9 @@ patch(PosStore.prototype, {
              const body = []
              const pro_id = false
              for (const line of this.get_order().get_orderlines()) {
+//                  const isService = product.detailed_type === 'service';
                  if (line.config.is_restrict_product && ((type == 'qty_on_hand') && (line.product_id.qty_available <= 0)) | ((type == 'virtual_qty') && (line.product_id.virtual_available <= 0)) |
-                                         ((line.product_id.qty_available <= 0) && (line.product_id.virtual_available <= 0))) {
+                                         ((line.product_id.qty_available <= 0) && (line.product_id.virtual_available <= 0)) && (line.product_id.type != 'service' && (!(line.product_id.to_weight)))) {
                                          // If the product restriction is activated in the settings and quantity is out stock, it show the restrict popup.
                                     body.push(line.product_id.display_name)
                  }
