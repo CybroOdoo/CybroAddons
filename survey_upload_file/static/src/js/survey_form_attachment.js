@@ -10,7 +10,6 @@ publicWidget.registry.SurveyFormUpload = publicWidget.Widget.extend(SurveyPreloa
         },
         init() {
             this._super(...arguments);
-//            this.rpc = this.bindService("rpc");
         },
         /** On adding file function */
         _onFileChange: function(event) {
@@ -29,20 +28,41 @@ publicWidget.registry.SurveyFormUpload = publicWidget.Widget.extend(SurveyPreloa
                     dataURLs.push(dataURL);
                     /**  Set the data-oe-data and data-oe-file_name attributes of the input element self call el */
                     var $input = self.$el.find('input.o_survey_upload_file');
+
+                    $input.attr('data-oe-data') && dataURLs.concat(JSON.parse($input.attr('data-oe-data')))
                     $input.attr('data-oe-data', JSON.stringify(dataURLs));
+                    $input.attr('data-oe-file_name') && fileNames.concat(JSON.parse($input.attr('data-oe-file_name')))
                     $input.attr('data-oe-file_name', JSON.stringify(fileNames));
                     // Create file list elements
                     var fileList = document.getElementById('fileList');
-                    fileList.innerHTML = ''; // clear previous contents of file list
-                    var ul = document.createElement('ul');
-                    fileNames.forEach(function(fileName) {
-                        var li = document.createElement('li');
-                        li.textContent = fileName;
-                        ul.appendChild(li);
-                    });
+                    var existingUl = fileList.querySelector('ul')
+                    if(existingUl){
+
+                        fileNames.forEach(function(fileName) {
+                            const exists = Array.from(existingUl.children).some(
+                                (li) => li.textContent === fileName
+                            );
+                            if(!exists){
+                                var li = document.createElement('li');
+                                li  .textContent = fileName;
+                                existingUl.appendChild(li);
+                            }
+                        });
+                    }
+                    else{
+                        var ul = document.createElement('ul');
+                        fileNames.forEach(function(fileName) {
+                            var li = document.createElement('li');
+                            li.textContent = fileName;
+                            ul.appendChild(li);
+                        });
+                        fileList.appendChild(ul);
+                    }
+
                     // Create delete button
                     var deleteBtn = document.createElement('button');
                     deleteBtn.textContent = 'Delete All';
+                    deleteBtn.id = "delete_button"
                     deleteBtn.addEventListener('click', function() {
                         // Clear file list
                         fileList.innerHTML = '';
@@ -52,8 +72,12 @@ publicWidget.registry.SurveyFormUpload = publicWidget.Widget.extend(SurveyPreloa
                         self.$el.find('input[type="file"]').val('');
                     });
                     // Append file list and delete button to file input container
-                    fileList.appendChild(ul);
+                    var existingBtn = fileList.querySelector('#delete_button');
+                    if(existingBtn){
+                        existingBtn.remove();
+                    }
                     fileList.appendChild(deleteBtn);
+
                 }
             }
         },

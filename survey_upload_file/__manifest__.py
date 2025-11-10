@@ -21,7 +21,7 @@
 ##############################################################################
 {
     'name': "File Upload In Survey",
-    'version': "18.0.1.0.1",
+    'version': "18.0.1.0.2",
     'category': 'Extra Tools',
     'summary': 'Attachment of File in Survey Form',
     'description': 'This module is used for attachments of file in Survey Form,'
