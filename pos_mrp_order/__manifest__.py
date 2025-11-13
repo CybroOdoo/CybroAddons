@@ -21,7 +21,7 @@
 ##############################################################################
 {
     'name': 'Make MRP Orders from POS',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.1.0',
     'category': 'Point of Sale',
     'summary': """Generate Automatic MRP orders from POS.""",
     'description': """This module enables to create automatic MRP orders after 

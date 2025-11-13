@@ -45,11 +45,12 @@ class MrpProduction(models.Model):
                         product_ids.append(product)
             for prod in product_ids:
                 if prod['qty'] > 0:
+                    product_template_id = self.env['product.product'].browse(prod['id']).product_tmpl_id.id
                     bom_count = self.env['mrp.bom'].search([
-                        ('product_id', '=', prod['id'])])
+                        ('product_tmpl_id', '=',product_template_id)])
                     if bom_count:
                         bom_temp = self.env['mrp.bom'].search([
-                            ('product_id', '=', prod['id']),
+                            ('product_tmpl_id', '=', product_template_id),
                             ('product_id', '=', False)])
                         bom_prod = self.env['mrp.bom'].search([
                             ('product_id', '=', prod['id'])])
@@ -63,6 +64,7 @@ class MrpProduction(models.Model):
                             vals = {
                                 'origin': 'POS-' + prod['pos_reference'],
                                 'state': 'confirmed',
+                                'product_tmpl_id': product_template_id,
                                 'product_id': prod['id'],
                                 'product_uom_id': prod['uom_id'],
                                 'product_qty': prod['qty'],
@@ -76,7 +78,7 @@ class MrpProduction(models.Model):
                                     'name': mrp_order.name,
                                     'product_id': bom_line.product_id.id,
                                     'product_uom': bom_line.product_uom_id.id,
-                                    'product_uom_qty': (bom_line.product_qty * mrp_order.product_qty)/self.env['mrp.bom'].search([("product_id", "=", prod['id'])]).product_qty,
+                                    'product_uom_qty': (bom_line.product_qty * mrp_order.product_qty)/self.env['mrp.bom'].search([("product_tmpl_id", "=", product_template_id)]).product_qty,
                                     'picking_type_id': mrp_order.picking_type_id.id,
                                     'location_id': mrp_order.location_src_id.id,
                                     'location_dest_id': bom_line.product_id.with_company(self.company_id.id).property_stock_production.id,
