@@ -339,13 +339,13 @@ class TurnoverReport(models.TransientModel):
         for record in record_dict.values():
             record_date = record['last_count_date']
             if ((not self.start_date and not self.end_date) or
-                    (self.start_date and self.end_date and
+                    (self.start_date and self.end_date and record_date and
                      self.start_date <= self.end_date and
                      self.start_date <= record_date <= self.end_date) or
-                    (self.start_date and not self.end_date and
+                    (self.start_date and not self.end_date and record_date and
                      record_date >= self.start_date) or
-                    (not self.start_date and self.end_date and
-                     record_date <= self.end_date)):
+                    (not self.start_date and self.end_date and record_date and
+                     record_date <= self.end_date) ):
                 if record['id'] in filtered_records:
                     filtered_record = filtered_records[record['id']]
                     filtered_record['opening_stock'] += record['opening_stock']
