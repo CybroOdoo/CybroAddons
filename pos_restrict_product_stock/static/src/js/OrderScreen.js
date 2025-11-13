@@ -24,6 +24,10 @@ patch(Order.prototype, {
         }
 
         for (const { product, total_qty, name } of Object.values(productQuantities)) {
+               if (product.detailed_type === 'service'|| product.uom_id[1]=="kg") {
+                console.log(product.type)
+                continue;
+            }
             if (is_restrict) {
                 const qty_available = product.pos_stock_qty ?? product.qty_available;
                 const virtual_qty = product.virtual_available;
