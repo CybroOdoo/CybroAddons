@@ -76,14 +76,16 @@ class Partner(models.Model):
             AND company_id = '%s' """ % (self.id, self.env.company.id)
         return query
 
-    def amount_query(self):
+    def amount_query(self, id=False):
         """ Return query for calculating total amount """
         amount_query = """ SELECT SUM(amount_total_signed) AS total, 
                     SUM(amount_residual) AS balance
                 FROM account_move WHERE payment_state != 'paid' 
                 AND state ='posted' AND partner_id= '%s'
-                AND company_id = '%s' """ % (self.id, self.env.company.id)
-        return amount_query
+                AND company_id = '%s' """
+        if self:
+            return amount_query %(self.id, self.env.company.id)
+        return amount_query %(id, self.env.company.id)
 
     def action_share_pdf(self):
         """ Action for sharing customer pdf report """
@@ -393,14 +395,14 @@ class Partner(models.Model):
     def auto_week_statement_report(self):
         """ Action for sending automatic weekly statement
             of both pdf and xlsx report """
-        partner = []
+        partner = set()
         invoice = self.env['account.move'].search(
             [('move_type', 'in', ['out_invoice', 'in_invoice']),
              ('payment_state', '!=', 'paid'),
              ('state', '=', 'posted')])
         for inv in invoice:
             if inv.partner_id not in partner:
-                partner.append(inv.partner_id)
+                partner.add(inv.partner_id)
         for rec in partner:
             if rec.id:
                 main_query = """ SELECT name , invoice_date, invoice_date_due,
@@ -416,6 +418,10 @@ class Partner(models.Model):
                     amount_residual
                     ORDER by name DESC""" % (self.env.company.id, rec.id)
 
+                amount = self.amount_query(id=rec.id)
+                amount += """ AND move_type IN ('out_invoice')"""
+                self.env.cr.execute(amount)
+                amount = self.env.cr.dictfetchall()
                 self.env.cr.execute(main_query)
                 main = self.env.cr.dictfetchall()
                 data = {
@@ -426,6 +432,9 @@ class Partner(models.Model):
                     'state': rec.state_id.name,
                     'zip': rec.zip,
                     'my_data': main,
+                    'total': amount[0]['total'],
+                    'balance': amount[0]['balance'],
+                    'currency': rec.currency_id.symbol,
                 }
                 report = self.env['ir.actions.report']._render_qweb_pdf(
                     'statement_report.res_partner_action',
@@ -453,7 +462,6 @@ class Partner(models.Model):
                 date_style = workbook.add_format(
                     {'text_wrap': True, 'align': 'center',
                      'num_format': 'yyyy-mm-dd'})
-
                 if data['customer']:
                     sheet.write('B7:D7', 'Customer/Supplier : ', cell_format)
                     sheet.merge_range('E7:H7', data['customer'], txt)
@@ -493,6 +501,14 @@ class Partner(models.Model):
                     sheet.merge_range(row, column + 15, row, column + 16,
                                       record['balance'], txt)
                     row = row + 1
+                total = data['currency'] + str(data['total'])
+                remain_balance = data['currency'] + str(data['balance'])
+                sheet.write(row + 2, column + 1, 'Total Amount : ', cell_format)
+                sheet.merge_range(row + 2, column + 4, row + 2, column + 5,
+                                  total, txt)
+                sheet.write(row + 4, column + 1, 'Balance Due : ', cell_format)
+                sheet.merge_range(row + 4, column + 4, row + 4, column + 5,
+                                  remain_balance, txt)
                 workbook.close()
                 output.seek(0)
                 xlsx = base64.b64encode(output.read())
@@ -520,14 +536,14 @@ class Partner(models.Model):
     def auto_month_statement_report(self):
         """ Action for sending automatic monthly statement report
             of both pdf and xlsx. """
-        partner = []
+        partner = set()
         invoice = self.env['account.move'].search(
             [('move_type', 'in', ['out_invoice', 'in_invoice']),
              ('payment_state', '!=', 'paid'),
              ('state', '=', 'posted')])
         for inv in invoice:
             if inv.partner_id not in partner:
-                partner.append(inv.partner_id)
+                partner.add(inv.partner_id)
         for rec in partner:
             if rec.id:
                 main_query = """SELECT name , invoice_date, invoice_date_due,
@@ -546,6 +562,10 @@ class Partner(models.Model):
 
                 self.env.cr.execute(main_query)
                 main = self.env.cr.dictfetchall()
+                amount = self.amount_query(id=rec.id)
+                amount += """ AND move_type IN ('out_invoice')"""
+                self.env.cr.execute(amount)
+                amount = self.env.cr.dictfetchall()
                 data = {
                     'customer': rec.display_name,
                     'street': rec.street,
@@ -554,6 +574,9 @@ class Partner(models.Model):
                     'state': rec.state_id.name,
                     'zip': rec.zip,
                     'my_data': main,
+                    'total': amount[0]['total'],
+                    'balance': amount[0]['balance'],
+                    'currency': rec.currency_id.symbol,
                 }
                 report = self.env['ir.actions.report']._render_qweb_pdf(
                     'statement_report.res_partner_action',
@@ -580,7 +603,6 @@ class Partner(models.Model):
                 date_style = workbook.add_format(
                     {'text_wrap': True, 'align': 'center',
                      'num_format': 'yyyy-mm-dd'})
-
                 if data['customer']:
                     sheet.write('B7:D7', 'Customer/Supplier : ', cell_format)
                     sheet.merge_range('E7:H7', data['customer'], txt)
@@ -602,10 +624,8 @@ class Partner(models.Model):
                 sheet.write('J15', 'Invoices/Debit', cell_format)
                 sheet.write('M15', 'Amount Due', cell_format)
                 sheet.write('P15', 'Balance Due', cell_format)
-
                 row = 16
                 column = 0
-
                 for record in data['my_data']:
                     sheet.merge_range(row, column + 1, row, column + 2,
                                       record['invoice_date'], date_style)
@@ -620,6 +640,14 @@ class Partner(models.Model):
                     sheet.merge_range(row, column + 15, row, column + 16,
                                       record['balance'], txt)
                     row = row + 1
+                total = data['currency'] + str(data['total'])
+                remain_balance = data['currency'] + str(data['balance'])
+                sheet.write(row + 2, column + 1, 'Total Amount : ', cell_format)
+                sheet.merge_range(row + 2, column + 4, row + 2, column + 5,
+                                  total, txt)
+                sheet.write(row + 4, column + 1, 'Balance Due : ', cell_format)
+                sheet.merge_range(row + 4, column + 4, row + 4, column + 5,
+                                  remain_balance, txt)
                 workbook.close()
                 output.seek(0)
                 xlsx = base64.b64encode(output.read())

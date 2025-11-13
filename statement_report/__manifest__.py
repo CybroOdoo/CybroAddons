@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Customer/ Supplier Payment Statement Report',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Productivity',
     'summary': """This module is designed to generate  Customer/Supplier Payment
     Statement Reports.""",
