@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <template id="featured_products" name="Featured Products Snippet">
+            <section class="featured o_not_editable">
+                <div class="alert alert-info">
+                    <h4>Snippet will be displayed here... Please Save to view the snippet.</h4>
+                </div>
+            </section>
+        </template>
+
+        <template id="featured_product_snippet">
+            <div class="container o_not_editable" t-ignore="True">
+                <t t-if="not products">
+                    <section class="featured o_not_editable">
+                        <div class="alert alert-info">
+                            <h3>Configure featured Product : Website > Configuration > Silon Configuration</h3>
+                        </div>
+                    </section>
+                </t>
+                <t t-else="">
+                    <h2 class="f-product-heading text-center mb-4">FEATURED PRODUCTS</h2>
+                </t>
+            </div>
+            <div class="f-product o_not_editable" t-ignore="True">
+                <div class="container" t-ignore="True">
+                    <!-- Mobile Carousel -->
+                    <div id="featuredProductCarouselMobile" class="carousel slide d-block d-md-none"
+                         data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            <t t-foreach="products" t-as="product_id" t-enumerate="true">
+                                <div t-attf-class="carousel-item #{product_id_index == 0 and 'active' or ''}">
+                                    <div class="product text-center px-4">
+                                        <div class="product__image mb-3">
+                                            <img t-att-src="'/web/image?model=product.product&amp;field=image_1920&amp;id=%d' % product_id['id']"
+                                                 class="img-fluid mx-auto product-image-clickable"
+                                                 style="max-height: 250px; width: auto; object-fit: contain; cursor: pointer;"
+                                                 t-att-alt="product_id['display_name']"
+                                                 t-att-data-url="product_id['website_url']"
+                                                 onclick="window.location.href = this.getAttribute('data-url')"/>
+                                        </div>
+                                        <div class="product__title mb-2">
+                                            <h5 class="text-dark" style="font-size: 1.1rem; margin: 0;">
+                                                <a t-att-href="product_id['website_url']"
+                                                   class="text-decoration-none text-dark">
+                                                    <span t-esc="product_id['display_name']"/>
+                                                </a>
+                                            </h5>
+                                        </div>
+                                        <div class="product__price mb-3">
+                                            <span t-esc="product_id['list_price']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+                                                  class="text-primary h5"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                        <button class="carousel-control-prev" type="button"
+                                data-bs-target="#featuredProductCarouselMobile" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon bg-dark rounded-circle p-2"
+                                  aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button"
+                                data-bs-target="#featuredProductCarouselMobile" data-bs-slide="next">
+                            <span class="carousel-control-next-icon bg-dark rounded-circle p-2"
+                                  aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+
+                    <!-- Desktop Carousel -->
+                    <div id="featuredProductCarouselDesktop" class="carousel slide d-none d-md-block"
+                         data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            <t t-foreach="range(0, len(products), 3)" t-as="i">
+                                <div t-attf-class="carousel-item #{i == 0 and 'active' or ''}">
+                                    <div class="row">
+                                        <t t-foreach="products[i:min(i+3, len(products))]" t-as="product_id">
+                                            <div class="col-md-4">
+                                                <a t-att-href="product_id['website_url']">
+                                                    <div class="product text-center px-3">
+                                                        <div class="product__image mb-3">
+                                                            <img t-att-src="'/web/image?model=product.product&amp;field=image_1920&amp;id=%d' % product_id['id']"
+                                                                 class="img-fluid mx-auto product-image-clickable"
+                                                                 style="max-height: 200px; width: auto; object-fit: contain; cursor: pointer;"
+                                                                 t-att-alt="product_id['display_name']"
+                                                                 t-att-data-url="product_id['website_url']"
+                                                                 onclick="window.location.href = this.getAttribute('data-url')"/>
+                                                        </div>
+                                                        <div class="product__title mb-2">
+                                                            <h5 class="text-dark" style="font-size: 1rem; margin: 0;">
+                                                                <a t-att-href="product_id['website_url']"
+                                                                   class="text-decoration-none text-dark">
+                                                                    <span t-esc="product_id['display_name']"/>
+                                                                </a>
+                                                            </h5>
+                                                        </div>
+                                                        <div class="product__price mb-3">
+                                                            <span t-esc="product_id['list_price']"
+                                                                  t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+                                                                  class="text-primary"/>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                        <t t-if="len(products) > 3">
+                            <button class="carousel-control-prev" type="button"
+                                    data-bs-target="#featuredProductCarouselDesktop" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon bg-dark rounded-circle p-2"
+                                      aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button"
+                                    data-bs-target="#featuredProductCarouselDesktop" data-bs-slide="next">
+                                <span class="carousel-control-next-icon bg-dark rounded-circle p-2"
+                                      aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="featured_products_snippet" inherit_id="website.snippets" name="Featured Products Snippet">
+            <xpath expr="//snippets[@id='snippet_content']" position="inside">
+                <t t-snippet="theme_silon.featured_products" group="silon"
+                   t-thumbnail="/theme_silon/static/src/img/snippets/featured_products_block.jpg"/>
+            </xpath>
+        </template>
+    </data>
+</odoo>
