@@ -29,9 +29,9 @@ patch(OrderReceipt.prototype, {
         };
     },
     get isTrue() {
-        if (this.env.services.pos.config.is_custom_receipt == false) {
-            return true;
+            if (this.env.services.pos.config.is_custom_receipt == false) {
+            return false;
         }
-        return false;
+        return true;
     }
 });
