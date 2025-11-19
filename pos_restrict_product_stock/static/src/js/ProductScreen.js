@@ -8,10 +8,12 @@ import { _t } from "@web/core/l10n/translation";
 patch(PosStore.prototype, {
     async addProductToCurrentOrder(...args) {
         const product = args[0];
+         if (product.detailed_type === 'service'|| product.uom_id[1]=="kg") {
+            return super.addProductToCurrentOrder(...args);
+        }
         const type = this.config.stock_type;
         const order = this.get_order();
         const selected_orderline = order.get_selected_orderline();
-
         let order_quantity = 1;
         if (selected_orderline && selected_orderline.product.id === product.id) {
             order_quantity = selected_orderline.quantity + 1;
