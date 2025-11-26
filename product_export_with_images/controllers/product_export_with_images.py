@@ -20,7 +20,7 @@
 #
 ###############################################################################
 import base64
-import imghdr
+import filetype
 import io
 import xlsxwriter
 from io import BytesIO
@@ -117,8 +117,9 @@ class ExcelReportController(http.Controller):
             sheet.write(row, 5, line["category"], text_style)
             if line["image"]:
                 source = base64.b64decode(line["image"])
-                image_type = imghdr.what(None, source)
-                if image_type in ["jpeg", "png", "gif", "bmp"]:
+                kind = filetype.guess(source)
+                image_type = kind.extension if kind else None
+                if image_type in ["jpeg", "png", "gif", "bmp", "jpg"]:
                     image_data = BytesIO(image_process(source, size=(300, 300)))
                     sheet.write(row, 6, "", text_style)
                     sheet.insert_image(row, 6, "product." + image_type, {"image_data": image_data})
@@ -152,8 +153,8 @@ class ExcelReportController(http.Controller):
 
                     except Exception as e:
                         traceback.print_exc()
-        row += 1
-        number += 1
+            row += 1
+            number += 1
         workbook.close()
         output.seek(0)
         response.stream.write(output.read())

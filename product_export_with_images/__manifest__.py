@@ -21,7 +21,7 @@
 ###############################################################################
 {
     "name": "Export Product Images",
-    "version": "18.0.1.0.1",
+    "version": "18.0.1.1.1",
     "category": "Warehouse",
     "summary": """To export product details along with the product images.""",
     "description": "The allowed users can download the product details "
@@ -36,6 +36,9 @@
         "security/ir.model.access.csv",
         "data/product_export_with_images_data.xml",
     ],
+    'external_dependencies': {
+            'python': ['filetype']
+        },
     "images": ["static/description/banner.png"],
     "license": "AGPL-3",
     "installable": True,
