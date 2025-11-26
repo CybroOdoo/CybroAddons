@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Website Warranty Management',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Sale',
     'summary': 'Warranty management used to manage warranty of product',
     'description': """The "Warranty Management" module enables businesses to 

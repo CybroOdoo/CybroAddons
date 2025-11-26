@@ -38,8 +38,6 @@ class WarrantyClaimController(http.Controller):
                                'customers': customers,
                                'products': products})
 
-    @http.route('/warranty/claim/submit', type='http', auth="public",
-                website=True)
-    def warranty_claim_submit(self):
-        """Function to render the claim thanks view"""
+    @http.route('/warranty/claim/submit', type='http', auth="public", website=True, csrf=True)
+    def warranty_claim_submit(self, **post):
         return request.render('website_warranty_management.claim_thanks_view')
