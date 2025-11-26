@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <!-- Product listing section -->
+    <t t-name="ProductsWidget" t-inherit="point_of_sale.ProductsWidget"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('products-widget')]" position="replace">
+            <div class="products-widget d-flex flex-column flex-grow-1 overflow-auto"
+                 t-ref="products-widget">
+                <t t-set="showCategoryImages"
+                   t-value="getShowCategoryImages()"/>
+                <div class="products-widget-control products-widget-control-header mt-4 d-flex shadow-sm justify-content-between">
+                        <CashierName/>
+                    <div class="d-flex search-products" id="search-products">
+                                <Input tModel="[pos, 'searchProductWord']"
+                                       class="'p-2 lg-screen'"
+                                       isSmall="ui.isSmall"
+                                       placeholder="'Search products...'"
+                                       icon="{type: 'fa', value: 'fa-search'}"
+                                       debounceMillis="100"/>
+                        <div class="home-category-button lg-screen-cat">
+                                 <span class="breadcrumb-button breadcrumb-home"
+                                       t-on-click="() => this.pos.setSelectedCategoryId(0)">
+                                    <i class="fa fa-home" role="img"
+                                       aria-label="Home" title="Home"
+                                       style="font-size: 30px;"/>
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                <div class="products-widget-control products-widget-control-header mt-4 d-flex shadow-sm justify-content-between">
+                        <Input tModel="[pos, 'searchProductWord']"
+                               class="'p-2 sm-screen'"
+                               isSmall="ui.isSmall"
+                               placeholder="'Search products...'"
+                               icon="{type: 'fa', value: 'fa-search'}"
+                               debounceMillis="100"/>
+
+                    <div class="home-category-button sm-screen-cat">
+                                 <span class="breadcrumb-button breadcrumb-home"
+                                       t-on-click="() => this.pos.setSelectedCategoryId(0)">
+                                    <i class="fa fa-home" role="img"
+                                       aria-label="Home" title="Home"
+                                       style="font-size: 30px;"/>
+                                </span>
+
+                            </div>
+                    </div>
+                <t t-set="categories" t-value="getCategories()"/>
+                <div t-if="categories.length > 2"
+                     class="products-widget-control bg-white products-widget-control-category d-flex shadow-sm">
+                    <div class="rightpane-header">
+                                <div class="categories-header">
+                                    <div class="category-list simple"
+                                         style="border-radius: 5px; padding: 10px;">
+                                        <t t-foreach="getCategories()"
+                                           t-as="category" t-key="category.id">
+                                            <span t-if="category.id != 0"
+                                                  class="category-simple-button"
+                                                  t-on-click="() => this.pos.setSelectedCategoryId(category.id)">
+                                                <t t-esc="category.name"/>
+                                            </span>
+                                        </t>
+                                    </div>
+                                </div>
+                        </div>
+                </div>
+
+                <div class="product-list-container flex-grow-1 overflow-y-auto">
+                    <div t-if="productsToDisplay.length != 0 and pos.posHasValidProduct()"
+                         t-attf-class="product-list {{this.pos.productListViewMode}} p-1">
+                        <t t-foreach="productsToDisplay" t-as="product"
+                           t-key="product.id">
+                            <ProductCard
+                                    class="pos.productViewMode"
+                                    name="product.display_name"
+                                    productId="product.id"
+                                    price="product.getFormattedUnitPrice()"
+                                    imageUrl="product.getImageUrl()"
+                                    onClick="() =>this.pos.addProductToCurrentOrder(product)"
+                                    productInfo="true"
+                                    onProductInfoClick="() => this.onProductInfoClick(product)"
+                            />
+                        </t>
+                    </div>
+                    <div t-else=""
+                         class="product-list-empty no-results-message text-center mt-5">
+                        <t t-if="searchWord">
+                            <p>No products found for <b>"<t t-esc="searchWord"/>
+                                "</b>
+                                in this category.</p>
+                        </t>
+                        <t t-else="">
+                            <t t-if="pos.posHasValidProduct()">
+                                <p>There are no products in this category.</p>
+                            </t>
+                            <t t-else="">
+                                <div t-if="!state.loadingDemo">
+                                    <p class="text-large">No products available. Explore
+                                        <a role="button"
+                                           class="button-no-demo fw-bolder"
+                                           t-on-click="loadDemoDataProducts">demo data</a>
+                                        or <a
+                                                role="button"
+                                                class="button-no-demo fw-bolder"
+                                                t-on-click="createNewProducts">create your own</a>.</p>
+                                </div>
+                                <div t-else=""
+                                     class="block-top-header position-absolute top-0 start-0 bg-black opacity-50 w-100 h-100 z-1000">
+                                    <div class="d-flex h-100 w-100 text-white flex-row align-items-center justify-content-center">
+                                        <div class="o_spinner d-flex flex-column mb-4">
+                                            <img src="/web/static/img/spin.svg"
+                                                 alt="Loading..."/>
+                                            Loading...
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </t>
+                    </div>
+                    <div t-if="searchWord"
+                         class="search-more-button d-flex justify-content-center">
+                        <button class="btn btn-primary btn-lg"
+                                t-on-click="onPressEnterKey">Search more</button>
+                    </div>
+                    <div class="portal search-database-button no-results-message"
+                         t-att-class="{ 'd-none':  !shouldShowButton }"/>
+                </div>
+            </div>
+        </xpath>
+    </t>
+</templates>

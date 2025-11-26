@@ -35,6 +35,7 @@
     'assets': {
         'point_of_sale._assets_pos': [
             'pos_theme_sapphire/static/src/js/ProductScreen.js',
+            'pos_theme_sapphire/static/src/js/ProductsWidget.js',
             'pos_theme_sapphire/static/src/xml/**/*.xml',
             'pos_theme_sapphire/static/src/css/custom.css',
         ],

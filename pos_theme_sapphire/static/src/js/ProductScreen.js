@@ -11,6 +11,7 @@ import { CashMovePopup } from "@point_of_sale/app/navbar/cash_move_popup/cash_mo
 import { TicketScreen } from "@point_of_sale/app/screens/ticket_screen/ticket_screen";
 import { BackButton } from "@point_of_sale/app/screens/product_screen/action_pad/back_button/back_button";
 import { CashierName } from "@point_of_sale/app/navbar/cashier_name/cashier_name";
+import { OrderTabs } from "@point_of_sale/app/components/order_tabs/order_tabs";
 
 ProductScreen.components = {
     ...ProductScreen.components,
@@ -18,6 +19,7 @@ ProductScreen.components = {
     SaleDetailsButton,
     BackButton,
     CashierName,
+    OrderTabs,
 }
 
 patch(ProductScreen.prototype, {
@@ -69,4 +71,13 @@ patch(ProductScreen.prototype, {
     showBackButton() {
         return this.pos.showBackButton() && this.ui.isSmall;
     },
+});
+
+
+patch(ProductScreen.prototype,{
+
+    getOrderTabs() {
+        return this.pos.get_open_orders().filter((order) => !order.table_id);
+    },
+
 });
