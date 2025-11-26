@@ -24,3 +24,8 @@
 #### Version 18.0.1.0.4
 ##### BUG FIX
 - Fixed the POS issue displaying the default receipt despite a selected custom design.
+
+#### 18.11.2025
+#### Version 18.0.1.0.5
+##### BUG FIX
+- Fixed the POS issue where the receipt design was not appearing even if a design is selected.
