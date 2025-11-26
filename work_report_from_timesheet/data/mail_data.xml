@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--Employee task report Email template -->
+        <record id="email_template_work_report_from_timesheet"
+                model="mail.template">
+            <field name="name">WorkReport: Task report from timesheet</field>
+            <field name="model_id" ref="work_report_from_timesheet.model_account_analytic_line"/>
+            <field name="subject">Task report_{{ object.date.strftime('%b-%d-%Y') }}_{{ (object.employee_id.name) }}</field>
+            <field name="description">Send Daily work report of employee to the manager</field>
+            <field name="email_from">{{ (object.user_id.email_formatted or user.email_formatted) }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hello,<br/>
+                        Here is a report on my daily work.<br/><br/><br/>
+                        <!-- Content-->
+                        <table width="75%"
+                               style="color: #454748; font-size: 12px;  border: 1px solid black;
+                                      border-collapse: collapse;">
+                            <tr style=" border: 1px solid black; background-color:rgb(183,183,183);
+                                        border-collapse: collapse;">
+                                <td width="5%" style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;">Sl.no</span>
+                                </td>
+                                <td width="15%" align="center" style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;">Project</span>
+                                </td>
+                                <td width="20%" align="center" style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;">Task</span>
+                                </td>
+                                <td width="20%" align="center"
+                                    style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;">Status</span>
+                                </td>
+                                <td width="15%" align="center" style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;">Hours spent</span>
+                                </td>
+                                <td width="25%" align="center" style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;">Remark</span>
+                                </td>
+                            </tr>
+                        </table>
+                        <table width="75%" style="color: #454748; font-size: 10px; border: 1px solid black;border-collapse: collapse;">
+                            <tr style=" border: 1px solid black; border-collapse: collapse;">
+                                <td colspan="4" width="5%" align="center" style=" border: 1px solid black;">
+                                    <span>1</span>
+                                </td>
+                                <td colspan="4" width="15%" align="center" style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;" t-out="object.project_id.name or ''">
+                                        Project name
+                                    </span>
+                                </td>
+                                <td colspan="4" width="20%" align="center"
+                                    style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;" t-out="object.task_id.name or ''">
+                                        Task name
+                                    </span>
+                                </td>
+                                <td colspan="4" width="20%" align="center"
+                                    t-if="object.status == 'ongoing'"
+                                    style="background-color : rgb(255,217,102);border: 1px solid black;">
+                                    <span style="font-weight:bold;" t-out="object.status or ''">
+                                        Status
+                                    </span>
+                                </td>
+                                <td colspan="4" width="20%" align="center" t-if="object.status == 'completed'"
+                                    style="background-color : rgb(106,168,79); border: 1px solid black;">
+                                    <span style="font-weight:bold;" t-out="object.status or ''">
+                                        Status
+                                    </span>
+                                </td>
+                                <td colspan="4" width="15%" align="center">
+                                    <span style="font-weight:bold;" t-out="object.unit_amount or ''">
+                                        Hours spent
+                                    </span>
+                                </td>
+                                <td colspan="4" width="25%" align="center" style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;" t-out="object.name or ''">
+                                        Remarks
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                        <br/>
+                        <!-- FOOTER -->
+                        <tr>
+                            <td align="Left" style="min-width: 590px;">
+                                Thanks &amp; Regard,
+                                <table border="0" cellpadding="0" cellspacing="0" width="590"
+                                       style="min-width: 590px; background-color: white; font-size: 11px;
+                                        padding: 0px 8px 0px 8px; border-collapse:separate;">
+                                    <tr>
+                                        <td valign="middle" align="left">
+                                            <t t-out="object.employee_id.name or ''">
+                                                Employee
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td valign="middle" align="left">
+                                            <t t-out="user.company_id.name or ''">YourCompany</t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td valign="middle" align="left" style="opacity: 0.7;">
+                                            <t t-out="user.company_id.phone or ''">+1 650-123-4567</t>
+                                            <t t-if="user.company_id.phone and (user.company_id.email or user.company_id.website)"> | </t>
+                                            <t t-if="user.company_id.email">
+                                                <a t-attf-href="'mailto:%s' % {{ user.company_id.email }}" style="text-decoration:none; color: #454748;"
+                                                   t-out="user.company_id.email or ''">
+                                                    info@yourcompany.com
+                                                </a>
+                                            </t>
+                                            <t t-if="user.company_id.email and user.company_id.website"> |
+                                            </t>
+                                            <t t-if="user.company_id.website">
+                                                <a t-attf-href="'%s' % {{ user.company_id.website }}"
+                                                   style="text-decoration:none; color: #454748;"
+                                                   t-out="user.company_id.website or ''">
+                                                    http://www.example.com
+                                                </a>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+            <field name="lang">${object.env.user.lang}</field>
+        </record>
+        <!--Employee daily work report Email template -->
+        <record id="email_template_daily_report_from_timesheet"
+                model="mail.template">
+            <field name="name">WorkReport: Daily Work report from timesheet</field>
+            <field name="model_id" ref="work_report_from_timesheet.model_account_analytic_line"/>
+             <field name="description">Send Daily work report of employee to the manager</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hello,<br/>
+                        Here is a report on my daily work.<br/><br/><br/>
+                        <!-- Content-->
+                        <table width="75%"
+                               style="color: #454748; font-size: 12px;  border: 1px solid black;
+                                      border-collapse: collapse;">
+                            <tr style=" border: 1px solid black; background-color:rgb(183,183,183);
+                                        border-collapse: collapse;">
+                                <td width="5%" style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;">Sl.no</span>
+                                </td>
+                                <td width="15%" align="center" style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;">Project</span>
+                                </td>
+                                <td width="20%" align="center" style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;">Task</span>
+                                </td>
+                                <td width="20%" align="center"
+                                    style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;">Status</span>
+                                </td>
+                                <td width="15%" align="center" style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;">Hours spent</span>
+                                </td>
+                                <td width="25%" align="center" style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;">Remark</span>
+                                </td>
+                            </tr>
+                        </table>
+                        <t t-set="i" t-value="1" />
+                        <t t-foreach="ctx.get('data')" t-as="data">
+                        <table width="75%" style="color: #454748; font-size: 10px; border: 1px solid black;border-collapse: collapse;">
+                            <tr style=" border: 1px solid black; border-collapse: collapse;">
+                                <td colspan="4" width="5%" align="center" style=" border: 1px solid black;">
+                                                <span t-esc="i"/>
+                                                  <t t-set="i" t-value="i+1"/>
+                                </td>
+                                <td colspan="4" width="15%" align="center" style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;" t-out="data.project_id.name or ''">
+                                        Project name
+                                    </span>
+                                </td>
+                                <td colspan="4" width="20%" align="center"
+                                    style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;" t-out="data.task_id.name or ''">
+                                        Task name
+                                    </span>
+                                </td>
+                                <td colspan="4" width="20%" align="center"
+                                    t-if="data.status == 'ongoing'"
+                                    style="background-color : rgb(255,217,102);border: 1px solid black;">
+                                    <span style="font-weight:bold;" t-out="data.status or ''">
+                                        Status
+                                    </span>
+                                </td>
+                                <td colspan="4" width="20%" align="center" t-if="data.status == 'completed'"
+                                    style="background-color : rgb(106,168,79); border: 1px solid black;">
+                                    <span style="font-weight:bold;" t-out="data.status or ''">
+                                        Status
+                                    </span>
+                                </td>
+                                <td colspan="4" width="15%" align="center">
+                                    <span style="font-weight:bold;" t-out="data.unit_amount or ''">
+                                        Hours spent
+                                    </span>
+                                </td>
+                                <td colspan="4" width="25%" align="center" style=" border: 1px solid black;">
+                                    <span style="font-weight:bold;" t-out="data.name or ''">
+                                        Remarks
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                        </t>
+                        <br/>
+                        <!-- FOOTER -->
+                        <tr>
+                            <td align="Left" style="min-width: 590px;">
+                                Thanks &amp; Regard,
+                                <table border="0" cellpadding="0" cellspacing="0" width="590"
+                                       style="min-width: 590px; background-color: white; font-size: 11px;
+                                        padding: 0px 8px 0px 8px; border-collapse:separate;">
+                                    <tr>
+                                        <td valign="middle" align="left">
+                                            <t t-out="data.employee_id.name or ''">
+                                                Employee
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td valign="middle" align="left">
+                                            <t t-out="user.company_id.name or ''">YourCompany</t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td valign="middle" align="left" style="opacity: 0.7;">
+                                            <t t-out="user.company_id.phone or ''">+1 650-123-4567</t>
+                                            <t t-if="user.company_id.phone and (user.company_id.email or user.company_id.website)"> | </t>
+                                            <t t-if="user.company_id.email">
+                                                <a t-attf-href="'mailto:%s' % {{ user.company_id.email }}" style="text-decoration:none; color: #454748;"
+                                                   t-out="user.company_id.email or ''">
+                                                    info@yourcompany.com
+                                                </a>
+                                            </t>
+                                            <t t-if="user.company_id.email and user.company_id.website"> |
+                                            </t>
+                                            <t t-if="user.company_id.website">
+                                                <a t-attf-href="'%s' % {{ user.company_id.website }}"
+                                                   style="text-decoration:none; color: #454748;"
+                                                   t-out="user.company_id.website or ''">
+                                                    http://www.example.com
+                                                </a>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+            <field name="lang">{{ object.partner_id.lang or '' }}</field>
+        </record>
+    </data>
+</odoo>
