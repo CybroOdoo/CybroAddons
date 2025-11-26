@@ -26,8 +26,6 @@ import re
 from odoo import http
 from odoo.http import request
 
-from odoo.modules.module import get_module_resource
-
 
 def minify_css(path):
     """
@@ -139,8 +137,11 @@ class ThemeStudio(http.Controller):
         changed_styles_str = kwargs.get('changed_styles', '{}')
         object_class = kwargs.get('object_class', '')
         changed_styles = json.loads(changed_styles_str)
-        file_path = get_module_resource('backend_theme_infinito', 'static', 'src', 'css', 'dynamic_styles.css')
+        working_dir = os.path.dirname(os.path.realpath(__file__))
+        working_dir = working_dir.replace('/controllers', '')
+        file_path = working_dir + '/static/src/css/dynamic_styles.css'
         style_file = open(file_path, 'a')
+
         if os.stat(file_path).st_size == 0:
             style_file.write('/* This file is generated automatically by '
                              'Theme Infinito */\n')
@@ -190,7 +191,9 @@ class ThemeStudio(http.Controller):
            ```
        """
         selector = kwargs.get('selector', '')
-        file_path = get_module_resource('backend_theme_infinito', 'static', 'src', 'css', 'dynamic_styles.css')
+        working_dir = os.path.dirname(os.path.realpath(__file__))
+        file_path = working_dir.replace('controllers',
+                                        'static/src/css/dynamic_styles.css')
         style_file = open(file_path, 'r')
         css = style_file.read()
         css = re.sub(r'/\*[\s\S]*?\*/', "", css)
@@ -236,7 +239,9 @@ class ThemeStudio(http.Controller):
             reset_to_default()
             ```
         """
-        file_path = get_module_resource('backend_theme_infinito', 'static', 'src', 'css', 'dynamic_styles.css')
+        working_dir = os.path.dirname(os.path.realpath(__file__))
+        file_path = working_dir.replace('controllers',
+                                        'static/src/css/dynamic_styles.css')
         style_file = open(file_path, 'w')
         style_file.write('')
         return True
@@ -433,35 +438,51 @@ class ThemeStudio(http.Controller):
             'user_id': request.env.user.id
         })
 
-    @http.route(['/theme_studio/get_recent_apps'], type="json")
+    @http.route(['/theme_studio/get_recent_apps'], type="json", auth="user")
     def get_recent_apps(self):
         """
-       Retrieve the list of recent applications for the current user.
+           Retrieve the list of recent applications for the current user.
 
-       Returns:
-           list: A list of dictionaries containing the recent applications'
-           information,
-               or an empty list if no recent apps are found.
+           Returns:
+               list: A list of dictionaries containing the recent applications'
+               information,
+                   or an empty list if no recent apps are found.
 
-       This function retrieves the list of recent applications for the current
-       user from the database. It returns a list of dictionaries containing the
-       information of each recent application, such as its ID, name, and other
-       relevant details.
+           This function retrieves the list of recent applications for the current
+           user from the database. It returns a list of dictionaries containing the
+           information of each recent application, such as its ID, name, and other
+           relevant details.
 
-       Example:
-           To retrieve the list of recent applications for the current user:
+           Example:
+               To retrieve the list of recent applications for the current user:
 
-           ```python
-           from my_theme_module import get_recent_apps
+               ```python
+               from my_theme_module import get_recent_apps
 
-           recent_apps = get_recent_apps()
-           print(recent_apps)
-           ```
-       """
-        recent_app = request.env['recent.apps'].sudo()
-        return recent_app.search_read([
-            ('user_id', '=', request.env.user.id)
-        ])
+               recent_apps = get_recent_apps()
+               print(recent_apps)
+               ```
+        """
+        recent_apps_model = request.env['recent.apps'].sudo()
+        menu_model = request.env['ir.ui.menu'].sudo()
+
+        results = []
+        recent_records = recent_apps_model.search(
+            [('user_id', '=', request.env.user.id)],
+            order="id desc")
+        for rec in recent_records:
+            menu = menu_model.browse(rec.app_id)
+            if not menu.exists():
+                continue
+            icon_data = menu.web_icon_data  # base64
+            icon_type = "svg" if (menu.web_icon and menu.web_icon.endswith("svg")) else "png"
+            results.append({
+                "app_id": menu.id,
+                "name": menu.name,
+                "icon": icon_data,
+                "type": icon_type,
+            })
+        return results
 
     @http.route(['/theme_studio/add_menu_bookmarks'], type="json")
     def add_menu_bookmarks(self, args):
@@ -571,7 +592,10 @@ class ThemeStudio(http.Controller):
             print(presets)
             ```
         """
-        file_path = get_module_resource("backend_theme_infinito", "static", "src", "json", "presets.json")
+        working_dir = os.path.dirname(os.path.realpath(__file__))
+        working_dir = working_dir.replace('/controllers', '')
+        file_path = working_dir + '/static/src/json/presets.json'
         file = open(file_path, 'r')
         presets = json.load(file)
+
         return presets

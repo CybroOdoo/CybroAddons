@@ -13,6 +13,8 @@ import {useService, useBus} from "@web/core/utils/hooks";
 import {InfinitoDialog} from "./style_add"
 import {jsonrpc} from "@web/core/network/rpc_service";
 import {Dialog} from "@web/core/dialog/dialog";
+import { variables, colors, to_color } from './variables';
+
 
 const {useRef, onWillStart, xml, onMounted} = owl;
 
@@ -45,7 +47,7 @@ export class ThemeEditorSidebar extends Component {
                                                         id="presets" t-on-change="_onPresetChange">
                                                         <t t-if="state.presets">
                                                             <t t-foreach="state.presets.button" t-as="preset" t-key="preset.name">
-                                                                <option t-att-value="preset.name" t-att-style="_convertStyle(preset.style)"><t t-esc="preset.name"/></option>
+                                                                <option t-att-value="preset.name" t-att-data="_convertStyle(preset.style)"><t t-esc="preset.name"/></option>
                                                             </t>
                                                         </t>
                                                 </select>
@@ -131,6 +133,7 @@ export class ThemeEditorSidebar extends Component {
             DesignDictionary: {},
             preset_type: null,
             presets: null,
+            style:'',
         })
         this.renderPresets();
         // Set display name based on props
@@ -191,7 +194,7 @@ export class ThemeEditorSidebar extends Component {
                                             <h6>${displayName}</h6>
                                             <div class="form-group">
                                                 <select class="form-control" id="select" t-att-name="${this.state.DesignDictionary[key].name}" aria-label="Default select example"
-                                                    t-att-data-alt="${this.state.DesignDictionary[key].alt}" t-on-click="_onClickInput">
+                                                    t-att-data-alt="${this.state.DesignDictionary[key].alt}" t-on-change="_onClickInput">
                                                     ${this.state.DesignDictionary[key].options.map(option => `
                                                         <option t-att-value="${option}">${option}</option>
                                                     `).join('')}
@@ -256,11 +259,12 @@ export class ThemeEditorSidebar extends Component {
      * @param {Event} ev - The event object representing the change event.
      */
     _onPresetChange(ev) {
+        document.querySelector(".infinito-remove").innerHTML = ''; // Clear existing content
         // Get the index and selected option element
         let index = ev.target.selectedIndex;
         let elem = ev.target.children[index];
         // Extract inline style string from the selected option element
-        let styleString = elem.getAttribute('style');
+        let styleString = elem.getAttribute('data');
         // Split the style string into individual style declarations and create a dictionary of styles
         const styleDeclarations = styleString.split(';');
         const styles_dict = {}
@@ -328,15 +332,25 @@ export class ThemeEditorSidebar extends Component {
         var styles = this.props.object.target.style
         // Open a dialog to save changes with the target styles and class
         this.dialog.add(SaveChanges, {tools: styles, targetClass: targetClass});
+        this.toggleSidebar()
     }
 
     /**
      * Handles the event when resetting changes.
      */
     _onResetChanges() {
-        // Remove the element with class 'infinito-remove'
-        document.querySelector('.infinito-remove').remove();
+        const attr = this.props.object.target;
+        const styleStr = this.state.style || '';
+
+        styleStr.split(';').forEach(rule => {
+            const [prop] = rule.split(':');
+            if (prop) $(attr).css(prop.trim(), '');
+        });
+
+        document.querySelector('.infinito-remove').innerHTML = '';
     }
+
+
 
     /**
      * Handles the click event on input elements.
@@ -346,7 +360,7 @@ export class ThemeEditorSidebar extends Component {
         // Initialize variables
         var input_value, new_attr = '';
         // Extract input type, unit, and alt from the target element
-        var input_type = $(ev.target).attr('name');
+        var input_type = ev.target.getAttribute('name') || ev.target.getAttribute('t-att-name')
         var all_alts = [input_type];
         var unit = $(ev.target).data('unit');
         var alt = $(ev.target).data('alt');
@@ -355,7 +369,7 @@ export class ThemeEditorSidebar extends Component {
             let value = $(ev.target).val();
             if (unit) {
                 value += unit;
-            }
+            }[[]]
             value = $(ev.target).val() == '-1' ? 'infinite' : value;
             $(ev.target).next().html(value);
         }
@@ -374,9 +388,10 @@ export class ThemeEditorSidebar extends Component {
                 all_alts.push(alt[i] + input_type)
             }
         }
+        this.state.style = this.state.style + style
         // Apply the style to the target element
         var attr = this.props.object.target;
-        $(attr).css('cssText', style);
+        $(attr).css('cssText', this.state.style);
     }
 
     /**
@@ -385,100 +400,56 @@ export class ThemeEditorSidebar extends Component {
      * @param {string} [val=null] - Optional value to override the default value of the tool.
      */
     renderNewTool(tool, val = null) {
-        if (tool) {
-            // Get default value or use provided value
-            var value = this.getDefaultValue(tool.name);
-            if (val) {
-                value = val;
-            }
-            if (tool.type == 'range') {
-                value = value.replace(/[^0-9,.]+/g, "")
-            }
-            // Set the tool default value
-            this.state.widget = tool;
-            tool.default = value;
-            // Create a new div element for the tool
-            var newDiv = document.createElement("div");
-            newDiv.classList.add("optss", "infinito-remove");
-            // Generate HTML based on the tool type
-            if (tool.type == 'color') {
-                // Color type tool
-                newDiv.innerHTML = `<div class="bg_color">
-                                    <h6>${tool.displayName}</h6>
-                                    <div class="color_picker">
-                                        <input class="favcolor" id="favcolor" type="color" name="${tool.name}" value="${tool.default}" property="color" data-alt="${tool.alt}"/>
-                                    </div>
-                                </div>`;
-                var customizeButton = document.querySelector('.button_cutomise');
-                customizeButton.appendChild(newDiv);
-            }
-            var rangeDiv = document.createElement("div");
-            rangeDiv.classList.add("optss", "infinito-remove");
-            if (tool.type == 'range') {
-                // Range type tool
-                rangeDiv.innerHTML = `<div class="b_slider">
-                                        <h6>
-                                            ${tool.displayName}
-                                        </h6>
-                                        <h6>
-                                            ${tool.unit}
-                                        </h6>
-                                    </div>
-                                    <div class="b_width">
-                                        <div class="sliderContainer">
-                                            <input type="range" t-att-name="${tool.name}" t-att-data-unit="${tool.unit}"
-                                                   value="${tool.default}" t-att-min="${tool.min}" t-att-max="${tool.max}"
-                                                   id="slider" t-att-data-alt="${tool.alt}"/>
-                                            <span id="output"/>
-                                        </div>
-                                    </div>`
-                var customizeButton = document.querySelector('.button_cutomise');
-                customizeButton.appendChild(rangeDiv);
-                var rangeInput = document.getElementById('slider');
-                rangeInput.addEventListener('click', function () {
-                    // Handle click event if needed
-                });
-            }
-            var SelectDiv = document.createElement("div");
-            SelectDiv.classList.add("optss", "infinito-remove");
-            if (tool.type == 'select') {
-                // Select type tool
-                SelectDiv.innerHTML = `<div class="b_slider">
-                                        <h6>
-                                             ${tool.displayName}
-                                        </h6>
-                                        <div class="form-group">
-                                            <select class="form-control" id="select" t-att-name="${tool.name}" aria-label="Default select example" t-att-data-alt="${tool.alt}">
-                                                <t t-foreach="${tool.options}" t-as="option" t-key="option">
-                                                    <option t-att-value="option"><t t-esc="option"/></option>
-                                                </t>
-                                            </select>
-                                        </div>
-                                    </div>`;
-                var customizeButton = document.querySelector('.button_cutomise');
-                customizeButton.appendChild(SelectDiv);
-            }
-            var InputDiv = document.createElement("div");
-            InputDiv.classList.add("optss", "infinito-remove");
-            if (tool.type == 'input') {
-                // Input type tool
-                InputDiv.innerHTML = `<div class="b_slider">
-                                        <h6>
-                                            ${tool.displayName}
-                                        </h6>
-                                    </div>
-                                    <ul class="b_style">
-                                        <li>
-                                            <input type="text" id="text" t-att-name="${tool.name}"
-                                                   t-att-value="${tool.default}" t-att-placeholder="${tool.displayName}"
-                                                   t-att-data-alt="${tool.alt}"/>
-                                        </li>
-                                    </ul>`
-                // Append the new tool to the DOM
-                var customizeButton = document.querySelector('.button_cutomise');
-                customizeButton.appendChild(InputDiv);
-            }
+        if (!tool) return null;
+        let value = this.getDefaultValue(tool.name);
+        if (val) value = val;
+        if (tool.type == 'range') value = value.replace(/[^0-9,.]+/g, "");
+
+        tool.default = value;
+        let newDiv = document.createElement("div");
+
+        if (tool.type == 'color') {
+            newDiv.innerHTML = `<div class="bg_color">
+                <h6>${tool.displayName}</h6>
+                <div class="color_picker">
+                    <input class="favcolor" id="favcolor" type="color" name="${tool.name}" value="${tool.default}" property="color" data-alt="${tool.alt}"/>
+                </div>
+            </div>`;
+        } else if (tool.type == 'range') {
+            newDiv.innerHTML = `<div class="b_slider">
+                <h6>${tool.displayName}</h6>
+                <h6>${tool.unit}</h6>
+            </div>
+            <div class="b_width">
+                <div class="sliderContainer">
+                    <input type="range" name="${tool.name}" data-unit="${tool.unit}"
+                        value="${tool.default}" min="${tool.min}" max="${tool.max}"
+                        id="slider" data-alt="${tool.alt}"/>
+                    <span id="output"/>
+                </div>
+            </div>`;
+        } else if (tool.type == 'select') {
+            newDiv.innerHTML = `<div class="b_slider">
+                <h6>${tool.displayName}</h6>
+                <div class="form-group">
+                    <select class="form-control" id="select" name="${tool.name}" aria-label="Default select example" data-alt="${tool.alt}">
+                        ${tool.options.map(option => `<option value="${option}">${option}</option>`).join('')}
+                    </select>
+                </div>
+            </div>`;
+        } else if (tool.type == 'input') {
+            newDiv.innerHTML = `<div class="b_slider">
+                <h6>${tool.displayName}</h6>
+            </div>
+            <ul class="b_style">
+                <li>
+                    <input type="text" id="text" name="${tool.name}"
+                        value="${tool.default}" placeholder="${tool.displayName}"
+                        data-alt="${tool.alt}"/>
+                </li>
+            </ul>`;
         }
+        return newDiv;
     }
 
     /**
@@ -487,13 +458,18 @@ export class ThemeEditorSidebar extends Component {
      */
     renderExistingTool(data) {
         // Iterate over each rule in the data
+        const infinito = document.querySelector(".infinito-remove");
+        infinito.innerHTML = ''; // Clear existing content
         for (var rule of data) {
             // Find the corresponding tool based on the rule name
             var current = NewTools.property.filter(tool => tool.name == rule[0].replace(' ', ''));
             // Push the tool name to the current_tools array
             this.current_tools.push(rule[0].replace(' ', ''));
             // Render the new tool based on the found tool configuration
-            this.renderNewTool(current[0]);
+            if(current.length !=0){
+                var styleDiv = this.renderNewTool(current[0]);
+                infinito.appendChild(styleDiv);
+            }
         }
     }
 

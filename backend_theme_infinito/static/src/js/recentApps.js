@@ -33,7 +33,7 @@ export default class InfinitoRecentApps extends owl.Component {
 // XML template for InfinitoRecentApps component
 InfinitoRecentApps.template = xml`
 <div class="recent-apps d-none" id="recentApps" t-ref="recentApps">
-        <div class="icon-tray">
+    <div class="icon-tray">
          <t t-foreach="recentApps" t-as="app" t-key="app">
             <a class="icon" t-attf-href="#menu_id={{app.app_id}}">
               <div class="img_wrapper">
@@ -43,6 +43,6 @@ InfinitoRecentApps.template = xml`
               <span class="zoomIn" t-esc="app.name"/>
             </a>
          </t>
-        </div>
-      </div>
+    </div>
+</div>
 `;
