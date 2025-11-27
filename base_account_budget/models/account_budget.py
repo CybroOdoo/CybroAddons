@@ -64,7 +64,7 @@ class Budget(models.Model):
         copy=False, tracking=True)
     budget_line = fields.One2many('budget.lines', 'budget_id', 'Budget Lines',
                                   copy=True)
-    company_id = fields.Many2one('res.company', 'Company', required=True,default=lambda self: self.env.company)
+    company_id = fields.Many2one('res.company', 'Company', required=True, default=lambda self: self.env.company)
 
     def action_budget_confirm(self):
         self.write({'state': 'confirm'})
@@ -170,28 +170,34 @@ class BudgetLines(models.Model):
                     else:
                         theo_amt = line.planned_amount
                 else:
-                    line_timedelta = fields.Datetime.from_string(
-                        line.date_to) - fields.Datetime.from_string(
-                        line.date_from)
-                    elapsed_timedelta = fields.Datetime.from_string(today) - (
-                        fields.Datetime.from_string(line.date_from))
-                    if elapsed_timedelta.days < 0:
+                    # Convert all dates to Date objects for consistent arithmetic
+                    date_from = fields.Date.from_string(line.date_from) if isinstance(line.date_from, str) else line.date_from
+                    date_to = fields.Date.from_string(line.date_to) if isinstance(line.date_to, str) else line.date_to
+                    today = fields.Date.today()
+                    
+                    if today < date_from:
                         # If the budget line has not started yet, theoretical amount should be zero
                         theo_amt = 0.00
-                    elif line_timedelta.days > 0 and fields.Datetime.from_string(
-                            today) < fields.Datetime.from_string(line.date_to):
-                        total_days = (line.date_to - line.date_from).days + 1
-                        days_over = (
-                                                fields.Date.today() - line.date_from).days + 1
-                        # If today is between the budget line date_from and date_to
-                        theo_amt = line.planned_amount / total_days * days_over
-                    else:
+                    elif today > date_to:
+                        # If today is after the budget line end date, use full amount
                         theo_amt = line.planned_amount
+                    else:
+                        # Calculate days using consistent Date objects
+                        total_days = (date_to - date_from).days + 1
+                        days_over = (today - date_from).days + 1
+                        # If today is between the budget line date_from and date_to
+                        theo_amt = line.planned_amount / max(1, total_days) * days_over
             line.theoretical_amount = theo_amt
 
     def _compute_percentage(self):
         for line in self:
-            if line.theoretical_amount != 0.00:
-                line.percentage = float((line.practical_amount or 0.0) / line.theoretical_amount) * 100
+            theoretical = line.theoretical_amount or 0.0
+            practical = line.practical_amount or 0.0
+
+            if theoretical != 0:
+                percentage = (practical / theoretical) * 100
             else:
-                line.percentage = 0.00
+                percentage = 0.0
+
+            line.percentage = max(0.0, min(100.0, percentage))
+
