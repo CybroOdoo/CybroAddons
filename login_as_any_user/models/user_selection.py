@@ -25,7 +25,7 @@ from odoo.http import request
 
 class UserSelection(models.Model):
     """
-        class for a wizard for users selection
+        Model used for selecting a user and switching the active session user.
         _onchange_user_id:
             function to get corresponding user group
         action_switch:

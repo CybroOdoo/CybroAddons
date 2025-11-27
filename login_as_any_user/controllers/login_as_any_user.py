@@ -31,7 +31,7 @@ class UserSwitch(http.Controller):
             function to switch back to admin
     """
 
-    @http.route('/switch/user', type='jsonrpc', auth='public')
+    @http.route('/switch/user', type='jsonrpc', auth='user')
     def user_switch(self):
         """
             Summary:
@@ -41,7 +41,7 @@ class UserSwitch(http.Controller):
         """
         return request.env.user._is_admin()
 
-    @http.route('/switch/admin', type='jsonrpc', auth='public')
+    @http.route('/switch/admin', type='jsonrpc', auth='user')
     def switch_admin(self):
         """
             Summary:
@@ -52,7 +52,7 @@ class UserSwitch(http.Controller):
         session = request.session
         pre_uid = session.get('previous_user')
         pre_user = request.env['res.users'].browse(pre_uid)
-        if pre_user and pre_user._is_admin:
+        if pre_user and pre_user._is_admin():
             session.authenticate_without_password(request.env.cr.dbname,
                                                   pre_user.login, request.env)
             return {

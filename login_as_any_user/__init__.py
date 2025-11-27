@@ -22,6 +22,5 @@
 from . import controllers
 from . import models
 from . import session
-from . import wizards
 
 

@@ -34,7 +34,7 @@
     'depends': ['web'],
     'data': [
         'security/ir.model.access.csv',
-        'wizards/user_selection_views.xml'
+        'views/user_selection_views.xml'
     ],
     'assets': {
         'web.assets_backend': [

@@ -26,22 +26,30 @@ from odoo.modules.registry import Registry
 
 def authenticate_without_password(self, dbname, login, env):
     """Function for login without password"""
-    registry = Registry(dbname)
-    pre_uid = env['res.users'].search([("login", '=', login)]).id
-    self.uid = None
-    self['pre_login'] = login
-    self['pre_uid'] = pre_uid
-    with registry.cursor() as cr:
-        env = odoo.api.Environment(cr, pre_uid, {})
-        # If 2FA is disabled we finalize immediately
-        user = env['res.users'].browse(pre_uid)
-        if not user._mfa_url():
-            self.finalize(env)
-    if request and request.session is self and request.db == dbname:
-        # Like update_env(user=request.session.uid) but works when uid is None
-        request.env = odoo.api.Environment(request.env.cr, self.uid,
-                                           self.context)
+    # validation
+    if not all([dbname, login]):
+        return None
+    # Get user
+    user_domain = [("login", "=", login)]
+    user = env['res.users'].search(user_domain, limit=1)
+    if not user:
+        return None
+    # Store session data
+    self.update({
+        'uid': None,
+        'pre_login': login,
+        'pre_uid': user.id
+    })
+    # Check 2FA requirement and authenticate if not required
+    if not user._mfa_url():
+        with Registry(dbname).cursor() as cr:
+            user_env = odoo.api.Environment(cr, user.id, {})
+            self.finalize(user_env)
+    # Update request environment if applicable
+    request = odoo.http.request
+    if request and getattr(request, 'session', None) is self and getattr(request, 'db', None) == dbname:
+        request.env = odoo.api.Environment(request.env.cr, self.uid, self.context)
         request.update_context(**self.context)
-    return pre_uid
+    return user.id
 
 Session.authenticate_without_password = authenticate_without_password
