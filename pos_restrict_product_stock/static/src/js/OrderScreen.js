@@ -24,8 +24,7 @@ patch(Order.prototype, {
         }
 
         for (const { product, total_qty, name } of Object.values(productQuantities)) {
-               if (product.detailed_type === 'service'|| product.uom_id[1]=="kg") {
-                console.log(product.type)
+               if (product.detailed_type === 'service'|| product.to_weight) {
                 continue;
             }
             if (is_restrict) {

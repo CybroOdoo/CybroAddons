@@ -8,7 +8,7 @@ import { _t } from "@web/core/l10n/translation";
 patch(PosStore.prototype, {
     async addProductToCurrentOrder(...args) {
         const product = args[0];
-         if (product.detailed_type === 'service'|| product.uom_id[1]=="kg") {
+         if (product.detailed_type === 'service'|| product.to_weight) {
             return super.addProductToCurrentOrder(...args);
         }
         const type = this.config.stock_type;

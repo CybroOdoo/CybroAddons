@@ -14,5 +14,5 @@ This will help prevent the ordering of out-of-stock products, whether entered vi
 #### 05.11.2025
 #### Version 17.0.2.1.2
 #### Update
-Service products and products measured in kilograms with “To Weigh in Scale” enabled are now excluded from 
+Service products and products measured “To Weigh in Scale” enabled are now excluded from 
 restricts stock availability check in POS.
