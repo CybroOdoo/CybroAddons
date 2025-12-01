@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Rearranged the DiscussSidebarCategory template-->
+<templates id="template" xml:space="preserve">
+    <t name="mail.DiscussSidebarCategoriesAdvanced"
+       t-inherit="mail.DiscussSidebarCategories.category"
+       t-inherit-mode="extension"
+       owl="1">
+            <DiscussSidebarCategory category="category" position="replace">
+                <t t-call="mail.DiscussionSidebarCategoryAdvanced">
+                    <t t-set="category" t-value="category"/>
+                </t>
+            </DiscussSidebarCategory>
+        </t>
+    <t t-name="mail.DiscussionSidebarCategoryAdvanced">
+            <t t-set="hover_class"
+               t-value="'btn p-0 text-start text-700 opacity-100-hover opacity-75'"/>
+        <t t-if="category.id == this.props.sidebar">
+                    <div class="o-mail-DiscussSidebarCategory d-flex align-items-center my-1"
+                         t-att-class="category.extraClass">
+                        <div t-attf-class="d-flex align-items-baseline mx-1 {{ hover_class }}"
+                             t-on-click="() => this.toggleCategory(category)">
+                            <i class="o-mail-DiscussSidebarCategory-icon small me-1"
+                               t-att-class="category.Open ? 'oi oi-chevron-down' : 'oi oi-chevron-right'"/>
+                            <span class="btn-sm p-0 text-uppercase fw-bolder"><t t-esc="category.name"/></span>
+                        </div>
+                        <div class="flex-grow-1"/>
+                        <div class="d-flex me-3">
+                            <i t-if="category.canView"
+                               t-attf-class="fa fa-cog {{ hover_class }}"
+                               title="View or join channels"
+                               t-on-click="() => this.openCategory(category)"
+                               role="img"/>
+                            <i t-if="category.canAdd and category.open"
+                               class="o-mail-DiscussSidebarCategory-add"
+                               t-attf-class="fa fa-plus {{ hover_class }} ms-1"
+                               t-on-click="() => this.addToCategory(category)"
+                               t-att-title="category.addTitle" role="img"
+                               t-att-data-hotkey="category.addHotkey"/>
+                        </div>
+                        <div t-if="!category.open and threadService.getDiscussSidebarCategoryCounter(category.id) > 0"
+                             class="o-mail-DiscussSidebar-badge badge rounded-pill me-3 o-discuss-badge fw-bold">
+                            <t t-esc="threadService.getDiscussSidebarCategoryCounter(category.id)"/>
+                        </div>
+                    </div>
+            </t>
+        </t>
+
+    <t name="mail.DiscussMeetingsAdvanced"
+       t-inherit="mail.MessagingMenu.content"
+       t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//div[hasclass('o-mail-MessagingMenu-header')]"
+               position="inside">
+            <t t-if="ui.isSmall">
+                <t t-if="store.discuss.activeTab !== 'main' or !env.inDiscussApp">
+                    <button name="startMeetingButton"
+                            t-if="!state.adding"
+                            class="w-50 m-1 me-0 btn btn-primary"
+                            t-on-click.stop="onClickStartMeeting">
+                        Start a meeting
+                    </button>
+                </t>
+            </t>
+        </xpath>
+    </t>
+</templates>
