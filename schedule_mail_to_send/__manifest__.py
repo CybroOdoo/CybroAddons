@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Schedule Mail to Send',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.1.0',
     'category': 'Discuss',
     'summary': """Easily schedule your emails for future delivery""",
     'description': """This module provides a function or feature that allows 

@@ -57,23 +57,20 @@ class MailComposeMessage(models.TransientModel):
             'scheduled_date': self.schedule_time,
             'recipient_ids': partner_list,
             'attachment_ids': attachment_list,
+            'scheduled_user_tz': pytz.timezone(self.env.context.get('tz') or self.env.user.tz),
         })
         # Get the user's timezone (fallback to UTC if not set)
         user_tz = self.env.context.get('tz') or self.env.user.tz or 'UTC'
-
         # Get current UTC time and convert to user's timezone
         utc_current_datetime = fields.Datetime.now()  # Naive UTC datetime
         local_current_datetime = fields.Datetime.context_timestamp(
             self.with_context(tz=user_tz), timestamp=utc_current_datetime
         )
-
         # Handle schedule_time (assumed to be UTC in the database)
         schedule_time = self.schedule_time
-
         if isinstance(schedule_time, str):
             # If schedule_time is a string, parse it to datetime (assuming UTC)
             schedule_time = fields.Datetime.from_string(schedule_time)
-
         # Convert schedule_time to user's timezone
         if schedule_time:
             schedule_time = fields.Datetime.context_timestamp(
@@ -107,29 +104,31 @@ class MailComposeMessage(models.TransientModel):
         return {'type': 'ir.actions.client', 'tag': 'reload'}
 
     def action_send_scheduled_mail(self):
-        """This function is called by a scheduled action in each minute to
-        send the scheduled mails"""
-        utc_current_datetime = fields.Datetime.now()
-        # Access the time zone
-        user_tz = pytz.timezone(self.env.context.get(
-            'tz') or self.env.user.tz)
-        # Access local time
-        date_today = pytz.utc.localize(utc_current_datetime).astimezone(
-            user_tz)
-        # Converted to string and removed the utc time difference
-        user_current_datetime = date_today.strftime(
-            '%Y-%m-%d %H:%M:%S')
-        # Again converted to datetime type and replace the seconds with 0
-        user_current_date = datetime.datetime.strptime(
-            user_current_datetime,
-            "%Y-%m-%d %H:%M:%S").replace(
-            second=0)
-        scheduled_mail_rec = self.env['mail.mail'].search(
-            [('scheduled_date', '<=', user_current_date)])
-        if scheduled_mail_rec:
-            for record in scheduled_mail_rec:
-                record.send()
-                planned_activity = self.env['mail.activity'].search(
-                    [('schedule_mail_id', '=', record.id)])
-                # unlink the planned activity
-                planned_activity.sudo().action_feedback(self)
+        """Executed by cron every minute. Sends emails whose scheduled datetime
+        has passed according to the timezone of the user who scheduled them.
+        """
+        Mail = self.env['mail.mail']
+        # Fetch all mails having schedule date set
+        scheduled_mails = Mail.search([('scheduled_date', '!=', False)])
+        for mail in scheduled_mails:
+            # If no timezone stored, fallback to UTC
+            user_tz = mail.scheduled_user_tz or 'UTC'
+            # Convert current UTC time → user's timezone
+            user_local_now = fields.Datetime.context_timestamp(
+                mail.with_context(tz=user_tz),
+                fields.Datetime.now()
+            ).replace(second=0, microsecond=0)
+            # Convert scheduled UTC → user's timezone
+            scheduled_dt = fields.Datetime.context_timestamp(
+                mail.with_context(tz=user_tz),
+                mail.scheduled_date
+            ).replace(second=0, microsecond=0)
+            # If scheduled time has passed, send mail
+            if scheduled_dt <= user_local_now:
+                mail.send()
+                # Remove any linked scheduled activity
+                activity = self.env['mail.activity'].search(
+                    [('schedule_mail_id', '=', mail.id)]
+                )
+                if activity:
+                    activity.sudo().action_feedback()

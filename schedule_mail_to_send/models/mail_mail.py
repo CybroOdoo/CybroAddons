@@ -19,6 +19,12 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import mail_compose_message
-from . import mail_activity
-from . import mail_mail
+from odoo import fields, models
+
+
+class MailMail(models.Model):
+    """This class is used to add fields to mail.mail model to"""
+    _inherit = 'mail.mail'
+
+    scheduled_user_tz = fields.Char(string="Scheduled User Timezone",
+                                    help="Shows the timezone of the user who scheduled the mail")
