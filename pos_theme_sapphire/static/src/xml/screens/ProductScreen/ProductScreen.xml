@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="point_of_sale.ProductScreen" t-inherit-mode="extension">
+        <xpath expr='//div[hasclass("product-screen")]' position="replace">
+            <div class="product-screen d-flex h-100 bg-100" t-att-class="{'flex-grow-1 w-100 mw-100': ui.isSmall}">
+
+                <!-- Sidebar Navigation -->
+                <div class="main-app">
+                    <div class="sidebar">
+                        <nav class="main-nav" style="height: 100%">
+                            <ul class="main-menu" style="height: 100%">
+
+                                <li class="menu-item">
+                                    <a href="#" class="menu-a" target="_blank">
+                                        <div class="ticket-button menu-txt-hld with-badge"
+                                            t-on-click="onTicketButtonClick"
+                                            t-att-badge="orderCount">
+                                            <i class="fa fa-ticket menu-icon" />
+                                            <span class="menu-txt">Orders</span>
+                                        </div>
+                                    </a>
+                                </li>
+
+                                <li class="menu-item">
+                                    <a href="#" class="menu-a" target="_blank">
+                                        <div class="cash-move-button menu-txt-hld"
+                                            t-on-click="onCashMoveButtonClick">
+                                            <i class="fa fa-money menu-icon" />
+                                            <span class="menu-txt">Cash In/Out</span>
+                                        </div>
+                                    </a>
+                                </li>
+
+                                <li class="menu-item">
+                                    <OrderTabs
+                                            orders="getOrderTabs()"
+                                            class="'sidebar-order-tabs d-flex flex-column gap-2 p-2'"
+                                    />
+                                </li>
+
+                                <li class="menu-item" style="position: absolute; bottom: 60px;">
+                                    <a href="#" class="menu-a" target="_blank">
+                                        <div class="header-button menu-txt-hld"
+                                            t-on-click="() => pos.closePos()">
+                                            <i class="fa fa-pause menu-icon" />
+                                            <span class="menu-txt">Backend</span>
+                                        </div>
+                                    </a>
+                                </li>
+
+                                <li class="menu-item" style="position: absolute; bottom: 5px;">
+                                    <a href="#" class="menu-a" target="_blank">
+                                        <div class="header-button menu-txt-hld" t-on-click="closeSession">
+                                            <i class="fa fa-sign-out menu-icon" />
+                                            <span class="menu-txt">Logout</span>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- RIGHT PANE (Products Area) -->
+                <div class="rightpane overflow-auto d-flex flex-grow-1 flex-column w-60"
+                    t-attf-class="{{ ui.isSmall and pos.mobile_pane !== 'right' ? 'd-none' : '' }}">
+                    <div class="position-relative d-flex flex-column flex-grow-1 overflow-hidden" t-ref="products-widget">
+                        <div
+                            class="products-widget-control products-widget-control-header mt-4 d-flex shadow-sm justify-content-between">
+                            <CashierName />
+                            <div class="d-flex search-products" id="search-products">
+                                <Input tModel="[pos, 'searchProductWord']" class="'p-2 lg-screen'" isSmall="ui.isSmall"
+                                    placeholder="'Search products...'" icon="{type: 'fa', value: 'fa-search'}"
+                                    debounceMillis="100" />
+                                <div class="home-category-button lg-screen-cat">
+                                    <span class="breadcrumb-button breadcrumb-home"
+                                        t-on-click="(id) => this.pos.setSelectedCategory(id)">
+                                        <i class="fa fa-home" role="img" aria-label="Home" title="Home"
+                                            style="font-size: 30px;" />
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Category and Product Grid -->
+                        <div class="product-list-container">
+                            <CategorySelector t-if="!ui.isSmall || !pos.scanning" />
+                        </div>
+
+                        <BarcodeVideoScanner t-if="pos.scanning" t-props="barcodeVideoScannerProps" />
+                        <div t-elif="pos.productToDisplayByCateg.length > 0" class="product_scroll_bar overflow-y-auto"
+                            t-on-scroll="onScroll">
+                            <div t-foreach="pos.productToDisplayByCateg" t-as="productCateg" t-key="productCateg[0]"
+                                class="product-list d-grid gap-1 gap-lg-2 px-2 pt-0 pb-2 mb-5">
+                                <ProductCard t-foreach="productCateg[1]" t-as="product" t-key="product.id"
+                                    productId="product.id" product="product" class="pos.productViewMode"
+                                    name="getProductName(product)"
+                                    color="product.color || product.pos_categ_ids?.at(-1)?.color"
+                                    imageUrl="pos.config.show_product_images and this.getProductImage(product)"
+                                    onClick.bind="() => this.addProductToOrder(product)"
+                                    t-on-mousedown="(event) => this.onMouseDown(event, product)"
+                                    t-on-mouseup="longPressHandlers.onMouseUp"
+                                    t-on-touchstart="(event) => this.onTouchStart(product)"
+                                    t-on-touchend="longPressHandlers.onTouchEnd"
+                                    productCartQty="this.state.quantityByProductTmplId[product.id]" />
+                            </div>
+                        </div>
+
+                        <!-- No Product Message -->
+                        <div t-else="" class="flex-grow-1 text-center mt-5">
+                            <p t-if="searchWord">No products found for <b>"<t t-esc="searchWord" />"</b>.</p>
+                            <div t-elif="!pos.selectedCategory" class="o_view_nocontent">
+                                <div class="o_nocontent_help">
+                                    <p class="o_view_nocontent_smiling_face">No Product Yet?</p>
+                                    <p>Scan a barcode to create automatically, or load our sample data.</p>
+                                    <p>
+                                        <button class="btn btn-lg btn-primary me-2"
+                                            t-on-click="()=> doLoadSampleData.call()"
+                                            t-att-disabled="doLoadSampleData.status === 'loading' ? 'disabled' : null">
+                                            <t t-if="doLoadSampleData.status === 'loading'">Loading...</t>
+                                            <t t-else="">Load Sample</t>
+                                        </button>
+                                        <button role="button" class="btn btn-lg btn-secondary"
+                                            t-on-click="()=>pos.editProduct()">Create Manually</button>
+                                    </p>
+                                </div>
+                            </div>
+                            <p t-else="">There are no products in this category.</p>
+                        </div>
+
+                        <!-- Search More Button -->
+                        <div t-if="searchWord" class="search-more-button d-flex justify-content-center m-2">
+                            <button class="btn btn-primary btn-lg lh-lg" t-on-click="onPressEnterKey">Search more</button>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Bottom Bar -->
+                    <t t-if="ui.isSmall">
+                        <div class="switchpane d-flex gap-2 p-2 border-top bg-view">
+                            <button t-if="!pos.scanning"
+                                class="btn-switchpane pay-button btn btn-lg flex-grow-1"
+                                t-attf-class="{{ currentOrder.isEmpty() ? 'btn-secondary' : 'btn-primary' }}"
+                                t-attf-style="{{ currentOrder.isEmpty() ? '' : 'background: linear-gradient(to right bottom, rgb(85, 100, 194), rgb(58, 46, 141)) !important; border-color: rgb(58, 46, 141); color: white !important;' }}"
+                                t-on-click="() => this.pos.pay()">
+                                <span class="d-block">Payment</span>
+                                <span t-esc="total" />
+                            </button>
+                            <button class="btn-switchpane btn btn-secondary review-button flex-grow-1"
+                                t-on-click="switchPane">
+                                <span class="d-block">Cart</span>
+                                <small><t t-esc="items" /> items</small>
+                            </button>
+                            <button t-if="pos.scanning"
+                                class="btn-switchpane btn btn-secondary btn-lg flex-grow-1"
+                                t-on-click="() => this.pos.scanning = false">
+                                <span class="d-block">Products</span>
+                            </button>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- LEFT PANE (Cart / Summary) -->
+                <div class="leftpane d-flex flex-column p-2"
+                    t-att-class="{'d-none': ui.isSmall and pos.mobile_pane !== 'left'}">
+                    <OrderSummary />
+                    <div class="pads">
+                        <div class="control-buttons d-flex justify-content-between gap-2 w-100 py-2">
+                            <ControlButtons t-if="!ui.isSmall" onClickMore.bind="displayAllControlPopup" />
+                        </div>
+                        <div class="subpads d-flex flex-column gap-2">
+                            <Numpad t-if="!currentOrder?.isEmpty() and pos.getOrder()?.uiState.selected_orderline_uuid"
+                                class="'d-grid m-n1'" buttons="getNumpadButtons()" onClick.bind="onNumpadClick" />
+                            <ActionpadWidget partner="currentOrder?.getPartner()"
+                                onClickMore.bind="displayAllControlPopup"
+                                actionName.translate="Payment"
+                                actionToTrigger="() => pos.pay()"
+                                showActionButton="!currentOrder?.isEmpty()" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Floating Reminder -->
+                <t t-if="ui.isSmall">
+                    <div class="product-reminder d-flex justify-content-center align-items-center py-1 text-bg-warning bg-opacity-50 fw-bolder"
+                        t-if="state.showProductReminder" t-key="animationKey">
+                        <span>
+                            <t t-esc="selectedOrderlineQuantity" />
+                            <t t-esc="selectedOrderlineDisplayName" />
+                            <t t-esc="selectedOrderlineTotal" />
+                        </span>
+                    </div>
+                </t>
+            </div>
+        </xpath>
+    </t>
+</templates>
