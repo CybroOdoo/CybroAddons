@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Pos Product Magnify Image",
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.1.0',
     'category': 'Point of Sale',
     'summary': """Magnify product image in PoS""",
     'description': "Allows to enlarge the image in a button click for every"
