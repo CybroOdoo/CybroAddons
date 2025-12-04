@@ -10,3 +10,8 @@
 #### Version 17.0.1.1.1
 ##### UPDATE
 - The latest module update includes enhancements to the list view configuration. You can now add the newly created field to the selected list view at the desired position, with the option to enable or disable its visibility by default.
+
+#### 03.12.2025
+#### Version 17.0.1.1.2
+##### UPDATE
+- Fixed the package issue during module installation

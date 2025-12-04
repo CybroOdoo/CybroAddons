@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from xlrd.xlsx import ET
+import xml.etree.ElementTree as ET
 
 from odoo import api, fields, models, _
 
