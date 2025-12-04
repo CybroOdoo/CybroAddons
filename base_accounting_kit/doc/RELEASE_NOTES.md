@@ -54,3 +54,8 @@
 #### Version 18.0.5.0.7
 #### FIX
 - Fixed Transactions button redirection for bank and cash journals to display journal-specific transactions, and added reconciliation filter for the To Reconcile action.
+
+#### 03.12.2025
+#### Version 18.0.5.0.8
+#### FIX
+- Fixed the issues in the controller while printing the xlsx report.
