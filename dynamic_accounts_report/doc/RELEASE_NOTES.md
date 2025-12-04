@@ -29,3 +29,8 @@
 #### Version 18.0.1.2.5
 #### UPDT
 - Bug Fixing in the accounting report (Trial Balance).
+
+#### 03.12.2025
+#### Version 18.0.1.2.6
+#### BUG FIX
+- Removed the controller for xlsx report generation which was already present in the dependent module base_accounting_kit.
