@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+    # -- coding: utf-8 --
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -22,29 +22,29 @@
 {
     'name': 'Instant Import',
     'version': '17.0.1.0.0',
-    'depends': ['base', 'web', 'base_import'],
     'category': 'Tools',
     'summary': 'Module for fast bulk imports using PostgreSQL COPY',
-    'author': "Cybrosys Techno Solutions",
+    'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
-    'application': False,
+    'maintainer ': 'Cybrosys Techno Solutions',
+    'website': 'https://www.cybrosys.com',
+    'depends': ['base', 'web', 'base_import'],
     'data': [
-        'security/ir.model.access.csv',
-    ],
-    'assets': {
-        'web.assets_backend': [
-            'instant_import/static/src/js/import_component.js',
-            'instant_import/static/src/js/import_component.xml',
-            'instant_import/static/src/js/instant_import.js',
-            'instant_import/static/src/js/templates.xml',
+            'security/ir.model.access.csv',
         ],
-    },
-    'images': [
-        'static/description/banner.jpg',
-    ],
+    'assets': {
+            'web.assets_backend': [
+                'instant_import/static/src/js/import_component.js',
+                'instant_import/static/src/js/import_component.xml',
+                'instant_import/static/src/js/instant_import.js',
+                'instant_import/static/src/js/templates.xml',
+            ],
+        },
+    'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
+    'installable': True,
+    'auto_install': False,
+    'application': True,
     'post_init_hook': 'setup_db_level_functions',
     'uninstall_hook': 'delete_contact',
 }

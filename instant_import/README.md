@@ -19,6 +19,7 @@ volumes of data are imported quickly and efficiently.
 - **Real-Time Validation**: Instantly checks for field mismatches or errors before importing.
 - **OWL-Based Interface**: Modern and responsive UI built with Odoo Web Library (OWL) for smooth user experience.
 - **Seamless Record Creation**: Automatically creates records without navigating away from the current view.
+- 
 ## Screenshots
 
 Here are some glimpses of Odoo Instant Import:
@@ -73,3 +74,63 @@ Here are some glimpses of Odoo Instant Import:
 Before you begin, ensure you have the following installed:
 
 - An active Odoo Community/Enterprise Edition instance (local or hosted)
+
+## Installation
+
+Follow these steps to set up and run the app:
+
+1. **Clone the Repository**
+
+   ```git clone https://github.com/cybrosystech/Instant-Import.git```
+   
+2. **Add the module to addons**
+
+   ```cd Instant-Import```
+
+## Contributing
+
+The feature - The ability to update existing records during import is not yet implemented.
+Currently, the importer supports only the creation of new records.
+Updates to existing entries will be available in a future release.
+We welcome contributions! To get started:
+
+1. Fork the repository.
+
+2. Create a new branch:  
+   ```  
+   git checkout -b feature/your-feature-name  
+   ```  
+3. Make changes and commit:  
+   ```  
+   git commit -m "Add your message here"  
+   ```  
+4. Push your changes:  
+   ```  
+   git push origin feature/your-feature-name  
+   ```  
+5. Create a Pull Request on GitHub.  
+
+---
+- Submit a pull request with a clear description of your changes.
+
+## License
+
+This project is licensed under the LGPL-3. Feel free to use, modify, and distribute it as needed.
+
+Company
+-------
+* `Cybrosys Techno Solutions <https://cybrosys.com/>`
+
+
+## Contact
+
+* Mail Contact : odoo@cybrosys.com
+* Website : https://cybrosys.com
+
+Maintainer
+==========
+.. image:: https://cybrosys.com/images/logo.png
+   :target: https://cybrosys.com
+
+This module is maintained by Cybrosys Technologies.
+For support and more information, please visit https://www.cybrosys.com

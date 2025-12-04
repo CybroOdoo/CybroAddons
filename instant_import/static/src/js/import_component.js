@@ -1,5 +1,4 @@
 /** @odoo-module **/
-
 import { registry } from "@web/core/registry";
 import { ImportAction } from "@base_import/import_action/import_action";
 import { useService } from "@web/core/utils/hooks";
@@ -22,8 +21,6 @@ export class InstantImport extends ImportAction {
             this.blockUI.block({
                 message: "Your records are being imported...",
             });
-
-            console.log("Importing model:", this.props.action.params.model);
             const result = await this.orm.call(
                 "custom.import.wizard",
                 "copy_import",
@@ -47,7 +44,6 @@ export class InstantImport extends ImportAction {
             }
 
         } catch (error) {
-            console.error("Import error:", error);
 
             // Extract the actual error message from the error object
             let errorMessage = "Import failed. Please check your data.";
@@ -84,7 +80,6 @@ export class InstantImport extends ImportAction {
                 {}
             );
 
-            console.log('Validation result:', validationResult);
 
             if (validationResult && validationResult.is_valid) {
                 this.notification.add(`Everything seems valid`, {
@@ -112,7 +107,6 @@ export class InstantImport extends ImportAction {
             }
 
         } catch (error) {
-            console.error("Error during column validation:", error);
 
             // Extract the actual error message from the error object
             let errorMessage = "Validation failed. Please check your data.";
@@ -136,3 +130,65 @@ export class InstantImport extends ImportAction {
 }
 
 registry.category("actions").add("instant_import", InstantImport);
+
+
+
+
+
+
+
+
+
+
+
+///** @odoo-module **/
+//
+//import { registry } from "@web/core/registry";
+//import { ImportAction } from "@base_import/import_action/import_action";
+//import { useService } from "@web/core/utils/hooks";
+//import { BlockUI } from "@web/core/ui/block_ui";
+//
+//export class CustomImport extends ImportAction {
+//    static template = "custom_import.importaction";
+//    static components = { ...ImportAction.components, BlockUI };
+//
+//    setup() {
+//        super.setup();
+//        this.orm = useService('orm');
+//        this.action = useService('action');
+//        this.notification = useService("notification");
+//        this.blockUI = useService("ui");
+//    }
+//
+//    async handleImport() {
+//        try {
+//            this.blockUI.block({
+//                message: "Your records are being imported...",
+//            });
+//
+//            const result = await this.orm.call(
+//                "custom.import.wizard",
+//                "copy_import",
+//                [this.model.id, this.props.action.params.model, this.model.columns],
+//                {}
+//            );
+//
+//            if (result && result.record_count) {
+//                this.notification.add(` ${result.record_count} Records successfully imported`, {
+//                    type: "success",
+//                });
+//            }
+//
+//            this.action.doAction({
+//                type: "ir.actions.act_window",
+//                res_model: this.props.action.params.model,
+//                name: result.name,
+//                views: [[false, 'kanban'], [false, 'form']],
+//                target: 'main',
+//            });
+//        }finally {
+//            this.blockUI.unblock();
+//        }
+//    }
+//}
+//registry.category("actions").add("custom_import", CustomImport);
