@@ -1,5 +1,4 @@
 <odoo>
-
     <template id="dynamic_accounts_report.trial_balance">
 <!--    <t t-call="web.html_container">-->
 <!--        <t t-foreach="docs" t-as="doc">-->
@@ -15,20 +14,6 @@
                     <div class="oe_structure"/>
                     <h3 style="text-align:centre;left:50%;"><span t-esc="Filters.get('company_name')"/>: Trial Balance
                     </h3>
-
-                    <span t-if="Filters.get('date_from')">
-                    <strong> From:</strong>
-                    <t t-esc="Filters['date_from']"/>
-                    </span>
-
-
-
-                    <span t-if="Filters.get('date_to')">
-                    <strong>To:</strong>
-                    <t t-esc="Filters['date_to']"/>
-                    </span>
-
-
                     <div>
                         <div style="text-align:centre;left:50%;" class="row">
 
@@ -47,6 +32,18 @@
                                             <t t-esc="Filters['target_move']"/>
                                         </li>
                                 </div>
+                                <div class="col-3" style="">
+                                    <strong>Compare Years:</strong>
+                                        <li>
+                                            <t t-esc="Filters.get('comparison_years', 0)"/>
+                                        </li>
+                                </div>
+                                <div class="col-3" style="">
+                                    <strong>Compare Months:</strong>
+                                        <li>
+                                            <t t-esc="Filters.get('comparison_months', 0)"/>
+                                        </li>
+                                </div>
                         </div>
 
 
@@ -60,6 +57,27 @@
                                         <th class="mon_fld">Initial Debit</th>
                                         <th class="mon_fld">Initial Credit</th>
 
+                                    </t>
+                                    <!-- Prior Years Comparison Columns -->
+                                    <t t-if="Filters.get('comparison_years') and Filters.get('comparison_years') > 0">
+                                        <t t-set="year_labels" t-value="comparison_year_labels"/>
+                                        <t t-foreach="enumerate(year_labels)" t-as="yl">
+                                            <t t-set="idx" t-value="yl[0] + 1"/>
+                                            <t t-set="year_label" t-value="yl[1]"/>
+
+                                            <th class="text-right">Debit <t t-esc="year_label"/></th>
+                                            <th class="text-right">Credit <t t-esc="year_label"/></th>
+                                        </t>
+                                    </t>
+                                    <!-- Prior Months Comparison Columns -->
+                                    <t t-if="Filters.get('comparison_months') and Filters.get('comparison_months') > 0">
+                                        <t t-set="month_labels" t-value="comparison_month_labels or []"/>
+                                        <t t-foreach="enumerate(month_labels)" t-as="ml">
+                                            <t t-set="idx" t-value="ml[0] + 1"/>
+                                            <t t-set="month_label" t-value="ml[1]"/>
+                                            <th class="text-right">Debit <t t-esc="month_label"/></th>
+                                            <th class="text-right">Credit <t t-esc="month_label"/></th>
+                                        </t>
                                     </t>
                                     <th class="text-right">Debit</th>
                                     <th class="text-right">Credit</th>
@@ -96,6 +114,36 @@
 
 										</t>
 
+                                        <!-- Prior Years Comparison Data -->
+                                        <t t-if="Filters.get('comparison_years') and Filters.get('comparison_years') > 0">
+                                            <t t-set="year_labels" t-value="comparison_year_labels"/>
+                                            <t t-foreach="enumerate(year_labels, start=1)" t-as="yl">
+                                                <t t-set="idx" t-value="yl[0]"/>
+                                                <td class="text-right">
+                                                    <span t-esc="line.get('debit_prev_%d' % idx, 0.0)"
+                                                          t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-esc="line.get('credit_prev_%d' % idx, 0.0)"
+                                                          t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                            </t>
+                                        </t>
+                                        <!-- Prior Months Comparison Data -->
+                                        <t t-if="Filters.get('comparison_months') and Filters.get('comparison_months') > 0">
+                                            <t t-set="month_cols" t-value="Filters.get('comparison_months')"/>
+                                            <t t-foreach="range(1, month_cols + 1)" t-as="month_idx">
+                                                <td class="text-right">
+                                                    <span t-esc="line.get('debit_month_%d' % month_idx, 0.0)"
+                                                          t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-esc="line.get('credit_month_%d' % month_idx, 0.0)"
+                                                          t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                </td>
+                                            </t>
+                                        </t>
+
                                         <td class="text-right">
                                             <span t-esc="line['debit']"
                                                   t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
@@ -111,9 +159,46 @@
                                 <td class="mon_fld" style="border-bottom: 1px solid ;"><strong></strong></td>
                                 <td class="mon_fld" style="border-bottom: 1px solid ;"><strong></strong></td>
                             </t>
+                            <!-- Prior Years Comparison Totals -->
+                            <t t-if="Filters.get('comparison_years') and Filters.get('comparison_years') > 0">
+                                <t t-set="year_labels" t-value="comparison_year_labels"/>
+                                <t t-foreach="enumerate(year_labels, start=1)" t-as="yl">
+                                    <t t-set="idx" t-value="yl[0]"/>
+                                    <td class="text-right" style="border-bottom: 1px solid ;">
+                                        <strong>
+                                            <t t-esc="debit_prev_totals[idx-1] if debit_prev_totals and len(debit_prev_totals) >= idx else 0.0"
+                                               t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </strong>
+                                    </td>
+                                    <td class="text-right" style="border-bottom: 1px solid ;">
+                                        <strong>
+                                            <t t-esc="credit_prev_totals[idx-1] if credit_prev_totals and len(credit_prev_totals) >= idx else 0.0"
+                                               t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </strong>
+                                    </td>
+                                </t>
+                            </t>
+                            <!-- Prior Months Comparison Totals -->
+                            <t t-if="Filters.get('comparison_months') and Filters.get('comparison_months') > 0">
+                                <t t-set="month_cols" t-value="Filters.get('comparison_months')"/>
+                                <t t-foreach="range(1, month_cols + 1)" t-as="month_idx">
+                                    <td class="text-right" style="border-bottom: 1px solid ;">
+                                        <strong>
+                                            <t t-esc="debit_month_totals[month_idx - 1] if debit_month_totals and len(debit_month_totals) >= month_idx else 0.0" 
+                                               t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </strong>
+                                    </td>
+                                    <td class="text-right" style="border-bottom: 1px solid ;">
+                                        <strong>
+                                            <t t-esc="credit_month_totals[month_idx - 1] if credit_month_totals and len(credit_month_totals) >= month_idx else 0.0" 
+                                               t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </strong>
+                                    </td>
+                                </t>
+                            </t>
 
 							<td class="text-right" style="border-bottom: 1px solid ;"><strong><t t-esc="debit_total" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></strong></td>
-							<td class="text-right" style="border-bottom: 1px solid;"><strong><t t-esc="debit_total" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></strong></td>
+							<td class="text-right" style="border-bottom: 1px solid;"><strong><t t-esc="credit_total" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></strong></td>
 
                         </table>
                     </div>

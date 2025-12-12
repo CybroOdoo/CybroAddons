@@ -76,7 +76,32 @@ odoo.define('dynamic_accounts_report.trial_balance', function(require) {
 						rep_lines.debit = self.format_currency(datas['currency'], rep_lines.debit);
 						rep_lines.credit = self.format_currency(datas['currency'], rep_lines.credit);
 						rep_lines.balance = self.format_currency(datas['currency'], rep_lines.balance);
-
+						// Format dynamic prior-year fields if present
+						if (datas['filters'] && datas['filters']['comparison_years'] && datas['filters']['comparison_years'] > 0) {
+							for (var i = 1; i <= datas['filters']['comparison_years']; i++) {
+								var keyDebit = 'debit_prev_' + i;
+								var keyCredit = 'credit_prev_' + i;
+								if (rep_lines[keyDebit] !== undefined) {
+									rep_lines[keyDebit] = self.format_currency(datas['currency'], rep_lines[keyDebit]);
+								}
+								if (rep_lines[keyCredit] !== undefined) {
+									rep_lines[keyCredit] = self.format_currency(datas['currency'], rep_lines[keyCredit]);
+								}
+							}
+						}
+						// Format dynamic prior-month fields if present
+						if (datas['filters'] && datas['filters']['comparison_months'] && datas['filters']['comparison_months'] > 0) {
+							for (var i = 1; i <= datas['filters']['comparison_months']; i++) {
+								var keyDebitMonth = 'debit_month_' + i;
+								var keyCreditMonth = 'credit_month_' + i;
+								if (rep_lines[keyDebitMonth] !== undefined) {
+									rep_lines[keyDebitMonth] = self.format_currency(datas['currency'], rep_lines[keyDebitMonth]);
+								}
+								if (rep_lines[keyCreditMonth] !== undefined) {
+									rep_lines[keyCreditMonth] = self.format_currency(datas['currency'], rep_lines[keyCreditMonth]);
+								}
+							}
+						}
 					});
 					if (initial_render) {
 						self.$('.filter_view_tb').html(QWeb.render('TrialFilterView', {
@@ -91,6 +116,13 @@ odoo.define('dynamic_accounts_report.trial_balance', function(require) {
 						self.$el.find('.display_account').select2({
 							placeholder: 'Display Accounts...',
 						});
+						// Initialize comparison numeric input from wizard value
+						if (datas['filters'] && datas['filters']['comparison_years']) {
+							$("#comparison_years").val(datas['filters']['comparison_years']);
+						}
+						if (datas['filters'] && datas['filters']['comparison_months']) {
+							$("#comparison_months").val(datas['filters']['comparison_months']);
+						}
 					}
 					var child = [];
 
@@ -99,8 +131,12 @@ odoo.define('dynamic_accounts_report.trial_balance', function(require) {
 						report_lines: datas['report_lines'],
 						filter: datas['filters'],
 						currency: datas['currency'],
-						credit_total: self.format_currency(datas['currency'], datas['debit_total']),
+						credit_total: self.format_currency(datas['currency'], datas['credit_total']),
 						debit_total: self.format_currency(datas['currency'], datas['debit_total']),
+						debit_prev_totals: datas['debit_prev_totals'],
+						credit_prev_totals: datas['credit_prev_totals'],
+						debit_month_totals: datas['debit_month_totals'],
+						credit_month_totals: datas['credit_month_totals'],
 					}));
 
 				});
@@ -329,16 +365,30 @@ odoo.define('dynamic_accounts_report.trial_balance', function(require) {
                 filter_data_selected.display_account = display_account_select.val();
                 display_account_res.innerHTML = selectedOption;
             }
-			rpc.query({
-				model: 'account.trial.balance',
-				method: 'write',
-				args: [
-					self.wizard_id, filter_data_selected
-				],
-			}).then(function(res) {
-				self.initial_render = false;
-				self.load_data(self.initial_render);
-			});
+            // Comparison selector
+            var comparisonYears = $("#comparison_years").val();
+            if (comparisonYears !== undefined && comparisonYears !== '') {
+                filter_data_selected.comparison_years = parseInt(comparisonYears, 10);
+            } else {
+                filter_data_selected.comparison_years = 0;
+            }
+            // Comparison months selector
+            var comparisonMonths = $("#comparison_months").val();
+            if (comparisonMonths !== undefined && comparisonMonths !== '') {
+                filter_data_selected.comparison_months = parseInt(comparisonMonths, 10);
+            } else {
+                filter_data_selected.comparison_months = 0;
+            }
+            rpc.query({
+                model: 'account.trial.balance',
+                method: 'write',
+                args: [
+                    self.wizard_id, filter_data_selected
+                ],
+            }).then(function(res) {
+                self.initial_render = false;
+                self.load_data(self.initial_render);
+            });
 		},
 
 	});

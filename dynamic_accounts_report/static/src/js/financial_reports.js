@@ -112,6 +112,13 @@ odoo.define('dynamic_accounts_report.financial_reports', function(require) {
 						self.$el.find('.target_move').select2({
 							placeholder: 'Target Move...',
 						});
+						// Initialize comparison numeric input from wizard value
+						if (datas['filters'] && datas['filters']['comparison_years']) {
+							$("#comparison_years").val(datas['filters']['comparison_years']);
+						}
+						if (datas['filters'] && datas['filters']['comparison_months']) {
+							$("#comparison_months").val(datas['filters']['comparison_months']);
+						}
 					}
 					var child = [];
 					self.$('.table_view_dfr').html(QWeb.render('dfr_table', {
@@ -123,6 +130,10 @@ odoo.define('dynamic_accounts_report.financial_reports', function(require) {
 						debit_balance: datas['debit_balance'],
 						bs_lines: datas['bs_lines'],
 						lang: datas['lang'],
+						debit_prev_totals: datas['debit_prev_totals'],
+						credit_prev_totals: datas['credit_prev_totals'],
+						debit_month_totals: datas['debit_month_totals'],
+						credit_month_totals: datas['credit_month_totals'],
 					}));
 				});
 			} catch (el) {
@@ -197,6 +208,22 @@ odoo.define('dynamic_accounts_report.financial_reports', function(require) {
 					[self.wizard_id], action_title, self.searchModel.config.context.lang
 				],
 			}).then(function(data) {
+				console.log('Excel Export Data:', data);
+				console.log('Comparison Data - debit_prev_totals:', data['debit_prev_totals']);
+				console.log('Comparison Data - credit_prev_totals:', data['credit_prev_totals']);
+				console.log('Comparison Data - bs_lines length:', data['bs_lines'] ? data['bs_lines'].length : 0);
+				
+				// Create a comprehensive data object that includes both bs_lines and comparison data
+				var export_data = {
+					'bs_lines': data['bs_lines'],
+					'debit_prev_totals': data['debit_prev_totals'],
+					'credit_prev_totals': data['credit_prev_totals'],
+					'debit_month_totals': data['debit_month_totals'],
+					'credit_month_totals': data['credit_month_totals'],
+					'comparison_year_labels': data['comparison_year_labels']
+				};
+				console.log('Export Data:', export_data);
+				
 				var action = {
 					//                    'type': 'ir_actions_dynamic_xlsx_download',
 					'data': {
@@ -205,7 +232,7 @@ odoo.define('dynamic_accounts_report.financial_reports', function(require) {
 						'output_format': 'xlsx',
 						'report_data': action_title,
 						'report_name': action_title,
-						'dfr_data': JSON.stringify(data['bs_lines']),
+						'dfr_data': JSON.stringify(export_data),
 					},
 				};
 				//                return self.do_action(action);
@@ -383,6 +410,20 @@ odoo.define('dynamic_accounts_report.financial_reports', function(require) {
 					post_res.innerHTML = "posted";
 
 				}
+			}
+			// Comparison years selector
+			var comparisonYears = $("#comparison_years").val();
+			if (comparisonYears !== undefined && comparisonYears !== '') {
+				filter_data_selected.comparison_years = parseInt(comparisonYears, 10);
+			} else {
+				filter_data_selected.comparison_years = 0;
+			}
+			// Comparison months selector
+			var comparisonMonths = $("#comparison_months").val();
+			if (comparisonMonths !== undefined && comparisonMonths !== '') {
+				filter_data_selected.comparison_months = parseInt(comparisonMonths, 10);
+			} else {
+				filter_data_selected.comparison_months = 0;
 			}
 			rpc.query({
 				model: 'dynamic.balance.sheet.report',

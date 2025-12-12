@@ -55,3 +55,8 @@
 ### version 16.0.2.0.0,
 ### UPDT
 - Added new filter display accounts in trial balance.
+
+### 09.12.2025
+### version 16.0.3.0.0,
+### UPDT
+- Added a new comparison feature in Trial Balance, Profit & Loss, and Balance Sheet reports.

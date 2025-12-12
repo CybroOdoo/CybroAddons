@@ -36,6 +36,16 @@ class TrialBalance(models.AbstractModel):
                                                      )['debit_total'],
                              'credit_total': data.get('report_data'
                                                       )['credit_total'],
+                             'debit_prev_totals': data.get('report_data'
+                                                          ).get('debit_prev_totals'),
+                             'credit_prev_totals': data.get('report_data'
+                                                           ).get('credit_prev_totals'),
+                             'debit_month_totals': data.get('report_data'
+                                                            ).get('debit_month_totals'),
+                             'credit_month_totals': data.get('report_data'
+                                                             ).get('credit_month_totals'),
+                             'comparison_year_labels': data.get('report_data').get('comparison_year_labels', []),
+                             'comparison_month_labels': data.get('report_data').get('comparison_month_labels', []),
                              'company': self.env.company,
                              })
         return data

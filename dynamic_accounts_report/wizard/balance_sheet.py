@@ -1,5 +1,6 @@
 import time
 from odoo import fields, models, api, _
+from dateutil.relativedelta import relativedelta
 
 import io
 import json
@@ -13,6 +14,29 @@ except ImportError:
 
 class BalanceSheetView(models.TransientModel):
     _name = 'dynamic.balance.sheet.report'
+
+    def _get_comparison_year_labels(self, data):
+        """Generate actual year labels for comparison columns"""
+        year_labels = []
+        if data.get('comparison_years') and data.get('comparison_years') > 0:
+            current_date = fields.Date.today()
+            current_year = current_date.year
+            for i in range(1, data.get('comparison_years') + 1):
+                year_labels.append(str(current_year - i))
+        return year_labels
+
+    def _get_comparison_month_labels(self, data):
+        """Generate actual month names for comparison columns"""
+        month_labels = []
+        if data.get('comparison_months') and data.get('comparison_months') > 0:
+            current_date = fields.Date.today()
+            for i in range(1, data.get('comparison_months') + 1):
+                # Calculate the month by going back i months from current date
+                comparison_date = current_date - relativedelta(months=i)
+                # Get month name (e.g., "November", "October")
+                month_name = comparison_date.strftime("%B")
+                month_labels.append(month_name)
+        return month_labels
 
     company_id = fields.Many2one('res.company', required=True,
                                  default=lambda self: self.env.company)
@@ -35,6 +59,8 @@ class BalanceSheetView(models.TransientModel):
         string='Target Move', required=True, default='posted')
     date_from = fields.Date(string="Start date")
     date_to = fields.Date(string="End date")
+    comparison_years = fields.Integer(string='Compare Prior Years', help='Number of prior years to include (1 = previous year only, 2 = last 2 years, etc.)')
+    comparison_months = fields.Integer(string='Compare Prior Months', help='Number of prior months to include (1 = previous month only, 2 = last 2 months, etc.)')
 
     @api.model
     def view_report(self, option, tag, lang):
@@ -48,6 +74,8 @@ class BalanceSheetView(models.TransientModel):
             'accounts': r.account_ids,
             'account_tags': r.account_tag_ids,
             'analytics': r.analytic_ids,
+            'comparison_years': r.comparison_years,
+            'comparison_months': r.comparison_months,
         }
         if r.date_from:
             data.update({
@@ -118,6 +146,11 @@ class BalanceSheetView(models.TransientModel):
             move_lines_dict[rec['id']]['debit'] = rec['debit']
             move_lines_dict[rec['id']]['credit'] = rec['credit']
             move_lines_dict[rec['id']]['balance'] = rec['balance']
+            move_lines_dict[rec['id']]['account_type'] = rec.get('account_type', '')
+            # Add comparison data to move_lines_dict
+            for key, value in rec.items():
+                if key.startswith('debit_prev_') or key.startswith('credit_prev_') or key.startswith('debit_month_') or key.startswith('credit_month_'):
+                    move_lines_dict[rec['id']][key] = value
         report_lines_move = []
         parent_list = []
 
@@ -135,12 +168,18 @@ class BalanceSheetView(models.TransientModel):
                     report_lines_move.append(each)
 
         filter_movelines_parents(report_lines)
-        # for rec in report_lines_move:
-        #     if rec['report_type'] == 'accounts':
-        #         if rec['account'] in move_line_accounts:
-        #             rec['debit'] = move_lines_dict[rec['account']]['debit']
-        #             rec['credit'] = move_lines_dict[rec['account']]['credit']
-        #             rec['balance'] = move_lines_dict[rec['account']]['balance']
+        for rec in report_lines_move:
+            if rec['report_type'] == 'accounts':
+                if rec['account'] in move_line_accounts:
+                    rec['debit'] = move_lines_dict[rec['account']]['debit']
+                    rec['credit'] = move_lines_dict[rec['account']]['credit']
+                    rec['balance'] = move_lines_dict[rec['account']]['balance']
+                    rec['account_type'] = move_lines_dict[rec['account']].get('account_type', '')
+                    # Assign comparison data to account lines
+                    account_data = move_lines_dict[rec['account']]
+                    for key, value in account_data.items():
+                        if key.startswith('debit_prev_') or key.startswith('credit_prev_') or key.startswith('debit_month_') or key.startswith('credit_month_'):
+                            rec[key] = value
 
         parent_list = list(set(parent_list))
         max_level = 0
@@ -178,12 +217,30 @@ class BalanceSheetView(models.TransientModel):
                 sum_list[pl]['s_debit'] = 0
                 sum_list[pl]['s_credit'] = 0
                 sum_list[pl]['s_balance'] = 0
+                # Initialize comparison sums
+                for i in range(1, (data.get('comparison_years') or 0) + 1):
+                    sum_list[pl]['s_debit_prev_%d' % i] = 0
+                    sum_list[pl]['s_credit_prev_%d' % i] = 0
+                for i in range(1, (data.get('comparison_months') or 0) + 1):
+                    sum_list[pl]['s_debit_month_%d' % i] = 0
+                    sum_list[pl]['s_credit_month_%d' % i] = 0
 
             for each in obj:
                 if each['p_id'] and each['p_id'] in parent_list:
                     sum_list[each['p_id']]['s_debit'] += each['debit']
                     sum_list[each['p_id']]['s_credit'] += each['credit']
                     sum_list[each['p_id']]['s_balance'] += each['balance']
+                    # Add comparison data
+                    for i in range(1, (data.get('comparison_years') or 0) + 1):
+                        debit_key = 'debit_prev_%d' % i
+                        credit_key = 'credit_prev_%d' % i
+                        sum_list[each['p_id']]['s_debit_prev_%d' % i] += each.get(debit_key, 0)
+                        sum_list[each['p_id']]['s_credit_prev_%d' % i] += each.get(credit_key, 0)
+                    for i in range(1, (data.get('comparison_months') or 0) + 1):
+                        debit_key = 'debit_month_%d' % i
+                        credit_key = 'credit_month_%d' % i
+                        sum_list[each['p_id']]['s_debit_month_%d' % i] += each.get(debit_key, 0)
+                        sum_list[each['p_id']]['s_credit_month_%d' % i] += each.get(credit_key, 0)
             return sum_list
 
         def assign_sum(obj):
@@ -192,6 +249,13 @@ class BalanceSheetView(models.TransientModel):
                         each['report_type'] != 'account_report':
                     each['debit'] = sum_list_new[each['r_id']]['s_debit']
                     each['credit'] = sum_list_new[each['r_id']]['s_credit']
+                    # Assign comparison values
+                    for i in range(1, (data.get('comparison_years') or 0) + 1):
+                        each['debit_prev_%d' % i] = sum_list_new[each['r_id']]['s_debit_prev_%d' % i]
+                        each['credit_prev_%d' % i] = sum_list_new[each['r_id']]['s_credit_prev_%d' % i]
+                    for i in range(1, (data.get('comparison_months') or 0) + 1):
+                        each['debit_month_%d' % i] = sum_list_new[each['r_id']]['s_debit_month_%d' % i]
+                        each['credit_month_%d' % i] = sum_list_new[each['r_id']]['s_credit_month_%d' % i]
 
         for p in range(max_level):
             sum_list_new = filter_sum(final_report_lines)
@@ -207,11 +271,79 @@ class BalanceSheetView(models.TransientModel):
         for rec in final_report_lines:
             rec['debit'] = round(rec['debit'], decimal_places)
             rec['credit'] = round(rec['credit'], decimal_places)
-            rec['balance'] = rec['debit'] - rec['credit']
+            
+            # Calculate balance based on account type (standard Odoo P&L logic)
+            account_type = rec.get('account_type', '').lower()
+            if 'income' in account_type:
+                # For income accounts: balance = credit - debit (income is credit-based)
+                rec['balance'] = rec['credit'] - rec['debit']
+            elif 'expense' in account_type:
+                # For expense accounts: balance = debit - credit (expenses are debit-based)  
+                rec['balance'] = rec['debit'] - rec['credit']
+            else:
+                # Default calculation for other account types
+                rec['balance'] = rec['debit'] - rec['credit']
+                
             rec['balance'] = round(rec['balance'], decimal_places)
-            if (rec['balance_cmp'] < 0 and rec['balance'] > 0) or (
-                    rec['balance_cmp'] > 0 and rec['balance'] < 0):
-                rec['balance'] = rec['balance'] * -1
+            
+            # Apply standard Odoo sign logic to comparison balances
+            for i in range(1, (data.get('comparison_years') or 0) + 1):
+                debit_key = 'debit_prev_%d' % i
+                credit_key = 'credit_prev_%d' % i
+                balance_key = 'balance_prev_%d' % i
+                if debit_key in rec and credit_key in rec:
+                    if 'income' in account_type:
+                        # For income accounts: balance = credit - debit
+                        rec[balance_key] = rec[credit_key] - rec[debit_key]
+                    elif 'expense' in account_type:
+                        # For expense accounts: balance = debit - credit
+                        rec[balance_key] = rec[debit_key] - rec[credit_key]
+                    else:
+                        # Default calculation
+                        rec[balance_key] = rec[debit_key] - rec[credit_key]
+            
+            for i in range(1, (data.get('comparison_months') or 0) + 1):
+                debit_key = 'debit_month_%d' % i
+                credit_key = 'credit_month_%d' % i
+                balance_key = 'balance_month_%d' % i
+                if debit_key in rec and credit_key in rec:
+                    if 'income' in account_type:
+                        # For income accounts: balance = credit - debit
+                        rec[balance_key] = rec[credit_key] - rec[debit_key]
+                    elif 'expense' in account_type:
+                        # For expense accounts: balance = debit - credit
+                        rec[balance_key] = rec[debit_key] - rec[credit_key]
+                    else:
+                        # Default calculation
+                        rec[balance_key] = rec[debit_key] - rec[credit_key]
+            
+            # Make income balance positive for the income row before Gross Profit
+            # Check if this is an income row (typically has 'income' in name and is a summary row)
+            account_name = rec.get('name', '').lower() if isinstance(rec.get('name'), str) else ''
+            
+            # Target the specific income summary row (before Gross Profit)
+            # This is typically a summary row with 'income' in the name
+            is_income_summary = ('income' in account_name and 
+                                rec.get('report_type') == 'account_report' and
+                                rec.get('level') == 1)  # Adjust level as needed
+            
+            if is_income_summary:
+                rec['balance'] = abs(rec['balance'])
+                # Make comparison balances positive for this income summary row
+                for i in range(1, (data.get('comparison_years') or 0) + 1):
+                    balance_key = 'balance_prev_%d' % i
+                    if balance_key in rec:
+                        rec[balance_key] = abs(rec[balance_key])
+                
+                for i in range(1, (data.get('comparison_months') or 0) + 1):
+                    balance_key = 'balance_month_%d' % i
+                    if balance_key in rec:
+                        rec[balance_key] = abs(rec[balance_key])
+            
+            # Remove the balance_cmp logic as it may interfere with standard P&L calculations
+            # if (rec['balance_cmp'] < 0 and rec['balance'] > 0) or (
+            #         rec['balance_cmp'] > 0 and rec['balance'] < 0):
+            #     rec['balance'] = rec['balance'] * -1
 
             if position == "before":
                 rec['m_debit'] = symbol + " " + "{:,.2f}".format(rec['debit'])
@@ -243,6 +375,21 @@ class BalanceSheetView(models.TransientModel):
                 merged_data[account_id]['debit'] += line['debit']
                 merged_data[account_id]['credit'] += line['credit']
                 merged_data[account_id]['balance'] += line['balance']
+                # Merge comparison data
+                for i in range(1, (data.get('comparison_years') or 0) + 1):
+                    debit_key = 'debit_prev_%d' % i
+                    credit_key = 'credit_prev_%d' % i
+                    if debit_key in line and debit_key in merged_data[account_id]:
+                        merged_data[account_id][debit_key] += line[debit_key]
+                    if credit_key in line and credit_key in merged_data[account_id]:
+                        merged_data[account_id][credit_key] += line[credit_key]
+                for i in range(1, (data.get('comparison_months') or 0) + 1):
+                    debit_key = 'debit_month_%d' % i
+                    credit_key = 'credit_month_%d' % i
+                    if debit_key in line and debit_key in merged_data[account_id]:
+                        merged_data[account_id][debit_key] += line[debit_key]
+                    if credit_key in line and credit_key in merged_data[account_id]:
+                        merged_data[account_id][credit_key] += line[credit_key]
         report_list = list(merged_data.values())
         return {
             'name': tag,
@@ -255,7 +402,13 @@ class BalanceSheetView(models.TransientModel):
             'debit_balance': records['debit_balance'],
             'currency': currency,
             'bs_lines': final_report_lines,
-            'lang': self.env.context.get('lang') or 'en_US'
+            'lang': self.env.context.get('lang') or 'en_US',
+            'debit_prev_totals': records.get('debit_prev_totals'),
+            'credit_prev_totals': records.get('credit_prev_totals'),
+            'debit_month_totals': records.get('debit_month_totals'),
+            'credit_month_totals': records.get('credit_month_totals'),
+            'comparison_year_labels': self._get_comparison_year_labels(data),
+            'comparison_month_labels': self._get_comparison_month_labels(data),
         }
 
     def get_filter(self, option):
@@ -294,6 +447,11 @@ class BalanceSheetView(models.TransientModel):
                 data.get('account_tag_ids', [])).mapped('name')
         else:
             filters['account_tags'] = ['All']
+
+        if data.get('comparison_years'):
+            filters['comparison_years'] = data.get('comparison_years')
+        if data.get('comparison_months'):
+            filters['comparison_months'] = data.get('comparison_months')
 
         # if data.get('analytic_tag_ids', []):
         #     filters['analytic_tags'] = self.env['account.analytic.tag'].browse(
@@ -373,6 +531,8 @@ class BalanceSheetView(models.TransientModel):
             #                       analytic_tags],
             'account_tag_ids': r.account_tag_ids.ids,
             'account_tag_list': [(a.id, a.name) for a in account_tags],
+            'comparison_years': r.comparison_years,
+            'comparison_months': r.comparison_months,
         }
         filter_dict.update(default_filters)
         return filter_dict
@@ -408,11 +568,37 @@ class BalanceSheetView(models.TransientModel):
         debit_total = sum(x['debit'] for x in account_res)
         credit_total = sum(x['credit'] for x in account_res)
         debit_balance = round(debit_total, decimal_places) - round(credit_total, decimal_places)
+        
+        # Calculate comparison totals
+        debit_prev_totals = None
+        credit_prev_totals = None
+        if data.get('comparison_years') and data.get('comparison_years') > 0:
+            years = data.get('comparison_years')
+            debit_prev_totals = []
+            credit_prev_totals = []
+            for i in range(1, years + 1):
+                debit_prev_totals.append(sum(x.get('debit_prev_%d' % i, 0.0) for x in account_res))
+                credit_prev_totals.append(sum(x.get('credit_prev_%d' % i, 0.0) for x in account_res))
+        
+        debit_month_totals = None
+        credit_month_totals = None
+        if data.get('comparison_months') and data.get('comparison_months') > 0:
+            months = data.get('comparison_months')
+            debit_month_totals = []
+            credit_month_totals = []
+            for i in range(1, months + 1):
+                debit_month_totals.append(sum(x.get('debit_month_%d' % i, 0.0) for x in account_res))
+                credit_month_totals.append(sum(x.get('credit_month_%d' % i, 0.0) for x in account_res))
+        
         return {
             'doc_ids': self.ids,
             'debit_total': debit_total,
             'credit_total': credit_total,
             'debit_balance': debit_balance,
+            'debit_prev_totals': debit_prev_totals,
+            'credit_prev_totals': credit_prev_totals,
+            'debit_month_totals': debit_month_totals,
+            'credit_month_totals': credit_month_totals,
             'docs': docs,
             'time': time,
             'Accounts': account_res,
@@ -500,7 +686,7 @@ class BalanceSheetView(models.TransientModel):
                     ROUND(COALESCE(SUM(l.debit),0),{}) AS debit, 
                     ROUND(COALESCE(SUM(l.credit),0),{}) AS credit, 
                     ROUND(COALESCE(SUM(l.balance),0),{}) AS balance,
-                    anl.keys, act.name as tag
+                    anl.keys, act.name as tag, a.account_type
                     FROM account_move_line l
                     JOIN account_move m ON (l.move_id=m.id)
                     LEFT JOIN res_currency c ON (l.currency_id=c.id)
@@ -526,6 +712,161 @@ class BalanceSheetView(models.TransientModel):
         cr.execute(sql, params)
 
         account_res = cr.dictfetchall()
+
+        # Prior years computation when requested
+        prior_year_results = {}
+        if data.get('comparison_years') and data.get('comparison_years') > 0:
+            years = data.get('comparison_years')
+            for i in range(1, years + 1):
+                tables_p, where_clause_p, where_params_p = MoveLine._query_get()
+                wheres_p = [""]
+                if where_clause_p.strip():
+                    wheres_p.append(where_clause_p.strip())
+                filters_p = " AND ".join(wheres_p)
+                filters_p = filters_p.replace('account_move_line__move_id',
+                                              'm').replace(
+                    'account_move_line', 'l')
+                if data['target_move'] == 'posted':
+                    filters_p += " AND m.state = 'posted'"
+                else:
+                    filters_p += " AND m.state in ('draft','posted')"
+                # Compute date range shifted by i years
+                date_from_prev = data.get('date_from')
+                date_to_prev = data.get('date_to')
+                
+                # If no date range specified, use current fiscal year dates
+                if not date_from_prev and not date_to_prev:
+                    current_date = fields.Date.today()
+                    current_year = current_date.year
+                    # Default to current fiscal year (Jan 1 to Dec 31)
+                    date_from_prev = fields.Date.from_string(f"{current_year}-01-01")
+                    date_to_prev = fields.Date.from_string(f"{current_year}-12-31")
+                
+                if date_from_prev:
+                    date_from_prev = fields.Date.from_string(date_from_prev) - relativedelta(years=i)
+                    filters_p += " AND l.date >= '%s'" % fields.Date.to_string(date_from_prev)
+                if date_to_prev:
+                    date_to_prev = fields.Date.from_string(date_to_prev) - relativedelta(years=i)
+                    filters_p += " AND l.date <= '%s'" % fields.Date.to_string(date_to_prev)
+
+                if data['journals']:
+                    filters_p += ' AND j.id IN %s' % str(tuple(data['journals'].ids) + tuple([0]))
+                if data.get('accounts'):
+                    WHERE_p = "WHERE l.account_id IN %s" % str(tuple(data.get('accounts').ids) + tuple([0]))
+                else:
+                    WHERE_p = "WHERE l.account_id IN %s"
+                if data.get('analytics'):
+                    WHERE_p += ' AND an.id IN %s' % str(tuple(data.get('analytics').ids) + tuple([0]))
+                if data.get('account_tags'):
+                    WHERE_p += ' AND act.id IN %s' % str(tuple(data.get('account_tags').ids) + tuple([0]))
+
+                sql_p = base_sql + WHERE_p + filters_p + ''' GROUP BY l.account_id, 
+                           a.code,a.id,a.name,anl.keys, act.name, a.account_type'''
+                
+                if data.get('accounts'):
+                    params_p = tuple(where_params_p)
+                else:
+                    params_p = (tuple(accounts.ids),) + tuple(where_params_p)
+                cr.execute(sql_p, params_p)
+                for row in cr.dictfetchall():
+                    aid = row['account_id']
+                    if aid not in prior_year_results:
+                        prior_year_results[aid] = {}
+                    prior_year_results[aid]['debit_prev_%d' % i] = row.get('debit') or 0.0
+                    prior_year_results[aid]['credit_prev_%d' % i] = row.get('credit') or 0.0
+                    # Calculate balance based on account type for comparison periods
+                    account_type = row.get('account_type', '').lower()
+                    if 'income' in account_type:
+                        # For income accounts: balance = credit - debit
+                        prior_year_results[aid]['balance_prev_%d' % i] = (row.get('credit') or 0.0) - (row.get('debit') or 0.0)
+                    elif 'expense' in account_type:
+                        # For expense accounts: balance = debit - credit
+                        prior_year_results[aid]['balance_prev_%d' % i] = (row.get('debit') or 0.0) - (row.get('credit') or 0.0)
+                    else:
+                        # Default calculation
+                        prior_year_results[aid]['balance_prev_%d' % i] = (row.get('debit') or 0.0) - (row.get('credit') or 0.0)
+
+        # Prior months computation when requested
+        prior_month_results = {}
+        if data.get('comparison_months') and data.get('comparison_months') > 0:
+            months = data.get('comparison_months')
+            for i in range(1, months + 1):
+                tables_m, where_clause_m, where_params_m = MoveLine._query_get()
+                wheres_m = [""]
+                if where_clause_m.strip():
+                    wheres_m.append(where_clause_m.strip())
+                filters_m = " AND ".join(wheres_m)
+                filters_m = filters_m.replace('account_move_line__move_id',
+                                              'm').replace(
+                    'account_move_line', 'l')
+                if data['target_move'] == 'posted':
+                    filters_m += " AND m.state = 'posted'"
+                else:
+                    filters_m += " AND m.state in ('draft','posted')"
+                # Compute date range shifted by i months
+                date_from_m = data.get('date_from')
+                date_to_m = data.get('date_to')
+                
+                # If no date range specified, use current month dates
+                if not date_from_m and not date_to_m:
+                    current_date = fields.Date.today()
+                    # Default to current month (1st to last day)
+                    date_from_m = current_date.replace(day=1)
+                    # Get last day of current month
+                    next_month = date_from_m + relativedelta(months=1)
+                    date_to_m = next_month - relativedelta(days=1)
+                
+                if date_from_m:
+                    date_from_m = fields.Date.from_string(date_from_m) - relativedelta(months=i)
+                    filters_m += " AND l.date >= '%s'" % fields.Date.to_string(date_from_m)
+                if date_to_m:
+                    date_to_m = fields.Date.from_string(date_to_m) - relativedelta(months=i)
+                    filters_m += " AND l.date <= '%s'" % fields.Date.to_string(date_to_m)
+
+                if data['journals']:
+                    filters_m += ' AND j.id IN %s' % str(tuple(data['journals'].ids) + tuple([0]))
+                if data.get('accounts'):
+                    WHERE_m = "WHERE l.account_id IN %s" % str(tuple(data.get('accounts').ids) + tuple([0]))
+                else:
+                    WHERE_m = "WHERE l.account_id IN %s"
+                if data.get('analytics'):
+                    WHERE_m += ' AND an.id IN %s' % str(tuple(data.get('analytics').ids) + tuple([0]))
+                if data.get('account_tags'):
+                    WHERE_m += ' AND act.id IN %s' % str(tuple(data.get('account_tags').ids) + tuple([0]))
+
+                sql_m = base_sql + WHERE_m + filters_m + ''' GROUP BY l.account_id, 
+                           a.code,a.id,a.name,anl.keys, act.name, a.account_type'''
+                
+                if data.get('accounts'):
+                    params_m = tuple(where_params_m)
+                else:
+                    params_m = (tuple(accounts.ids),) + tuple(where_params_m)
+                cr.execute(sql_m, params_m)
+                for row in cr.dictfetchall():
+                    aid = row['account_id']
+                    if aid not in prior_month_results:
+                        prior_month_results[aid] = {}
+                    prior_month_results[aid]['debit_month_%d' % i] = row.get('debit') or 0.0
+                    prior_month_results[aid]['credit_month_%d' % i] = row.get('credit') or 0.0
+                    # Calculate balance based on account type for month comparison periods
+                    account_type = row.get('account_type', '').lower()
+                    if 'income' in account_type:
+                        # For income accounts: balance = credit - debit
+                        prior_month_results[aid]['balance_month_%d' % i] = (row.get('credit') or 0.0) - (row.get('debit') or 0.0)
+                    elif 'expense' in account_type:
+                        # For expense accounts: balance = debit - credit
+                        prior_month_results[aid]['balance_month_%d' % i] = (row.get('debit') or 0.0) - (row.get('credit') or 0.0)
+                    else:
+                        # Default calculation
+                        prior_month_results[aid]['balance_month_%d' % i] = (row.get('debit') or 0.0) - (row.get('credit') or 0.0)
+
+        # Merge comparison data into main results
+        for account in account_res:
+            aid = account['account_id']
+            if aid in prior_year_results:
+                account.update(prior_year_results[aid])
+            if aid in prior_month_results:
+                account.update(prior_month_results[aid])
 
         return account_res
 
@@ -573,8 +914,15 @@ class BalanceSheetView(models.TransientModel):
                                 dfr_data):
         i_data = str(report_data)
         filters = json.loads(options)
-        j_data = dfr_data
-        rl_data = json.loads(j_data)
+        export_data = json.loads(dfr_data)
+        rl_data = export_data.get('bs_lines', [])
+        
+        # Get comparison data from the export_data
+        debit_prev_totals = export_data.get('debit_prev_totals', [])
+        credit_prev_totals = export_data.get('credit_prev_totals', [])
+        debit_month_totals = export_data.get('debit_month_totals', [])
+        credit_month_totals = export_data.get('credit_month_totals', [])
+        comparison_year_labels = export_data.get('comparison_year_labels', [])
 
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
@@ -645,6 +993,21 @@ class BalanceSheetView(models.TransientModel):
         sheet.set_column(1, 1, 20)
         sheet.set_column(2, 2, 15)
         sheet.set_column(3, 3, 15)
+        
+        # Set column widths for comparison columns
+        if filters.get('comparison_years') and filters.get('comparison_years') > 0:
+            year_cols = filters.get('comparison_years') * 3
+            start_col = 4
+            end_col = start_col + year_cols - 1
+            sheet.set_column(start_col, end_col, 15)
+        
+        if filters.get('comparison_months') and filters.get('comparison_months') > 0:
+            month_cols = filters.get('comparison_months') * 3
+            start_col = 4
+            if filters.get('comparison_years') and filters.get('comparison_years') > 0:
+                start_col = 4 + (filters.get('comparison_years') * 3)
+            end_col = start_col + month_cols - 1
+            sheet.set_column(start_col, end_col, 15)
 
         row = 5
         col = 0
@@ -654,6 +1017,29 @@ class BalanceSheetView(models.TransientModel):
         sheet.write(row, col + 1, 'Debit', sub_heading)
         sheet.write(row, col + 2, 'Credit', sub_heading)
         sheet.write(row, col + 3, 'Balance', sub_heading)
+        
+        # Calculate column positions for comparison headers
+        header_col = 4
+        
+        # Add prior year headers
+        if filters.get('comparison_years') and filters.get('comparison_years') > 0:
+            current_date = fields.Date.today()
+            current_year = current_date.year
+            for i in range(1, filters.get('comparison_years') + 1):
+                year_label = str(current_year - i)
+                sheet.write(row, header_col, f'Debit {year_label}', sub_heading)
+                sheet.write(row, header_col + 1, f'Credit {year_label}', sub_heading)
+                sheet.write(row, header_col + 2, f'Balance {year_label}', sub_heading)
+                header_col += 3  # Move column position for next year
+        
+        # Add prior month headers
+        if filters.get('comparison_months') and filters.get('comparison_months') > 0:
+            month_labels = self._get_comparison_month_labels(filters)
+            for i, month_label in enumerate(month_labels, 1):
+                sheet.write(row, header_col, f'Debit {month_label}', sub_heading)
+                sheet.write(row, header_col + 1, f'Credit {month_label}', sub_heading)
+                sheet.write(row, header_col + 2, f'Balance {month_label}', sub_heading)
+                header_col += 3  # Move column position for next month
 
         if rl_data:
             for fr in rl_data:
@@ -668,6 +1054,55 @@ class BalanceSheetView(models.TransientModel):
                 sheet.write(row, col + 1, fr['debit'], txt)
                 sheet.write(row, col + 2, fr['credit'], txt)
                 sheet.write(row, col + 3, fr['balance'], txt)
+                
+                # Write prior year data
+                data_col = 4
+                if filters.get('comparison_years') and filters.get('comparison_years') > 0:
+                    for i in range(1, filters.get('comparison_years') + 1):
+                        # Use pre-calculated balance values for comparison periods
+                        debit_key = 'debit_prev_%d' % i
+                        credit_key = 'credit_prev_%d' % i
+                        balance_key = 'balance_prev_%d' % i
+                        
+                        debit_val = fr.get(debit_key, 0.0)
+                        credit_val = fr.get(credit_key, 0.0)
+                        balance_val = fr.get(balance_key, 0.0)
+                        
+                        # If balance values exist but debit/credit don't, it means we're looking at summary data
+                        if balance_val != 0.0 and debit_val == 0.0 and credit_val == 0.0:
+                            # For summary rows, try to get from comparison totals
+                            if fr.get('level', 0) <= 2:  # Header or sub-header
+                                debit_val = debit_prev_totals[i-1] if debit_prev_totals and len(debit_prev_totals) >= i else 0.0
+                                credit_val = credit_prev_totals[i-1] if credit_prev_totals and len(credit_prev_totals) >= i else 0.0
+                        
+                        sheet.write(row, data_col, debit_val, txt)
+                        sheet.write(row, data_col + 1, credit_val, txt)
+                        sheet.write(row, data_col + 2, balance_val, txt)
+                        data_col += 3
+                
+                # Write prior month data
+                if filters.get('comparison_months') and filters.get('comparison_months') > 0:
+                    for i in range(1, filters.get('comparison_months') + 1):
+                        # Use pre-calculated balance values for comparison periods
+                        debit_key = 'debit_month_%d' % i
+                        credit_key = 'credit_month_%d' % i
+                        balance_key = 'balance_month_%d' % i
+                        
+                        debit_val = fr.get(debit_key, 0.0)
+                        credit_val = fr.get(credit_key, 0.0)
+                        balance_val = fr.get(balance_key, 0.0)
+                        
+                        # If balance values exist but debit/credit don't, it means we're looking at summary data
+                        if balance_val != 0.0 and debit_val == 0.0 and credit_val == 0.0:
+                            # For summary rows, try to get from comparison totals
+                            if fr.get('level', 0) <= 2:  # Header or sub-header
+                                debit_val = debit_month_totals[i-1] if debit_month_totals and len(debit_month_totals) >= i else 0.0
+                                credit_val = credit_month_totals[i-1] if credit_month_totals and len(credit_month_totals) >= i else 0.0
+                        
+                        sheet.write(row, data_col, debit_val, txt)
+                        sheet.write(row, data_col + 1, credit_val, txt)
+                        sheet.write(row, data_col + 2, balance_val, txt)
+                        data_col += 3
 
         workbook.close()
         output.seek(0)

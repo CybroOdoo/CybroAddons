@@ -91,20 +91,41 @@
                                 <th class="text-right">Debit</th>
                                 <th class="text-right">Credit</th>
                                 <th class="text-right">Balance</th>
+                                <!-- Prior Years Comparison Columns -->
+                                <t t-if="Filters.get('comparison_years') and Filters.get('comparison_years') > 0">
+                                    <t t-set="year_labels" t-value="comparison_year_labels"/>
+                                    <t t-foreach="enumerate(year_labels)" t-as="yl">
+                                        <t t-set="idx" t-value="yl[0] + 1"/>
+                                        <t t-set="year_label" t-value="yl[1]"/>
+                                        <th class="text-right">Debit <t t-esc="year_label"/></th>
+                                        <th class="text-right">Credit <t t-esc="year_label"/></th>
+                                        <th class="text-right">Balance <t t-esc="year_label"/></th>
+                                    </t>
+                                </t>
+                                <!-- Prior Months Comparison Columns -->
+                                <t t-if="Filters.get('comparison_months') and Filters.get('comparison_months') > 0">
+                                    <t t-set="month_labels" t-value="comparison_month_labels or []"/>
+                                    <t t-foreach="enumerate(month_labels)" t-as="ml">
+                                        <t t-set="idx" t-value="ml[0] + 1"/>
+                                        <t t-set="month_label" t-value="ml[1]"/>
+                                        <th class="text-right">Debit <t t-esc="month_label"/></th>
+                                        <th class="text-right">Credit <t t-esc="month_label"/></th>
+                                        <th class="text-right">Balance <t t-esc="month_label"/></th>
+                                    </t>
+                                </t>
                             </tr>
                         </thead>
                         <tbody>
                             <tr t-foreach="report_lines" t-as="a">
 
-                                <t t-if="a['level'] != 0">
-                                    <t t-if="a.get('level') &gt; 2">
-                                        <t t-set="style"
-                                           t-value="'font-weight: normal;'"/>
-                                    </t>
-                                    <t t-if="not a.get('level') &gt; 2">
-                                        <t t-set="style"
-                                           t-value="'font-weight: bold;'"/>
-                                    </t>
+                                <t t-if="a.get('level') &gt; 2">
+                                    <t t-set="style"
+                                       t-value="'font-weight: normal;'"/>
+                                </t>
+                                <t t-if="not a.get('level') &gt; 2">
+                                    <t t-set="style"
+                                       t-value="'font-weight: bold;'"/>
+                                </t>
                                     <t t-if="a.get('code')">
                                         <t t-foreach="account_data" t-as="line">
                                             <t t-if="line['id'] == a.get('account')">
@@ -143,38 +164,112 @@
                                                         <span t-esc="a.get('balance')"
                                                               t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
                                                     </td>
+                                                    <!-- Prior Years Comparison Data -->
+                                                    <t t-if="Filters.get('comparison_years') and Filters.get('comparison_years') > 0">
+                                                        <t t-set="year_labels" t-value="comparison_year_labels"/>
+                                                        <t t-foreach="enumerate(year_labels, start=1)" t-as="yl">
+                                                            <t t-set="idx" t-value="yl[0]"/>
+                                                            <td class="text-right">
+                                                                <span t-esc="a.get('debit_prev_%d' % idx, 0.0)"
+                                                                      t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                                            </td>
+                                                            <td class="text-right">
+                                                                <span t-esc="a.get('credit_prev_%d' % idx, 0.0)"
+                                                                      t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                                            </td>
+                                                            <td class="text-right">
+                                                                <span t-esc="(a.get('debit_prev_%d' % idx, 0.0) or 0.0) - (a.get('credit_prev_%d' % idx, 0.0) or 0.0)"
+                                                                      t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                                            </td>
+                                                        </t>
+                                                    </t>
+                                                    <!-- Prior Months Comparison Data -->
+                                                    <t t-if="Filters.get('comparison_months') and Filters.get('comparison_months') > 0">
+                                                        <t t-set="month_cols" t-value="Filters.get('comparison_months')"/>
+                                                        <t t-foreach="range(1, month_cols + 1)" t-as="month_idx">
+                                                            <td class="text-right">
+                                                                <span t-esc="a.get('debit_month_%d' % month_idx, 0.0)"
+                                                                      t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                                            </td>
+                                                            <td class="text-right">
+                                                                <span t-esc="a.get('credit_month_%d' % month_idx, 0.0)"
+                                                                      t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                                            </td>
+                                                            <td class="text-right">
+                                                                <span t-esc="(a.get('debit_month_%d' % month_idx, 0.0) or 0.0) - (a.get('credit_month_%d' % month_idx, 0.0) or 0.0)"
+                                                                      t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                                            </td>
+                                                        </t>
+                                                    </t>
                                                 </tr>
                                             </t>
                                         </t>
                                     </t>
-                                    <t t-else="">
-                                        <td>
-                                            <span style="color: white;"
-                                                  t-esc="'..' * a.get('level', 0) * 3"/>
-                                            <span t-att-style="style"
-                                                  t-esc="a.get('name')"/>
-                                        </td>
-                                        <td class="text-right"
-                                            style="white-space: text-nowrap;">
-                                            <span t-att-style="style"
-                                                  t-esc="a.get('debit')"
-                                                  t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
-                                        </td>
-                                        <td class="text-right"
-                                            style="white-space: text-nowrap;">
-                                            <span t-att-style="style"
-                                                  t-esc="a.get('credit')"
-                                                  t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
-                                        </td>
-                                        <td class="text-right"
-                                            style="white-space: text-nowrap;">
-                                            <span t-att-style="style"
-                                                  t-esc="a.get('balance')"
-                                                  t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
-                                        </td>
+                                <t t-else="">
+                                    <td>
+                                        <span style="color: white;"
+                                              t-esc="'..' * a.get('level', 0) * 3"/>
+                                        <span t-att-style="style"
+                                              t-esc="a.get('name')"/>
+                                    </td>
+                                    <td class="text-right"
+                                        style="white-space: text-nowrap;">
+                                        <span t-att-style="style"
+                                              t-esc="a.get('debit')"
+                                              t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+                                    <td class="text-right"
+                                        style="white-space: text-nowrap;">
+                                        <span t-att-style="style"
+                                              t-esc="a.get('credit')"
+                                              t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+                                    <td class="text-right"
+                                        style="white-space: text-nowrap;">
+                                        <span t-att-style="style"
+                                              t-esc="a.get('balance')"
+                                              t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                    </td>
+                                    <!-- Prior Years Comparison Data -->
+                                    <t t-if="Filters.get('comparison_years') and Filters.get('comparison_years') > 0">
+                                        <t t-set="year_labels" t-value="comparison_year_labels"/>
+                                        <t t-foreach="enumerate(year_labels, start=1)" t-as="yl">
+                                            <t t-set="idx" t-value="yl[0]"/>
+                                            <td class="text-right">
+                                                <span t-esc="a.get('debit_prev_%d' % idx, 0.0)"
+                                                      t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-esc="a.get('credit_prev_%d' % idx, 0.0)"
+                                                      t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-esc="(a.get('debit_prev_%d' % idx, 0.0) or 0.0) - (a.get('credit_prev_%d' % idx, 0.0) or 0.0)"
+                                                      t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                            </td>
+                                        </t>
                                     </t>
-
+                                    <!-- Prior Months Comparison Data -->
+                                    <t t-if="Filters.get('comparison_months') and Filters.get('comparison_months') > 0">
+                                        <t t-set="month_cols" t-value="Filters.get('comparison_months')"/>
+                                        <t t-foreach="range(1, month_cols + 1)" t-as="month_idx">
+                                            <td class="text-right">
+                                                <span t-esc="a.get('debit_month_%d' % month_idx, 0.0)"
+                                                      t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-esc="a.get('credit_month_%d' % month_idx, 0.0)"
+                                                      t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-esc="(a.get('debit_month_%d' % month_idx, 0.0) or 0.0) - (a.get('credit_month_%d' % month_idx, 0.0) or 0.0)"
+                                                      t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                            </td>
+                                        </t>
+                                    </t>
                                 </t>
+
+<!--                                </t>-->
                             </tr>
                         </tbody>
                     </table>

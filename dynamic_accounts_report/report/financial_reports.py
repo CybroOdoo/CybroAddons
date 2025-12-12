@@ -37,5 +37,11 @@ class InsReportBalanceSheet(models.AbstractModel):
                     'report_name': data.get('report_name'),
                     'title': data.get('report_data')['name'],
                     'company': self.env.company,
+                    'debit_prev_totals': data.get('report_data').get('debit_prev_totals'),
+                    'credit_prev_totals': data.get('report_data').get('credit_prev_totals'),
+                    'debit_month_totals': data.get('report_data').get('debit_month_totals'),
+                    'credit_month_totals': data.get('report_data').get('credit_month_totals'),
+                    'comparison_year_labels': data.get('report_data').get('comparison_year_labels', []),
+                    'comparison_month_labels': data.get('report_data').get('comparison_month_labels', []),
                 })
         return data
