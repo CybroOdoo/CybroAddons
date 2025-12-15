@@ -22,7 +22,7 @@
 def setup_db_level_functions(env):
     env.cr.execute(
         """
-        CREATE OR REPLACE FUNCTION process_m2m_mapping() 
+        CREATE OR REPLACE FUNCTION process_m2m_mapping()
         RETURNS TRIGGER AS $$
         DECLARE
             col record;
@@ -35,7 +35,7 @@ def setup_db_level_functions(env):
             column_type text;
             field_config jsonb;
         BEGIN
-            -- Get the mapping configuration from TG_ARGV[0]   
+            -- Get the mapping configuration from TG_ARGV[0]
             -- Expected format:
             -- {
             --   "m2m__field1": {"data_table": "table1", "mapping_table": "map1", "column1": "col1", "column2": "col2"},
@@ -45,8 +45,8 @@ def setup_db_level_functions(env):
 
             -- Loop through all columns of the table
             FOR col IN (
-                SELECT column_name 
-                FROM information_schema.columns 
+                SELECT column_name
+                FROM information_schema.columns
                 WHERE table_name = TG_TABLE_NAME::text
                 AND column_name LIKE 'm2m__%'
             ) LOOP
@@ -62,9 +62,9 @@ def setup_db_level_functions(env):
 
                         -- Get the data type of the name column
                         EXECUTE format(
-                            'SELECT data_type 
-                             FROM information_schema.columns 
-                             WHERE table_name = %L 
+                            'SELECT data_type
+                             FROM information_schema.columns
+                             WHERE table_name = %L
                              AND column_name = ''name''',
                             field_config->>'data_table'
                         ) INTO column_type;
@@ -104,8 +104,8 @@ def setup_db_level_functions(env):
                             -- Insert into mapping table if both IDs are found
                             IF id1 IS NOT NULL AND id2 IS NOT NULL THEN
                                 EXECUTE format(
-                                    'INSERT INTO %I (%I, %I) 
-                                     VALUES (%L, %L) 
+                                    'INSERT INTO %I (%I, %I)
+                                     VALUES (%L, %L)
                                      ON CONFLICT (%I, %I) DO NOTHING',
                                     field_config->>'mapping_table',
                                     field_config->>'column1',
@@ -153,24 +153,24 @@ def setup_db_level_functions(env):
                         -- Log the record data for debugging
                         RAISE NOTICE 'Record data: %', record_data;
 
-                        SELECT 
+                        SELECT
                             string_agg(quote_ident(c.column_name), ', '),
                             string_agg(
-                                CASE 
+                                CASE
                                     WHEN c.data_type IN ('integer', 'bigint') THEN format('CAST(($2->>%L) AS INTEGER)', c.column_name)
                                     WHEN c.data_type = 'numeric' THEN format('CAST(($2->>%L) AS NUMERIC)', c.column_name)
                                     WHEN c.data_type = 'double precision' THEN format('CAST(($2->>%L) AS DOUBLE PRECISION)', c.column_name)
                                     WHEN c.data_type = 'boolean' THEN format('CAST(($2->>%L) AS BOOLEAN)', c.column_name)
                                     WHEN c.data_type = 'date' THEN format('CAST(($2->>%L) AS DATE)', c.column_name)
                                     -- FIXED: Handle all timestamp variations
-                                    WHEN c.data_type IN ('timestamp without time zone', 'timestamp with time zone') 
+                                    WHEN c.data_type IN ('timestamp without time zone', 'timestamp with time zone')
                                         THEN format('CAST(($2->>%L) AS TIMESTAMP)', c.column_name)
                                     WHEN c.data_type = 'datetime' THEN format('CAST(($2->>%L) AS TIMESTAMP)', c.column_name)
                                     ELSE format('$2->>%L', c.column_name)
-                                END, 
+                                END,
                                 ', '
                             )
-                        INTO 
+                        INTO
                             column_list,
                             value_list
                         FROM information_schema.columns c

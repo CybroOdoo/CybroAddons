@@ -20,10 +20,13 @@
 #
 #############################################################################
 import json
+import csv
 import logging
 from datetime import datetime
+import datetime as _dt
+import numpy as _np
+import pandas as _pd
 from io import BytesIO
-import re
 
 import pandas as pd
 from odoo import models, fields, api, _
@@ -40,155 +43,15 @@ class ImportWizard(models.TransientModel):
     model_id = fields.Many2one('ir.model', 'Model', required=True,
                                domain=[('transient', '=', False)])
 
-    def _get_sequence_for_model(self, model_name):
-        """
-            Returns the most suitable ir.sequence record for the given model name.
-            The method tries multiple matching strategies: exact code match, partial
-            match using the last part of the model name, prefix/name lookup, and
-            fallback token searches. If no matching sequence is found, it returns False.
-        """
-        try:
-            seq = self.env['ir.sequence'].search([('code', '=', model_name)], limit=1)
-            if seq:
-                return seq
-            last_part = model_name.split('.')[-1]
-            seq = self.env['ir.sequence'].search([('code', 'ilike', last_part)], limit=1)
-            if seq:
-                return seq
-            seqs = self.env['ir.sequence'].search(['|', ('prefix', 'ilike', model_name), ('name', 'ilike', model_name)],
-                                                  limit=5)
-            if seqs:
-                return seqs[0]
-            parts = [p for p in model_name.replace('.', '_').split('_') if len(p) > 2]
-            for p in parts:
-                seq = self.env['ir.sequence'].search([('code', 'ilike', p)], limit=1)
-                if seq:
-                    return seq
-            return False
-        except Exception as e:
-            _logger.warning(f"Sequence lookup failed for {model_name}: {e}")
-            return False
-
-    def _get_model_defaults(self, model_name):
-        """
-           Retrieves the default values for all fields of the given model. The method
-           loads the model, fetches its field names, and uses default_get to obtain
-           their default values. Only fields with non-None defaults are returned.
-        """
-        try:
-            Model = self.env[model_name]
-            field_names = list(Model.fields_get().keys())
-            defaults = Model.default_get(field_names)
-            return {k: v for k, v in defaults.items() if v is not None}
-        except Exception as e:
-            _logger.warning(f"Could not get defaults for model {model_name}: {e}")
-            return {}
-
-    def _get_common_default_context(self, model_name=None):
-        """
-           Builds a dictionary of common default values used during record creation.
-           This includes generic fields such as company, user, dates, and state. If a
-           model name is provided, the method also inspects the model's required
-           fields and automatically fills required many2one fields with the first
-           matching record, including special handling for UoM fields. Returns a
-           context dictionary containing default values suitable for most models.
-        """
-        defaults = {
-            'company_id': self.env.company.id,
-            'currency_id': getattr(self.env.company, 'currency_id', False) and self.env.company.currency_id.id or None,
-            'create_uid': self.env.uid,
-            'write_uid': self.env.uid,
-            'create_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'write_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'state': 'draft',
-            'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'date_order': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        }
-        if model_name:
-            try:
-                Model = self.env[model_name]
-                model_fields = Model.fields_get()
-                # Get required fields from the model
-                required_fields = []
-                for fname, finfo in model_fields.items():
-                    if finfo.get('required') and finfo.get('store') and not finfo.get('deprecated', False):
-                        required_fields.append(fname)
-                # Only auto-populate many2one fields that are REQUIRED
-                for fname, finfo in model_fields.items():
-                    if finfo.get('type') == 'many2one' and fname in required_fields:
-                        rel_model = finfo.get('relation')
-                        if not rel_model:
-                            continue
-                        # Skip if already in defaults
-                        if fname in defaults:
-                            continue
-                        domain = []
-                        if 'company_id' in self.env[rel_model]._fields:
-                            domain = [('company_id', '=', self.env.company.id)]
-                        rec = self.env[rel_model].search(domain, limit=1) if domain else self.env[rel_model].search([],
-                                                                                                                    limit=1)
-                        if rec:
-                            defaults.setdefault(fname, rec.id)
-                    # Handle UOM fields - only if required
-                    elif finfo.get('type') == 'many2one' and finfo.get('relation') == 'uom.uom':
-                        if fname in required_fields and fname not in defaults:
-                            try:
-                                rec = self.env['uom.uom'].search([], limit=1)
-                                if rec:
-                                    defaults[fname] = rec.id
-                            except Exception:
-                                pass
-            except Exception as e:
-                _logger.warning(f"Could not prepare model-specific defaults for {model_name}: {e}")
-        return defaults
-
-    def _get_dynamic_state_default(self, model, state_field_info):
-        """
-            Determines the default value for a model's state field based on its
-            selection options. If the selection is dynamic (callable), it is evaluated.
-            The method prioritizes returning a 'draft' state when available; otherwise,
-            it returns the first selection value. In case of errors or missing data,
-            'draft' is used as a fallback.
-        """
-        try:
-            selection_values = state_field_info['selection']
-            if callable(selection_values):
-                selection_values = selection_values(self.env[model])
-            if selection_values:
-                draft_states = [val[0] for val in selection_values if val[0].lower() == 'draft']
-                if draft_states:
-                    return draft_states[0]
-                return selection_values[0][0]
-            return 'draft'
-        except Exception as e:
-            _logger.warning(f"Error getting dynamic state default: {e}")
-            return 'draft'
-
-    def _prepare_audit_fields(self):
-        """
-           Generates a dictionary containing standard audit fields used during record
-           creation. It assigns the current user as both creator and last writer, and
-           sets the creation and last write timestamps to the current datetime.
-        """
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        return {
-            'create_uid': self.env.uid,
-            'write_uid': self.env.uid,
-            'create_date': current_time,
-            'write_date': current_time
-        }
-
     @api.model
     def copy_import(self, res_id, model, columns):
         """
-            Performs an advanced import of Excel data into the specified model, handling
-            complex field structures such as many2one, many2many, and one2many
-            relationships. The method validates columns, prepares defaults, maps
-            relational fields, resolves references, processes O2M grouping, fills
-            required fields dynamically, and finally executes an optimized PostgreSQL
-            bulk import. It also manages trigger creation/removal and ensures proper
-            audit and state values, raising detailed errors when import validation or
-            processing fails.
+        Main import function that processes Excel files to create records in Odoo models.
+        This method reads Excel data, maps columns to model fields, and imports records
+        using optimized bulk operations. It automatically handles relationships like one2many
+        (child records) and many2many (tags/categories), resolves references, fills missing
+        required fields with defaults, and generates sequences where needed. The import is
+        optimized for performance using PostgreSQL bulk operations and triggers.
         """
         try:
             reference_cache = {}
@@ -198,37 +61,29 @@ class ImportWizard(models.TransientModel):
             required_fields_info = self.get_required_fields(model)
             required_field_names = [f['name'] for f in required_fields_info]
             model_fields = self.env[model].fields_get()
-            for field_name, field_info in model_fields.items():
-                if field_info['type'] == 'one2many':
-                    _logger.info(f"O2M Field: {field_name} -> {field_info['relation']}")
             column_mapping, imported_fields, o2m_field_mappings = {}, set(), {}
+            # Build field mappings
             for item in columns:
                 if 'fieldInfo' not in item:
                     continue
                 field_path = item['fieldInfo'].get('fieldPath', item['fieldInfo']['id'])
                 field_name = item['fieldInfo']['id']
                 excel_column_name = item.get('name', field_name)
-                _logger.info(f"Processing field: {field_path} -> {field_name} (Excel: {excel_column_name})")
                 if '/' in field_path:
                     path_parts = field_path.split('/')
                     parent_field_raw = path_parts[0]
                     child_field_raw = '/'.join(path_parts[1:])
                     parent_field = parent_field_raw
                     if parent_field not in model_fields:
-                        _logger.warning(
-                            f"Parent field '{parent_field}' not found, attempting to find a one2many field dynamically...")
                         o2m_fields = [f for f, info in model_fields.items() if info['type'] == 'one2many']
                         if o2m_fields:
                             parent_field = o2m_fields[0]
-                            _logger.info(f"Using first O2M field for {model}: {parent_field}")
                         else:
                             continue
                     field_info = model_fields[parent_field]
                     if field_info['type'] != 'one2many':
-                        _logger.error(f"Field '{parent_field}' is not a one2many field")
                         continue
                     comodel_name = field_info['relation']
-                    _logger.info(f"Found O2M field: {parent_field} -> {comodel_name}")
                     try:
                         comodel_fields = self.env[comodel_name].fields_get()
                         child_field = child_field_raw
@@ -245,20 +100,42 @@ class ImportWizard(models.TransientModel):
                             'comodel_name': comodel_name
                         })
                         imported_fields.add(parent_field)
-                        _logger.info(f"✅O2M Mapping: {parent_field} -> {child_field}")
                     except Exception as e:
-                        _logger.error(f"Error processing child field: {e}")
                         continue
                 else:
                     if field_name in model_fields:
                         column_mapping[excel_column_name] = field_name
                         imported_fields.add(field_name)
-                        _logger.info(f"Regular field: {excel_column_name} -> {field_name}")
+            # Load Excel data
             import_record = self.env['base_import.import'].browse(res_id).file
             file_stream = BytesIO(import_record)
             data = pd.read_excel(file_stream, dtype=str)
             data = data.replace({pd.NA: None, '': None})
+            # Create a copy for the original column names before renaming
+            original_columns = data.columns.tolist()
+            original_data = data.copy()  # Keep a copy of original data for M2M extraction
+            # Rename columns using the mapping
             data = data.rename(columns=column_mapping)
+            if model == "account.move":
+                if "move_type" not in data.columns:
+                    raise UserError(
+                        _("Missing required field 'Type (move_type)' for Account Moves. "
+                          "Please add the 'Type' column in your import file.")
+                    )
+                invalid_rows = data[
+                    data["move_type"].isna() |
+                    (data["move_type"].astype(str).str.strip() == "") |
+                    (data["move_type"].astype(str).str.lower().isin(["none", "null", "nan"]))
+                    ]
+                if not invalid_rows.empty:
+                    raise UserError(
+                        _("The 'Type (move_type)' field is required for Account Moves.\n"
+                          "Please ensure all rows have a valid value like:\n"
+                          "- out_invoice\n"
+                          "- in_invoice\n"
+                          "- out_refund\n"
+                          "- in_refund")
+                    )
             Model = self.env[model]
             defaults = self._get_model_defaults(model)
             missing_without_fallback = self._check_missing_required_fields(model, imported_fields, defaults)
@@ -268,46 +145,55 @@ class ImportWizard(models.TransientModel):
                 still_missing = self._check_missing_required_fields(model, updated_imported_fields, defaults)
                 if still_missing:
                     raise UserError(f"Missing required fields without defaults: {', '.join(still_missing)}")
-            if not o2m_field_mappings:
-                filled_rows = []
-                for _, row in data.iterrows():
-                    parent_dict = row.to_dict()
-                    parent_dict = self._apply_parent_defaults(parent_dict, model)
-                    filled_rows.append(parent_dict)
-                data = pd.DataFrame(filled_rows)
+            # Process O2M grouping
             if o2m_field_mappings:
                 processed_data = self._group_o2m_records(data, model, o2m_field_mappings, reference_cache)
                 if processed_data is not None and len(processed_data) > 0:
                     data = processed_data
-                    _logger.info(f"After O2M grouping: {len(data)} parent records with O2M data for model {model}")
-                else:
-                    _logger.warning("O2M grouping returned empty data, falling back to original processing")
             else:
                 _logger.info("No O2M fields found, using standard processing")
+            # Check required fields
             required_fields = [f['name'] for f in required_fields_info]
             missing_required = set(required_fields) - imported_fields
             table_name = self.env[model]._table
             m2m_columns, o2m_columns, m2m_trigger_val, o2m_trigger_val = [], [], {}, {}
             has_complex_fields = False
-            # Process M2M fields
+            # Process M2M fields - IMPORTANT: Extract M2M values from original data
+            m2m_field_mapping = {}
+            m2m_columns_data = {}
             for item in columns:
                 if 'fieldInfo' in item and item["fieldInfo"].get("type") == "many2many":
                     has_complex_fields = True
-                    val = self.get_m2m_details(item['fieldInfo']['model_name'], item['fieldInfo']['id'])
-                    m2m = f"m2m__{item['fieldInfo']['id']}"
-                    m2m_trigger_val[m2m] = {
-                        "data_table": self.env[item['fieldInfo']['comodel_name']]._table,
-                        "mapping_table": val['relation_table'],
-                        "column1": val['column1'],
-                        "column2": val['column2'],
-                    }
-                    m2m_columns.append(m2m)
-                    self.env.cr.execute(f"ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS {m2m} TEXT;")
+                    field_name = item['fieldInfo']['id']
+                    excel_column_name = item.get('name', field_name)
+                    # Check if this column exists in the original data
+                    if excel_column_name in original_columns:
+                        # Store the M2M values from the original data (before renaming)
+                        m2m_column_name = f"m2m__{field_name}"
+                        m2m_columns.append(m2m_column_name)
+                        # Get M2M values from the original column
+                        if excel_column_name in original_data.columns:
+                            # Store the values for later processing
+                            data[m2m_column_name] = original_data[excel_column_name]
+                            m2m_field_mapping[field_name] = data[m2m_column_name].copy()
+                            m2m_columns_data[m2m_column_name] = data[m2m_column_name].copy()
+                            _logger.info(f"M2M Field found: {field_name} with values from column {excel_column_name}")
+                            # Add temporary column to table
+                            self.env.cr.execute(
+                                f"ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS {m2m_column_name} TEXT;")
+                            # Store trigger info
+                            val = self.get_m2m_details(item['fieldInfo']['model_name'], field_name)
+                            m2m_trigger_val[m2m_column_name] = {
+                                "data_table": self.env[item['fieldInfo']['comodel_name']]._table,
+                                "mapping_table": val['relation_table'],
+                                "column1": val['column1'],
+                                "column2": val['column2'],
+                            }
             model_record = self.env['ir.model'].search([('model', '=', model)], limit=1)
             if not model_record:
                 raise UserError(f"Model '{model}' does not exist.")
             initial_count = self.env[model].search_count([])
-            # Process O2M fields
+            # Process O2M fields for trigger setup
             for parent_field, field_mappings in o2m_field_mappings.items():
                 parent_field_info = self.env[model]._fields.get(parent_field)
                 if isinstance(parent_field_info, fields.One2many):
@@ -324,6 +210,65 @@ class ImportWizard(models.TransientModel):
                         self.env.cr.execute(
                             f"ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS {o2m_field_name} jsonb;")
                         _logger.info(f"Added JSONB column {o2m_field_name} to {table_name}")
+            model_fields = self.env[model].fields_get()
+            # Auto-fill currency_id if required and missing
+            if "currency_id" in model_fields:
+                field_info = model_fields["currency_id"]
+                if field_info.get("required", False):
+                    needs_fill = (
+                            "currency_id" not in data.columns
+                            or data["currency_id"].isna().all()
+                            or all(str(v).strip().lower() in ["", "none", "null", "nan"]
+                                   for v in data["currency_id"].fillna(""))
+                    )
+                    if needs_fill:
+                        default_currency = self.env.company.currency_id.id
+                        data["currency_id"] = default_currency
+                        imported_fields.add("currency_id")
+                        _logger.info(f"[AUTO-FILL] currency_id set to company currency {default_currency}")
+            # AUTO-FILL journal_id ONLY IF MODEL REQUIRES IT
+            if "journal_id" in model_fields:
+                field_info = model_fields["journal_id"]
+                if field_info.get("required", False):
+                    needs_fill = (
+                            "journal_id" not in data.columns
+                            or data["journal_id"].isna().all()
+                            or all(str(v).strip().lower() in ["", "none", "null", "nan"]
+                                   for v in data["journal_id"].fillna(""))
+                    )
+                    if needs_fill:
+                        # Get a suitable journal based on model logic
+                        Journal = self.env["account.journal"]
+                        # Special logic for account.move → correct journal based on move_type
+                        if model == "account.move" and "move_type" in data.columns:
+                            move_type_sample = str(data["move_type"].dropna().iloc[0]).strip()
+                            if move_type_sample in ["out_invoice", "out_refund"]:
+                                journal = Journal.search(
+                                    [("type", "=", "sale"), ("company_id", "=", self.env.company.id)],
+                                    limit=1
+                                )
+                            elif move_type_sample in ["in_invoice", "in_refund"]:
+                                journal = Journal.search(
+                                    [("type", "=", "purchase"), ("company_id", "=", self.env.company.id)],
+                                    limit=1
+                                )
+                            else:
+                                journal = Journal.search(
+                                    [("company_id", "=", self.env.company.id)],
+                                    limit=1
+                                )
+                        else:
+                            # Generic fallback for any model requiring journal_id
+                            journal = Journal.search(
+                                [("company_id", "=", self.env.company.id)],
+                                limit=1
+                            )
+                        if journal:
+                            data["journal_id"] = journal.id
+                            imported_fields.add("journal_id")
+                            _logger.info(f"[AUTO-FILL] journal_id set to {journal.id} for model {model}")
+                        else:
+                            raise UserError("journal_id is required but no journal exists for this company.")
             if 'state' in model_fields and model_fields['state']['type'] == 'selection':
                 state_default = self._get_dynamic_state_default(model, model_fields['state'])
                 _logger.info(f"Setting state field default to: {state_default}")
@@ -341,6 +286,7 @@ class ImportWizard(models.TransientModel):
                             state_values.append(str(val).strip())
                     data = data.copy()
                     data.loc[:, 'state'] = state_values
+            # Handle date fields
             date_fields = [f for f, info in model_fields.items() if info['type'] in ['date', 'datetime']]
             for date_field in date_fields:
                 if date_field not in data.columns and date_field in required_field_names:
@@ -348,10 +294,12 @@ class ImportWizard(models.TransientModel):
                     data = data.copy()
                     data.loc[:, date_field] = [current_datetime] * len(data)
                     imported_fields.add(date_field)
+            # Apply defaults for missing required fields
             for field in missing_required:
                 if field not in data.columns and field in defaults:
                     data = data.copy()
                     data.loc[:, field] = [defaults[field]] * len(data)
+            # Resolve many2one references
             many2one_fields = {}
             for column in data.columns:
                 if column in model_fields and model_fields[column]['type'] == 'many2one':
@@ -368,6 +316,7 @@ class ImportWizard(models.TransientModel):
                         resolved_values.append(None)
                 data = data.copy()
                 data.loc[:, column] = resolved_values
+            # Handle partner addresses
             if ('partner_id' in data.columns and
                     any(f in model_fields for f in ['partner_invoice_id', 'partner_shipping_id'])):
                 partner_ids = []
@@ -402,6 +351,7 @@ class ImportWizard(models.TransientModel):
                         address_cache.get(int(pid), {}).get('delivery') if pd.notna(pid) else None
                         for pid in data['partner_id']
                     ]
+            # Prepare final fields for import
             fields_to_import = list(imported_fields.union(missing_required))
             available_fields = [f for f in fields_to_import if f in data.columns]
             for field in fields_to_import:
@@ -412,217 +362,167 @@ class ImportWizard(models.TransientModel):
                         data = data.copy()
                         data.loc[:, field] = defaults[field]
                         available_fields.append(field)
+            # Add O2M and M2M columns
             for o2m_col in o2m_columns:
-                if o2m_col not in available_fields:
+                if o2m_col not in available_fields and o2m_col in data.columns:
                     available_fields.append(o2m_col)
             for m2m_col in m2m_columns:
-                if m2m_col not in available_fields:
+                if m2m_col not in available_fields and m2m_col in data.columns:
                     available_fields.append(m2m_col)
             for parent_field in o2m_field_mappings.keys():
                 imported_fields.add(parent_field)
                 if parent_field not in fields_to_import:
                     fields_to_import.append(parent_field)
+            # Add all M2M fields that are in the data
+            for m2m_col in m2m_columns:
+                if m2m_col in data.columns and m2m_col not in available_fields:
+                    available_fields.append(m2m_col)
             final_fields = [f for f in available_fields if (
                     f in model_fields or f == 'id' or f.startswith('o2m__') or f.startswith('m2m__')
             )]
             if not final_fields:
                 raise UserError("No valid fields found for import")
+            # Drop existing triggers
             try:
                 self.env.cr.execute("SAVEPOINT trigger_setup;")
                 self.env.cr.execute(f"""
-                    DROP TRIGGER IF EXISTS trg_process_m2m_mapping ON {table_name};
-                    DROP TRIGGER IF EXISTS trg_process_o2m_mapping ON {table_name};
-                """)
+                           DROP TRIGGER IF EXISTS trg_process_m2m_mapping ON {table_name};
+                           DROP TRIGGER IF EXISTS trg_process_o2m_mapping ON {table_name};
+                       """)
                 self.env.cr.execute("RELEASE SAVEPOINT trigger_setup;")
                 _logger.info("Dropped existing triggers successfully")
             except Exception as e:
                 self.env.cr.execute("ROLLBACK TO SAVEPOINT trigger_setup;")
                 self.env.cr.execute("RELEASE SAVEPOINT trigger_setup;")
                 self.env.cr.warning(f"Failed to drop triggers (isolated): {e}. Continuing import...")
-            # Use enhanced bulk import that handles both M2M and O2M
-            result = self._postgres_bulk_import_enhanced(
-                data, model, final_fields,
-                m2m_trigger_val, o2m_trigger_val,
-                m2m_columns, o2m_columns,
-                table_name, model_fields,
-                initial_count, model_record,
-                has_complex_fields, reference_cache
-            )
+            # Choose import method based on what we have
+            if has_complex_fields:
+                if o2m_columns and not m2m_columns:
+                    # Only O2M fields - use fast trigger-based import
+                    result = self._postgres_bulk_import_fast(
+                        data, model, final_fields,
+                        m2m_trigger_val, o2m_trigger_val,
+                        m2m_columns, o2m_columns,
+                        table_name, model_fields,
+                        initial_count, model_record,
+                        has_complex_fields, reference_cache
+                    )
+                elif m2m_columns:
+                    # Has M2M fields - use enhanced import (handles both O2M and M2M)
+                    result = self._postgres_bulk_import_enhanced(
+                        data, model, final_fields,
+                        m2m_trigger_val, o2m_trigger_val,
+                        m2m_columns, o2m_columns,
+                        table_name, model_fields,
+                        initial_count, model_record,
+                        has_complex_fields, reference_cache
+                    )
+                else:
+                    # Other complex fields - use enhanced import
+                    result = self._postgres_bulk_import_enhanced(
+                        data, model, final_fields,
+                        m2m_trigger_val, o2m_trigger_val,
+                        m2m_columns, o2m_columns,
+                        table_name, model_fields,
+                        initial_count, model_record,
+                        has_complex_fields, reference_cache
+                    )
+            else:
+                # Simple import - use fast method
+                result = self._postgres_bulk_import_fast(
+                    data, model, final_fields,
+                    m2m_trigger_val, o2m_trigger_val,
+                    m2m_columns, o2m_columns,
+                    table_name, model_fields,
+                    initial_count, model_record,
+                    has_complex_fields, reference_cache
+                )
             return result
         except UserError:
             raise
         except Exception as e:
-            _logger.error(f"Import failed with exception: {str(e)}")
-            import traceback
-            _logger.error(f"Full traceback: {traceback.format_exc()}")
             raise UserError(f"Import failed: {str(e)}")
 
-    def remove_m2m_temp_columns(self, table, m2m_columns):
+    def _prepare_audit_fields(self):
         """
-           Removes temporary many2many helper columns from the specified table and
-           drops the related processing triggers. This cleanup is typically performed
-           after bulk import operations to restore the table structure and avoid
-           leaving behind intermediate metadata used during import.
+        Generate audit fields dictionary.
         """
-        for column in m2m_columns:
-            self.env.cr.execute(f"ALTER TABLE {table} DROP COLUMN IF EXISTS {column};")
-        self.env.cr.execute(f"""
-            DROP TRIGGER IF EXISTS trg_process_m2m_mapping ON {table};
-            DROP TRIGGER IF EXISTS trg_process_o2m_mapping ON {table};
-        """)
-
-    def get_m2m_details(self, model_name, field_name):
-        """
-           Retrieves metadata for a many2many field, including the relation table and
-           the linking column names. This information is used during bulk import to
-           correctly populate the M2M intermediate table.
-        """
-        model = self.env[model_name]
-        field = model._fields[field_name]
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         return {
-            'relation_table': field.relation,
-            'column1': field.column1,
-            'column2': field.column2
+            'create_uid': self.env.uid,
+            'write_uid': self.env.uid,
+            'create_date': current_time,
+            'write_date': current_time
         }
 
-    @api.model
-    def validate_columns(self, res_id, model, columns):
+    def _get_common_default_context(self, model_name=None):
         """
-            Validates the imported column definitions before processing an Excel import.
-            It checks for invalid or unmapped columns, ensures required fields are
-            present, and performs special validation for models such as res.partner that
-            require specific fields (e.g., name or complete_name). The method returns a
-            structured result indicating whether validation succeeded or providing
-            details about any missing or invalid columns.
+        Builds a dictionary of common default values used during record creation.
+        """
+        defaults = {
+            'company_id': self.env.company.id,
+            'currency_id': getattr(self.env.company, 'currency_id', False) and self.env.company.currency_id.id or None,
+            'create_uid': self.env.uid,
+            'write_uid': self.env.uid,
+            'create_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'write_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'state': 'draft',
+        }
+        if model_name:
+            try:
+                Model = self.env[model_name]
+                model_fields = Model.fields_get()
+                required_fields = []
+                for fname, finfo in model_fields.items():
+                    if finfo.get('required') and finfo.get('store') and not finfo.get('deprecated', False):
+                        required_fields.append(fname)
+                for fname, finfo in model_fields.items():
+                    if finfo.get('type') == 'many2one' and fname in required_fields:
+                        rel_model = finfo.get('relation')
+                        if not rel_model:
+                            continue
+                        if fname in defaults:
+                            continue
+                        domain = []
+                        if 'company_id' in self.env[rel_model]._fields:
+                            domain = [('company_id', '=', self.env.company.id)]
+                        rec = self.env[rel_model].search(domain, limit=1) if domain else self.env[rel_model].search([],
+                                                                                                                    limit=1)
+                        if rec:
+                            defaults.setdefault(fname, rec.id)
+                    elif finfo.get('type') == 'many2one' and finfo.get('relation') == 'uom.uom':
+                        if fname in required_fields and fname not in defaults:
+                            try:
+                                rec = self.env['uom.uom'].search([], limit=1)
+                                if rec:
+                                    defaults[fname] = rec.id
+                            except Exception:
+                                pass
+            except Exception as e:
+                _logger.warning(f"Could not prepare model-specific defaults for {model_name}: {e}")
+        return defaults
+
+    def _get_dynamic_state_default(self, model, state_field_info):
+        """
+        Determines the default value for a model's state field.
         """
         try:
-            uploaded_columns = [item['fieldInfo']['id'] for item in columns if 'fieldInfo' in item]
-            if len(uploaded_columns) < len(columns):
-                invalid_columns = [col.get('name', 'Unknown') for col in columns if 'fieldInfo' not in col]
-                return {
-                    'is_valid': False,
-                    'invalid_columns': invalid_columns,
-                    'error_type': 'invalid_columns'
-                }
-            # Special validation for res.partner model
-            if model == 'res.partner':
-                # Extract all field names that will be imported
-                imported_field_names = set()
-                for item in columns:
-                    if 'fieldInfo' in item:
-                        field_info = item['fieldInfo']
-                        field_name = field_info['id']
-                        # If it's a field path (contains '/'), get the first part
-                        if '/' in field_name:
-                            field_name = field_name.split('/')[0]
-                        imported_field_names.add(field_name)
-                # Check if neither 'name' nor 'complete_name' is present
-                if 'name' not in imported_field_names and 'complete_name' not in imported_field_names:
-                    return {
-                        'is_valid': False,
-                        'error_type': 'missing_required_fields',
-                        'error_message': "For Contact/Partner import, either 'Name' or 'Complete Name' field is required. Please add at least one of these columns to your Excel file."
-                    }
-            missing_required = self._check_missing_required_fields_for_validation(model, columns)
-            if missing_required:
-                return {
-                    'is_valid': False,
-                    'missing_required_fields': missing_required,
-                    'error_type': 'missing_required_fields',
-                    'error_message': f"Required fields missing: {', '.join(missing_required)}. Please add these columns to your Excel file."
-                }
-            return {'is_valid': True}
+            selection_values = state_field_info['selection']
+            if callable(selection_values):
+                selection_values = selection_values(self.env[model])
+            if selection_values:
+                draft_states = [val[0] for val in selection_values if val[0].lower() == 'draft']
+                if draft_states:
+                    return draft_states[0]
+                return selection_values[0][0]
+            return 'draft'
         except Exception as e:
-            _logger.error(f"Validation error for model {model}: {str(e)}")
-            return {
-                'is_valid': False,
-                'error_type': 'validation_error',
-                'error_message': f"Validation failed: {str(e)}"
-            }
-
-    def get_required_fields(self, model_name):
-        """
-            Returns a list of required, stored, and non-deprecated fields for the given
-            model. Each returned item includes the field name and its type, allowing the
-            importer to identify mandatory fields that must be provided or filled during
-            data processing.
-        """
-        Model = self.env[model_name]
-        model_fields = Model.fields_get()
-        required_fields = []
-        for field_name, field in model_fields.items():
-            if field.get('required') and field.get('store') and not field.get('deprecated', False):
-                required_fields.append({
-                    'name': field_name,
-                    'type': field['type']
-                })
-        return required_fields
-
-    def _check_missing_required_fields_for_validation(self, model_name, columns):
-        """
-            Identifies required fields that are missing during the initial validation
-            phase of an import. It determines which fields the user has mapped, checks
-            the model's true required fields (excluding deprecated, auto-generated,
-            audit, and defaulted fields), and ensures each required field is either
-            provided in the uploaded columns or has a fallback value. Returns a list of
-            required fields that cannot be automatically filled and must be added to the
-            import file.
-        """
-        try:
-            imported_fields = set()
-            for item in columns:
-                if 'fieldInfo' in item:
-                    field_name = item['fieldInfo']['id']
-                    if '/' in field_name:
-                        field_name = field_name.split('/')[0]
-                    imported_fields.add(field_name)
-            Model = self.env[model_name]
-            model_fields = Model.fields_get()
-            # Get actual field objects for better property checking
-            field_objects = Model._fields
-            required_fields = []
-            for field_name, field_info in model_fields.items():
-                field_obj = field_objects.get(field_name)
-                # Skip deprecated fields
-                if field_info.get('deprecated', False):
-                    continue
-                # Check if field is really required
-                is_required = field_info.get('required', False)
-                # Skip if field has a default value in the model
-                has_default = False
-                if field_obj and hasattr(field_obj, 'default'):
-                    if field_obj.default is not None:
-                        has_default = True
-                # Skip automatic/audit fields
-                if field_name in ['create_date', 'write_date', 'create_uid', 'write_uid']:
-                    continue
-                # Skip alias_id specifically since it's not actually required for import
-                if field_name in ['alias_id', 'resource_id']:
-                    continue
-                # Only add if truly required and not having a default
-                if is_required and not has_default:
-                    # Double-check that field is stored and not computed
-                    if field_info.get('store', True) and not field_info.get('compute', False):
-                        required_fields.append(field_name)
-            defaults = Model.default_get(list(model_fields.keys()))
-            odoo_defaults = {k: v for k, v in defaults.items() if v is not None}
-            auto_generated_fields = self._get_auto_generated_fields(model_name , required_fields)
-            missing_without_fallback = []
-            for field in set(required_fields) - imported_fields:
-                if field not in odoo_defaults and field not in auto_generated_fields:
-                    missing_without_fallback.append(field)
-            return missing_without_fallback
-        except Exception as e:
-            _logger.error(f"Error checking required fields for {model_name}: {str(e)}")
-            return []
+            _logger.warning(f"Error getting dynamic state default: {e}")
+            return 'draft'
 
     def _get_auto_generated_fields(self, model_name, required_fields):
         """
-            Determines which required fields of a model can be automatically generated
-            during import. This includes computed fields, related fields, fields with
-            default values, audit fields, and any fields that Odoo inherently populates
-            on record creation. These fields do not need to be provided in the import
-            file, and identifying them helps avoid false validation errors.
+        Determines which required fields can be auto-generated.
         """
         auto_generated_fields = set()
         try:
@@ -651,11 +551,7 @@ class ImportWizard(models.TransientModel):
 
     def _field_has_automatic_value(self, model_name, field_name):
         """
-            Checks whether a given field is automatically populated by Odoo during
-            record creation. This includes fields with default methods, sequence-based
-            name generation, or defaults provided through the model's context. The
-            result helps determine whether a required field must be present in the
-            import file or can be safely omitted.
+        Checks if a field has automatic value.
         """
         try:
             model_obj = self.env[model_name]
@@ -674,37 +570,22 @@ class ImportWizard(models.TransientModel):
             _logger.warning(f"Error checking automatic value for {field_name}: {e}")
             return False
 
-    def _handle_missing_required_fields(self, data, model_name, missing_required):
+    def _get_model_defaults(self, model_name):
         """
-            Fills required fields that were not provided in the import data by generating
-            appropriate default values dynamically. For each missing required field, the
-            method retrieves a model-specific fallback value and inserts it into the
-            dataset, ensuring the import can proceed without errors. Returns the updated
-            DataFrame with all necessary fields populated.
+        Retrieves the default values for all fields of the given model.
         """
         try:
             Model = self.env[model_name]
-            for field_name in missing_required:
-                if field_name not in data.columns:
-                    field_value = self._get_dynamic_default_value(model_name, field_name, len(data))
-                    if field_value is not None:
-                        data = data.copy()
-                        data.loc[:, field_name] = field_value
-                        _logger.info(f"Dynamically set {field_name} for {model_name}")
-            return data
+            field_names = list(Model.fields_get().keys())
+            defaults = Model.default_get(field_names)
+            return {k: v for k, v in defaults.items() if v is not None}
         except Exception as e:
-            _logger.warning(f"Error dynamically handling required fields: {e}")
-            return data
+            _logger.warning(f"Could not get defaults for model {model_name}: {e}")
+            return {}
 
     def _get_dynamic_default_value(self, model_name, field_name, record_count):
         """
-           Generates a suitable default value for a required field that was not
-           provided in the import file. The method checks Odoo's built-in defaults,
-           field-level default methods, and falls back to intelligent type-based
-           defaults for common field types (char, numeric, boolean, date, datetime,
-           many2one, selection). The returned value is repeated for the number of
-           records being imported. Returns None if no reasonable fallback can be
-           determined.
+        Generates dynamic default values for missing fields.
         """
         try:
             Model = self.env[model_name]
@@ -726,9 +607,10 @@ class ImportWizard(models.TransientModel):
             elif field_type == 'boolean':
                 return [False] * record_count
             elif field_type == 'date':
-                return [datetime.now().strftime('%Y-%m-%d')] * record_count
+                # Do NOT override if user supplied a value
+                return [None] * record_count
             elif field_type == 'datetime':
-                return [datetime.now().strftime('%Y-%m-%d %H:%M:%S')] * record_count
+                return [None] * record_count
             elif field_type == 'many2one':
                 comodel = field_obj.comodel_name
                 if comodel:
@@ -747,14 +629,160 @@ class ImportWizard(models.TransientModel):
             _logger.warning(f"Error getting dynamic default for {field_name}: {e}")
             return None
 
+    def _get_sequence_for_model(self, model_name):
+        """
+        Returns the most suitable ir.sequence record for the given model name.
+        """
+        try:
+            seq = self.env['ir.sequence'].search([('code', '=', model_name)], limit=1)
+            if seq:
+                return seq
+            last_part = model_name.split('.')[-1]
+            seq = self.env['ir.sequence'].search([('code', 'ilike', last_part)], limit=1)
+            if seq:
+                return seq
+            seqs = self.env['ir.sequence'].search(['|', ('prefix', 'ilike', model_name), ('name', 'ilike', model_name)],
+                                                  limit=5)
+            if seqs:
+                return seqs[0]
+            parts = [p for p in model_name.replace('.', '_').split('_') if len(p) > 2]
+            for p in parts:
+                seq = self.env['ir.sequence'].search([('code', 'ilike', p)], limit=1)
+                if seq:
+                    return seq
+            return False
+        except Exception as e:
+            _logger.warning(f"Sequence lookup failed for {model_name}: {e}")
+            return False
+
+    def _generate_bulk_sequences(self, sequence, count):
+        """
+        Generates bulk sequence values.
+        """
+        if not sequence or count <= 0:
+            return []
+        if hasattr(sequence, '_next_do'):
+            return [sequence._next_do() for i in range(count)]
+        else:
+            return [sequence._next() for i in range(count)]
+
+    def _sanitize_value(self, val, field_info=None):
+        """
+        Convert Python/Odoo values into SQL-safe JSON values dynamically.
+        """
+        # Handle pandas NaN / None
+        if val is None:
+            return None
+        if isinstance(val, float) and (_np.isnan(val) if hasattr(_np, "isnan") else _pd.isna(val)):
+            return None
+        # Convert booleans properly
+        if val is True:
+            return True
+        if val is False:
+            return None
+        # Convert datetime/date
+        if isinstance(val, (_dt.datetime, _dt.date)):
+            return val.strftime('%Y-%m-%d %H:%M:%S')
+        # Convert all string "false", "False", "NULL", "" to NULL
+        if isinstance(val, str):
+            if val.strip().lower() in ("false", "none", "null", ""):
+                return None
+            return val.strip()
+        # Handle integer/float cleanly
+        if isinstance(val, (int, float)):
+            return val
+        # Any unknown value convert to string safely
+        return str(val)
+
+    def _safe_json_array(self, value_list):
+        """
+        Return a JSON array string that PostgreSQL can cast to jsonb without errors.
+        """
+        if not value_list:
+            return "[]"
+        safe_list = []
+        for item in value_list:
+            if item is None:
+                continue
+            if not isinstance(item, dict):
+                # Wrap non-dict (rare case)
+                safe_list.append(self._sanitize_value(item))
+                continue
+            # Sanitize each key
+            clean = {}
+            for k, v in item.items():
+                clean[k] = self._sanitize_value(v)
+            safe_list.append(clean)
+        return json.dumps(safe_list, ensure_ascii=False, default=str)
+
+    def _safe_json_value(self, val):
+        """
+        Convert any Python object into JSON-serializable type.
+        """
+        if isinstance(val, (datetime.date, datetime.datetime)):
+            return val.strftime('%Y-%m-%d %H:%M:%S')
+        if isinstance(val, float):
+            if pd.isna(val):
+                return None
+        if isinstance(val, pd.Timestamp):
+            return val.strftime("%Y-%m-%d %H:%M:%S")
+        return val
+
+    def _resolve_reference(self, model, value, reference_cache):
+        """
+        Convert a reference value (ID, name, code, etc.) to a database ID for a many2one field.
+        This helper method resolves references by checking multiple sources: first looking in cache,
+        then trying direct ID matching, XML external IDs, and finally searching common fields like
+        name, code, or barcode. It caches successful lookups to improve performance for repeated values.
+        """
+        if pd.isna(value) or value in ['', 0, '0']:
+            return None
+        cache_key = model
+        str_val = str(value).strip()
+        if cache_key in reference_cache:
+            cached_id = reference_cache[cache_key].get(str_val)
+            if cached_id is not None:
+                return cached_id
+        Model = self.env[model]
+        try:
+            record_id = int(float(str_val))
+            record = Model.browse(record_id).exists()
+            if record:
+                return record.id
+        except:
+            pass
+        try:
+            return self.env.ref(str_val).id
+        except Exception:
+            pass
+        searchable_fields = []
+        model_fields = Model.fields_get()
+        for field_name, info in model_fields.items():
+            if (info.get('store') and info.get('type') in ['char', 'text'] and not info.get('deprecated', False)):
+                searchable_fields.append(field_name)
+        for field in ['name', 'code', 'reference', 'display_name', 'complete_name', 'default_code', 'barcode']:
+            if field in model_fields and field not in searchable_fields:
+                searchable_fields.append(field)
+        for field_name in searchable_fields:
+            try:
+                record = Model.search([(field_name, '=ilike', str_val)], limit=1)
+                if record:
+                    if cache_key not in reference_cache:
+                        reference_cache[cache_key] = {}
+                    reference_cache[cache_key][str_val] = record.id
+                    return record.id
+            except Exception:
+                continue
+        _logger.warning(f"Could not resolve {model} reference: {str_val}")
+        return None
+
     def _build_reference_cache(self, model, values, reference_cache):
         """
-            Builds a lookup cache for resolving many2one references during import.
-            It analyzes the provided column values, extracts valid IDs, searches for
-            matching records by common identifier fields (such as default_code, barcode,
-            name, code, or complete_name), and maps each recognized value to its
-            corresponding record ID. This cache significantly speeds up reference
-            resolution and avoids repeated database searches during bulk imports.
+        Pre-populate a cache with many2one references to speed up resolution.
+        This method proactively looks up all unique values for a model and stores their
+        database IDs in cache. It checks for direct IDs, searches common identifying fields
+        (name, code, barcode, etc.), and extracts codes from bracketed formats. This bulk
+        approach significantly improves performance when resolving many references.
         """
         cache_key = model
         if cache_key not in reference_cache:
@@ -809,78 +837,119 @@ class ImportWizard(models.TransientModel):
             except Exception:
                 continue
 
-    def _resolve_reference(self, model, value, reference_cache):
+    def _handle_sql_constraints_for_child_records(self, comodel_name, row_data, reference_cache):
         """
-            Resolves a many2one reference value dynamically by checking multiple possible
-            identifiers. It first looks up the value in the reference cache, then
-            attempts ID-based lookup, XML ID resolution, and finally searches common
-            textual identifier fields (such as name, code, or default_code). When a
-            match is found, it is cached for future lookups. Returns the resolved record
-            ID or None if no matching record can be identified.
+        Automatically fill missing fields to satisfy database constraints for child records.
+        This method examines the child model's SQL constraints and provides default values
+        for required fields that might be missing. For example, it sets date_planned for future
+        dates, links UOM from products, and assigns appropriate accounts based on product categories.
         """
-        if pd.isna(value) or value in ['', 0, '0']:
-            return None
-        cache_key = model
-        str_val = str(value).strip()
-        if cache_key in reference_cache:
-            cached_id = reference_cache[cache_key].get(str_val)
-            if cached_id is not None:
-                return cached_id
-        Model = self.env[model]
         try:
-            record_id = int(float(str_val))
-            record = Model.browse(record_id).exists()
-            if record:
-                return record.id
-        except:
-            pass
-        try:
-            return self.env.ref(str_val).id
-        except Exception:
-            pass
-        searchable_fields = []
-        model_fields = Model.fields_get()
-        for field_name, info in model_fields.items():
-            if (info.get('store') and info.get('type') in ['char', 'text'] and not info.get('deprecated', False)):
-                searchable_fields.append(field_name)
-        for field in ['name', 'code', 'reference', 'display_name', 'complete_name', 'default_code', 'barcode']:
-            if field in model_fields and field not in searchable_fields:
-                searchable_fields.append(field)
-        for field_name in searchable_fields:
-            try:
-                record = Model.search([(field_name, '=ilike', str_val)], limit=1)
-                if record:
-                    if cache_key not in reference_cache:
-                        reference_cache[cache_key] = {}
-                    reference_cache[cache_key][str_val] = record.id
-                    return record.id
-            except Exception:
-                continue
-        _logger.warning(f"Could not resolve {model} reference: {str_val}")
-        return None
+            child_model = self.env[comodel_name]
+            if not hasattr(child_model, '_sql_constraints'):
+                return row_data
+            _logger.info(f"Checking SQL constraints for: {comodel_name}")
+            for constraint_name, constraint_sql, constraint_msg in child_model._sql_constraints:
+                constraint_sql_lower = constraint_sql.lower()
+                if 'date_planned is not null' in constraint_sql_lower and 'date_planned' not in row_data:
+                    from datetime import timedelta
+                    future_date = datetime.now() + timedelta(weeks=1)
+                    row_data['date_planned'] = future_date.strftime('%Y-%m-%d')
+                    _logger.info(f"Set date_planned: {row_data['date_planned']}")
+                if ('product_uom is not null' in constraint_sql_lower and
+                        'product_uom' not in row_data and 'product_id' in row_data):
+                    try:
+                        product = self.env['product.product'].browse(row_data['product_id'])
+                        if product.exists() and product.uom_id:
+                            row_data['product_uom'] = product.uom_id.id
+                            _logger.info(f"Set product_uom: {row_data['product_uom']}")
+                    except Exception as e:
+                        _logger.warning(f"Failed to set product_uom: {e}")
+                if ('account_id is not null' in constraint_sql_lower and
+                        'account_id' not in row_data and 'product_id' in row_data):
+                    try:
+                        product = self.env['product.product'].browse(row_data['product_id'])
+                        if product.exists():
+                            account_id = None
+                            if hasattr(product, 'property_account_expense_id') and product.property_account_expense_id:
+                                account_id = product.property_account_expense_id.id
+                            elif hasattr(product, 'property_account_income_id') and product.property_account_income_id:
+                                account_id = product.property_account_income_id.id
+                            if account_id:
+                                row_data['account_id'] = account_id
+                                _logger.info(f"Set account_id: {account_id}")
+                    except Exception as e:
+                        _logger.warning(f"Failed to set account_id: {e}")
+            return row_data
+        except Exception as e:
+            _logger.warning(f"Error handling SQL constraints for {comodel_name}: {e}")
+            return row_data
 
-    def _generate_bulk_sequences(self, sequence, count):
+    def get_required_fields(self, model_name):
         """
-            Generates a list of sequence values in bulk for the given sequence record.
-            It supports both modern and legacy sequence methods (_next_do and _next),
-            returning the requested number of sequence values. If no valid sequence is
-            provided or the count is zero, an empty list is returned.
+        Returns a list of required fields for the given model.
         """
-        if not sequence or count <= 0:
+        Model = self.env[model_name]
+        model_fields = Model.fields_get()
+        required_fields = []
+        for field_name, field in model_fields.items():
+            if field.get('required') and field.get('store') and not field.get('deprecated', False):
+                required_fields.append({
+                    'name': field_name,
+                    'type': field['type']
+                })
+        return required_fields
+
+    def _check_missing_required_fields_for_validation(self, model_name, columns):
+        """
+        Find required fields that are missing from import data and have no fallback values.
+        This validation method compares the imported fields against the model's requirements,
+        identifying fields that are required for creation, not provided in the import, and
+        lack default values or auto-generation. It excludes audit fields and computed fields.
+        """
+        try:
+            imported_fields = set()
+            for item in columns:
+                if 'fieldInfo' in item:
+                    field_name = item['fieldInfo']['id']
+                    if '/' in field_name:
+                        field_name = field_name.split('/')[0]
+                    imported_fields.add(field_name)
+            Model = self.env[model_name]
+            model_fields = Model.fields_get()
+            field_objects = Model._fields
+            required_fields = []
+            for field_name, field_info in model_fields.items():
+                field_obj = field_objects.get(field_name)
+                if field_info.get('deprecated', False):
+                    continue
+                is_required = field_info.get('required', False)
+                has_default = False
+                if field_obj and hasattr(field_obj, 'default'):
+                    if field_obj.default is not None:
+                        has_default = True
+                if field_name in ['create_date', 'write_date', 'create_uid', 'write_uid']:
+                    continue
+                if field_name in ['alias_id', 'resource_id']:
+                    continue
+                if is_required and not has_default:
+                    if field_info.get('store', True) and not field_info.get('compute', False):
+                        required_fields.append(field_name)
+            defaults = Model.default_get(list(model_fields.keys()))
+            odoo_defaults = {k: v for k, v in defaults.items() if v is not None}
+            auto_generated_fields = self._get_auto_generated_fields(model_name, required_fields)
+            missing_without_fallback = []
+            for field in set(required_fields) - imported_fields:
+                if field not in odoo_defaults and field not in auto_generated_fields:
+                    missing_without_fallback.append(field)
+            return missing_without_fallback
+        except Exception as e:
+            _logger.error(f"Error checking required fields for {model_name}: {str(e)}")
             return []
-        if hasattr(sequence, '_next_do'):
-            return [sequence._next_do() for i in range(count)]
-        else:
-            return [sequence._next() for i in range(count)]
 
     def _check_missing_required_fields(self, model_name, imported_fields, defaults):
         """
-           Determines which required fields of a model are still missing after initial
-           import mapping and default assignment. It compares the model’s true required
-           fields against the fields imported, filters out fields that have defaults or
-           can be auto-generated by Odoo, and returns only those required fields that
-           have no available fallback and must be explicitly provided in the import
-           data.
+        Checks for missing required fields.
         """
         Model = self.env[model_name]
         model_fields = Model.fields_get()
@@ -898,40 +967,31 @@ class ImportWizard(models.TransientModel):
                 missing_without_fallback.append(field)
         return missing_without_fallback
 
-    def _get_next_sequence_values(self, table_name, count):
+    def _handle_missing_required_fields(self, data, model_name, missing_required):
         """
-            Generates a list of new sequential IDs for direct PostgreSQL bulk inserts.
-            It calculates the next available IDs based on the current maximum ID in the
-            target table, adjusts the underlying sequence to prevent conflicts, and
-            returns the reserved ID range. If sequence adjustment fails, it falls back
-            to a simpler max-ID-based generation, raising an error only if both
-            strategies fail.
+            Fills required fields that were not provided in the import data by generating
+            appropriate default values dynamically. For each missing required field, the
+            method retrieves a model-specific fallback value and inserts it into the
+            dataset, ensuring the import can proceed without errors. Returns the updated
+            DataFrame with all necessary fields populated.
         """
         try:
-            self.env.cr.execute(f"SELECT COALESCE(MAX(id), 0) FROM {table_name}")
-            max_id = self.env.cr.fetchone()[0]
-            ids_to_use = list(range(max_id + 1, max_id + count + 1))
-            sequence_name = f"{table_name}_id_seq"
-            new_seq_val = max_id + count + 100
-            self.env.cr.execute(f"SELECT setval('{sequence_name}', %s, false)", (new_seq_val,))
-            return ids_to_use
+            Model = self.env[model_name]
+            for field_name in missing_required:
+                if field_name not in data.columns:
+                    field_value = self._get_dynamic_default_value(model_name, field_name, len(data))
+                    if field_value is not None:
+                        data = data.copy()
+                        data.loc[:, field_name] = field_value
+                        _logger.info(f"Dynamically set {field_name} for {model_name}")
+            return data
         except Exception as e:
-            _logger.error(f"Error generating sequence values for {table_name}: {e}")
-            try:
-                self.env.cr.execute(f"SELECT COALESCE(MAX(id), 0) FROM {table_name}")
-                max_id = self.env.cr.fetchone()[0]
-                return list(range(max_id + 1, max_id + count + 1))
-            except Exception as fallback_error:
-                _logger.error(f"Fallback ID generation failed: {fallback_error}")
-                raise UserError(f"Unable to generate unique IDs: {str(e)}")
+            _logger.warning(f"Error dynamically handling required fields: {e}")
+            return data
 
     def _sync_sequence_after_import(self, table_name):
         """
-            Synchronizes the PostgreSQL sequence associated with a table's ID column
-            after a bulk import. It updates the sequence to a value safely beyond the
-            current maximum ID, preventing future insert conflicts. If the update
-            fails, a fallback attempt resets the sequence directly above the maximum
-            existing ID.
+        Synchronize PostgreSQL sequence after bulk import.
         """
         try:
             self.env.cr.execute(f"SELECT COALESCE(MAX(id), 0) FROM {table_name}")
@@ -949,59 +1009,316 @@ class ImportWizard(models.TransientModel):
             except Exception as fallback_error:
                 _logger.error(f"Fallback sequence sync failed for {table_name}: {fallback_error}")
 
-    def _handle_sql_constraints_for_child_records(self, comodel_name, row_data, reference_cache):
+    def remove_m2m_temp_columns(self, table, m2m_columns):
         """
-           Inspects SQL-level NOT NULL constraints on child models and ensures the
-           imported row data satisfies them. Missing fields required by SQL constraints
-           are automatically filled using model defaults or intelligent type-based
-           fallback values. This helps prevent database constraint violations during
-           bulk creation of one2many child records.
+        Remove temporary many2many/one2many helper columns and drop triggers.
+        """
+        for column in m2m_columns:
+            self.env.cr.execute(f"ALTER TABLE {table} DROP COLUMN IF EXISTS {column};")
+        self.env.cr.execute(f"""
+            DROP TRIGGER IF EXISTS trg_process_m2m_mapping ON {table};
+            DROP TRIGGER IF EXISTS trg_process_o2m_mapping ON {table};
+        """)
+
+    def get_m2m_details(self, model_name, field_name):
+        """
+        Retrieves metadata for a many2many field.
+        """
+        model = self.env[model_name]
+        field = model._fields[field_name]
+        return {
+            'relation_table': field.relation,
+            'column1': field.column1,
+            'column2': field.column2
+        }
+
+    def _apply_parent_defaults(self, parent_record, model_name):
+        """
+        Applies defaults to parent records.
+        """
+        try:
+            Model = self.env[model_name]
+            model_fields = Model.fields_get()
+            defaults = {
+                'state': 'draft',
+                'company_id': self.env.company.id,
+                'currency_id': getattr(self.env.company, 'currency_id',
+                                       False) and self.env.company.currency_id.id or None,
+            }
+            for field, default_value in defaults.items():
+                if field in model_fields and (field not in parent_record or not parent_record[field]):
+                    parent_record[field] = default_value
+            context_defaults = self._get_common_default_context(model_name)
+            for field, value in context_defaults.items():
+                if field in model_fields and not parent_record.get(field) and value:
+                    parent_record[field] = value
+            for field_name, field_info in model_fields.items():
+                if field_info['type'] == 'many2one' and field_name not in parent_record:
+                    if field_name in ['company_id']:
+                        parent_record[field_name] = self.env.company.id
+        except Exception as e:
+            _logger.warning(f"Error applying parent defaults for {model_name}: {e}")
+        return parent_record
+
+    def _apply_child_defaults(self, child_record, comodel_name, reference_cache, default_context=None):
+        """
+        Applies defaults to child records.
         """
         try:
             ChildModel = self.env[comodel_name]
-            if not hasattr(ChildModel, "_sql_constraints"):
-                return row_data
             child_fields = ChildModel.fields_get()
+            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            if default_context:
+                for field, value in default_context.items():
+                    if field in child_fields and not child_record.get(field):
+                        child_record[field] = value
             model_defaults = ChildModel.default_get(list(child_fields.keys()))
-            for _, constraint_sql, _ in getattr(ChildModel, "_sql_constraints", []):
-                required_fields = re.findall(r'"?([a-zA-Z0-9_]+)"?\s+is\s+not\s+null', constraint_sql.lower())
-                for field in required_fields:
-                    if field not in row_data:
-                        field_type = child_fields[field]["type"]
-                        if field in model_defaults and model_defaults[field] is not None:
-                            row_data[field] = model_defaults[field]
-                            continue
-                        if field_type in ("char", "text"):
-                            row_data[field] = f"Auto {field.replace('_', ' ').title()}"
-                        elif field_type in ("integer", "float", "monetary"):
-                            row_data[field] = 0.0
-                        elif field_type == "boolean":
-                            row_data[field] = False
-                        elif field_type == "date":
-                            row_data[field] = datetime.now().strftime("%Y-%m-%d")
-                        elif field_type == "datetime":
-                            row_data[field] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        elif field_type == "many2one":
-                            rel_model = child_fields[field].get("relation")
-                            if rel_model:
-                                rec = self.env[rel_model].search([('company_id', '=', self.env.company.id)], limit=1)
-                                if not rec:
-                                    rec = self.env[rel_model].search([], limit=1)
-                                if rec:
-                                    row_data[field] = rec.id
-            return row_data
+            for field, val in model_defaults.items():
+                if field in child_fields and field not in child_record and val is not None:
+                    child_record[field] = val
+            # Get product if product_id exists
+            product = None
+            if 'product_id' in child_record and child_record['product_id']:
+                try:
+                    product = self.env['product.product'].browse(child_record['product_id'])
+                    if product.exists():
+                        # Fill name with product name if name is empty
+                        if not child_record.get('name') or child_record['name'] == '':
+                            child_record['name'] = product.display_name or product.name
+                            _logger.info(f"Set name field to product name: {child_record['name']}")
+                        # Fill price_unit with product price if price_unit is empty
+                        if 'price_unit' in child_fields and (
+                                not child_record.get('price_unit') or child_record['price_unit'] == '' or child_record[
+                            'price_unit'] == 0):
+                            # Use product's sale price (lst_price)
+                            child_record['price_unit'] = product.lst_price or 0.0
+                            _logger.info(f"Set price_unit to product price: {child_record['price_unit']}")
+                        # Set UOM from product if UOM field is empty
+                        uom_fields = [f for f, finfo in child_fields.items() if
+                                      finfo.get('type') == 'many2one' and finfo.get('relation') == 'uom.uom']
+                        for uom_field in uom_fields:
+                            if uom_field not in child_record or not child_record.get(uom_field):
+                                if getattr(product, 'uom_id', False):
+                                    child_record[uom_field] = product.uom_id.id
+                                    _logger.info(f"Set {uom_field} to product UOM: {product.uom_id.id}")
+                except Exception as e:
+                    _logger.warning(f"Failed to process product {child_record.get('product_id')}: {e}")
+                    product = None
+            # Set default name if still empty
+            if 'name' not in child_record or not child_record.get('name') or child_record['name'] == '':
+                child_record['name'] = "Line"
+            # Set default product_id if needed
+            for candidate in ['product_id']:
+                if candidate in child_fields and not child_record.get(candidate):
+                    field_obj = ChildModel._fields.get(candidate)
+                    if field_obj and getattr(field_obj, 'comodel_name', None):
+                        try:
+                            rec = self.env[field_obj.comodel_name].search([], limit=1)
+                            if rec:
+                                child_record[candidate] = rec.id
+                        except Exception:
+                            pass
+            # Set UOM from default if not set from product
+            uom_fields = [f for f, finfo in child_fields.items() if
+                          finfo.get('type') == 'many2one' and finfo.get('relation') == 'uom.uom']
+            for uom_field in uom_fields:
+                if uom_field not in child_record or not child_record.get(uom_field):
+                    try:
+                        uom = self.env['uom.uom'].search([], limit=1)
+                        if uom:
+                            child_record[uom_field] = uom.id
+                    except Exception:
+                        pass
+            # Set date_planned if exists
+            if 'date_planned' in child_fields and not child_record.get('date_planned'):
+                child_record['date_planned'] = now_str
+            # Set required fields
+            for field, finfo in child_fields.items():
+                if finfo.get('required') and field not in child_record:
+                    ftype = finfo['type']
+                    if ftype in ['integer', 'float', 'monetary']:
+                        child_record[field] = 0.0
+                    elif ftype in ['char', 'text']:
+                        child_record[field] = f"Auto {field.replace('_', ' ').title()}"
+                    elif ftype in ['date', 'datetime']:
+                        child_record[field] = now_str
+                    elif ftype == 'many2one':
+                        rel_model = finfo.get('relation')
+                        if rel_model:
+                            record = self.env[rel_model].search([], limit=1)
+                            if record:
+                                child_record[field] = record.id
+            # Handle display_type based on name
+            if 'name' in child_record and isinstance(child_record['name'], str):
+                lower_name = child_record['name'].strip().lower()
+                if lower_name.startswith('note:'):
+                    child_record['display_type'] = 'line_note'
+                    # Clear product fields for note lines
+                    for f in ['product_id', 'product_uom', 'product_qty', 'price_unit', 'date_planned']:
+                        if f in child_record:
+                            child_record[f] = None
+                elif lower_name.startswith('section:'):
+                    child_record['display_type'] = 'line_section'
+                    # Clear product fields for section lines
+                    for f in ['product_id', 'product_uom', 'product_qty', 'price_unit', 'date_planned']:
+                        if f in child_record:
+                            child_record[f] = None
+            else:
+                child_record['display_type'] = 'product'
+            if 'display_type' in child_record:
+                display_type = child_record['display_type']
+                if isinstance(display_type, bool) or isinstance(display_type, (int, float)):
+                    display_type = None
+                elif isinstance(display_type, str):
+                    display_type = display_type.strip().lower()
+                    if display_type in ('line_section', 'section'):
+                        display_type = 'line_section'
+                    elif display_type in ('line_note', 'note'):
+                        display_type = 'line_note'
+                    else:
+                        display_type = 'product'
+                else:
+                    display_type = 'product'
+                child_record['display_type'] = display_type
+                if display_type in ('line_section', 'line_note'):
+                    for f in ['product_id', 'product_uom', 'product_qty', 'price_unit', 'date_planned']:
+                        if f in child_record:
+                            child_record[f] = None
+            child_record = self._handle_sql_constraints_for_child_records(comodel_name, child_record, reference_cache)
+            # Special handling for account.move.line
+            if comodel_name == "account.move.line":
+                # Fill name with product name if available
+                if (not child_record.get('name') or child_record['name'] == '') and child_record.get('product_id'):
+                    if product is None:
+                        product = self.env['product.product'].browse(child_record['product_id'])
+                    if product.exists():
+                        child_record['name'] = product.display_name or product.name
+                # Fill price_unit with product price if empty
+                if (not child_record.get('price_unit') or child_record['price_unit'] == '' or child_record[
+                    'price_unit'] == 0) and child_record.get('product_id'):
+                    if product is None:
+                        product = self.env['product.product'].browse(child_record['product_id'])
+                    if product.exists():
+                        child_record['price_unit'] = product.lst_price or 0.0
+                # Set account_id from product
+                if not child_record.get('account_id') and child_record.get('product_id'):
+                    if product is None:
+                        product = self.env['product.product'].browse(child_record['product_id'])
+                    if product.exists():
+                        account = (
+                                getattr(product, "property_account_income_id", False) or
+                                getattr(product.categ_id, "property_account_income_categ_id", False) or
+                                getattr(product, "property_account_expense_id", False) or
+                                getattr(product.categ_id, "property_account_expense_categ_id", False)
+                        )
+                        if account:
+                            child_record['account_id'] = account.id
+                        if not child_record.get("display_type"):
+                            # Use proper Odoo defaults: invoice lines are product lines unless user says section/note
+                            child_record["display_type"] = "product"
+                        # Normalize and validate display_type
+                        dt = str(child_record.get("display_type", "")).strip().lower()
+                        if dt in ("section", "line_section"):
+                            dt = "line_section"
+                        elif dt in ("note", "line_note"):
+                            dt = "line_note"
+                        else:
+                            dt = "product"
+                        child_record["display_type"] = dt
+                        # Clear product fields if it's a note/section line
+                        if dt in ("line_section", "line_note"):
+                            for f in ["product_id", "product_uom_id", "quantity", "price_unit", "debit", "credit"]:
+                                if f in child_record:
+                                    child_record[f] = None
+                # Set default quantity
+                if not child_record.get('quantity') and child_record.get('product_uom_qty') is None:
+                    child_record['quantity'] = 1
+                # Set debit/credit
+                if not child_record.get('debit') and not child_record.get('credit'):
+                    qty = float(child_record.get('quantity', 1))
+                    price = float(child_record.get('price_unit', 0))
+                    amount = qty * price
+                    child_record['debit'] = amount
+                    child_record['credit'] = 0.0
+                # Set product_uom_id from product
+                if child_record.get('product_id') and not child_record.get('product_uom_id'):
+                    if product is None:
+                        product = self.env['product.product'].browse(child_record['product_id'])
+                    if product and product.uom_id:
+                        child_record['product_uom_id'] = product.uom_id.id
+            # Calculate total if we have quantity and price
+            if child_record.get('product_qty') and child_record.get('price_unit'):
+                try:
+                    qty = float(child_record.get('product_qty', 1))
+                    price = float(child_record.get('price_unit', 0))
+                    amount = qty * price
+                    # Set price_subtotal if field exists
+                    if 'price_subtotal' in child_fields:
+                        child_record['price_subtotal'] = amount
+                    # Set price_total if field exists
+                    if 'price_total' in child_fields:
+                        child_record['price_total'] = amount
+                except (ValueError, TypeError):
+                    pass
+            # Final sanitize before JSON serialization
+            for key, val in list(child_record.items()):
+                child_record[key] = self._sanitize_value(
+                    child_record[key],
+                    field_info=child_fields.get(key)
+                )
+            return child_record
         except Exception as e:
-            _logger.warning(f"Dynamic constraint handling failed for {comodel_name}: {e}")
-            return row_data
+            _logger.error(f"Error applying child defaults for {comodel_name}: {e}")
+            import traceback
+            _logger.error(traceback.format_exc())
+            return child_record
+
+    def _process_child_field_value(self, child_field, cell_value, comodel_name, reference_cache):
+        """
+            Processes and converts a raw Excel cell value into a valid value for a
+            child (one2many) field. It handles many2one fields by resolving references,
+            numeric fields by safely converting to floats, and fallback text fields by
+            cleaning string values. Missing or invalid data is normalized to safe
+            defaults to ensure child record creation does not fail.
+        """
+        try:
+            comodel = self.env[comodel_name]
+            child_field_obj = comodel._fields.get(child_field)
+            if child_field.endswith('_id') or (
+                    child_field_obj and getattr(child_field_obj, 'type', None) == 'many2one'):
+                field_model = None
+                if child_field_obj and getattr(child_field_obj, 'comodel_name', None):
+                    field_model = child_field_obj.comodel_name
+                else:
+                    field_model = child_field.replace('_id', '').replace('_', '.')
+                resolved_id = self._resolve_reference(field_model, cell_value, reference_cache)
+                return resolved_id
+            numeric_field_names = ['qty', 'quantity', 'product_qty', 'price_unit', 'amount', 'purchase_price',
+                                   'cost_price', 'product_uom_qty']
+            if child_field in numeric_field_names:
+                try:
+                    if pd.isna(cell_value) or cell_value in ['', None, 'nan', 'None']:
+                        return 0.0
+                    return float(cell_value)
+                except (ValueError, TypeError):
+                    return 0.0
+            if pd.isna(cell_value) or cell_value in ['', None, 'nan', 'None']:
+                return ""
+            return str(cell_value).strip()
+        except Exception as e:
+            _logger.warning(f"Error processing child field {child_field}: {e}")
+            if child_field in ['product_qty', 'price_unit', 'quantity', 'qty']:
+                return 0.0
+            else:
+                return ""
 
     def _group_o2m_records(self, data, model_name, o2m_field_mappings, reference_cache):
         """
-           Groups rows of imported data into parent–child structures for one2many
-           fields. It detects a parent identifier, groups corresponding rows, extracts
-           child field values, resolves many2one references, applies defaults, and
-           assembles a clean parent dataset where each parent row contains a JSON-like
-           list of child dictionaries. This function enables accurate reconstruction of
-           hierarchical data during bulk imports.
+         Organize flat Excel data into parent records with their one2many child records.
+        This method groups spreadsheet rows by parent identifiers (like order numbers or names),
+        creating parent records from the first row of each group and collecting child data from
+        subsequent rows. It handles missing identifiers by generating synthetic ones and prepares
+        child records in JSON format for bulk import.
         """
         if data is None or len(data) == 0:
             _logger.warning(f"No data received for grouping in model {model_name}")
@@ -1123,8 +1440,7 @@ class ImportWizard(models.TransientModel):
                         cell_value = row_tuple[pos]
                         if pd.isna(cell_value) or str(cell_value).strip() == "":
                             continue
-                        processed_value = self._process_child_field_value(child_field, cell_value, comodel_name,
-                                                                          reference_cache)
+                        processed_value = self._process_child_field_value(child_field, cell_value, comodel_name,reference_cache)
                         if processed_value is not None:
                             child_record[child_field] = processed_value
                             has_child_data = True
@@ -1145,220 +1461,366 @@ class ImportWizard(models.TransientModel):
                 result_df.loc[:, o2m_column_name] = o2m_data_mapping[parent_field]
         return result_df
 
-    def _process_child_field_value(self, child_field, cell_value, comodel_name, reference_cache):
+    def _get_next_sequence_values(self, table_name, count):
         """
-            Processes and converts a raw Excel cell value into a valid value for a
-            child (one2many) field. It handles many2one fields by resolving references,
-            numeric fields by safely converting to floats, and fallback text fields by
-            cleaning string values. Missing or invalid data is normalized to safe
-            defaults to ensure child record creation does not fail.
+        Generate sequential IDs for PostgreSQL bulk inserts.
         """
         try:
-            comodel = self.env[comodel_name]
-            child_field_obj = comodel._fields.get(child_field)
-            if child_field.endswith('_id') or (
-                    child_field_obj and getattr(child_field_obj, 'type', None) == 'many2one'):
-                field_model = None
-                if child_field_obj and getattr(child_field_obj, 'comodel_name', None):
-                    field_model = child_field_obj.comodel_name
-                else:
-                    field_model = child_field.replace('_id', '').replace('_', '.')
-                resolved_id = self._resolve_reference(field_model, cell_value, reference_cache)
-                return resolved_id
-            numeric_field_names = ['qty', 'quantity', 'product_qty', 'price_unit', 'amount', 'purchase_price',
-                                   'cost_price', 'product_uom_qty']
-            if child_field in numeric_field_names:
-                try:
-                    if pd.isna(cell_value) or cell_value in ['', None, 'nan', 'None']:
-                        return 0.0
-                    return float(cell_value)
-                except (ValueError, TypeError):
-                    return 0.0
-            if pd.isna(cell_value) or cell_value in ['', None, 'nan', 'None']:
-                return ""
-            return str(cell_value).strip()
+            self.env.cr.execute(f"SELECT COALESCE(MAX(id), 0) FROM {table_name}")
+            max_id = self.env.cr.fetchone()[0]
+            ids_to_use = list(range(max_id + 1, max_id + count + 1))
+            sequence_name = f"{table_name}_id_seq"
+            new_seq_val = max_id + count + 100
+            self.env.cr.execute(f"SELECT setval('{sequence_name}', %s, false)", (new_seq_val,))
+            return ids_to_use
         except Exception as e:
-            _logger.warning(f"Error processing child field {child_field}: {e}")
-            if child_field in ['product_qty', 'price_unit', 'quantity', 'qty']:
-                return 0.0
-            else:
-                return ""
+            _logger.error(f"Error generating sequence values for {table_name}: {e}")
+            try:
+                self.env.cr.execute(f"SELECT COALESCE(MAX(id), 0) FROM {table_name}")
+                max_id = self.env.cr.fetchone()[0]
+                return list(range(max_id + 1, max_id + count + 1))
+            except Exception as fallback_error:
+                _logger.error(f"Fallback ID generation failed: {fallback_error}")
+                raise UserError(f"Unable to generate unique IDs: {str(e)}")
 
-    def _apply_child_defaults(self, child_record, comodel_name, reference_cache, default_context=None):
+    def _postgres_bulk_import_fast(self, data, model, final_fields, m2m_trigger_val, o2m_trigger_val,
+                                   m2m_columns, o2m_columns, table_name, model_fields,
+                                   initial_count, model_record, has_complex_fields, reference_cache):
         """
-           Applies default values and normalization rules to a one2many child record
-           during import. This method ensures every required field is populated using
-           model defaults, dynamic fallbacks, product-based UoM assignment, and
-           context-driven values. It also interprets special line types (sections and
-           notes), cleans invalid values, assigns proper display_type logic, and
-           resolves many2one fields when possible. SQL constraint-based defaults are
-           applied at the end to guarantee child records are valid before creation.
+        Perform high-speed bulk import using PostgreSQL COPY command.
+        This optimized method uses PostgreSQL's COPY command for maximum performance when
+        importing large datasets. It prepares data with proper formatting, sets up database
+        triggers to handle one2many and many2many relationships automatically, and cleans
+        up temporary structures after import. Includes audit field population, sequence
+        generation, and data type conversion.
         """
         try:
-            ChildModel = self.env[comodel_name]
-            child_fields = ChildModel.fields_get()
-            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            if default_context:
-                for field, value in default_context.items():
-                    if field in child_fields and not child_record.get(field):
-                        child_record[field] = value
-            model_defaults = ChildModel.default_get(list(child_fields.keys()))
-            for field, val in model_defaults.items():
-                if field in child_fields and field not in child_record and val is not None:
-                    child_record[field] = val
-            for candidate in ['product_id']:
-                if candidate in child_fields and not child_record.get(candidate):
-                    field_obj = ChildModel._fields.get(candidate)
-                    if field_obj and getattr(field_obj, 'comodel_name', None):
-                        try:
-                            rec = self.env[field_obj.comodel_name].search([], limit=1)
-                            if rec:
-                                child_record[candidate] = rec.id
-                        except Exception:
-                            pass
-            uom_fields = [f for f, finfo in child_fields.items() if
-                          finfo.get('type') == 'many2one' and finfo.get('relation') == 'uom.uom']
-            for uom_field in uom_fields:
-                if uom_field not in child_record:
-                    if 'product_id' in child_record and child_record['product_id']:
-                        try:
-                            product = self.env['product.product'].browse(child_record['product_id'])
-                            if product.exists() and getattr(product, 'uom_id', False):
-                                child_record[uom_field] = product.uom_id.id
-                        except Exception:
-                            pass
-                    if uom_field not in child_record:
-                        try:
-                            uom = self.env['uom.uom'].search([], limit=1)
-                            if uom:
-                                child_record[uom_field] = uom.id
-                        except Exception:
-                            pass
-            if 'date_planned' in child_fields and not child_record.get('date_planned'):
-                child_record['date_planned'] = now_str
-            for field, finfo in child_fields.items():
-                if finfo.get('required') and field not in child_record:
-                    ftype = finfo['type']
-                    if ftype in ['integer', 'float', 'monetary']:
-                        child_record[field] = 0.0
-                    elif ftype in ['char', 'text']:
-                        child_record[field] = f"Auto {field.replace('_', ' ').title()}"
-                    elif ftype in ['date', 'datetime']:
-                        child_record[field] = now_str
-                    elif ftype == 'many2one':
-                        rel_model = finfo.get('relation')
-                        if rel_model:
-                            record = self.env[rel_model].search([], limit=1)
-                            if record:
-                                child_record[field] = record.id
-            if 'name' in child_record and isinstance(child_record['name'], str):
-                lower_name = child_record['name'].strip().lower()
-                if lower_name.startswith('note:'):
-                    child_record['display_type'] = 'line_note'
-                elif lower_name.startswith('section:'):
-                    child_record['display_type'] = 'line_section'
-            if 'display_type' in child_record:
-                display_type = child_record['display_type']
-                if isinstance(display_type, bool) or isinstance(display_type, (int, float)):
-                    display_type = None
-                elif isinstance(display_type, str):
-                    display_type = display_type.strip().lower()
-                    if display_type in ('line_section', 'section'):
-                        display_type = 'line_section'
-                    elif display_type in ('line_note', 'note'):
-                        display_type = 'line_note'
+            Model = self.env[model]
+            # Handle sequence for name field
+            if 'name' in model_fields:
+                sequence = self._get_sequence_for_model(model)
+                needs_sequence = False
+                name_in_data = 'name' in data.columns
+                if not name_in_data:
+                    needs_sequence = True
+                else:
+                    non_null_names = data['name'].dropna()
+                    if len(non_null_names) == 0:
+                        needs_sequence = True
                     else:
-                        display_type = 'product'
-                else:
-                    display_type = 'product'
-                child_record['display_type'] = display_type
-                if display_type in ('line_section', 'line_note'):
-                    for f in ['product_id', 'product_uom', 'product_qty', 'price_unit', 'date_planned']:
-                        if f in child_record:
-                            child_record[f] = None
-            else:
-                child_record['display_type'] = 'product'
-            child_record = self._handle_sql_constraints_for_child_records(comodel_name, child_record, reference_cache)
-            return child_record
-        except Exception as e:
-            _logger.error(f"Error applying child defaults for {comodel_name}: {e}")
-            import traceback
-            _logger.error(traceback.format_exc())
-            return child_record
-
-    def _apply_parent_defaults(self, parent_record, model_name):
-        """
-            Applies default and contextual values to a parent record before import.
-            It fills essential fields such as state, dates, company, and currency when
-            missing, merges defaults from the model’s computed context, and ensures
-            critical many2one fields like company_id are populated. The method prepares
-            the parent record to be structurally complete and ready for database
-            insertion without altering values explicitly provided by the user.
-        """
-        try:
-            Model = self.env[model_name]
-            model_fields = Model.fields_get()
-            defaults = {
-                'state': 'draft',
-                'date_order': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                'company_id': self.env.company.id,
-                'currency_id': getattr(self.env.company, 'currency_id',
-                                       False) and self.env.company.currency_id.id or None,
+                        name_check_results = []
+                        for val in non_null_names:
+                            str_val = str(val).strip().lower()
+                            name_check_results.append(str_val in ['new', '', 'false'])
+                        needs_sequence = all(name_check_results)
+                if sequence and needs_sequence:
+                    record_count = len(data)
+                    if record_count > 0:
+                        try:
+                            sequence_values = self._generate_bulk_sequences(sequence, record_count)
+                            data = data.copy()
+                            data.loc[:, 'name'] = sequence_values
+                            if 'name' not in final_fields:
+                                final_fields.append('name')
+                        except Exception as e:
+                            _logger.error(f"Failed to generate sequences: {e}")
+                elif not sequence and needs_sequence:
+                    timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+                    data = data.copy()
+                    data.loc[:, 'name'] = [f"New-{timestamp}-{i + 1}" for i in range(len(data))]
+                    if 'name' not in final_fields:
+                        final_fields.append('name')
+            # Add audit fields
+            audit_fields = self._prepare_audit_fields()
+            audit_field_names = ['create_uid', 'write_uid', 'create_date', 'write_date']
+            for audit_field in audit_field_names:
+                if audit_field in model_fields and audit_field not in final_fields:
+                    data = data.copy()
+                    data.loc[:, audit_field] = [audit_fields[audit_field]] * len(data)
+                    final_fields.append(audit_field)
+            if 'company_id' in model_fields and 'company_id' not in final_fields:
+                data = data.copy()
+                data.loc[:, 'company_id'] = [self.env.company.id] * len(data)
+                final_fields.append('company_id')
+                _logger.info("Added company_id field with current company")
+            # Generate IDs if needed
+            if 'id' not in final_fields:
+                record_count = len(data)
+                if record_count > 0:
+                    try:
+                        next_ids = self._get_next_sequence_values(table_name, record_count)
+                        data = data.copy()
+                        data.loc[:, 'id'] = next_ids
+                        final_fields.insert(0, 'id')
+                    except Exception as e:
+                        if 'id' in final_fields:
+                            final_fields.remove('id')
+                        if 'id' in data.columns:
+                            data = data.drop(columns=['id'])
+            # Set up triggers for complex fields
+            if has_complex_fields:
+                if m2m_trigger_val:
+                    vals = json.dumps(m2m_trigger_val)
+                    self.env.cr.execute(f"""
+                        CREATE OR REPLACE TRIGGER trg_process_m2m_mapping
+                        AFTER INSERT ON {table_name}
+                        FOR EACH ROW
+                        EXECUTE FUNCTION process_m2m_mapping('{vals}');
+                    """)
+                if o2m_trigger_val:
+                    vals = json.dumps(o2m_trigger_val)
+                    self.env.cr.execute(f"""
+                        CREATE TRIGGER trg_process_o2m_mapping
+                        AFTER INSERT ON {table_name}
+                        FOR EACH ROW
+                        EXECUTE FUNCTION process_o2m_mapping('{vals}');
+                    """)
+            # Filter data to final fields
+            data = data[final_fields].copy()
+            # Handle translatable fields
+            default_lang = self.env.context.get('lang') or getattr(self.env, 'lang', None) or 'en_US'
+            translatable_columns = set()
+            for column in data.columns:
+                if column in model_fields:
+                    field_info = model_fields[column]
+                    if field_info.get('translate') and field_info.get('store'):
+                        translatable_columns.add(column)
+                        def _to_jsonb_value(val):
+                            if pd.isna(val) or val is None:
+                                return None
+                            if isinstance(val, dict):
+                                try:
+                                    return json.dumps(val, ensure_ascii=False)
+                                except Exception:
+                                    return json.dumps({default_lang: str(val)}, ensure_ascii=False)
+                            s = str(val).strip()
+                            if s == '':
+                                return None
+                            if (s.startswith('{') or s.startswith('[')):
+                                try:
+                                    parsed = json.loads(s)
+                                    return json.dumps(parsed, ensure_ascii=False)
+                                except Exception:
+                                    return json.dumps({default_lang: s}, ensure_ascii=False)
+                            return json.dumps({default_lang: s}, ensure_ascii=False)
+                        try:
+                            jsonb_values = []
+                            for val in data[column]:
+                                jsonb_values.append(_to_jsonb_value(val))
+                            data = data.copy()
+                            data.loc[:, column] = jsonb_values
+                        except Exception as e:
+                            _logger.warning(f"Failed converting translate field {column} to jsonb: {e}")
+            # Process data types
+            processed_data = data.copy()
+            for column in processed_data.columns:
+                if column in model_fields and column not in translatable_columns:
+                    field_info = model_fields[column]
+                    field_type = field_info['type']
+                    if field_type in ['char', 'text']:
+                        processed_data.loc[:, column] = processed_data[column].astype(str)
+                        processed_data.loc[:, column] = processed_data[column].str.replace(r'[\n\r]+', ' ', regex=True)
+                        processed_data.loc[:, column] = processed_data[column].str.strip()
+                        processed_data.loc[:, column] = processed_data[column].replace(['nan', 'None'], None)
+                    elif field_type in ['integer', 'float']:
+                        if model_fields[column].get('required', False):
+                            processed_data.loc[:, column] = pd.to_numeric(processed_data[column],
+                                                                          errors='coerce').fillna(0)
+                        else:
+                            processed_data.loc[:, column] = pd.to_numeric(processed_data[column], errors='coerce')
+                    elif field_type == 'boolean':
+                        processed_data.loc[:, column] = processed_data[column].fillna(False)
+                        bool_values = []
+                        for val in processed_data[column]:
+                            if pd.isna(val):
+                                bool_values.append('f')
+                            else:
+                                bool_values.append('t' if bool(val) else 'f')
+                        processed_data.loc[:, column] = bool_values
+                    elif field_type in ['date', 'datetime']:
+                        formatted_dates = []
+                        current_datetime = datetime.now()
+                        for val in processed_data[column]:
+                            if pd.isna(val) or val in ['', None, 'nan', 'None']:
+                                formatted_dates.append(None)
+                            else:
+                                try:
+                                    if isinstance(val, str):
+                                        parsed_date = pd.to_datetime(val, errors='coerce')
+                                        if pd.isna(parsed_date):
+                                            for fmt in ['%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y', '%d-%m-%Y',
+                                                        '%Y-%m-%d %H:%M:%S']:
+                                                try:
+                                                    parsed_date = datetime.strptime(val, fmt)
+                                                    break
+                                                except ValueError:
+                                                    continue
+                                        if pd.isna(parsed_date) or parsed_date is pd.NaT:
+                                            formatted_dates.append(None)
+                                        else:
+                                            if isinstance(parsed_date, pd.Timestamp):
+                                                if field_type == 'date':
+                                                    formatted_dates.append(parsed_date.strftime('%Y-%m-%d'))
+                                                else:
+                                                    formatted_dates.append(parsed_date.strftime('%Y-%m-%d %H:%M:%S'))
+                                            else:
+                                                if field_type == 'date':
+                                                    formatted_dates.append(parsed_date.strftime('%Y-%m-%d'))
+                                                else:
+                                                    formatted_dates.append(parsed_date.strftime('%Y-%m-%d %H:%M:%S'))
+                                    else:
+                                        if hasattr(val, 'strftime'):
+                                            formatted_dates.append(val.strftime('%Y-%m-%d %H:%M:%S'))
+                                        else:
+                                            formatted_dates.append(str(val))
+                                except Exception:
+                                    formatted_dates.append(None)
+                        processed_data.loc[:, column] = formatted_dates
+                    elif field_type == 'many2one':
+                        processed_data.loc[:, column] = pd.to_numeric(processed_data[column], errors='coerce').astype(
+                            'Int64')
+            csv_buffer = BytesIO()
+            # Build SQL-safe JSON arrays
+            for col in o2m_columns + m2m_columns:
+                if col not in processed_data.columns:
+                    continue
+                processed_data = processed_data.copy()
+                def _build_array(val):
+                    # val may be list, None, or stringified json
+                    if isinstance(val, list):
+                        return self._safe_json_array(val)
+                    # empty array
+                    if val is None or val == "" or val == "[]":
+                        return "[]"
+                    # if it's a JSON string already
+                    if isinstance(val, str):
+                        try:
+                            parsed = json.loads(val)
+                            if isinstance(parsed, list):
+                                return self._safe_json_array(parsed)
+                        except Exception:
+                            pass
+                        # fallback: wrap into list
+                        return self._safe_json_array([val])
+                    # anything else  wrap into list
+                    return self._safe_json_array([val])
+                processed_data[col] = processed_data[col].apply(_build_array)
+                # Debug sample
+                sample_val = next((x for x in processed_data[col] if x not in ("[]", "", None)), None)
+                _logger.info(f"[IMPORT DEBUG] JSON for {col} example → {sample_val}")
+            data_for_copy = processed_data.copy()
+            for column in data_for_copy.columns:
+                if column in model_fields:
+                    field_info = model_fields[column]
+                    field_type = field_info['type']
+                    if field_info.get('translate') and field_info.get('store'):
+                        translate_values = []
+                        for val in data_for_copy[column]:
+                            if val is None or pd.isna(val):
+                                translate_values.append('')
+                            else:
+                                translate_values.append(str(val))
+                        data_for_copy.loc[:, column] = translate_values
+                    elif field_type in ['integer', 'float', 'many2one']:
+                        if field_type in ['integer', 'many2one']:
+                            data_for_copy.loc[:, column] = pd.to_numeric(data_for_copy[column], errors='coerce').astype(
+                                'Int64')
+                        else:
+                            data_for_copy.loc[:, column] = pd.to_numeric(data_for_copy[column], errors='coerce')
+                    else:
+                        other_values = []
+                        for val in data_for_copy[column]:
+                            if val is None or pd.isna(val):
+                                other_values.append('')
+                            else:
+                                other_values.append(str(val) if not isinstance(val, str) else val)
+                        data_for_copy.loc[:, column] = other_values
+            # Write to CSV buffer
+            data_for_copy.to_csv(csv_buffer, index=False, header=False, sep='|',
+                                 na_rep='', quoting=csv.QUOTE_MINIMAL, doublequote=True)
+            csv_buffer.seek(0)
+            # Disable triggers during bulk copy
+            self.env.cr.execute(f"ALTER TABLE {table_name} DISABLE TRIGGER USER;")
+            if has_complex_fields:
+                if m2m_trigger_val:
+                    self.env.cr.execute(f"ALTER TABLE {table_name} ENABLE TRIGGER trg_process_m2m_mapping;")
+                if o2m_trigger_val:
+                    self.env.cr.execute(f"ALTER TABLE {table_name} ENABLE TRIGGER trg_process_o2m_mapping;")
+            fields_str = ",".join(final_fields)
+            # Use PostgreSQL COPY command for bulk import
+            copy_sql = f"""
+                COPY {table_name} ({fields_str})
+                FROM STDIN WITH (
+                    FORMAT CSV,
+                    HEADER FALSE,
+                    DELIMITER '|',
+                    NULL '',
+                    QUOTE '"'
+                )
+            """
+            start_time = datetime.now()
+            self.env.cr.copy_expert(copy_sql, csv_buffer)
+            record_count = len(data)
+            if record_count > 500:
+                self.env.cr.commit()
+            end_time = datetime.now()
+            import_duration = (end_time - start_time).total_seconds()
+            # Sync sequence
+            self._sync_sequence_after_import(table_name)
+            # Re-enable triggers
+            self.env.cr.execute(f"ALTER TABLE {table_name} ENABLE TRIGGER USER;")
+            # Clean up temporary columns
+            if has_complex_fields and (m2m_trigger_val or o2m_trigger_val):
+                self.remove_m2m_temp_columns(table_name, m2m_columns + o2m_columns)
+            self.env.invalidate_all()
+            # Analyze table for query optimization
+            self.env.cr.execute(f"ANALYZE {table_name};")
+            final_count = self.env[model].search_count([])
+            imported_count = final_count - initial_count
+            return {
+                'name': model_record.name,
+                'record_count': imported_count,
+                'duration': import_duration
             }
-            for field, default_value in defaults.items():
-                if field in model_fields and (field not in parent_record or not parent_record[field]):
-                    parent_record[field] = default_value
-            context_defaults = self._get_common_default_context(model_name)
-            for field, value in context_defaults.items():
-                if field in model_fields and not parent_record.get(field) and value:
-                    parent_record[field] = value
-            for field_name, field_info in model_fields.items():
-                if field_info['type'] == 'many2one' and field_name not in parent_record:
-                    # Leave it empty - will be NULL in database
-                    # Or only set if it's a truly required field with a logical default
-                    if field_name in ['company_id']:  # Only for essential fields
-                        parent_record[field_name] = self.env.company.id
         except Exception as e:
-            _logger.warning(f"Error applying parent defaults for {model_name}: {e}")
-        return parent_record
+            try:
+                self.env.cr.execute(f"ALTER TABLE {table_name} ENABLE TRIGGER USER;")
+            except:
+                pass
+            if has_complex_fields and (m2m_trigger_val or o2m_trigger_val):
+                try:
+                    self.remove_m2m_temp_columns(table_name, m2m_columns + o2m_columns)
+                except:
+                    pass
+            raise UserError(f"Failed to import data: {str(e)}")
 
     def _postgres_bulk_import_enhanced(self, data, model, final_fields, m2m_trigger_val, o2m_trigger_val,
                                        m2m_columns, o2m_columns, table_name, model_fields,
                                        initial_count, model_record, has_complex_fields, reference_cache):
         """
-            Performs a high-performance PostgreSQL bulk import that supports complex
-            Odoo models, including many2many (M2M) and one2many (O2M) relationships.
-            The method prepares data for direct SQL insertion, validates table columns,
-            applies sequences, audit fields, default values, and handles translation
-            fields. Regular fields are imported using optimized INSERT operations, while
-            O2M values are stored as JSON and later expanded into actual child records.
-            M2M relationships are processed after inserting the parent rows, creating
-            link-table entries while resolving references dynamically.
-
-            The method isolates each row insert using savepoints to ensure partial
-            recovery, logs failures, updates sequences, cleans up temporary columns, and
-            returns a structured summary of import counts and warnings.
+        Flexible import method handling complex one2many and many2many relationships.
+        This enhanced version processes records individually with transaction safety,
+        creating many2many relationship entries and one2many child records after parent
+        insertion. It includes detailed error tracking, relationship resolution, and
+        automatic creation of missing related records when needed.
         """
         try:
             env = self.env
             Model = env[model]
             odoo_fields = getattr(Model, "_fields", {}) or model_fields or {}
-
             if not table_name:
                 table_name = Model._table
-            # First, verify the table structure
+            # Verify table structure
             env.cr.execute(f"""
-                SELECT column_name 
-                FROM information_schema.columns 
-                WHERE table_name = '{table_name}' 
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_name = '{table_name}'
                 ORDER BY ordinal_position
             """)
             existing_columns = [row[0] for row in env.cr.fetchall()]
-            # Clean regular_final_fields to only include existing columns
+            # Clean regular fields
             cleaned_regular_fields = []
             for field in final_fields:
-                # Remove m2m and o2m prefixes for checking
                 clean_field = field.replace('m2m__', '').replace('o2m__', '')
                 if field in existing_columns or clean_field in odoo_fields:
                     cleaned_regular_fields.append(field)
@@ -1379,9 +1841,9 @@ class ImportWizard(models.TransientModel):
                         field_type = getattr(field_obj, "type", None)
                         if field_type == 'many2many':
                             m2m_field_mapping[column] = original_data[column].copy()
-                        elif column in existing_columns:  # Check if column exists in table
+                        elif column in existing_columns:
                             regular_final_fields.append(column)
-                    elif column in existing_columns:  # Check if column exists in table
+                    elif column in existing_columns:
                         regular_final_fields.append(column)
             # Clean fields - remove computed fields that are not stored
             model_fields = self.env[model]._fields
@@ -1389,13 +1851,12 @@ class ImportWizard(models.TransientModel):
             for f in regular_final_fields:
                 field = model_fields.get(f)
                 if not field:
-                    # If not a model field, check if it exists in table
                     if f in existing_columns:
                         clean_fields.append(f)
                     continue
                 if getattr(field, 'compute', False) and not field.store and not field.required:
                     continue
-                if f in existing_columns:  # Only add if column exists
+                if f in existing_columns:
                     clean_fields.append(f)
             regular_final_fields = clean_fields
             # Add O2M fields to regular fields for processing
@@ -1457,7 +1918,7 @@ class ImportWizard(models.TransientModel):
                 if getattr(field_obj, "related", False):
                     continue
                 if audit_field not in existing_columns:
-                    continue  # Skip if column doesn't exist in table
+                    continue
                 if audit_field not in insert_data.columns:
                     insert_data[audit_field] = value
                 if audit_field not in available_columns:
@@ -1740,6 +2201,53 @@ class ImportWizard(models.TransientModel):
             self.env.cr.rollback()
             raise UserError(_("Failed to import data: %s") % str(e))
 
+    @api.model
+    def validate_columns(self, res_id, model, columns):
+        """
+        Validates the imported column definitions.
+        """
+        try:
+            uploaded_columns = [item['fieldInfo']['id'] for item in columns if 'fieldInfo' in item]
+            if len(uploaded_columns) < len(columns):
+                invalid_columns = [col.get('name', 'Unknown') for col in columns if 'fieldInfo' not in col]
+                return {
+                    'is_valid': False,
+                    'invalid_columns': invalid_columns,
+                    'error_type': 'invalid_columns'
+                }
+            # Special validation for res.partner model
+            if model == 'res.partner':
+                imported_field_names = set()
+                for item in columns:
+                    if 'fieldInfo' in item:
+                        field_info = item['fieldInfo']
+                        field_name = field_info['id']
+                        if '/' in field_name:
+                            field_name = field_name.split('/')[0]
+                        imported_field_names.add(field_name)
+                if 'name' not in imported_field_names and 'complete_name' not in imported_field_names:
+                    return {
+                        'is_valid': False,
+                        'error_type': 'missing_required_fields',
+                        'error_message': "For Contact/Partner import, either 'Name' or 'Complete Name' field is required. Please add at least one of these columns to your Excel file."
+                    }
+            missing_required = self._check_missing_required_fields_for_validation(model, columns)
+            if missing_required:
+                return {
+                    'is_valid': False,
+                    'missing_required_fields': missing_required,
+                    'error_type': 'missing_required_fields',
+                    'error_message': f"Required fields missing: {', '.join(missing_required)}. Please add these columns to your Excel file."
+                }
+            return {'is_valid': True}
+        except Exception as e:
+            _logger.error(f"Validation error for model {model}: {str(e)}")
+            return {
+                'is_valid': False,
+                'error_type': 'validation_error',
+                'error_message': f"Validation failed: {str(e)}"
+            }
+
 
 class Import(models.TransientModel):
     _inherit = 'base_import.import'
@@ -1754,12 +2262,13 @@ class Import(models.TransientModel):
             'required': False,
             'fields': [],
             'type': 'id',
+            'model_name': model,
         }]
         if not depth:
             return importable_fields
         model_fields = Model.fields_get()
         for name, field in model_fields.items():
-            if field.get('deprecated', False) is not False:
+            if field.get('deprecated', False):
                 continue
             if not field.get('store'):
                 continue
@@ -1770,20 +2279,45 @@ class Import(models.TransientModel):
                 'required': bool(field.get('required')),
                 'fields': [],
                 'type': field['type'],
-                'model_name': model
+                'model_name': model,
             }
-            if field['type'] in ('many2many', 'many2one'):
+            # many2one / many2many
+            if field['type'] in ('many2one', 'many2many'):
+                field_value['comodel_name'] = field['relation']
                 field_value['fields'] = [
-                    dict(field_value, name='id', string=_("External ID"), type='id'),
-                    dict(field_value, name='.id', string=_("Database ID"), type='id'),
+                    {
+                        'id': f"{name}.id",
+                        'name': 'id',
+                        'string': _("External ID"),
+                        'required': False,
+                        'fields': [],
+                        'type': 'id',
+                        'model_name': field['relation'],
+                    },
+                    {
+                        'id': f"{name}._id",
+                        'name': '.id',
+                        'string': _("Database ID"),
+                        'required': False,
+                        'fields': [],
+                        'type': 'id',
+                        'model_name': field['relation'],
+                    },
                 ]
-                field_value['comodel_name'] = field['relation']
+            # one2many
             elif field['type'] == 'one2many':
-                field_value['fields'] = self.get_fields_tree(field['relation'], depth=depth - 1)
-                if self.user_has_groups('base.group_no_one'):
-                    field_value['fields'].append(
-                        {'id': '.id', 'name': '.id', 'string': _("Database ID"),
-                         'required': False, 'fields': [], 'type': 'id'})
                 field_value['comodel_name'] = field['relation']
+                field_value['fields'] = self.get_fields_tree(field['relation'], depth - 1)
+                # add .id only for technical group
+                if self.env.user.has_group('base.group_no_one'):
+                    field_value['fields'].append({
+                        'id': f"{name}._id",
+                        'name': '.id',
+                        'string': _("Database ID"),
+                        'required': False,
+                        'fields': [],
+                        'type': 'id',
+                        'model_name': field['relation'],
+                    })
             importable_fields.append(field_value)
         return importable_fields
