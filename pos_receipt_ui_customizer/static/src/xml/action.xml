@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="custom_receipt_for_pos.client_layout_customisation_template">
+        <div class="vh-100 overflow-auto bg-muted">
+            <div class="o_pos_receipt_layout_client_action p-4">
+                <div class="container-class">
+                    <!-- Editor Panel -->
+                    <div class="editor_panel d-flex flex-column gap-3">
+                        <!-- Font Style -->
+                        <div class="editor_panel_section">
+                            <h5 class="d-flex align-items-center gap-2">
+                                <i class="fa fa-font"/>
+                                Select Font Style
+                            </h5>
+                            <select t-model="state.fontStyle" t-on-change="onFontChange" class="form-select">
+                                <option value="Arial">Arial</option>
+                                <option value="Courier New">Courier New</option>
+                                <option value="Inter">Inter</option>
+                                <option value="system-ui">system-ui</option>
+                                <option value="monospace">monospace</option>
+                            </select>
+                        </div>
+                        <!-- Logo -->
+                        <div class="editor_panel_section">
+                            <h5 class="d-flex align-items-center gap-2">
+                                <i class="fa fa-image"/>
+                                Change Your Logo
+                            </h5>
+                            <button class="btn btn-outline-primary" t-on-click="triggerImageUpload">
+                                Select Logo
+                            </button>
+                            <input type="file" id="imageUpload" accept="image/*" style="display:none"
+                                   t-on-change="insertImage"/>
+                        </div>
+                        <!-- Draggable Fields -->
+                        <div class="editor_panel_section">
+                            <h5 class="d-flex align-items-center gap-2">
+                                <i class="fa fa-arrows"/>
+                                Drag and Drop Fields
+                            </h5>
+                            <select t-on-change="onModelChange" class="form-select">
+                                <option value="">Select Model</option>
+                                <option value="pos.order">POS Order</option>
+                                <option value="res.partner">Customer</option>
+                            </select>
+                            <t t-if="state.model">
+                                <div class="field-list-container mt-2">
+                                    <ul>
+                                        <li t-foreach="state.fields" t-as="field" t-key="field.technical"
+                                            draggable="true" t-on-dragstart="onDragStart" t-on-dragend="onDragEnd"
+                                            t-att-data-field="field.technical" class="p-2 border-bottom cursor-pointer">
+                                            <t t-esc="field.label"/>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                    <!-- Receipt Preview -->
+                    <div class="receipt_content " t-ref="ReceiptContent"
+                         t-att-style="'font-family:' + state.fontStyle" contenteditable="true" t-on-drop="onDrop"/>
+                </div>
+                <!-- Action Buttons -->
+                <div class="button-class" >
+                    <button id="saveButton" class="btn btn-primary" t-on-click="saveEditedReceipt">Save</button>
+                    <button id="resetButton" class="btn btn-outline-secondary"
+                            t-on-click="resetEditedReceipt">Reset</button>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
