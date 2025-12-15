@@ -39,7 +39,7 @@
         'views/product_template_views.xml',
         'views/stock_quant_views.xml'
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
