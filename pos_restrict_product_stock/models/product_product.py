@@ -32,5 +32,5 @@ class ProductProduct(models.Model):
        Retrieves a list of products that are available in the Point of Sale (POS) system,
        including their current available quantity and virtual available quantity.
        """
-        products= self.search_read([('available_in_pos','=',True)],fields=['id', 'qty_available','virtual_available'])
+        products= self.search_read([('available_in_pos','=',True)],fields=['id', 'qty_available','virtual_available','detailed_type'])
         return products
