@@ -138,7 +138,7 @@
                                         <span class="fa fa-user"
                                               title="Accounts"
                                               role="img" aria-label="Dates"/>
-                                        Account
+                                        Account Type
                                         <t t-if="state.account">:
                                             <t t-foreach="state.account"
                                                t-as="account_key"
@@ -170,6 +170,252 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!--Partner filter-->
+                            <div class="px-2">
+                                <div class="partner_filter" style="">
+                                    <a type="button" class="dropdown-toggle"
+                                       data-bs-toggle="dropdown">
+                                        <span class="fa fa-users"
+                                              title="Partners"
+                                              role="img" aria-label="Partners"/>
+                                        Partners
+                                        <t t-if="state.selected_partner_rec and state.selected_partner_rec.length > 0">
+                                            :
+                                            <t t-foreach="state.selected_partner_rec" t-as="partner_rec"
+                                               t-key="partner_rec_index">
+                                                <t t-esc="partner_rec.display_name || partner_rec.name"/>
+                                                <t t-if="partner_rec_index != state.selected_partner_rec.length - 1">,
+                                                </t>
+                                            </t>
+                                        </t>
+                                    </a>
+                                    <div class="dropdown-menu partner-dropdown" role="menu"
+                                         style="width: 300px; max-height: 350px; overflow-y: auto; padding: 8px;;">
+                                        <div class="list-group">
+                                            <!-- Search Input -->
+                                            <div class="mb-2">
+                                                <input type="text"
+                                                       class="form-control form-control-sm"
+                                                       placeholder="Search partners..."
+                                                       t-ref="partnerSearch"
+                                                       t-on-input="searchPartners"
+                                                       style="border: 1px solid #ccc; padding: 5px; font-size: 13px;"/>
+                                            </div>
+                                            <!--                                        &lt;!&ndash; Selected Partners Display &ndash;&gt;-->
+                                            <t t-if="state.selected_partner_rec and state.selected_partner_rec.length > 0">
+                                                <div class="mb-2" style="max-height: 80px; overflow-y: auto;">
+                                                    <small class="text-muted">
+                                                        <strong>Selected:</strong>
+                                                    </small>
+                                                    <div class="mt-1">
+                                                        <t t-foreach="state.selected_partner_rec" t-as="selected"
+                                                           t-key="selected_index">
+                                                            <span class="badge bg-primary me-1 mb-1"
+                                                                  style="display: inline-flex; align-items: center; font-size: 11px;">
+                                                                <t t-esc="selected.display_name || selected.name"/>
+                                                                <i class="fa fa-times ms-1"
+                                                                   style="cursor: pointer; font-size: 10px;"
+                                                                   t-att-data-partner-id="selected.id"
+                                                                   t-on-click="removePartner"/>
+                                                            </span>
+                                                        </t>
+                                                    </div>
+                                                </div>
+                                                <div role="separator" class="dropdown-divider"/>
+                                            </t>
+                                            <!-- Partner List -->
+                                            <div class="partner-list" style="max-height: 180px; overflow-y: auto;">
+                                                <t t-if="state.filtered_partners and state.filtered_partners.length > 0">
+                                                    <t t-foreach="state.filtered_partners" t-as="partner"
+                                                       t-key="partner_index">
+                                                        <button class="dropdown-item partner-item"
+                                                                type="button"
+                                                                t-att-data-partner-id="partner.id"
+                                                                t-att-data-partner-name="partner.display_name || partner.name"
+                                                                t-on-click="selectPartner"
+                                                                style="width: 100%; text-align: left; padding: 6px 10px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                            <t t-esc="partner.display_name || partner.name"/>
+                                                        </button>
+                                                    </t>
+                                                </t>
+                                                <t t-else="">
+                                                    <div class="text-muted p-2" style="font-size: 12px;">No partners
+                                                        found
+                                                    </div>
+                                                </t>
+                                            </div>
+                                            <t t-if="state.selected_partner_rec and state.selected_partner_rec.length > 0">
+                                                <div role="separator" class="dropdown-divider"/>
+                                                <button class="btn btn-sm btn-danger w-100 mt-2"
+                                                        type="button"
+                                                        t-on-click="clearAllPartners"
+                                                        style="font-size: 12px; padding: 4px;">
+                                                    Clear All
+                                                </button>
+                                            </t>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- Partner Tags Filter - Fixed Size -->
+                            <div class="px-2">
+                                <div class="category_filter">
+                                    <a type="button" class="dropdown-toggle" data-bs-toggle="dropdown">
+                                        <span class="fa fa-filter" title="Partner Tags" role="img" aria-label="Partner Tags"/>
+                                        Partner Tags
+                                        <t t-if="state.selected_tags and state.selected_tags.length > 0">
+                                            (<t t-esc="state.selected_tags.length"/>)
+                                        </t>
+                                    </a>
+                                    <div class="dropdown-menu category-dropdown" role="menu"
+                                         style="width: 280px; max-height: 350px; overflow-y: auto; padding: 8px;">
+                                        <div class="list-group">
+                                            <!-- Search Input -->
+                                            <div class="mb-2">
+                                                <input type="text"
+                                                       class="form-control form-control-sm"
+                                                       placeholder="Search tags..."
+                                                       t-ref="tagSearch"
+                                                       t-on-input="searchTags"
+                                                       style="border: 1px solid #ccc; padding: 5px; font-size: 13px;"/>
+                                            </div>
+
+                                            <!-- Selected Tags Display -->
+                                            <t t-if="state.selected_tags and state.selected_tags.length > 0">
+                                                <div class="mb-2" style="max-height: 80px; overflow-y: auto;">
+                                                    <small class="text-muted"><strong>Selected:</strong></small>
+                                                    <div class="mt-1">
+                                                        <t t-foreach="state.selected_tags" t-as="tag" t-key="tag_index">
+                                                            <span class="badge bg-info me-1 mb-1"
+                                                                  style="display: inline-flex; align-items: center; font-size: 11px;">
+                                                                <t t-esc="tag.name"/>
+                                                                <i class="fa fa-times ms-1"
+                                                                   style="cursor: pointer; font-size: 10px;"
+                                                                   t-att-data-tag-id="tag.id"
+                                                                   t-on-click="removeTag"/>
+                                                            </span>
+                                                        </t>
+                                                    </div>
+                                                </div>
+                                                <div role="separator" class="dropdown-divider"/>
+                                            </t>
+
+                                            <!-- Tags List -->
+                                            <div class="tag-list" style="max-height: 180px; overflow-y: auto;">
+                                                <t t-if="state.filtered_tags and state.filtered_tags.length > 0">
+                                                    <t t-foreach="state.filtered_tags" t-as="tag" t-key="tag_index">
+                                                        <button class="dropdown-item tag-item"
+                                                                type="button"
+                                                                t-att-data-tag-id="tag.id"
+                                                                t-att-data-tag-name="tag.name"
+                                                                t-on-click="selectTag"
+                                                                style="width: 100%; text-align: left; padding: 6px 10px; font-size: 13px;">
+                                                            <t t-esc="tag.name"/>
+                                                        </button>
+                                                    </t>
+                                                </t>
+                                                <t t-else="">
+                                                    <div class="text-muted p-2" style="font-size: 12px;">No tags found</div>
+                                                </t>
+                                            </div>
+
+                                            <!-- Clear All Button -->
+                                            <t t-if="state.selected_tags and state.selected_tags.length > 0">
+                                                <div role="separator" class="dropdown-divider"/>
+                                                <button class="btn btn-sm btn-danger w-100 mt-2"
+                                                        type="button"
+                                                        t-on-click="clearAllTags"
+                                                        style="font-size: 12px; padding: 4px;">
+                                                    Clear All
+                                                </button>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Accounts Filter - Fixed Size -->
+                            <div class="px-2">
+                                <div class="acc_filter">
+                                    <a type="button" class="dropdown-toggle" data-bs-toggle="dropdown">
+                                        <span class="fa fa-book" title="Accounts" role="img" aria-label="Accounts"/>
+                                        Accounts
+                                        <t t-if="state.selected_accounts and state.selected_accounts.length > 0">
+                                            (<t t-esc="state.selected_accounts.length"/>)
+                                        </t>
+                                    </a>
+                                    <div class="dropdown-menu account-dropdown" role="menu"
+                                         style="width: 320px; max-height: 350px; overflow-y: auto; padding: 8px;">
+                                        <div class="list-group">
+                                            <!-- Search Input -->
+                                            <div class="mb-2">
+                                                <input type="text"
+                                                       class="form-control form-control-sm"
+                                                       placeholder="Search accounts..."
+                                                       t-ref="accountSearch"
+                                                       t-on-input="searchAccounts"
+                                                       style="border: 1px solid #ccc; padding: 5px; font-size: 13px;"/>
+                                            </div>
+
+                                            <!-- Selected Accounts Display -->
+                                            <t t-if="state.selected_accounts and state.selected_accounts.length > 0">
+                                                <div class="mb-2" style="max-height: 80px; overflow-y: auto;">
+                                                    <small class="text-muted"><strong>Selected:</strong></small>
+                                                    <div class="mt-1">
+                                                        <t t-foreach="state.selected_accounts" t-as="acc" t-key="acc_index">
+                                                            <span class="badge bg-success me-1 mb-1"
+                                                                  style="display: inline-flex; align-items: center; font-size: 11px;">
+                                                                <t t-esc="acc.code"/> - <t t-esc="acc.name"/>
+                                                                <i class="fa fa-times ms-1"
+                                                                   style="cursor: pointer; font-size: 10px;"
+                                                                   t-att-data-account-id="acc.id"
+                                                                   t-on-click="removeAccount"/>
+                                                            </span>
+                                                        </t>
+                                                    </div>
+                                                </div>
+                                                <div role="separator" class="dropdown-divider"/>
+                                            </t>
+
+                                            <!-- Accounts List -->
+                                            <div class="account-list" style="max-height: 180px; overflow-y: auto;">
+                                                <t t-if="state.filtered_accounts and state.filtered_accounts.length > 0">
+                                                    <t t-foreach="state.filtered_accounts" t-as="acc" t-key="acc_index">
+                                                        <button class="dropdown-item account-item"
+                                                                type="button"
+                                                                t-att-data-account-id="acc.id"
+                                                                t-att-data-account-code="acc.code"
+                                                                t-att-data-account-name="acc.name"
+                                                                t-on-click="selectAccount"
+                                                                style="width: 100%; text-align: left; padding: 6px 10px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                            <strong><t t-esc="acc.code"/></strong> - <t t-esc="acc.name"/>
+                                                        </button>
+                                                    </t>
+                                                </t>
+                                                <t t-else="">
+                                                    <div class="text-muted p-2" style="font-size: 12px;">No accounts found</div>
+                                                </t>
+                                            </div>
+
+                                            <!-- Clear All Button -->
+                                            <t t-if="state.selected_accounts and state.selected_accounts.length > 0">
+                                                <div role="separator" class="dropdown-divider"/>
+                                                <button class="btn btn-sm btn-danger w-100 mt-2"
+                                                        type="button"
+                                                        t-on-click="clearAllAccounts"
+                                                        style="font-size: 12px; padding: 4px;">
+                                                    Clear All
+                                                </button>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Options Dropdown -->
                             <div class="px-2">
                                 <div class="option" style="">
@@ -236,9 +482,10 @@
                                            t-as="partner"
                                            t-key="partner_index">
                                             <t t-set="i" t-value="i + 1"/>
-                                            <tr class="border-bottom border-dark border-gainsboro">
+                                            <t t-if="state.total[partner]['total_debit']">
+                                                <tr class="border-bottom border-dark border-gainsboro">
                                                 <th>
-                                                    <div data-bs-toggle="collapse"
+                                                        <div data-bs-toggle="collapse"
                                                          t-attf-href="#partner-{{i}}"
                                                          aria-expanded="false"
                                                          t-attf-aria-controls="partner-{{i}}"
@@ -303,6 +550,7 @@
                                                     </span>
                                                 </th>
                                             </tr>
+                                            </t>
                                             <!-- Iterate over partner's initial balance -->
                                             <t t-set="j" t-value="0"/>
                                             <t t-foreach="state.partners"

@@ -98,7 +98,7 @@ class AccountPartnerLedger(models.TransientModel):
         return partner_dict
 
     @api.model
-    def get_filter_values(self, partner_id, data_range, account, options):
+    def get_filter_values(self, partner_id, data_range, account, options, tag_ids=None, account_ids=None):
         """
         Retrieve filtered partner-related data for generating a report.
 
@@ -140,6 +140,18 @@ class AccountPartnerLedger(models.TransientModel):
         quarter_start, quarter_end = date_utils.get_quarter(today)
         previous_quarter_start = quarter_start - relativedelta(months=3)
         previous_quarter_end = quarter_start - relativedelta(days=1)
+
+        # Handle partner tag filter
+        if tag_ids:
+            partners_with_tags = self.env['res.partner'].search([
+                ('category_id', 'in', tag_ids)
+            ])
+            if partner_id:
+                # Intersection of selected partners and partners with tags
+                partner_id = list(set(partner_id) & set(partners_with_tags.ids))
+            else:
+                partner_id = partners_with_tags.ids
+
         if not partner_id:
             partner_id = self.env['account.move.line'].search([(
                 'account_type', 'in', account_type_domain),
@@ -148,13 +160,24 @@ class AccountPartnerLedger(models.TransientModel):
         balance_move_line_ids = []
         for partners in partner_id:
             partner = self.env['res.partner'].browse(partners).name
+            # Base domain for move lines
+            base_domain = [
+                ('partner_id', '=', partners),
+                ('account_type', 'in', account_type_domain),
+                ('parent_state', 'in', option_domain)
+            ]
+
+            # NEW: Add account filter to base domain
+            if account_ids:
+                base_domain.append(('account_id', 'in', account_ids))
             if data_range:
                 if data_range == 'month':
+                    domain = base_domain + [
+                        ('date', '>=', fields.Date.today().replace(day=1)),
+                        ('date', '<=', fields.Date.today())
+                    ]
                     move_line_ids = self.env['account.move.line'].search(
-                        [('partner_id', '=', partners), (
-                            'account_type', 'in',
-                            account_type_domain),
-                         ('parent_state', 'in', option_domain)]).filtered(
+                        domain).filtered(
                         lambda x: x.date.month == fields.Date.today().month)
                     date_start = fields.Date.today().replace(day=1)
                     balance_move_line_ids = self.env[
@@ -164,6 +187,7 @@ class AccountPartnerLedger(models.TransientModel):
                             account_type_domain),
                          ('parent_state', 'in', option_domain),
                          ('invoice_date', '<', date_start)])
+
                 elif data_range == 'year':
                     move_line_ids = self.env['account.move.line'].search(
                         [('partner_id', '=', partners), (
@@ -299,11 +323,7 @@ class AccountPartnerLedger(models.TransientModel):
                          ('parent_state', 'in', option_domain),
                          ('invoice_date', '<', date_start)])
             else:
-                move_line_ids = self.env['account.move.line'].search(
-                    [('partner_id', '=', partners), (
-                        'account_type', 'in',
-                        account_type_domain),
-                     ('parent_state', 'in', option_domain)])
+                move_line_ids = self.env['account.move.line'].search(base_domain)
             total_debit_balance = 0
             total_credit_balance = 0
             balance = 0
@@ -499,3 +519,5 @@ class AccountPartnerLedger(models.TransientModel):
         output.seek(0)
         response.stream.write(output.read())
         output.close()
+
+

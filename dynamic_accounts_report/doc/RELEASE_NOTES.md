@@ -34,3 +34,8 @@
 #### Version 18.0.1.2.6
 #### BUG FIX
 - Removed the controller for xlsx report generation which was already present in the dependent module base_accounting_kit.
+
+#### 12.12.2025
+#### Version 18.0.1.3.0
+#### UPDT
+- Commit for adding partner, partner tag, and account filter in the Partner Ledger report.
