@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--   Displays a list view of AI assistants -->
+    <record id="ora_ai_tree_view" model="ir.ui.view">
+        <field name="name">ora.ai.tree.view</field>
+        <field name="model">ora.ai</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="language_id"/>
+                <field name="date"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+    <!--   Form view of the ora AI model.-->
+    <record id="ora_ai_form_view" model="ir.ui.view">
+        <field name="name">ora.ai.form.view</field>
+        <field name="model">ora.ai</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_create_assistant" string="Create Assistant" type="object"
+                            invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" text="Created" invisible="state not in 'done'"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="id_assistant"/>
+                        </group>
+                        <group>
+                            <field name="date" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Model">
+                            <group name="model">
+                                <group>
+                                    <field name="first_message"/>
+                                    <field name="prompt" readonly="0"/>
+                                    <field name="end_call_phrases"/>
+                                    <field name="file_ids" widget="many2many_tags"/>
+                                </group>
+                                <group>
+                                    <field name="provider" widget="selection"/>
+                                    <field name="provider_model_id"
+                                           options="{'no_create': True}"/>
+                                    <field name="provider_model_ids"
+                                           invisible="1"/>
+                                    <button type="object" name="action_assistant_testing" string="Test Assistant"
+                                            invisible="state not in 'done'"/>
+                                    <field name="function_description" invisible="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Transcriber">
+                            <group>
+                                <field name="transcriber_provider"/>
+                                <field name="transcriber_model_id"
+                                       options="{'no_create': True}"/>
+                                <field name="transcriber_model_ids"
+                                       invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="is_lang_switch"/>
+                                <field name="language_ids" widget="many2many_tags" invisible="not is_lang_switch"/>
+                                <field name="language_id" invisible="is_lang_switch" required="1"/>
+                                <field name="language_function_description" invisible="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!--    Creates a backend menu action named "Assistants"-->
+    <record id="ora_ai_action" model="ir.actions.act_window">
+        <field name="name">Assistants</field>
+        <field name="res_model">ora.ai</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
