@@ -27,3 +27,9 @@ This will help prevent the ordering of out-of-stock products, whether entered vi
 #### Version 16.0.2.2.2
 #### Update
 - Fixed the bug and updated the out-of-stock condition. If the product quantity is out of stock, a popup will be displayed.
+
+#### 06.11.2025
+#### Version 16.0.2.2.3
+#### Update
+- Service products and products measured with “To Weigh in Scale” enabled are now excluded from 
+Restrict Product Out of Stock in POS.

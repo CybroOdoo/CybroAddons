@@ -10,7 +10,9 @@ const RestrictProductScreen = (ProductScreen) => class RestrictProductScreen ext
         const product = event.detail;
         const type = this.env.pos.config.stock_type;
         const is_restrict = this.env.pos.config.is_restrict_product;
-
+        if (product.detailed_type === 'service' || product.to_weight) {
+            return super._clickProduct(event);
+        }
         let qty = 0;
 
         const selectedLine = this.currentOrder.selected_orderline;
@@ -19,6 +21,7 @@ const RestrictProductScreen = (ProductScreen) => class RestrictProductScreen ext
         } else {
             qty = 1;
         }
+
 
         const qty_available = product.qty_available;
         const virtual_qty = product.virtual_available;
@@ -60,6 +63,9 @@ const RestrictProductScreen = (ProductScreen) => class RestrictProductScreen ext
         }
 
         for (const { product, name, total_qty } of Object.values(productQtyMap)) {
+            if (product.detailed_type === 'service' || product.to_weight) {
+                continue;
+            }
             const qty_available = product.qty_available;
             const virtual_qty = product.virtual_available;
 
