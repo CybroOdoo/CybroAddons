@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Sale Order Payment Status',
-    'version': '18.0.1.0.3',
+    'version': '18.0.1.0.4',
     'category': 'Sales',
     'summary': 'Displays the payment status and details in the Sale Order.',
     'description': """This module is used to display the invoice status of the

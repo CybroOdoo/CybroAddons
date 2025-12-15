@@ -19,3 +19,8 @@
 #### Version 18.0.1.0.3
 ##### ADD
 - Issue resolved while clicking view from payment info.
+
+#### 09.12.2025
+#### Version 18.0.1.0.4
+##### BUG_FIX
+- Resolved the issue where the badge was not appearing as “NOT PAID”.
