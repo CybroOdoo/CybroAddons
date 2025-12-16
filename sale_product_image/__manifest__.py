@@ -21,7 +21,7 @@
 #############################################################################
 {
     "name": "Sale Order Line Images",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "category": 'Sales',
     "summary": "Order Line Images In Sale and Sale Report",
     "description": """Order Line Images In Sale and Sale Report, odoo 17, order line images""",
@@ -37,6 +37,11 @@
         'views/res_config_settings_views.xml',
         'report/sale_order_report.xml',
     ],
+    'external_dependencies': {
+        'python': [
+            'wand',
+        ],
+    },
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
