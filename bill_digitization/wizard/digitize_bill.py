@@ -381,10 +381,11 @@ class DigitizeBill(models.TransientModel):
             raise ValidationError(_("Cannot identify data"))
         # Converting the image into text using OCR python package
         # pytesseract
-        try:
-            text = pytesseract.image_to_string(resized_img)
-        except Exception:
-            raise ValidationError(_("Data cannot read"))
+        # try:
+        text = pytesseract.image_to_string(resized_img)
+        # except Exception:
+        #     print('Exception',Exception)
+        #     raise ValidationError(_("Data cannot read"))
         # Calling the function to create vendor bill
         bill_record = self.create_record(text)
         # Opening the vendor bill using its id
