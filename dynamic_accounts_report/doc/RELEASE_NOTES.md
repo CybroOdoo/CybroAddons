@@ -60,3 +60,8 @@
 ### version 16.0.3.0.0,
 ### UPDT
 - Added a new comparison feature in Trial Balance, Profit & Loss, and Balance Sheet reports.
+
+### 17.12.2025
+### version 16.0.3.0.0,
+### BUGFIX
+- Fixed the currency type issue that caused NaN values in Trial Balance subtotals.
