@@ -42,9 +42,8 @@ class StockMove(models.Model):
         for picking in self.mapped('picking_id'):
             sequence_number = 1
             for move in picking.move_ids:
-                if move in self:  # Only update moves in our original recordset
-                    move.sequence_number = sequence_number
-                    sequence_number += 1
+                move.sequence_number = sequence_number
+                sequence_number += 1
 
 
 class StockPicking(models.Model):
