@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--Template for shop sidebar in website-->
+    <template id="Fuge_categories" name="Fuge Categories"
+              inherit_id="website_sale.products_categories"
+              customize_show="True" priority="1" active="True">
+        <xpath expr="//button[@type='button']" position="replace"/>
+        <xpath expr="//div[@id='wsale_products_categories_collapse']"
+               position="replace">
+            <div class="sidebar">
+                <div class="wrapper">
+                    <div class="box">
+                        <div class="accordion" id="accordionExample">
+                            <div class="card" style="border:none; color:#f4f4f4;">
+                                <div class="card-header" id="headingOne">
+                                    <h2 class="mb-0">
+                                        <button class="btn btn-link collapsed"
+                                                type="button"
+                                                data-toggle="collapse"
+                                                data-target="#collapseOne"
+                                                aria-expanded="true"
+                                                aria-controls="collapseOne">
+                                            <h3 style="font-size: 24px;color: #000000;margin-bottom: 30px;font-weight: 700; display:ruby; margin-left:-28px;">
+                                                PRODUCT
+                                                <span style="color: #3fc0b6">
+                                                    CATEGORIES
+                                                </span>
+                                            </h3>
+                                        </button>
+                                    </h2>
+                                    <ul class="list-group">
+                                        <t t-foreach="categories"
+                                           t-as="c">
+                                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                <t t-call="theme_fuge.fuge_categories_recursive"/>
+                                            </div>
+                                        </t>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <template id="fuge_categories_recursive" name="fuge Category list" inherit_id="website_sale.categories_recursive">
+         <xpath expr="//li[hasclass('nav-item')]"
+               position="replace">
+        <li class="nav-item">
+            <a  style="color:#828282;" t-att-href="keep('/shop/category/' + slug(c), category=0)" t-attf-class="nav-link #{'active' if c.id == category.id else ''}">
+                <span t-field="c.name"/>
+            </a>
+            <ul t-if="c.child_id" class="nav nav-pills flex-column nav-hierarchy">
+                <t t-foreach="c.child_id" t-as="c">
+                    <t t-if="not search or c.id in search_categories_ids">
+                        <t t-call="theme_fuge.fuge_categories_recursive" />
+                    </t>
+                </t>
+            </ul>
+        </li>
+         </xpath>
+    </template>
+</odoo>
