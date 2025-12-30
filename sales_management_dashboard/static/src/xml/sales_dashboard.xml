@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <t t-name="sales_management_dashboard.SalesDashboardTemplate" owl="1">
+        <div class="o_sales_dashboard p-4" style="max-height: 90vh; overflow-y: auto;">
+            <h2 class="mb-4 fw-bold text-center text-primary" style="backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 12px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);">📊 Sales Dashboard</h2>
+                 <div class="flex items-center gap-2 mb-4" style="width: 100px ; min-width: 150px; border-radius: 0.5rem;">
+                    <label class="font-semibold">Global Filter:</label>
+                        <select id="global_filter" t-on-change="onChangeGlobalFilter"
+                                t-model="state.filters.global_filter"
+                                class="border rounded p-1" style="box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+                            <option value="select_period">Select Period</option>
+                            <option value="this_week">This Week</option>
+                            <option value="this_month">This Month</option>
+                            <option value="this_year">This Year</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+
+                    <input type="date"
+                           t-if="state.filters.global_filter === 'custom'"
+                           t-on-change="onChangeCustomFrom"
+                           class="border rounded p-1" />
+
+                    <input type="date"
+                           t-if="state.filters.global_filter === 'custom'"
+                           t-on-change="onChangeCustomTo"
+                           class="border rounded p-1" />
+
+                     <div class="flex items-center gap-2" style="min-width: 100px;">
+                        <label class="font-semibold">Limit:</label>
+                        <select id="global_limit"
+                                t-on-change="onChangeGlobalLimit"
+                                t-model="state.filters.limit"
+                                class="border rounded p-1"
+                                style="box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                            <option value="25">25</option>
+                            <option value="30">30</option>
+                        </select>
+                    </div>
+                </div>
+
+               <div class="row justify-content-center my-4">
+                <!-- First Row -->
+                <!-- Sale Orders -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative" style="cursor: pointer; height: 160px; background-color: #3490dc;" role="button" t-on-click="viewOrders">
+                        <div class="icon-box position-absolute"
+                             style="top: 15px; left: 15px;
+                                background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05));
+                                width: 48px; height: 48px;
+                                display: flex; align-items: center; justify-content: center;
+                                border-radius: 12px;
+                                backdrop-filter: blur(8px);
+                                border: 1px solid rgba(255,255,255,0.2);
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+                            <i class="fa fa-shopping-cart text-white" style="font-size: 22px;"></i>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Sale Orders</h3>
+                            <div class="fw-bold" style="font-size: 20px; color: #f8f9fa;">
+                                <t t-esc="state.data.sales_info.sale_orders"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quotations -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative" style="cursor: pointer; height: 160px; background-color: #38c172;" role="button" t-on-click="viewQuotations">
+                        <div class="icon-box position-absolute"
+                             style="top: 15px; left: 15px;
+                                background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05));
+                                width: 48px; height: 48px;
+                                display: flex; align-items: center; justify-content: center;
+                                border-radius: 12px;
+                                backdrop-filter: blur(8px);
+                                border: 1px solid rgba(255,255,255,0.2);
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+                            <i class="fa fa-file-text-o text-white" style="font-size: 22px;"></i>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Quotations</h3>
+                            <div class="fw-bold" style="font-size: 20px; color: #f8f9fa;">
+                                <t t-esc="state.data.sales_info.quotation"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders to Invoice -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative" style="cursor: pointer; height: 160px; background-color: #ff9800;" role="button" t-on-click="viewToInvoiceOrders">
+                        <div class="icon-box position-absolute"
+                             style="top: 15px; left: 15px;
+                                background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05));
+                                width: 48px; height: 48px;
+                                display: flex; align-items: center; justify-content: center;
+                                border-radius: 12px;
+                                backdrop-filter: blur(8px);
+                                border: 1px solid rgba(255,255,255,0.2);
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+                            <i class="fa fa-credit-card text-white" style="font-size: 22px;"></i>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Orders to Invoice</h3>
+                            <div class="fw-bold" style="font-size: 20px; color: #f8f9fa;">
+                                <t t-esc="state.data.sales_info.orders_to_invoice"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fully Invoiced -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative" style="cursor: pointer; height: 160px; background-color: #9f7aea;" role="button" t-on-click="viewFullyInvoicedOrders">
+                        <div class="icon-box position-absolute"
+                             style="top: 15px; left: 15px;
+                                background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05));
+                                width: 48px; height: 48px;
+                                display: flex; align-items: center; justify-content: center;
+                                border-radius: 12px;
+                                backdrop-filter: blur(8px);
+                                border: 1px solid rgba(255,255,255,0.2);
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+                            <i class="fa fa-check-circle text-white" style="font-size: 22px;"></i>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Fully Invoiced</h3>
+                            <div class="fw-bold" style="font-size: 20px; color: #f8f9fa;">
+                                <t t-esc="state.data.sales_info.orders_fully_invoiced"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               </div>
+            <!-- Second Row -->
+            <!-- Order Conversion Rate -->
+            <div class="row justify-content-center my-4">
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative" style="cursor: pointer; height: 160px; background-color: #ff9800;">
+                        <div class="icon-box position-absolute"
+                             style="top: 15px; left: 15px;
+                                background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05));
+                                width: 48px; height: 48px;
+                                display: flex; align-items: center; justify-content: center;
+                                border-radius: 12px;
+                                backdrop-filter: blur(8px);
+                                border: 1px solid rgba(255,255,255,0.2);
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+                            <i class="fa fa-angle-double-right  text-white" style="font-size: 22px;"></i>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Order Conversion Rate</h3>
+                            <div class="fw-bold" style="font-size: 20px; color: #f8f9fa;">
+                                <t t-esc="state.data.sales_info.conversion_rate"/>%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Total Revenue MTD -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative" style="cursor: pointer; height: 160px; background-color: #9f7aea;">
+                        <div class="icon-box position-absolute"
+                             style="top: 15px; left: 15px;
+                                background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05));
+                                width: 48px; height: 48px;
+                                display: flex; align-items: center; justify-content: center;
+                                border-radius: 12px;
+                                backdrop-filter: blur(8px);
+                                border: 1px solid rgba(255,255,255,0.2);
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+                            <i class="fa fa-money  text-white" style="font-size: 22px;"></i>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Total Revenue MTD</h3>
+                            <div class="fw-bold" style="font-size: 20px; color: #f8f9fa;">
+                                <t t-esc="state.data.sales_info.total_revenue_mtd"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Total Revenue YTD -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative" style="cursor: pointer; height: 160px; background-color: #3490dc;">
+                        <div class="icon-box position-absolute"
+                             style="top: 15px; left: 15px;
+                                background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05));
+                                width: 48px; height: 48px;
+                                display: flex; align-items: center; justify-content: center;
+                                border-radius: 12px;
+                                backdrop-filter: blur(8px);
+                                border: 1px solid rgba(255,255,255,0.2);
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+                            <i class="fa fa-money  text-white" style="font-size: 22px;"></i>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Total Revenue YTD</h3>
+                            <div class="fw-bold" style="font-size: 20px; color: #f8f9fa;">
+                                <t t-esc="state.data.sales_info.total_revenue_ytd"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Average Order Value -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative" style="cursor: pointer; height: 160px; background-color: #38c172;">
+                        <div class="icon-box position-absolute"
+                             style="top: 15px; left: 15px;
+                                background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05));
+                                width: 48px; height: 48px;
+                                display: flex; align-items: center; justify-content: center;
+                                border-radius: 12px;
+                                backdrop-filter: blur(8px);
+                                border: 1px solid rgba(255,255,255,0.2);
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+                            <i class="fa fa-money  text-white" style="font-size: 22px;"></i>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Average Order Value</h3>
+                            <div class="fw-bold" style="font-size: 20px; color: #f8f9fa;">
+                                <t t-esc="state.data.sales_info.avg_order_value"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <!-- Sales by Team -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white fw-bold">Sales by Team</div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <t t-if="state.filters.global_filter == 'select_period'">
+                            <select class="form-select w-auto" style="box-shadow: 0 2px 6px rgba(0,0,0,0.2);" t-on-change="onChangeTeamFilter" t-att-value="state.filters.team_filter">
+                                <option value="this_week">This Week</option>
+                                <option value="this_month">This Month</option>
+                                <option value="this_year">This Year</option>
+                            </select>
+                            </t>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="salesByTeamChart" style="max-height: 50vh;display: block; box-sizing: border-box; height: 789px; width: 525px; cursor: pointer;"></canvas>
+                            <table class="table table-bordered table-sm table-hover mt-3">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Team</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.data.sales_by_team || []" t-as="team" t-key="team.id">
+                                        <tr class="clickable-row" t-on-click="() => goToRecord('crm.team', team.id)">
+                                            <td t-esc="team.name"/>
+                                            <td class="text-end fw-bold" t-esc="team.amount"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- Sales by Person -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-info text-white fw-bold">Sales by Person</div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <t t-if="state.filters.global_filter == 'select_period'">
+                            <select class="form-select w-auto" style="box-shadow: 0 2px 6px rgba(0,0,0,0.2);" t-on-change="onChangePersonFilter" t-att-value="state.filters.person_filter">
+                                <option value="this_week">This Week</option>
+                                <option value="this_month">This Month</option>
+                                <option value="this_year">This Year</option>
+                            </select>
+                            </t>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="salesByPersonChart" style="max-height: 50vh;display: block; box-sizing: border-box; height: 789px; width: 525px; cursor: pointer;"></canvas>
+                            <table class="table table-bordered table-sm table-hover mt-3">
+                                <thead class="table-light">
+                                    <tr><th>Salesperson</th><th class="text-end">Amount</th></tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.data.sales_by_person || []" t-as="person" t-key="person.id">
+                                        <tr class="clickable-row" t-on-click="() => goToRecord('res.users', person.id)">
+                                            <td t-esc="person.name"/>
+                                            <td class="text-end fw-bold" t-esc="person.amount"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Row 2: Top & Lowest Products -->
+            <div class="row mb-4">
+                <!-- Top Products -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-success text-white fw-bold">Top Selling Products</div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex gap-2">
+                                <t t-if="state.filters.global_filter == 'select_period'">
+                                <select class="form-select form-select-sm w-auto" style="box-shadow: 0 2px 6px rgba(0,0,0,0.2);" t-on-change="onChangeProductFilter" t-att-value="state.filters.product_filter">
+                                    <option value="this_week">This Week</option>
+                                    <option value="this_month">This Month</option>
+                                    <option value="this_year">This Year</option>
+                                </select>
+                                </t>
+                                <select class="form-select form-select-sm w-auto" style="box-shadow: 0 2px 6px rgba(0,0,0,0.2);" t-on-change="onChangeProductCategory">
+                                    <option value="">All Categories</option>
+                                    <t t-foreach="state.data.product_categories || []" t-as="cat" t-key="cat.id">
+                                        <option t-att-value="cat.id" t-esc="cat.name"/>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="topProductsChart" height="200" style="cursor: pointer;"></canvas>
+                            <table class="table table-bordered table-sm table-hover mt-3">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th class="text-end">Quantity Sold</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.data.top_products || []" t-as="prod" t-key="prod.id">
+                                        <tr class="clickable-row" t-on-click="() => goToRecord('product.product', prod.id)">
+                                            <td t-esc="prod.name"/>
+                                            <td class="text-end fw-bold" t-esc="prod.qty"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- Lowest Products -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-danger text-white fw-bold">Least Selling Products</div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex gap-2">
+                                <t t-if="state.filters.global_filter == 'select_period'">
+                                <select class="form-select form-select-sm w-auto" style="box-shadow: 0 2px 6px rgba(0,0,0,0.2);" t-on-change="onChangeLowProductFilter" t-att-value="state.filters.low_product_filter">
+                                    <option value="this_week">This Week</option>
+                                    <option value="this_month">This Month</option>
+                                    <option value="this_year">This Year</option>
+                                </select>
+                                </t>
+                                <select class="form-select form-select-sm w-auto" style="box-shadow: 0 2px 6px rgba(0,0,0,0.2);" t-on-change="onChangeLowProductCategory">
+                                    <option value="">All Categories</option>
+                                    <t t-foreach="state.data.product_categories || []" t-as="cat" t-key="cat.id">
+                                        <option t-att-value="cat.id" t-esc="cat.name"/>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="lowestProductsChart" height="200" style="cursor: pointer;"></canvas>
+                            <table class="table table-bordered table-sm table-hover mt-3">
+                                <thead class="table-light">
+                                    <tr><th>Product</th><th class="text-end">Quantity Sold</th></tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.data.lowest_products || []" t-as="prod" t-key="prod.id">
+                                        <tr class="clickable-row" t-on-click="() => goToRecord('product.product', prod.id)">
+                                            <td t-esc="prod.name"/>
+                                            <td class="text-end fw-bold" t-esc="prod.qty"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Row 3: Top Customers -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-warning text-white fw-bold">Top Customers</div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <t t-if="state.filters.global_filter == 'select_period'">
+                            <select class="form-select w-auto" style="box-shadow: 0 2px 6px rgba(0,0,0,0.2);" t-on-change="onChangeCustomerFilter" t-att-value="state.filters.customer_filter">
+                                <option value="this_week">This Week</option>
+                                <option value="this_month">This Month</option>
+                                <option value="this_year">This Year</option>
+                            </select>
+                            </t>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr><th>Customer</th><th class="text-end">Amount</th></tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.data.top_customers || []" t-as="cust" t-key="cust.id">
+                                        <tr class="clickable-row" t-on-click="() => goToRecord('res.partner', cust.id)">
+                                            <td t-esc="cust.name"/>
+                                            <td class="text-end fw-bold" t-esc="cust.amount"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Row 4: Order & Invoice Status -->
+            <div class="row mb-4">
+                <!-- Order Status -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-secondary text-black fw-bold">Order Status</div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <t t-if="state.filters.global_filter == 'select_period'">
+                            <select class="form-select w-auto" style="box-shadow: 0 2px 6px rgba(0,0,0,0.2);" t-on-change="onChangeOrderFilter" t-att-value="state.filters.order_filter">
+                                <option value="this_week">This Week</option>
+                                <option value="this_month">This Month</option>
+                                <option value="this_year">This Year</option>
+                            </select>
+                            </t>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="orderStatusChart" style="max-height: 50vh;display: block; box-sizing: border-box; height: 789px; width: 525px; cursor: pointer;"></canvas>
+                            <table class="table table-bordered table-sm table-hover mt-3">
+                                <thead class="table-light">
+                                    <tr><th>Status</th><th class="text-end">Count</th></tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.data.order_status || []" t-as="order" t-key="order.status">
+                                        <tr>
+                                            <td t-esc="order.status"/>
+                                            <td class="text-end fw-bold" t-esc="order.count"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- Invoice Status -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-dark text-white fw-bold">Invoice Status</div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <t t-if="state.filters.global_filter == 'select_period'">
+                            <select class="form-select w-auto" style="box-shadow: 0 2px 6px rgba(0,0,0,0.2);" t-on-change="onChangeInvoiceFilter" t-att-value="state.filters.invoice_filter">
+                                <option value="this_week">This Week</option>
+                                <option value="this_month">This Month</option>
+                                <option value="this_year">This Year</option>
+                            </select>
+                            </t>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="invoiceStatusChart" style="max-height: 50vh;display: block; box-sizing: border-box; height: 789px; width: 525px; cursor: pointer;"></canvas>
+                            <table class="table table-bordered table-sm table-hover mt-3">
+                                <thead class="table-light">
+                                    <tr><th>Status</th><th class="text-end">Count</th></tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.data.invoice_status || []" t-as="inv" t-key="inv.status">
+                                        <tr>
+                                            <td t-esc="inv.status"/>
+                                            <td class="text-end fw-bold" t-esc="inv.count"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Row 5: Overdue Customers & New vs Returning Customers -->
+            <div class="row mb-4">
+                <!-- Overdue Customers -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-danger text-white fw-bold">Overdue Customers</div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <t t-if="state.filters.global_filter == 'select_period'">
+                            <select class="form-select w-auto" style="box-shadow: 0 2px 6px rgba(0,0,0,0.2);" t-on-change="onChangeOverdueFilter" t-att-value="state.filters.team_filter">
+                                <option value="this_week">This Week</option>
+                                <option value="this_month">This Month</option>
+                                <option value="this_year">This Year</option>
+                            </select>
+                            </t>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="overdueCustomersChart" style="max-height: 50vh;display: block; box-sizing: border-box; height: 789px; width: 525px; cursor: pointer;"></canvas>
+                            <table class="table table-bordered table-sm table-hover mt-3">
+                                <thead class="table-light">
+                                    <tr><th>Customer</th><th class="text-end">Amount</th></tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.data.overdue_customers || []" t-as="cust" t-key="cust.id">
+                                        <tr class="clickable-row" t-on-click="() => goToRecord('res.partner', cust.id)">
+                                            <td t-esc="cust.name"/>
+                                            <td class="text-end fw-bold" t-esc="cust.amount"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- New vs Returning Customers -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-success text-white fw-bold">New vs Returning Customers</div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <t t-if="state.filters.global_filter == 'select_period'">
+                            <select class="form-select w-auto" style="box-shadow: 0 2px 6px rgba(0,0,0,0.2);" t-on-change="onChangeNvRFilter" t-att-value="state.filters.team_filter">
+                                <option value="this_week">This Week</option>
+                                <option value="this_month">This Month</option>
+                                <option value="this_year">This Year</option>
+                            </select>
+                            </t>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="newVsReturningChart" style="max-height: 50vh;display: block; box-sizing: border-box; height: 789px; width: 525px; cursor: pointer;"></canvas>
+                            <t t-set="customerData" t-value="state.data.new_vs_returning"/>
+                                <div t-if="customerData and customerData.details">
+                                    <h5 class="mt-3">New Customers</h5>
+                                    <table class="table table-bordered table-sm table-hover mt-2">
+                                        <thead class="table-light">
+                                            <tr><th>Customer</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="customerData.details.new" t-as="cust" t-key="cust_index">
+                                                <td class="clickable-row" t-on-click="() => this.goToRecord('res.partner', cust.id)" t-esc="cust.name"/>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <!-- Returning Customers -->
+                                    <h5 class="mt-3">Returning Customers</h5>
+                                    <table class="table table-bordered table-sm table-hover mt-2">
+                                        <thead class="table-light">
+                                            <tr><th>Customer</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="customerData.details.returning" t-as="cust" t-key="cust_index">
+                                                <td class="clickable-row" t-on-click="() => this.goToRecord('res.partner', cust.id)" t-esc="cust.name"/>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
