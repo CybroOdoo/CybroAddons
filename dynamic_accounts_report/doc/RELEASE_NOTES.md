@@ -39,3 +39,8 @@
 #### Version 18.0.1.3.0
 #### UPDT
 - Commit for adding partner, partner tag, and account filter in the Partner Ledger report.
+
+#### 22.12.2025
+#### Version 18.0.1.3.1
+#### UPDT
+- Added Total to the Trial Balance and report. Fixed the filter issue and the date range RPC error.

@@ -24,7 +24,7 @@ class TrialBalance extends owl.Component {
             move_line: null,
             default_report: true,
             data: null,
-            total: null,
+            totals: null,
             journals: null,
             accounts: null,
             selected_analytic: [],
@@ -38,6 +38,8 @@ class TrialBalance extends owl.Component {
             date_viewed: [],
             comparison_number: null,
             options: null,
+            has_filters: false,
+            filter_version: 0, // Add this to force re-render
             method: {
                         'accural': true
                     },
@@ -46,7 +48,8 @@ class TrialBalance extends owl.Component {
     }
     async load_data() {
         /**
-         * Loads the data for the trial balance report.
+         * Asynchronously loads initial data for the trial balance report.
+         * Fetches default trial balance data and populates the component state.
          */
         let move_line_list = []
         let move_lines_total = ''
@@ -57,12 +60,17 @@ class TrialBalance extends owl.Component {
             var today = new Date();
             var startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
             var endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-            self.state.data = await self.orm.call("account.trial.balance", "view_report", []);
+            let result = await self.orm.call("account.trial.balance", "view_report", []);
+            self.state.data = result[0];
+            self.state.totals = result[2];
             self.start_date.el.value = startOfMonth.getFullYear() + '-' + String(startOfMonth.getMonth() + 1).padStart(2, '0') + '-' + String(startOfMonth.getDate()).padStart(2, '0');
             self.end_date.el.value = endOfMonth.getFullYear() + '-' + String(endOfMonth.getMonth() + 1).padStart(2, '0') + '-' + String(endOfMonth.getDate()).padStart(2, '0');
             self.state.date_viewed.push(monthNamesShort[today.getMonth()] + '  ' + today.getFullYear())
-            self.state.journals = self.state.data[1]['journal_ids']
-            self.state.accounts = self.state.data[0]
+            self.state.journals = result[1]['journal_ids']
+            self.state.accounts = self.state.data
+            // Reset to default report state when loading initial data
+            self.state.default_report = true;
+            self.state.has_filters = false; // Reset filters flag
             $.each(self.state.data, function (index, value) {
                 self.state.journals = value.journal_ids
             })
@@ -73,13 +81,8 @@ class TrialBalance extends owl.Component {
     }
     async applyFilter(val, ev, is_delete) {
         /**
-         * Asynchronously applies filters and loads data for the trial balance report.
-         * Modifies state variables based on the selected filter options.
-         * Updates 'move_line_list' and 'move_lines_total'.
-         * Sets the start and end date inputs based on selected filter options.
-         * Appends the selected date ranges to 'state.date_viewed'.
-         * Updates 'state.journals' based on the selected journal filter.
-         * Retrieves data using the 'account.trial.balance' API with the selected filter values.
+         * Asynchronously applies filters to the trial balance report.
+         * Fetches data based on selected filters and updates the component state.
          * Updates 'state.data' with the retrieved data.
          * Handles the comparison logic and updates 'state.date_viewed' accordingly.
          * Reverses the order of 'state.date_viewed' if data exists.
@@ -89,10 +92,17 @@ class TrialBalance extends owl.Component {
          * @param {boolean} is_delete - Flag indicating if the filter is being deleted.
          * @returns {Promise<void>} Resolves when the filter is applied and data is loaded.
          */
+        
+        // Set filter flags for ANY filter operation (including date changes)
+        this.state.has_filters = true;
+        this.state.default_report = false;
+        this.state.filter_version += 1; // Force re-render
+
         if (ev && ev.target && ev.target.attributes["data-value"] && ev.target.attributes["data-value"].value == 'no comparison') {
             const lastIndex = this.state.date_viewed.length - 1;
             this.state.date_viewed.splice(0, lastIndex);
         }
+
         if (ev) {
             if (ev.input && ev.input.attributes.placeholder.value == 'Account' && !is_delete) {
                 this.state.selected_analytic.push(val[0].id)
@@ -129,6 +139,10 @@ class TrialBalance extends owl.Component {
                     start_date: this.start_date.el.value,
                     end_date: this.end_date.el.value
                 };
+                // Set filter flags for date range selection
+                this.state.has_filters = true;
+                this.state.default_report = false;
+                this.state.filter_version += 1;
             } else if (val && val.target.attributes["data-value"].value == 'year') {
                 this.start_date.el.value = today.startOf('year').toFormat('yyyy-MM-dd')
                 this.end_date.el.value = today.endOf('year').toFormat('yyyy-MM-dd')
@@ -140,17 +154,25 @@ class TrialBalance extends owl.Component {
                     start_date: this.start_date.el.value,
                     end_date: this.end_date.el.value
                 };
+                // Set filter flags for date range selection
+                this.state.has_filters = true;
+                this.state.default_report = false;
+                this.state.filter_version += 1;
             } else if (val && val.target.attributes["data-value"].value == 'quarter') {
                 this.start_date.el.value = today.startOf('quarter').toFormat('yyyy-MM-dd')
                 this.end_date.el.value = today.endOf('quarter').toFormat('yyyy-MM-dd')
                 this.state.date_viewed = []
                 this.state.date_viewed.push('Q' + ' ' + today.quarter)
-                this.state.comparison_type = this.state.date_type
                 this.state.date_type = val.target.attributes["data-value"].value
+                this.state.comparison_type = this.state.date_type
                 this.state.date_range = {
                     start_date: this.start_date.el.value,
                     end_date: this.end_date.el.value
                 };
+                // Set filter flags for date range selection
+                this.state.has_filters = true;
+                this.state.default_report = false;
+                this.state.filter_version += 1;
             } else if (val && val.target.attributes["data-value"].value == 'last-month') {
                 this.start_date.el.value = today.startOf('month').minus({ days: 1 }).startOf('month').toFormat('yyyy-MM-dd')
                 this.end_date.el.value = today.startOf('month').minus({ days: 1 }).toFormat('yyyy-MM-dd')
@@ -158,10 +180,15 @@ class TrialBalance extends owl.Component {
                 this.state.date_viewed.push(today.startOf('month').minus({ days: 1 }).monthShort + ' ' + today.startOf('month').minus({ days: 1 }).c.year)
                 this.state.date_type = 'month'
                 this.state.comparison_type = this.state.date_type
+                console.log("amrutha test")
                 this.state.date_range = {
                     start_date: this.start_date.el.value,
                     end_date: this.end_date.el.value
                 };
+                // Set filter flags for date range selection
+                this.state.has_filters = true;
+                this.state.default_report = false;
+                this.state.filter_version += 1;
             } else if (val && val.target.attributes["data-value"].value == 'last-year') {
                 this.start_date.el.value = today.startOf('year').minus({ days: 1 }).startOf('year').toFormat('yyyy-MM-dd')
                 this.end_date.el.value = today.startOf('year').minus({ days: 1 }).toFormat('yyyy-MM-dd')
@@ -173,6 +200,10 @@ class TrialBalance extends owl.Component {
                     start_date: this.start_date.el.value,
                     end_date: this.end_date.el.value
                 };
+                // Set filter flags for date range selection
+                this.state.has_filters = true;
+                this.state.default_report = false;
+                this.state.filter_version += 1;
             } else if (val && val.target.attributes["data-value"].value == 'last-quarter') {
                 this.start_date.el.value = today.startOf('quarter').minus({ days: 1 }).startOf('quarter').toFormat('yyyy-MM-dd')
                 this.end_date.el.value = today.startOf('quarter').minus({ days: 1 }).toFormat('yyyy-MM-dd')
@@ -184,6 +215,10 @@ class TrialBalance extends owl.Component {
                     start_date: this.start_date.el.value,
                     end_date: this.end_date.el.value
                 };
+                // Set filter flags for date range selection
+                this.state.has_filters = true;
+                this.state.default_report = false;
+                this.state.filter_version += 1;
             } else if (val && val.target.attributes["data-value"].value == 'journal') {
                 if (!val.target.classList.contains("selected-filter")) {
                     this.state.selected_journal_list.push(parseInt(val.target.attributes["data-id"].value, 10))
@@ -193,6 +228,10 @@ class TrialBalance extends owl.Component {
                     this.state.selected_journal_list = updatedList
                     val.target.classList.remove("selected-filter");
                 }
+                // Set filter flags for journal selection
+                this.state.has_filters = true;
+                this.state.default_report = false;
+                this.state.filter_version += 1;
             } else if (val && val.target.attributes["data-value"].value === 'draft') {
                 if (val.target.classList.contains("selected-filter")) {
                     const { draft, ...updatedAccount } = this.state.options;
@@ -205,18 +244,22 @@ class TrialBalance extends owl.Component {
                     };
                     val.target.classList.add("selected-filter");
                 }
+                // Set filter flags for draft selection
+                this.state.has_filters = true;
+                this.state.default_report = false;
+                this.state.filter_version += 1;
             }else if (val.target.attributes["data-value"].value === 'cash-basis') {
-                if (val.target.classList.contains("selected-filter")) {
-                    const { cash, ...updatedAccount } = this.state.method;
-                    this.state.method = updatedAccount;
-                    val.target.classList.remove("selected-filter");
+                if (this.start_date.el.value) {
+                    var current_year = new Date(this.start_date.el.value).getFullYear();
+                    var month = new Date(this.start_date.el.value).getMonth();
                 } else {
-                    this.state.method = {
-                        ...this.state.method,
-                        'cash': true
-                    };
-                    val.target.classList.add("selected-filter");
+                    var current_year = new Date(today).getFullYear();
+                    var month = new Date(today).getMonth()
                 }
+                // Set filter flags for cash-basis selection
+                this.state.has_filters = true;
+                this.state.default_report = false;
+                this.state.filter_version += 1;
             }
         }
         if (this.state.apply_comparison == true) {
@@ -243,7 +286,8 @@ class TrialBalance extends owl.Component {
             }
         }
         this.state.data = await this.orm.call("account.trial.balance", "get_filter_values", [this.start_date.el.value, this.end_date.el.value, this.state.comparison_number, this.state.comparison_type, this.state.selected_journal_list, this.state.selected_analytic, this.state.options,this.state.method,]);
-        this.state.default_report = false
+        this.state.totals = this.state.data[1];
+        this.state.data = this.state.data[0];
         var date_viewed = []
         if (date_viewed.length !== 0) {
             this.state.date_viewed = date_viewed.reverse()
@@ -297,7 +341,7 @@ class TrialBalance extends owl.Component {
     }
     sumByKey(data, key) {
         if (!Array.isArray(data)) return 0;
-        return data.reduce((acc, item) => {
+        const total = data.reduce((acc, item) => {
             let raw = item[key];
             if (typeof raw === 'string') {
                 raw = raw.replace(/,/g, ''); // remove commas
@@ -305,6 +349,8 @@ class TrialBalance extends owl.Component {
             const val = parseFloat(raw);
             return acc + (isNaN(val) ? 0 : val);
         }, 0);
+        // Format with commas and 2 decimal places
+        return total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
     get comparison_number_range() {
         /**
@@ -373,6 +419,7 @@ class TrialBalance extends owl.Component {
         var action_title = self.props.action.display_name;
         let comparison_number_range = self.comparison_number_range
         let data_viewed = self.state.date_viewed
+        
         if (self.state.apply_comparison) {
              if (self.comparison_number_range.length > 10) {
                 comparison_number_range = self.comparison_number_range.slice(-10);
@@ -386,6 +433,7 @@ class TrialBalance extends owl.Component {
             'report_file': 'dynamic_accounts_report.trial_balance',
             'data': {
                 'data': this.normalizeReportData(self.state.data),
+                'totals': self.state.totals,
                 'date_viewed': data_viewed,
                 'filters': this.filter(),
                 'apply_comparison': self.state.apply_comparison,
@@ -470,6 +518,7 @@ class TrialBalance extends owl.Component {
         var action_title = self.props.action.display_name;
         var datas = {
             'data': this.normalizeReportData(self.state.data),
+            'totals': self.state.totals,
             'date_viewed': self.state.date_viewed,
             'filters': this.filter(),
             'apply_comparison': self.state.apply_comparison,
