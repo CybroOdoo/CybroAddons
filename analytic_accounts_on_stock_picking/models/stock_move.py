@@ -19,37 +19,57 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import fields, models, api
 
 
 class StockMove(models.Model):
-    """This class inherits the model stock.move and add the field analytic to
-     it, which shows the selected analytic distribution in sale.order.line"""
+    """Inherit stock.move to show analytic distribution
+    coming from sale or purchase order lines
+    """
     _inherit = 'stock.move'
 
-    analytic = fields.Json('Analytic', compute='_compute_analytic',
-                           help='Analytic Distribution')
-    analytic_precision = fields.Integer(store=False,
-                                        help='Define the precision of '
-                                             'percentage decimal value',
-                                        default=lambda self: self.env[
-                                            'decimal.precision'].precision_get(
-                                            "Percentage Analytic"))
+    analytic = fields.Json(
+        string='Analytic',
+        compute='_compute_analytic',
+        help='Analytic Distribution'
+    )
 
+    analytic_precision = fields.Integer(
+        store=False,
+        help='Define the precision of percentage decimal value',
+        default=lambda self: self.env['decimal.precision'].precision_get(
+            "Percentage Analytic"
+        )
+    )
+
+    @api.depends(
+        'sale_line_id',
+        'sale_line_id.analytic_distribution',
+        'sale_line_id.order_id.analytic_account_id',
+        'purchase_line_id',
+        'purchase_line_id.analytic_distribution',
+    )
     def _compute_analytic(self):
-        """This function is used to show the selected analytic distribution in
-        stock.move """
         for rec in self:
+            # ✅ ALWAYS assign a default value
+            rec.analytic = False
+
+            # -------- Sale Order Case --------
             if rec.sale_line_id:
-                analytic_account_id = self.env['sale.order'].search(
-                    [('name', '=', rec.origin)]).analytic_account_id.id
-                analytic_account = rec.sale_line_id.analytic_distribution
+                analytic_distribution = (
+                    rec.sale_line_id.analytic_distribution or {}
+                )
+
+                analytic_account = rec.sale_line_id.order_id.analytic_account_id
                 if analytic_account:
-                    analytic_account.update({
-                        str(analytic_account_id): 100
-                    })
-                    rec.analytic = analytic_account
-                else:
-                    rec.analytic = False
-            if rec.purchase_line_id:
-                rec.analytic = rec.purchase_line_id.analytic_distribution
+                    # copy to avoid mutating cached value
+                    analytic_distribution = dict(analytic_distribution)
+                    analytic_distribution[str(analytic_account.id)] = 100
+
+                rec.analytic = analytic_distribution
+
+            # -------- Purchase Order Case --------
+            elif rec.purchase_line_id:
+                rec.analytic = (
+                    rec.purchase_line_id.analytic_distribution or False
+                )
