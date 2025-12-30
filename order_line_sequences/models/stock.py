@@ -31,6 +31,7 @@ class StockMove(models.Model):
                                      compute='_compute_sequence_number',
                                      help='Line Numbers',default=False)
 
+
     @api.depends('picking_id', 'picking_id.move_ids_without_package')
     def _compute_sequence_number(self):
         """Function to compute line numbers"""
@@ -42,9 +43,8 @@ class StockMove(models.Model):
         for picking in self.mapped('picking_id'):
             sequence_number = 1
             for move in picking.move_ids_without_package:
-                if move in self:  # Only update moves in our original recordset
-                    move.sequence_number = sequence_number
-                    sequence_number += 1
+                move.sequence_number = sequence_number
+                sequence_number += 1
 
 
 class StockPicking(models.Model):
