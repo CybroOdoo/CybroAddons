@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- This XML record defines a form view for creating or editing incoming document requests.-->
+    <record id="request_document_view_incoming_form" model="ir.ui.view">
+        <field name="name">request.document.view.incoming.form</field>
+        <field name="model">request.document</field>
+        <field name="arch" type="xml">
+
+            <form string="Request document">
+                <header>
+                    <button type="action"
+                            name="%(enhanced_document_management.document_request_accept_action)d"
+                            string="ACCEPT"
+                            class="btn-primary"
+                            invisible="state != 'requested'"
+                            context="{'default_document_request_id': id,'default_workspace_id':workspace_id}"/>
+                    <button type="action"
+                            name="%(enhanced_document_management.document_request_reject_action)d"
+                            string="REJECT"
+                            class="btn-secondary"
+                            invisible="state != 'requested'"
+                            context="{'default_document_request_id': id}"/>
+
+                    <field name="state" widget="statusbar" statusbar_visible="requested,accepted,rejected"/>
+
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <div class="d-flex">
+                                <field class="text-break" name="display_name" options="{'line_breaks': False}"
+                                       widget="text"
+                                       readonly="1"/>
+                            </div>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="user_id" string="Request To"/>
+                            <field colspan="2" name="needed_doc" string="Note"
+                                   placeholder="Document Needed....."/>
+                            <field name="workspace_id" string="Workspace"/>
+
+                        </group>
+                        <group>
+                            <field name="requested_by_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="public" string="Reject reason"
+                              invisible="state != 'rejected'">
+                            <field name="reject_reason"/>
+                        </page>
+                    </notebook>
+
+                </sheet>
+                <chatter open_attachments="True"/>
+            </form>
+        </field>
+    </record>
+    <!--            This XML record defines a list view for creating or editing incoming document requests.-->
+    <record id="request_document_view_incoming_list" model="ir.ui.view">
+        <field name="name">request.document.view.incoming.list</field>
+        <field name="model">request.document</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="needed_doc" string="Request"/>
+                <field name="display_name" string="Name"/>
+                <field name="requested_by_id" string="Requested by"
+                       widget="many2one_avatar_user"/>
+                <field name="user_id" string="Requested to"
+                       widget="many2one_avatar_user"/>
+                <field name="create_date" string="Requested Date"/>
+                <field name="workspace_id" string="Workspace"/>
+                <field name="needed_doc" string="Document"/>
+                <field name="state" string="State" widget="badge"
+                       decoration-warning="state == 'requested'"
+                       decoration-danger="state == 'rejected'"
+                       decoration-success="state == 'accepted'"/>
+            </list>
+        </field>
+    </record>
+    <!-- This XML code defines an Odoo search view for searching and filtering incoming request documents. -->
+    <record id="request_document_incoming_view_search" model="ir.ui.view">
+        <field name="name">request.document.incoming.view.search</field>
+        <field name="model">request.document</field>
+        <field name="arch" type="xml">
+            <search string="Document Search">
+                <field name="display_name" string="Name"/>
+                <field name="needed_doc" string="Request"/>
+                <field name="create_date"/>
+                <field name="workspace_id"/>
+                <field name="state"/>
+                <filter string="Requested" name="requested"
+                        domain="[('state', '=', 'requested')]"/>
+                <filter string="Accepted" name="accepted"
+                        domain="[('state', '=', 'accepted')]"/>
+                <filter string="Rejected" name="rejected"
+                        domain="[('state', '=', 'rejected')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_workspace" string="Workspace"
+                            context="{'group_by':'workspace_id'}"/>
+                    <filter name="group_state" string="State"
+                            context="{'group_by':'state'}"/>
+                    <filter name="group_requested_by" string="Requested By"
+                            context="{'group_by':'requested_by_id'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by':'create_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- This XML record defines an action for opening the incoming requests related to the document.-->
+    <record id="request_document_incoming_action" model="ir.actions.act_window">
+        <field name="name">Incoming Requests</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">request.document</field>
+        <field name="domain">[('user_id','=', uid)]</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="request_document_view_incoming_list"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('request_document_view_incoming_list')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('request_document_view_incoming_form')})]"/>
+        <field name="context">{'create':False,'edit':False,'search_default_requested':True, }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a Request for document from user
+            </p>
+        </field>
+    </record>
+</odoo>

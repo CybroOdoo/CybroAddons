@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- This XML code defines an Odoo action window for managing documents. -->
+    <record id="document_file_action" model="ir.actions.act_window">
+        <field name="name">Documents</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">document.file</field>
+        <field name="view_mode">kanban,list,form,calendar</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder no_content_message">
+                Save your documents...
+            </p>
+        </field>
+    </record>
+    <!-- This XML code defines an Odoo view for displaying documents in a calendar view. -->
+    <record id="document_file_view_calendar" model="ir.ui.view">
+        <field name="name">document.file.view.calendar</field>
+        <field name="model">document.file</field>
+        <field eval="2" name="priority"/>
+        <field name="arch" type="xml">
+            <calendar date_start="date"
+                      string="Document"
+                      mode="month">
+                <field name="deleted_date"/>
+            </calendar>
+        </field>
+    </record>
+    <!-- This XML code defines an Odoo Kanban view for managing documents. -->
+    <record id="document_file_view_kanban" model="ir.ui.view">
+        <field name="name">document.file.view.kanban</field>
+        <field name="model">document.file</field>
+        <field name="arch" type="xml">
+            <kanban create="false" js_class="button_in_kanban_view">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="attachment" filename="name"/>
+                <field name="attachment_id"/>
+                <field name="workspace_id"/>
+                <field name="content_url"/>
+                <field name="preview"/>
+                <field name="user_id"/>
+                <field name="id"/>
+                <field name="extension"/>
+                <field name="is_locked"/>
+                <field name="is_crm_install"/>
+                <field name="is_project_install"/>
+                <field name="document_tag_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="kanban_document"
+                             t-att-data-id="record.id.value">
+                            <div class="o_kanban_record d-flex flex-grow-1 flex-md-shrink-1 flex-shrink-0 oe_file_request"
+                                 t-att-data-id="record.id.value">
+                                <div class="document_table">
+                                    <table class="kanban_table">
+                                        <i class="fa fa-lock document_lock_icon"
+                                           invisible="not is_locked"
+                                           title="Locked Document"/>
+                                        <tr>
+                                            <td>
+                                                <field name="priority"
+                                                       widget="priority"/>
+                                            </td>
+                                            <td>
+                                                <div class="o-checkbox form-check check_box"
+                                                     style="display:none;">
+                                                    <input type="checkbox"
+                                                           style="border-radius: 50%;
+                                                                                cursor: pointer;"
+                                                           class="form-check-input
+                                                                               docs_check_box check_circle"
+                                                           t-attf-id="{{record.id.value}}"
+                                                           t-att-data-id="record.id.value"
+                                                    />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="document_image">
+                                    <div class="d-flex flex-column oe_kanban_global_area o_kanban_attachment o_documents_attachment oe_file_request"
+                                         t-att-data-id="record.id.value"
+                                         style="justify-content: center; align-items: center; height: 130px !important;">
+                                        <div class="o_kanban_image o_request_image">
+                                            <div class="o_kanban_image_wrapper">
+                                                <t t-value="record.extension.value"
+                                                   t-set="Extension"/>
+                                                <t t-if="Extension == 'xlsx'">
+                                                    <img src="/enhanced_document_management/static/images/xls.png"
+                                                         t-att-data-id="record.id.value"
+                                                         alt="xlsx"/>
+                                                </t>
+                                                <t t-elif="Extension == 'pdf'">
+                                                    <img src="/enhanced_document_management/static/images/pdf.png"
+                                                         class="on_preview_image_pdf_button"
+                                                         t-att-data-id="record.id.value"
+                                                         alt="pdf"/>
+                                                </t>
+                                                <t t-elif="Extension == 'txt'">
+                                                    <a t-att-href="record.content_url.value">
+                                                        <img src="/enhanced_document_management/static/images/text.png"
+                                                             t-att-data-id="record.id.value"
+                                                             alt="txt"/>
+                                                    </a>
+                                                </t>
+                                                <t t-elif="Extension == 'pptx'">
+                                                    <img src="/enhanced_document_management/static/images/ppt.gif"
+                                                         t-att-data-id="record.id.value"
+                                                         alt="pptx"/>
+                                                </t>
+                                                <t t-elif="Extension == 'url'">
+                                                    <a t-att-href="record.content_url.value">
+                                                        <img src="/enhanced_document_management/static/images/url.gif"
+                                                             t-att-data-id="record.id.value"
+                                                             alt="url"/>
+                                                    </a>
+                                                </t>
+                                                <t t-elif="Extension == 'docx'">
+                                                    <img src="/enhanced_document_management/static/images/doc.png"
+                                                         t-att-data-id="record.id.value"
+                                                         alt="docx"/>
+                                                </t>
+                                                <t t-elif="Extension == 'jpg'">
+                                                    <img t-att-src="record.content_url.value"
+                                                         class="preview_image on_preview_image_pdf_button"
+                                                         t-att-data-id="record.id.value"
+                                                         alt="jpg"
+                                                    />
+                                                </t>
+                                                <t t-elif=" Extension== 'jpeg'">
+                                                    <img t-att-src="record.content_url.value"
+                                                         class="preview_image on_preview_image_pdf_button"
+                                                         t-att-data-id="record.id.value"
+                                                         alt="jpeg"
+                                                    />
+                                                </t>
+                                                <t t-elif="Extension == 'png'">
+                                                    <a t-att-href="record.content_url.value"
+                                                       data-fancybox=""
+                                                       data-caption="">
+                                                        <img t-att-src="record.content_url.value"
+                                                             t-att-data-id="record.id.value"
+                                                             class="on_preview_button"
+                                                             alt="png"/>
+                                                    </a>
+                                                </t>
+                                                <t t-elif="Extension == 'csv'">
+                                                    <img src="/enhanced_document_management/static/images/csv.png"
+                                                         t-att-data-id="record.id.value"
+                                                         alt="csv"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <img src="/enhanced_document_management/static/images/file.png"
+                                                         class="on_preview_button"
+                                                         t-att-data-id="record.id.value"
+                                                         alt="png"/>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="document_details"
+                                     t-att-data-id="record.id.value">
+                                    <t t-value="record.extension.value"
+                                       t-set="Extension"/>
+                                    <div class="o_kanban_details flex-grow-1 flex-shrink-1 flex-auto"
+                                         t-att-data-id="record.id.value">
+                                        <div class="o_kanban_details_wrapper"
+                                             t-att-data-id="record.id.value">
+                                            <div t-if="record.document_tag_id.raw_value"
+                                                 class="badge rounded-pill o_tag"
+                                                 t-att-data-id="record.id.value">
+                                                <field name="document_tag_id"
+                                                       t-att-data-id="record.id.value"/>
+                                            </div>
+                                            <div class="o_kanban_record_title"
+                                                 t-att-data-id="record.id.value">
+                                                <field name="name"
+                                                       t-att-data-id="record.id.value"/>
+                                                <field name="active"
+                                                       invisible="1"
+                                                       t-att-data-id="record.id.value"/>
+                                            </div>
+                                            <div class="o_kanban_record_body text-muted"
+                                                 t-att-data-id="record.id.value">
+                                                <field name="date"
+                                                       t-att-data-id="record.id.value"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="o_kanban_record_bottom">
+                                        <div class="oe_kanban_bottom_left">
+                                            <field name="attachment" invisible="is_locked"
+                                                   widget="binary_widget"/>
+                                        </div>
+                                        <div class="oe_kanban_bottom_right">
+                                            <field name="activity_ids"
+                                                   widget="kanban_activity"/>
+                                            <field name="user_id"
+                                                   widget="many2one_avatar_user"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </t>
+                    <t t-name="kanban-menu">
+                        <t t-set="content_url"
+                           t-value="record.content_url.value"/>
+                        <t t-set="id" t-value="record.id.value"/>
+                        <a class="dropdown-item dropdown_share document_dropdown"
+                           type="object" name="click_share"
+                           context="{'document_id': id}">Share
+                        </a>
+                        <a class="dropdown-item dropdown_create_lead document_dropdown"
+                           type="object" name="click_create_lead"
+                           context="{'document_id': id}"
+                           invisible="not is_crm_install">Create Lead
+                        </a>
+                        <a class="dropdown-item dropdown_create_task document_dropdown"
+                           type="object" name="click_create_task"
+                           context="{'document_id': id}"
+                           invisible="not is_project_install">Create Task
+                        </a>
+                        <a class="dropdown-item dropdown_create_mail document_dropdown"
+                           type="object" name="click_create_mail"
+                           context="{'document_id': id}">Create Mail
+                        </a>
+                        <a class="dropdown-item dropdown_copy_move document_dropdown"
+                           type="object" name="click_copy_move"
+                           context="{'document_id': id}">Copy/Move
+                        </a>
+                        <a class="dropdown-item dropdown_archive document_dropdown"
+                           type="object" name="click_document_archive"
+                           context="{'document_id': id}"
+                        >Archive/Unarchive
+                        </a>
+                        <a class="dropdown-item dropdown_delete document_dropdown"
+                           type="object" name="click_document_delete"
+                           context="{'document_id': id}">Delete
+                        </a>
+                        <a class="dropdown-item document_lock document_dropdown"
+                           type="object" name="click_document_lock"
+                           context="{'document_id': id}"
+                           invisible="is_locked">
+                            Lock Document
+                        </a>
+                        <a class="dropdown-item document_lock document_dropdown"
+                           type="object" name="click_document_unlock"
+                           context="{'document_id': id}"
+                           invisible="not is_locked">
+                            Unlock Document
+                        </a>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!-- This XML code defines an Odoo Tree View for displaying documents-->
+    <record id="document_file_view_list" model="ir.ui.view">
+        <field name="name">document.file.view.list</field>
+        <field name="model">document.file</field>
+        <field name="arch" type="xml">
+            <list export_xlsx="0">
+                <field name="name" string="Document"/>
+                <field name="workspace_id" string="Workspace"/>
+                <field name="user_id" string="Owner"
+                       widget="many2one_avatar_user"/>
+                <field name="partner_id" string="Contact"/>
+                <field name="extension" string="Type"/>
+                <field name="size" string="Size"/>
+                <field name="is_project_install" string="Project"/>
+                <field name="date" string="Created on"/>
+            </list>
+        </field>
+    </record>
+    <!-- This XML code defines an Odoo form view for managing workspace details. -->
+    <record id="document_file_view_form" model="ir.ui.view">
+        <field name="name">document.file.view.form</field>
+        <field name="model">document.file</field>
+        <field name="arch" type="xml">
+            <form string="Upload Document" create="0" copy="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="attachment" filename="name"/>
+                            <field name="mimetype" invisible="1"/>
+                            <field name="name" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="workspace_id"
+                                   help="User can choose where to save the file"/>
+                        </group>
+                    </group>
+                    <group string="History" invisible="1">
+                        <group>
+                            <field name="create_uid" string="Created by"/>
+                            <field name="create_date" string="Created on"/>
+                        </group>
+                        <group>
+                            <field name="write_uid" string="Last Updated on"/>
+                            <field name="create_date" string="Last Updated by"/>
+                        </group>
+                    </group>
+                    <group string="Security">
+                        <group>
+                            <field name="security" widget="radio"
+                                   string="Access"
+                                   help="Who can access your file"/>
+                            <field name="user_ids" widget="many2many_tags"
+                                   invisible="security != 'specific_users'"/>
+                        </group>
+                        <group>
+                            <field name="partner_id" string="Related Partner"/>
+                            <field name="auto_delete"/>
+                            <field name="days"
+                                   invisible="auto_delete == False"/>
+                            <field name="delete_date"
+                                   invisible="auto_delete == False"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <group colspan="4">
+                            <field colspan="2" name="description" nolabel="1"
+                                   placeholder="Your file need..."/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button class="oe_highlight" name="action_upload_document"
+                            type="object"
+                            string="Upload"/>
+                    <button special="cancel" string="Discard"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!-- This XML code defines an Odoo search view for searching and filtering documents. -->
+    <record id="document_file_view_search" model="ir.ui.view">
+        <field name="name">document.file.view.search</field>
+        <field name="model">document.file</field>
+        <field name="arch" type="xml">
+            <search string="Document Search">
+                <field name="name" string="Document"/>
+                <field name="date"/>
+                <field name="workspace_id"/>
+                <filter string="Archive" name="archive"
+                        domain="[('active', '=', False), ('trash', '=', False)]"/>
+                <filter string="Favourite" name="favourite"
+                        domain="[('priority', '=', '1')]"/>
+                <filter string="PDF" name="filter_pdf"
+                        domain="[('extension', '=', 'pdf')]"/>
+                <filter string="XLSX" name="filter_xlsx"
+                        domain="[('extension', 'in', ['xlsx','xls'])]"/>
+                <filter string="Image" name="filter_xlsx"
+                        domain="[('extension', 'in', ['jpg','jpeg','png'])]"/>
+                <filter string="URL" name="filter_xlsx"
+                        domain="[('extension', '=', 'url')]"/>
+                <filter string="CSV" name="filter_xlsx"
+                        domain="[('extension', '=', 'csv')]"/>
+                <filter string="DOC" name="filter_xlsx"
+                        domain="[('extension', 'in', ['doc','docx'])]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_workspace" string="Workspace"
+                            context="{'group_by':'workspace_id'}"/>
+                    <filter name="group_extension" string="Extension"
+                            context="{'group_by':'extension'}"/>
+                    <filter name="group_user" string="Owner"
+                            context="{'group_by':'user_id'}"/>
+                </group>
+                <searchpanel>
+                    <field name="workspace_id" icon="fa-folder"
+                           hierarchize="1" expand="1" enable_counters="1"
+                           select="one"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+</odoo>
