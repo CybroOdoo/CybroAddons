@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Advanced Cash Flow Statements',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'summary': """Generate four levels of cash flow statement reports""",
     'description': """Generate four hierarchical levels of cash flow statements 
                       and provide options to print reports in both PDF and XLSX 

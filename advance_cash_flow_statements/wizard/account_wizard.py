@@ -100,7 +100,7 @@ class AccountWizard(models.TransientModel):
         }
         return {
             'type': 'ir.actions.report',
-            'report_type': 'xlsx',
+            'report_type': 'xlsx_advance_cashflow',
             'data': {'model': 'account.wizard',
                      'output_format': 'xlsx',
                      'options': json.dumps(data,

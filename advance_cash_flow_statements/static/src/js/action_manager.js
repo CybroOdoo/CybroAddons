@@ -5,7 +5,7 @@ import { download } from "@web/core/network/download";
 
 // This function is responsible for generating and downloading an XLSX report.
 registry.category("ir.actions.report handlers").add("xlsx", async function (action){
-    if (action.report_type === 'xlsx') {
+    if (action.report_type === 'xlsx_advance_cashflow') {
         const blockUI = new BlockUI();
         await download({
             url: '/cash_flow_xlsx_reports',
