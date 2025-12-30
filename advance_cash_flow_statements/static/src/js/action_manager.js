@@ -6,7 +6,7 @@ import framework from 'web.framework';
 import session from 'web.session';
 
 registry.category("ir.actions.report handlers").add("advance_cash_xlsx", async (action) => {
-    if (action.report_type === 'xlsx') {
+    if (action.report_type === 'xlsx_advance_cashflow') {
         framework.blockUI();
         var def = $.Deferred();
         session.get_file({
