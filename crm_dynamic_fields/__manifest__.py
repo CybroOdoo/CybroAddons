@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'CRM Dynamic Fields',
-    'version': '18.0.1.0.1',
+    'version': '18.0.1.0.2',
     'category': 'Extra Tools',
     'summary': "Helps to Add Custom Fields for Opportunity from user interface",
     'description': """Adding Custom Fields for Opportunity

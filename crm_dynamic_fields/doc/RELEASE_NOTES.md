@@ -7,3 +7,8 @@
 #### UPDATE
 - Field can be edit from CRM view.
 
+
+#### 29.12.2025
+#### Version 18.0.1.0.2
+#### UPDT
+- Bug Fix

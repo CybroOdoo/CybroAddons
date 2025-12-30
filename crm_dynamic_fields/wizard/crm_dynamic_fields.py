@@ -116,7 +116,7 @@ class CRMDynamicFields(models.TransientModel):
     def action_create_fields(self):
         """ Creates a new custom field for the project.project model and adds
                 it to the project form view."""
-        self.env['ir.model.fields'].sudo().create(
+        a = self.env['ir.model.fields'].sudo().create(
             {'name': self.name,
              'field_description': self.field_description,
              'model_id': self.model_id.id,
@@ -183,24 +183,20 @@ class CRMDynamicFields(models.TransientModel):
                                                        self.position,
                                                        self.name)
             else:
-                arch_base = _('<?xml version="1.0"?>'
-                              '<data>'
-                              '<field name="%s" position="%s">'
-                              '<field name="%s"/>'
-                              '</field>'
-                              '</data>') % (
-                                self.position_field_id.name, self.position,
-                                self.name)
+                arch_base = f"""
+                <xpath expr="//page[@name='lead']//field[@name='{self.position_field_id.name}']"
+                       position="{self.position}">
+                    <field name="{self.name}"/>
+                </xpath>
+                """
                 if self.widget_id:
-                    arch_base = _('<?xml version="1.0"?>'
-                                  '<data>'
-                                  '<field name="%s" position="%s">'
-                                  '<field name="%s" widget="%s"/>'
-                                  '</field>'
-                                  '</data>') % (
-                                    self.position_field_id.name, self.position,
-                                    self.name,
-                                    self.widget_id.name)
+                    arch_base = f"""
+                    <xpath expr="//page[@name='lead']//field[@name='{self.position_field_id.name}']"
+                           position="{self.position}">
+                        <field name="{self.name}" widget="{self.widget_id.name}"/>
+                    </xpath>
+                    """
+
             if self.position_field_id.name == 'partner_id':
                 arch_base = (
                     f"""<xpath expr="//group[@name='opportunity_partner']/field
