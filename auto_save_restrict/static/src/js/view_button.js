@@ -11,7 +11,7 @@ patch(ViewButton.prototype, {
     setup() {
         super.setup(...arguments);
         this.dialogService = useService("dialog");
-        this.actionService = useService("action");   // use this instead of old DOM
+        this.actionService = useService("action");
     },
 
     async onClick(ev) {
@@ -20,11 +20,26 @@ patch(ViewButton.prototype, {
             model && typeof model.isDirty === "function" && (await model.isDirty());
 
         if (hasUnsavedChanges) {
+            if (this.props.tag === "a") {
+                ev.preventDefault();
+            }
+            ev.stopPropagation();
+
             const proceed = await this._confirmSave(model);
-            if (!proceed) return;
+            if (!proceed) {
+                return;
+            }
+            if (this.props.clickParams) {
+                return this.env.onClickViewButton({
+                    clickParams: this.props.clickParams,
+                    getResParams: () =>
+                        pick(model, "context", "evalContext", "resModel", "resId", "resIds"),
+                });
+            }
+            return;
         }
 
-        // Normal button behavior
+        // Normal button behavior (no unsaved changes)
         if (this.props.tag === "a") {
             ev.preventDefault();
         }
@@ -49,23 +64,16 @@ patch(ViewButton.prototype, {
                 confirm: async () => {
                     try {
                         await model.save();
-                        //  use Action Service instead of onClickViewButton (avoids `el=null`)
-                        if (this.props.clickParams) {
-                            this.actionService.doActionButton({
-                                name: this.props.clickParams.name,
-                                type: "object",
-                                resModel: model.resModel,
-                                resId: model.resId,
-                                context: model.context,
-                            });
-                        }
+                        proceed = true;
                     } catch (e) {
                         console.error("Save failed:", e);
+                        proceed = false;
                     }
                     resolve();
                 },
                 cancel: async () => {
                     if (model?.discard) await model.discard();
+                    proceed = true;
                     resolve();
                 },
                 stayHere: () => {

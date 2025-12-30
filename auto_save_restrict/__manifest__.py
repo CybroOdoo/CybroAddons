@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Auto Save Restrict',
-    'version': '18.0.1.1.0',
+    'version': '18.0.1.1.1',
     'category': 'Extra Tools',
     'summary': """Restrict auto save in all models""",
     'description': 'Using this module,we can restrict'

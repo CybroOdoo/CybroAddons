@@ -7,8 +7,6 @@ import { SettingsConfirmationDialog } from "@web/webclient/settings_form_view/se
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { ListConfirmationDialog } from "@web/views/list/list_confirmation_dialog";
 
-
-
 patch(ListController.prototype, {
 /* Patch ListController to restrict auto save in tree views */
    setup(){
