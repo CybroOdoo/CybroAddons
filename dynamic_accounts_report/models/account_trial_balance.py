@@ -22,8 +22,7 @@
 import calendar
 import io
 import json
-import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 import xlsxwriter
 from odoo import api, fields, models
 from odoo.tools.date_utils import get_month, get_fiscal_year, \
@@ -37,7 +36,7 @@ class AccountTrialBalance(models.TransientModel):
 
     @api.model
     def view_report(self):
-        """
+        """date_view
         Generates a trial balance report for multiple accounts.
         Retrieves account information and calculates total debit and credit
         amounts for each account within the specified date range. Returns a list
@@ -55,10 +54,22 @@ class AccountTrialBalance(models.TransientModel):
                 [('date', '<', get_month(today)[0]),
                  ('account_id', '=', account_id.id),
                  ('parent_state', '=', 'posted')])
-            initial_total_debit = round(
+
+            # Calculate raw totals
+            initial_total_debit_raw = round(
                 sum(initial_move_line_ids.mapped('debit')), 2)
-            initial_total_credit = round(
+            initial_total_credit_raw = round(
                 sum(initial_move_line_ids.mapped('credit')), 2)
+
+            # Calculate NET initial balance
+            initial_diff = initial_total_debit_raw - initial_total_credit_raw
+            if initial_diff > 0:
+                initial_total_debit = initial_diff
+                initial_total_credit = 0.0
+            else:
+                initial_total_debit = 0.0
+                initial_total_credit = abs(initial_diff)
+
             move_line_ids = self.env['account.move.line'].search(
                 [('date', '>=', get_month(today)[0]),
                  ('account_id', '=', account_id.id),
@@ -91,11 +102,8 @@ class AccountTrialBalance(models.TransientModel):
             'journal_ids': self.env['account.journal'].search_read([], [
                 'name'])
         }
-        
-        # Calculate totals
-        totals = self._calculate_totals(move_line_list, None)
-        
-        return move_line_list, journal, totals
+        print('mmmmm', move_line_list, 'hhhhhh', journal)
+        return move_line_list, journal
 
     @api.model
     def get_filter_values(self, start_date, end_date, comparison_number,
@@ -135,12 +143,6 @@ class AccountTrialBalance(models.TransientModel):
         account_ids = self.env['account.move.line'].search([]).mapped(
             'account_id')
         move_line_list = []
-        # Handle empty dates that can occur with language changes
-        if not start_date or not end_date:
-            today = fields.Date.today()
-            start_date = get_month(today)[0].strftime('%Y-%m-%d')
-            end_date = get_month(today)[1].strftime('%Y-%m-%d')
-        
         start_date_first = \
             get_fiscal_year(datetime.strptime(start_date, "%Y-%m-%d").date())[
                 0] if comparison_type == 'year' else datetime.strptime(
@@ -164,6 +166,7 @@ class AccountTrialBalance(models.TransientModel):
                         comparison_number) * 3)
             else:
                 initial_start_date = start_date
+
             domain = [('date', '<', initial_start_date),
                       ('account_id', '=', account_id.id),
                       ('parent_state', 'in', option_domain), ]
@@ -176,12 +179,23 @@ class AccountTrialBalance(models.TransientModel):
             if method is not None and 'cash' in method:
                 domain.append(('journal_id', 'in',
                                self.env.company.tax_cash_basis_journal_id.ids))
-            initial_move_line_ids = self.env['account.move.line'].search(
-                domain)
-            initial_total_debit = round(
+
+            initial_move_line_ids = self.env['account.move.line'].search(domain)
+
+            # Calculate raw totals
+            initial_total_debit_raw = round(
                 sum(initial_move_line_ids.mapped('debit')), 2)
-            initial_total_credit = round(
+            initial_total_credit_raw = round(
                 sum(initial_move_line_ids.mapped('credit')), 2)
+
+            # Calculate NET initial balance
+            initial_diff = initial_total_debit_raw - initial_total_credit_raw
+            if initial_diff > 0:
+                initial_total_debit = initial_diff
+                initial_total_credit = 0.0
+            else:
+                initial_total_debit = 0.0
+                initial_total_credit = abs(initial_diff)
             if comparison_number:
                 if comparison_type == 'year':
                     for i in range(1, eval(comparison_number) + 1):
@@ -324,92 +338,7 @@ class AccountTrialBalance(models.TransientModel):
                         f"dynamic_total_credit_{eval(comparison_number) + 1 - i}",
                         0.0)
             move_line_list.append(data)
-        
-        # Calculate totals
-        totals = self._calculate_totals(move_line_list, comparison_number)
-        
-        return move_line_list, totals
-
-    def _calculate_totals(self, move_line_list, comparison_number):
-        """
-        Calculate totals for all monetary fields in the trial balance.
-        :param move_line_list: List of account data dictionaries
-        :param comparison_number: Number of comparison periods
-        :return: Dictionary containing all totals
-        """
-        totals = {
-            'initial_total_debit': 0.0,
-            'initial_total_credit': 0.0,
-            'total_debit': 0.0,
-            'total_credit': 0.0,
-            'end_total_debit': 0.0,
-            'end_total_credit': 0.0
-        }
-        
-        # Add dynamic period totals if comparison is enabled
-        if comparison_number:
-            for i in range(1, eval(comparison_number) + 1):
-                totals[f'dynamic_total_debit_{i}'] = 0.0
-                totals[f'dynamic_total_credit_{i}'] = 0.0
-        
-        # Helper function to convert value to float
-        def to_float(value):
-            if isinstance(value, str):
-                # Remove commas and convert to float
-                try:
-                    return float(value.replace(',', ''))
-                except ValueError:
-                    return 0.0
-            return float(value) if value is not None else 0.0
-        
-        # Sum all values
-        for account_data in move_line_list:
-            totals['initial_total_debit'] += to_float(account_data.get('initial_total_debit', 0))
-            totals['initial_total_credit'] += to_float(account_data.get('initial_total_credit', 0))
-            totals['total_debit'] += to_float(account_data.get('total_debit', 0))
-            totals['total_credit'] += to_float(account_data.get('total_credit', 0))
-            totals['end_total_debit'] += to_float(account_data.get('end_total_debit', 0))
-            totals['end_total_credit'] += to_float(account_data.get('end_total_credit', 0))
-            
-            if comparison_number:
-                for i in range(1, eval(comparison_number) + 1):
-                    totals[f'dynamic_total_debit_{i}'] += to_float(account_data.get(f'dynamic_total_debit_{i}', 0))
-                    totals[f'dynamic_total_credit_{i}'] += to_float(account_data.get(f'dynamic_total_credit_{i}', 0))
-        
-        # Format totals as strings with commas and 2 decimal places
-        for key in totals:
-            totals[key] = "{:,.2f}".format(totals[key])
-        
-        return totals
-
-    def _get_report_values(self, docids, data=None):
-        """
-        Get the report values for the trial balance PDF report.
-        This method is called by the Odoo report engine.
-        """
-        if not data:
-            data = {}
-        
-        # Extract data from the data dictionary passed from JavaScript
-        report_data = data.get('data', [])
-        totals = data.get('totals', {})
-        date_viewed = data.get('date_viewed', [])
-        filters = data.get('filters', {})
-        apply_comparison = data.get('apply_comparison', False)
-        comparison_number_range = data.get('comparison_number_range', [])
-        title = data.get('title', 'Trial Balance')
-        report_name = data.get('report_name', 'Trial Balance')
-        
-        return {
-            'data': report_data,
-            'totals': totals,
-            'date_viewed': date_viewed,
-            'filters': filters,
-            'apply_comparison': apply_comparison,
-            'comparison_number_range': comparison_number_range,
-            'title': title,
-            'report_name': report_name,
-        }
+        return move_line_list
 
     @api.model
     def get_month_name(self, date):
@@ -542,29 +471,6 @@ class AccountTrialBalance(models.TransientModel):
                     sheet.write(row, col + j + 3,
                                 move_line['end_total_credit'], txt_name)
                     row += 1
-                
-                # Add totals row
-                if 'totals' in data and data['totals']:
-                    totals = data['totals']
-                    # Create bold format for totals
-                    totals_format = workbook.add_format(
-                        {'bold': True, 'bg_color': '#E0E0E0', 'border': 1})
-                    
-                    sheet.write(row, col, 'Total', totals_format)
-                    sheet.write(row, col + 1, totals.get('initial_total_debit', '0.00'),
-                                totals_format)
-                    sheet.write(row, col + 2, totals.get('initial_total_credit', '0.00'), totals_format)
-                    j = 3
-                    if data['apply_comparison']:
-                        number_of_periods = data['comparison_number_range']
-                        for num in number_of_periods:
-                            sheet.write(row, col + j, totals.get(f'dynamic_total_debit_{num}', '0.00'), totals_format)
-                            sheet.write(row, col + j + 1, totals.get(f'dynamic_total_credit_{num}', '0.00'), totals_format)
-                            j += 2
-                    sheet.write(row, col + j, totals.get('total_debit', '0.00'), totals_format)
-                    sheet.write(row, col + j + 1, totals.get('total_credit', '0.00'), totals_format)
-                    sheet.write(row, col + j + 2, totals.get('end_total_debit', '0.00'), totals_format)
-                    sheet.write(row, col + j + 3, totals.get('end_total_credit', '0.00'), totals_format)
         workbook.close()
         output.seek(0)
         response.stream.write(output.read())

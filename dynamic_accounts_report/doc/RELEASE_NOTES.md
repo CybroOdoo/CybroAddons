@@ -44,3 +44,8 @@
 #### Version 18.0.1.3.1
 #### UPDT
 - Added Total to the Trial Balance and report. Fixed the filter issue and the date range RPC error.
+
+#### 30.12.2025
+#### Version 18.0.1.3.2
+#### UPDT
+- Fixed an issue where the Trial Balance initial balance was showing the total debit and credit amounts, even when the accounts were balanced.
