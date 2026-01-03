@@ -44,6 +44,9 @@ registry.category("ir.actions.report handlers").add("pdf_report_preview",
     if (["upgrade", "ok"].includes(state)) {
         const url = getReportUrl(action, "pdf");
         window.open(url);
+        if (action.close_on_report_download) {
+            env.services.action.doAction({ type: "ir.actions.act_window_close" });
+        }
         return true;
     } else {
         return _executeReportClientAction(action, options);
