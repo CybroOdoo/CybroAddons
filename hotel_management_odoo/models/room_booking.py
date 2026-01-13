@@ -528,7 +528,7 @@ class RoomBooking(models.Model):
         for rec in self.room_line_ids.room_id.ids:
             room_list.append(rec)
         if room_list:
-            room_id = self.env['hotel.room'].search([
+            room_id = self.env['product.template'].search([
                 ('id', 'in', room_list)])
             self.env['maintenance.request'].sudo().create({
                 'date': fields.Date.today(),

@@ -44,8 +44,9 @@ class RoomBookingLine(models.Model):
                                     help="You can choose the date,"
                                          " Otherwise sets to current Date",
                                     required=True)
-    room_id = fields.Many2one('hotel.room', string="Room",
+    room_id = fields.Many2one('product.template', string="Room",
                               help="Indicates the Room",
+                              domain=[('is_room', '=', True)],
                               required=True)
     uom_qty = fields.Float(string="Duration",
                            help="The quantity converted into the UoM used by "
@@ -55,13 +56,16 @@ class RoomBookingLine(models.Model):
                              string="Unit of Measure",
                              help="This will set the unit of measure used",
                              readonly=True)
-    price_unit = fields.Float(related='room_id.list_price', string='Rent',
-                              digits='Product Price',
-                              help="The rent price of the selected room.")
+    price_unit = fields.Float(
+        string="Rent",
+        digits='Product Price',
+        compute='_compute_price_unit',
+        store=True
+    )
     tax_ids = fields.Many2many('account.tax',
                                'hotel_room_order_line_taxes_rel',
                                'room_id', 'tax_id',
-                               related='room_id.taxes_ids',
+                               related='room_id.taxes_id',
                                string='Taxes',
                                help="Default taxes used when selling the room."
                                , domain=[('type_tax_use', '=', 'sale')])
@@ -169,3 +173,23 @@ class RoomBookingLine(models.Model):
                                 "Sorry You cannot create a reservation for this"
                                 "date due to an existing reservation between "
                                 "this date")
+
+    @api.depends(
+        'room_id',
+        'booking_id.pricelist_id',
+    )
+    def _compute_price_unit(self):
+        for line in self:
+            price = 0.0
+            if line.room_id and line.booking_id.pricelist_id:
+                pricelist = line.booking_id.pricelist_id
+
+                # Use product variant (required by pricelist)
+                product = line.room_id.product_variant_id
+
+                price = pricelist._get_product_price(
+                    product=product,
+                    quantity=1.0,
+                    partner=line.booking_id.partner_id
+                )
+            line.price_unit = price

@@ -69,7 +69,7 @@ class MaintenanceRequest(models.Model):
                                        ('cleaning', 'Cleaning')], string="Type",
                             help="The type for which the request is creating",
                             tracking=True)
-    room_maintenance_ids = fields.Many2many('hotel.room',
+    room_maintenance_ids = fields.Many2many('product.template',
                                             string="Room Maintenance",
                                             help="Choose Room Maintenance")
     hotel_maintenance = fields.Char(string='Hotel Maintenance',

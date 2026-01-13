@@ -46,7 +46,7 @@ class CleaningRequest(models.Model):
                                      required=True, tracking=True,
                                      string="Cleaning Type",
                                      help="Choose what is to be cleaned")
-    room_id = fields.Many2one('hotel.room', string="Room",
+    room_id = fields.Many2one('product.template', string="Room",
                               help="Choose the room")
     hotel = fields.Char(string="Hotel", help="Cleaning request space in hotel")
     vehicle_id = fields.Many2one('fleet.vehicle.model',

@@ -39,7 +39,8 @@ class RoomBookingWizard(models.TransientModel):
 
     checkin = fields.Date(help="Choose the Checkin Date", string="Checkin")
     checkout = fields.Date(help="Choose the Checkout Date", string="Checkout")
-    room_id = fields.Many2one("hotel.room", string="Room",
+    room_id = fields.Many2one("product.template", string="Room",
+                              domain=[('is_room', '=', True)],
                               help="Choose The Room")
 
     def action_room_booking_pdf(self):

@@ -24,3 +24,8 @@
 #### Version 18.0.1.1.2
 #### UPDT
 - Fixed the error shown while click Add Line in Food, Service or any extra Services
+
+#### 03.01.2026
+#### Version 18.0.1.1.3
+#### UPDT
+- Fixed the issue so rooms can now be added as products in the pricelist.
