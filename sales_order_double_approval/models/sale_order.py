@@ -32,25 +32,41 @@ class SaleOrder(models.Model):
 
     def button_approve(self):
         """ Method to approve the sale order and change its state to 'sale' """
-        self.write({'state': 'sale'})
+        self.write({'state': 'draft'})
+        return super(SaleOrder, self).action_confirm()
+
+    def _needs_approval(self):
+        """ Helper method to check if the sale order needs approval """
+        self.ensure_one()
+        if not self.company_id.so_double_validation:
+            return False
+
+        if not self.env['ir.config_parameter'].sudo().get_param(
+                'sales_order_double_approval.so_approval'):
+            return False
+
+        min_amount = float(
+            self.env['ir.config_parameter'].sudo().get_param(
+                'sales_order_double_approval.so_min_amount', default=0))
+
+        if self.amount_total <= min_amount:
+            return False
+
+        if self.env.user.has_group('sales_team.group_sale_manager'):
+            return False
+
+        return True
 
     def action_confirm(self):
         """ Override to add double validation logic based on company settings.
         Confirms the sale order if conditions are met, otherwise sets state to
         'to_approve'. """
-        res = super(SaleOrder, self).action_confirm()
-        if self.company_id.so_double_validation:
-            if self.env['ir.config_parameter'].sudo().get_param(
-                    'sales_order_double_approval.so_approval'):
-                if self.amount_total > float(
-                        self.env['ir.config_parameter'].sudo().get_param(
-                            'sales_order_double_approval.so_min_amount')):
-                    if self.env.user.has_group('sales_team.group_sale_manager'):
-                        self.state = 'sale'
-                    else:
-                        self.state = 'to_approve'
-        return res
+        if self._needs_approval():
+            self.write({'state': 'to_approve'})
+            return True
+
+        return super(SaleOrder, self).action_confirm()
 
     def action_cancel(self):
         """ Method to cancel the sale order and change state into 'cancel' """
-        self.state = 'cancel'
+        self.write({'state': 'cancel'})

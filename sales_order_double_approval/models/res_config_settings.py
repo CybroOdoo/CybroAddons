@@ -44,20 +44,21 @@ class ResConfigSettings(models.TransientModel):
         """ Override to get the values of the custom fields from the
         'ir.config_parameter' model. """
         res = super(ResConfigSettings, self).get_values()
-        res['so_approval'] = self.env['ir.config_parameter'].sudo().get_param(
-            "sales_order_double_approval.so_approval", default="")
-        res['so_min_amount'] = self.env['ir.config_parameter'].sudo().get_param(
-            "sales_order_double_approval.so_min_amount", default="")
+        params = self.env['ir.config_parameter'].sudo()
+        res['so_approval'] = params.get_param(
+            "sales_order_double_approval.so_approval", default=False)
+        res['so_min_amount'] = float(params.get_param(
+            "sales_order_double_approval.so_min_amount", default=0.0))
         return res
 
-    @api.model
     def set_values(self):
         """ Override to set the values of the custom fields in the
         'ir.config_parameter' model. """
-        self.env['ir.config_parameter'].set_param(
-            "sales_order_double_approval.so_approval",
-            self.so_approval or '')
-        self.env['ir.config_parameter'].set_param(
-            "sales_order_double_approval.so_min_amount",
-            self.so_min_amount or '')
         super(ResConfigSettings, self).set_values()
+        params = self.env['ir.config_parameter'].sudo()
+        params.set_param(
+            "sales_order_double_approval.so_approval",
+            self.so_approval)
+        params.set_param(
+            "sales_order_double_approval.so_min_amount",
+            self.so_min_amount or 0.0)
