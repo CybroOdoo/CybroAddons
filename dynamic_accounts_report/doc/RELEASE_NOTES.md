@@ -49,3 +49,8 @@
 #### Version 18.0.1.3.2
 #### UPDT
 - Fixed an issue where the Trial Balance initial balance was showing the total debit and credit amounts, even when the accounts were balanced.
+
+#### 08.01.2026
+#### Version 18.0.1.3.3
+#### UPDT
+- Fixed an issue where records were disappearing after applying date filters.

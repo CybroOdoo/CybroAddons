@@ -102,8 +102,8 @@ class AccountTrialBalance(models.TransientModel):
             'journal_ids': self.env['account.journal'].search_read([], [
                 'name'])
         }
-        print('mmmmm', move_line_list, 'hhhhhh', journal)
-        return move_line_list, journal
+        totals = self._calculate_totals(move_line_list, None)
+        return move_line_list, journal, totals
 
     @api.model
     def get_filter_values(self, start_date, end_date, comparison_number,
@@ -338,7 +338,58 @@ class AccountTrialBalance(models.TransientModel):
                         f"dynamic_total_credit_{eval(comparison_number) + 1 - i}",
                         0.0)
             move_line_list.append(data)
-        return move_line_list
+        totals = self._calculate_totals(move_line_list, comparison_number)
+        return move_line_list, totals
+
+    def _calculate_totals(self, move_line_list, comparison_number):
+        """
+        Calculate totals for all monetary fields in the trial balance.
+        :param move_line_list: List of account data dictionaries
+        :param comparison_number: Number of comparison periods
+        :return: Dictionary containing all totals
+        """
+        totals = {
+            'initial_total_debit': 0.0,
+            'initial_total_credit': 0.0,
+            'total_debit': 0.0,
+            'total_credit': 0.0,
+            'end_total_debit': 0.0,
+            'end_total_credit': 0.0
+        }
+
+        # Add dynamic period totals if comparison is enabled
+        if comparison_number:
+            for i in range(1, eval(comparison_number) + 1):
+                totals[f'dynamic_total_debit_{i}'] = 0.0
+                totals[f'dynamic_total_credit_{i}'] = 0.0
+
+        def to_float(value):
+            if isinstance(value, str):
+                try:
+                    return float(value.replace(',', ''))
+                except ValueError:
+                    return 0.0
+            return float(value) if value is not None else 0.0
+
+        # Sum all values
+        for account_data in move_line_list:
+            totals['initial_total_debit'] += to_float(account_data.get('initial_total_debit', 0))
+            totals['initial_total_credit'] += to_float(account_data.get('initial_total_credit', 0))
+            totals['total_debit'] += to_float(account_data.get('total_debit', 0))
+            totals['total_credit'] += to_float(account_data.get('total_credit', 0))
+            totals['end_total_debit'] += to_float(account_data.get('end_total_debit', 0))
+            totals['end_total_credit'] += to_float(account_data.get('end_total_credit', 0))
+
+            if comparison_number:
+                for i in range(1, eval(comparison_number) + 1):
+                    totals[f'dynamic_total_debit_{i}'] += to_float(account_data.get(f'dynamic_total_debit_{i}', 0))
+                    totals[f'dynamic_total_credit_{i}'] += to_float(account_data.get(f'dynamic_total_credit_{i}', 0))
+
+        # Format totals as strings with commas and 2 decimal places
+        for key in totals:
+            totals[key] = "{:,.2f}".format(totals[key])
+
+        return totals
 
     @api.model
     def get_month_name(self, date):
