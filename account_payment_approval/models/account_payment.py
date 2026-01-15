@@ -94,7 +94,6 @@ class AccountPayment(models.Model):
                         payment_amount = (self.currency_id._convert(
                             self.amount, currency_id, self.company_id,
                             self.date or fields.Date.today(), round=True))
-                if payment_amount > amount:
                     debit_account = self.outstanding_account_id.id
                     credit_account = self.destination_account_id.id
 
@@ -117,6 +116,7 @@ class AccountPayment(models.Model):
                         }
                     ]
                     self.env['account.move.line'].create(move_lines_vals)
+                if payment_amount > amount:
                     self.write({
                         'state': 'waiting_approval'
                     })
