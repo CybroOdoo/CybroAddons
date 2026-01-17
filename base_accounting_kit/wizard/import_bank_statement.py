@@ -58,20 +58,24 @@ class ImportBankStatement(models.TransientModel):
                     raise ValidationError(_("Choose correct file"))
                 # Skipping the first line
                 firstline = True
+                statement = False
                 for file_item in file_string:
                     if firstline:
                         firstline = False
                         continue
+                    # Skip empty lines
+                    if not file_item.strip():
+                        continue
                     # Reading the content from csv file
                     values = file_item.split(',')
-                    if len(values) >= 5:
-                        if values[0] and values[1] and values[4]:
-                            date_obj = str(fields.date.today()) if not values[
+                    if len(values) >= 4:
+                        if values[0] and values[1] and values[2]:
+                            date_obj = str(fields.Date.today()) if not values[
                                 3] else values[3]
                             transaction_date = datetime.strptime(date_obj,
                                                                  "%Y-%m-%d")
                             partner = self.env['res.partner'].search(
-                                [('name', '=', values[4])])
+                                [('name', '=', values[2])])
                             if partner:
                                 statement = self.env[
                                     'account.bank.statement'].create({
@@ -82,7 +86,6 @@ class ImportBankStatement(models.TransientModel):
                                         'partner_id': partner.id,
                                         'journal_id': self.journal_id.id,
                                         'amount': values[1],
-                                        'amount_currency': values[2],
                                     })],
                                 })
                             else:
@@ -94,8 +97,8 @@ class ImportBankStatement(models.TransientModel):
                                     _("Account name is not set"))
                             elif not values[1]:
                                 raise ValidationError(_("Amount is not set"))
-                            elif not values[4]:
-                                date_obj = str(fields.date.today()) if not \
+                            elif not values[3]:
+                                date_obj = str(fields.Date.today()) if not \
                                 values[3] else values[3]
                                 transaction_date = datetime.strptime(date_obj,
                                                                      "%Y-%m-%d")
@@ -107,12 +110,27 @@ class ImportBankStatement(models.TransientModel):
                                         'payment_ref': 'csv file',
                                         'journal_id': self.journal_id.id,
                                         'amount': values[1],
-                                        'amount_currency': values[2],
+                                    })],
+                                })
+                            else:
+                                date_obj = str(fields.Date.today()) if not \
+                                    values[3] else values[3]
+                                transaction_date = datetime.strptime(date_obj,
+                                                                     "%Y-%m-%d")
+                                statement = self.env[
+                                    'account.bank.statement'].create({
+                                    'name': values[0],
+                                    'line_ids': [(0, 0, {
+                                        'date': transaction_date,
+                                        'payment_ref': 'csv file',
+                                        'journal_id': self.journal_id.id,
+                                        'amount': values[1],
                                     })],
                                 })
                     else:
                         raise ValidationError(
                             _("Invalid row format in CSV file. Ensure all required columns are present."))
+
                 return {
                     'type': 'ir.actions.act_window',
                     'name': 'Statements',
@@ -137,7 +155,7 @@ class ImportBankStatement(models.TransientModel):
                     if line[0] and line[1] and line[3]:
                         partner = self.env['res.partner'].search(
                             [('name', '=', line[3])])
-                        date_obj = fields.date.today() if not line[2] else \
+                        date_obj = fields.Date.today() if not line[2] else \
                             line[2].date()
                         # Creating record
                         if partner:
@@ -164,7 +182,7 @@ class ImportBankStatement(models.TransientModel):
                             raise ValidationError(
                                 _("Amount is not set"))
                         elif not line[3]:
-                            date_obj = fields.date.today() if not line[2] else \
+                            date_obj = fields.Date.today() if not line[2] else \
                                 line[2].date()
                             # Creating record
                             statement = self.env[
@@ -216,7 +234,7 @@ class ImportBankStatement(models.TransientModel):
                         amount = transaction.amount
                         date = transaction.date
                         if not date:
-                            date = fields.date.today()
+                            date = fields.Date.today()
                         partner = self.env['res.partner'].search(
                             [('name', '=', payee)])
                         if partner:
@@ -228,7 +246,7 @@ class ImportBankStatement(models.TransientModel):
                         amount = transaction.amount
                         date = transaction.date
                         if not date:
-                            date = fields.date.today()
+                            date = fields.Date.today()
                         partner = self.env['res.partner'].search(
                             [('name', '=', payee)])
                         if partner:
@@ -292,7 +310,7 @@ class ImportBankStatement(models.TransientModel):
                     payee = data[3][1:]
                     if amount and payee:
                         if not date_entry:
-                            date_entry = str(fields.date.today())
+                            date_entry = str(fields.Date.today())
                         date_object = datetime.strptime(date_entry, '%d/%m/%Y')
                         date = date_object.strftime('%Y-%m-%d')
                         statement_list.append([payee, amount, date])

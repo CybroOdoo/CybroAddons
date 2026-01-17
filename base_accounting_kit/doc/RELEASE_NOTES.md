@@ -10,3 +10,8 @@
 #### ADD
 - Added Customer Statement feature.
 
+#### 09.01.2026
+#### Version 19.0.2.1.0
+#### ADD
+- Fixed the issue in the bank statement import.
+

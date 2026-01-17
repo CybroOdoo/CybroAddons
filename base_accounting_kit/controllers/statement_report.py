@@ -32,7 +32,6 @@ class XLSXReportController(http.Controller):
     def get_report_xlsx(self, model, options, output_format, report_name):
         """ Get xlsx report data """
         report_obj = request.env[model].sudo()
-        print("popopop")
         options = json.loads(options)
         try:
             if output_format == 'xlsx':
