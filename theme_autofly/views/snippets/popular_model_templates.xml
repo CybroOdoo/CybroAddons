@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Single template that works both before and after save -->
+    <template id="product_tab_snippet" name="Popular Model">
+        <section class="Popular">
+            <t t-set="hot_deals" t-value="request.env['product.template'].sudo().search([('website_published', '=', True), ('popular_product', '=', True)])"/>
+            <t t-set="res_company" t-value="request.env.company"/>
+            
+            <div class="wrapper">
+                <div class="container">
+                    <h5 class="common_heading">POPULAR CAR MODEL</h5>
+                    <div class="alert alert-info" t-if="not hot_deals">
+                        No Popular products. Choose popular products using the checkbox in products form.
+                    </div>
+                    <div class="row mt-5 pt-3" style="--gutter-x: 32px;">
+                        <t t-foreach="hot_deals" t-as="hot_deal" t-if="hot_deals">
+                            <div t-attf-class="col-lg-3 col-md-4 col-sm-6 col-12 #{ 'mt-4' if hot_deal_index > 3 else '' }">
+                                <div class="product_card">
+                                    <a t-attf-href="/shop/product/#{slug(hot_deal)}">
+                                        <div class="p_card_heading" style="white-space: nowrap; width: 242px; overflow: hidden; text-overflow: ellipsis;">
+                                            <t t-esc="hot_deal.display_name"/>
+                                            <span>(<t t-esc="hot_deal.car_model"/>)</span>
+                                        </div>
+                                        <div class="img_wrapper">
+                                            <!-- Fixed image with fallback -->
+                                            <img t-attf-src="/web/image/product.template/#{hot_deal.id}/image_256"
+                                                 class="img img-fluid"
+                                                 t-att-alt="hot_deal.name"
+                                                 loading="lazy"
+                                                 onerror="this.onerror=null; this.src='/web/static/img/placeholder.png';"/>
+                                        </div>
+                                        <div class="card_bottom">
+                                            <div class="c_b_wrapper">
+                                                <img src="/theme_autofly/static/src/assets/card_icon/speedometer 1.png" alt=""/>
+                                                <span class="d-block"><t t-esc="hot_deal.mileage or '2000 KM'"/></span>
+                                            </div>
+                                            <div class="c_b_wrapper">
+                                                <img src="/theme_autofly/static/src/assets/card_icon/engine (1) 1.png" alt=""/>
+                                                <span class="d-block"><t t-esc="hot_deal.transmission or 'Automatic'"/></span>
+                                            </div>
+                                            <div class="c_b_wrapper">
+                                                <img src="/theme_autofly/static/src/assets/card_icon/fuel-station 1.png" alt=""/>
+                                                <span class="d-block"><t t-esc="hot_deal.fuel_type or 'Petrol'"/></span>
+                                            </div>
+                                        </div>
+                                        <div class="p_c_bottom">
+                                            <span class="price">
+                                                <t t-esc="res_company.currency_id.symbol"/>
+                                                <t t-esc="hot_deal.list_price"/>
+                                            </span>
+                                            <a t-attf-href="/shop/product/#{slug(hot_deal)}" class="btn btn-card">
+                                                More Details
+                                            </a>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                    <t t-if="hot_deals">
+                        <div class="row">
+                            <div class="p_b_wrapper m-auto">
+                                <a href="/shop" class="btn btn-secondary mt-5 mx-auto">Show more</a>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </section>
+    </template>
+</odoo>

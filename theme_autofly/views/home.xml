@@ -1,0 +1,484 @@
+<odoo>
+    <template id="autofly_home_page" inherit_id="website.homepage">
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <!-- Load Swiper CSS and JS -->
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/8.4.7/swiper-bundle.min.css"/>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/8.4.7/swiper-bundle.min.js"></script>
+
+            <div id="wrap" class="oe_structure oe_empty o_editable">
+                
+                <!-- Banner Section -->
+                <section class="banner oe_structure">
+                    <div class="container">
+                        <div class="banner_content">
+                            <div class="row">
+                                <div class="col-xl-5 col-lg-8 col-md-7 col-sm-8 col-12">
+                                    <div class="details">
+                                        <h3 class="banner_heading">2024 Mercedes AMG CLA45-S</h3>
+                                        <p>Experience unmatched performance and luxury with the 2024 Mercedes AMG CLA45-S — a perfect fusion of power, precision, and design crafted for true driving enthusiasts.</p>
+                                    </div>
+                                     <a class="btn btn-primary" href="#">Book now</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- search -->
+                <section class="search mt-4 mb-4 pt-1">
+                    <form action="/cars-search" enctype="multipart/form-data" method="post">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <div class="container">
+                            <div class="search_bar">
+                                <div class="row">
+                                    <!-- Fetch brands directly in template -->
+                                    <t t-set="car_brands" t-value="request.env['car.brand'].sudo().search([])"/>
+                                    <t t-set="car_types" t-value="request.env['car.types'].sudo().search([])"/>
+                                    
+                                    <div class="col-lg-2 col-md-2 col-sm-4 col-6">
+                                        <div class="form-group">
+                                            <label for="search_sel_box">Brand :</label>
+                                            <select class="form-select search_sel_box" 
+                                                    aria-label=".form-select-lg example"
+                                                    id="search_sel_box" 
+                                                    name="car-selection">
+                                                <option value="">Select Brand</option>
+                                                <t t-foreach="car_brands" t-as="brand">
+                                                    <option t-att-value="brand.id">
+                                                        <t t-esc="brand.name"/>
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-lg-2 col-md-2 col-sm-4 col-6 spec_c bd_none_sm">
+                                        <div class="form-group">
+                                            <label for="carModel">Model :</label>
+                                            <input type="number" class="form-control" id="carModel" name="car-model"/>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-lg-2 col-md-2 col-sm-4 col-6 spec_c bd_none_sm">
+                                        <div class="form-group">
+                                            <label for="carLocation">Location :</label>
+                                            <input type="text" class="form-control" id="carLocation" name="car-location"/>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-lg-2 col-md-2 col-sm-4 col-6 spec_c bd_none_md">
+                                        <div class="form-group">
+                                            <label for="carPrice">Price :</label>
+                                            <input type="number" class="form-control" id="carPrice" step="0.01" name="car-price"/>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-lg-2 col-md-2 col-sm-4 col-6 spec_c bd_none_sm">
+                                        <div class="form-group">
+                                            <label for="carType">Type :</label>
+                                            <select class="form-select search_car_type_sel_box" 
+                                                    aria-label=".form-select-lg example"
+                                                    id="carType" 
+                                                    name="car-type-selection">
+                                                <option value="">Select Type</option>
+                                                <t t-foreach="car_types" t-as="car_type">
+                                                    <option t-att-value="car_type.id">
+                                                        <t t-esc="car_type.name"/>
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-lg-2 col-md-2 col-sm-4 col-6 spec_c bd_none_sm search-submit">
+                                        <div class="spec">
+                                            <button type="submit" class="btn btn-secondary">Search</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- find a car -->
+
+                <section class="oe_structure mt-4 mb-4 pt-2">
+                    <div class="wrapper">
+                        <div class="container find_car oe_structure">
+                            <div class="row">
+                                <div class="col-lg-6 col-12">
+                                    <div class="f_c_heading">
+                                        <h5 class="common_heading">Find Car by MODEL</h5>
+                                        <p class="common_text">
+                                            Explore a wide range of car models to find the one that perfectly fits your style, performance needs, and lifestyle preferences.
+                                        </p>
+                                    </div>
+                                </div>
+                                <t t-set="hot_deals" t-value="request.env['car.types'].sudo().search([], order='id desc', limit=6)"/>
+                                <t t-foreach="hot_deals" t-as="hot_deal" t-if="hot_deals">
+                                    <div class="col-lg-3 col-md-6 col-sm-6 col-12 pt-5 pt-lg-0">
+                                        <a class="f_c_info" href="#">
+                                            <div class="img_wrapper" style="height: 140px; margin-bottom: 5px">
+                                                <img t-attf-src="/web/image?model=car.types&amp;field=image&amp;id=#{hot_deal.id}"
+                                                    class="img img-fluid rotate-center" style="max-height: 100%" alt=""
+                                                    loading="lazy"/>
+                                            </div>
+                                            <div class="car_name">
+                                                <t t-esc="hot_deal.name"/>
+                                            </div>
+                                            <div class="count">
+                                                <t t-esc="hot_deal.product_count"/> Vehicles
+                                            </div>
+                                        </a>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Partners -->
+
+                <section class="partners mt-4 mb-4 oe_structure">
+                    <div class="wrapper">
+                        <div class="container">
+                            <div class="row justify-content-lg-between">
+                                <div class="col-lg-1 col-md-3 col-sm-3 col-6 p_alighn">
+                                    <div class="p_img_wrapper">
+                                        <img src="/theme_autofly/static/src/assets/partners/Vector (11).png" alt=""/>
+                                    </div>
+                                </div>
+                                <div class="col-lg-1 col-md-3 col-sm-3 col-6 p_alighn">
+                                    <div class="p_img_wrapper">
+                                        <img src="/theme_autofly/static/src/assets/partners/Vector (1).png" alt=""/>
+                                    </div>
+                                </div>
+                                <div class="col-lg-1 col-md-3 col-sm-3 col-6  p_alighn pt-5 pt-sm-0 pt-md-0 pt-lg-0">
+                                    <div class="p_img_wrapper">
+                                        <img src="/theme_autofly/static/src/assets/partners/Vector (12).png" alt=""/>
+                                    </div>
+                                </div>
+                                <div class="col-lg-1 col-md-3 col-sm-3 col-6  p_alighn pt-5 pt-sm-0 pt-md-0 pt-lg-0">
+                                    <div class="p_img_wrapper">
+                                        <img src="/theme_autofly/static/src/assets/partners/Vector (3).png" alt=""/>
+                                    </div>
+                                </div>
+                                <div class="col-lg-1 col-md-3 col-sm-3 col-6 p_alighn pt-5 pt-lg-0">
+                                    <div class="p_img_wrapper">
+                                        <img src="/theme_autofly/static/src/assets/partners/Vector (4).png" alt=""/>
+                                    </div>
+                                </div>
+                                <div class="col-lg-1 col-md-3 col-sm-3 col-6  p_alighn pt-5 pt-lg-0">
+                                    <div class="p_img_wrapper">
+                                        <img src="/theme_autofly/static/src/assets/partners/Vector (5).png" alt=""/>
+                                    </div>
+                                </div>
+                                <div class="col-lg-1 col-md-3 col-sm-3 col-6  p_alighn pt-5 pt-lg-0">
+                                    <div class="p_img_wrapper">
+                                        <img src="/theme_autofly/static/src/assets/partners/Vector (6).png" alt=""/>
+                                    </div>
+                                </div>
+                                <div class="col-lg-1 col-md-3 col-sm-3 col-6  p_alighn pt-5 pt-lg-0">
+                                    <div class="p_img_wrapper">
+                                        <img src="/theme_autofly/static/src/assets/partners/Vector (13).png" alt=""/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- POpular car model -->
+
+                <section class="Popular mt-4 mb-4 pt-2">
+                    <t t-set="hot_deals" t-value="request.env['product.template'].sudo().search([('website_published', '=', True), ('popular_product', '=', True)])"/>
+                    <t t-set="res_company" t-value="request.env.company"/>
+                    
+                    <div class="wrapper">
+                        <div class="container">
+                            <h5 class="common_heading">POPULAR CAR MODEL</h5>
+                            <div class="alert alert-info" t-if="not hot_deals">
+                                No Popular products. Choose popular products using the checkbox in products form.
+                            </div>
+                            <div class="row mt-5 pt-3" style="--gutter-x: 32px;">
+                                <t t-foreach="hot_deals" t-as="hot_deal" t-if="hot_deals">
+                                    <div t-attf-class="col-lg-3 col-md-4 col-sm-6 col-12 #{ 'mt-4' if hot_deal_index > 3 else '' }">
+                                        <div class="product_card">
+                                            <a t-attf-href="/shop/product/#{slug(hot_deal)}">
+                                                <div class="p_card_heading" style="white-space: nowrap; width: 242px; overflow: hidden; text-overflow: ellipsis;">
+                                                    <t t-esc="hot_deal.display_name"/>
+                                                    <span>(<t t-esc="hot_deal.car_model"/>)</span>
+                                                </div>
+                                                <div class="img_wrapper">
+                                                    <!-- Fixed image with fallback -->
+                                                    <img t-attf-src="/web/image/product.template/#{hot_deal.id}/image_256"
+                                                        class="img img-fluid"
+                                                        t-att-alt="hot_deal.name"
+                                                        loading="lazy"
+                                                        onerror="this.onerror=null; this.src='/web/static/img/placeholder.png';"/>
+                                                </div>
+                                                <div class="card_bottom">
+                                                    <div class="c_b_wrapper">
+                                                        <img src="/theme_autofly/static/src/assets/card_icon/speedometer 1.png" alt=""/>
+                                                        <span class="d-block"><t t-esc="hot_deal.mileage or '2000 KM'"/></span>
+                                                    </div>
+                                                    <div class="c_b_wrapper">
+                                                        <img src="/theme_autofly/static/src/assets/card_icon/engine (1) 1.png" alt=""/>
+                                                        <span class="d-block"><t t-esc="hot_deal.transmission or 'Automatic'"/></span>
+                                                    </div>
+                                                    <div class="c_b_wrapper">
+                                                        <img src="/theme_autofly/static/src/assets/card_icon/fuel-station 1.png" alt=""/>
+                                                        <span class="d-block"><t t-esc="hot_deal.fuel_type or 'Petrol'"/></span>
+                                                    </div>
+                                                </div>
+                                                <div class="p_c_bottom">
+                                                    <span class="price">
+                                                        <t t-esc="res_company.currency_id.symbol"/>
+                                                        <t t-esc="hot_deal.list_price"/>
+                                                    </span>
+                                                    <a t-attf-href="/shop/product/#{slug(hot_deal)}" class="btn btn-card">
+                                                        More Details
+                                                    </a>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                            <t t-if="hot_deals">
+                                <div class="row">
+                                    <div class="p_b_wrapper m-auto">
+                                        <a href="/shop" class="btn btn-secondary mt-5 mx-auto">Show more</a>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Choose us -->
+                <section class="choose oe_structure mt-4 mb-4 pt-2">
+                    <div class="wrapper">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-lg-6 col-12 mt-5 mt-lg-0">
+                                    <div class="choose_left">
+                                        <div class="common_p">
+                                            Why choose us
+                                        </div>
+                                        <h5 class="common_heading">Affordable Prices with Premium Quality Cars</h5>
+                                        <div class="c_details">
+                                            <p>
+                                                At Autofly, we believe luxury and performance should be accessible to everyone. 
+                                                Our collection features handpicked, high-quality cars at prices that fit your budget.
+                                            </p>
+                                            <h6>Trusted by Thousands</h6>
+                                            <p>
+                                                We’ve built our reputation through honesty, transparency, and exceptional customer service, earning the trust of car enthusiasts nationwide.
+                                            </p>
+                                            <h6>Wide Selection of Models</h6>
+                                            <p>
+                                                Whether you’re looking for a sporty coupe, a family SUV, or an executive sedan, our diverse inventory has something for every need and lifestyle.
+                                            </p>
+                                            <h6>Expert Guidance &amp; Support</h6>
+                                            <p>
+                                                Our experienced team helps you make informed decisions, offering expert advice from car selection to financing and after-sales support.
+                                            </p>
+                                            <a href="#" class="btn btn-secondary mt-4">Read More</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-12 mt-5 mt-lg-0">
+                                    <div class="choose_right">
+                                        <img src="/theme_autofly/static/src/assets/choose/2024-Mercedes-AMG-CLA45-S-001-2800p 1.png" alt="Luxury car showcase"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Testimonial -->
+                <section class="s_quotes_carousel_wrapper testimonial oe_structure pb-5" data-vxml="001" data-vcss="001">
+                    <t t-set="uniq" t-value="datetime.datetime.now().microsecond"/>
+                    <div t-attf-id="myQuoteCarousel{{uniq}}" 
+                        class="s_quotes_carousel s_carousel_default carousel slide o_cc testimonial_carousel"
+                        data-bs-interval="10000">
+                        <!-- Indicators -->
+                        <ol class="carousel-indicators">
+                            <t t-set="testimonials" t-value="request.env['autofly.testimonial'].sudo().search([], order='id desc', limit=12)"/>
+                            <t t-set="slide_count" t-value="(len(testimonials) + 2) // 3"/>
+                            <t t-foreach="range(slide_count if slide_count > 0 else 1)" t-as="slide_index">
+                                <li t-attf-data-bs-target="#myQuoteCarousel{{uniq}}" 
+                                    t-attf-data-bs-slide-to="{{slide_index}}"
+                                    t-attf-class="{{'' if slide_index else 'active'}}"/>
+                            </t>
+                        </ol>
+                        
+                        <div class="carousel-inner wrapper">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="common_p">
+                                            Why choose us
+                                        </div>
+                                        <h5 class="common_heading white_heading">
+                                            Cheap prices with QUALITY CARS
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Check if testimonials exist -->
+                            <t t-if="len(testimonials) > 0">
+                                <!-- Generate slides dynamically -->
+                                <t t-foreach="range(slide_count)" t-as="slide_num">
+                                    <div t-attf-class="carousel-item {{'' if slide_num else 'active'}} oe_img_bg o_bg_img_center pt80 pb80 slider_wrapper"
+                                        data-name="Slide">
+                                        <div class="container owl-carousel" style="display:flex; overflow-x: hidden;">
+                                            <!-- Get 3 testimonials for this slide -->
+                                            <t t-set="slide_testimonials" t-value="testimonials[slide_num * 3:(slide_num + 1) * 3]"/>
+                                            <t t-foreach="slide_testimonials" t-as="testimonial">
+                                                <div class="col-12 col-sm-12 col-md-6 col-lg-4">
+                                                    <blockquote class="s_blockquote s_blockquote_classic blockquote mx-auto w-100 item"
+                                                                data-name="Blockquote"
+                                                                style="font-family: Inter sans-serif !important; font-style:normal;">
+                                                        <div class="item_wrapper">
+                                                            <div class="media">
+                                                                <img class="mr-3"
+                                                                    t-attf-src="/web/image/res.partner/#{testimonial.partner_id.id}/avatar_128"
+                                                                    alt=""/>
+                                                                <div class="media-body">
+                                                                    <h5 class="mt-0">
+                                                                        <t t-esc="testimonial.partner_id.name"/>
+                                                                    </h5>
+                                                                    Customer
+                                                                </div>
+                                                            </div>
+                                                            <p>
+                                                                <t t-esc="testimonial.review"/>
+                                                            </p>
+                                                            <!-- UPDATED RATING SECTION -->
+                                                            <div class="rating">
+                                                                <span>
+                                                                    <t t-esc="testimonial.rating"/>.0
+                                                                </span>
+                                                                <ul>
+                                                                    <t t-foreach="range(int(testimonial.rating))" t-as="star">
+                                                                        <li>
+                                                                            <a href="#">
+                                                                                <img src="theme_autofly/static/src/assets/icons/Star.svg" alt=""/>
+                                                                            </a>
+                                                                        </li>
+                                                                    </t>
+                                                                </ul>
+                                                            </div>
+                                                            <!-- END RATING SECTION -->
+                                                        </div>
+                                                    </blockquote>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                            </t>
+                            
+                            <!-- Fallback if no testimonials -->
+                            <t t-else="">
+                                <div class="carousel-item active oe_img_bg o_bg_img_center pt80 pb80 slider_wrapper">
+                                    <div class="container">
+                                        <div class="alert alert-info text-center">
+                                            <h4>No testimonials available. Please add testimonials in the backend.</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                        
+                        <!-- Controls -->
+                        <div class="carousel-control-prev o_not_editable"
+                            t-attf-data-bs-target="#myQuoteCarousel{{uniq}}"
+                            data-bs-slide="prev" role="img"
+                            aria-label="Previous" title="Previous">
+                            <span class="carousel-control-prev-icon"/>
+                            <span class="visually-hidden">Previous</span>
+                        </div>
+                        <div class="carousel-control-next o_not_editable"
+                            t-attf-data-bs-target="#myQuoteCarousel{{uniq}}"
+                            data-bs-slide="next" role="img"
+                            aria-label="Next" title="Next">
+                            <span class="carousel-control-next-icon"/>
+                            <span class="visually-hidden">Next</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Blog -->
+
+                <section class="blog_index oe_structure mt-4 mb-4 pt-2">
+                    <div class="wrapper">
+                        <div class="container">
+                            <div class="common_p">
+                                Blog news
+                            </div>
+                            <h5 class="common_heading">Our blog content</h5>
+                            
+                            <!-- Fetch blog data directly in template -->
+                            <t t-set="blog_posts" t-value="request.env['blog.post'].sudo().search([], order='id desc', limit=3)"/>
+                            
+                            <div class="blog_wrapper">
+                                <t t-if="blog_posts">
+                                    <div class="row">
+                                        <t t-foreach="blog_posts" t-as="blog_post">
+                                            <div class="col-lg-4 col-md-4 col-12">
+                                                <div class="card" style="overflow: unset !important">
+                                                    <div class="b_img">
+                                                        <div class="tag">
+                                                            <t t-esc="blog_post.create_date.strftime('%Y-%m-%d')"/>
+                                                        </div>
+                                                        <img class="card-img-top"
+                                                            t-attf-src="/website_blog/static/src/img/cover_#{blog_post.id}.jpg"
+                                                            alt="Card image cap"/>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">
+                                                            <t t-esc="blog_post.name"/>
+                                                        </h5>
+                                                        <a t-attf-href="/blog/#{slug(blog_post.blog_id)}/#{slug(blog_post)}"
+                                                        class="text-decoration-none">
+                                                            <p class="card-text">
+                                                                <t t-esc="blog_post.subtitle or blog_post.teaser"/>
+                                                            </p>
+                                                        </a>
+                                                        <a t-attf-href="/blog/#{slug(blog_post.blog_id)}/#{slug(blog_post)}"
+                                                        class="read_more">
+                                                            Read more
+                                                            <svg width="27" height="16" viewBox="0 0 27 16" fill="none"
+                                                                xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M1 7C0.447715 7 0 7.44772 0 8C0 8.55228 0.447715 9 1 9V7ZM26.7071 8.70711C27.0976 8.31658 27.0976 7.68342 26.7071 7.29289L20.3431 0.928932C19.9526 0.538408 19.3195 0.538408 18.9289 0.928932C18.5384 1.31946 18.5384 1.95262 18.9289 2.34315L24.5858 8L18.9289 13.6569C18.5384 14.0474 18.5384 14.6805 18.9289 15.0711C19.3195 15.4616 19.9526 15.4616 20.3431 15.0711L26.7071 8.70711ZM1 9H26V7H1V9Z"
+                                                                    fill="#282828"/>
+                                                            </svg>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                                
+                                <!-- Fallback if no blog posts -->
+                                <t t-else="">
+                                    <div class="alert alert-info text-center">
+                                        <h4>No blog posts available. Please create blog posts to display here.</h4>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </xpath>
+    </template>
+</odoo>

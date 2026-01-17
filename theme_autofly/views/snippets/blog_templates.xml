@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Blog template -->
+    <template id="autofly_blog" name="Blog">
+        <section class="blog_index oe_structure">
+            <div class="wrapper">
+                <div class="container">
+                    <div class="common_p">
+                        Blog news
+                    </div>
+                    <h5 class="common_heading">Our blog content</h5>
+                    
+                    <!-- Fetch blog data directly in template -->
+                    <t t-set="blog_posts" t-value="request.env['blog.post'].sudo().search([], order='id desc', limit=3)"/>
+                    
+                    <div class="blog_wrapper">
+                        <t t-if="blog_posts">
+                            <div class="row">
+                                <t t-foreach="blog_posts" t-as="blog_post">
+                                    <div class="col-lg-4 col-md-4 col-12">
+                                        <div class="card" style="overflow: unset !important">
+                                            <div class="b_img">
+                                                <div class="tag">
+                                                    <t t-esc="blog_post.create_date.strftime('%Y-%m-%d')"/>
+                                                </div>
+                                                <img class="card-img-top"
+                                                     t-attf-src="/website_blog/static/src/img/cover_#{blog_post.id}.jpg"
+                                                     alt="Card image cap"/>
+                                            </div>
+                                            <div class="card-body">
+                                                <h5 class="card-title">
+                                                    <t t-esc="blog_post.name"/>
+                                                </h5>
+                                                <a t-attf-href="/blog/#{slug(blog_post.blog_id)}/#{slug(blog_post)}"
+                                                   class="text-decoration-none">
+                                                    <p class="card-text">
+                                                        <t t-esc="blog_post.subtitle or blog_post.teaser"/>
+                                                    </p>
+                                                </a>
+                                                <a t-attf-href="/blog/#{slug(blog_post.blog_id)}/#{slug(blog_post)}"
+                                                   class="read_more">
+                                                    Read more
+                                                    <svg width="27" height="16" viewBox="0 0 27 16" fill="none"
+                                                         xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M1 7C0.447715 7 0 7.44772 0 8C0 8.55228 0.447715 9 1 9V7ZM26.7071 8.70711C27.0976 8.31658 27.0976 7.68342 26.7071 7.29289L20.3431 0.928932C19.9526 0.538408 19.3195 0.538408 18.9289 0.928932C18.5384 1.31946 18.5384 1.95262 18.9289 2.34315L24.5858 8L18.9289 13.6569C18.5384 14.0474 18.5384 14.6805 18.9289 15.0711C19.3195 15.4616 19.9526 15.4616 20.3431 15.0711L26.7071 8.70711ZM1 9H26V7H1V9Z"
+                                                              fill="#282828"/>
+                                                    </svg>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                        
+                        <!-- Fallback if no blog posts -->
+                        <t t-else="">
+                            <div class="alert alert-info text-center">
+                                <h4>No blog posts available. Please create blog posts to display here.</h4>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+</odoo>
