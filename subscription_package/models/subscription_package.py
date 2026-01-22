@@ -199,7 +199,7 @@ class SubscriptionPackage(models.Model):
     def _compute_sale_count(self):
         """ Calculate sale order count based on subscription package """
         self.so_count = self.env['sale.order'].search_count(
-            [('id', '=', self.sale_order.id)])
+            [('subscription_id', '=', self.id)])
 
     @api.depends('stage_id')
     def _compute_current_stage(self):
@@ -233,7 +233,7 @@ class SubscriptionPackage(models.Model):
         """ It displays sale order based on subscription package """
         return {
             'name': 'Products',
-            'domain': [('id', '=', self.sale_order.id)],
+            'domain': [('subscription_id', '=', self.id)],
             'view_type': 'form',
             'res_model': 'sale.order',
             'view_mode': 'tree,form',
@@ -285,13 +285,12 @@ class SubscriptionPackage(models.Model):
                                'discount': rec.discount}]
             this_products_line.append(rec_list)
         orders = self.env['sale.order'].search(
-            [('id', '=', self.sale_order_count),
+            [('subscription_id', '=', self.id),
              ('invoice_status', '=', 'no')])
         if orders:
             for order in orders:
                 order.action_confirm()
         so_id = self.env['sale.order'].create({
-            'id': self.sale_order_count,
             'partner_id': self.partner_id.id,
             'partner_invoice_id': self.partner_id.id,
             'partner_shipping_id': self.partner_id.id,
