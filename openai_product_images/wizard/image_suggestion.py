@@ -73,35 +73,43 @@ class ImageSuggestion(models.TransientModel):
 
     def action_search(self):
         """Generate product images from OpenAI DALL·E 3"""
-        # Hardcoded API key as requested
-        api_key = self.env['ir.config_parameter'].sudo().get_param('openai_api_key')
-
+        api_key = self.env['ir.config_parameter'].sudo().get_param(
+            'openai_api_key')
         client = OpenAI(api_key=api_key)
+
+        # Safety — default to 1
+        total_images = self.num_image or 1
+
         try:
-            response = client.images.generate(
-                model="dall-e-3",
-                prompt=self.image_prompt,  # Use image_prompt field
-                size=self.size_image,
-                quality=self.quality,
-                n=self.num_image,
-            )
-            # Process the first image (DALL-E 3 typically returns one image)
-            image_url = response.data[0].url
-            image_content = urlopen(image_url).read()
-            image_b64_encoded = base64.b64encode(image_content)
+            last_image_b64 = False
 
-            # Update the product's image_1920 field
-            self.product_tmpl_id.write({'image_1920': image_b64_encoded})
+            for i in range(total_images):
+                response = client.images.generate(
+                    model="dall-e-3",
+                    prompt=self.image_prompt,
+                    size=self.size_image,
+                    quality=self.quality,
+                    n=1,  # DALL·E 3 rule
+                )
 
-            # Optionally store in dalle.image.suggestion (if needed for history)
-            self.env['dalle.image.suggestion'].create({
-                'product_image': image_b64_encoded,
-                'product_tmpl_id': self.product_tmpl_id.id,
-            })
+                # Get image URL
+                image_url = response.data[0].url
+                image_content = urlopen(image_url).read()
+                image_b64_encoded = base64.b64encode(image_content)
 
-            # Return action to close wizard or refresh product form
-            return {
-                'type': 'ir.actions.act_window_close',
-            }
+                last_image_b64 = image_b64_encoded
+
+                # Save each image to history table
+                self.env['dalle.image.suggestion'].create({
+                    'product_image': image_b64_encoded,
+                    'product_tmpl_id': self.product_tmpl_id.id,
+                })
+
+            # Optionally set last generated image as product main image
+            if last_image_b64:
+                self.product_tmpl_id.write({'image_1920': last_image_b64})
+
+            return {'type': 'ir.actions.act_window_close'}
+
         except Exception as e:
             raise UserError(f"Error generating image: {str(e)}")
