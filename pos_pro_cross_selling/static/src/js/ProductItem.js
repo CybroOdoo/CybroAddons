@@ -1,6 +1,6 @@
 /** @odoo-module **/
 import { ProductScreen } from "@point_of_sale/app/screens/product_screen/product_screen";
-import { rpc } from "@web/core/network/rpc";;
+import { rpc } from "@web/core/network/rpc";
 import { patch } from "@web/core/utils/patch";
 import { CrossProduct } from "@pos_pro_cross_selling/app/cross_product/cross_product";
 import { reactive } from "@odoo/owl";
@@ -13,7 +13,7 @@ patch(ProductScreen.prototype, {
         rpc('/web/dataset/call_kw/pos.cross.selling/get_cross_selling_products', {
             model: 'pos.cross.selling',
             method: 'get_cross_selling_products',
-            args: [[],ProductSelected?._raw.product_id.id],
+            args: [[],ProductSelected?.raw.product_id.id],
             kwargs: {},
         }).then(async(result) => {
             if (result.length > 0) {
