@@ -34,10 +34,6 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     "website": "https://www.cybrosys.com",
-    'images': [
-        'static/description/banner.jpg',
-        'static/description/theme_screenshot.jpg',
-    ],
     "depends": [
         'web',
         'website_livechat',
@@ -57,7 +53,7 @@
     },
     'images': [
         'static/description/banner.jpg',
-        'static/description/thumbnail.jpg'
+        'static/description/theme_screenshot.jpg',
     ],
     'icon': 'static/description/icon.png',
     'license': 'LGPL-3',
