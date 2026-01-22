@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Purchase Product Configurator',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.1.0',
     'category': 'Purchases',
     'summary': """Purchase variant selection options for products.""",
     'description': """This module helps you to configure product variant

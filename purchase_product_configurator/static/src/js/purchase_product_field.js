@@ -75,6 +75,21 @@ patch(PurchaseOrderLineProductField.prototype, {
         }
     },
 
+    async onEditConfiguration() {
+    const product_config_mode = await this.orm.read(
+        'product.template',
+            [this.props.record.data.product_template_id[0]],
+        ["product_config_mode"]
+    );
+   if (!product_config_mode[0].product_config_mode || product_config_mode[0].product_config_mode === 'configurator') {
+         this._openProductConfigurator({ edit: false });
+
+    }else {
+            // only triggered when purchase_product_matrix is installed.
+            this._openGridConfigurator(true);
+        }
+},
+
     /**
      * Checks if the template is configurable.
      */
@@ -86,6 +101,7 @@ patch(PurchaseOrderLineProductField.prototype, {
      */
     async _openProductConfigurator(jsonInfo, productTemplateId, editedCellAttributes,edit=false) {
         const purchaseOrderRecord = this.props.record.model.root;
+        const purchaseOrderline =  this.props.record.data;
         let ptavIds = this.props.record.data.product_template_attribute_value_ids.records.map(
             record => record.resId
         );
@@ -125,7 +141,7 @@ patch(PurchaseOrderLineProductField.prototype, {
                     }
                 }
             ),
-            quantity:1.0,
+            quantity:purchaseOrderline.product_qty,
             productUOMId: this.props.record.data.product_uom[0],
             companyId: purchaseOrderRecord.data.company_id[0],
             currencyId: this.props.record.data.currency_id[0],
@@ -141,9 +157,9 @@ patch(PurchaseOrderLineProductField.prototype, {
                     await applyProduct(line, optionalProduct);
                 }
             },
-            discard: () => {
-                purchaseOrderRecord.data.order_line.delete(this.props.record);
-            },
+            // discard: () => {
+            //     purchaseOrderRecord.data.order_line.delete(this.props.record);
+            // },
         });
     },
 });
