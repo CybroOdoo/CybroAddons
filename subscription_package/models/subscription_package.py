@@ -169,6 +169,7 @@ class SubscriptionPackage(models.Model):
         invoices = sale_id.order_line.invoice_lines.move_id.filtered(
             lambda r: r.move_type in ('out_invoice', 'out_refund'))
         invoices.write({'subscription_id': self.id})
+
         invoice_count = self.env['account.move'].search_count(
             [('subscription_id', '=', self.id)])
         if invoice_count > 0:
@@ -180,7 +181,7 @@ class SubscriptionPackage(models.Model):
     def _compute_sale_count(self):
         """ Calculate sale order count based on subscription package """
         self.so_count = self.env['sale.order'].search_count(
-            [('id', '=', self.sale_order_id.id)])
+            [('subscription_id', '=', self.id)])
 
     @api.depends('stage_id')
     def _compute_current_stage(self):
@@ -222,7 +223,7 @@ class SubscriptionPackage(models.Model):
         """ It displays sale order based on subscription package """
         return {
             'name': 'Products',
-            'domain': [('id', '=', self.sale_order_id.id)],
+            'domain': [('subscription_id', '=', self.id)],
             'view_type': 'form',
             'res_model': 'sale.order',
             'view_mode': 'tree,form',
@@ -279,7 +280,7 @@ class SubscriptionPackage(models.Model):
                                'discount': rec.discount}]
             this_products_line.append(rec_list)
         orders = self.env['sale.order'].search(
-            [('id', '=', self.sale_order_count),
+            [('subscription_id', '=', self.id),
              ('invoice_status', '=', 'no')])
         if orders:
             for order in orders:
@@ -422,6 +423,7 @@ class SubscriptionPackage(models.Model):
                         pending_subscription.plan_id.days_to_end)
                     pending_subscription.write(
                         {'close_date': new_date['close_date']})
+
                     self.send_renew_alert_mail(today_date,
                                                new_date['renew_date'],
                                                pending_subscription.id)

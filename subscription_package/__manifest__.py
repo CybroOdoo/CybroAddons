@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Subscription Management',
-    'version': '17.0.3.1.2',
+    'version': '17.0.4.0.0',
     'category': 'Sales',
     'summary': 'Subscription Package Management Module For Odoo17 Community',
     'description': 'Subscription Package Management Module specifically '
