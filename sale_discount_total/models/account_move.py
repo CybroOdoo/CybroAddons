@@ -121,7 +121,7 @@ class AccountInvoice(models.Model):
                     else:
                         new_pmt_state = move._get_invoice_in_payment_state()
                 elif currency.compare_amounts(total_to_pay,
-                                              abs(total_residual)) != 0:
+                                              abs(total_residual_currency)) != 0:
                     new_pmt_state = 'partial'
             if new_pmt_state == 'paid' and move.move_type in (
                     'in_invoice', 'out_invoice', 'entry'):
