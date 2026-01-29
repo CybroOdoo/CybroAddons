@@ -164,10 +164,10 @@ class AccountInvoice(models.Model):
                 total = 0.0
                 for line in inv.invoice_line_ids:
                     total += (line.quantity * line.price_unit)
-                if inv.discount_rate != 0:
+                if inv.discount_rate != 0 and total != 0:
                     discount = (inv.discount_rate / total) * 100
                 else:
-                    discount = inv.discount_rate
+                    discount = inv.discount_rate if total == 0 else 0
                 for line in inv.invoice_line_ids:
                     line.discount = discount
                     inv.amount_discount = inv.discount_rate
