@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="hover_template">
+        <div class="container" style="color: #000000; width:auto; height:auto;">
+            <div t-if="requiredData and requiredData.length > 0 and typeof requiredData === 'object'">
+                <h6>Field Data</h6>
+                    <!-- Iterate through each line of required data -->
+                    <ul class="o-tooltip--technical">
+                        <!-- Render differently based on data type -->
+                        <li t-if="requiredData[0].ttype === 'binary'">
+                            <!-- Render binary data as image -->
+                            <span class="o-tooltip--technical--title" t-esc="line.field"/><span>:</span>
+                            <img t-attf-src="data:image/png;base64,#{requiredData[0].value}" style="width:40px; padding:5px;" t-att-alt="requiredData[0].field"/>
+                        </li>
+                        <li t-elif="requiredData[0].ttype === 'html'">
+                            <!-- Render HTML data as iframe -->
+                            <span class="o-tooltip--technical--title" t-esc="requiredData[0].field"/><span>:</span>
+                            <br/>
+                            <div style="background:#fff;">
+                                <iframe t-att-srcdoc="requiredData[0].field_name" style="width: auto;; height: auto;"></iframe>
+                            </div>
+                        </li>
+                        <li t-elif="requiredData[0].formatType === 'many2one'">
+                            <span class="o-tooltip--technical--title"/><span>Display Name:</span>
+                            <t t-esc="requiredData[0].m2o_value"/><br/>
+                            <span class="o-tooltip--technical--title"/><span>Field Name:</span>
+                            <t t-esc="requiredData[0].field_char"/><br/>
+                            <span class="o-tooltip--technical--title"/><span>ID:</span>
+                            <t t-esc="requiredData[0].id"/>
+                        </li>
+                    </ul>
+            </div>
+            <!-- Render if 'requiredData' is not an object -->
+            <div t-elif="typeof requiredData !== 'object'">
+                <span t-esc="requiredData"/>
+            </div>
+            <!-- Render if 'requiredData' is empty -->
+            <div t-else="">
+                <h6 style="color: #fff;">No Data Available !!!</h6>
+            </div>
+        </div>
+    </t>
+</templates>

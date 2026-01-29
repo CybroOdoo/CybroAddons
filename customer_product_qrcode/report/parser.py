@@ -24,10 +24,17 @@ from odoo.http import request
 
 
 class CustomerBadge(models.AbstractModel):
+    """
+    Class for qr code report
+        Methods:
+            _get_report_values(self, docids, data=None):
+                method to get values for the report
+    """
     _name = 'report.customer_product_qrcode.customer_qr_template'
 
     @api.model
     def _get_report_values(self, docids, data=None):
+        """ getting values for the report to print """
         if data['type'] == 'cust':
             dat = [request.env['res.partner'].browse(data['data'])]
         elif data['type'] == 'all':

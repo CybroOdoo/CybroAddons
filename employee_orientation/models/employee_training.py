@@ -38,9 +38,9 @@ class EmployeeTraining(models.Model):
     _inherit = 'mail.thread'
 
     program_name = fields.Char(string='Training Program', required=True)
-    program_department = fields.Many2one('hr.department', string='Department', required=True)
-    program_convener = fields.Many2one('res.users', string='Responsible User', size=32, required=True)
-    training_id = fields.One2many('hr.employee', string='Employee Details', compute="employee_details")
+    program_department_id = fields.Many2one('hr.department', string='Department', required=True)
+    program_convener_id = fields.Many2one('res.users', string='Responsible User', size=32, required=True)
+    training_ids = fields.One2many('hr.employee', string='Employee Details', compute="employee_details")
     note_id = fields.Text('Description')
     date_from = fields.Datetime(string="Date From")
     date_to = fields.Datetime(string="Date To")
@@ -56,10 +56,10 @@ class EmployeeTraining(models.Model):
         ('print', 'Print'),
     ], string='Status', readonly=True, copy=False, index=True, track_visibility='onchange', default='new')
 
-    @api.onchange('program_department')
+    @api.depends('program_department_id')
     def employee_details(self):
-        datas = self.env['hr.employee'].search([('department_id', '=', self.program_department.id)])
-        self.training_id = datas
+        datas = self.env['hr.employee'].search([('department_id', '=', self.program_department_id.id)])
+        self.training_ids = datas
 
     def print_event(self):
         self.ensure_one()
@@ -70,14 +70,14 @@ class EmployeeTraining(models.Model):
         hours = difference.hours
         minutes = difference.minutes
         data = {
-            'dept_id': self.program_department.id,
+            'dept_id': self.program_department_id.id,
             'program_name': self.program_name,
             'company_name': self.company_id.name,
             'date_to': started_date,
             'duration': duration,
             'hours': hours,
             'minutes': minutes,
-            'program_convener': self.program_convener.name,
+            'program_convener': self.program_convener_id.name,
 
         }
         return self.env.ref('employee_orientation.print_pack_certificates').report_action(self, data=data)

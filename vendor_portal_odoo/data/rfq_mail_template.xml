@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="email_template_vendor_rfq_request" model="mail.template">
+            <field name="name">Purchase Order: Send RFQ</field>
+            <field name="model_id" ref="vendor_portal_odoo.model_rfq_vendor"/>
+            <field name="subject">RFQ Request</field>
+            <field name="partner_to">{{ ctx.get('partner_to') }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Dear <t t-out="ctx.get('name') or ''"/>,
+                        <br/><br/>
+                        We would like to request a quotation for the Product
+                        <strong t-out="object.product_id.name or ''"/> of
+                        <t t-out="object.quantity"/><t t-out="object.unit_id.name"/>
+                        from you.
+                        <br/><br/>
+                        If you are interested, please check below link and let us know the quote
+                        <br/><br/>
+                        Best regards,
+                        <br/>
+                        <t t-out="object.user_id.name"/>
+                    </p>
+                </div>
+            </field>
+<!--            <field name="report_template" ref="report_purchase_quotation"/>-->
+<!--            <field name="report_name">RFQ_{{ (object.name or '').replace('/','_') }}</field>-->
+            <field name="lang">{{ ctx.get('lang') }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+        <record id="email_template_vendor_rfq_mark_done" model="mail.template">
+            <field name="name">Purchase Order: Quote Accepted</field>
+            <field name="model_id" ref="vendor_portal_odoo.model_rfq_vendor"/>
+            <field name="subject">Quote Accepted</field>
+            <field name="partner_to">{{ ctx.get('partner_to') }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Dear <t t-out="ctx.get('name') or ''"/>,
+                        <br/><br/>
+                        We want to let you know that we accept your quoted price of <strong t-esc="ctx.get('price') or ''"
+                                                                                          t-options='{"widget": "monetary", "display_currency": ctx.get("currency_id")}'/> for the <strong t-out="object.product_id.name or ''"/> within your specified delivery date <strong t-out="ctx.get('delivery_date') or ''"/> from you.
+                        <br/><br/>
+                        We'd like to buy <strong t-out="object.quantity or ''"/> units of <strong t-out="object.product_id.name or ''"/> from you by the estimated date.
+
+                        <br/>
+                        We will send you a purchase order as soon as possible.
+                        <br/><br/>
+                        Best regards,
+                        <br/>
+                        <t t-out="object.user_id.name"/>
+                    </p>
+                </div>
+            </field>
+<!--            <field name="report_template" ref="report_purchase_quotation"/>-->
+<!--            <field name="report_name">RFQ_{{ (object.name or '').replace('/','_') }}</field>-->
+            <field name="lang">{{ ctx.get('lang') }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

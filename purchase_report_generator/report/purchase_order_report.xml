@@ -1,0 +1,461 @@
+<odoo>
+    <template id="purchase_order_report">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <t t-if="Filters.get('report_type')=='Report By Order'">
+                    <t t-call="purchase_report_generator.report_order"/>
+                </t>
+                <t t-if="Filters.get('report_type')=='Report By Order Detail'">
+                    <t t-call="purchase_report_generator.report_order_detail"/>
+                </t>
+                <t t-if="Filters.get('report_type')=='Report By Product'">
+                    <t t-call="purchase_report_generator.report_product"/>
+                </t>
+                <t t-if="Filters.get('report_type')=='Report By Categories'">
+                    <t t-call="purchase_report_generator.report_category"/>
+                </t>
+                <t t-if="Filters.get('report_type')=='Report By Purchase Representative'">
+                    <t t-call="purchase_report_generator.report_purchase_representative"/>
+                </t>
+                <t t-if="Filters.get('report_type')=='Report By State'">
+                    <t t-call="purchase_report_generator.report_state"/>
+                </t>
+            </t>
+        </t>
+    </template>
+    <template id="report_order">
+        <div class="page">
+            <div class="oe_structure"/>
+            <span t-if="Filters.get('date_from')">
+                <strong>From:</strong>
+                <t t-esc="Filters['date_from']"/>
+            </span>
+
+
+            <span t-if="Filters.get('date_to')">
+                <strong>To:</strong>
+                <t t-esc="Filters['date_to']"/>
+            </span>
+
+
+            <div>
+                <div style="width:100%;">
+                    <div style="text-align:centre;" class="row">
+
+                        <div class="col-2">
+                            <strong>Report Type:</strong>
+                            <t t-esc="Filters.get('report_type')"/>
+                        </div>
+
+
+                    </div>
+                </div>
+
+
+                <br></br>
+                <table class="table table-sm table-reports">
+                    <thead>
+                        <tr >
+                            <th class="text-left">Order</th>
+                            <th colspan="6" class="text-center">Date Order</th>
+                            <th colspan="6" class="text-right">Customer</th>
+                            <th colspan="6" class="text-right">Purchase Representative</th>
+                            <th colspan="6" class="text-center">Total Qty</th>
+                            <th colspan="6" class="text-left">Amount Total</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-left">
+                        <t t-foreach="report_main_line_data" t-as="main">
+                            <tr style="font-weight: bold;">
+                                <td colspan="6">
+                                    <span t-esc="main['name']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['date_order']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['partner']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['salesman']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['sum']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['amount_total']"/>
+                                </td>
+                            </tr>
+
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+            <br></br>
+        </div>
+
+    </template>
+
+    <template id="report_order_detail">
+        <div class="page">
+            <div class="oe_structure"/>
+            <span t-if="Filters.get('date_from')">
+                <strong>From:</strong>
+                <t t-esc="Filters['date_from']"/>
+            </span>
+
+
+            <span t-if="Filters.get('date_to')">
+                <strong>To:</strong>
+                <t t-esc="Filters['date_to']"/>
+            </span>
+
+
+            <div>
+                <div style="width:100%;">
+                    <div style="text-align:centre;" class="row">
+
+                        <div class="col-2">
+                            <strong>Report Type:</strong>
+                            <t t-esc="Filters.get('report_type')"/>
+                        </div>
+
+
+                    </div>
+                </div>
+
+
+                <br></br>
+                <table class="table table-sm table-reports">
+                    <thead>
+                        <tr class="text-right">
+                            <th>Order</th>
+                            <th colspan="6">Date Order</th>
+                            <th colspan="6">Customer</th>
+                            <th colspan="6">Purchase Representative</th>
+                            <th colspan="6">Product Code</th>
+                            <th colspan="6">Product Name</th>
+                            <th colspan="6">Price unit</th>
+                            <th colspan="6">Qty</th>
+                            <th colspan="6">Price Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="report_main_line_data" t-as="main">
+                            <tr style="font-weight: bold;">
+                                <td colspan="6">
+                                    <span t-esc="main['name']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['date_order']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['partner']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['salesman']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['default_code']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['product']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['price_unit']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['sum']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['amount_total']"/>
+                                </td>
+                            </tr>
+
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+            <br></br>
+        </div>
+    </template>
+
+    <template id="report_product">
+        <div class="page">
+            <div class="oe_structure"/>
+            <span t-if="Filters.get('date_from')">
+                <strong>From:</strong>
+                <t t-esc="Filters['date_from']"/>
+            </span>
+
+
+            <span t-if="Filters.get('date_to')">
+                <strong>To:</strong>
+                <t t-esc="Filters['date_to']"/>
+            </span>
+
+
+            <div>
+                <div style="width:100%;">
+                    <div style="text-align:centre;" class="row">
+
+                        <div class="col-2">
+                            <strong>Report Type:</strong>
+                            <t t-esc="Filters.get('report_type')"/>
+                        </div>
+
+
+                    </div>
+                </div>
+
+
+                <br></br>
+                <table class="table table-sm table-reports">
+                    <thead>
+                        <tr>
+                            <th class="text-left">Category</th>
+                            <th colspan="6" class="text-center">Product Code</th>
+                            <th colspan="6" class="text-center">Product Name</th>
+                            <th colspan="6" class="text-center">Qty</th>
+                            <th colspan="6">Amount Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="report_main_line_data" t-as="main">
+                            <tr style="font-weight: bold;">
+                                <td colspan="6">
+                                    <span t-esc="main['name']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['default_code']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['product']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['qty']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['amount_total']"/>
+                                </td>
+                            </tr>
+
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+            <br></br>
+        </div>
+    </template>
+
+
+    <template id="report_category">
+        <div class="page">
+            <div class="oe_structure"/>
+            <span t-if="Filters.get('date_from')">
+                <strong>From:</strong>
+                <t t-esc="Filters['date_from']"/>
+            </span>
+
+
+            <span t-if="Filters.get('date_to')">
+                <strong>To:</strong>
+                <t t-esc="Filters['date_to']"/>
+            </span>
+
+
+            <div>
+                <div style="width:100%;">
+                    <div style="text-align:centre;" class="row">
+
+                        <div class="col-2">
+                            <strong>Report Type:</strong>
+                            <t t-esc="Filters.get('report_type')"/>
+                        </div>
+
+
+                    </div>
+                </div>
+
+
+                <br></br>
+                <table class="table table-sm table-reports">
+                    <thead>
+                        <tr>
+                            <th colspan="6">Category</th>
+                            <th colspan="6">Qty</th>
+                            <th colspan="6">Amount Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="report_main_line_data" t-as="purchase_category">
+                            <tr style="font-weight: bold;">
+                                <td colspan="6">
+                                    <span t-esc="purchase_category['name']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="purchase_category['qty']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="purchase_category['amount_total']"/>
+                                </td>
+
+                            </tr>
+
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+            <br></br>
+        </div>
+    </template>
+
+    <template id="report_purchase_representative">
+        <div class="page">
+            <div class="oe_structure"/>
+            <span t-if="Filters.get('date_from')">
+                <strong>From:</strong>
+                <t t-esc="Filters['date_from']"/>
+            </span>
+
+
+            <span t-if="Filters.get('date_to')">
+                <strong>To:</strong>
+                <t t-esc="Filters['date_to']"/>
+            </span>
+
+
+            <div>
+                <div style="width:100%;">
+                    <div style="text-align:centre;" class="row">
+
+                        <div class="col-2">
+                            <strong>Report Type:</strong>
+                            <t t-esc="Filters.get('report_type')"/>
+                        </div>
+
+
+                    </div>
+                </div>
+
+
+                <br></br>
+                <table class="table table-sm table-reports">
+                    <thead>
+                        <tr>
+                            <th>Purchase Representative</th>
+                            <th colspan="6">Total Order</th>
+                            <th colspan="6">Total Qty</th>
+                            <th colspan="6">Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="report_main_line_data" t-as="main">
+                            <tr style="font-weight: bold;">
+                                <td>
+                                    <span t-esc="main['name']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['order']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['qty']"/>
+                                </td>
+                                <td colspan="6">
+                                    <span t-esc="main['amount']"/>
+                                </td>
+
+                            </tr>
+
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+            <br></br>
+        </div>
+    </template>
+
+    <template id="report_state">
+        <div class="page">
+            <div class="oe_structure"/>
+            <span t-if="Filters.get('date_from')">
+                <strong>From:</strong>
+                <t t-esc="Filters['date_from']"/>
+            </span>
+
+
+            <span t-if="Filters.get('date_to')">
+                <strong>To:</strong>
+                <t t-esc="Filters['date_to']"/>
+            </span>
+
+
+            <div>
+                <div style="width:100%;">
+                    <div style="text-align:centre;" class="row">
+
+                        <div class="col-2">
+                            <strong>Report Type:</strong>
+                            <t t-esc="Filters.get('report_type')"/>
+                        </div>
+
+
+                    </div>
+                </div>
+
+
+                <br></br>
+                <table class="table table-sm table-reports">
+                    <thead>
+                        <tr class="text-left">
+                            <th>State</th>
+                            <th colspan="6">Total Count</th>
+                            <th colspan="6">Quantity</th>
+                            <th colspan="6">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="report_main_line_data" t-as="main">
+                            <tr style="font-weight: bold;">
+                                <td colspan="6">
+                                    <t t-if="main['state'] == 'draft'">
+                                        <span>Quotation</span>
+                                    </t>
+                                    <t t-if="main['state'] == 'sent'">
+                                        <span>Quotation Sent</span>
+                                    </t>
+                                    <t t-if="main['state'] == 'purchase'">
+                                        <span>Purchase Order</span>
+                                    </t>
+
+                                </td>
+                                <td colspan="6" class="text-left">
+                                    <span t-esc="main['order']"/>
+                                </td>
+                                <td colspan="6" class="text-left">
+                                    <span t-esc="main['qty']"/>
+                                </td>
+                                <td colspan="6" class="text-left">
+                                    <span t-esc="main['amount']"/>
+                                </td>
+
+                            </tr>
+
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+            <br></br>
+        </div>
+    </template>
+
+
+    <record id="action_report_purchase_all_in_one" model="ir.actions.report">
+        <field name="name">Purchase All In One Report</field>
+        <field name="model">dynamic.purchase.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">purchase_report_generator.purchase_order_report</field>
+        <field name="report_file">purchase_report_generator.purchase_order_report</field>
+    </record>
+
+</odoo>

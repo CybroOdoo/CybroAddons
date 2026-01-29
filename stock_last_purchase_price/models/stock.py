@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
 
-from odoo import api, models
+from odoo import api, models, _
 from odoo.exceptions import UserError
 from odoo.tools import float_is_zero
 
@@ -32,7 +32,7 @@ class StockMove(models.Model):
                     qty_done = move.product_uom._compute_quantity(move.quantity_done, move.product_id.uom_id)
                     qty = forced_qty or qty_done
                     new_std_price = ((amount_unit * product_tot_qty_available) + (move._get_price_unit() * qty)) / (product_tot_qty_available + qty_done)
-            if move.product_id.cost_method == 'last' and move.product_id.valuation == 'real_time':
+            if move.product_id.cost_method == 'last' and move.product_id.valuation == 'real_time' or move.product_id.valuation == 'manual_periodic':
                 new_std_price = move._get_price_unit()
                 products = self.env['product.product'].browse(move.product_id.id)
                 account_id = products.property_account_creditor_price_difference.id or products.categ_id.property_account_creditor_price_difference_categ.id

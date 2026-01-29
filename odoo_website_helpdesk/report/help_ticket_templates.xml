@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    report_help_ticket-->
+    <template id="help_ticket_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div style="margin-bottom: 10px;">
+                            <div class="text-center"
+                                 style="font-weight: 400 !important; font-size: 2rem !important;">
+                                <t t-esc="o.name"/>
+                                -
+                                <t t-esc="o.subject"/>
+                            </div>
+                            <br/>
+                            <table class="table table-bordered mt32">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">
+                                            <span>Customer :</span>
+                                        </th>
+                                        <th class="text-center">
+                                            <span>Description :</span>
+                                        </th>
+                                        <th class="text-center">
+                                            <span>Priority :</span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="text-center">
+                                        <td>
+                                            <span t-field="o.customer_id"
+                                                  t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                                        </td>
+                                        <td>
+                                            <h3 t-field="o.description"/>
+                                        </td>
+                                        <td>
+                                            <h3 t-field="o.priority"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <t t-set="tasks"
+                           t-value="request.env['project.task'].search([('ticket_id', '=', o.id)])"/>
+                        <t t-if="tasks">
+                            <div>
+                                <h3 class="text-center">
+                                    <strong>Tasks</strong>
+                                </h3>
+                            </div>
+                            <table class="table table-bordered mt32">
+                                <t t-foreach="tasks" t-as="task">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">
+                                                <span>Task Name</span>
+                                            </th>
+                                            <th class="text-center"
+                                                t-if="task.analytic_account_id">
+                                                <span>Analytic Account</span>
+                                            </th>
+                                            <th class="text-center">
+                                                <span>Assigned to</span>
+                                            </th>
+                                            <th class="text-center">
+                                                <span>Total Hours Spend</span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="text-center">
+                                            <td>
+                                                <span t-field="task.name"/>
+                                            </td>
+                                            <td t-if="task.analytic_account_id">
+                                                <span t-field="task.analytic_account_id"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="', '.join(map(lambda x: (x.name), task.user_ids))"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="task.effective_hours"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </t>
+                            </table>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

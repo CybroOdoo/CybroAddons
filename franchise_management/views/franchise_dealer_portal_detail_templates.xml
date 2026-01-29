@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--Portal home menu for franchise registrations-->
+    <template id="portal_my_home_menu_FranchiseRegistrations"
+              name="Portal layout : FranchiseRegistrations menu entries"
+          inherit_id="portal.portal_breadcrumbs" priority="60">
+    <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+        <li t-if="page_name == 'franchise_registrations'"
+            class="breadcrumb-item active">
+            <span>FranchiseRegistrations</span>
+        </li>
+        <li t-if="page_name == 'registration_details'"
+            class="breadcrumb-item active">
+              <a t-attf-href="/my/franchise" aria-label="Home"
+                 title="FranchiseRegistrations">
+                <span>FranchiseRegistrations</span>
+            </a>
+            <span>/
+                <em t-out="franchise.serial_no"/>
+            </span>
+        </li>
+    </xpath>
+</template>
+<!--Franchise portal registration template-->
+    <template id="franchise_portal" name="My Franchise Registration">
+        <t t-call="portal.portal_layout">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-lg-15">
+                            <h3>
+                                Franchise
+                                <span t-field="franchise.serial_no"
+                                      style="font-size=25px; font-weight:bold;"/>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h2>
+                                <span t-if="franchise.dealer_name"
+                                      t-field="franchise.dealer_name"
+                                      style="font-size=35px; font-weight:bold;"/>
+                            </h2>
+                            <h5>
+                                Date:
+                                <span t-field="franchise.create_date"
+                                      style="font-size=15px"/>
+                            </h5>
+                            <address class="col-8">
+                                <div>
+                                    <span class="fa fa-phone" role="img"
+                                          aria-label="Phone" title="Phone"/>
+                                    <span itemprop="telephone"
+                                          t-field="franchise.dealer_phone"/>
+                                </div>
+                                <div>
+                                    <span class="fa fa-envelope" role="img"
+                                          aria-label="Email" title="Email"/>
+                                    <span itemprop="email"
+                                          t-field="franchise.dealer_mail"/>
+                                </div>
+                                <div>
+                                    <span t-if="franchise.country_id"
+                                          itemprop="name"
+                                          t-field="franchise.country_id"/>
+                                </div>
+                            </address>
+                        </div>
+                        <div class="col-md-12">
+                            <div style="justify-content: center">
+                            <span t-if="franchise.body_html"
+                                  itemprop="name"
+                                  t-field="franchise.body_html"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br/>
+                <section t-if="franchise.signature" id="signature"
+                         name="Signature">
+                    <div class="row mt-4" name="signature">
+                        <div t-attf-class="#{'col-3' if report_type != 'html' else 'col-sm-7 col-md-4'} ms-auto text-center">
+                            <h5>Signature</h5>
+                            <img t-att-src="image_data_uri(franchise.signature)"
+                                 style="max-height: 6rem; max-width: 100%;"/>
+                            <p t-field="franchise.signed_by"/>
+                        </div>
+                    </div>
+                </section>
+                <!--Sing validate>............-->
+                <div role="dialog" class="modal fade" id="sign_contract">
+                    <div class="modal-dialog">
+                        <form id="accept" method="POST"
+                              t-att-data-order-id="franchise.id"
+                              class="js_accept_json modal-content js_website_submit_form">
+                            <input type="hidden" name="csrf_token"
+                                   t-att-value="request.csrf_token()"/>
+                            <header class="modal-header">
+                                <h4 class="modal-title">Validate Order</h4>
+                                <button type="text" class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close"/>
+                            </header>
+                            <main class="modal-body" id="sign-dialog">
+                                <p>
+                                    <span>By signing this proposal, I agree to
+                                        the following terms:
+                                    </span>
+                                    <ul>
+                                    </ul>
+                                </p>
+                                <t t-call="portal.signature_form">
+                                    <t t-set="call_url"
+                                       t-value="franchise.get_portal_url(suffix='/accept')"/>
+                                    <t t-set="default_name"
+                                       t-value="franchise.dealer_name"/>
+                                </t>
+                            </main>
+                        </form>
+                    </div>
+                </div>
+                <!--Reject sign..-->
+                <div role="dialog" class="modal fade" id="modaldecline">
+                    <div class="modal-dialog">
+                        <form id="decline" method="POST"
+                              t-attf-action="/my/franchise/#{franchise.id}/decline"
+                              class="modal-content">
+                            <input type="hidden" name="csrf_token"
+                                   t-att-value="request.csrf_token()"/>
+                            <header class="modal-header">
+                                <h4 class="modal-title">Reject This Quotation
+                                </h4>
+                                <button type="button" class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close"/>
+                            </header>
+                            <main class="modal-body">
+                                <p>
+                                    Tell us why you are refusing this quotation,
+                                    this will help us improve our services.
+                                </p>
+                                <textarea rows="4" name="decline_message"
+                                          required=""
+                                          placeholder="Your feedback..."
+                                          class="form-control"/>
+                            </main>
+                            <footer class="modal-footer">
+                                <button type="submit" t-att-id="franchise.id"
+                                        class="btn btn-danger">
+                                    <i class="fa fa-times"/>
+                                    Reject
+                                </button>
+                                <button type="button" class="btn btn-primary"
+                                        data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+                            </footer>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!--Button view.......-->
+            <div t-if="franchise.state == 'e_contract'"
+                 class="row justify-content-center text-center">
+                <div class="col-sm-auto mt8">
+                    <a role="button" class="btn btn-primary"
+                       data-toggle="modal" href="#sign_contract"
+                       >
+                        <i class="fa fa-check"/>
+                        <t>Sign Contract</t>
+                    </a>
+                </div>
+                <div class="col-sm-auto mt8">
+                    <a role="button" class="btn btn-danger"
+                       data-bs-toggle="modal" data-bs-target="#modaldecline"
+                       href="#">
+                        <i class="fa fa-times"/>
+                        Reject
+                    </a>
+                </div>
+            </div>
+            <!--Chatter -->
+            <div id="dealer_communication" class="mt-4">
+                <h2>History</h2>
+                <t t-call="portal.message_thread">
+                    <t t-set="object" t-value="franchise"/>
+                </t>
+            </div>
+        </t>
+    </template>
+</odoo>

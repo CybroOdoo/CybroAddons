@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- This template is used for hiding price from shop grid and list view -->
+    <template id="shop_hide_price" inherit_id="website_sale.products_item">
+        <xpath expr="//div[hasclass('product_price')]" position="replace">
+            <t t-if="product.price_call">
+            </t>
+            <t t-else="">
+                <div class="product_price" itemprop="offers"
+                     itemscope="itemscope" itemtype="http://schema.org/Offer">
+                    <t t-if="combination_info['price']">
+                        <del t-attf-class="text-muted me-1 h6 mb-0"
+                             style="white-space: nowrap;">
+                            <em class="small"
+                                t-esc="combination_info['price']"
+                                t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        </del>
+                    </t>
+                    <span class="h6 mb-0"
+                          t-if="combination_info['price'] or not website.prevent_zero_price_sale"
+                          t-esc="combination_info['price']"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    <span class="h6 mb-0" t-else=""
+                          t-field="website.prevent_zero_price_sale_text"/>
+                    <span itemprop="price" style="display:none;"
+                          t-esc="combination_info['price']"/>
+                    <span itemprop="priceCurrency" style="display:none;"
+                          t-esc="website.currency_id.name"/>
+                </div>
+            </t>
+        </xpath>
+    </template>
+    <!-- This template is used for hiding product price and add to cart button from each product and displays button for requesting price -->
+    <template id="shop_product_hide_price" inherit_id="website_sale.product">
+        <xpath expr="//div[hasclass('js_main_product')]" position="replace">
+            <t t-if="product.price_call">
+                <div class="alert alert-success" id="alert_message"
+                     style="display:none">
+                    Thank you for information, we will get back to you asap.
+                </div>
+                <a role="button" class="btn btn-primary" href="#"
+                   data-toggle="modal"
+                   data-target="#call_for_price">
+                    Call for Price
+                </a>
+                <div id="o_wsale_cta_wrapper"
+                     class="d-flex flex-wrap align-items-center">
+                    <t t-set="hasQuantities" t-value="false"/>
+                    <t t-set="hasBuyNow" t-value="false"/>
+                    <t t-set="ctaSizeBig"
+                       t-value="not hasQuantities or not hasBuyNow"/>
+                    <div id="product_option_block"
+                         class="d-flex flex-wrap w-100"/>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="js_product js_main_product mb-3">
+                    <div>
+                        <t t-call="website_sale.product_price"/>
+                        <small class="ms-1 text-muted o_base_unit_price_wrapper d-none"
+                               groups="website_sale.group_show_uom_price">
+                            <t t-call='website_sale.base_unit_price'/>
+                        </small>
+                    </div>
+                    <t t-placeholder="select">
+                        <input type="hidden" class="product_id"
+                               name="product_id"
+                               t-att-value="product_variant.id"/>
+                        <input type="hidden" class="product_template_id"
+                               name="product_template_id"
+                               t-att-value="product.id"/>
+                        <input t-if="product.public_categ_ids.ids" type="hidden"
+                               class="product_category_id"
+                               name="product_category_id"
+                               t-att-value="product.public_categ_ids.ids[0]"/>
+                        <t t-if="combination" t-call="sale.variants">
+                            <t t-set="ul_class" t-valuef="flex-column"/>
+                            <t t-set="parent_combination" t-value="None"/>
+                        </t>
+                        <t t-else="">
+                            <ul class="d-none js_add_cart_variants mb-0"
+                                t-att-data-attribute_exclusions="{'exclusions: []'}"/>
+                        </t>
+                    </t>
+                    <p t-if="True"
+                       class="css_not_available_msg alert alert-warning">This
+                        combination does not exist.
+                    </p>
+                    <div id="add_to_cart_wrap" class="d-inline">
+                        <a data-animation-selector=".o_wsale_product_images" role="button" id="add_to_cart" class="btn btn-primary btn-lg js_check_product a-submit my-1 mr-1 px-5 font-weight-bold flex-grow-1" href="#"><i class="fa fa-shopping-cart mr-2"/>ADD TO CART</a>
+                        <div id="product_option_block" class="d-inline-block align-middle"/>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//div[@id='o_product_terms_and_share']" position="before">
+            <div id="call_for_price" tabindex="-1" class="modal fade">
+                <div class="modal-dialog modal-content" style="height:auto">
+                    <div class="page">
+                        <h3 style="text-align:-webkit-center;">Call For
+                            Price
+                        </h3>
+                    </div>
+                    <input type="hidden" name="product_id" id="product_id"
+                           t-att-value="product.id"/>
+                    <hr/>
+                    <center>
+                        <table style="width:500px">
+                            <tr style="height:60px">
+                                <td style="width:100px">
+                                    <label for="first_name"
+                                           class="control-label">First Name
+                                        <i class="fa fa-asterisk" style="font-size:8px;color:red; position:absolute; top:122px; padding-left:2px;"/>
+                                    </label>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control"
+                                           name="first_name"
+                                           id="first_name"/>
+                                </td>
+                            </tr>
+                            <tr style="height:60px">
+                                <td>
+                                    <label for="last_name"
+                                           class="control-label">Last Name
+                                    </label>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control"
+                                           name="last_name"
+                                           id="last_name"/>
+                                    <i class="fa fa-asterisk" style="font-size:8px;color:red; position:absolute; top:181px; left:157px;"/>
+                                </td>
+                            </tr>
+                            <tr style="height:60px">
+                                <td>
+                                    <label for="email">Email</label>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control"
+                                           name="email"
+                                           id="email"/>
+                                    <i class="fa fa-asterisk" style="font-size:8px;color:red; position:absolute; top:240px; left:118px;"/>
+                                </td>
+                            </tr>
+                            <tr style="height:60px">
+                                <td>
+                                    <label for="phone">Contact No.</label>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control"
+                                           id="phone" name="phone"/>
+                                    <i class="fa fa-asterisk" style="font-size:8px;color:red; position:absolute; top:301px; left:161px;"/>
+                                </td>
+                            </tr>
+                            <tr style="height:60px">
+                                <td>
+                                    <label>Quantity</label>
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control"
+                                           name="quantity" id="quantity"/>
+                                    <i class="fa fa-asterisk" style="font-size:8px;color:red; position:absolute; top:362px; left:142px;"/>
+                                </td>
+                            </tr>
+                            <tr style="height:60px">
+                                <td>
+                                    <label>Message</label>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control"
+                                           name="message" id="message"/>
+                                    <i class="fa fa-asterisk" style="font-size:8px;color:red; position:absolute; top:424px; left:142px;"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <hr/>
+                         <button id="send_btn" type="button" class="btn btn-primary">
+                            Send
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn_close_modal"
+                                data-bs-dismiss="modal">
+                            Close
+                        </button>
+                    </center>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

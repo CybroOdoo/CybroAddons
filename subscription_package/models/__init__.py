@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from . import subscription_plan
 from . import subscription_stage
 from . import subscription_package
@@ -27,3 +26,4 @@ from . import subscription_products
 from . import subscription_close
 from . import subscription_renew
 from . import res_partner
+from . import recurrence_period

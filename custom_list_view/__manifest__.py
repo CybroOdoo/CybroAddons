@@ -22,7 +22,7 @@
 
 {
     'name': 'Custom List View',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'summary': 'Helps to Show Row Number, Fixed Header, Duplicate Record and Highlight Selected Record in List View',
     'description': 'Helps to Show Row Number, Fixed Header, Duplicate Record and Highlight Selected Record in List View',
     'category': 'Tools',

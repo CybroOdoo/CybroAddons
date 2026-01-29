@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Survey portal Views -->
+    <template id="portal_my_home_survey"
+              name="survey" customize_show="True"
+              inherit_id="portal.portal_my_home" priority="20">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Survey</t>
+                <t t-set="url" t-value="'/my/survey/ans'"/>
+                <t t-set="placeholder_count" t-value="'survey_count'"/>
+            </t>
+        </xpath>
+    </template>
+    <!-- Survey portal Breadcrumbs -->
+    <template id="portal_my_home_menu_survey" name="Portal layout : Survey menu"
+              inherit_id="portal.portal_breadcrumbs"
+              priority="20">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'survey'">
+                <a t-if="survey_boolean" t-attf-href="/my/survey/ans">/
+                    Surveys
+                </a>
+                <t t-else="">/ Surveys</t>
+            </li>
+            <li t-if="survey_boolean" class="breadcrumb-item active">
+                /
+                <t t-esc="survey"/>
+            </li>
+        </xpath>
+    </template>
+    <!-- Survey portal Views: Surveys -->
+    <template id="portal_survey_result" name="Survey">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Survey</t>
+            </t>
+            <table class="table rounded mb-0 bg-white o_portal_my_doc_table">
+                <thead>
+                    <tr class="active">
+                        <th class="text-right">Survey</th>
+                        <th class="text-right">Partner</th>
+                        <th class="text-right">Email</th>
+                        <th class="text-right">Status</th>
+                        <th class="text-right"/>
+                    </tr>
+                </thead>
+                <t t-foreach="survey_list" t-as="survey">
+                    <tr>
+                        <td class="text-right">
+                            <a t-attf-href="/my/survey/{{survey['id']}}">
+                                <span t-esc="survey['survey']"/>
+                            </a>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="survey['user_id']"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="survey['email']"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="survey['status']"/>
+                        </td>
+                    </tr>
+                </t>
+            </table>
+        </t>
+    </template>
+    <!-- Survey portal views results -->
+    <template id="portal_survey_result_view" name="Survey Result">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Survey Results</t>
+            </t>
+            <table class="table">
+                <tr>
+                    <td class="text-right">
+                        <strong>Survey:</strong>
+                        <span t-esc="survey"/>
+                    </td>
+                    <td>
+                        <strong>Created on:</strong>
+                        <span t-esc="survey_date"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong>Partner:</strong>
+                        <span t-esc="name"/>
+                    </td>
+                    <td>
+                        <strong>Email:</strong>
+                        <span t-esc="email"/>
+                    </td>
+                </tr>
+            </table>
+            <table class="table rounded mb-0 bg-white o_portal_my_doc_table">
+                <thead>
+                    <tr class="active">
+                        <th class="text-right">Questions</th>
+                        <th class="text-right">Created Date</th>
+                        <th class="text-right">Questions_type</th>
+                        <th class="text-right">Answer</th>
+                        <th class="text-right">Score</th>
+                    </tr>
+                </thead>
+                <t t-foreach="survey_questions" t-as="qst">
+                    <tr>
+                        <td class="text-right">
+                            <span t-esc="qst['questions']"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="qst['section']"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="qst['question_type']"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="qst['answer']"
+                                  style="white-space: normal !important;"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="qst['score']"/>
+                        </td>
+                    </tr>
+                </t>
+            </table>
+        </t>
+    </template>
+</odoo>

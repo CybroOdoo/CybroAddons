@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-##############################################################################
+###############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2019-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Akhilesh N S(<http://www.cybrosys.com>)
-#    you can modify it under the terms of the GNU LESSER
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Abhishek E T (odoo@cybrosys.com)
+#
+#    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
 #    This program is distributed in the hope that it will be useful,
@@ -14,9 +15,8 @@
 #    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
 #    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    GENERAL PUBLIC LICENSE (LGPL v3) along with this program.
+#    (LGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-##############################################################################
-
+###############################################################################
 from . import models

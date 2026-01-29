@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- This template inherits from the website_sale.payment template and
+    is used for the one-page checkout payment step. -->
+    <template id="one_page_checkout_payment" inherit_id="website_sale.payment">
+        <xpath expr="//div[@id='wrap']/div" position="replace">
+            <div class="row single_pg_checkout_layout">
+                <div class='col-12'>
+                    <t t-call="website_sale.wizard_checkout">
+                        <!-- This sets the step to 20 if the partner is inactive,
+                        or 40 if the partner is active. -->
+                        <t t-if="website_sale_order.partner_id.active == False">
+                            <t t-set="step" t-value="20"/>
+                        </t>
+                        <t t-else="">
+                            <t t-set="step" t-value="40"/>
+                        </t>
+                    </t>
+                </div>
+                <!-- This displays any errors that occur during checkout. -->
+                <div class="col-12" t-if="errors">
+                    <t t-foreach="errors" t-as="error">
+                        <div class="alert alert-danger" t-if="error" role="alert">
+                            <h4>
+                                <t t-esc="error[0]"/>
+                            </h4>
+                            <t t-esc="error[1]"/>
+                        </div>
+                    </t>
+                </div>
+                <!-- This calls the cart_summary and extra_info templates for the left column. -->
+                <div class="column">
+                    <t t-call="website_sale.cart_summary"/>
+                    <t t-call="one_page_checkout.extra_info"/>
+                </div>
+                <!-- This calls the address column template for the middle column. -->
+                <div class="column">
+                    <t t-call="one_page_checkout.address_column"/>
+                </div>
+                <!-- This calls the payment template for the right column.
+                If the partner is inactive, it adds the "block-ui" class to the column. -->
+                <div t-attf-class="column #{'block-ui' if website_sale_order.partner_id.active == False else ''}">
+                    <t t-call="one_page_checkout.payment"/>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

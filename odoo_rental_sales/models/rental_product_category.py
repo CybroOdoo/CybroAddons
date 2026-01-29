@@ -1,0 +1,48 @@
+# -*- coding: utf-8 -*-
+################################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Aswathi PN (odoo@cybrosys.com)
+#
+#    You can modify it under the terms of the GNU AFFERO
+#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
+#
+#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
+#    (AGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+from odoo import fields, models
+
+
+class RentalProductCategory(models.Model):
+    """Model for configuring the rental product category"""
+
+    _name = 'rental.product.category'
+    _description = 'Rental Product Categories'
+
+    name = fields.Char(string='Name', required=True,
+                       help='Name of rental product category')
+
+    def action_view_rental_products(self):
+        """Showing the products under the rental category
+
+             :param :
+            :return: tree view that under the rental category
+        """
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Rental Products',
+            'view_mode': 'tree',
+            'res_model': 'product.product',
+            'domain': [('category_id', '=', self.id)],
+            'context': "{'create': False}"
+        }

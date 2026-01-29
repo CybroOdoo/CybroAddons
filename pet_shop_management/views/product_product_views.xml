@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Pets view-->
+    <record id="product_product_view_form" model="ir.ui.view">
+        <field name="name">pets.form</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" eval="False"/>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="create_sale_order" string="Create Sale Order"
+                            type="object" class="oe_primary"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="pet_seq"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="dob"/>
+                            <field name="age" attrs="{'invisible':[('age','&lt;=',0)]}"/>
+                            <field name="month"
+                                   attrs="{'invisible':[('month','&lt;=',0)]}"/>
+                        </group>
+                        <group>
+                            <field name="image_1920" widget="image"
+                                   class="oe_avatar"
+                                   options="{'preview_image': 'image_128'}"/>
+                            <field name="partner_id"/>
+                            <field name="is_pet"/>
+                            <field name="is_pet_service"/>
+                        </group>
+                        <group>
+                            <field name="customer_id"/>
+                            <field name="responsible_id" string="Responsible"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group>
+                            <field name="sex"/>
+                            <field name="pet_type_id"/>
+                            <field name="color"/>
+                            <field name="stay"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Medical History"
+                              groups="pet_shop_management.pet_shop_management_group_pet_manager">
+                            <group>
+                                <group>
+                                    <field name="veterinarian_id"/>
+                                    <field name="pet_place"/>
+                                    <field name="pet_food"/>
+                                    <field name="is_contact"/>
+                                    <field name="previous_reactions"/>
+                                </group>
+                                <group>
+                                    <field name="is_allergy"/>
+                                    <field name="is_reaction"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Vaccine History"
+                              groups="pet_shop_management.pet_shop_management_group_pet_manager">
+                            <group>
+                                <field name="vaccine"/>
+                            </group>
+                        </page>
+                        <page string="Pet vaccines">
+                            <field name="pet_vaccines_ids">
+                                <tree editable="bottom">
+                                    <field name="vaccine_name"/>
+                                    <field name="date"/>
+                                    <field name="date_exp"/>
+                                    <field name="veterinarian_id"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Other Photos"
+                              groups="pet_shop_management.pet_user">
+                            <group>
+                                <field name="photo_one"/>
+                            </group>
+                            <group>
+                                <field name="photo_two"/>
+                                <field name="photo_three"/>
+                            </group>
+                        </page>
+                        <page string="Other Info">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"
+                           options="{'open_attachments': True}"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <record id="product_product_view_tree" model="ir.ui.view">
+        <field name="name">pets.tree</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" eval="False"/>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="pet_seq"/>
+                <field name="name"/>
+                <field name="dob"/>
+                <field name="stay"/>
+            </tree>
+        </field>
+    </record>
+    <record id="product_product_action" model="ir.actions.act_window">
+        <field name="name">Pets</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.product</field>
+        <field name="domain">[('is_pet', '=', True)]</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_ids"
+               eval="[(5, 0, 0),
+               (0, 0, {'view_mode': 'tree', 'view_id': ref('pet_shop_management.product_product_view_tree')}),
+               (0, 0, {'view_mode': 'form', 'view_id': ref('pet_shop_management.product_product_view_form')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a Pets
+            </p>
+        </field>
+    </record>
+    <!-- Action for pets service view -->
+    <record id="product_product_action" model="ir.actions.act_window">
+        <field name="name">Pets Main Action</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.product</field>
+        <field name="domain">[('is_pet_service', '=', True)]</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a Pets
+            </p>
+        </field>
+    </record>
+    <!-- Product inheriting to add new field-->
+    <record id="product_normal_form_view" model="ir.ui.view">
+        <field name="name">
+            product.product.view.form.inherit.pet.shop.management
+        </field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='sale_ok']" position="before">
+                <group>
+                    <field name="is_pet" string="Is Pet"/>
+                    <field name="is_pet_service" string="Is Pet Service"/>
+                    <field name="customer_id"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

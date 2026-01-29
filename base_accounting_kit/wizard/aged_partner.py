@@ -19,9 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 import time
-
 from dateutil.relativedelta import relativedelta
 
 from odoo import fields, models, _
@@ -40,7 +38,6 @@ class AccountAgedTrialBalance(models.TransientModel):
     date_from = fields.Date(default=lambda *a: time.strftime('%Y-%m-%d'))
 
     def _print_report(self, data):
-
         res = {}
         data = self.pre_print_report(data)
         data['form'].update(self.read(['period_length'])[0])
@@ -49,9 +46,7 @@ class AccountAgedTrialBalance(models.TransientModel):
             raise UserError(_('You must set a period length greater than 0.'))
         if not data['form']['date_from']:
             raise UserError(_('You must set a start date.'))
-
         start = data['form']['date_from']
-
         for i in range(5)[::-1]:
             stop = start - relativedelta(days=period_length - 1)
             res[str(i)] = {

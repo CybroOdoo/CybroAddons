@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--Add a filter to the product form view-->
+    <record id="product_product_view_search" model="ir.ui.view">
+        <field name="name">product.product.view.search.inherit.odoo.rental.sales</field>
+        <field name="model">product.product</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter string="Rental" name="rental"
+                        domain="[('rental', '=',True)]"/>
+            </search>
+        </field>
+    </record>
+    <!--Inherited product action for passing new context-->
+    <record id="product_product_action" model="ir.actions.act_window">
+        <field name="name">Products</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.product</field>
+        <field name="view_mode">kanban,tree,form,activity</field>
+        <field name="context">{'search_default_rental': 1, "default_rental": True}</field>
+        <field name="view_id" ref="product.product_search_form_view"/>
+        <field name="search_view_id" ref="odoo_rental_sales.product_product_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new rental product
+            </p>
+        </field>
+    </record>
+    <!--Adding custom field to the product form view-->
+    <record id="product_normal_form_view" model="ir.ui.view">
+        <field name="name">product.product.view.form.inherit.odoo.rental.sales</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='options']" position="inside">
+                <span class="d-inline-block">
+                    <field name="rental"/>
+                    <label for="rental"/>
+                </span>
+            </xpath>
+            <xpath expr="//notebook[last()]" position="inside">
+                <page string="Rental" name="rental">
+                    <group>
+                        <group>
+                            <field name="category_id"/>
+                            <field name="security_amount"/>
+                        </group>
+                        <group>
+                            <field name="product_agreement_id"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Report Template-->
+    <template id="report_trial_balance">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-if="start_date or end_date or journals_name or state">
+                    <div style="padding:10px;" class="row mt32 mb32">
+                        <div t-if="start_date"
+                             class="col-auto col-3 mw-100 mb-2">
+                            <strong>Start Date :</strong>
+                            <p class="m-0" t-esc="start_date"/>
+                        </div>
+                        <div t-if="end_date"
+                             class="col-auto col-3 mw-100 mb-2">
+                            <strong>End Date :</strong>
+                            <p class="m-0" t-esc="end_date"/>
+                        </div>
+                        <div t-if="journals_name"
+                             class="col-auto col-3 mw-100 mb-2">
+                            <strong>Journals:</strong>
+                            <p class="m-0" t-esc="journals_name"/>
+                        </div>
+                        <div t-if="state"
+                             class="col-auto col-3 mw-100 mb-2"
+                             name="state">
+                            <strong>State:</strong>
+                            <p class="m-0" t-esc="state"/>
+                        </div>
+                    </div>
+                </t>
+                <div class="page">
+                    <center>
+                        <h2 class="mt16">Trial Balance</h2>
+                    </center>
+                </div>
+                <br/>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Account</th>
+                            <th>Debit</th>
+                            <th>Credit</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="query" t-as="i">
+                            <td>
+                                <span t-esc="i['code']"/>
+                            </td>
+                            <td>
+                                <span t-esc="i['ac_name']"/>
+                            </td>
+                            <td>
+                                <span t-esc="currency"/>
+                                <span t-esc="i['debit']"/>
+                            </td>
+                            <td>
+                                <span t-esc="currency"/>
+                                <span t-esc="i['credit']"/>
+                            </td>
+                            <td>
+                                <span t-esc="currency"/>
+                                <span t-esc="i['balance']"/>
+                            </td>
+                        </tr>
+                        <tr class="border-top">
+                            <td colspan="2" style="text-align:center;">
+                                <b>Total</b>
+                            </td>
+                            <td>
+                                <b>
+                                    <span t-esc="currency"/>
+                                    <span t-esc="total_debit"/>
+                                </b>
+                            </td>
+                            <td>
+                                <b>
+                                    <span t-esc="currency"/>
+                                    <span t-esc="total_credit"/>
+                                </b>
+                            </td>
+                            <td>
+                                <b>
+                                    <span t-esc="currency"/>
+                                    <span t-esc="balance"/>
+                                </b>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </t>
+        </t>
+    </template>
+    <!--Report Action-->
+    <record id="action_report_trial_balance" model="ir.actions.report">
+        <field name="name">Trial Balance</field>
+        <field name="model">trial.balance.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">trial_balance_pdf.report_trial_balance</field>
+        <field name="report_file">trial_balance_pdf.report_trial_balance</field>
+        <field name="binding_model_id" ref="model_trial_balance_report"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

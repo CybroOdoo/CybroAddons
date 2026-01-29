@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+	<!-- Template of timesheet add view template from systray-->
+    <t t-name="TimesheetSystray" owl="1">
+		<Dropdown position="" menuClass="`p-3 pb-3` ">
+			<t t-set-slot="toggler" t-if="state.Access">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30px"
+                     height="1em" viewBox="0 0 448 512">
+				<path fill="currentColor"
+                      d="M432 304c0 114.9-93.1 208-208 208S16 418.9 16 304c0-104 76.3-190.2 176-205.5V64h-28c-6.6 0-12-5.4-12-12V12c0-6.6 5.4-12 12-12h120c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-28v34.5c37.5 5.8 71.7 21.6 99.7 44.6l27.5-27.5c4.7-4.7 12.3-4.7 17 0l28.3 28.3c4.7 4.7 4.7 12.3 0 17l-29.4 29.4l-.6.6C419.7 223.3 432 262.2 432 304m-176 36V188.5c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12V340c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12"/>
+				</svg>
+			</t>
+            <t t-set-slot="default">
+				<div t-ref="Timesheet"
+                     style="padding:5%;">
+					<div t-esc="state.time" class="time"/>
+                    <t t-if="!state.WorkTime">
+						<div class="row">
+							<div class="col-2">Project</div>
+                            <div class="col-8">
+								<select class="form-control ml-4 o_exported_lists_select Project"
+                                        t-on-change="(ev) => ChangeProject(ev.target.value)">
+									<option class="font-italic" value="">Select a
+										Project</option>
+                                    <t t-foreach="state.project"
+                                       t-as="project"
+                                       t-key="project_index">
+										<option t-att-value="project.id"
+                                                t-esc="project.display_name"/>
+									</t>
+								</select>
+							</div>
+						</div>
+                        <div class="row mt-2">
+							<div class="col-2">Task</div>
+                            <div class="col-8">
+									<select class="form-control ml-4 o_exported_lists_select Task"
+                                            t-on-change="(ev) => ChangeTask(ev.target.value)">
+										<option class="font-italic" value="">Select a
+											Task</option>
+                                        <t t-foreach="state.Task"
+                                           t-as="task" t-key="task_index">
+											<option t-att-value="task.id"
+                                                    t-esc="task.display_name"/>
+										</t>
+									</select>
+								</div>
+							</div>
+						</t>
+                    <t t-if="state.WorkTime">
+							<div class="row d-flex">
+								<div>
+									<small class="">Description</small>
+								</div>
+                                <div class="fs-3 text-info text-end">
+                                    <textarea class="form-control Description"
+                                              rows="3"/>
+								</div>
+							</div>
+						</t>
+					</div>
+                <div class="mt-2"
+                     style="justify-content: right;display: flex;padding-right: 16%;">
+					<button t-if="!state.WorkTime"
+                            class="btn btn-success start"
+                            t-on-click="StartTime">
+						<span>Start</span>
+					</button>
+                    <button t-if="state.WorkTime"
+                            class="btn btn-danger stop"
+                            t-on-click="AddTimesheet">
+							<span>Stop</span>
+						</button>
+                    <button t-if="state.WorkTime and !state.paused"
+                            class="btn btn-primary pause mr-4"
+                            t-on-click="PauseTime">
+                        <span>Pause</span>
+					</button>
+                    <button t-if="state.paused"
+                            class="btn btn-primary pause mr-4"
+                            t-on-click="PlayTime">
+                        <span>Re-start</span>
+						</button>
+					</div>
+			</t>
+		</Dropdown>
+	</t>
+</templates>

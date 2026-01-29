@@ -22,7 +22,7 @@
 
 {
     'name': "Invoice From Stock Picking",
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'summary': """In this module creating customer invoice,vendor bill, customer
     credit note and refund from stock picking""",
     'description': """In this module creating customer invoice,vendor bill, customer

@@ -19,12 +19,10 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from datetime import datetime, date
-
+from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 
-from odoo import models, fields, api, _
-from odoo.exceptions import UserError
+from odoo import api, fields, models, _
 
 
 class FilterRecurringEntries(models.Model):
@@ -90,7 +88,8 @@ class RecurringPayments(models.Model):
                                 store=True, required=True)
     company_id = fields.Many2one('res.company',
                                  default=lambda l: l.env.company.id)
-    recurring_lines = fields.One2many('account.recurring.entries.line', 'tmpl_id')
+    recurring_lines = fields.One2many(
+        'account.recurring.entries.line', 'tmpl_id')
 
     @api.onchange('partner_id')
     def onchange_partner_id(self):
@@ -167,13 +166,11 @@ class RecurringPayments(models.Model):
                 move_id.post()
 
 
-    class GetAllRecurringEntries(models.TransientModel):
-        _name = 'account.recurring.entries.line'
-        _description = 'Account Recurring Entries Line'
+class GetAllRecurringEntries(models.TransientModel):
+    _name = 'account.recurring.entries.line'
+    _description = 'Account Recurring Entries Line'
 
-        date = fields.Date('Date')
-        template_name = fields.Char('Name')
-        amount = fields.Float('Amount')
-        tmpl_id = fields.Many2one('account.recurring.payments', string='id')
-
-
+    date = fields.Date('Date')
+    template_name = fields.Char('Name')
+    amount = fields.Float('Amount')
+    tmpl_id = fields.Many2one('account.recurring.payments', string='id')

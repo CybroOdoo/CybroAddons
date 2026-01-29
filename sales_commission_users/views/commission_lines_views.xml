@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    To add option to create invoice in the action-->
+    <record id="commission_lines_action_create_invoice"
+            model="ir.actions.server">
+        <field name="name">Create Invoice</field>
+        <field name="type">ir.actions.server</field>
+        <field name="model_id"
+               ref="sales_commission_users.model_commission_lines"/>
+        <field name="binding_model_id"
+               ref="sales_commission_users.model_commission_lines"/>
+        <field name="binding_view_types">list</field>
+        <field name='groups_id'
+               eval="[(4, ref('account.group_account_invoice'))]"/>
+        <field name="state">code</field>
+        <field name="code">
+            if records:
+            action = records.action_create_invoice()
+        </field>
+    </record>
+    <!--    Commission lines tree view-->
+    <record id="commission_lines_view_tree" model="ir.ui.view">
+        <field name="name">commission.lines.view.tree</field>
+        <field name="model">commission.lines</field>
+        <field name="arch" type="xml">
+            <tree string="Sales Commission">
+                <field name="date"/>
+                <field name="description"/>
+                <field name="sales_person_id"/>
+                <field name="order_ref"/>
+                <field name="commission"/>
+                <field name="commission_type"/>
+                <field name="partner_id"/>
+                <field name="commission_amount"/>
+            </tree>
+        </field>
+    </record>
+    <!--    Action for commission lines-->
+    <record id="commission_lines_action" model="ir.actions.act_window">
+        <field name="name">Commission Lines</field>
+        <field name="res_model">commission.lines</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

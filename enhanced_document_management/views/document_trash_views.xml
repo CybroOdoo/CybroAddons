@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Window Action to show data from document.trash module-->
+     <record id="document_trash_action" model="ir.actions.act_window">
+        <field name="name">Trash</field>
+        <field name="res_model">document.trash</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--  Document Trash tree view  -->
+    <record id="document_trash_view_tree" model="ir.ui.view">
+        <field name="name">document.trash.view.tree</field>
+        <field name="model">document.trash</field>
+        <field name="arch" type="xml">
+            <tree create="0">
+                <field name="name" string="Document"/>
+                <field name="workspace_id" string="Workspace"/>
+                <field name="user_id" string="Owner" widget="many2one_avatar_user"/>
+                <field name="partner_id" string="Contact"/>
+                <field name="extension" string="Type"/>
+                <field name="deleted_date" string="Deleted on"/>
+            </tree>
+        </field>
+    </record>
+    <!--  Document Trash from view -->
+    <record id="document_trash_view_form" model="ir.ui.view">
+        <field name="name">document.trash.view.form</field>
+        <field name="model">document.trash</field>
+        <field name="arch" type="xml">
+            <form string="Trash Document" create="0" copy="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="attachment" filename="name"/>
+                            <field name="mimetype" invisible="1"/>
+                            <field name="name" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="workspace_id" help="User can choose where to save the file"/>
+                            <field name="company_id"/>
+                        </group>
+                    </group>
+                    <group string="History" invisible="1">
+                        <group>
+                            <field name="create_uid" string="Created by"/>
+                            <field name="create_date" string="Created on"/>
+                        </group>
+                        <group>
+                            <field name="write_uid" string="Last Updated on"/>
+                            <field name="create_date" string="Last Updated by"/>
+                        </group>
+                    </group>
+                    <group string="Security" rowspan="2">
+                        <group>
+                            <field name="security" widget="radio" string="Access" help="Who can access your file"/>
+                            <field name="user_ids" widget="many2many_tags"
+                                   attrs="{'invisible':[('security','!=','specific_users')]}"/>
+                        </group>
+                        <group>
+                            <field name="partner_id" string="Related Partner"/>
+                            <field name="auto_delete"/>
+                            <field name="days" attrs="{'invisible':[('auto_delete','=',False)]}"/>
+                            <field name="delete_date" attrs="{'invisible':[('auto_delete','=',False)]}"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <group colspan="4">
+                            <field colspan="2" name="description" nolabel="1" placeholder="Your file need..."/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

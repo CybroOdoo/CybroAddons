@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--    inheriting the website shop and customisation-->
+    <template id="perfume_shop_product_page" inherit_id="website_sale.products"
+              active="True" name="Products Page">
+        <xpath expr="//table[hasclass('table')]" position="replace">
+            <div class="product_view">
+                <div class="container">
+                    <div class="row">
+                        <div t-if="bins" class="row pt">
+                            <t t-foreach="bins" t-as="tr_product">
+                                <t t-foreach="tr_product"
+                                   t-as="td_product">
+                                    <t t-if="td_product">
+                                        <t t-set="product"
+                                           t-value="td_product['product']"/>
+                                        <t t-attf-class="wrapper"
+                                           t-att-data-ribbon-id="td_product['ribbon'].id">
+                                            <div t-attf-class="img_wrapper">
+                                                <t t-call="cts_theme_perfume.perfume_shop_images"/>
+                                            </div>
+                                        </t>
+                                    </t>
+                                    <t t-else=""/>
+                                </t>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <template id="perfume_add_grid_or_list_option"
+              name="perfume add_grid_or_list_option"
+              inherit_id="website_sale.add_grid_or_list_option">
+        <xpath expr="//div[hasclass('o_wsale_apply_layout')]"
+               position="replace">
+            <div class="btn-group btn-group-toggle ml-3 mb-2 d-none d-sm-inline-flex o_wsale_apply_layout"
+                 data-toggle="buttons">
+                <label t-attf-class="btn btn-light border-0 #{'active' if layout_mode != 'list' else None} fa fa-th-large o_wsale_apply_grid"
+                       title="Grid">
+                    <input type="radio" name="wsale_products_layout"
+                           t-att-checked="'checked' if layout_mode != 'list' else None"/>
+                </label>
+                <label t-attf-class="btn btn-light border-0 #{'active' if layout_mode == 'list' else None} fa fa-th-list o_wsale_apply_list"
+                       title="List">
+                    <input type="radio" name="wsale_products_layout"
+                           t-att-checked="'checked' if layout_mode == 'list' else None"/>
+                </label>
+            </div>
+        </xpath>
+    </template>
+    <template id="perfume_shop_images" name="Perfumr Shop Images"
+              inherit_id="website_sale.products_item">
+        <xpath expr="//div[hasclass('oe_product_image')]"
+               position="replace">
+            <t t-set="product" t-value="product"/>
+            <div class="card-body p-1 oe_product_image">
+                <input type="hidden" name="csrf_token"
+                       t-att-value="request.csrf_token()"/>
+                <a t-att-href="product_href" class="d-block h-100"
+                   itemprop="url">
+                    <t t-set="image_holder"
+                       t-value="product._get_image_holder()"/>
+                    <span t-field="image_holder.image_1920"
+                          t-options="{'widget': 'image', 'preview_image': 'image_1920'}"
+                          class="d-flex h-100 justify-content-center align-items-center">
+                    </span>
+                </a>
+            </div>
+        </xpath>
+        <xpath expr="//div[hasclass('o_wsale_product_information_text')]"
+               position="replace">
+            <div class="p-2 o_wsale_product_information_text">
+                <h6 class="o_wsale_products_item_title">
+                    <a style="font-size: 16px;text-decoration: none !important;font-weight: 600;color: #000000 !important"
+                       itemprop="name"
+                       t-att-href="product_href"
+                       t-att-content="product.name"
+                       t-field="product.name"/>
+                    <a role="button"
+                       t-if="not product.website_published"
+                       t-att-href="product_href"
+                       class="btn btn-sm btn-danger"
+                       title="This product is unpublished.">Unpublished
+                    </a>
+                </h6>
+                <div class="product_price" itemprop="offers"
+                     itemscope="itemscope"
+                     itemtype="http://schema.org/Offer">
+                    <del t-attf-class="text-danger mr-2 {{'' if combination_info['has_discounted_price'] else 'd-none'}}"
+                         style="white-space: nowrap;"
+                         t-esc="combination_info['list_price']"
+                         t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    <span t-if="combination_info['price']"
+                          t-esc="combination_info['price']"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+                          style="font-weight: 600;color: #000000 !important"/>
+                    <span itemprop="price" style="display:none;"
+                          t-esc="combination_info['price']"/>
+                    <span itemprop="priceCurrency" style="display:none;"
+                          t-esc="website.currency_id.name"/>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

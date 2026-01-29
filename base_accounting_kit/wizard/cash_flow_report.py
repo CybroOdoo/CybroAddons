@@ -19,7 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 
 
@@ -39,27 +38,30 @@ class AccountingReport(models.TransientModel):
         return reports and reports[0] or False
 
     enable_filter = fields.Boolean(string='Enable Comparison')
-    account_report_id = fields.Many2one('account.financial.report',
-                                        string='Account Reports',
-                                        required=True,
-                                        default=_get_account_report)
-    label_filter = fields.Char(string='Column Label',
-                               help="This label will be displayed on report to show the balance"
-                                    " computed for the given comparison filter.")
+    account_report_id = fields.Many2one(
+        'account.financial.report', string='Account Reports', required=True,
+        default=_get_account_report)
+    label_filter = fields.Char(
+        string='Column Label',
+        help="This label will be displayed on report to show the balance "
+             "computed for the given comparison filter.")
     filter_cmp = fields.Selection(
         [('filter_no', 'No Filters'), ('filter_date', 'Date')],
         string='Filter by', required=True, default='filter_no')
     date_from_cmp = fields.Date(string='Date Start')
     date_to_cmp = fields.Date(string='Date End')
-    debit_credit = fields.Boolean(string='Display Debit/Credit Columns',
-                                  help="This option allows you to get more details about the way your balances are computed. Because it is space consuming, we do not allow to use it while doing a comparison.")
+    debit_credit = fields.Boolean(
+        string='Display Debit/Credit Columns',
+        help="This option allows you to get more details about the way your "
+             "balances are computed. Because it is space consuming, we do not "
+             "allow to use it while doing a comparison.")
 
     def _build_comparison_context(self, data):
-        result = {}
-        result['journal_ids'] = 'journal_ids' in data['form'] and data['form'][
-            'journal_ids'] or False
-        result['state'] = 'target_move' in data['form'] and data['form'][
-            'target_move'] or ''
+        result = {
+            'journal_ids': data.get('form', {}).get(
+                'journal_ids', False) or False,
+            'state': data.get('form', {}).get('target_move', '') or '',
+        }
         if data['form']['filter_cmp'] == 'filter_date':
             result['date_from'] = data['form']['date_from_cmp']
             result['date_to'] = data['form']['date_to_cmp']
@@ -69,10 +71,9 @@ class AccountingReport(models.TransientModel):
     # @api.multi
     def check_report(self):
         res = super(AccountingReport, self).check_report()
-        data = {}
-        data['form'] = self.read(
+        data = {'form': self.read(
             ['account_report_id', 'date_from_cmp', 'date_to_cmp',
-             'journal_ids', 'filter_cmp', 'target_move'])[0]
+             'journal_ids', 'filter_cmp', 'target_move'])[0]}
         for field in ['account_report_id']:
             if isinstance(data['form'][field], tuple):
                 data['form'][field] = data['form'][field][0]
@@ -86,6 +87,5 @@ class AccountingReport(models.TransientModel):
              'account_report_id', 'enable_filter', 'label_filter',
              'target_move'])[0])
         return self.env.ref(
-            'base_accounting_kit.action_report_cash_flow').report_action(self,
-                                                                         data=data,
-                                                                         config=False)
+            'base_accounting_kit.action_report_cash_flow').report_action(
+            self, data=data, config=False)

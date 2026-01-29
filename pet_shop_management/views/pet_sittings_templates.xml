@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Template for pet sittings-->
+    <template id="portal_my_home_menu_sittings"
+              name="Portal layout : sittings menu entries"
+              inherit_id="portal.portal_breadcrumbs" priority="20">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'sittings'"
+                t-attf-class="breadcrumb-item #{'active ' if not sittings else ''}">
+                <a t-if="product_product"
+                   t-attf-href="/my/sittings?{{ keep_query() }}">Pet Sittings
+                    and Schedules
+                </a>
+                <t t-else="">Pet sittings And Schedules</t>
+            </li>
+        </xpath>
+    </template>
+    <template id="portal_my_home_sale_sittings" name="Sittings"
+              customize_show="True" inherit_id="portal.portal_my_home"
+              priority="20">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Pet sittings And Schedules</t>
+                <t t-set="url" t-value="'/my/sittings'"/>
+                <t t-set="placeholder_count" t-value="'sittings_count'"/>
+            </t>
+        </xpath>
+    </template>
+    <template id="portal_my_sittings" name="My Schedules">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Pet Sittings</t>
+            </t>
+            <t t-if="not sittings">
+                <p>There are currently no sittings.</p>
+            </t>
+            <t t-if="sittings" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Meeting #</th>
+                        <th>Pets</th>
+                        <th class='d-none d-md-table-cell'>Service</th>
+                        <th>Starting At</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="sittings" t-as="sit">
+                        <t t-foreach="sit.pet_info_ids" t-as="p">
+                            <t t-foreach="sit.service_ids" t-as="s">
+                                <tr>
+                                    <td>
+                                        <span t-field="sit.number_id.name"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="p.pet_num"/>
+                                    </td>
+
+                                    <td class="tx_status">
+                                        <span t-esc='s.name.name'/>
+                                    </td>
+                                    <td class="tx_status">
+                                        <span t-esc='sit.date_start'/>
+                                    </td>
+                                    <td class="tx_status">
+                                        <span t-esc='sit.duration'/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                    </t>
+                </tbody>
+            </t>
+        </t>
+    </template>
+</odoo>

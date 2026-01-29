@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Generate Lot/Serial Number From Manufacturing Order',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'summary': """Auto generate Serial/lot from manufacturing order""",
     'description': """Automatically generates lot/serial number for product while confirming
                       the manufacturing order.User can set lot/seral number sequence in 

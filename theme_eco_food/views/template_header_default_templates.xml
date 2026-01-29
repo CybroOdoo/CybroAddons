@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Template for header of theme eco food-->
+    <template id="header_eco_food" inherit_id="website.template_header_default"
+              name="Template Header Theme EcoFood" active="True">
+        <xpath expr="//t[@t-call='website.navbar']" position="replace">
+            <header class="header_modern_light">
+                <section class="nav_modern  sticker">
+                    <div class="containe-fluid">
+                        <div class="top_bar1 bg-dark">
+                            <div class="left">
+                                <span>
+                                    Welcome you to Eco life store!
+                                </span>
+                            </div>
+                            <div class="right">
+                                <ul class="d-flex xxx">
+                                    <li>
+                                        <t t-set="website_sale_pricelists" t-value="website.get_pricelist_available(show_visible=True)" />
+                                        <div class="bg-dark" t-attf-class="o_pricelist_dropdown dropdown#{'' if website_sale_pricelists and len(website_sale_pricelists)&gt;1 else ' d-none'} #{_classes}">
+                                            <t t-set="curr_pl" t-value="website.get_current_pricelist()" />
+                                            <a role="button" href="#" class="dropdown-toggle btn btn-light border-0 px-0 text-muted align-baseline bg-dark" data-toggle="dropdown">
+                                                <t t-esc="curr_pl and curr_pl.name or ' - '" />
+                                            </a>
+                                            <div class="dropdown-menu bg-dark" role="menu">
+                                                <t t-foreach="website_sale_pricelists" t-as="pl">
+                                                    <a role="menuitem" t-att-href="'/shop/change_pricelist/%s' % pl.id" class="dropdown-item">
+                                                        <span class="switcher_pricelist" t-att-data-pl_id="pl.id" t-esc="pl.name" />
+                                                    </a>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </li>
+
+                                    <li>
+                                        <t t-call="website_sale_wishlist.header_wishlist_link">
+                                            <t t-set="_text" t-value="True"/>
+                                            <t t-set="_link_class" t-value="'o_navlink_background_hover btn position-relative rounded-circle border-0 p-1 text-reset'"/>
+                                            <t t-set="_badge_class" t-value="'position-absolute bg-transparent top-0 end-0 mt-n1 me-n1 rounded-pill'"/>
+                                        </t>
+                                    </li>
+                                    <li class="user-dropdown-large">
+                                        <t t-call="portal.user_dropdown">
+                                            <t t-set="_icon" t-value="true"/>
+                                            <t t-set="_item_class" t-valuef="nav-item dropdown ml-3"/>
+                                            <t t-set="_link_class" t-valuef="nav-link"/>
+                                            <t t-set="_dropdown_menu_class" t-valuef="position-absolute dropdown-menu-right"/>
+
+                                        </t>
+                                    </li>
+
+
+                                </ul>
+                            </div>
+                        </div>
+                        <section class="topbar">
+                            <nav class="navbar navbar-expand-lg navbar-light ">
+                                <a class="navbar-brand pb-2   d-none d-md-none d-lg-block "
+                                   href="/">
+                                    <span t-field="website.logo"
+                                          t-options="{'widget': 'image', 'width': 95, 'height': 40}"
+                                          role="img"
+                                          t-att-aria-label="'Logo of %s' % website.name"
+                                          t-att-title="website.name"/>
+                                </a>
+                                <a class="navbar-toggler collapsed border-0 x "
+                                   type="button" data-toggle="collapse"
+                                   data-target="#navbarNavDropdown"
+                                   aria-controls="navbarNavDropdown"
+                                   aria-expanded="false"
+                                   aria-label="Toggle navigation">
+                                    <span class="span_color"/>
+                                    <span class="span_color"/>
+                                    <span class="span_color"/>
+                                </a>
+                                <div class="collapse navbar-collapse    p-3 p-lg-0 px-sm-0 mt-0 mt-lg-0 d-flex flex-column
+                                        flex-lg-row flex-xl-row justify-content-lg-center mobileMenu"
+                                     id="navbarNavDropdown">
+                                    <a class="navbar-toggler collapsed border-0 x mobile_toggler"
+                                       type="button"
+                                       data-toggle="collapse"
+                                       data-target="#navbarNavDropdown"
+                                       aria-controls="navbarNavDropdown"
+                                       aria-expanded="false"
+                                       aria-label="Toggle navigation">
+                                        <span class="span_color"/>
+                                        <span class="span_color"/>
+                                        <span class="span_color"/>
+                                    </a>
+
+                                    <ul class="navbar-nav align-self-stretch">
+                                        <li class="nav-item">
+                                            <t t-foreach="website.menu_id.child_id"
+                                               t-as="submenu">
+                                                <t t-set="item_class"
+                                                   t-valuef="nav-item"/>
+                                                <t t-set="link_class"
+                                                   t-valuef="nav-link"/>
+                                                <t t-set="show_dropdown"
+                                                   t-value="(submenu.is_mega_menu and submenu.is_visible) or submenu.child_id.filtered(lambda menu: menu.is_visible)"/>
+                                                <li t-if="submenu.is_visible and not (submenu.child_id or submenu.is_mega_menu)"
+                                                    t-attf-class="#{item_class or ''}">
+                                                    <a t-att-href="submenu.clean_url()"
+                                                       t-attf-class="#{link_class or ''} #{'active under_lines' if submenu.clean_url() and unslug_url(request.httprequest.path) == unslug_url(submenu.clean_url()) else ''}"
+                                                       role="menuitem"
+                                                       t-ignore="true"
+                                                       t-att-target="'_blank' if submenu.new_window else None">
+                                                        <span t-field="submenu.name"/>
+                                                    </a>
+                                                </li>
+                                                <li t-elif="show_dropdown"
+                                                    t-attf-class="#{item_class or ''} dropdown #{
+                                                    (submenu.clean_url() and submenu.clean_url() != '/' and any(request.httprequest.path == child.url for child in submenu.child_id if child.url) or
+                                                     (submenu.clean_url() and request.httprequest.path == submenu.clean_url())) and 'active'
+                                                    } #{submenu.is_mega_menu and 'position-static'}">
+                                                    <a t-attf-class="#{link_class or ''} dropdown-toggle #{submenu.is_mega_menu and 'o_mega_menu_toggle'}"
+                                                       data-bs-toggle="dropdown"
+                                                       href="#">
+                                                        <span t-field="submenu.name"/>
+                                                    </a>
+                                                    <div t-if="submenu.is_mega_menu"
+                                                         t-attf-class="dropdown-menu o_mega_menu #{submenu.mega_menu_classes}"
+                                                         data-name="Mega Menu"
+                                                         t-field="submenu.mega_menu_content"/>
+                                                    <ul t-else=""
+                                                        class="dropdown-menu"
+                                                        role="menu">
+                                                        <t t-foreach="submenu.child_id"
+                                                           t-as="submenu">
+                                                            <t t-call="website.submenu">
+                                                                <t t-set="item_class"
+                                                                   t-value="None"/>
+                                                                <t t-set="link_class"
+                                                                   t-valuef="dropdown-item"/>
+                                                            </t>
+                                                        </t>
+                                                    </ul>
+                                                </li>
+                                            </t>
+                                            <li class="d-xl-none d-lg-none">
+                                            <div class="custom-dropdown">
+                                                <t t-set="website_sale_pricelists" t-value="website.get_pricelist_available(show_visible=True)" />
+                                                <t t-set="curr_pl" t-value="website.get_current_pricelist()" />
+                                              <button class="custom-dropbtn">
+                                                  <a href="#">
+                                                        <span class="pricelist-label custom-label"><t t-esc="curr_pl and curr_pl.name or ' - '" /></span>
+                                                  </a>
+                                              </button>
+                                              <div class="custom-dropdown-content">
+                                                  <t t-foreach="website_sale_pricelists" t-as="pl">
+
+                                                        <a role="menuitem" t-att-href="'/shop/change_pricelist/%s' % pl.id" class="dropdown-item custom-dropdown-item">
+                                                            <span class="switcher_pricelist custom-switcher" t-att-data-pl_id="pl.id" t-esc="pl.name" />
+                                                        </a>
+
+                                                    </t>
+                                              </div>
+                                            </div>
+                                        </li>
+                                        </li>
+                                    </ul>
+
+                                </div>
+                                <a class="navbar-brand  navbar-brand2  pb-2  under_line d-block  d-lg-none"
+                                   href="index.html">EcoFood
+                                </a>
+                                <ul class="icons_nav d-flex">
+                                    <t t-set="_icon" t-value="True"/>
+                                    <t t-set="_item_class"
+                                       t-value="'nav-item mx-lg-3'"/>
+                                    <t t-set="_link_class"
+                                       t-value="'nav-link'"/>
+                                    <t t-nocache="The number of products is dynamic, this rendering cannot be cached."
+                                       t-nocache-_icon="_icon"
+                                       t-nocache-_item_class="_item_class"
+                                       t-nocache-_link_class="_link_class">
+                                        <t t-set="website_sale_cart_quantity"
+                                           t-value="request.session['website_sale_cart_quantity'] if 'website_sale_cart_quantity' in request.session else website.sale_get_order().cart_quantity or 0"/>
+                                        <t t-set="show_cart" t-value="true"/>
+                                        <li t-attf-class="#{_item_class} divider d-none"/>
+
+                                        <li t-attf-class="o_wsale_my_cart align-self-md-start #{not show_cart and 'd-none'} #{_item_class}">
+                                            <a href="/shop/cart"
+                                               t-attf-class="#{_link_class}">
+                                                <i t-if="_icon"
+                                                   class="bi bi-bag"/>
+                                                <span t-if="_text">My Cart
+                                                </span>
+                                                <sup class="my_cart_quantity badge text-bg-primary"
+                                                     t-esc="website_sale_cart_quantity"
+                                                     t-att-data-order-id="request.session.get('sale_order_id', '')"/>
+                                            </a>
+                                        </li>
+                                    </t>
+                                </ul>
+                            </nav>
+                            <div class="overlay"/>
+                        </section>
+                    </div>
+                </section>
+            </header>
+        </xpath>
+    </template>
+</odoo>

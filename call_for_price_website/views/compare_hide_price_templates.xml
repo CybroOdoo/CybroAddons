@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- This template used to hide the price form the comparison page-->
+    <template id="compare_hide_price"
+              inherit_id="website_sale_comparison.product_compare">
+        <xpath expr="//div[hasclass('product_summary')]/span" position="replace">
+            <t t-if="product.price_call"></t>
+            <t t-else="">
+                <span>
+                    <strong>Price:</strong>
+                    <del t-attf-class="text-danger mr8 {{'' if combination_info['has_discounted_price'] else 'd-none'}}" style="white-space: nowrap;" t-esc="combination_info['list_price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" />
+                    <span t-esc="combination_info['price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"></span>
+                    <small class="d-block text-muted" groups="website_sale.group_show_uom_price" t-if="product.base_unit_price">
+                        <t t-call='website_sale.base_unit_price'/>
+                    </small>
+                </span>
+            </t>
+        </xpath>
+        <xpath expr="//form[hasclass('o_add_cart_form_compare')]"
+               position="replace">
+            <t t-if="product.price_call"/>
+            <t t-else="">
+                <form action="/shop/cart/update" method="post"
+                      class="text-center o_add_cart_form_compare">
+                    <input type="hidden" name="csrf_token"
+                           t-att-value="request.csrf_token()"/>
+                    <input name="product_id" t-att-value="product.id"
+                           type="hidden"
+                           t-att-data-product-tracking-info="json.dumps(request.env['product.template'].get_google_analytics_data(combination_info))"/>
+                    <a role="button" class="btn btn-primary btn-block a-submit"
+                       href="#"><i class="fa fa-shopping-cart mr-2"/>Add to
+                        Cart
+                    </a>
+                </form>
+            </t>
+        </xpath>
+    </template>
+    <!-- This template used to hide price from product comparison tool page-->
+    <template id="compare_hide_price_product"
+              inherit_id="website_sale_comparison.product_product">
+        <xpath expr="//div[hasclass('pl-2')]" position="replace">
+            <t t-if="product.price_call">
+                <div class="col-8 pl-2">
+                    <h6>
+                        <a t-att-href="product.website_url">
+                            <t t-esc="combination_info['display_name']"/>
+                        </a>
+                        <br/>
+                    </h6>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="col-8 pl-2">
+                    <h6>
+                        <a t-att-href="product.website_url">
+                            <t t-esc="combination_info['display_name']"/>
+                        </a>
+                        <br/>
+                        <del t-attf-class="text-danger mr8 {{'' if combination_info['has_discounted_price'] else 'd-none'}}"
+                             style="white-space: nowrap;"
+                             t-esc="combination_info['list_price']"
+                             t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <span t-esc="combination_info['price']"
+                              t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    </h6>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

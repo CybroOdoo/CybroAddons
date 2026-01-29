@@ -107,20 +107,25 @@ class CommissionReportWizard(models.TransientModel):
                         lambda l: l.product_id == rule.product_id)
                     total_price = sum(
                         product_order_line.mapped('price_subtotal'))
-                    product_commission = (total_price * rule.percentage) / 100
+                    if rule.commission_amount_type == 'percentage':
+                        product_commission = (total_price * rule.percentage) / 100
+                    elif rule.commission_amount_type == 'fixed':
+                        product_commission = rule.fixed_amount
                     total_list.append(total_price)
                     user_commission_name.append(commission_id.name)
                     user_commission_salesperson.append(user.name)
                     commission_list.append(rule.amount) if (
-                            product_commission > rule.amount) \
+                            product_commission > rule.amount and rule.commission_amount_type == 'percentage') \
                         else commission_list.append(product_commission)
-
             if commission_id.type == 'revenue' and (
                     commission_id.revenue_type == 'graduated'):
                 for rule in commission_id.revenue_grd_comm_ids:
                     if rule.amount_from <= filtered_order_lines_commission_total < rule.amount_to:
-                        graduated_commission = (filtered_order_lines_commission_total
+                        if rule.graduated_amount_type == 'percentage':
+                            graduated_commission = (filtered_order_lines_commission_total
                                                 * rule.graduated_commission_rate) / 100
+                        elif rule.graduated_amount_type == 'fixed':
+                            graduated_commission = rule.graduated_fixed_amount
                         commission_list.append(graduated_commission)
                         user_commission_name.append(commission_id.name)
                         user_commission_salesperson.append(user.name)
@@ -128,8 +133,11 @@ class CommissionReportWizard(models.TransientModel):
 
             if commission_id.type == 'revenue' and (
                     commission_id.revenue_type == 'straight'):
-                straight_commission = (filtered_order_lines_commission_total
-                                       * commission_id.straight_commission_rate) / 100
+                if commission_id.straight_commission_type == 'percentage':
+                    straight_commission = (filtered_order_lines_commission_total
+                                           * commission_id.straight_commission_rate) / 100
+                elif commission_id.straight_commission_type == 'fixed':
+                    straight_commission = commission_id.straight_commission_fixed
                 commission_list.append(straight_commission)
                 user_commission_name.append(commission_id.name)
                 user_commission_salesperson.append(user.name)
@@ -177,14 +185,17 @@ class CommissionReportWizard(models.TransientModel):
                             lambda l: l.product_id == rules.product_id)
                         total_price = sum(
                             product_order_line.mapped('price_subtotal'))
-                        product_commission = (total_price * rules.percentage) / 100
+                        if rules.commission_amount_type == 'percentage':
+                            product_commission = (total_price * rules.percentage) / 100
+                        elif rules.commission_amount_type == 'fixed':
+                            product_commission = rules.fixed_amount
                         commission_total.append(total_price)
                         commission_name.append(commissions_id.name)
                         commission_salesperson.append(team_user.name)
                         commission_sales_team.append(
                             team_user.sale_team_id.name)
                         commission.append(rules.amount) if (
-                                product_commission > rules.amount) \
+                                product_commission > rules.amount and rules.commission_amount_type == 'percentage') \
                             else commission.append(product_commission)
 
                 if commissions_id.type == 'revenue' and (
@@ -192,8 +203,12 @@ class CommissionReportWizard(models.TransientModel):
                     for rules in commissions_id.revenue_grd_comm_ids:
                         if rules.amount_from <= filtered_order_lines_commission_total \
                                 < rules.amount_to:
-                            graduated_commission = (filtered_order_lines_commission_total
-                                                               * rules.graduated_commission_rate) / 100
+                            if rules.graduated_amount_type == 'percentage':
+                                graduated_commission = (filtered_order_lines_commission_total
+                                                        * rules.graduated_commission_rate) / 100
+                            elif rules.graduated_amount_type == 'fixed':
+                                graduated_commission = rules.graduated_fixed_amount
+
                             commission.append(graduated_commission)
                             commission_name.append(commissions_id.name)
                             commission_salesperson.append(team_user.name)
@@ -204,8 +219,11 @@ class CommissionReportWizard(models.TransientModel):
 
                 if commissions_id.type == 'revenue' and (
                         commissions_id.revenue_type == 'straight'):
-                    straight_commission = (filtered_order_lines_commission_total
-                                           * commissions_id.straight_commission_rate) / 100
+                    if commission_id.straight_commission_type == 'percentage':
+                        straight_commission = (filtered_order_lines_commission_total
+                                               * commission_id.straight_commission_rate) / 100
+                    elif commission_id.straight_commission_type == 'fixed':
+                        straight_commission = commission_id.straight_commission_fixed
                     commission.append(straight_commission)
                     commission_name.append(commissions_id.name)
                     commission_salesperson.append(team_user.name)

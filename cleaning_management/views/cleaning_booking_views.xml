@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Allows users to view the cleaning management as a tree and
+    provides a form for inputting cleaning management-->
+    <record id="cleaning_booking_action" model="ir.actions.act_window">
+        <field name="name">Cleaning Booking</field>
+        <field name="res_model">cleaning.booking</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a New Booking
+            </p>
+        </field>
+    </record>
+    <!--Cleaning management form view-->
+    <record id="cleaning_booking_view_form" model="ir.ui.view">
+        <field name="name">cleaning.booking.view.form</field>
+        <field name="model">cleaning.booking</field>
+        <field name="arch" type="xml">
+            <form duplicate="0">
+                <header>
+                    <button name="action_booking" string="Confirm"
+                            class="oe_highlight" type="object"
+                            attrs="{'invisible':
+                            [('confirm_stage', '=', False)]}"/>
+                    <button name="action_cancel" string="Cancel"
+                            class="oe_highlight" type="object"
+                            attrs="{'invisible':
+                            [('cancel_stage', '=', True)]}"/>
+                    <button name="action_create_invoice" type="object"
+                            string="Create Invoice"
+                            attrs="{'invisible': ['|', ('state', '!=', 'cleaned'),('invoice_count', '>', 0)]}"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,booked,cleaned"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" name="action_view_invoice"
+                                class="oe_stat_button"
+                                icon="fa-pencil-square-o"
+                                attrs="{'invisible':['|', ('invoice_count', '=', 0), ('state', 'in', ('draft','booked','cancelled'))]}">
+                            <field name="invoice_count" widget="statinfo"
+                                   string="Invoice"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="customer_name_id"/>
+                            <field name="address"/>
+                            <field name="building_type_id"/>
+                            <field name="booking_date"/>
+                            <field name="location_state_id"/>
+                            <field name="place"/>
+                            <field name="confirm_stage" invisible="1"/>
+                            <field name="clean_stage" invisible="1"/>
+                            <field name="cancel_stage" invisible="1"/>
+                        </group>
+                        <group position="right">
+                            <field name="cleaning_date"/>
+                            <field name="cleaning_time"/>
+                            <field name="cleaning_team_id"/>
+                            <field name="description"/>
+                            <field name="unit_price"/>
+                            <field name="total_hour_of_working" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--Cleaning management tree view-->
+    <record id="cleaning_booking_view_tree" model="ir.ui.view">
+        <field name="name">cleaning.booking.view.tree</field>
+        <field name="model">cleaning.booking</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="customer_name_id"/>
+                <field name="address"/>
+                <field name="building_type_id"/>
+                <field name="booking_date"/>
+                <field name="cleaning_team_id"/>
+                <field name="cleaning_date"/>
+                <field name="cleaning_time"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'cleaned'"
+                       decoration-info="state == 'booked'"
+                       decoration-danger="state == 'cancelled'"
+                       optional="show"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

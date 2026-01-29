@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Report action for brochure -->
+    <record id="action_property_brochure" model="ir.actions.report">
+        <field name="name">Property Brochure</field>
+        <field name="model">property.property</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">advanced_property_management.property_brochure</field>
+        <field name="report_file">advanced_property_management.property_brochure</field>
+        <field name="print_report_name">'Property Brochure - %s' %(object.name)</field>
+        <field name="binding_model_id" ref="model_property_property"/>
+        <field name="binding_type">report</field>
+    </record>
+    <!-- Template for brochure -->
+    <template id="property_brochure">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <t t-foreach="docs" t-as="data">
+                        <img t-attf-src="data:image/png;base64,{{data['image']}}"
+                             style="max-height: 300px; max-width: 400px;"/>
+                        <br/>
+                        <br/>
+                        <span style="font-size:25px;">
+                            <strong>
+                                <t t-esc="data['name']"/>
+                            </strong>
+                        </span>
+                        <br/>
+                        <span t-if="data['street']"><t t-esc="data['street']"/>,
+                        </span>
+                        <span t-if="data['street2']"><t
+                                t-esc="data['street2']"/>,
+                            <br/>
+                        </span>
+                        <span t-if="data['city']"><t t-esc="data['city']"/>,
+                        </span>
+                        <span t-if="data['zip']">
+                            <t t-esc="data['zip']"/>
+                            <br/>
+                        </span>
+                        <span t-if="data['state_id']"><t
+                                t-esc="data['state_id'].name"/>,
+                        </span>
+                        <span t-if="data['country_id']">
+                            <t t-esc="data['country_id'].name"/>
+                            <br/>
+                        </span>
+                        <br/>
+                        <br/>
+                        <span id="about_property">
+                            <strong style="font-size:20px;">About Property
+                            </strong>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td>
+                                        <strong>Latitude</strong>
+                                    </td>
+                                    <td>
+                                        <t t-esc="data['latitude']"/>
+                                    </td>
+                                    <td>
+                                        <strong>Longitude</strong>
+                                    </td>
+                                    <td>
+                                        <t t-esc="data['longitude']"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Constructed Year</strong>
+                                    </td>
+                                    <td>
+                                        <t t-esc="data['construct_year']"/>
+                                    </td>
+                                    <td>
+                                        <strong>License Number</strong>
+                                    </td>
+                                    <td>
+                                        <t t-esc="data['license_no']"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Property Type</strong>
+                                    </td>
+                                    <td>
+                                        <t t-esc="data['property_type']"/>
+                                    </td>
+                                    <td>
+                                        <strong>Property Measurement</strong>
+                                    </td>
+                                    <td><t t-esc="data['total_sq_feet']"/>(ft²)
+                                    </td>
+                                </tr>
+                            </table>
+                            <br/>
+                            <br/>
+                        </span>
+                        <span t-if="data['facility_ids']">
+                            <strong style="font-size:20px;">Property
+                                Facilities
+                            </strong>
+                            <ul class="list-group"
+                                t-foreach="data['facility_ids']" t-as="rec">
+                                <li class="list-group-item list-group-item-info">
+                                    <t t-esc="rec['facility']"/>
+                                </li>
+                            </ul>
+                            <br/>
+                            <br/>
+                        </span>
+                        <span t-if="data['nearby_connectivity_ids']">
+                            <strong style="font-size:20px;">Nearby Connectives
+                            </strong>
+                            <ul class="list-group"
+                                t-foreach="data['nearby_connectivity_ids']"
+                                t-as="rec">
+                                <li class="list-group-item list-group-item-warning">
+                                    <t t-esc="rec['name']"/>
+                                    -->
+                                    <t t-esc="rec['kilometer']"/>
+                                    Kilometers
+                                </li>
+                            </ul>
+                            <br/>
+                            <br/>
+                        </span>
+                        <span id="property_images"
+                              t-if="data['property_image_ids']">
+                            <strong style="font-size:20px;">Property Images
+                            </strong>
+                            <div class="card-group"
+                                 t-foreach="data['property_image_ids']"
+                                 t-as="rec">
+                                <div class="card">
+                                    <img t-attf-src="data:image/png;base64,{{rec['image']}}"
+                                         style="max-height: 200px; max-width: 300px;"/>
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <t t-esc="rec['name']"/>
+                                        </h5>
+                                        <p class="card-text">
+                                            <t t-esc="rec['description']"/>
+                                        </p>
+                                    </div>
+                                </div>
+                                <br/>
+                            </div>
+                        </span>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

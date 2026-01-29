@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="vendor_search_view_inherit" model="ir.ui.view">
+        <field name="name">vendor.form.search.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="groups_id" eval="[(4, ref('purchase.group_purchase_user'))]"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='type_company']" position="after">
+                <filter string="Registered Vendors" name="is_registered"
+                        domain="[('is_registered','=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="registered_res_partner_action_supplier" model="ir.actions.act_window">
+        <field name="name">Registered Vendors</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="context">{'search_default_is_registered': True}</field>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Create a new vendor
+          </p><p>
+            Odoo helps you easily track all activities related to a registered vendor.
+          </p>
+        </field>
+    </record>
+
+    <record id="vendor_view_form" model="ir.ui.view">
+        <field name="name">vendor.form.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form" />
+        <field name="priority" eval="9"/>
+        <field name="groups_id" eval="[(4, ref('purchase.group_purchase_user'))]"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <field name="is_registered" invisible="1"/>
+                <button class="oe_stat_button" name="%(vendor_portal_odoo.register_vendor_action)d" type="action"
+                    groups="purchase.group_purchase_user"
+                    icon="fa-user-plus" attrs="{'invisible': [('supplier_rank','=',0)]}">
+                    <field name="supplier_rank" invisible="1"/>
+                    <span class="o_stat_text" attrs="{'invisible': [('is_registered', '=', True)]}">Make Portal User</span>
+                    <span class="o_stat_text" attrs="{'invisible': [('is_registered', '=', False)]}">Registered</span>
+                </button>
+            </div>
+        </field>
+    </record>
+</odoo>

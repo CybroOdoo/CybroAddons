@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="report_sale_purchase">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h2>Sale Purchase Report</h2>
+                    <br t-if="date_from or data_to"/>
+                    <div>
+                        <t t-if="date_from">
+                            <span>
+                                <strong>Date From:</strong>
+                                <span style="margin-left:3px;margin-right:17px;margin-bottom:3px"
+                                      t-esc="date_from"/>
+                            </span>
+                        </t>
+                        <t t-if="date_to">
+                            <span>
+                                <strong>Date To:</strong>
+                                <span style="margin-left:3px;margin-right:17px;margin-bottom:3px"
+                                      t-esc="date_to"/>
+                            </span>
+                        </t>
+                    </div>
+                    <br/>
+                    <table class="table table-sm o_main_table">
+                        <thead>
+                            <tr>
+                                <th>Order Date</th>
+                                <th>Order Type</th>
+                                <th>Order Ref</th>
+                                <th>Partner</th>
+                                <th>Product</th>
+                                <th>Product Type</th>
+                                <th>Qty Ordered</th>
+                                <th>Qty Received/Delivered</th>
+                                <th>Qty Billed/Invoiced</th>
+                                <th>Unit Price</th>
+                                <th>Price Total</th>
+                                <th>Order State</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs" t-as="line">
+                                <tr>
+                                    <td>
+                                        <span t-esc="line[3]" t-options="{'widget': 'date'}"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="line[1]"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="line[6]"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="request.env['res.partner'].sudo().browse(line[4]).name"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="request.env['product.product'].sudo().browse(line[5]).display_name"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="{
+                                        'service': 'Service',
+                                        'consu': 'Consumable',
+                                        'product': 'Product'
+                                        }[line[13]]"/>
+                                    </td>
+                                    <td>
+                                        <t t-if="line[1] == 'Sale' and line[17]">
+                                            <span t-esc="line[17]"/>
+                                            <span t-esc="request.env['uom.uom'].sudo().browse(line[21]).name"
+                                                  groups="uom.group_uom"/>
+                                        </t>
+                                        <t t-if="line[1] == 'Purchase' and line[16] != 0">
+                                            <span t-esc="line[16]"/>
+                                            <span t-esc="request.env['uom.uom'].sudo().browse(line[21]).name"
+                                                  groups="uom.group_uom"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-if="line[1] == 'Sale' and line[18] != 0">
+                                            <span t-esc="line[18]"/>
+                                            <span t-esc="request.env['uom.uom'].sudo().browse(line[21]).name"
+                                                  groups="uom.group_uom"/>
+                                        </t>
+                                        <t t-if="line[1] == 'Purchase' and line[19] != 0">
+                                            <span t-esc="line[19]"/>
+                                            <span t-esc="request.env['uom.uom'].sudo().browse(line[21]).name"
+                                                  groups="uom.group_uom"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-if="line[1] == 'Sale' and line[14] != 0">
+                                            <span t-esc="line[14]"/>
+                                            <span t-esc="request.env['uom.uom'].sudo().browse(line[21]).name"
+                                                  groups="uom.group_uom"/>
+                                        </t>
+                                        <t t-if="line[1] == 'Purchase' and line[15] != 0">
+                                            <span t-esc="line[15]"/>
+                                            <span t-esc="request.env['uom.uom'].sudo().browse(line[21]).name"
+                                                  groups="uom.group_uom"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-if="line[1] == 'Sale' and line[7]">
+                                            <span t-esc="line[7]"/>
+                                        </t>
+                                        <t t-else="line[8]">
+                                            <span t-esc="line[8]"/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-if="line[1] == 'Sale' and line[11]">
+                                            <span t-esc="line[11]"
+                                                  t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                        </t>
+                                        <t t-else="line[12]">
+                                            <span t-esc="line[12]"
+                                                  t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-esc="{
+                                        'draft_sale': 'Quotation',
+                                        'draft_rfq': 'RFQ',
+                                        'sent_sale': 'Quotation Sent',
+                                        'rfq_sent': 'RFQ Sent',
+                                        'to_approve': 'To Approve',
+                                        'sale': 'Sale Order',
+                                        'purchase': 'Purchase Order',
+                                        'done': 'Done',
+                                        'cancel': 'Cancelled'}[line[2]]"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Template for portal view for pet information-->
+    <template id="portal_my_home_menu_pets"
+              name="Portal layout : Pets menu entries"
+              inherit_id="portal.portal_breadcrumbs" priority="25">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'pets'"
+                t-attf-class="breadcrumb-item #{'active ' if not pets else ''}">
+                <a t-if="hr_payslip"
+                   t-attf-href="/my/pets?{{ keep_query() }}">Pets
+                </a>
+                <t t-else="">Pets</t>
+            </li>
+        </xpath>
+    </template>
+    <template id="portal_my_home_sale_pets" name="Pets"
+              customize_show="True" inherit_id="portal.portal_my_home"
+              priority="25">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Pets</t>
+                <t t-set="url" t-value="'/my/pets'"/>
+                <t t-set="placeholder_count" t-value="'pets_count'"/>
+            </t>
+        </xpath>
+    </template>
+    <template id="portal_my_pets" name="My Pets">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">My Pets</t>
+            </t>
+            <t t-if="not pets">
+                <p>There is no information regarding this pet is
+                    available.
+                </p>
+            </t>
+            <t t-if="pets" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Number #</th>
+                        <th>Name</th>
+                        <th class='d-none d-md-table-cell'>Responsible</th>
+                        <th>Pet Type</th>
+                        <th>Birth date</th>
+                        <th>Age</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="pets" t-as="pet">
+                        <tr>
+                            <td>
+                                <a t-attf-href="/my/pets/#{pet.id}?{{ keep_query() }}"
+                                   t-att-title="pet.pet_seq">
+                                    <t t-esc="pet.pet_seq"/>
+                                </a>
+                            </td>
+                            <td>
+                                <span t-field="pet.name"/>
+                            </td>
+                            <td class='d-none d-md-table-cell'>
+                                <span t-field="pet.responsible_id"/>
+                            </td>
+                            <td class="tx_status">
+                                <span t-esc='pet.pet_type_id.name'/>
+                            </td>
+                            <td class="tx_status">
+                                <span t-esc='pet.dob'/>
+                            </td>
+                            <td class="tx_status">
+                                <span t-esc='pet.age'/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </t>
+        </t>
+    </template>
+    <template id="portal_pets_page" name="Pets Portal Template"
+              inherit_id="portal.portal_sidebar" primary="True">
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+            <t t-set="o_portal_fullwidth_alert"
+               groups="sales_team.group_sale_salesman">
+                <t t-call="portal.portal_back_in_edit_mode">
+                    <t t-set="url" t-value="'/my/pets/#'"/>
+                </t>
+            </t>
+            <div class="row mt16 o_portal_sale_sidebar">
+                <div id="pets_content"
+                     class="col-12 col-lg justify-content-end">
+                    <div t-attf-class="card #{'pb-5' if report_type == 'pdf' else ''}"
+                         id="portal_sale_content">
+                        <div t-call="pet_shop_management.pets_portal_content"/>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <template id="pets_portal_content" name="Payslip Portal Content">
+        <div id="introduction"
+             t-attf-class="pb-2 pt-3 #{'card-header bg-white' if report_type == 'pdf' else ''}">
+            <h2 class="my-0" style="margin-left: 840px;">
+                <t t-esc="pets.name"/>
+            </h2>
+        </div>
+        <div style="padding-left: 25px;">
+            <div id="informations">
+                <div class="row">
+                    <div class="mb-2 col-3">
+                        <div>
+                            <span>
+                                <b>Number:</b>
+                            </span>
+                            <t t-esc="pets.pet_seq"/>
+                            <span>
+                                <b>Number:</b>
+                            </span>
+                            <t t-esc="pets.pet_seq"/>
+                            <br/>
+                            <span>
+                                <b>Name:</b>
+                            </span>
+                            <t t-esc="pets.name"/>
+                            <br/>
+                            <span>
+                                <b>Birth:</b>
+                            </span>
+                            <t t-esc="pets.dob"/>
+                            <br/>
+                            <span>
+                                <b>Age:</b>
+                            </span>
+                            <t t-esc="pets.age"/>
+                            <br/>
+                            <span>
+                                <b>Type:</b>
+                            </span>
+                            <t t-esc="pets.pet_type_id.name"/>
+                            <br/>
+                            <span>
+                                <b>Color:</b>
+                            </span>
+                            <t t-esc="pets.color"/>
+                            <br/>
+                            <span>
+                                <b>Type:</b>
+                            </span>
+                            <t t-esc="pets.stay"/>
+                        </div>
+                    </div>
+                    <div style="margin-left: 813px;margin-top: -181px;width: 215px;">
+                        <span t-field="pets.image_1920"
+                              t-options='{"widget": "image"}'/>
+                    </div>
+                </div>
+                <br/>
+                <br/>
+                <div>
+                    <h2>Medical History</h2>
+                    <span>Has your pet ever had an allergic reaction to
+                        medicine?
+                    </span>
+                    <br/>
+                    <span>Has your pet ever had an allergic reaction to
+                        vaccine?
+                    </span>
+                    <br/>
+                    <span>Has your pet had any previous medical or surgical
+                        problems?
+                    </span>
+                    <br/>
+                </div>
+                <br/>
+                <br/>
+                <div>
+                    <h2>Pet Vaccines</h2>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Description
+                                </th>
+                                <th>Date</th>
+                                <th>Expiration Date</th>
+                                <th>Veterinarian</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <t t-esc="pets.pet_vaccines_ids.vaccine_name"/>
+                                </td>
+                                <td>
+                                    <t t-esc="pets.pet_vaccines_ids.date"/>
+                                </td>
+                                <td>
+                                    <t t-esc="pets.pet_vaccines_ids.date_exp"/>
+                                </td>
+                                <t t-if="pets.pet_vaccines_ids.veterinarian_id">
+                                    <td>
+                                        <t t-esc="pets.pet_vaccines_ids.veterinarian_id.name"/>
+                                    </td>
+                                </t>
+                                <t t-else="">
+                                    <td/>
+                                </t>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <br/>
+                <br/>
+                <div>
+                    <h2>Other Information</h2>
+                    <t t-esc="pets.notes"/>
+                    <br/>
+                    <span>Contact if your pet has any hesitation</span>
+                    <br/>
+                    <span>Where did your pet come from?</span>
+                    <br/>
+                    <span>what do you feed your pet?</span>
+                    <t t-esc="pets.pet_food"/>
+                    <br/>
+                </div>
+                <p class="text-right">
+                    <strong>Authorized signature</strong>
+                </p>
+            </div>
+        </div>
+    </template>
+</odoo>

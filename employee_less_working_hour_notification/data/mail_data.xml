@@ -1,0 +1,121 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<odoo>
+    <data noupdate="1">
+        <!--Email Template for employee having less working hour-->
+        <record id="mail_template_less_worked_employees" model="mail.template">
+            <field name="name">Employees Having Less Working Hours</field>
+            <field name="model_id" ref="model_hr_employee"/>
+            <field name="subject">Employees Having Less Working Hours</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;background-color:#f2f2f2;
+                height:auto">
+                    <div style="background-color:#875a7b;height:150px;">
+                        <center>
+                            <div style="height:150px; color:white;  width:40%">
+                                <br/>
+                                <h1>
+                                    <t t-out="ctx.get('company_detail')
+                                    ['company']"/>
+                                </h1>
+                                <h3>
+                                    <t t-out="ctx.get('company_detail')
+                                    ['email']"/>
+                                    <br/>
+                                    <t t-out="ctx.get('company_detail')
+                                    ['phone']"/>
+                                </h3>
+                            </div>
+                        </center>
+                    </div>
+                    <br/>
+                    <br/>
+                    <t t-if="ctx.get('less_worked_employee_list')">
+                        <table class="table table_notification"
+                               style="align:center;background-color:white;
+                               width:70%; margin:auto;padding-bottom:100px;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th colspan="3">
+                                        <center>
+                                            <h3>List of Employees worked less
+                                                than
+                                                <t t-out="ctx.get('company_detail')['minimum_working_hour']"/>
+                                                hours on
+                                                <t t-out="ctx.get('company_detail')['date']"/>
+                                            </h3>
+                                        </center>
+                                    </th>
+                                </tr>
+                                <tr style="text-align: center;">
+                                    <th scope="col" >Name</th>
+                                    <th scope="col">Department</th>
+                                    <th scope="col">Worked Hours</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="ctx.get
+                                ('less_worked_employee_list')"
+                                   t-as="rec">
+                                    <tr class="tr_notification" >
+                                        <t t-foreach="rec" t-as="item">
+                                            <td class="td_notification"
+                                                style="text-align: center;">
+                                                <t t-out="rec[item]"/>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <t t-if="ctx.get('non_checkout_employee_list')">
+                        <table class="table table_notification"
+                               style="align:center;background-color:white;
+                               width:70%; margin:auto;padding-bottom:100px;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th colspan="2">
+                                        <center>
+                                            <h3>
+                                                List of employees who doesn't
+                                                check out on
+                                                <t t-out="ctx.get
+                                                ('company_detail')['date']"/>
+                                            </h3>
+                                        </center>
+                                    </th>
+                                </tr>
+                                <tr style="text-align: center;">
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Department</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="ctx.get
+                                ('non_checkout_employee_list')"
+                                   t-as="rec">
+                                    <tr class="tr_notification" >
+                                        <t t-foreach="rec" t-as="item">
+                                            <td class="td_notification"
+                                                style="text-align: center;">
+                                                <t t-if="rec[item]!=0">
+                                                    <t t-out="rec[item]"/>
+                                                </t>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+                    <br/>
+                    <br/>
+                    <br/>
+                </div>
+            </field>
+        </record>
+    </data>
+</odoo>

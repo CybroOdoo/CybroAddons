@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form view -->
+    <record id="visa_approval_view_form" model="ir.ui.view">
+        <field name="name">visa.approval.view.form</field>
+        <field name="model">visa.approval</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,approved,expired"/>
+                    <button name="action_visa_approve" string="Approve" class="oe_highlight" type="object"
+                            groups="employee_visa_management.visa_manager" states="submit,reject"/>
+                    <button name="action_visa_submit" string="Submit" class="oe_highlight" type="object" states="draft,reject"/>
+                    <button name="action_renew" string="Renew" class="oe_highlight" type="object" states="expired"/>
+                    <button name="action_reject" string="Reject" class="oe_highlight" type="object" states="submit,approved"
+                            groups="employee_visa_management.visa_manager"/>
+                </header>
+                <sheet>
+                    <h1 class="head-class">
+                        <field name="name"/>
+                    </h1>
+                    <group col="4" colspan="2">
+                        <field name="application_date"/>
+                        <field name="employee_id"/>
+                        <field name="visa_application_no_id" readonly="1"/>
+                        <field name="expire_date" readonly="1"/>
+                        <field name="visa_type"/>
+                        <field name="company_id"/>
+                    </group>
+                    <notebook>
+                        <page string="Visa Application">
+                            <group col="4" colspan="2">
+                                <field name="employee_id"/>
+                                <field name="profession"/>
+                                <field name="passport"/>
+                                <field name="gender"/>
+                                <field name="department_id"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!-- Inherit form view -->
+    <record id="visa_approval_view_form_inherit" model="ir.ui.view">
+        <field name="name">visa.approval.view.form.inherit.employee.visa.management</field>
+        <field name="model">visa.approval</field>
+        <field name="inherit_id" ref="employee_visa_management.visa_approval_view_form"/>
+        <field name="groups_id" eval="[(4, ref('employee_visa_management.visa_manager'))]"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='visa_application_no_id']" position="attributes">
+                <attribute name="readonly">0</attribute>
+            </xpath>
+            <xpath expr="//field[@name='expire_date']" position="attributes">
+                <attribute name="readonly">0</attribute>
+            </xpath>
+        </field>
+    </record>
+    <!-- Tree view -->
+    <record id="visa_approval_tree" model="ir.ui.view">
+        <field name="name">visa.approval.view.tree</field>
+        <field name="model">visa.approval</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="application_date"/>
+                <field name="expire_date"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Search view -->
+    <record id="view_expired_search" model="ir.ui.view">
+        <field name="name">visa.approval.search</field>
+        <field name="model">visa.approval</field>
+        <field name="arch" type="xml">
+            <search string="Visa">
+                <filter name="is_expired" string="Is Expired" domain="[('is_expired', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+    <!-- Action -->
+    <record id="visa_approval_action" model="ir.actions.act_window">
+        <field name="name">Visa Approval</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">visa.approval</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_expired_search"/>
+    </record>
+    <!-- Menu -->
+    <menuitem id="employee_visa_menu" name="Visa Management"
+              web_icon="employee_visa_management,static/description/icon.png"
+              sequence="2"/>
+    <menuitem id="visa_management_menu" name="Visa Management"
+              parent="employee_visa_menu"
+              sequence="6"/>
+    <menuitem id="visa_approval_menu" name="Visa Approval"
+              parent="visa_management_menu"
+              action='visa_approval_action'
+              sequence="4"/>
+</odoo>

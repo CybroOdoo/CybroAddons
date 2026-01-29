@@ -26,7 +26,7 @@ from odoo import fields, models
 class AccountPartnerLedger(models.TransientModel):
     _inherit = "account.report.partner.ledger"
 
-    partner_ids = fields.Many2many('res.partner', 'partner_ledger_partner_rel', 'id', 'partner_id', string='Partners')
+    partner_ids = fields.Many2many('res.partner', 'partner_ledger_res_partner_rel', 'id', 'partner_id', string='Partners')
 
     def _print_report(self, data):
         data = self.pre_print_report(data)

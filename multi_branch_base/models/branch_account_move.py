@@ -61,7 +61,6 @@ class AccountMove(models.Model):
         else:
             company_id = self.company_id.id if self.company_id else self._context.get('default_company_id',
                                            self.env.company.id)
-
             domain = [('company_id', '=', company_id),
                       ('type', 'in', journal_types)]
             journal = None
@@ -84,6 +83,14 @@ class AccountMove(models.Model):
 
             return journal
 
+    @api.depends('journal_id')
+    def _compute_default_branch(self):
+        for record in self:
+            if record.journal_id:
+                record.branch_id = record.journal_id.branch_id.id
+            else:
+                record.branch_id = False
+
     def _get_default_branch(self):
         branch = False
         if len(self.env.user.branch_ids) == 1:
@@ -101,7 +108,8 @@ class AccountMove(models.Model):
     branch_id = fields.Many2one('res.branch', string='Branch', store=True,
                                 readonly=False,
                                 default=_get_default_branch,
-                                domain=_get_branch_domain)
+                                domain=_get_branch_domain,
+                                compute=_compute_default_branch)
 
     @api.onchange('branch_id')
     def onchange_branch_id(self):
@@ -157,7 +165,6 @@ class AccountMove(models.Model):
                 journal_type = m.invoice_filter_type_domain or 'general'
                 company_id = m.company_id.id if m.company_id else self.env.company.id
                 domain = [('company_id', '=', company_id),
-                          ('branch_id', '=', False),
                           ('type', '=', journal_type)]
                 m.suitable_journal_ids = self.env['account.journal'].search(
                     domain)

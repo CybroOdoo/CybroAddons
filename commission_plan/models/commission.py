@@ -41,7 +41,17 @@ class CommissionPlan(models.Model):
     user_id = fields.Many2one('res.users', string='Salesperson')
     product_comm_ids = fields.One2many('commission.product', 'commission_id',
                                        string="Product Wise")
+    currency_id = fields.Many2one("res.currency", string="Currency",
+                                  default=lambda self:
+                                  self.env.user.company_id.currency_id.id)
+    straight_commission_type = fields.Selection([('percentage', 'Percentage'),
+                                                ('fixed', 'Fixed Amount')],
+                                                string="Amount Type",
+                                                default='percentage')
+
+    straight_commission_fixed = fields.Monetary('Commission Amount', default=0.0)
     straight_commission_rate = fields.Float(string='Commission rate (%)')
+
     revenue_grd_comm_ids = fields.One2many(
         'commission.graduated',
         'commission_id',
@@ -78,6 +88,9 @@ class CommissionProduct(models.Model):
     category_id = fields.Many2one('product.category', string='Product Category')
     product_id = fields.Many2one('product.product', string='Product',
                                  domain="[('categ_id', '=', category_id)]")
+    commission_amount_type = fields.Selection([('percentage', 'Percentage'),
+                                               ('fixed', 'Fixed Amount')], string="Amount Type", default='percentage')
+    fixed_amount = fields.Monetary('Commission Amount', default=0.0)
     percentage = fields.Float(string='Rate in Percentage (%)')
     amount = fields.Monetary('Maximum Commission Amount', default=0.0)
     currency_id = fields.Many2one("res.currency", string="Currency",
@@ -90,6 +103,12 @@ class CommissionRevenueGraduated(models.Model):
     _name = 'commission.graduated'
     _description = 'Commission Revenue Graduated Wise'
 
+    currency_id = fields.Many2one("res.currency", string="Currency",
+                                  default=lambda self:
+                                  self.env.user.company_id.currency_id.id)
+    graduated_amount_type = fields.Selection([('percentage', 'Percentage'), ('fixed', 'Fixed Amount')],
+                                             string="Amount Type", default='percentage')
+    graduated_fixed_amount = fields.Monetary('Commission Amount', default=0.0)
     graduated_commission_rate = fields.Float(string='Commission rate (%)')
     amount_from = fields.Float(string="From Amount")
     amount_to = fields.Float(string="To Amount")

@@ -9,7 +9,7 @@ odoo.define('dynamic_accounts_report.general_ledger', function (require) {
     var QWeb = core.qweb;
     var _t = core._t;
     var trial = require('dynamic_accounts_report.trial_balance');
-
+    var framework = require('web.framework');
     var datepicker = require('web.datepicker');
     var time = require('web.time');
 
@@ -209,9 +209,20 @@ odoo.define('dynamic_accounts_report.general_ledger', function (require) {
                     },
                 };
 //                return self.do_action(action);
-                   core.action_registry.map.t_b.prototype.downloadXlsx(action)
+//                   core.action_registry.map.t_b.prototype.downloadXlsx(action)
+                self.downloadXlsx(action)
             });
         },
+
+        downloadXlsx: function (action){
+            framework.blockUI();
+                session.get_file({
+                    url: '/dynamic_xlsx_reports',
+                    data: action.data,
+                    complete: framework.unblockUI,
+                    error: (error) => this.call('crash_manager', 'rpc_error', error),
+                });
+            },
 
 
 
@@ -294,6 +305,7 @@ odoo.define('dynamic_accounts_report.general_ledger', function (require) {
                     if (account_id == data['report_lines'][i]['id'] ){
 
                     $(event.currentTarget).next('tr').find('td .gl-table-div').remove();
+
                     $(event.currentTarget).next('tr').find('td ul').after(
                         QWeb.render('SubSection', {
                             account_data: data['report_lines'][i]['move_lines'],

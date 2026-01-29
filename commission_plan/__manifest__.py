@@ -24,7 +24,7 @@
     'description': """CRM Commission Plan for odoo15, CRM, crm commission, commission plan, crm features""",
     'summary': """CRM Commission Plan for odoo15""",
     "category": 'Sales',
-    "version": '15.0.1.0.0',
+    "version": '15.0.1.0.1',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

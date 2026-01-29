@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Report Template For BOM Comparison Report-->
+    <template id="bom_compare_report">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <div class="align-items-center"
+                         style="min-height:110px; background-color: #583759;">
+                        <div style="padding: 30px">
+                            <h3 style="margin-top:20px;color:#fff;font-weight:bold;">
+                                BOM Comparison Report
+                            </h3>
+                        </div>
+                    </div>
+                     <div id="informations" class="row mt-4 mb-4">
+                        <div class="col-auto col-3 mw-100 mb-2" t-if="data['analysis']" >
+                            <strong>Analysis Based On :</strong>
+                            <t t-if="data['analysis'] == 'cost'">Cost</t>
+                            <t t-if="data['analysis'] == 'sale_price'">Sales Price</t>
+                        </div>
+                        <div class="col-auto col-3 mw-100 mb-2" t-if="data['unit']" >
+                            <strong>Number Of Products:</strong>
+                            <t t-esc="data['unit']"/>
+                        </div>
+                         <div class="col-auto col-3 mw-100 mb-2"  >
+                            <strong>Date:</strong>
+                            <t t-esc="datetime.date.today().strftime('%d/%m/%Y')"/>
+                        </div>
+                    </div>
+                    <div style="border-radius: 19px;margin-top: 20px;height: 5px;width: 100%;background: #583759;"/>
+                    <div class="mt-3 ml-1">
+                        <table class="table table-bordered mt32">
+                            <thead>
+                                <tr>
+                                    <th colspan="2">Bill Of Material</th>
+                                    <th>No.of Components Needed for the product</th>
+                                    <th>Total Price of the Components</th>
+                                    <th>Total Price of Components for the Required No.of Products</th>
+                                </tr>
+                            </thead>
+                            <t t-foreach="data['bom_report']" t-as="bom">
+                                <tr>
+                                    <td style="text-align:center" colspan="2">
+                                        <b>
+                                            <t t-esc="bom['bom_name']"/>
+                                        </b>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <t t-esc="bom['products']"/>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <t t-esc="bom['total']"/>
+                                        <t t-esc="data['currency']"/>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <t t-esc="bom['total_given']"/>
+                                        <t t-esc="data['currency']"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </table>
+                    </div>
+                    <div style="border-radius: 19px;margin-top: 20px;height: 5px;width: 100%;background:#583759;"/>
+                    <div style="margin-top:20px;">
+                        <h5 >Profitable BOM  :
+                            <span style="background: #9EA700;"><b>
+                                <t t-esc="data['better_option']['bom_name']"/></b></span>
+                                    With Total Amount of
+                                    <b><t t-esc="data['better_option']['total_given']"/>
+                                    <t t-esc="data['currency']"/>
+                            </b>
+                        </h5>
+                    </div>
+                    <div style="border-radius: 19px;margin-top: 20px;height: 5px;width: 100%;background: #583759;"/>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Property rental action -->
+    <record id="property_rental_action" model="ir.actions.act_window">
+        <field name="name">Property Rental</field>
+        <field name="res_model">property.rental</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Rental record!
+            </p>
+        </field>
+    </record>
+    <!-- Property rental menu items -->
+    <menuitem id="property_rental_menu" name="Property Rental"
+              parent="property_menu"
+              action="property_rental_action" sequence="8"/>
+    <!-- Property rental tree view -->
+    <record id="property_rental_view_tree" model="ir.ui.view">
+        <field name="name">property.rental.view.tree</field>
+        <field name="model">property.rental</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="property_id"/>
+                <field name="renter_id"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Property rental form view -->
+    <record id="property_rental_view_form" model="ir.ui.view">
+        <field name="name">property.rental.view.form</field>
+        <field name="model">property.rental</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            class="btn-secondary"
+                            states="draft,in_contract,expired"/>
+                    <field name="state" widget="statusbar"
+                           options="{'clickable': '1'}"/>
+                    <button name="action_create_contract" class="oe_highlight"
+                            states="draft" string="Create Contract"
+                            type="object"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoice" type="object"
+                                class="oe_stat_button" icon="fa-book"
+                                attrs="{'invisible':[('invoice_count','=',0)]}">
+                            <field name="invoice_count" widget="statinfo"
+                                   string="Invoices"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="property_id"/>
+                            <field name="owner_id"/>
+                            <field name="rent_price"/>
+                        </group>
+                        <group>
+                            <field name="renter_id"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <field name="next_invoice"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Bills">
+                            <field name="rental_bills_ids">
+                                <tree editable="bottom">
+                                    <field name="bill_no"/>
+                                    <field name="name"/>
+                                    <field name="amount"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="activity_ids"/>
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+</odoo>

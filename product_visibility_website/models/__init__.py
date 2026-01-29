@@ -22,3 +22,5 @@
 ###################################################################################
 
 from . import website_product_visibility
+from . import product_public_category
+from . import product_template

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--  Inherited portal_breadcrumbs template to add Document Requests as breadcrumbs  -->
+    <template id="portal_my_home_menu_req" name="Portal layout : Req menu"
+              inherit_id="portal.portal_breadcrumbs" priority="20">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'document_requests'">
+                <a t-if="document_requests" t-attf-href="/my/documents">/ Upload Request</a>
+                <t t-else="">/ Upload Request</t>
+            </li>
+            <li t-if="document_requests" class="breadcrumb-item active">
+                / <t t-esc="name"/>
+            </li>
+        </xpath>
+    </template>
+    <!--  Inherited portal_layout template to add Document Requests inside portal view  -->
+    <template id="portal_my_document_request" name="Document Request">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Document Requests</t>
+            </t>
+            <div id="document_portal">
+                <span id="req_reject_form" class="modal fade">
+                    <div class="modal-dialog modal-content"
+                         style="border:none; height:fit-content; max-width:700px;
+                         margin-top:2%;">
+                        <div class="modal-body" id="pop_html">
+                            <form action="/website/documents_request_reject" method="post"
+                                 class="oe_import">
+                                <div class="row form-group" style="padding:8px">
+                                    <div class="align-middle"
+                                         style="margin:0 auto; width:80%;">
+                                        <input type="hidden" name="csrf_token"
+                                            t-att-value="csrf_token"/>
+                                        <input type="hidden" name="req_id"
+                                            id="req_id"/>
+                                        <label for="reason">Reason </label>
+                                        <textarea name="reason"
+                                               class="form-control"
+                                        />
+                                         <button id="submit"
+                                                type="submit"
+                                                class="btn btn-secondary"
+                                                style="width:200px;
+                                                margin-top:10px; margin-left:25%;
+                                                background-color:#59CE8F;
+                                                border:none; padding:8px;
+                                                font-size:16px;">
+                                            Reject
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </span>
+                <span id="req_upload_form" class="modal fade">
+                    <div class="modal-dialog modal-content"
+                         style="border:none; height:fit-content; max-width:700px;
+                         margin-top:2%;">
+                        <div class="modal-body" id="pop_html">
+                            <form action="/website/documents_request" method="post"
+                                  enctype="multipart/form-data" class="oe_import">
+                                <input type="hidden" name="csrf_token"
+                                       t-att-value="csrf_token"/>
+
+                                <div class="row form-group" style="padding:8px">
+                                    <div class="align-middle"
+                                         style="margin:0 auto; width:80%;">
+                                        <input type="file" name="file"
+                                               class="form-control" required="1"/>
+                                    </div>
+                                </div>
+                                <div class="form-group row" style="padding:8px">
+                                    <div class="align-middle"
+                                         style="margin:0 auto; width:80%;">
+                                        <input type="hidden" name="workspace"
+                                               id="workspace_id"/>
+                                        <input type="hidden" name="requested_by"
+                                               id="requested_by"/>
+                                        <input type="hidden" name="rec_id"
+                                               id="rec_id"/>
+                                        <input type="text" name="workspace_id"
+                                               id="workspace" readonly="1"
+                                               class="form-control"/>
+                                    </div>
+                                </div>
+                                <div class="form-group row" style="padding:5px">
+                                    <div class="align-middle"
+                                         style="margin:0 auto; width:80%;">
+                                        <textarea rows="6" cols="40"
+                                                  class="form-control"
+                                                  id="return_reason" name="reason"
+                                                  placeholder="Description"
+                                                  style="padding:5px; border:1px
+                                                  solid #8879B0;"/>
+                                        <button id="submit"
+                                                type="submit"
+                                                class="btn btn-secondary"
+                                                style="width:200px;
+                                                margin-top:10px; margin-left:25%;
+                                                background-color:#59CE8F;
+                                                border:none; padding:8px;
+                                                font-size:16px;">
+                                            Upload
+                                        </button>
+                                        <span id="o_website_form_result"/>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </span>
+                <table class="table rounded mb-0 bg-white o_portal_my_doc_table">
+                    <thead>
+                        <tr class="active">
+                            <th class="text-start">Request Date</th>
+                            <th class="text-end">Requested By</th>
+                            <th class="text-end">Document Needed</th>
+                            <th class="text-end">Workspace</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="requests" t-as="req">
+                            <tr>
+                                <td class="text-start">
+                                    <t t-esc="req['date']"/>
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="req['requested_by'][1]"/>
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="req['needed_doc']"/>
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="req['workspace_id'][1]"/>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-outline-primary
+                                    fa fa-upload re-upload" t-att-data-id="req['id']"
+                                    t-att-data-workspace_id="req['workspace_id'][0]"
+                                    t-att-data-workspace="req['workspace_id'][1]"
+                                    t-att-data-requested_by="req['requested_by'][0]"/>
+                                    <button class="btn btn-outline-danger
+                                    fa fa-minus-circle re-reject"
+                                     t-att-data-id="req['id']"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+</odoo>

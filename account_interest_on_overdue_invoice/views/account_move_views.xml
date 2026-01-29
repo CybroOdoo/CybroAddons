@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_inherit_interest" model="ir.ui.view">
+        <field name="name">view.move.form.inherit.interest</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tax_totals_json']" position="before">
+                <field name="interest_overdue_act" invisible="1"/>
+                <button name="action_interest_compute" string='(Update Interest)'
+                                type='object' groups="account.group_account_invoice"
+                                attrs="{'invisible': ['|','|',('interest_overdue_act', '=', False),('state','in',('posted','cancel')),('move_type','!=','out_invoice')]}" class = "oe_edit_only"/>
+                <button name="action_interest_reset" string='(Reset)'
+                                type='object' groups="sales_team.group_sale_manager,account.group_account_invoice"
+                   attrs="{'invisible': ['|','|',('interest_overdue_act', '=', False),('state','in',('posted','cancel')),('move_type','!=','out_invoice')]}" class="oe_edit_only"/>
+                <field name="interest_amount" widget="monetary" attrs="{'invisible': ['|',('interest_overdue_act', '=', False),('move_type','!=','out_invoice')]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

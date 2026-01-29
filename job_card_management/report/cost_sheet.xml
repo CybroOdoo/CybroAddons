@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="report_cost" model="ir.actions.report">
+            <field name="name">Cost Sheet</field>
+            <field name="model">job.card</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">job_card_management.report_cost_sheet</field>
+            <field name="report_file">job_card_management.report_cost_sheet</field>
+            <field name="print_report_name">'Cost Sheet - %s' % object.name
+            </field>
+            <field name="binding_model_id" ref="model_job_card"/>
+            <field name="binding_type">report</field>
+        </record>
+        <template id="report_cost_sheet">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="web.external_layout">
+                        <center>
+                            <b>
+                                <h3>Cost Sheet</h3>
+                            </b>
+                        </center>
+                        <b>
+                            <h3>
+                                <t t-esc="doc.name"/>
+                            </h3>
+                        </b>
+                        <br/>
+                        <table class="table">
+                            <tbody class="order_body">
+                                <tr>
+                                    <td>
+                                        <strong>Customer:</strong>
+                                    </td>
+                                    <td>
+                                        <span t-field="doc.partner_id.name"/>
+                                    </td>
+                                    <td>
+                                        <strong>Project:</strong>
+                                    </td>
+                                    <td>
+                                        <span t-field="doc.project_id.name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Start Date:</strong>
+                                    </td>
+                                    <td>
+                                        <span t-field="doc.start_date"/>
+                                    </td>
+                                    <td>
+                                        <strong>End Date:</strong>
+                                    </td>
+                                    <td>
+                                        <span t-field="doc.end_date"/>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+
+                        <br/>
+                        <div>
+                            <strong>
+                                <h3>Cost Sheet</h3>
+                            </strong>
+                        </div>
+                        <table class="table o_main_table">
+                            <thead style="display: table-row-group">
+                                <tr>
+                                    <th class="text-left">Type</th>
+                                    <th class="text-left">Product</th>
+                                    <th class="text-left">Quantity</th>
+                                    <th class="text-left">Unit Price</th>
+                                    <th class="text-left">Discount</th>
+                                    <th class="text-left">Tax</th>
+                                    <th class="text-left">amount</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-att-class="'bg-200 font-weight-bold'"
+                                    t-foreach="doc.job_cost_sheet_ids"
+                                    t-as="cost">
+                                    <td>
+                                        <span t-field="cost.type"/>
+                                    </td>
+                                    <td t-esc="cost.product_id.name or ''  "/>
+                                    <td t-esc="cost.quantity or ''  "/>
+                                    <td t-esc="cost.unit_price or ''  "/>
+                                    <td t-esc="cost.discount or ''  "/>
+                                    <td t-esc="cost.tax.name or ''  "/>
+                                    <td t-esc="cost.amount or ''  "/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <td>Total Amount</td>
+                                    <td t-esc="doc.cost_sheet_amount"/>
+                                    <td>Total Untaxed Amount</td>
+                                    <td t-esc="doc.job_cost_sheet_untaxed_amount"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

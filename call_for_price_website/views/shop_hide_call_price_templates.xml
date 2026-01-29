@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Template for hiding product price in the shop page when 'price_call' is set -->
+	<template id="shop_hide_price" inherit_id="website_sale.products_item">
+		<xpath expr="//div[hasclass('product_price')]" position="replace">
+			<t t-foreach="product.product_variant_ids" t-as="variant">
+				<t t-if="variant.price_call">
+					<t t-set="has_price_call" t-value="True"/>
+					<t t-break="1"/></t>
+			</t>
+			<t t-if="has_price_call"></t>
+			<t t-else="">
+				<div class="product_price mb-1" itemprop="offers"
+                     itemscope="itemscope" itemtype="http://schema.org/Offer">
+					<span class="h5" t-if="combination_info['price']"
+                          t-esc="combination_info['price']"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+					<del t-attf-class="text-danger ml-1 h6 {{'' if combination_info['has_discounted_price'] else 'd-none'}}"
+                         style="white-space: nowrap;"
+                         t-esc="combination_info['list_price']"
+                         t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+					<span itemprop="price" style="display:none;"
+                          t-esc="combination_info['price']"/>
+					<span itemprop="priceCurrency" style="display:none;"
+                          t-esc="website.currency_id.name"/>
+				</div>
+			</t>
+		</xpath>
+	</template>
+    <!-- Template for hiding product price from the search results -->
+	<template id="hide_search" inherit_id="website_sale.search">
+		<xpath expr="//t[@t-set='display_detail']" position="replace">
+			<t t-set="display_detail" t-valuef="false"/>
+		</xpath>
+	</template>
+    <!-- Template for hiding product price from the product page -->
+	<template id="product_price" inherit_id="website_sale.product_price">
+		<xpath expr="//div[@itemprop='offers']" position="replace">
+			<div itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer" class="product_price d-inline-block mt-2 mb-3">
+				<h3 class="css_editable_mode_hidden" id="price_of_product">
+					<span class="oe_price" style="white-space: nowrap;" t-esc="combination_info['price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+					<span itemprop="price" style="display:none;" t-esc="combination_info['price']"/>
+					<span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name"/>
+					<span t-attf-class="text-danger oe_default_price ml-1 h5 {{'' if combination_info['has_discounted_price'] else 'd-none'}}" style="text-decoration: line-through; white-space: nowrap;"
+                  t-esc="combination_info['list_price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+              />
+				</h3>
+				<h3 class="css_non_editable_mode_hidden decimal_precision" t-att-data-precision="str(website.currency_id.decimal_places)" id="price_of_products">
+					<span t-field="product.list_price"
+                t-options='{
+                   "widget": "monetary",
+                   "display_currency": product.currency_id,
+               }'/>
+				</h3>
+			</div>
+			<div id="price_call_hide" style="display:none">
+				<div>
+					<div class="alert alert-success" id="alert_message"
+                     style="display:none">
+                    Thank you for information, we will get back to you asap.
+                </div>
+					<a role="button" class="btn btn-primary" href="#call_for_price"
+                   data-bs-toggle="modal"
+                   id="button_call_for_price">
+                    Call for Price
+                </a>
+				</div>
+			</div>
+		</xpath>
+	</template>
+    <!-- Template for showing the call for price form -->
+	<template id="shop_product_hide_price" inherit_id="website_sale.product">
+		<xpath expr="//div[@id='o_product_terms_and_share']" position="before">
+			<div id="call_for_price" class="modal">
+				<div class="modal-dialog modal-content" style="height:auto">
+					<div class="page">
+						<h3 class="text-center">Call For Price</h3>
+					</div>
+					<input type="hidden" name="product_id" id="product_id"
+                           t-att-value="product.id"/>
+					<hr/>
+					<center>
+						<table style="width:500px">
+							<tr style="height:60px">
+								<td style="width:100px">
+									<label for="first_name"
+                                           class="control-label">First Name:
+                                    </label>
+								</td>
+								<td>
+									<input type="text" class="form-control"
+                                           name="first_name"
+                                           id="first_name"
+                                           required="required"
+                                    />
+								</td>
+							</tr>
+							<tr style="height:60px">
+								<td>
+									<label for="last_name"
+                                           class="control-label">Last Name:
+                                    </label>
+								</td>
+								<td>
+									<input type="text" class="form-control"
+                                           name="last_name"
+                                           id="last_name"/>
+								</td>
+							</tr>
+							<tr style="height:60px">
+								<td>
+									<label for="email">Email</label>
+								</td>
+								<td>
+									<input type="text" class="form-control"
+                                           name="email"
+                                           id="email"/>
+								</td>
+							</tr>
+							<tr style="height:60px">
+								<td>
+									<label for="phone">Contact No.</label>
+								</td>
+								<td>
+									<input type="text" class="form-control"
+                                           id="phone" name="phone"/>
+								</td>
+							</tr>
+							<tr style="height:60px">
+								<td>
+									<label>Quantity</label>
+								</td>
+								<td>
+									<input type="number" class="form-control"
+                                           name="quantity" id="quantity"/>
+								</td>
+							</tr>
+							<tr style="height:60px">
+								<td>
+									<label>Message</label>
+								</td>
+								<td>
+									<input type="text" class="form-control"
+                                           name="message" id="message"/>
+								</td>
+							</tr>
+						</table>
+						<hr/>
+						<button id="send_btn" type="confirm"
+                                class="btn btn-primary">
+                            Send
+                        </button>
+						<button id="call_modal_close" type="button" class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">
+                            Close
+                        </button>
+					</center>
+				</div>
+			</div>
+		</xpath>
+	</template>
+</odoo>

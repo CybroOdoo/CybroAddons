@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit the view of pos.order to add ribbon and fields -->
+    <record id="view_pos_pos_form" model="ir.ui.view">
+        <field name="name">pos.order.view.form.inherit.pos.partial.payment.odoo</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_button_box')]" position="after">
+                <widget name="web_ribbon" title="Partial"
+                        bg_color="bg-success"
+                        attrs="{'invisible': [('is_partial_payment', '=', False)]}"/>
+            </xpath>
+            <xpath expr="//group[@name='order_total']" position="replace">
+                <group class="oe_subtotal_footer oe_right" colspan="2"
+                       name="order_total">
+                    <field name="is_partial_payment" invisible="1"/>
+                    <field name="amount_tax"
+                           force_save="1"
+                           widget="monetary"/>
+                    <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                        <label for="amount_total"/>
+                        <button name="button_dummy"
+                                states="draft" string="(update)"
+                                class="oe_edit_only oe_link"/>
+                    </div>
+                    <field name="amount_total"
+                           force_save="1"
+                           nolabel="1"
+                           class="oe_subtotal_footer_separator"
+                           widget="monetary"/>
+                    <field name="amount_paid"
+                           string="Total Paid (with rounding)"
+                           class="oe_subtotal_footer_separator"
+                           widget="monetary"
+                           attrs="{'invisible': [('amount_paid','=', 'amount_total')]}"/>
+                    <field name="due_amount"
+                           string="Due Amount"
+                           class="oe_subtotal_footer_separator"
+                           widget="monetary"
+                           attrs="{'invisible': [('is_partial_payment','=', False)]}"/>
+                    <label for="margin"/>
+                    <div class="text-nowrap">
+                        <field name="margin" class="oe_inline"
+                               attrs="{'invisible': [('is_total_cost_computed','=', False)]}"/>
+                        <span class="oe_inline"
+                              attrs="{'invisible': [('is_total_cost_computed','=', False)]}">
+                            (<field name="margin_percent" nolabel="1"
+                                    class="oe_inline" widget="percentage"/>)
+                        </span>
+                        <span attrs="{'invisible': [('is_total_cost_computed','=', True)]}">
+                            TBD
+                        </span>
+                    </div>
+                    <field name="is_total_cost_computed" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -31,15 +31,15 @@ class OrientationChecklistRequest(models.Model):
     _inherit = 'mail.thread'
 
     request_name = fields.Char(string='Name')
-    request_orientation = fields.Many2one('employee.orientation', string='Employee Orientation')
-    employee_company = fields.Many2one('res.company', string='Company', required=True,
-                                       default=lambda self: self.env.user.company_id)
+    request_orientation_id = fields.Many2one('employee.orientation', string='Employee Orientation')
+    employee_company_id = fields.Many2one('res.company', string='Company', required=True,
+                                          default=lambda self: self.env.user.company_id)
     partner_id = fields.Many2one('res.users', string='Responsible User')
     request_date = fields.Date(string="Date")
     employee_id = fields.Many2one('hr.employee', string='Employee')
     request_expected_date = fields.Date(string="Expected Date")
     attachment_id_1 = fields.Many2many('ir.attachment', 'orientation_rel_1', string="Attachment")
-    note_id = fields.Text('Description')
+    note = fields.Text('Description')
     user_id = fields.Many2one('res.users', string='users', default=lambda self: self.env.user)
     company_id = fields.Many2one('res.company', string='Company', required=True,
                                  default=lambda self: self.env.user.company_id)
@@ -54,6 +54,7 @@ class OrientationChecklistRequest(models.Model):
         ir_model_data = self.env['ir.model.data']
         try:
             template_id = ir_model_data._xmlid_lookup('employee_orientation.orientation_request_mailer')[2]
+            print(template_id)
         except ValueError:
             template_id = False
         try:
@@ -61,6 +62,7 @@ class OrientationChecklistRequest(models.Model):
         except ValueError:
             compose_form_id = False
         ctx = dict(self.env.context or {})
+        print(template_id)
         ctx.update({
             'default_model': 'orientation.request',
             'default_res_id': self.ids[0],

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_reservation" model="ir.actions.act_window">
+        <field name="name">Rooms</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">room.reservation</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create Reservation
+            </p>
+        </field>
+    </record>
+    <record id="view_reservation_tree" model="ir.ui.view">
+        <field name="name">room.reservation.tree</field>
+        <field name="model">room.reservation</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="date_order"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_reservation_form" model="ir.ui.view">
+        <field name="name">room.reservation.form</field>
+        <field name="model">room.reservation</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button id="button_confirm" name="action_confirm"
+                            string="Confirm" class="btn-primary"
+                            states="draft" type="object"/>
+                    <button
+                            name="%(sale.action_view_sale_advance_payment_inv)d"
+                            string="Create Invoice"
+                            type="action"
+                            class="btn-primary"
+                            states="confirm"
+                    />
+                    <button id="button_cancel"
+                            name="action_cancel"
+                            string="Cancel" class="btn-btn"
+                            states="confirm" type="object"/>
+                    <field name="state" widget="statusbar"
+                           options="{'clickable': '1', 'fold_field': 'fold'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id" string="Guest Name"/>
+                            <field name="num_person"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="user_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="date_order"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Booking Info">
+                            <field name="reservation_line_ids">
+                                <tree editable="bottom">
+                                    <field name="type_id" domain="[('is_room_categ','=',True)]"/>
+                                    <field name="product_id" domain="[('categ_id','=',type_id),('active','=',True)]"
+                                           string="Room No"/>
+                                    <field name="company_id" invisible="1"/>
+                                    <field name="checkin_date"/>
+                                    <field name="checkout_date"/>
+                                    <field name="product_uom_qty" string="Days"/>
+                                    <field name="price_unit" string="Rent"/>
+                                    <field name="tax_id" widget="many2many_tags"/>
+                                    <field name="price_subtotal"/>
+                                    <field invisible="1" name="currency_id"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Services">
+                            <field name="service_ids">
+                                <tree editable="bottom">
+                                    <field name="product_id" domain="[('service_ok','=',True)]" string="Service"/>
+                                    <field name="company_id" invisible="1"/>
+                                    <field name="categ_id" string="Category"/>
+                                    <field name="price_unit" string="Price"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Meals">
+                            <field name="meals_ids">
+                                <tree editable="bottom">
+                                    <field name="categ_id" domain="[('is_meals_categ','=',True)]"/>
+                                    <field name="product_id" domain="[('categ_id','=',categ_id)]" string="Meals"/>
+                                    <field name="checkin_date"/>
+                                    <field name="checkout_date"/>
+                                    <field name="product_uom_qty" string="Days"/>
+                                    <field name="price_unit" string="Price"/>
+                                    <field name="price_subtotal"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                    <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
+                        <field name="tax_totals_json" widget="account-tax-totals-field" nolabel="1" colspan="2"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <menuitem id="hotel_management_root"
+              name="Hotel Management"
+              sequence="10"/>
+    <menuitem id="Reservation_root"
+              name="Reservation"
+              parent="hotel_management_root"
+              sequence="1"/>
+    <menuitem id="reservation"
+              name="Rooms"
+              parent="Reservation_root"
+              action="view_reservation"
+              sequence="10"/>
+</odoo>

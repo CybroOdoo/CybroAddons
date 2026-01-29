@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!-- Record inherit and shows additional fields in crm.lead form view -->
+    <record id="crm_lead_view_form" model="ir.ui.view">
+        <field name="name">crm.lead.view.form.inherit.hubspot.odoo.connector</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='company_id']"
+                   position="after">
+                <field name="hs_object_id"/>
+                <field name="sync_mode"/>
+            </xpath>
+        </field>
+    </record>
+<!-- Menu action for Deals Exported. -->
+    <record id="hubspot_deals_export_action" model="ir.actions.act_window">
+        <field name="name">Opportunities</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">kanban,tree,graph,pivot,form,calendar,activity</field>
+        <field name="domain">[('sync_mode', '=', 'export')]</field>
+        <field name="help" type="html">
+            <p>
+                Odoo helps you track all exported leads from Hubspot.
+            </p>
+        </field>
+    </record>
+<!-- Menu action record for Deals Imported. -->
+    <record id="hubspot_deals_import_action" model="ir.actions.act_window">
+        <field name="name">Opportunities</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">kanban,tree,graph,pivot,form,calendar,activity</field>
+        <field name="domain">[('sync_mode', '=', 'import')]</field>
+        <field name="help" type="html">
+            <p>
+                Odoo helps you track all exported leads to Hubspot.
+            </p>
+        </field>
+    </record>
+    <!--  Menus for Deals  -->
+    <menuitem id="crm_lead_menu"
+              name="Deals"
+              parent="hubspot_connector_menu_root"/>
+    <menuitem id="crm_lead_menu_action_import"
+              name="Deals Import"
+              action="hubspot_deals_import_action"
+              parent="crm_lead_menu"/>
+    <menuitem id="crm_lead_menu_action_export"
+              name="Deals Export"
+              action="hubspot_deals_export_action"
+              parent="crm_lead_menu"/>
+</odoo>

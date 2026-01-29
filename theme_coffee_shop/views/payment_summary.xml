@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Template for cart summary-->
+    <template id="coffee_shop_payment_summary"
+              inherit_id="website_sale.cart_summary"
+              name="Coffee Payment Total">
+        <xpath expr="." position="replace">
+            <div class="card tbl-tbl">
+                <div class="card-body">
+                    <div class="toggle_summary d-xl-none">
+                        <b>Your order:</b>
+                        <span id="amount_total_summary" class="monetary_field"
+                              t-field="website_sale_order.amount_total"
+                              t-options='{"widget": "monetary", "display_currency": website_sale_order.pricelist_id.currency_id}'/>
+                        <span class='fa fa-chevron-down fa-border float-end'
+                              role="img" aria-label="Details" title="Details"/>
+                    </div>
+                    <div t-if="not website_sale_order or not website_sale_order.website_order_line"
+                         class="alert alert-info">
+                        Your cart is empty!
+                    </div>
+                    <div class="toggle_summary_div d-none d-xl-block">
+                        <table class="table table-striped table-sm"
+                               id="cart_products"
+                               t-if="website_sale_order and website_sale_order.website_order_line">
+                            <thead>
+                                <h3>Order Summary</h3>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="website_sale_order.website_order_line"
+                                    t-as="line" class="d-none">
+                                    <td colspan="2"
+                                        t-if="not line.product_id.product_tmpl_id"/>
+                                    <t t-else="">
+                                        <td class='td-img text-center'>
+                                            <span t-if="line._is_not_sellable_line() and line.product_id.image_128">
+                                                <img t-att-src="image_data_uri(line.product_id.image_128)"
+                                                     class="img o_image_64_max rounded"
+                                                     t-att-alt="line.name_short"/>
+                                            </span>
+                                            <span t-else=""
+                                                  t-field="line.product_id.image_128"
+                                                  t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'rounded o_image_64_max'}"
+                                            />
+                                        </td>
+                                        <td class='td-product_name'>
+                                            <div>
+                                                <strong t-field="line.name_short"/>
+                                            </div>
+                                        </td>
+                                    </t>
+                                    <td class='td-qty'>
+                                        <div t-esc="line.product_uom_qty"/>
+                                        <i class='fa fa-warning text-warning'
+                                           role="img" aria-label="Warning"/>
+                                    </td>
+                                    <td class="text-center td-price text-nowrap">
+                                        <span t-field="line.price_reduce_taxexcl"
+                                              t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"
+                                              groups="account.group_show_line_subtotals_tax_excluded"/>
+                                        <span t-field="line.price_reduce_taxinc"
+                                              t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"
+                                              groups="account.group_show_line_subtotals_tax_included"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <t t-call="website_sale.total">
+                            <t t-set='redirect'
+                               t-value="redirect or '/shop/payment'"/>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

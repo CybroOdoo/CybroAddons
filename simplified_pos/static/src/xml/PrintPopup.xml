@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- A template is created for the print popup -->
+    <t t-name="PrintPopup" owl="1">
+        <div class="popup popup-selection"
+             style="background: teal;position: fixed;margin-top: 7%;margin-left: 37%;">
+            <header class="title drag-handle">
+                <h3 style="text-align:center" t-esc="props.title"/>
+            </header>
+            <div class="form-container">
+                <t t-if="company_details.company_logo_base64">
+                    <img class="pos-receipt-logo"
+                         t-att-src="company_details.company_logo_base64"
+                         alt="Logo"/>
+                    <br/>
+                </t>
+                <center>
+                    <t t-if="!company_logo">
+                        <h2 class="pos-receipt-center-align">
+                            <t t-esc="company_name"/>
+                        </h2>
+                        <br/>
+                    </t>
+                    <div class="pos-receipt-contact">
+                        <t t-if="company_details.company.name">
+                            <div>
+                                <t t-esc="company_details.company.name"/>
+                            </div>
+                        </t>
+                        <t t-if="company_details.company.phone">
+                            <div>Tel:
+                                <t t-esc="company_details.company.phone"/>
+                            </div>
+                        </t>
+                        <t t-if="company_details.company.vat">
+                            <div>
+                                <t t-esc="company_details.company.vat"/>:
+                                <t t-esc="company_details.company.vat_label"/>
+                            </div>
+                        </t>
+                        <t t-if="company_details.company.email">
+                            <div>
+                                <t t-esc="company_details.company.email"/>
+                            </div>
+                        </t>
+                        <t t-if="company_details.company.website">
+                            <div>
+                                <t t-esc="company_details.company.website"/>
+                            </div>
+                        </t>
+                        <t t-if="company_details.header_html">
+                            <t t-raw="company_details.header_html"/>
+                        </t>
+                        <t t-if="!company_details.header_html and company_details.header">
+                            <div style="white-space:pre-line">
+                                <t t-esc="company_details.header"/>
+                            </div>
+                        </t>
+                        <t t-if="company_details.get_cashier()">
+                            <div class="cashier">
+                                <div>--------------------------------</div>
+                                <div>Served by
+                                    <t t-esc="company_details.get_cashier().name"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </center>
+                <br/>
+                <br/>
+                <!-- Orderlines -->
+                <div class="orderlines-receipt">
+                    <t t-foreach="orderlines()" t-as="line" t-key="line[0]">
+                        <t t-esc="line[0]"/>
+                        <span style="float: right;margin-right:20px;">
+                            <t t-esc="line[3]"/>
+                        </span>
+                        <br/>
+                        <span>(</span>
+                        <t t-esc="line[1]"/>x
+                        <t t-esc="line[2]"/>
+                        <span>)</span>
+                        <br/>
+                    </t>
+                </div>
+                <br/>
+                <br/>
+                <center>-----------------------</center>
+                <!-- Payment Lines -->
+                <t t-foreach="paymentlines" t-as="line" t-key="line.cid">
+                    <div>
+                        <t t-esc="line.name"/>
+                        <span t-esc="line.amount"
+                              style="float: right;margin-right:20px;"/>
+                    </div>
+                </t>
+                <!--Total -->
+                <center>-----------------------</center>
+                <br/>
+                <div class="pos-receipt-amount" style="margin-left:35px;">
+                    TOTAL
+                    <span t-esc="total" class="pos-receipt-right-align"
+                          style="float: right;"/>
+                </div>
+                <br/>
+                <div class="pos-receipt-amount" style="margin-left:35px;">
+                  To Pay
+                 <span t-esc='total_rounded' class="pos-receipt-right-align"
+                       style="float: right;"/>
+              </div>
+                <br/>
+                <br/>
+                <div class="after-footer">
+                <t t-foreach="paymentlines" t-as="line">
+                    <t t-if="line.ticket">
+                        <br/>
+                        <div class="pos-payment-terminal-receipt">
+                            <t t-raw="line.ticket"/>
+                        </div>
+                    </t>
+                </t>
+            </div>
+                <br/>
+                <br/>
+            </div>
+            <footer class="footer">
+                <div class="button confirm" t-on-click="cancel">
+                    <t t-esc="props.cancelText"/>
+                </div>
+                <div class="button confirm" t-on-click="printReceipt">
+                    <t t-esc="props.confirmText"/>
+                </div>
+            </footer>
+        </div>
+    </t>
+</templates>

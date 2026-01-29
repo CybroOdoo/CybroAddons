@@ -17,4 +17,4 @@ odoo.define('custom_list_view.record_highlighted', function (require) {
             }
         },
     });
-});
+});0

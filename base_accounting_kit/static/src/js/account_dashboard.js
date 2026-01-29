@@ -54,6 +54,35 @@ odoo.define('AccountingDashboard.AccountingDashboard', function(require) {
                 this.$('.top_10_customers_this_month').empty();
                 this.onclick_top_10_month(this.$('#top_10_customer_value').val());
             },
+            'change #invoice_values': function(e) {
+                e.stopPropagation();
+                var $target = $(e.target);
+                var value = $target.val();
+                if (value == 'this_year'){
+                    this.onclick_invoice_this_year(this.$('#invoice_values').val());
+                }
+                else{
+                    this.onclick_invoice_this_month(this.$('#invoice_values').val());
+                }
+            },
+            'change #income_expense_values': function(e) {
+                e.stopPropagation();
+                var $target = $(e.target);
+                var value = $target.val();
+                if (value == 'income_this_year'){
+                    this.onclick_income_this_year(this.$('#income_expense_values').val());
+                }
+                else if (value == 'income_this_month'){
+                    this.onclick_income_this_month(this.$('#income_expense_values').val());
+                }
+                else if (value == 'income_last_month'){
+                    this.onclick_income_last_month(this.$('#income_expense_values').val());
+                }
+                else{
+                    this.onclick_income_last_year(this.$('#income_expense_values').val());
+                }
+            },
+
             'change #toggle-two': 'onclick_toggle_two',
             'click #unreconciled_counts_this_year': 'unreconciled_year',
             'click #unreconciled_items_': 'unreconciled_month',
@@ -450,7 +479,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function(require) {
         },
 
         onclick_toggle_two: function(ev) {
-
             this.onclick_aged_payable(this.$('#aged_receivable_values').val());
             this.onclick_aged_receivable(this.$('#aged_payable_value').val());
             this.onclick_invoice_this_year(ev);
@@ -508,7 +536,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function(require) {
         },
 
         onclick_income_last_year: function(ev) {
-            ev.preventDefault();
             var selected = $('.btn.btn-tool.income');
             var data = $(selected[0]).data();
             var posted = false;
@@ -584,7 +611,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function(require) {
         },
 
         onclick_income_last_month: function(ev) {
-            ev.preventDefault();
             var selected = $('.btn.btn-tool.income');
             var data = $(selected[0]).data();
             var posted = false;
@@ -658,7 +684,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function(require) {
             })
         },
         onclick_income_this_year: function(ev) {
-            ev.preventDefault();
             var selected = $('.btn.btn-tool.income');
             var data = $(selected[0]).data();
             var posted = false;
@@ -730,7 +755,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function(require) {
 
 
         onclick_invoice_this_year: function(ev) {
-            ev.preventDefault();
             var selected = $('.btn.btn-tool.selected');
             var data = $(selected[0]).data();
             var posted = false;
@@ -812,7 +836,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function(require) {
             })
         },
         onclick_invoice_this_month: function(ev) {
-            ev.preventDefault();
             var selected = $('.btn.btn-tool.selected');
             var data = $(selected[0]).data();
             var posted = false;
@@ -891,7 +914,6 @@ odoo.define('AccountingDashboard.AccountingDashboard', function(require) {
         },
 
         onclick_income_this_month: function(ev) {
-            ev.preventDefault();
             var selected = $('.btn.btn-tool.income');
             var data = $(selected[0]).data();
             var posted = false;

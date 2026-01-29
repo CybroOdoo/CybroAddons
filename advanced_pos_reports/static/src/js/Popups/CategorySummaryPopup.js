@@ -5,6 +5,8 @@ odoo.define('advanced_pos_reports.CategorySummaryPopup', function(require) {
     const AbstractAwaitablePopup = require('point_of_sale.AbstractAwaitablePopup');
     const Registries = require('point_of_sale.Registries');
     const { _lt } = require('@web/core/l10n/translation');
+    var core = require('web.core');
+    var _t = core._t;
 
     class CategorySummaryPopup extends AbstractAwaitablePopup {
         constructor() {
@@ -34,6 +36,9 @@ odoo.define('advanced_pos_reports.CategorySummaryPopup', function(require) {
                 domain = [['session_id', '=', this.env.pos.pos_session.id]]
             }
             else{
+                 if (start_date.trim() === '' || end_date.trim() === '') {
+                    return;
+                 }
                 domain = [['date_order', '>=', start_date + ' 00:00:00'], ['date_order', '<=', end_date +  ' 23:59:59']]
             }
             var orders = await this.rpc({

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding = "utf-8"?>
+<odoo>
+    <!--New fields added to Reward  form-->
+    <record id="view_loyalty_reward_form" model="ir.ui.view">
+        <field name="name">
+            loyalty.reward.view.form.inherit.advanced.loyalty.management
+        </field>
+        <field name="model">loyalty.reward</field>
+        <field name="inherit_id" ref="pos_loyalty.view_loyalty_reward_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[2]/group" position="after">
+                <label for="redemption_point" string="Conditions"
+                       attrs="{'invisible': [('reward_type','!=','redemption')]}" style="font-weight: bold;"/>
+                <group
+                       attrs="{'invisible': [('reward_type','!=','redemption')]}">
+                    <field name="redemption_point" default="1"/>
+                    <field name="redemption_amount" widget="monetary"/>
+                    <label for="max_redemption_amount"/>
+                    <div id="max_redemption_amount" class="o_row">
+                        <field name="max_redemption_type" class="oe_inline"/>
+                        <field name="max_redemption_amount"
+                               class="oe_inline"/>
+                    </div>
+                    <field name="redemption_frequency"/>
+                    <field name="redemption_frequency_unit"/>
+                    <field name="redemption_eligibility" widget="monetary"/>
+                </group>
+            </xpath>
+            <xpath expr="//label[@for='discount_type']" position="replace">
+                <label string="Apply Discount" for="discount_type" attrs="{'invisible': [('reward_type', 'in', ('gift','redemption'))]}"/>
+            </xpath>
+            <xpath expr="//field[@name='discount_product_id']" position="replace">
+                    <field name="discount_product_id" string="Discount Product"
+                           attrs="{ 'invisible':[('reward_type','not in',['discount','redemption'])],
+                           'required':[('reward_type','==','discount')] }" domain="[('available_in_pos', '=', True)]"
+                           context="{'default_available_in_pos': '1'}"/>
+            </xpath>
+            <xpath expr="//field[@name='discount_apply_on']" position="replace">
+                    <field name="discount_apply_on" attrs="{'invisible':
+                            ['|', ('reward_type', 'in', ('product', 'gift', 'redemption')),
+                             ('discount_type', '!=', 'percentage')]}" widget="radio"/>
+            </xpath>
+            <xpath expr="//field[@name='discount_max_amount']" position="replace">
+                    <field name="discount_max_amount" class="oe_inline" attrs="{'invisible':
+                            [('reward_type', '=', 'redemption')]}"/>
+            </xpath>
+            <xpath expr="//label[@for='discount_max_amount']" position="replace">
+                <label for="discount_max_amount" string="Max Discount Amount" attrs="{'invisible': ['|', ('reward_type', 'in', ('product', 'gift', 'redemption')), ('discount_type', '!=', 'percentage')]}"/>
+            </xpath>
+            <xpath expr="//span[hasclass('oe_grey')]" position="replace">
+                    <span class="oe_grey" attrs="{'invisible':
+                            [('reward_type', '=', 'redemption')]}">if 0, no limit</span>
+            </xpath>
+        </field>
+    </record>
+</odoo>

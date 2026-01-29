@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <t t-inherit="mail.ThreadPreview" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_ThreadPreview_header')]/span[1]" position="after">
+            <span style="padding-left: 1rem;"></span>
+            <t t-if="!thread.favour_btn">
+                <t t-if="thread.is_favour">
+                    <span class="o_NotificationGroup_favourites fa fa-star text-danger"
+                          t-att-id="'star_icon_' + thread.id"
+                          title="favourite" t-on-click="_onClickMarkFavourite"
+                          t-ref="markAsRead"/>
+                </t>
+                <t t-else="">
+                    <span class="o_NotificationGroup_favourites fa fa-star" t-att-id="'star_icon_' + thread.id"
+                          title="favourite" t-on-click="_onClickMarkFavourite"
+                          t-ref="markAsRead"/>
+                </t>
+            </t>
+        </xpath>
+    </t>
+
+    <t t-inherit="mail.MessagingMenu" t-inherit-mode="extension">
+        <xpath expr="//a[hasclass('o_MessagingMenu_toggler')]" position="after">
+            <a class="o_ChatFavourite_icon dropdown-toggle o-no-caret o-dropdown--narrow"
+               title="Favourite Chats" role="button"
+               t-on-click="_onClickFavourite">
+
+                <i class="o_ChatFavourite_icon fa fa-star" role="img" aria-label="Favourites" id="star_btn"/>
+            </a>
+        </xpath>
+        <xpath expr="//div[hasclass('o_MessagingMenu_dropdownMenuHeader')]" position="replace">
+            <div class="o_MessagingMenu_dropdownMenuHeader" t-att-class="{ 'o-mobile': messaging.device.isMobile }">
+                <t t-if="!messaging.device.isMobile">
+                    <t t-if="favourite_button">
+                        <t t-set="tabId" t-value="chat"/>
+                        <button class="o_MessagingMenu_tabButton o-desktop btn btn-link"
+                                t-att-class="{ 'o-active': messagingMenu.activeTabId === tabId, }"
+                                type="button" role="tab"
+                                t-att-data-tab-id="tabId">
+                            <t>Favourite Chat</t>
+                        </button>
+                    </t>
+                    <t t-else="">
+                        <t t-foreach="['all', 'chat', 'channel']" t-as="tabId" t-key="tabId">
+                            <button class="o_MessagingMenu_tabButton o-desktop btn btn-link"
+                                    t-att-class="{ 'o-active': messagingMenu.activeTabId === tabId, }"
+                                    t-on-click="_onClickDesktopTabButton" type="button" role="tab"
+                                    t-att-data-tab-id="tabId">
+                                <t t-if="tabId === 'all'">All</t>
+                                <t t-elif="tabId === 'chat'">Chat</t>
+                                <t t-elif="tabId === 'channel'">Channels</t>
+                            </button>
+                        </t>
+                    </t>
+                </t>
+                <t t-if="messaging.device.isMobile">
+                    <t t-call="mail.MessagingMenu.newMessageButton"/>
+                </t>
+                <div class="o-autogrow"/>
+                <t t-if="!favourite_button">
+                    <t t-if="!messaging.device.isMobile and !messaging.discuss.isOpen">
+                        <t t-call="mail.MessagingMenu.newMessageButton"/>
+                    </t>
+                </t>
+                <t t-if="messaging.device.isMobile and messagingMenu.isMobileNewMessageToggled">
+                    <AutocompleteInput
+                            class="o_MessagingMenu_mobileNewMessageInput"
+                            customClass="id + '_mobileNewMessageInputAutocomplete'"
+                            isFocusOnMount="true"
+                            placeholder="mobileNewMessageInputPlaceholder"
+                            select="_onMobileNewMessageInputSelect"
+                            source="_onMobileNewMessageInputSource"
+                            t-on-o-hide="_onHideMobileNewMessage"
+                    />
+                </t>
+            </div>
+        </xpath>
+    </t>
+</templates>

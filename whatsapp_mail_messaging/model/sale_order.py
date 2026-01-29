@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -32,8 +32,10 @@ class Sale(models.Model):
     def action_send_whatsapp(self):
         compose_form_id = self.env.ref('whatsapp_mail_messaging.whatsapp_message_wizard_form').id
         ctx = dict(self.env.context)
-        message = "Hi" + " " + self.partner_id.name + ',' + '\n' + "Your quotation" + ' ' + self.name + ' ' + "amounting" + ' ' + str(
+        message_template = self.company_id.whatsapp_message
+        default_message = "Hi" + " " + self.partner_id.name + ',' + '\n' + "Your quotation" + ' ' + self.name + ' ' + "amounting" + ' ' + str(
             self.amount_total) + self.currency_id.symbol + ' ' + "is ready for review.Do not hesitate to contact us if you have any questions."
+        message = message_template if message_template else default_message
         ctx.update({
             'default_message': message,
             'default_partner_id': self.partner_id.id,

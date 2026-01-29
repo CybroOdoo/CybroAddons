@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_location_form" model="ir.ui.view">
+        <field name="name">stock.location.view.form.inherit.stock_3d_view
+        </field>
+        <field name="model">stock.location</field>
+        <field name="inherit_id" ref="stock.view_location_form"/>
+        <field name="arch" type="xml">
+            <!--adding a 3D button in stock.location form view.-->
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button type="object" name="action_view_location_3d_button"
+                            string="3D" id="view_location_3d_button"
+                            class="btn btn-primary fa fa-lg fa-cubes"
+                            attrs="{'invisible':['|',('location_id', '=', False),('length','=',0),('width','=',0)]}"/>
+                </header>
+            </xpath>
+            <!--adding location dimension fields in stock.location form view.-->
+            <xpath expr="//sheet" position="inside">
+                <notebook>
+                    <page string="3D Properties"
+                          attrs="{'invisible': [('usage', '!=', 'internal')]}">
+                        <group>
+                            <group string="Dimension">
+                                <field name="length"
+                                       attrs="{'required': [('usage', '=', 'internal')]}"/>
+                                <field name="width"
+                                       attrs="{'required': [('usage', '=', 'internal')]}"/>
+                                <field name="height"
+                                       attrs="{'required': [('usage', '=', 'internal')]}"/>
+                            </group>
+                            <group string="Position">
+                                <field name="pos_x"
+                                       attrs="{'required': [('usage', '=', 'internal')]}"/>
+                                <field name="pos_y"
+                                       attrs="{'required': [('usage', '=', 'internal')]}"/>
+                                <field name="pos_z"
+                                       attrs="{'required': [('usage', '=', 'internal')]}"/>
+                            </group>
+                        </group>
+                    </page>
+                </notebook>
+            </xpath>
+            <!--adding unique code field of the location inside the stock.location form view.-->
+            <xpath expr="//field[@name='usage']" position="after">
+                <field name="unique_code"
+                       attrs="{'invisible': [('usage', '!=', 'internal')], 'required': [('usage', '=', 'internal')]}"/>
+            </xpath>
+            <!--adding maximum capacity field of the location inside the stock.location form view.-->
+            <xpath expr="//field[@name='storage_category_id']" position="after">
+                <field name="max_capacity"
+                       attrs="{'invisible': [('usage', '!=', 'internal')]}"/>
+            </xpath>
+        </field>
+    </record>
+    <!--client action for 3d view of locations.-->
+    <record id="stock_location_3d_action" model="ir.actions.client">
+        <field name="name">Location 3D View</field>
+        <field name="tag">open_form_3d_view</field>
+    </record>
+    <data>
+        <!--adding button to open 3d view in stock.location tree view-->
+        <record id="view_location_tree2" model="ir.ui.view">
+            <field name="name">stock.location.view.tree.inherit.stock_3d_view
+            </field>
+            <field name="model">stock.location</field>
+            <field name="inherit_id" ref="stock.view_location_tree2"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree" position="attributes">
+                    <attribute name="js_class">3d_button_in_stock</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--Rearranged the "mail.ComposerAdvanced" templates-->
+    <t name="mail.ComposerAdvanced" t-inherit="mail.Composer" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('o_Composer_coreMain')]" position="replace">
+            <div class="o_Composer_coreMain" t-att-class="{
+                        'o-composer-is-compact': props.isCompact,
+                    }">
+                <div class="o_Composer_primaryToolButtons" t-att-class="{ 'o-composer-is-compact': props.isCompact }" style="height: 40px;background: #017e84;border-bottom-left-radius: 7px;border-top-left-radius: 7px;color: #018e84;opacity: 0.65;">
+                    <Popover position="'top'" t-on-o-emoji-selection="_onEmojiSelection">
+                        <!-- TODO FIXME o-open and aria-expanded not possible to code due to https://github.com/odoo/owl/issues/693 -->
+                        <button class="o_Composer_button o_Composer_buttonEmojis o_Composer_toolButton btn btn-light" t-att-class="{
+                                            'o-open': false and state.displayed,
+                                            'o-mobile': messaging.device.isMobile,
+                                        }" t-on-keydown="_onKeydownEmojiButton" aria-label="Emojis" t-att-aria-expanded="false and (state.displayed ? 'true' : 'false')" style="    background: #017e84;color: #fff;opacity: 0.65;">
+                            <i class="o_Composer_EmojiIcon fa fa-smile-o" />
+                        </button>
+                        <t t-set="opened">
+                            <EmojisPopover t-ref="emojisPopover" />
+                        </t>
+                    </Popover>
+                    <button class="o_Composer_button o_Composer_buttonAttachment o_Composer_toolButton btn btn-light fa fa-paperclip" t-att-class="{ 'o-mobile': messaging.device.isMobile }" title="Add attachment" aria-label="Add attachment" type="button" t-on-click="_onClickAddAttachment" style="    background: #017e84;color: #fff;opacity: 0.65;" />
+                </div>
+                <ComposerTextInput class="o_Composer_textInput" t-att-class="{
+                            'o-composer-is-compact': props.isCompact,
+                            'o_Composer_textInput-mobile': messaging.device.isMobile,
+                            'o-has-current-partner-avatar': props.hasCurrentPartnerAvatar,
+                        }" composerViewLocalId="composerView.localId" hasMentionSuggestionsBelowPosition="props.hasMentionSuggestionsBelowPosition" isCompact="props.isCompact" sendShortcuts="props.textInputSendShortcuts" t-on-o-composer-text-input-send-shortcut="_onComposerTextInputSendShortcut" t-on-paste="_onPasteTextInput" t-key="composerView.localId" t-ref="textInput" />
+                <div class="o_Composer_buttons" t-att-class="{ 'o-composer-is-compact': props.isCompact, 'o-mobile': messaging.device.isMobile, 'o-messaging-in-editing': composerView and composerView.messageViewInEditing }">
+                    <div class="o_Composer_toolButtons" t-att-class="{
+                                'o-composer-has-current-partner-avatar': props.hasCurrentPartnerAvatar,
+                                'o-composer-is-compact': props.isCompact,
+                            }">
+                        <t t-if="props.isCompact">
+                            <div class="o_Composer_toolButtonSeparator" />
+                        </t>
+                        <t t-if="props.isExpandable">
+                            <div class="o_Composer_secondaryToolButtons">
+                                <button class="btn btn-light fa fa-expand o_Composer_button o_Composer_buttonFullComposer o_Composer_toolButton" t-att-class="{ 'o-mobile': messaging.device.isMobile }" title="Full composer" aria-label="Full composer" type="button" t-on-click="_onClickFullComposer" />
+                            </div>
+                        </t>
+                    </div>
+                    <t t-if="props.isCompact">
+                        <t t-call="mail.Composer.actionButtons" />
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </t>
+    <!--Rearranged the "mail.Composer.actionButtonsAdvanced" templates-->
+    <t name="mail.Composer.actionButtonsAdvanced" t-inherit="mail.Composer.actionButtons" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('o_Composer_actionButtons')]" position="replace">
+            <div class="o_Composer_actionButtons" t-att-class="{ 'o-composer-is-compact': props.isCompact }">
+                <t t-if="props.hasSendButton">
+                    <button class="o_Composer_actionButton o_Composer_button o_Composer_buttonSend btn btn-primary" t-att-class="{
+                        'o-last': messaging.device.isMobile or !props.hasDiscardButton,
+                        'o-composer-is-compact': props.isCompact,
+                        'o-has-current-partner-avatar': props.hasCurrentPartnerAvatar,
+                    }" t-att-disabled="!composerView.composer.canPostMessage ? 'disabled' : ''" type="button" t-on-click="_onClickSend">
+                        <t t-if="!messaging.device.isMobile">
+                            <t t-esc="composerView.sendButtonText" />
+                        </t>
+                        <t t-else=""><i class="fa fa-paper-plane-o" /></t>
+                    </button>
+                </t>
+                <t t-if="!messaging.device.isMobile and props.hasDiscardButton">
+                    <button class="o_Composer_actionButton o-last o_Composer_button o_Composer_buttonDiscard btn btn-secondary" t-att-class="{ 'o-composer-is-compact': props.isCompact, 'o-has-current-partner-avatar': props.hasCurrentPartnerAvatar }" type="button" t-on-click="_onClickDiscard">
+                        Discard
+                    </button>
+                </t>
+            </div>
+        </xpath>
+    </t>
+</templates>

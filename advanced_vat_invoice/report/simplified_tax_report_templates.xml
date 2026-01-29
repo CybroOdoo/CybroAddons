@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Template for simplified tax report-->
+    <template id="simplified_tax_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-foreach="docs" t-as="doc">
+                    <div class="page">
+                        <h4>
+                            <center>
+                                <span class="text-right">فاتورة ضريبية مبسطة
+                                </span>
+                                <br/>
+                                <span>Simplified Tax Invoice</span>
+                            </center>
+                        </h4>
+                    </div>
+                    <br/>
+                    <div>
+                        <div style="float:left !important;">
+                            <span>Invoice Number :</span>
+                            <t t-esc="doc.name"/>
+                            <br/>
+                            <span>Issue Date:</span>
+                            <t t-esc="doc.invoice_date"/>
+                        </div>
+
+                        <div style="float:right !important;">
+                            <img t-attf-src="data:image/png;base64, {{doc.qr}}"/>
+                        </div>
+                    </div>
+                    <br/>
+
+                    <table style="border:2pt solid grey;width:100%;color:black;"
+                           class="table-condensed">
+                        <thead>
+                            <tr style="background-color:#DCDCDC">
+                                <td width="40%"
+                                    style="border:2pt solid grey;text-align:center;padding:2pt;">
+                                    Description
+                                    <br/>
+                                    <span class="description">تفاصيل السلع أو
+                                        الخدمات
+                                    </span>
+                                </td>
+                                <td width="20%"
+                                    style="border:2pt solid grey;text-align:center;padding:2pt;">
+                                    Unit Price
+                                    <br/>
+                                    <span class="unit_price">سعر الوحدة</span>
+                                </td>
+                                <td width="20%"
+                                    style="border:2pt solid grey;text-align:center;padding:2pt;width:7%">
+                                    Quantity
+                                    <br/>
+                                    <span class="qty"/>
+                                    الكمية
+                                </td>
+                                <td width="20%"
+                                    style="border:2pt solid grey;text-align:center;padding:2pt;">
+                                    Total
+                                    <br/>
+                                    (excl.vat)
+                                    <br/>
+                                    <span class="total">المجموع (شامل ضريبة
+                                        القيمة المضافة)
+                                    </span>
+                                </td>
+                            </tr>
+                        </thead>
+                        <t t-set="tax_total" t-value="0"/>
+                        <tbody class="invoice_line">
+                            <tr t-foreach="doc.invoice_line_ids" t-as="line">
+                                <t t-set="line_tax_total" t-value="0"/>
+                                <t t-foreach="line.tax_ids" t-as="tax">
+                                    <t t-set="tax_total"
+                                       t-value="tax_total + line.price_subtotal* tax.amount/100"/>
+                                    <t t-set="line_tax_total"
+                                       t-value="line_tax_total + tax.amount"/>
+                                </t>
+                                <td style="border-right:2pt solid grey;text-align:center;padding:3pt">
+                                    <span t-field="line.name"/>
+                                    <br/>
+                                </td>
+                                <td style="border-right:2pt solid grey;text-align:center;padding:3pt">
+                                    <span t-field="line.price_unit" t-options='{" widget": "monetary", "
+                                        display_currency": doc.currency_id}'/>
+                                </td>
+                                <td style="border-right:2pt solid grey;text-align:center;padding:3pt">
+                                    <span t-esc="'%.2f %s '%(line.quantity,line.product_uom_id.name)"/>
+                                </td>
+                                <td style="border-right:2pt solid grey;text-align:center;padding:3pt">
+                                    <span t-field="line.price_subtotal"
+                                          t-options='{" widget": "monetary", "
+                                        display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <br/>
+                    <table style="border:2pt solid grey;width:100%;color:black;"
+                           class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <td width="40%"
+                                    style="font-weight: bold;text-align:left;padding:2pt">
+                                    Total Taxable
+                                    Amount (excl. VAT)
+                                </td>
+                                <td class="amount" width="40%"
+                                    style="text-align:right;padding:2pt">إجمالي
+                                    المبلغ
+                                    الخاضع للضريبة (غير شامل ضريبة القيمة
+                                    المضافة)
+                                </td>
+                                <td width="40%"
+                                    style="text-align:right;padding:2pt"
+                                    class="text-right">
+                                    <span t-esc="doc.currency_id.symbol"/>
+                                    <span t-esc="doc.amount_untaxed"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;text-align:left;padding:3pt">
+                                    Total VAT
+                                </td>
+                                <td class="total"
+                                    style="text-align:right;padding:3pt">مجموع
+                                    ضريبة القيمة المضافة
+                                </td>
+                                <td style="text-align:right;padding:3pt"
+                                    class="text-right">
+                                    <span t-esc="tax_total"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;text-align:left;padding:3pt">
+                                    Amount Due
+                                </td>
+                                <td class="due"
+                                    style="text-align:right;padding:3pt">اجمالي
+                                    المبلغ المستحق
+                                </td>
+                                <td style="text-align:right;padding:3pt"
+                                    class="text-right">
+                                    <span t-esc="doc.currency_id.symbol"/>
+                                    <span t-esc="doc.amount_residual"/>
+                                </td>
+                            </tr>
+                        </thead>
+                    </table>
+                    <br/>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

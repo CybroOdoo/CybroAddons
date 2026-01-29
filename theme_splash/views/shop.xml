@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <template id="splash_product_pager" name="Splash Product Pager" inherit_id="website_sale.products">
+<!-- It replaces the original product header with a search bar, a price list dropdown, and a pagination bar.-->
+            <xpath expr="//div[hasclass('products_header')]" position="replace">
+                <div class="products_header products_pager form-inline flex-md-nowrap justify-content-end mb-4">
+                    <t t-call="website_sale.search">
+                        <t t-set="_classes" t-valuef="w-100 w-md-auto mr-auto mb-2"/>
+                        <t t-set="search" t-value="original_search or search"/>
+                    </t>
+                    <t t-call="website_sale.pricelist_list">
+                        <t t-set="_classes" t-valuef="ml-3 mb-2 btn-splash"/>
+                    </t>
+                    <t t-call="website.pager"/>
+                </div>
+            </xpath>
+        </template>
+
+        <template id="splash_add_grid_or_list_option" inherit_id="theme_splash.splash_product_pager" active="True"
+                  customize_show="True" name="Splash Grid or List button">
+<!--     Adds a button group to switch between grid and list layout modes for product display, -->
+<!--     placed after the pager on the product page inherited from the "theme_splash.splash_product_pager" template.-->
+            <xpath expr="//div[hasclass('products_header')]/t[@t-call='website.pager']" position="after">
+                <div class="btn-group btn-group-toggle ml-3 mb-2 d-none d-sm-inline-flex o_wsale_apply_layout"
+                     data-toggle="buttons">
+                    <label t-attf-class="btn btn-light border-0 #{'active' if layout_mode != 'list' else None} fa fa-th-large o_wsale_apply_grid"
+                           title="Grid">
+                        <input type="radio" name="wsale_products_layout"
+                               t-att-checked="'checked' if layout_mode != 'list' else None"/>
+                    </label>
+                    <label t-attf-class="btn btn-light border-0 #{'active' if layout_mode == 'list' else None} fa fa-th-list o_wsale_apply_list"
+                           title="List">
+                        <input type="radio" name="wsale_products_layout"
+                               t-att-checked="'checked' if layout_mode == 'list' else None"/>
+                    </label>
+                </div>
+            </xpath>
+        </template>
+
+        <template id="splash_sort" inherit_id="theme_splash.splash_product_pager" customize_show="True"
+                  name="Show Sort by">
+<!--            Adds a sort by dropdown menu to the product page header with options to sort by price, -->
+<!--            date of creation, and name. It inherits from the "Splash Product Pager" template -->
+<!--            and customizes the position and content of the product pager.-->
+            <xpath expr="//div[hasclass('products_header')]" position="inside">
+                <t t-set="list_price_asc_label">Price - Low to High</t>
+                <t t-set="list_price_desc_label">Price - High to Low</t>
+                <t t-set="newest_arrivals_desc_label">Newest arrivals</t>
+                <t t-set="name_asc_label">Name</t>
+                <t t-set="website_sale_sortable" t-value="[
+                (list_price_asc_label, 'list_price asc'),
+                (list_price_desc_label, 'list_price desc'),
+                (newest_arrivals_desc_label, 'create_date desc'),
+                (name_asc_label, 'name asc')
+            ]"/>
+                <t t-set="website_sale_sortable_current"
+                   t-value="[sort for sort in website_sale_sortable if sort[1]==request.params.get('order', '')]"/>
+                <div class="o_sortby_dropdown dropdown dropdown_sorty_by ml-3 pb-2 btn-splash">
+                    <a role="button" href="#"
+                       class="dropdown-toggle btn btn-light border-0 px-0 text-muted align-baseline"
+                       data-toggle="dropdown">
+                        <span class="d-none d-lg-inline">
+                            <t t-if='website_sale_sortable_current'>
+                                <t t-esc="website_sale_sortable_current[0][0]"/>
+                            </t>
+                            <t t-else='1'>
+                                Featured
+                            </t>
+                        </span>
+                        <i class="fa fa-sort-amount-asc d-lg-none"/>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" role="menu">
+                        <t t-foreach="website_sale_sortable" t-as="sortby">
+                            <a role="menuitem" rel="noindex,nofollow" t-att-href="keep('/shop', order=sortby[1])"
+                               class="dropdown-item">
+                                <span t-out="sortby[0]"/>
+                            </a>
+                        </t>
+                    </div>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>

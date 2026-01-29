@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<odoo>
+    <!--    Calendar form view-->
+    <record id="view_calendar_event_form" model="ir.ui.view">
+        <field name="name">calendar.event.view.form.calendar.meeting.checklist</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='page_invitations']" position="after">
+                <page name="checklist" string="Checklist">
+                    <label for="checklist_template_ids"
+                           string="Checklist Template"/>
+                    <field name="checklist_template_ids" widget="many2many_tags"
+                           string="Checklist Template"/>
+                    <field name="checklist_progress" string="Completed"
+                           widget="percentpie"
+                           attrs="{'invisible': [('checklist_progress', '=', 0)]}"/>
+                    <field name="checklist_line_ids" widget="one2many"
+                           mode="tree">
+                        <tree string="Checklists" editable="bottom" create="true"
+                              delete="true">
+                            <field name="sequence" widget="handle"/>
+                            <field name="checklist_id"/>
+                            <field name="stage"/>
+                            <button name="action_complete" string="Complete"
+                                    type="object"
+                                    icon="fa-check text-success"
+                                    attrs="{'invisible': [('stage', '!=', 'new')]}"/>
+                            <button name="action_cancel" string="Cancel"
+                                    type="object"
+                                    icon="fa-times-circle text-danger"
+                                    attrs="{'invisible': [('stage', '!=', 'new')]}"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <!--Calendar tree view-->
+    <record id="view_calendar_event_tree" model="ir.ui.view">
+        <field name="name">calendar.event.view.tree.calendar.meeting.checklist
+        </field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='duration']" position="after">
+                <field name="checklist_progress" string="Completed checklists"
+                       widget="progressbar"/>
+            </xpath>
+        </field>
+    </record>
+    <!--    Calendar Search view-->
+    <record id="view_calendar_event_search" model="ir.ui.view">
+        <field name="name">calendar.event.view.search.inherit.calendar.meeting.checklist</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='inactive']" position="after">
+                <separator/>
+                <filter string="Completed Checklist" name="completed_checklist"
+                        domain="[('completed_checklist', '=', True)]"/>
+                <filter string="Incomplete Checklist"
+                        name="not_completed_checklist"
+                        domain="[('completed_checklist', '=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-         <!--modern Template View-->
+        <!--modern Template View-->
         <template id="custom_template_report_invoice_modern">
             <t t-if="o and 'company_id' in o">
                 <t t-set="company" t-value="o.company_id"/>
@@ -130,26 +130,8 @@
                             <strong>Customer Address</strong>
                             <br/>
                             <span style="color:#{o.theme_id.customer_text_color} !important;"
-                                  t-field="o.partner_id"/>
+                                  t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}' />
                             <br/>
-                            <span t-if="o.theme_id.address">
-                            <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
-                                  t-field="o.partner_id.street"/>
-                            <br/>
-                            <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
-                                  t-field="o.partner_id.street2"/>
-                            <br/>
-                            </span>
-                            <span t-if="o.theme_id.city">
-                            <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
-                                  t-field="o.partner_id.city"/>
-                             </span>
-                             <br/>
-                            <span t-if="o.theme_id.country">
-                            <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
-                                  t-field="o.partner_id.country_id"/>
-                            </span>
-                                    <br/>
                             <span t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
                                   t-field="o.partner_id.vat"/>
                             <br/>
@@ -251,11 +233,13 @@
                             </tbody>
                         </table>
                     </div>
-                    <div>
+                    <div class="clearfix mb-4">
                         <div class="col-4 pull-right">
                             <table class="table table-condensed">
-                                <t t-set="tax_totals" t-value="json.loads(o.tax_totals_json)"/>
-                                <t t-foreach="tax_totals['subtotals']" t-as="subtotal">
+                                <t t-set="tax_totals"
+                                   t-value="json.loads(o.tax_totals_json)"/>
+                                <t t-foreach="tax_totals['subtotals']"
+                                   t-as="subtotal">
                                     <tr class="border-black o_subtotal">
                                         <td>
                                             <strong t-esc="subtotal['name']"/>
@@ -263,14 +247,15 @@
 
                                         <td class="text-right">
                                             <span
-                                                t-att-class="oe_subtotal_footer_separator"
-                                                t-esc="subtotal['amount']"
-                                                t-options='{"widget": "monetary", "display_currency": o.currency_id}'
+                                                    t-att-class="oe_subtotal_footer_separator"
+                                                    t-esc="subtotal['amount']"
+                                                    t-options='{"widget": "monetary", "display_currency": o.currency_id}'
                                             />
                                         </td>
                                     </tr>
 
-                                    <t t-set="subtotal_to_show" t-value="subtotal['name']"/>
+                                    <t t-set="subtotal_to_show"
+                                       t-value="subtotal['name']"/>
                                     <t t-call="account.tax_groups_totals"/>
                                 </t>
 
@@ -280,61 +265,51 @@
                                         <strong>Total</strong>
                                     </td>
                                     <td class="text-right">
-                                        <span t-esc="tax_totals['amount_total']" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        <span t-esc="tax_totals['amount_total']"
+                                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                                     </td>
                                 </tr>
                             </table>
                         </div>
-                    </div>
-                    <div style="padding-top:10%;" class="col-12">
-                        <p t-if="not is_html_empty(o.narration)">
-                            <strong>Comment:</strong>
-                            <span t-field="o.narration"/>
-                        </p>
-                        <p t-if="o.fiscal_position_id.note">
-                            <strong>Fiscal Position Remark:</strong>
-                            <span t-field="o.fiscal_position_id.note"/>
-                        </p>
-                        <br/>
-                        <br/>
-                        <p t-if="o.move_type in ('out_invoice','in_refund')">
-                            Please use the following communication for your
-                            payment
-                            :
-                            <b>
-                                <span t-field="o.payment_reference"/>
-                            </b>
-                        </p>
-                        <p t-if="o.invoice_payment_term_id" name="payment_term">
-                            <span t-field="o.invoice_payment_term_id.note"/>
-                        </p>
-                        <p t-if="o.fiscal_position_id.note" name="note">
-                            <span t-field="o.fiscal_position_id.note"/>
-                        </p>
-                        <t t-if="o.company_id.country_id.code == 'IN'">
-                            <p id="total_in_words" class="mb16">
-                                <strong>Total (In Words):</strong>
-                                <span t-field="o.amount_total_words"/>
+                        <div style="padding-top:15%;" class="col-12">
+                            <p t-if="o.move_type in ('out_invoice', 'in_refund') and o.payment_reference"
+                               name="payment_communication">
+                                Please use the following communication for your
+                                payment :
+                                <b>
+                                    <span t-field="o.payment_reference"/>
+                                </b>
                             </p>
-                        </t>
-                        <div id="qrcode"
-                             t-if="(o.company_id.qr_code) and (o.currency_id.name == 'EUR') and (o.invoice_partner_bank_id.acc_number != False)">
-                            <p t-if="(o.invoice_partner_bank_id.qr_code_valid)">
-                                <strong class="text-center">Scan me with your
-                                    banking app.
-                                </strong>
-                                <br/>
-                                <br/>
-                                <img class="border border-dark rounded"
-                                     t-att-src="o.invoice_partner_bank_id.build_qr_code_url(o.amount_residual,  o.ref or o.name)"/>
+                            <p t-if="o.invoice_payment_term_id"
+                               name="payment_term">
+                                <span t-field="o.invoice_payment_term_id.note"/>
                             </p>
-                            <p t-if="(o.invoice_partner_bank_id.qr_code_valid == False)">
-                                <strong class="text-center">The SEPA QR Code
-                                    informations are not set
-                                    correctly.
-                                </strong>
-                                <br/>
+                            <div t-if="not is_html_empty(o.narration)"
+                                 name="comment">
+                                <span t-field="o.narration"/>
+                            </div>
+                            <p t-if="not is_html_empty(o.fiscal_position_id.note)"
+                               name="note">
+                                <span t-field="o.fiscal_position_id.note"/>
                             </p>
+                            <p t-if="o.invoice_incoterm_id" name="incoterm">
+                                <strong>Incoterm:</strong>
+                                <span t-field="o.invoice_incoterm_id.code"/>
+                                -
+                                <span t-field="o.invoice_incoterm_id.name"/>
+                            </p>
+                            <div id="qrcode"
+                                 t-if="o.display_qr_code and o.amount_residual > 0">
+                                <p t-if="qr_code_urls.get(o.id)">
+                                    <strong class="text-center">Scan me with
+                                        your banking app.
+                                    </strong>
+                                    <br/>
+                                    <br/>
+                                    <img class="border border-dark rounded"
+                                         t-att-src="qr_code_urls[o.id]"/>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>

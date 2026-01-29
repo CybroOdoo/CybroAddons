@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--  Inherited portal_my_home template to add documents inside portal view  -->
+    <template id="portal_my_home_document"
+              name="Show Documents" customize_show="True"
+              inherit_id="portal.portal_my_home" priority="20">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Documents</t>
+                <t t-set="url" t-value="'/my/documents'"/>
+                <t t-set="placeholder_count" t-value="'document_count'"/>
+            </t>
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Document Requests</t>
+                <t t-set="url" t-value="'/my/document_request'"/>
+                <t t-set="placeholder_count" t-value="'request_count'"/>
+            </t>
+        </xpath>
+    </template>
+    <!--  Inherited portal_layout template to add documents tree view -->
+    <template id="portal_my_documents" name="My Documents">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Documents</t>
+            </t>
+            <div id="document_portal">
+
+            <t t-if="not document_ids">
+                <p>There are currently no Documents for your account.</p>
+            </t>
+            <t t-if="document_ids">
+                <table class="table rounded mb-0 bg-white o_portal_my_doc_table">
+                    <thead>
+                        <tr class="active">
+                            <th class="text-start">Document Name</th>
+                            <th class="text-end">User Name</th>
+                            <th class="text-end">Create Date</th>
+                            <th class="text-end">Related User</th>
+                            <th class="text-end">Download</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="count" t-value="0"/>
+                        <t t-foreach="extensions" t-as="extension">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-start" colspan="5"
+                                        style="text-transform: uppercase;">
+                                        <t t-esc="extension"/>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <t t-foreach="document_ids[count]" t-as="docs">
+                                <tr>
+                                    <td class="text-start">
+                                        <t t-esc="docs.name"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <t t-esc="docs.user_id.name"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <t t-esc="docs.date"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <t t-esc="docs.partner_id.name"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <t t-if="extension == 'url'">
+                                            <i class="btn btn-outline-primary fa fa-share" t-att-data-url="docs.brochure_url"/>
+                                            <a class="btn btn-outline-primary fa fa-expand"
+                                                t-att-href="docs.content_url"
+                                                target="_blank">
+                                            </a>
+                                        </t>
+
+                                        <t t-else="">
+                                            <i class="btn btn-outline-primary fa fa-share" t-attf-data-url="{{base_url}}{{docs.brochure_url}}"/>
+                                            <a class="btn btn-outline-primary fa fa-download"
+                                               t-attf-href="/web/content/#{docs.attachment_id.id}?download=true&amp;access_token="
+                                               target="_blank"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </t>
+                            <t t-set="count" t-value="count+1"/>
+                        </t>
+                    </tbody>
+                </table>
+                <div class="toast"
+                     style="position:absolute;top:62px;right:10px;">
+                    <div class="toast-header">
+                        Link Copied to Clipboard
+                        <button type="button" class="btn-close" data-bs-dismiss="toast"/>
+                    </div>
+                    <div class="toast-body text-primary">
+                    </div>
+                </div>
+            </t>
+            </div>
+        </t>
+    </template>
+</odoo>

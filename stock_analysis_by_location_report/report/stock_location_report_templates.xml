@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Templates for the stock location report-->
+    <template id="report_stock_location">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h2>Stock Location Report</h2>
+                    <div>
+                        <strong> Report Date:</strong>
+                        <span t-esc="datetime.datetime.now().strftime('%Y-%m-%d')"/>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Location</th>
+                                <th>OnHand Quantity</th>
+                                <th>Incoming Quantity</th>
+                                <th>Outgoing Quantity</th>
+                                <th>Forecast Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="grouped_data.items()" t-as="group">
+                                <t t-set="product_id" t-value="group[0]"/>
+                                <t t-set="product_data" t-value="group[1]"/>
+                                <t t-foreach="product_data" t-as="data">
+                                    <tr>
+                                        <td t-esc="product_id"/>
+                                        <td t-esc="data['location']"/>
+                                        <td t-esc="data['on_hand_qty']"/>
+                                        <td t-esc="data['qty_incoming']"/>
+                                        <td t-esc="data['qty_outgoing']"/>
+                                        <td t-esc="data['forecast_qty']"/>
+                                    </tr>
+                                </t>
+                                <tr>
+                                    <td colspan="2" style="text-align: right;"><strong>Total:</strong></td>
+                                    <td><strong><t t-esc="sum([x['on_hand_qty'] for x in product_data])"/></strong></td>
+                                    <td><strong><t t-esc="sum([x['qty_incoming'] for x in product_data])"/></strong></td>
+                                    <td><strong><t t-esc="sum([x['qty_outgoing'] for x in product_data])"/></strong></td>
+                                    <td><strong><t t-esc="sum([x['forecast_qty'] for x in product_data])"/></strong></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

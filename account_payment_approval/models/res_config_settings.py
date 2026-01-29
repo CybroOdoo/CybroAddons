@@ -20,7 +20,7 @@
 #
 #############################################################################
 
-from odoo import fields, models
+from odoo import fields, models, api
 
 
 class ResConfigSettings(models.TransientModel):
@@ -31,7 +31,10 @@ class ResConfigSettings(models.TransientModel):
         account_manager_ids = user_ids.filtered(lambda l: l.has_group('account.group_account_manager'))
         return [('id', 'in', account_manager_ids.ids)]
 
-    payment_approval = fields.Boolean('Payment Approval', config_parameter='account_payment_approval.payment_approval')
+    payment_approval = fields.Boolean('Single Payment Approval',
+                                      config_parameter='account_payment_approval.payment_approval')
+    multi_approval = fields.Boolean('Multi Payment Approval',
+                                    config_parameter='account_payment_approval.multi_approval')
     approval_user_id = fields.Many2one('res.users', string="Payment Approver", required=False,
                                        domain=_get_account_manager_ids,
                                        config_parameter='account_payment_approval.approval_user_id')
@@ -41,3 +44,8 @@ class ResConfigSettings(models.TransientModel):
     approval_currency_id = fields.Many2one('res.currency', string='Approval Currency',
                                            config_parameter='account_payment_approval.approval_currency_id',
                                            help="Converts the payment amount to this currency if chosen.")
+
+    @api.onchange('multi_approval')
+    def onchange_multi_approval(self):
+        if self.multi_approval:
+            self.payment_approval = False

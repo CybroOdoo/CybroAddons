@@ -92,7 +92,6 @@ class BalanceSheet(models.TransientModel):
         'sum' : it's the sum of the children of this record
          (aka a 'view' record)"""
 
-
         res = {}
         fields = ['credit', 'debit', 'balance']
         for report in reports:
@@ -134,7 +133,6 @@ class BalanceSheet(models.TransientModel):
         return res
 
     def get_account_lines(self, data):
-
         lines = []
         account_report = data['account_report_id']
         child_reports = account_report._get_children_by_order()
@@ -196,7 +194,6 @@ class BalanceSheet(models.TransientModel):
                 # used to display the details of the
                 #  financial report, so it's not needed here.
                 continue
-
             if res[report.id].get('account'):
                 sub_lines = []
                 for account_id, value \
@@ -226,7 +223,7 @@ class BalanceSheet(models.TransientModel):
                         'level': (
                                 report.display_detail == 'detail_with_hierarchy' and
                                 4),
-                        'account_type': account.internal_type,
+                        # 'account_type': account.internal_type,
                     }
                     if data['debit_credit']:
                         vals['debit'] = value['debit']
@@ -249,7 +246,6 @@ class BalanceSheet(models.TransientModel):
                         sub_lines.append(vals)
                 lines += sorted(sub_lines,
                                 key=lambda sub_line: sub_line['name'])
-
         return lines
 
     def find_journal_items(self, report_lines, form):
@@ -296,9 +292,3 @@ class BalanceSheet(models.TransientModel):
                     j['type'] = 'journal_item'
                     journal_items.append(j)
         return journal_items
-
-
-
-
-
-

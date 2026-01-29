@@ -20,10 +20,7 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###################################################################################
-
-from . import model
-from . import email_send
-from . import email_template
-from . import mail_mail
-from . import ir_config_parameter
+from . import email_api
+from . import mailing_mailing
 from . import res_config_settings
+from . import sendgrid_email_template

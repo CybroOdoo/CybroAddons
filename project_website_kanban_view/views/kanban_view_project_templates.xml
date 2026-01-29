@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Project Kanban View Template-->
+    <template id="project_kanban_view_template" name="Kanban View">
+        <t t-if="viewtype =='kanban'">
+            <t t-if="page_name == 'project'">
+                <section
+                        class="section-Kanban-view w-100 float-left kanban-container">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="container-projects  pl-5 pr-5 float-left w-100">
+                                    <div class="row">
+                                        <t t-foreach="projects"
+                                           t-as="project">
+                                            <div class="col-lg-3 mb-4">
+                                                <div class="project-container w-100 float-left p-3">
+                                                    <h6>
+                                                        <a t-attf-href="/my/projects/#{project.id}?{{ keep_query() }}">
+                                                            <t t-esc="project.name"/>
+                                                        </a>
+                                                    </h6>
+                                                    <div class="tasks">
+                                                        <a t-attf-href="/my/projects/#{project.id}?{{ keep_query() }}">
+                                                            <t t-out="project.task_count_with_subtasks"/>
+                                                            Tasks
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </t>
+        </t>
+    </template>
+    <!--Inheriting the Searchbar to add kanban and task icon-->
+    <template id="kanban_view_template_inherit"
+              inherit_id="portal.portal_searchbar">
+        <xpath expr="//nav" position="before">
+            <t t-if="page_name == 'project' or page_name == 'task'">
+                <div class="container-view float-left w-100">
+                    <div class="mt-3 mb-3 list-view-icon">
+                        <a t-att-href="default_url + '?' + keep_query('*', viewtype='list')">
+                            <img class="w-100"
+                                 src="/project_website_kanban_view/static/src/images/img-list-view.png"/>
+                        </a>
+                    </div>
+                    <div class="mt-3 mb-3 thumbnail-view-icon mr-2">
+                        <a t-att-href="default_url + '?' + keep_query('*', viewtype='kanban')">
+                            <img class="w-100"
+                                 src="/project_website_kanban_view/static/src/images/img-thumbnail-view.png"/>
+                        </a>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+<!--    Adding an attribute viewtype to the list view table and also add the Project kanban view Template-->
+    <template id="list_view_template_inherit" inherit_id="portal.portal_table">
+        <xpath expr="//table[hasclass('o_portal_my_doc_table')]"
+               position="attributes">
+            <attribute name="t-if">viewtype != 'kanban'</attribute>
+        </xpath>
+        <xpath expr="//table[hasclass('o_portal_my_doc_table')]"
+               position="before">
+            <t t-call="project_website_kanban_view.project_kanban_view_template"/>
+        </xpath>
+    </template>
+</odoo>

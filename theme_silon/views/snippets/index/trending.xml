@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="trending_product_snippet" name="Trending Product Snippet">
+        <section class="trending o_not_editable">
+            <div class="alert alert-info">
+                <h4>Snippet will be displayed here... Please Save to view the snippet.</h4>
+            </div>
+        </section>
+    </template>
+
+    <template id="trending_snippet" name="Trending Products Snippet">
+        <div class="container o_not_editable" t-ignore="True">
+            <h2 class="f-product-heading">TRENDING PRODUCTS</h2>
+        </div>
+
+        <div class="f-product o_not_editable">
+            <div class="container" t-ignore="True">
+                <div class="row">
+                    <t t-foreach="product_ids" t-as="product_id">
+                        <div class="col-12 col-sm-6 col-lg-3 col-md-6">
+                            <t t-set="product_tmpl_id"
+                               t-value="request.env['product.template'].search([('id','=',product_id['product_template_id'])])"/>
+                            <a t-attf-href="/shop/product/#{ slug(product_tmpl_id) }">
+                                <div class="product">
+                                    <t t-if="product_id['rating']">
+
+                                        <span t-if="product_id['ratings'] &gt;= 3.40"
+                                              class="rating_ribbon rating_ribbon-green">
+                                            <span>
+                                                <t t-esc="product_id['ratings']"/>
+                                            </span>
+                                        </span>
+                                        <span t-if="product_id['ratings'] &lt;= 1.70"
+                                              class="rating_ribbon rating_ribbon-red">
+                                            <span>
+                                                <t t-esc="product_id['ratings']"/>
+                                            </span>
+                                        </span>
+                                        <span t-if="product_id['ratings'] &gt;= 1.69 and product_id['ratings'] &lt;= 3.39"
+                                              class="rating_ribbon rating_ribbon-yellow">
+                                            <span>
+                                                <t t-esc="product_id['ratings']"/>
+                                            </span>
+                                        </span>
+                                    </t>
+                                    <div class="product__image">
+                                        <img t-attf-src="/web/image?model=product.template&amp;field=image_1920&amp;id=#{product_id['id']}"
+                                             class="img img-fluid"
+                                             style="width:auto; height:auto;max-height: -webkit-fill-available;"/>
+                                    </div>
+                                    <div class="product-details">
+                                        <div class="product__title">
+                                            <span t-if="product_id" t-esc="product_id['display_name']"/>
+                                        </div>
+                                        <div class="product__price">
+                                            <span t-if="product_id"
+                                                  t-esc="product_id['list_price']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template id="trending" inherit_id="website.snippets" name="Trending Snippet">
+        <xpath expr="//div[@id='snippet_structure']/div[hasclass('o_panel_body')]" position="inside">
+            <t t-snippet="theme_silon.trending_product_snippet"
+               t-thumbnail="/theme_silon/static/src/img/snippets/trending_products_block.jpg"/>
+        </xpath>
+    </template>
+</odoo>

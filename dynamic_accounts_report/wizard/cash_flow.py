@@ -263,18 +263,17 @@ class AccountCasgFlow(models.TransientModel):
         elif data.get('levels') == 'consolidated':
             state = """ AND am.state = 'posted' """ if data.get('target_move') == 'Posted' else ''
             state2 = ' AND aml.company_id IN %s' % str(tuple(self.env.companies.ids) + tuple([0]))
-            query2 = """SELECT aat.name, sum(aml.debit) AS total_debit, sum(aml.credit) AS total_credit,
+            query2 = """SELECT aml.account_type, sum(aml.debit) AS total_debit, sum(aml.credit) AS total_credit,
                          sum(aml.balance) AS total_balance FROM (  SELECT am.id, am.state FROM account_move as am
                          LEFT JOIN account_move_line aml ON aml.move_id = am.id
                          LEFT JOIN account_account aa ON aa.id = aml.account_id
-                         LEFT JOIN account_account_type aat ON aat.id = aa.user_type_id
                          WHERE am.date BETWEEN '""" + str(data.get('date_from')) + """' and '""" + str(
                 data.get('date_to')) + """' AND aat.id='""" + str(
                 account_type_id) + """' """ + state + state2 + """) am
                                      LEFT JOIN account_move_line aml ON aml.move_id = am.id
                                      LEFT JOIN account_account aa ON aa.id = aml.account_id
                                      LEFT JOIN account_account_type aat ON aat.id = aa.user_type_id
-                                     GROUP BY aat.name"""
+                                     GROUP BY aml.account_type"""
             cr = self._cr
             cr.execute(query2)
             fetched_data = cr.dictfetchall()

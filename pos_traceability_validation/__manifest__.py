@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-##############################################################################
+###############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2020-TODAY Cybrosys Technologies(<http://www.cybrosys.com>).
-#    Author: Akhilesh N S(<http://www.cybrosys.com>)
-#    you can modify it under the terms of the GNU LESSER
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Abhishek E T (odoo@cybrosys.com)
+#
+#    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
 #    This program is distributed in the hope that it will be useful,
@@ -14,29 +15,33 @@
 #    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
 #    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    GENERAL PUBLIC LICENSE (LGPL v3) along with this program.
+#    (LGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
 #
-##############################################################################
-
+###############################################################################
 {
     'name': 'POS Serial Number Validator',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.1.0.',
+    'category': 'Point of Sale',
+    'summary': 'Validate the lot/ serial number of products in PoS',
+    'description': """Validate the lot/ serial number of a product by checking the 
+    availability in stock and duplication of serial number""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'category': 'Point of Sale',
-    'summary': """Validate Serial number of a product by checking availability in stock""",
-    'description': """Validate Serial number of a product by checking availability in stock""",
-    'depends': ['point_of_sale'],
+    'depends': ['point_of_sale', 'stock'],
     'assets': {
         'web.assets_backend': [
-            'pos_traceability_validation/static/src/js/pos_models.js',
+            'pos_traceability_validation/static/src/js/PoSEditListPopup.js',
+            'pos_traceability_validation/static/src/js/PoSOrderWidget.js',
+            'pos_traceability_validation/static/src/js/PoSProductScreen.js',
         ],
     },
     'images': ['static/description/banner.png'],
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
+    'application': False
 }
 

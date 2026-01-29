@@ -1,7 +1,25 @@
 # -*- coding: utf-8 -*-
-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2019-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
 from odoo import api, fields, models
-
 from odoo.modules import get_resource_path
 
 try:
@@ -24,44 +42,29 @@ class MultipleInvoiceLayout(models.TransientModel):
 
     company_id = fields.Many2one(
         'res.company', default=lambda self: self.env.company, required=True)
-
     layout = fields.Char(related="company_id.external_report_layout_id.key")
-
     journal_id = fields.Many2one('account.journal', string='Journal',
                                  required=True, default=_get_default_journal)
-
     multiple_invoice_type = fields.Selection(
         related='journal_id.multiple_invoice_type', readonly=False,
         required=True)
-
     text_position = fields.Selection(related='journal_id.text_position',
                                      readonly=False, required=True,
                                      default='header')
-
     body_text_position = fields.Selection(
-        related='journal_id.body_text_position',
-        readonly=False)
-
+        related='journal_id.body_text_position', readonly=False)
     text_align = fields.Selection(
-        related='journal_id.text_align',
-        readonly=False)
-
-    preview = fields.Html(compute='_compute_preview',
-                          sanitize=False,
-                          sanitize_tags=False,
-                          sanitize_attributes=False,
-                          sanitize_style=False,
-                          sanitize_form=False,
-                          strip_style=False,
-                          strip_classes=False)
+        related='journal_id.text_align', readonly=False)
+    preview = fields.Html(
+        compute='_compute_preview', sanitize=False, sanitize_tags=False,
+        sanitize_attributes=False, sanitize_style=False, sanitize_form=False,
+        strip_style=False, strip_classes=False)
 
     @api.depends('multiple_invoice_type', 'text_position', 'body_text_position',
                  'text_align')
     def _compute_preview(self):
         """ compute a qweb based preview to display on the wizard """
-
         styles = self._get_asset_style()
-
         for wizard in self:
             if wizard.company_id:
                 preview_css = self._get_css_for_preview(styles, wizard.id)
@@ -86,11 +89,9 @@ class MultipleInvoiceLayout(models.TransientModel):
                                       raise_if_not_found=False)
         if not template_style:
             return b''
-
         company_styles = template_style._render({
             'company_ids': self.company_id,
         })
-
         return company_styles
 
     @api.model
@@ -108,16 +109,13 @@ class MultipleInvoiceLayout(models.TransientModel):
         Parameters are the same from odoo/addons/base/models/assetsbundle.py
         Simply copied and adapted slightly
         """
-
         # No scss ? still valid, returns empty css
         if not scss_source.strip():
             return ""
-
         precision = 8
         output_style = 'expanded'
         bootstrap_path = get_resource_path('web', 'static', 'lib', 'bootstrap',
                                            'scss')
-
         try:
             return libsass.compile(
                 string=scss_source,
@@ -133,16 +131,12 @@ class MultipleInvoiceLayout(models.TransientModel):
     def _get_layout_for_preview(self):
         if self.layout == 'web.external_layout_boxed':
             new_layout = 'base_accounting_kit.boxed'
-
         elif self.layout == 'web.external_layout_bold':
             new_layout = 'base_accounting_kit.bold'
-
         elif self.layout == 'web.external_layout_striped':
             new_layout = 'base_accounting_kit.striped'
-
         else:
             new_layout = 'base_accounting_kit.standard'
-
         return new_layout
 
     def document_layout_save(self):

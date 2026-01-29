@@ -25,6 +25,7 @@ class TBXLSXReportController(http.Controller):
                     ]
                 )
                 report_obj.get_dynamic_xlsx_report(options, response, report_data, dfr_data)
+
             response.set_cookie('fileToken', token)
             return response
         except Exception as e:

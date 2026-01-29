@@ -21,19 +21,14 @@
 #
 ###################################################################################
 
-from odoo import models, fields, api, _
+from odoo import models, fields
 
 
-class SendGridApiConfig(models.TransientModel):
+class ResConfigSettings(models.TransientModel):
+    """Inherits the model res.config.settings to add extra fields"""
     _inherit = 'res.config.settings'
 
-    send_grid_api_check = fields.Boolean(string="SendGrid API")
-    send_grid_api_value = fields.Char(string='API key')
-
-    def set_values(self):
-        """ save values in the settings fields """
-
-        super(SendGridApiConfig, self).set_values()
-        company_id = self.env.company
-        self.env['ir.config_parameter'].sudo().set_param("SendGrid API Key "+company_id.name+"",
-                                                         self.send_grid_api_value)
+    send_grid_api_check = fields.Boolean(string="SendGrid API",
+                                         config_parameter="sendgrid_email.send_grid_api_check")
+    send_grid_api_value = fields.Char(string='API key',
+                                      config_parameter="sendgrid_email.send_grid_api_value")

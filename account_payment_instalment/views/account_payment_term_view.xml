@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_payment_term_line_tree_instalment" model="ir.ui.view">
+            <field name="name">account.payment.term.line.tree</field>
+            <field name="model">account.payment.term.line</field>
+            <field name="inherit_id" ref="account.view_payment_term_line_tree"/>
+            <field name="arch" type="xml">
+                <field name="option" position="after">
+                    <field name="period_type"/>
+                    <field name="period_count"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="view_payment_term_form_instalment" model="ir.ui.view">
+            <field name="name">account.payment.term.form</field>
+            <field name="model">account.payment.term</field>
+            <field name="inherit_id" ref="account.view_payment_term_form"/>
+            <field name="arch" type="xml">
+                <p class="text-muted" position="replace">
+                    The last line's computation type should be "Balance or Instalment" to ensure that the whole amount will be allocated.
+                </p>
+            </field>
+        </record>
+
+        <record id="view_payment_term_line_form_instalment" model="ir.ui.view">
+            <field name="name">az.account.payment.term.line.form</field>
+            <field name="model">account.payment.term.line</field>
+            <field name="inherit_id" ref="account.view_payment_term_line_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group/group[2]/div/label" position="attributes">
+                    <attribute name="attrs">{'invisible':[('value','in',['balance','instalment'])]}</attribute>
+                </xpath>
+                <xpath expr="//group/group[2]/div" position="attributes">
+                    <attribute name="attrs">{'invisible':[('value','in',['balance','instalment'])]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='days']" position="attributes">
+                    <attribute name="attrs">{'invisible':[('value','=','instalment')]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='option']" position="attributes">
+                    <attribute name="attrs">{'invisible':[('value','=','instalment')]}</attribute>
+                </xpath>
+                <xpath expr="//div/label[1][@for='days']" position="attributes">
+                    <attribute name="attrs">{'invisible':[('value','=','instalment')]}</attribute>
+                </xpath>
+                <xpath expr="//div[2]" position="attributes">
+                    <attribute name="attrs">{'invisible':['|',('option','!=', 'day_after_invoice_date'),('value','=','instalment')]}</attribute>
+                </xpath>
+                <xpath expr="//div[2]" position="after">
+                    <group attrs="{'invisible':[('value','!=','instalment')]}">
+                        <field name="period_type" attrs="{'required':[('value','=','instalment')]}"/>
+                        <field name="period_count" attrs="{'required':[('value','=','instalment')]}"/>
+                    </group>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>

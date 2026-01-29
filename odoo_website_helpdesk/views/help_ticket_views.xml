@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    HelpDesk Form View-->
+    <record id="help_ticket_view_form" model="ir.ui.view">
+        <field name="name">help.ticket.view.form</field>
+        <field name="model">help.ticket</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_create_tasks" string="Create Task"
+                            type="object" class="btn-primary"
+                            attrs="{'invisible':[('create_task','=',False)]}"/>
+                    <button name="action_create_invoice" string="Create Invoice"
+                            type="object" class="btn-primary"
+                            attrs="{'invisible':[('billable','=',False)]}"/>
+                    <field name="stage_id" widget="statusbar"
+                           options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" name="action_open_tasks"
+                                string="Tasks" type="object" icon="fa-tasks"
+                                attrs="{'invisible':[('create_task','=',False)]}">
+                        </button>
+                        <button class="oe_stat_button"
+                                name="action_open_invoices" string="Invoices"
+                                type="object" icon="fa-tasks"
+                                attrs="{'invisible':[('billable','=',False)]}">
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                        <label for="subject" class="oe_edit_only"/>
+                        <h1 class="mt0">
+                            <field name="subject"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="customer_id"/>
+                            <field name="customer_name"/>
+                            <field name="email"/>
+                            <field name="phone"/>
+                            <field name="cost"/>
+                            <field name="start_date"/>
+                        </group>
+                        <group>
+                            <field name="team_id"/>
+                            <field name="project_id"/>
+                            <field name="service_product_id" attrs="{'invisible':[('create_task','=',False)],
+                         'required': [('create_task','=', True)]}"/>
+                            <field name="priority" widget="priority"/>
+                            <field name="show_create_task" invisible="1"/>
+                            <field name="create_task"
+                                   attrs="{'invisible':[('show_create_task','=',False)]}"/>
+                            <field name="billable"
+                                   attrs="{'invisible':[('create_task','=',False)]}"/>
+                            <field name="end_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Issue Description">
+                            <field name="description"
+                                   placeholder="Provide the reason in detail"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="o_attachment_preview"/>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"
+                           groups="base.group_user"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!--HelpDesk Tree View-->
+    <record id="help_ticket_view_tree" model="ir.ui.view">
+        <field name="name">help.ticket.view.tree</field>
+        <field name="model">help.ticket</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="customer_id"/>
+                <field name="customer_name"/>
+                <field name="subject"/>
+                <field name="stage_id"/>
+            </tree>
+        </field>
+    </record>
+    <!--    HelpDesk Kanban View-->
+    <record id="help_ticket_view_kanban" model="ir.ui.view">
+        <field name="name">help.ticket.view.kanban</field>
+        <field name="model">help.ticket</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage_id" class="o_kanban_small_column"
+                    quick_create="false" on_create="quick_create">
+                <field name="color"/>
+                <field name="name"/>
+                <field name="stage_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="#{kanban_color(record.color.raw_value)} oe_kanban_global_click">
+                            <div class="o_dropdown_kanban dropdown">
+                                <a role="button"
+                                   class="dropdown-toggle o-no-caret btn"
+                                   data-toggle="dropdown" href="#"
+                                   aria-label="Dropdown menu"
+                                   title="Dropdown menu">
+                                    <span class="fa fa-ellipsis-v"/>
+                                </a>
+                                <div class="dropdown-menu" role="menu">
+                                    <t t-if="widget.editable">
+                                        <a role="menuitem" type="edit"
+                                           class="dropdown-item">Edit...
+                                        </a>
+                                    </t>
+                                    <t t-if="widget.deletable">
+                                        <a role="menuitem" type="delete"
+                                           class="dropdown-item">Delete
+                                        </a>
+                                    </t>
+                                    <ul class="oe_kanban_colorpicker"
+                                        data-field="color"/>
+                                </div>
+                            </div>
+                            <div class="oe_kanban_content">
+                                <div>
+                                    <strong>
+                                        <field name="name"/>
+                                    </strong>
+                                </div>
+                                <div class="text-muted">
+                                    <a>Customer :</a>
+                                    <field name="customer_id"/>
+                                    <div style="float: right;">
+                                        <a>Priority :</a>
+                                        <field name="priority"/>
+                                    </div>
+                                </div>
+                                <div class="text-muted">
+                                    <a>Subject :</a>
+                                    <field name="subject"/>
+                                </div>
+                                <div class="text-muted">
+                                    <a>Team :</a>
+                                    <field name="team_id"/>
+                                </div>
+                            </div>
+                            <div class="oe_clear"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!--Helpdesk_view_activity-->
+    <record id="help_ticket_view_activity" model="ir.ui.view">
+        <field name="name">help.ticket.view.activity</field>
+        <field name="model">help.ticket</field>
+        <field name="arch" type="xml">
+            <activity string="Tickets">
+                <templates>
+                    <div t-name="activity-box">
+                        <div>
+                            <field name="name" display="full"/>
+                            <field name="customer_id" muted="1" display="full"/>
+                        </div>
+                    </div>
+                </templates>
+            </activity>
+        </field>
+    </record>
+    <!--    Help_ticket_view_calendar-->
+    <record id="help_ticket_view_calendar" model="ir.ui.view">
+        <field name="name">help.ticket.view.calendar</field>
+        <field name="model">help.ticket</field>
+        <field name="arch" type="xml">
+            <calendar string="Helpdesk Ticket" date_start="start_date"
+                      date_stop="end_date" event_open_popup="true" mode="month"
+                      color="customer_id" quick_add="False">
+                <field name="customer_id"/>
+                <field name="subject"/>
+                <field name="team_id"/>
+            </calendar>
+        </field>
+    </record>
+    <!--Help_ticket_actions-->
+   <record id="help_ticket_action" model="ir.actions.act_window">
+        <field name="name">Helpdesk</field>
+        <field name="res_model">help.ticket</field>
+        <field name="view_mode">kanban,tree,form,calendar,activity</field>
+    </record>
+
+</odoo>

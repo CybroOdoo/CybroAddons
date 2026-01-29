@@ -43,6 +43,7 @@ class AccountMove(models.Model):
     def _onchange_partner_id(self):
         """This is the onchange function of the partner which loads the
         persons for the approval to the approver table of the account.move"""
+        print("Onchange")
         res = super(AccountMove, self)._onchange_partner_id()
         invoice_approval_id = self.env['invoice.approval'].search([])
         self.approval_ids = None

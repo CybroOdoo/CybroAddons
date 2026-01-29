@@ -20,7 +20,7 @@
 #
 #############################################################################
 
-from odoo import models, fields, api
+from odoo import models, fields
 
 
 class ProductTemplate(models.Model):
@@ -36,46 +36,48 @@ class MrpProduction(models.Model):
     def action_confirm(self):
         parms = self.env['ir.config_parameter'].sudo()
         type = parms.get_param('serial_selection')
-        if self.product_id.tracking == 'serial' or self.product_id.tracking == 'lot':
-            if type == 'global':
-                digit = parms.get_param('digit')
-                prefix = parms.get_param('prefix')
-                seq = self.env['ir.sequence'].sudo().search([('code', '=', 'mrp.production.sequence')])
-                if seq:
-                    seq.write({
-                        'prefix': prefix,
-                        'padding': digit
+        for rec in self:
+            if rec.product_id.tracking == 'serial' or rec.product_id.tracking == 'lot':
+                if type == 'global':
+                    digit = parms.get_param('digit')
+                    prefix = parms.get_param('prefix')
+                    seq = self.env['ir.sequence'].sudo().search([('code', '=', 'mrp.production.sequence')])
+
+                    if seq:
+                        seq.write({
+                            'prefix': prefix,
+                            'padding': digit
+                        })
+                    if not seq:
+                        self.env['ir.sequence'].create({
+                            'name': 'Mrp Production',
+                            'implementation': 'standard',
+                            'code': 'mrp.production.sequence',
+                            'prefix': prefix,
+                            'padding': digit})
+                    serial_id = self.env['stock.production.lot'].create({
+                        'name': self.env['ir.sequence'].sudo().next_by_code('mrp.production.sequence'),
+                        'product_id': rec.product_id.id,
+                        'company_id': rec.company_id.id,
                     })
-                if not seq:
-                    self.env['ir.sequence'].create({
-                        'name': 'Mrp Production',
-                        'implementation': 'standard',
-                        'code': 'mrp.production.sequence',
-                        'prefix': prefix,
-                        'padding': digit})
-                serial_id = self.env['stock.production.lot'].create({
-                    'name': self.env['ir.sequence'].sudo().next_by_code('mrp.production.sequence'),
-                    'product_id': self.product_id.id,
-                    'company_id': self.company_id.id,
-                })
-            else:
-                seq = self.env['ir.sequence'].sudo().search([('code', '=', self.product_id.name)])
-                if seq:
-                    seq.write({
-                        'prefix': self.product_id.product_tmpl_id.prefix,
-                        'padding': self.product_id.product_tmpl_id.digit,
+                else:
+                    seq = self.env['ir.sequence'].sudo().search([('code', '=', rec.product_id.name)])
+                    if seq:
+                        seq.write({
+                            'prefix': rec.product_id.product_tmpl_id.prefix,
+                            'padding': rec.product_id.product_tmpl_id.digit,
+                        })
+                    if not seq:
+                        self.env['ir.sequence'].create({
+                            'name': 'Mrp Production',
+                            'implementation': 'standard',
+                            'code': rec.product_id.name,
+                            'prefix': rec.product_id.product_tmpl_id.prefix,
+                            'padding': rec.product_id.product_tmpl_id.digit})
+                    serial_id = self.env['stock.production.lot'].create({
+                        'name': self.env['ir.sequence'].sudo().next_by_code(rec.product_id.name),
+                        'product_id': rec.product_id.id,
+                        'company_id': rec.company_id.id,
                     })
-                if not seq:
-                    self.env['ir.sequence'].create({
-                        'name': 'Mrp Production',
-                        'implementation': 'standard',
-                        'code': self.product_id.name,
-                        'prefix': self.product_id.product_tmpl_id.prefix,
-                        'padding': self.product_id.product_tmpl_id.digit})
-                serial_id = self.env['stock.production.lot'].create({
-                    'name': self.env['ir.sequence'].sudo().next_by_code(self.product_id.name),
-                    'product_id': self.product_id.id,
-                    'company_id': self.company_id.id,
-                })
-            self.lot_producing_id = serial_id
-        return super(MrpProduction, self).action_confirm()
+                rec.lot_producing_id = serial_id
+            return super(MrpProduction, self).action_confirm()

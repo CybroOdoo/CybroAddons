@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_print_thermal_so" model="ir.actions.report">
+        <field name="name">Thermal Invoice</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">thermal_invoice_report.report_thermal</field>
+        <field name="report_file">thermal_invoice_report.report_thermal</field>
+        <field name="print_report_name">(object._get_report_base_filename())</field>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_thermal_paper"/>
+    </record>
+
+
+    <template id="report_thermal">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <t t-foreach="docs" t-as="doc">
+
+                    <link rel="stylesheet"
+                          href="/thermal_invoice_report/static/src/css/thermal_style.css"/>
+
+                    <center class="thermal-report-page">
+                        <div class="my_container">
+                            <div style="width: 45%;">
+                                <img src='/web/binary/company_logo'
+                                     style="width:100%"/>
+                            </div>
+                            <p>
+                                <span t-field="doc.company_id.company_details"/>
+                            </p>
+
+                            <div class="cntr">
+                                --------------------------------------------------------------------
+                            </div>
+                            <br/>
+                            <div class="my_section">
+
+                                <div class="detail_section">
+                                    <b>Invoice No &#160; :
+                                        <span
+                                                t-field="doc.name"/>
+                                    </b>
+                                    <br/>
+                                    Customer &#160; &#160; :
+                                    <span
+                                            t-field="doc.partner_id"/>
+                                    <br/>
+                                    invoice Date :
+                                    <span
+                                            t-field="doc.invoice_date"/>
+
+                                </div>
+                                <div class="date_section">
+                                    Date :
+                                    <span
+                                            t-esc="context_timestamp(datetime.datetime.now()).strftime('%m/%d/%Y')"/>
+                                    <br/>
+                                    Time :
+                                    <span
+                                            t-esc="context_timestamp(datetime.datetime.now()).strftime('%I:%M:%p')"/>
+
+                                </div>
+
+                            </div>
+
+                            <br/>
+
+                            <div class="cntr">
+                                --------------------------------------------------------------------
+                            </div>
+                            <br/>
+                            <table class=" table my_product_table">
+
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <b>PRODUCT</b>
+                                        </td>
+                                        <td>
+                                            <b>QUANTITY</b>
+                                        </td>
+                                        <td>
+                                            <b>PRICE</b>
+                                        </td>
+                                    </tr>
+                                    <tr t-foreach="doc.invoice_line_ids"
+                                        t-as="a">
+                                        <td>
+                                            <span t-field="a.name"/>
+                                            <br/>
+                                            Discount :
+                                            <span
+                                                    t-field="a.discount"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="a.quantity"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="a.price_unit"
+                                                  t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="cntr">
+                                --------------------------------------------------------------------
+                            </div>
+                            <br/>
+                            <center style="width:90%;">
+
+                                <table class="my_table">
+                                    <tbody>
+                                        <tr>
+                                            <td>Taxes</td>
+                                            <td>:</td>
+                                            <td>
+                                                <span
+                                                        t-field="a.tax_ids"/>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>Total</td>
+                                            <td>:</td>
+                                            <td>
+                                                <span t-field="doc.amount_total"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </center>
+
+                            <div class="cntr">
+                                --------------------------------------------------------------------
+                            </div>
+                            <br/>
+                            <center>
+                                Thank You For Shopping With Us
+                                <p class="cntr">-- *** --</p>
+                            </center>
+
+                        </div>
+                    </center>
+                </t>
+            </t>
+        </t>
+    </template>
+
+
+</odoo>

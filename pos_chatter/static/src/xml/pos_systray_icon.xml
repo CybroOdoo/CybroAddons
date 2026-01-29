@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="template" xml:space="preserve">
+    <!--    ADDING ICON IN THE POS SYSTRAY-->
+    <t t-name="PosSystray" owl="1">
+        <div class="ticket-button" t-att-class="{ highlight: props.isTicketScreenShown }" t-on-click="onClick">
+            <i class="fa fa-comments" />
+        </div>
+    </t>
+    <!--    VIEW FOR POS MESSAGES LIST -->
+    <t t-name="PosMsgView" owl="1" id="pos_chatter.view_template">
+        <div id="pos_systray_template" style="height:auto;width:350px;background-color:white;position:fixed;right: 15px;top:49px;">
+            <div style="display:flex;height: 27px;">
+                <p style="margin-left:10px;cursor: pointer;" id="all_message_button" t-on-click="_onClickAllMessage">All</p>
+                <p style="margin-left:10px;cursor: pointer;color:#9c9a97;" id="all_chat_button" t-on-click="_onClickAllChat">Chat</p>
+                <p style="margin-left:10px;cursor: pointer;color:#9c9a97;" id="all_channels_button" t-on-click="_onClickAllChannels">Channels</p>
+            </div>
+            <hr />
+            <div id="all_message">
+                <t t-foreach="state.data" t-as="data">
+                    <div style="background-color: #e7f3fe;border-left: 6px solid #2196F3;
+                    margin-bottom: 15px;padding: 4px 12px;display:flex;cursor:pointer;" t-att-value="data['id']" t-on-click="_onClickToMessage">
+                        <div style="width:30px">
+                            <t t-if="data['type'] == 'channel'">
+                                <i style="margin:40%" class="fa fa-users" />
+                            </t>
+                            <t t-else="">
+                                <i style="margin:40%" class="fa fa-user" />
+                            </t>
+                        </div>
+                        <div style="margin-left: 20px;width: 250px">
+                            <span t-esc="data['name']" />
+                            <br />
+                            <small style="color:#9c9a97;" t-raw="data['message_body']" />
+                        </div>
+                    </div>
+                </t>
+            </div>
+            <div id="all_chat" style="display:none">
+                <t t-foreach="state.data" t-as="data">
+                    <t t-if="data['type'] == 'chat'">
+                        <div style="background-color: #ddffdd;  border-left: 6px solid #04AA6D;
+                        margin-bottom: 15px;padding: 4px 12px;display:flex;cursor:pointer;" t-att-value="data['id']" t-on-click="_onClickToMessage">
+                            <div style="width:30px">
+                                <i style="margin:8px" class="fa fa-user" />
+                            </div>
+                            <div style="margin-left: 20px;width: 250px">
+                                <span t-esc="data['name']" />
+                                <br />
+                                <small style="color:#9c9a97;" t-raw="data['message_body']" />
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </div>
+            <div id="all_channels" style="display:none">
+                <t t-foreach="state.data" t-as="data">
+
+                    <t t-if="data['type'] == 'channel'">
+                        <div style="background-color: #ffffcc;border-left: 6px solid #ffeb3b;
+                        margin-bottom: 15px;padding: 4px 12px;display:flex;cursor:pointer;" t-att-value="data['id']" t-on-click="_onClickToMessage">
+                            <div style="width:30px">
+                                <i style="margin:8px" class="fa fa-users" />
+                            </div>
+                            <div style="margin-left: 20px;width: 250px">
+                                <span t-esc="data['name']" />
+                                <br />
+                                <small style="color:#9c9a97;" t-raw="data['message_body']" />
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </div>
+        </div>
+    </t>
+    <!--    VIEW FOR CHAT OF CORRESPONDING CONTACTS-->
+    <t t-name="ChatMsgView" owl="1" id="pos_chatter.chat_template">
+        <div id="pos_chat_view" style="position:fixed;width:325px;background:#fff;bottom:5px;right:5px;height:500px;border-radius:10px;">
+            <div style="width=100%;background:#875A7B;height:36px;border-top-left-radius: 10px;border-top-right-radius: 10px;">
+                <div style="padding: 10px;display:flex;">
+                    <i style="margin-left:10px;color: white;width:30px;" class="fa fa-lock" />
+                    <span style="margin-left:5px;color: white;width:225px;" t-esc="state.name" />
+                    <i style="color: white;width:30px;cursor: pointer;text-align: center;" t-on-click="close_window" class="fa fa-times" />
+                </div>
+                <div id="msg_content" style="height:400px;background-color: white;overflow-y: scroll;">
+                    <t t-foreach="state.data" t-as="data">
+                        <t t-if="data['flag'] == 0">
+                            <p style="text-align:left;margin-left: 10px;"><small style="color:#9c9a97;" t-esc="data['author']" />
+                                <br />
+                                <t t-raw="data['body']" />
+                            </p>
+                        </t>
+                        <t t-else="">
+                            <p style="text-align:right;margin-right: 10px;"><small style="color:#9c9a97;"> You </small>
+                                <br />
+                                <t t-raw="data['body']" />
+                            </p>
+                        </t>
+                    </t>
+                </div>
+                <hr />
+                <div>
+                    <input id="message_to_send" type="text" style="border:none;width: 265px;margin-left: 17px;outline:none;height: 25px;" placeholder="Message" />
+                    <i style="margin-left:7px;cursor: pointer;" id="button_send" class="fa fa-paper-plane" t-att-value="state.id" t-on-click="_onClickMessageSend" />
+                </div>
+            </div>
+        </div>
+    </t>
+    <!--    DEFINING THE POSITION OF THE ICON-->
+    <t t-inherit="point_of_sale.Chrome" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('status-buttons')]" position="inside">
+            <PosSystray isTicketScreenShown="isTicketScreenShown" />
+        </xpath>
+    </t>
+</template>

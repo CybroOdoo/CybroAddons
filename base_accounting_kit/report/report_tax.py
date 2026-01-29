@@ -19,8 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
-from _datetime import datetime
+from datetime import datetime
 
 from odoo import api, models, _
 from odoo.exceptions import UserError
@@ -55,7 +54,6 @@ class ReportTax(models.AbstractModel):
         return sql
 
     def _compute_from_amls(self, options, taxes):
-        print("hhhh")
         # compute the tax amount
         sql = self._sql_from_amls_one()
         tables, where_clause, where_params = self.env[
@@ -63,7 +61,6 @@ class ReportTax(models.AbstractModel):
         query = sql % (tables, where_clause)
         self.env.cr.execute(query, where_params)
         results = self.env.cr.fetchall()
-        print("3333",results)
         for result in results:
             if result[0] in taxes:
                 taxes[result[0]]['tax'] = abs(result[1])
@@ -100,10 +97,9 @@ class ReportTax(models.AbstractModel):
                               strict_range=True)._compute_from_amls(options,
                                                                     taxes)
         elif options['date_from'] and options['date_to']:
-            self.with_context(date_from=options['date_from'],
-                              date_to=options['date_to'],
-                              strict_range=True)._compute_from_amls(options,
-                                                                    taxes)
+            self.with_context(
+                date_from=options['date_from'], date_to=options['date_to'],
+                strict_range=True)._compute_from_amls(options, taxes)
         else:
             date_to = str(datetime.today().date())
             self.with_context(date_to=date_to,

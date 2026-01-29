@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Add "Time Log" field into pos.config-->
+    <record id="pos_config_view_form" model="ir.ui.view">
+        <field name="name">pos.config.view.form.inherit.pos.timesheet</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id"
+               ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='iface_orderline_customer_notes']"
+                   position="after">
+                <div class="col-12 col-lg-6 o_setting_box"
+                     title="When starting a session, it automatically creates a task in the selected project and adds the timesheet of the employees based on their work hours automatically."
+                     attrs="{'invisible': [('module_pos_hr','=',False)]}">
+                    <div class="o_setting_left_pane">
+                        <field name="time_log"
+                               attrs="{'readonly': [('has_active_session','=', True)]}"/>
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <span class="o_form_label">Time Log
+                        </span>
+                        <div class="text-muted">
+                            Automatically record employees' work hours in the
+                            timesheet
+                        </div>
+                        <div class="content-group mt16">
+                            <div class="row">
+                                <label for="project_id"
+                                       string="Project"
+                                       class="col-lg-3 o_light_label"/>
+                                <field name="project_id"
+                                       attrs="{'required': [('time_log', '=', True)]}"
+                                       domain="[('company_id', '=', company_id)]"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

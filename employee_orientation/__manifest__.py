@@ -39,6 +39,7 @@
         'views/print_pack_certificates_template.xml',
         'views/report.xml',
         'views/employee_training.xml',
+        'wizard/orientation_complete.xml',
         'security/ir.model.access.csv',
     ],
     'images': ['static/description/banner.png'],
