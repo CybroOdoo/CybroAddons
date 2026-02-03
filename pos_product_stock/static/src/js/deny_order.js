@@ -27,7 +27,7 @@ patch(ProductScreen.prototype, {
         });
      if(event.type === 'consu'){
      if(this.pos.res_setting['stock_from'] === 'all_warehouse'){
-     let qty_available = 0;
+        let qty_available = 0;
         product_variants.forEach((variant) => {
             if (variant.qty_available) {
                 qty_available += variant.qty_available;

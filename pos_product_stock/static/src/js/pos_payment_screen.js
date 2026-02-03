@@ -7,8 +7,8 @@ patch(PaymentScreen.prototype, {
         super.setup(...arguments);
     },
     async validateOrder(isForceValidate) {
-        var order = this.pos.get_order();
-        var lines = order.get_orderlines();
+        var order = this.pos.getOrder();
+        var lines = order.getOrderlines();
         if (this.pos.res_setting['stock_from'] === 'all_warehouse') {
             if (this.pos.res_setting['stock_type'] === 'on_hand') {
                 lines.forEach((line) => {
