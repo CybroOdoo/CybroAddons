@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--    Search, Filter, Group-->
+    <record id="dental_appointment_search" model="ir.ui.view">
+        <field name="name">dental.appointment.search</field>
+        <field name="model">dental.appointment</field>
+        <field name="arch" type="xml">
+            <!-- Search -->
+            <search>
+                <field name="patient_id"/>
+                <field name="doctor_id"/>
+                <!-- Filter -->
+                <filter string="Today" name="today"
+                        domain="[('date', '=', context_today())]"/>
+                <filter string="Yesterday" name="yesterday"
+                        domain="[('date', '=',  ((context_today()-datetime.timedelta(days=1)).strftime('%Y-%m-%d 00:00:00')))]"/>
+                <!-- Group By -->
+                <group expand="0" string="group by">
+                    <filter name="doctor_id"
+                            context="{'group_by':'doctor_id','residual_visible':True}"/>
+                    <filter name="specialist_id"
+                            context="{'group_by':'specialist_id','residual_visible':True}"/>
+                    <filter name="patient_id"
+                            context="{'group_by':'patient_id','residual_visible':True}"/>
+                    <filter name="shift_id"
+                            context="{'group_by':'shift_id','residual_visible':True}"/>
+                    <filter name="done" string="Done"
+                            domain="[('state', 'in', ['done'])]"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Dental Appointment page to take appointments for patients -->
+    <record id="dental_appointment_view_form" model="ir.ui.view">
+        <field name="name">dental.appointment.view.form</field>
+        <field name="model">dental.appointment</field>
+        <field name="arch" type="xml">
+            <form string="Appointments">
+                <header>
+                    <button name="action_cancel" id="action_cancel"
+                            string="Cancel" class="btn-primary"
+                            type="object" invisible="state != 'new'"/>
+                    <button name="action_create_appointment" id="action_create_appointment"
+                            string="Create Appointment" class="btn-primary"
+                            type="object" invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="new,pending,done,cancel"
+                           on_change="1" field_id="state_0"/>
+                </header>
+                <sheet>
+                    <!-- Smart button-->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_prescription" class="oe_stat_button"
+                                icon="fa-bars" type="object"
+                                help="prescription view of appointment"
+                                invisible="state != 'done'">
+                            <div class="o_form_field o_stat_info">
+                                <span class="o_stat_text">Prescription</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="sequence_no"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="token_no"/>
+                            <field name="patient_id"/>
+                            <field name="patient_phone"/>
+                            <field name="patient_age"/>
+                        </group>
+                        <group>
+                            <field name="specialist_id"/>
+                            <field name="doctor_ids" invisible="1"/>
+                            <field name="doctor_id"/>
+                            <field name="time_shift_ids" widget="many2many_tags"/>
+                            <field name="shift_id"/>
+                            <field name="date"/>
+                            <field name="reason"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="dental_appointment_view_tree" model="ir.ui.view">
+        <field name="name">dental.appointment.view.list</field>
+        <field name="model">dental.appointment</field>
+        <field name="arch" type="xml">
+            <list string="Appointments">
+                <field name="sequence_no"/>
+                <field name="token_no"/>
+                <field name="patient_id"/>
+                <field name="patient_phone"/>
+                <field name="date"/>
+                <field name="doctor_id"/>
+                <field name="shift_id" optional="hide"/>
+                <field name="state" optional="hide"
+                       widget="badge"
+                       decoration-warning="state == 'new'"
+                       decoration-success="state == 'done'"
+                       decoration-danger="state == 'cancel'"/>
+            </list>
+        </field>
+    </record>
+</odoo>

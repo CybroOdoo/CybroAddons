@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- form template-->
+    <template id="website_dental_template" name="Dental Appointment">
+        <t t-call="website.layout">
+            <div class="container">
+                <br/>
+                <div class="row">
+                    <div class="col">
+                        <h3 align="center">PATIENT APPOINTMENT FORM</h3>
+                    </div>
+                </div>
+                <br/>
+                <form class="form" id="appointment_form" method="post" action="/create/appointment">
+                    <input type="hidden" name="csrf_token"
+                           t-att-value="request.csrf_token()"/>
+                    <div class="row mb-3">
+                        <label for="patient" class="col-sm-2 col-form-label">Patient</label>
+                        <div class="col-sm-10">
+                            <select id="patient_id" name="patient" class="form-control"
+                                    readonly="1">
+                                <t t-foreach="patient_id" t-as="patient">
+                                    <t t-set="patient_details" t-value="patient"/>
+                                    <option t-att-value="patient.id">
+                                        <t t-esc="patient.name"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="phone" class="col-sm-2 col-form-label">Phone</label>
+                        <div class="col-sm-10">
+                            <input type="phone" name="phone" id="phone"
+                                   t-att-value="patient_details.phone"
+                                   class="form-control"/>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="age" class="col-sm-2 col-form-label">Age</label>
+                        <div class="col-sm-10">
+                            <input type="number" name="age" id="age"
+                                   t-att-value="patient_details.patient_age"
+                                   class="form-control" readonly="1"/>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="specialised_id" class="col-sm-2 col-form-label">Specialised</label>
+                        <div class="col-sm-10">
+                            <select id="specialised_id" name="specialization" class="form-control" required="1">
+                                <option value="">Select Specialised</option>
+                                <t t-foreach="specialised_id" t-as="specialised">
+                                    <option t-att-value="specialised.id" >
+                                        <t t-esc="specialised.name"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="doctor_id" class="col-sm-2 col-form-label">Doctor</label>
+                        <div class="col-sm-10">
+                            <select id="doctor_id" name="doctor" class="form-control" required="1">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="time_shift" class="col-sm-2 col-form-label">Booking Time</label>
+                        <div class="col-sm-10">
+                            <select id="time_shift" name="time_shift" class="form-control">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="date" class="col-sm-2 col-form-label">Date</label>
+                        <div class="col-sm-10">
+                            <input type="date" name="date"
+                                   class="form-control" required="1"
+                                   t-att-value="datetime.datetime.now().strftime('%Y-%m-%d')"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </t>
+    </template>
+    <!-- Successfully registered template-->
+    <template id="website_rental_success_template" name="Success">
+        <t t-call="website.layout">
+            <div class="container" style="margin: 150px; margin-left: 250px;">
+                <div class="alert alert-success" role="alert">
+                    <h4 class="alert-heading">Appointment Successful</h4>
+                    <p>Aww yeah, you successfully registered for the Doctor Appointment.</p>
+                    <hr/>
+                    <p class="mb-0">Your appointment token number is <t t-esc="token['token']"/></p>
+                    <br/>
+                    <a class="btn btn-secondary"
+                       t-attf-href="/dental_clinic/appointment_card/{{ token['token'] }}">
+                        <i class="fa fa-cloud-download"/> Download Appointment Card
+                    </a>
+                    <a t-attf-href="/dental_doctor">
+                        <button type="button" class="btn btn-dark">Back</button>
+                    </a>
+                </div>
+            </div>
+        </t>
+    </template>
+    <!-- List of all doctors template-->
+    <template id="website_all_doctors" name="dental_doctors">
+        <t t-call="website.layout">
+            <div class="container">
+                <br/>
+                <div class="row">
+                    <div class="col">
+                        <h3 align="center">LIST OF DOCTORS</h3>
+                    </div>
+                </div>
+                <br/>
+                <table class="table table-bordered">
+                    <thead align="center">
+                        <tr>
+                            <th>Doctor</th>
+                            <th>Department</th>
+                            <th>Specialised</th>
+                            <th>Available Time Slot</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="doctor_ids" t-as="doctor">
+                            <tr align="center">
+                                <td>
+                                    <t t-esc="doctor.name"/>
+                                </td>
+                                <td>
+                                    <t t-if="doctor.department_id.name">
+                                        <t t-esc="doctor.department_id.name"/>
+                                    </t>
+                                    <t t-else="">-</t>
+                                </td>
+                                <td>
+                                    <t t-if="doctor.specialised_in_id.name">
+                                        <t t-esc="doctor.specialised_in_id.name"/>
+                                    </t>
+                                    <t t-else="">-</t>
+                                </td>
+                                <td>
+                                    <t t-if="doctor.time_shift_ids">
+                                        <t t-foreach="doctor.time_shift_ids" t-as="time_slot">
+                                            <t t-esc="time_slot.name"/><br/>
+                                        </t>
+                                    </t>
+                                    <t t-else="">-</t>
+                                </td>
+
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+</odoo>
