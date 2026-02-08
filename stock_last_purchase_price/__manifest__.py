@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Costing Method: Last Purchase Price',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Warehouse',
     'summary': "Introducing new costing method in Odoo 'Last Purchase Price'",
     'description': "Introducing new costing method in Odoo last purchase price'."

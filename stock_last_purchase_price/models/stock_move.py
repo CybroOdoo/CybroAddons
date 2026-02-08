@@ -48,14 +48,16 @@ class StockMove(models.Model):
                 qty_done += valued_move_line.product_uom_id._compute_quantity(
                     valued_move_line.quantity, move.product_id.uom_id)
             qty = forced_qty or qty_done
+            move_cost = move._get_price_unit()
+            move_cost_unit = next(iter(move_cost.values()))
             if float_is_zero(product_tot_qty_available,
                              precision_rounding=rounding):
-                new_std_price = move._get_price_unit()
+                new_std_price = move_cost_unit
             elif float_is_zero(product_tot_qty_available + move.product_qty,
                                precision_rounding=rounding) or \
                     float_is_zero(product_tot_qty_available + qty,
                                   precision_rounding=rounding):
-                new_std_price = move._get_price_unit()
+                new_std_price = move_cost_unit
             else:
                 # Get the standard price
                 amount_unit = std_price_update.get((move.company_id.id,
@@ -63,7 +65,7 @@ class StockMove(models.Model):
                     move.company_id).standard_price
                 new_std_price = ((
                                          amount_unit * product_tot_qty_available) + (
-                                         move._get_price_unit() * qty)) / (
+                                         move_cost_unit * qty)) / (
                                         product_tot_qty_available + qty)
 
             tmpl_dict[move.product_id.id] += qty_done
@@ -82,8 +84,10 @@ class StockMove(models.Model):
                                   and float_is_zero(
                                       move.product_id.sudo().quantity_svl,
                                       precision_rounding=move.product_id.uom_id.rounding)):
+            move_cost = move._get_price_unit()
+            price_unit = next(iter(move_cost.values()))
             move.product_id.with_company(move.company_id.id).sudo().write(
-                {'standard_price': move._get_price_unit()})
+                {'standard_price': price_unit})
             # Add new costing method for 'last' with real-time or
             # manual_periodic valuation
         # Filter moves based on conditions
@@ -92,7 +96,8 @@ class StockMove(models.Model):
                                                (
                                                        move.product_id.valuation == 'real_time' or move.product_id.valuation == 'manual_periodic')):
             # Get the new standard price for the move
-            new_std_price = move._get_price_unit()[self.env['stock.lot']]
+            move_cost = move._get_price_unit()
+            new_std_price = next(iter(move_cost.values()))
             # Presumably retrieves incoming move price
             # Retrieve product details for the move
             products = self.env['product.product'].browse(
