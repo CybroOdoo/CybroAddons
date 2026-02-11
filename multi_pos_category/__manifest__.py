@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Pos Multi Category',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Point of sale',
     'summary': 'Select multiple category in point of sale',
     'description': 'The point-of-sale system provides the '
