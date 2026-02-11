@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'GYM Management System',
-    'version': '16.0.2.0.0',
+    'version': '16.0.2.1.0',
     'category': 'Industries',
     'summary': 'GYM Management System For Managing '
                'Membership, Member, Workout Plan, etc',
@@ -33,7 +33,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': [ 'mail', 'contacts', 'hr',
+    'depends': [ 'account_accountant', 'mail', 'contacts', 'hr',
         'product', 'membership', 'sale_management','hr_skills',
     ],
     'data': [
