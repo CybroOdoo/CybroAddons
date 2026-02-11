@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Search, Filter, Group-->
+    <record id="dental_prescription_search" model="ir.ui.view">
+        <field name="name">dental.prescription.search</field>
+        <field name="model">dental.prescription</field>
+        <field name="arch" type="xml">
+            <!-- Search -->
+            <search>
+                <field name="patient_id"/>
+                <field name="prescribed_doctor_id"/>
+                <!-- Filter -->
+                <filter string="Today's Prescription" name="today"
+                        domain="[('prescription_date', '=', context_today())]"/>
+                <filter string="Yesterday's Prescription" name="yesterday"
+                        domain="[('prescription_date', '=',  ((context_today()-datetime.timedelta(days=1)).strftime('%Y-%m-%d 00:00:00')))]"/>
+                <!-- Group By -->
+                <group expand="0" string="group by">
+                    <filter name="invoiced" string="Invoiced"
+                            domain="[('state', 'in', ['invoiced'])]"/>
+                    <filter name="prescribe" string="Prescribe"
+                            domain="[('state', 'in', ['done'])]"/>
+                    <filter name="treatment_id"
+                            context="{'group_by':'treatment_id','residual_visible':True}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!--  Form View-->
+    <record id="dental_prescription_view_form" model="ir.ui.view">
+            <field name="name">dental.prescription.view.form</field>
+            <field name="model">dental.prescription</field>
+            <field name="arch" type="xml">
+                <form string="Prescription">
+                    <header>
+                        <button name="action_prescribed" id="action_prescribed"
+                                string="Prescribe" class="btn-primary"
+                                type="object" invisible="state != 'new'"/>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="new,done"
+                               on_change="1" field_id="state_0"/>
+                        <button name="create_invoice" id="create_invoice"
+                                type="object" string="Create Invoice"
+                                class="btn-primary" invisible="state != 'done'"/>
+                    </header>
+                    <sheet>
+                        <!-- Smart button-->
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_invoice" type="object"
+                                    string="Invoice" class="oe_stat_button"
+                                    icon="fa-pencil-square-o"
+                                    invisible="state != 'invoiced'">
+                                <div class="o_form_field o_stat_info">
+                                    <span class="o_stat_text">Invoice</span>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="sequence_no"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="appointment_ids" invisible="1"/>
+                                <field name="appointment_id"/>
+                                <field name="patient_id"/>
+                                <field name="token_no"/>
+                            </group>
+                            <group>
+                                <field name="treatment_id"/>
+                                <field name="currency_id" invisible="1"/>
+                                <field name="cost" widget="monetary"/>
+                                <field name="prescribed_doctor_id"/>
+                                <field name="prescription_date"/>
+                            </group>
+                        </group>
+                        <field name="medicine_ids">
+                            <list string="Prescribed Medicines" editable="bottom">
+                                <field name="medicament_id"/>
+                                <field name="generic_name"/>
+                                <field name="dosage_strength"/>
+                                <field name="medicament_form"/>
+                                <field name="quantity"/>
+                                <field name="frequency_id"/>
+                                <field name="price"/>
+                                <field name="total"/>
+                            </list>
+                        </field>
+                        <group col="12" class="oe_invoice_lines_tab">
+                            <group colspan="12">
+                                <group class="oe_subtotal_footer">
+                                    <field name="grand_total" colspan="2"/>
+                                </group>
+                            </group>
+                        </group>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+    </record>
+    <!--  Tree View-->
+    <record id="dental_prescription_view_tree" model="ir.ui.view">
+            <field name="name">dental.prescription.view.list</field>
+            <field name="model">dental.prescription</field>
+            <field name="arch" type="xml">
+                <list string="Dental Prescription">
+                    <field name="sequence_no"/>
+                    <field name="patient_id"/>
+                    <field name="prescribed_doctor_id"/>
+                    <field name="prescription_date"/>
+                    <field name="state" widget="badge"
+                           decoration-warning="state == 'new'"
+                           decoration-info="state == 'done'"
+                           decoration-success="state == 'invoiced'"/>
+                </list>
+            </field>
+    </record>
+</odoo>
