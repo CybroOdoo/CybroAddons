@@ -69,9 +69,9 @@ class SellerPayment(models.Model):
         """ Request for payment and check payment term settings values  """
         self.state = 'Requested'
         amount_limit = self.env['ir.config_parameter'].sudo().get_param(
-            'multi_vendor_marketplace.amt_limit')
+            'multi_vendor_marketplace.amt_limit') or '0'
         min_gap = self.env['ir.config_parameter'].sudo().get_param(
-            'multi_vendor_marketplace.min_gap')
+            'multi_vendor_marketplace.min_gap') or '0'
         partner_id = self.env['res.partner'].search(
             [('id', '=', self.seller_id.id)])
         today_date = fields.Date.today()
@@ -82,12 +82,12 @@ class SellerPayment(models.Model):
             order='date DESC')
         for checkdate in date_info_record:
             if (self.payable_amount > partner_id.total_commission
-                    or self.payable_amount > int(
-                    amount_limit) or checkdate.date >= mingap_date):
+                    or self.payable_amount > int(amount_limit)
+                    or checkdate.date >= mingap_date):
                 raise ValidationError(
-                    _("Entered amount is greater than your commission or "
-                      "Amount limit is " + amount_limit + " and Minimum gap "
-                        "for next payment request " + min_gap + " days"))
+                    _(f"Entered amount is greater than your commission or "
+                      f"Amount limit is {amount_limit} and Minimum gap "
+                      f"for next payment request {min_gap} days"))
             break
 
     def reject(self):
@@ -105,14 +105,24 @@ class SellerPayment(models.Model):
         params = request.env['ir.config_parameter'].sudo()
         partner_id = self.env['res.partner'].search(
             [('id', '=', self.seller_id.id)])
-        if self.payable_amount < partner_id.commission:
+        if self.payable_amount > partner_id.commission:
             raise ValidationError(
                 _("Entered amount is greater than the commission"))
-        product = self.env['ir.config_parameter'].sudo().get_param(
+        product_id = self.env['ir.config_parameter'].sudo().get_param(
             'multi_vendor_marketplace.pay_product')
         currency = self.env['ir.config_parameter'].sudo().get_param(
             'multi_vendor_marketplace.currency')
         currency_id = self.env['res.currency'].search([('id', '=', currency)])
+        product = self.env['product.product'].browse(int(product_id))
+        # Get the appropriate account from the product
+        account = product.product_tmpl_id.get_product_accounts()['expense']
+        # Get the default purchase journal for vendor bills
+        purchase_journal = self.env['account.journal'].search([
+            ('type', '=', 'purchase'),
+            ('company_id', '=', self.env.company.id)
+        ], limit=1)
+        if not purchase_journal:
+            raise ValidationError(_("No purchase journal found. Please configure a purchase journal first."))
         self.env['account.move'].create({
             'move_type': 'in_invoice',
             'partner_id': self.seller_id.id,
@@ -120,15 +130,16 @@ class SellerPayment(models.Model):
             'invoice_date': self.date,
             'invoice_payment_term_id': 1,
             'currency_id': currency_id.id,
-            'journal_id': 3,
+            'journal_id': purchase_journal.id,
             'invoice_line_ids':
                 [(0, 0,
                   {
-                      'product_id': product,
+                      'product_id': product.id,
                       'name': self.memo,
                       'quantity': 1,
                       'price_unit': self.payable_amount,
                       'currency_id': currency_id.id,
+                      'account_id': account.id,
                       'tax_ids': False,
                   })]
         })

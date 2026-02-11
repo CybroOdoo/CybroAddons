@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Odoo Multi Vendor Marketplace",
-    'version': "16.0.1.0.1",
+    'version': "16.0.1.0.2",
     'category': 'eCommerce,Sales ,Warehouse',
     'summary': 'Odoo Multi Vendor Marketplace, Odoo16, Multi Vendor',
     'description': 'The Multi-Vendor Marketplace module in Odoo enables '

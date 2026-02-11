@@ -10,3 +10,9 @@
 #### UPDT
 - Addressed bug in Odoo Multi Vendor Marketplace module
 
+
+#### 06.02.2026
+#### Version 16.0.1.0.2
+#### UPDT
+- Addressed bug in Odoo Multi Vendor Marketplace module
+
