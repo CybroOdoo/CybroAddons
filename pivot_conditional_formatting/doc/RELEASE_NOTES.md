@@ -4,3 +4,8 @@
 #### Version 18.0.1.0.0
 #### ADD
 - Initial Commit for Conditional Formatting in Pivot View
+
+#### 10.02.2026
+#### Version 18.0.1.0.1
+#### ADD
+- Fixed the js error caused by unmet dependencies and deprecated properties.

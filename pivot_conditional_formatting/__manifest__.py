@@ -21,7 +21,7 @@
 #############################################################################
 {
     "name": "Conditional Formatting in Pivot View",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0.1",
     "category": "Extra Tools",
     "summary": "This Module allows to setup conditional formatting in "
     "the pivot view of models",
@@ -41,7 +41,7 @@
         "views/pivot_conditional_settings_views.xml",
     ],
     "assets": {
-        "web.assets_backend": [
+        "web.assets_backend_lazy": [
             "pivot_conditional_formatting/static/src/xml/pivot_conditional_formatting.xml",
             "pivot_conditional_formatting/static/src/css/pivot_conditional_formatting.css",
             "pivot_conditional_formatting/static/src/js/pivot_conditional_formatting.js",
