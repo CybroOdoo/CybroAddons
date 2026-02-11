@@ -32,6 +32,7 @@ class AccountPaymentRegister(models.TransientModel):
         res = super()._post_payments(to_process, edit_mode=False)
         for record in self:
             loan_line_id = self.env['repayment.line'].search([
-                ('name', 'ilike', record.communication)])
-            loan_line_id.write({'state': 'paid'})
+                ('name', '=', record.communication)])  # Changed from ilike to =
+            if loan_line_id:  # Add this check for safety
+                loan_line_id.write({'state': 'paid'})
         return res
