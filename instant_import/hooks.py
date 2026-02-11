@@ -22,72 +22,39 @@
 def setup_db_level_functions(env):
     env.cr.execute(
         """
-        CREATE OR REPLACE FUNCTION process_o2m_mapping()
+            CREATE OR REPLACE FUNCTION process_o2m_mapping()
         RETURNS TRIGGER AS $$
         DECLARE
-            values json;
             field_name TEXT;
-            field_config json;
-            record_data json;
-            field_value text;
-            column_info record;
-            column_list text;
-            value_list text;
-            debug_msg text;
+            field_config jsonb;
+            field_value_jsonb jsonb;
+            column_list TEXT;
         BEGIN
-            values := TG_ARGV[0]::json;
+            -- TG_ARGV[0] is the config passed from the trigger creation
+            FOR field_name, field_config IN SELECT * FROM jsonb_each(TG_ARGV[0]::jsonb) LOOP
+                
+                -- Pull the O2M data from the parent column
+                EXECUTE format('SELECT ($1).%I::jsonb', field_name) INTO field_value_jsonb USING NEW;
 
-            FOR field_name, field_config IN SELECT * FROM json_each(values::json) LOOP
-                EXECUTE format('SELECT ($1).%I::text', field_name)
-                INTO field_value
-                USING NEW;
+                IF field_value_jsonb IS NOT NULL AND jsonb_array_length(field_value_jsonb) > 0 THEN
+                    
+                    -- Extract only the keys present in the JSON
+                    SELECT string_agg(quote_ident(key), ', ') 
+                    INTO column_list 
+                    FROM jsonb_object_keys(field_value_jsonb->0) AS t(key);
 
-                IF field_value IS NOT NULL THEN
-                    FOR record_data IN SELECT * FROM json_array_elements(field_value::json) LOOP
-                        -- Log the record data for debugging
-                        RAISE NOTICE 'Record data: %', record_data;
+                    -- THE FIX: We list columns in both the INSERT and the SELECT.
+                    -- This prevents the '*' mismatch error.
+                    EXECUTE format(
+                        'INSERT INTO %I (%I, %s) 
+                         SELECT $1, %s FROM jsonb_populate_recordset(NULL::%I, $2)',
+                        field_config->>'data_table',
+                        field_config->>'inverse_name',
+                        column_list,
+                        column_list,
+                        field_config->>'data_table'
+                    ) USING NEW.id, field_value_jsonb;
 
-                        SELECT 
-                            string_agg(quote_ident(c.column_name), ', '),
-                            string_agg(
-                                CASE 
-                                    WHEN c.data_type IN ('integer', 'bigint') THEN format('CAST(($2->>%L) AS INTEGER)', c.column_name)
-                                    WHEN c.data_type = 'numeric' THEN format('CAST(($2->>%L) AS NUMERIC)', c.column_name)
-                                    WHEN c.data_type = 'double precision' THEN format('CAST(($2->>%L) AS DOUBLE PRECISION)', c.column_name)
-                                    WHEN c.data_type = 'boolean' THEN format('CAST(($2->>%L) AS BOOLEAN)', c.column_name)
-                                    WHEN c.data_type = 'date' THEN format('CAST(($2->>%L) AS DATE)', c.column_name)
-                                    -- FIXED: Handle all timestamp variations
-                                    WHEN c.data_type IN ('timestamp without time zone', 'timestamp with time zone') 
-                                        THEN format('CAST(($2->>%L) AS TIMESTAMP)', c.column_name)
-                                    WHEN c.data_type = 'datetime' THEN format('CAST(($2->>%L) AS TIMESTAMP)', c.column_name)
-                                    ELSE format('$2->>%L', c.column_name)
-                                END, 
-                                ', '
-                            )
-                        INTO 
-                            column_list,
-                            value_list
-                        FROM information_schema.columns c
-                        WHERE c.table_name = field_config->>'data_table'
-                        AND c.column_name = ANY (
-                            ARRAY(SELECT key::text FROM json_object_keys(record_data) AS t(key))
-                        );
-
-                        -- Add the inverse_name column and value
-                        column_list := quote_ident(field_config->>'inverse_name') || ', ' || COALESCE(column_list, '');
-                        value_list := '$1, ' || COALESCE(value_list, '');
-
-                        -- Build the complete SQL statement
-                        debug_msg := format(
-                            'INSERT INTO %I (%s) VALUES (%s)',
-                            field_config->>'data_table',
-                            column_list,
-                            value_list
-                        );
-
-                        EXECUTE debug_msg
-                        USING NEW.id, record_data;
-                    END LOOP;
                 END IF;
             END LOOP;
             RETURN NEW;
