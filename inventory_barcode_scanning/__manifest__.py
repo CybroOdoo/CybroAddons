@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Barcode scanning in Inventory',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'category': 'Warehouse',
     'summary': 'Barcode Support in Stock Picking.',
     'description': """Increase Quantity of Product by entering Barcode.""",

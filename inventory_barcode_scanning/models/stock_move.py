@@ -36,6 +36,7 @@ class StockPickingOperation(models.Model):
                 [('barcode', '=', self.barcode)])
             self.product_id = product.id
 
+
     @api.onchange('product_id')
     def _onchange_product(self):
         """Function to add barcode in line when choosing a Product."""

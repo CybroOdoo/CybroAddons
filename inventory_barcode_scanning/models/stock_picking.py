@@ -30,27 +30,34 @@ class StockPicking(models.Model):
 
     @api.onchange('barcode')
     def _onchange_barcode(self):
-        """Function to add Quantity when entering a Barcode."""
         match = False
         product_id = self.env['product.product'].search(
-            [('barcode', '=', self.barcode)])
+            [('barcode', '=', self.barcode)], limit=1
+        )
         if self.barcode and not product_id:
-            warning_mess = {
-                'title': _('Warning !'),
-                'message': _('No product is available for this barcode')
+            self.barcode = False
+            return {
+                'warning': {
+                    'title': _('Warning!'),
+                    'message': _('No product is available for this barcode')
+                }
             }
-            return {'warning': warning_mess}
         if self.barcode and self.move_ids_without_package:
             for line in self.move_ids_without_package:
                 if line.product_id.barcode == self.barcode:
                     line.quantity += 1
                     match = True
-        if self.barcode and not match:
-            if product_id:
-                warning_mess = {
-                    'title': _('Warning !'),
-                    'message': _('This product is not available in the order.'
-                                 'You can add this product by clicking the'
-                                 ' "Add an item" and scan')
+                    break
+        if self.barcode and not match and product_id:
+            self.barcode = False
+            return {
+                'warning': {
+                    'title': _('Warning!'),
+                    'message': _(
+                        'This product is not available in the order. '
+                        'You can add it by clicking "Add an item" and scanning again.'
+                    )
                 }
-                return {'warning': warning_mess}
+            }
+
+        self.barcode = False
