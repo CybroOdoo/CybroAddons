@@ -82,21 +82,17 @@ class SaleOrder(models.Model):
 
     @api.depends('invoice_ids')
     def _compute_invoice_state_and_amount_due(self):
-        """ The function will compute the state of the invoice , Once an invoice
-        is existing in a sale order. """
         for rec in self:
-            amount_due = 0
+            amount_due = 0.0
             rec.invoice_state = 'No invoice'
-            for order in rec.invoice_ids:
-                amount_due = amount_due + (order.amount_total -
-                                           order.amount_residual)
-                if order.state == 'posted':
-                    rec.invoice_state = 'posted'
-                elif order.state != 'posted':
-                    rec.invoice_state = 'draft'
-                else:
-                    rec.invoice_state = 'No invoice'
-            rec.amount_due = rec.amount_total - amount_due
+
+            valid_invoices = rec.invoice_ids.filtered(
+                lambda inv: inv.state == 'posted' and inv.move_type == 'out_invoice'
+            )
+
+            if valid_invoices:
+                rec.invoice_state = 'posted'
+            rec.amount_due = sum(valid_invoices.mapped('amount_residual'))
 
     def action_open_business_doc(self):
         """ This method is intended to be used in the context of an
