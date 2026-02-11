@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- GYM MEMBERSHIP PLANS -->
+    <record model="ir.ui.view" id="gym_membership_products_tree">
+        <field name="name">Membership Plans</field>
+        <field name="model">product.template</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <list string="Membership products">
+                <field name="name"/>
+                <field name="membership_date_from"/>
+                <field name="membership_date_to"/>
+                <field name="list_price" string="Membership Fee"/>
+                <field name="categ_id" column_invisible="True"/>
+                <field name="uom_id" column_invisible="True"/>
+                <field name="type" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+    <record id="gym_membership_products_kanban" model="ir.ui.view">
+        <field name="name">product.template.kanban</field>
+        <field name="model">product.template</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex">
+                            <field name="name" class="fw-bolder fs-5"/>
+                            <span class="badge rounded-pill ms-auto">
+                                <i class="fa fa-money" role="img" aria-label="Price" title="Price"/>
+                                <field name="list_price"/>
+                            </span>
+                        </div>
+                        <div>
+                            <i class="fa fa-clock-o" role="img" aria-label="Period" title="Period"></i>
+                            <strong>From:</strong>
+                            <field name="membership_date_from"/>
+                            <strong>To:</strong>
+                            <field name="membership_date_to"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="gym_membership_products_form">
+        <field name="name">Membership Plan</field>
+        <field name="model">product.template</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <form string="Membership products">
+                <sheet>
+                    <label for="name" string="Plan Name"/>
+                    <h1>
+                        <field name="name"/>
+                    </h1>
+                    <group>
+                        <group name="product_details">
+                            <field name="default_code"/>
+                            <field name="categ_id"/>
+                            <field name="membership" invisible="1"/>
+                            <field name="company_id"
+                                   groups="base.group_multi_company"
+                                   options="{'no_create': True}"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group name="membership_details">
+                            <label for="membership_date_from" string="Membership Duration"/>
+                            <div class="o_row">
+                                <field name="membership_date_from" required="1"/>
+                                -
+                                <field name="membership_date_to" required="1"/>
+                            </div>
+                            <field name="list_price" string="Membership Fee"/>
+                            <field
+                                    name="property_account_income_id"/>
+                            <field name="taxes_id" widget="many2many_tags" string="Taxes"/>
+                        </group>
+                    </group>
+                    <label for="description"/>
+                    <field colspan="4" name="description" placeholder="Add a description..."/>
+                    <label for="description_sale"/>
+                    <field colspan="4" name="description_sale"
+                           placeholder="This note will be displayed on quotations..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--    Views for membership plan -->
+    <record id="product_template_action" model="ir.actions.act_window">
+        <field name="name">Membership Plan</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.template</field>
+        <field name="view_id" ref="gym_mgmt_system.gym_membership_products_tree"/>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Trainer!
+            </p>
+        </field>
+    </record>
+    <record model="ir.actions.act_window" id="action_gym_membership_products">
+        <field name="name">Membership Plans</field>
+        <field name="res_model">product.template</field>
+        <field name="domain">[('membership','=',True), ('type', '=', 'service')]</field>
+        <field name="context">{
+            'membership':True,
+            'type':'service',
+            'default_membership': True,
+            'default_type': 'service',
+            }
+        </field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create new Membership Plan
+            </p>
+        </field>
+        <field name="search_view_id" ref="membership.membership_product_search_form_view"/>
+    </record>
+    <record model="ir.actions.act_window.view" id="action_gym_membership_product_view_tree">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="gym_membership_products_tree"/>
+        <field name="act_window_id" ref="action_gym_membership_products"/>
+    </record>
+    <record model="ir.actions.act_window.view" id="action_gym_membership_product_view_form">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="gym_membership_products_form"/>
+        <field name="act_window_id" ref="action_gym_membership_products"/>
+    </record>
+    <record model="ir.actions.act_window.view" id="action_gym_membership_product_view_kanban">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="gym_membership_products_kanban"/>
+        <field name="act_window_id" ref="action_gym_membership_products"/>
+    </record>
+    <menuitem name="Membership plan"
+              id="membership_products_menu"
+              parent="gym_member_root"
+              action="gym_mgmt_system.action_gym_membership_products"/>
+</odoo>

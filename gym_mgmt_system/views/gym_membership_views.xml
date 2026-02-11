@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- form view for gym membership -->
+    <record id="gym_membership_view_form" model="ir.ui.view">
+        <field name="name">gym.membership.view.form</field>
+        <field name="model">gym.membership</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false" delete="false">
+                <header>
+                    <field name="state" widget="statusbar"
+                           options="{'clickable': true}"/>
+                    <button name="action_set_active" string="Activate" type="object"
+                            class="btn-primary"
+                            invisible="state != 'confirm'"/>
+                    <button name="action_pause" string="Pause" type="object"
+                            class="btn-primary"
+                            invisible="state != 'active'"/>
+                    <button name="action_resume" string="Resume" type="object"
+                            class="btn-primary"
+                            invisible="state != 'paused'"/>
+                    <button name="action_extend_membership" string="Extend" type="object"
+                            class="btn-primary"
+                            invisible="not can_extend"
+                            help="Extend this expired membership"/>
+                    <div class="alert alert-info"
+                         invisible="can_extend or state != 'expired'">
+                        <strong>Extension Limit Reached:</strong>
+                        This membership has been extended <field name="extension_count"/> times.
+                        Maximum extensions allowed: 3.
+                    </div>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="reference"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="member_id"/>
+                            <field name="membership_scheme_id"/>
+                            <field name="paid_amount"/>
+                            <field name="membership_duration" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="membership_fees"/>
+                            <field name="sale_order_id" readonly="1"/>
+                            <field name="extension_count" readonly="1" invisible="extension_count == 0"/>
+                            <field name="can_extend" invisible="1"/>
+
+                            <label for="membership_date_from" string="Original Duration"/>
+                            <div class="o_row">
+                                <field name="membership_date_from" required="1"/>
+                                -
+                                <field name="membership_date_to" required="1"/>
+                            </div>
+
+                            <label for="effective_start_date" string="Effective Duration"/>
+                            <div class="o_row">
+                                <field name="effective_start_date" readonly="1"/>
+                                -
+                                <field name="effective_end_date" readonly="1"/>
+                            </div>
+                        </group>
+                    </group>
+
+                    <group string="Pause &amp; Extension Information"
+                           invisible="state not in ['paused', 'active', 'expired']">
+                        <group>
+                            <field name="current_pause_start" readonly="1"
+                                   invisible="state != 'paused'"/>
+                            <field name="total_paused_days" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="total_extended_days" readonly="1"/>
+                            <field name="can_extend" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Pause History" invisible="not pause_history_ids">
+                            <field name="pause_history_ids" readonly="1">
+                                <list create="false" edit="false">
+                                    <field name="pause_start"/>
+                                    <field name="pause_end"/>
+                                    <field name="days_paused"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Extension History" invisible="not extension_history_ids">
+                            <field name="extension_history_ids" readonly="1">
+                                <list create="false" edit="false">
+                                    <field name="extension_date"/>
+                                    <field name="days_extended"/>
+                                    <field name="extension_amount"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="gym_membership_view_tree" model="ir.ui.view">
+        <field name="name">gym.membership.view.tree</field>
+        <field name="model">gym.membership</field>
+        <field name="arch" type="xml">
+            <list default_order="reference desc" create="false" edit="false" delete="false">
+                <field name="reference"/>
+                <field name="member_id"/>
+                <field name="membership_scheme_id"/>
+                <field name="membership_fees"/>
+                <field name="effective_end_date"/>
+                <field name="total_paused_days"/>
+                <field name="state" decoration-info="state == 'active'"
+                       decoration-warning="state == 'paused'"
+                       decoration-danger="state == 'expired'"/>
+            </list>
+        </field>
+    </record>
+
+    <!--Action for gym membership-->
+    <record id="gym_membership_action" model="ir.actions.act_window">
+        <field name="name">Gym Membership</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">gym.membership</field>
+        <field name="view_mode">list,form,kanban</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Membership!
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem
+            id="gym_membership_menu_action"
+            name="Membership"
+            parent="gym_member_root"
+            action="gym_membership_action"
+            sequence="30"/>
+</odoo>
