@@ -10,20 +10,48 @@ patch(ProductCard.prototype, {
         this.pos = usePos();
         this.orm = useService('orm');
         this.state = useState({
-            qty_available: null,
-            incoming_qty: null,
-            outgoing_qty: null,
+
+            qty_available: 0,
+            incoming_qty: 0,
+            outgoing_qty: 0,
+
+            // ADD THESE
+            on_hand_loc: 0,
+            incoming_loc: 0,
+            outgoing_loc: 0,
             display_stock: false,
         });
     },
 
     async fetchProductDetails(productId) {
-        const product = await this.orm.call("product.template", "read", [[productId], ["name", "id", "incoming_qty","outgoing_qty","qty_available"]]);
+        const product = await this.orm.call("product.template", "read", [[productId], ["name", "id", "incoming_qty","outgoing_qty","qty_available", "location_id"]]);
         return product[0];
     },
 
+    async _loadLocationStock(productId) {
+        const locationId = this.pos.config.pos_stock_location_id;
+        if (!locationId) return;
+
+        const quants = await this.orm.call(
+            "stock.quant",
+            "search_read",
+            [[["product_tmpl_id", "=", productId],["location_id", "=", locationId]],["quantity", "available_quantity", "product_id","product_tmpl_id" ,"location_id"]]);
+
+        this.location_stock_quant = quants.reduce(
+            (total, q) => total + (q.available_quantity || 0),
+            0
+        );
+    },
+
+    async after_load_server_data() {
+        await super.after_load_server_data(...arguments);
+        await this._loadLocationStock();
+    },
+
+
     async updateProductDetails() {
         const productId = this.props.productId;
+        const locationId = this.pos.config.pos_stock_location_id;
         if (productId) {
             this.productDetail = await this.fetchProductDetails(productId);
             const product_product = this.pos.product_product;
@@ -43,73 +71,59 @@ patch(ProductCard.prototype, {
 
     get value() {
         if (this.pos.config.display_stock_setting == true) {
-            const current_product = this.props.productId;
             const current_product_name = this.props.name;
             const move_line = this.pos.move_line;
             const stock_product = this.pos.stock_quant;
             const product_product = this.pos.product_product;
+            const current_product = this.props.productId;
+            const productId = this.props.productId;
+            let on_hand_loc = 0;
+            let incoming_loc = 0;
+            let outgoing_loc = 0;
+            var flag = 0
+            this._loadLocationStock(productId).then(() => {
+                this.state.on_hand_loc = this.location_stock_quant;
+                this.pos.on_hand_loc = this.location_stock_quant;
+            });
 
-            let qty = 0;
-            let on_hand = 0;
-            let outgoing = 0;
-            let incoming = 0;
-            const abd_prod = product_product.find(product => product.product_tmpl_id.id === current_product)
             const main_product = product_product.find(product => product.product_tmpl_id.id === current_product);
+            const main_prod_id = main_product?.id
 
-            if(main_product){
-                const product_tmpl_id = main_product.raw.product_tmpl_id;
-                const product_variants = product_product.filter(product => product.product_tmpl_id.id === product_tmpl_id);
-
-                stock_product.forEach((product) => {
-                      if (product && product.raw.product_id) {
-                          const product_id = product.raw.product_id;
-                          const is_variant = product_variants.some(variant => variant.id === product_id);
-                          if (product_id === current_product || is_variant) {
-                                qty += product.raw.available_quantity;
-                                on_hand += product.raw.quantity;
-                          }
-                      }
-                });
-                move_line.forEach((line) => {
-                if (line && line.product_id) {
-                    if(line.product_id.id == current_product && this.pos.res_setting && this.pos.res_setting.raw.stock_location_id[1] == line.raw.location_dest_id[1]){
-                           incoming = incoming + line.product_id.incoming_qty;
-                    }if(line.product_id.id == current_product && this.pos.res_setting && this.pos.res_setting.raw.stock_location_id && this.pos.res_setting.raw.stock_location_id[1] == line.raw.location_id[1]){
-                          outgoing = outgoing + line.product_id.outgoing_qty;
-                    }
+            move_line.forEach((line) => {
+            if (line && line.product_id) {
+                if(line.product_id.id == main_prod_id && this.pos.res_setting && this.pos.config.pos_stock_location_id == line.raw.location_dest_id && flag == 0){
+                      flag = 1
+                      incoming_loc = incoming_loc + line.product_id.incoming_qty;
+                }if(line.product_id.id == main_prod_id && this.pos.res_setting && this.pos.config.pos_stock_location_id && this.pos.config.pos_stock_location_id == line.raw.location_id && flag == 0){
+                       flag = 1
+                      outgoing_loc = outgoing_loc + line.product_id.outgoing_qty;
                 }
-                });
             }
-
-
-            if (!this.props.available) {
-                this.props.available = qty
-            }
-            if (!this.props.on_hand) {
-                this.props.on_hand = on_hand;
-            }
-            if (!this.props.outgoing) {
-                this.props.outgoing = outgoing
-            }
-            if (!this.props.incoming) {
-                this.props.incoming_loc = incoming
-            }
+            });
 
             this.updateProductDetails().then(() => {
                 this.state.main_prod = main_product?.display_name
-                this.state.qty_available = this.qty_available
-                this.state.incoming_qty = this.productDetail?.incoming_qty
-                this.state.outgoing_qty = this.productDetail?.outgoing_qty
-            });
-            this.state.display_stock = true;
-            return {
-                display_stock: this.pos.config.display_stock_setting
-            };
 
+                this.state.qty_available = this.qty_available;
+                this.pos.all_on_hand = this.qty_available;
+
+                this.state.incoming_qty = this.productDetail?.incoming_qty;
+                this.pos.all_incoming = this.productDetail?.incoming_qty;
+
+                this.state.outgoing_qty = this.productDetail?.outgoing_qty;
+                this.pos.all_outgoing = this.productDetail?.outgoing_qty;
+
+                this.state.incoming_loc = incoming_loc;
+                this.pos.incoming_loc = incoming_loc;
+
+                this.state.outgoing_loc = outgoing_loc;
+                this.pos.outgoing_loc = outgoing_loc;
+
+                this.state.display_stock = false;
+            });
+            return { display_stock: this.pos.config.display_stock_setting };
         } else {
-            return {
-                display_stock: false
-            };
+            return {display_stock: false};
         }
     }
 });
