@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    This template is responsible for rendering the layout of the products page in a web shop.
+    It includes features such as product grids, filtering options, sorting, and category headers.
+    The template handles the display of products in a table format and provides options for customization.-->
+    <template id="sample_order_template_view" name="Products">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Shop</t>
+            <t t-set="grid_block_name">Grid</t>
+            <t t-set="product_block_name">Product</t>
+            <t t-set="navClass" t-valuef="light"/>
+            <t t-set="opt_wsale_categories"
+               t-value="is_view_active('website_sale.products_categories')"/>
+            <t t-set="opt_wsale_attributes"
+               t-value="is_view_active('website_sale.products_attributes')"/>
+            <t t-set="opt_wsale_filter_price"
+               t-value="is_view_active('website_sale.filter_products_price')"/>
+            <t t-set="opt_wsale_categories_top"
+               t-value="is_view_active('website_sale.products_categories_top')"/>
+            <t t-set="opt_wsale_attributes_top"
+               t-value="is_view_active('website_sale.products_attributes_top')"/>
+            <t t-set="website_sale_pricelists"
+               t-value="website.get_pricelist_available(show_visible=True)"/>
+            <t t-set="website_sale_sortable"
+               t-value="website._get_product_sort_mapping()"/>
+            <t t-set="hasLeftColumn"
+               t-value="opt_wsale_categories or opt_wsale_attributes"/>
+            <t t-set="isFilteringByPrice" t-if="opt_wsale_filter_price"
+               t-value="float_round(available_min_price, 2) != float_round(min_price, 2) or float_round(available_max_price, 2) != float_round(max_price, 2)"/>
+            <t t-set="hasPricelistDropdown"
+               t-value="website_sale_pricelists and len(website_sale_pricelists)&gt;1"/>
+            <t t-set="isSortingBy"
+               t-value="[sort for sort in website_sale_sortable if sort[0]==request.params.get('order', '')]"/>
+            <div id="wrap" class="js_sale o_wsale_products_page">
+                <div class="oe_structure oe_empty oe_structure_not_nearest"
+                     id="oe_structure_website_sale_products_1"/>
+                <div class="container oe_website_sale pt-2">
+                    <div class="row o_wsale_products_main_row align-items-start flex-nowrap">
+                        <div id="products_grid"
+                             t-attf-class="#{'o_wsale_layout_list' if layout_mode == 'list' else ''} {{'col-lg-9' if hasLeftColumn else 'col-12'}}">
+                            <t t-call="website_sale.products_breadcrumb">
+                                <t t-set="_classes"
+                                   t-valuef="d-none d-lg-flex w-100 p-0 small"/>
+                            </t>
+                            <div class="products_header btn-toolbar flex-nowrap align-items-center justify-content-between mb-3">
+                                <button t-if="is_view_active('website_sale.sort') or opt_wsale_categories or opt_wsale_attributes or opt_wsale_attributes_top"
+                                        t-attf-class="btn btn-{{navClass}} position-relative ms-3 {{not opt_wsale_attributes_top and 'd-lg-none'}}"
+                                        data-bs-toggle="offcanvas"
+                                        data-bs-target="#o_wsale_offcanvas">
+                                    <i class="fa fa-sliders"/>
+                                    <span t-if="isFilteringByPrice or attrib_set"
+                                          t-attf-class="position-absolute top-0 start-100 translate-middle badge border border-{{navClass}} rounded-circle bg-danger p-1">
+                                        <span class="visually-hidden">filters
+                                            active
+                                        </span>
+                                    </span>
+                                </button>
+                            </div>
+                            <div t-if="original_search and products"
+                                 class="alert alert-warning mt8">
+                                No results found for '<span
+                                    t-esc="original_search"/>'. Showing results
+                                for '<span t-esc="search"/>'.
+                            </div>
+                            <t t-if="category">
+                                <t t-set='editor_msg'>Drag building blocks here
+                                    to customize the header for "<t
+                                            t-esc='category.name'/>" category.
+                                </t>
+                                <div class="mb16" id="category_header"
+                                     t-att-data-editor-message="editor_msg"
+                                     t-field="category.website_description"/>
+                            </t>
+                            <div t-cache="pricelist,products" t-if="products"
+                                 class="o_wsale_products_grid_table_wrapper pt-3 pt-lg-0">
+                                <table class="table table-borderless h-100 m-0"
+                                       t-att-data-ppg="ppg" t-att-data-ppr="ppr"
+                                       t-att-data-default-sort="website.shop_default_sort"
+                                       t-att-data-name="grid_block_name">
+                                    <colgroup t-ignore="true">
+                                        <col t-foreach="ppr" t-as="p"/>
+                                    </colgroup>
+                                    <tbody>
+                                        <tr t-foreach="bins" t-as="tr_product">
+                                            <t t-foreach="tr_product"
+                                               t-as="td_product">
+                                                <t t-if="td_product">
+                                                    <td t-att-colspan="td_product['x'] != 1 and td_product['x']"
+                                                        t-att-rowspan="td_product['y'] != 1 and td_product['y']"
+                                                        t-attf-class="oe_product"
+                                                        t-att-data-ribbon-id="td_product['ribbon'].id"
+                                                        t-att-data-name="product_block_name">
+                                                        <div t-attf-class="o_wsale_product_grid_wrapper position-relative h-100 o_wsale_product_grid_wrapper_#{td_product['x']}_#{td_product['y']}">
+                                                            <t t-call="website_sale.products_item">
+                                                                <t t-set="product"
+                                                                   t-value="td_product['product']"/>
+                                                            </t>
+                                                        </div>
+                                                    </td>
+                                                </t>
+                                                <td t-else=""/>
+                                            </t>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div t-else=""
+                                 class="text-center text-muted mt128 mb256">
+                                <t t-if="not search">
+                                    <h3 class="mt8">No product defined</h3>
+                                    <p t-if="category">No product defined in
+                                        category "
+                                        <strong
+                                                t-esc="category.display_name"/>
+                                        ".
+                                    </p>
+                                </t>
+                                <t t-else="">
+                                    <h3 class="mt8">No results</h3>
+                                    <p>No results for "<strong t-esc='search'/>"
+                                        <t t-if="category">in category "<strong
+                                                t-esc="category.display_name"/>"
+                                        </t>
+                                        .
+                                    </p>
+                                </t>
+                                <p t-ignore="true"
+                                   groups="sales_team.group_sale_manager">Click <i>
+                                    'New'
+                                </i> in the top-right corner to create your
+                                    first product.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <t t-call="website_sale.o_wsale_offcanvas"/>
+                </div>
+                <div class="oe_structure oe_empty oe_structure_not_nearest"
+                     id="oe_structure_website_sale_products_2"/>
+            </div>
+        </t>
+    </template>
+</odoo>
