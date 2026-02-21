@@ -1,4 +1,4 @@
-# Drive through AI for Odoo 17
+# Ora-Ai Call for Odoo 17
 
 [![Odoo](https://img.shields.io/badge/Odoo-%23A24689.svg?style=for-the-badge&logo=Odoo&logoColor=white)](https://www.odoo.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
@@ -113,7 +113,7 @@ This project is licensed under the AGPL-3. Feel free to use, modify, and distrib
 
 Company
 -------
-* `Cybrosys Techno Solutions <https://cybrosys.com/>`__
+* Cybrosys Techno Solutions <https://cybrosys.com/>
 
 ## Contact
 
