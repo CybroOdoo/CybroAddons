@@ -124,11 +124,10 @@ Company
 * Mail Contact : odoo@cybrosys.com
 * Website : https://cybrosys.com
 
-
 Maintainer
 ==========
-![Cybrosys Logo](https://www.cybrosys.com/images/logo.png)
-https://cybrosys.com
+.. image:: https://cybrosys.com/images/logo.png
+   :target: https://cybrosys.com
 
 This module is maintained by Cybrosys Technologies.
 For support and more information, please visit https://www.cybrosys.com

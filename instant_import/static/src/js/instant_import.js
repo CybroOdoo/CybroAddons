@@ -18,6 +18,7 @@ patch(ImportRecords.prototype, {
         this.action.doAction({
             type: "ir.actions.client",
             tag: "instant_import",
+            path: "instant_import",
             params: { model: resModel, context },
         });
     }

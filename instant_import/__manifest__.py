@@ -21,10 +21,14 @@
 #############################################################################
 {
     'name': 'Instant Import',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'depends': ['base', 'web', 'base_import'],
     'category': 'Tools',
-    'summary': 'Module for fast bulk imports using PostgreSQL COPY',
+    'summary': 'Instant Import is a universal Odoo data import tool designed to import data into any Odoo model quickly and accurately.',
+    'description': """Instant Import is a powerful and user-friendly Odoo data import solution that enables businesses to import large 
+                      volumes of data quickly and accurately using Excel (XLS, XLSX) files.It allows you to import records into 
+                      any Odoo model with minimal setup and no complex configuration. Instant Import helps reduce manual entry, minimize errors, 
+                      and streamline operations across products, customers, vendors, invoices, inventory, and more.""",
     'author': "Cybrosys Techno Solutions",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

@@ -4,17 +4,22 @@ import { registry } from "@web/core/registry";
 import { ImportAction } from "@base_import/import_action/import_action";
 import { useService } from "@web/core/utils/hooks";
 import { BlockUI } from "@web/core/ui/block_ui";
+import { Component, EventBus, onWillStart, useSubEnv, useState } from "@odoo/owl";
+
 
 export class InstantImport extends ImportAction {
     static template = "instant_import.ImportAction";
     static components = { ...ImportAction.components, BlockUI };
-
+    static path = "instant_import";
     setup() {
         super.setup();
         this.orm = useService('orm');
         this.actionService = useService('action');
         this.notification = useService("notification");
         this.blockUI = useService("ui");
+        this.state = useState({
+            isTest: false
+        });
     }
 
     async handleImport(isTest = true) {
@@ -127,6 +132,7 @@ export class InstantImport extends ImportAction {
                 sticky: true,
             });
         } finally {
+            this.state.isTest = true
             this.blockUI.unblock();
         }
     }
