@@ -47,7 +47,7 @@ class CleaningRequest(models.Model):
                                      string="Cleaning Type",
                                      help="Choose what is to be cleaned")
     room_id = fields.Many2one('product.template', string="Room",
-                              help="Choose the room")
+                              help="Choose the room", domain=[('is_room', '=', 'true')])
     hotel = fields.Char(string="Hotel", help="Cleaning request space in hotel")
     vehicle_id = fields.Many2one('fleet.vehicle.model',
                                  string="Vehicle",

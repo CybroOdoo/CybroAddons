@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Hotel Management',
-    'version': '18.0.1.1.3',
+    'version': '18.0.1.1.4',
     'category': 'Industries',
     'summary': """A complete Hotel Management System that cover all areas of 
      Hotel services""" ,
@@ -32,7 +32,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['account', 'event', 'fleet', 'lunch'],
+    'depends': ['account', 'event', 'fleet', 'lunch', 'stock'],
     'data': [
         'security/hotel_management_odoo_groups.xml',
         'security/hotel_management_odoo_security.xml',

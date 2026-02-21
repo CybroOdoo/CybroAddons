@@ -83,3 +83,17 @@ class ProductTemplate(models.Model):
             self.num_person = 2
         else:
             self.num_person = 4
+
+    @api.onchange('is_room')
+    def _onchange_is_room(self):
+        """Set product type to consumable if it is a room"""
+        if self.is_room:
+            self.type = 'consu'
+            self.is_storable = False
+
+    @api.constrains('is_room', 'is_storable')
+    def _check_room_type(self):
+        """Room products cannot be storable"""
+        for record in self:
+            if record.is_room and record.is_storable:
+                raise ValidationError(_("Room products cannot be storable. Please disable 'Track Inventory'."))

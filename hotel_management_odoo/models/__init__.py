@@ -36,3 +36,4 @@ from . import room_booking
 from . import room_booking_line
 from . import service_booking_line
 from . import product_template
+from . import stock_quant

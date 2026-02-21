@@ -29,3 +29,8 @@
 #### Version 18.0.1.1.3
 #### UPDT
 - Fixed the issue so rooms can now be added as products in the pricelist.
+
+#### 16.02.2026
+#### Version 18.0.1.1.4
+#### UPDT
+- Fixed the hotel.room issue in JS by counting products marked as is_room.
