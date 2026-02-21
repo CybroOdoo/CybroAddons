@@ -21,8 +21,10 @@
 ###############################################################################
 import base64
 import codecs
+import csv
 import openpyxl
 import os
+import io
 from datetime import datetime
 from io import BytesIO
 from odoo import fields, models, _
@@ -43,93 +45,212 @@ class ImportBankStatement(models.TransientModel):
     journal_id = fields.Many2one('account.journal', string="Journal ID",
                                  help="Journal in which the file importing")
 
+    def _parse_date(self, date_str):
+        """ Helper to parse date from string """
+        if not date_str:
+            return fields.Date.today()
+
+        if isinstance(date_str, datetime):
+            return date_str.date()
+
+        # Remove potential quotes and whitespace
+        date_str = str(date_str).strip().strip('"').strip("'")
+        if not date_str:
+            return fields.Date.today()
+
+        # Try common formats
+        for fmt in ('%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y', '%d-%m-%Y', '%Y/%m/%d'):
+            try:
+                return datetime.strptime(date_str, fmt).date()
+            except (ValueError, TypeError):
+                continue
+
+        # Fallback to Odoo fields.Date.from_string
+        try:
+            res = fields.Date.from_string(date_str)
+            if res:
+                return res
+        except:
+            pass
+
+        return fields.Date.today()
+
+    def _parse_float(self, val):
+        """ Helper to parse float from string with currency symbols and commas """
+        if not val:
+            return 0.0
+        if isinstance(val, (int, float)):
+            return float(val)
+        
+        # Remove currency symbols, quotes, commas, spaces
+        clean_val = str(val).strip().replace('"', '').replace("'", "").replace(',', '').replace(' ', '')
+        for symbol in ('$', '€', '£', '¥', '₹'):
+            clean_val = clean_val.replace(symbol, '')
+
+        # Handle accounting negative format (100.0) -> -100.0
+        if clean_val.startswith('(') and clean_val.endswith(')'):
+            clean_val = '-' + clean_val[1:-1]
+
+        try:
+            return float(clean_val)
+        except (ValueError, TypeError):
+            return 0.0
+
     def action_statement_import(self):
         """Function to import csv, xlsx, ofx and qif file format"""
         split_tup = os.path.splitext(self.file_name)
         if split_tup[1] == '.csv' or split_tup[1] == '.xlsx' or split_tup[
             1] == '.ofx' or split_tup[1] == '.qif':
             if split_tup[1] == '.csv':
-                # Reading csv file
                 try:
-                    file = base64.b64decode(self.attachment)
-                    file_string = file.decode('utf-8')
-                    file_string = file_string.split('\n')
-                except:
-                    raise ValidationError(_("Choose correct file"))
-                # Skipping the first line
-                firstline = True
-                statement = False
-                for file_item in file_string:
-                    if firstline:
-                        firstline = False
+                    file_data = base64.b64decode(self.attachment)
+                    file_string = file_data.decode('utf-8-sig')
+                    f = io.StringIO(file_string)
+                    reader = csv.DictReader(f)
+                    fieldnames = reader.fieldnames or []
+                    header_map = {f.strip().lower(): f for f in fieldnames}
+                except Exception as e:
+                    raise ValidationError(_("Error reading CSV file: %s") % str(e))
+
+                statement_id = False
+                for row in reader:
+                    if not any(row.values()):
                         continue
-                    # Skip empty lines
-                    if not file_item.strip():
-                        continue
-                    # Reading the content from csv file
-                    values = file_item.split(',')
-                    if len(values) >= 4:
-                        if values[0] and values[1] and values[2]:
-                            date_obj = str(fields.Date.today()) if not values[
-                                3] else values[3]
-                            transaction_date = datetime.strptime(date_obj,
-                                                                 "%Y-%m-%d")
-                            partner = self.env['res.partner'].search(
-                                [('name', '=', values[2])])
-                            if partner:
-                                statement = self.env[
-                                    'account.bank.statement'].create({
-                                    'name': values[0],
-                                    'line_ids': [(0, 0, {
-                                        'date': transaction_date,
-                                        'payment_ref': 'csv file',
-                                        'partner_id': partner.id,
-                                        'journal_id': self.journal_id.id,
-                                        'amount': values[1],
-                                    })],
-                                })
-                            else:
-                                raise ValidationError(
-                                    _("Partner does not exist"))
-                        else:
-                            if not values[0]:
-                                raise ValidationError(
-                                    _("Account name is not set"))
-                            elif not values[1]:
-                                raise ValidationError(_("Amount is not set"))
-                            elif not values[3]:
-                                date_obj = str(fields.Date.today()) if not \
-                                values[3] else values[3]
-                                transaction_date = datetime.strptime(date_obj,
-                                                                     "%Y-%m-%d")
-                                statement = self.env[
-                                    'account.bank.statement'].create({
-                                    'name': values[0],
-                                    'line_ids': [(0, 0, {
-                                        'date': transaction_date,
-                                        'payment_ref': 'csv file',
-                                        'journal_id': self.journal_id.id,
-                                        'amount': values[1],
-                                    })],
-                                })
-                            else:
-                                date_obj = str(fields.Date.today()) if not \
-                                    values[3] else values[3]
-                                transaction_date = datetime.strptime(date_obj,
-                                                                     "%Y-%m-%d")
-                                statement = self.env[
-                                    'account.bank.statement'].create({
-                                    'name': values[0],
-                                    'line_ids': [(0, 0, {
-                                        'date': transaction_date,
-                                        'payment_ref': 'csv file',
-                                        'journal_id': self.journal_id.id,
-                                        'amount': values[1],
-                                    })],
-                                })
+
+                    def get_field(keys):
+                        for k in keys:
+                            if k.lower() in header_map:
+                                return row.get(header_map[k.lower()])
+                        return None
+
+                    # Mappings for common Odoo and generic bank headers
+                    name = get_field(['name', 'label', 'description', 'reference', 'account', 'line_ids/payment_ref', 'payment_ref'])
+                    amount = get_field(['amount', 'value', 'price', 'total', 'line_ids/amount'])
+                    partner_name = get_field(['partner', 'partner_id/name', 'contact', 'payee', 'customer', 'supplier', 'line_ids/partner_id', 'partner_id'])
+                    date_str = get_field(['date', 'transaction date', 'time', 'line_ids/date'])
+                    starting_balance = get_field(['starting balance', 'start balance', 'opening balance', 'balance_start'])
+                    ending_balance = get_field(['ending balance', 'balance', 'real balance', 'end balance', 'balance_end_real'])
+
+                    values = [v.strip() if v else '' for v in row.values()]
+                    keys = list(row.keys())
+                    mapped_indices = set()
+                    
+                    def find_column(targets, is_numeric=False, is_date=False, exclude_indices=None):
+                        exclude_indices = exclude_indices or set()
+                        for k, v in header_map.items():
+                            if any(t in k for t in targets):
+                                idx = keys.index(v)
+                                if idx not in exclude_indices:
+                                    return row.get(v), idx
+                        if is_numeric or is_date:
+                            for i, val in enumerate(values):
+                                if i in exclude_indices: continue
+                                if is_numeric:
+                                    try:
+                                        temp = val.replace('$', '').replace(',', '').strip()
+                                        if temp:
+                                            float(temp)
+                                            return val, i
+                                    except: pass
+                                if is_date:
+                                    try:
+                                        self._parse_date(val)
+                                        return val, i
+                                    except: pass
+                        return None, -1
+
+                    # Heuristic backups for unmapped fields
+                    if amount is None:
+                        amount_val, idx = find_column(['amount', 'value', 'price', 'total'], is_numeric=True)
+                        if idx != -1:
+                            amount = amount_val
+                            mapped_indices.add(idx)
+
+                    if date_str is None:
+                        date_val, idx = find_column(['date', 'time'], is_date=True, exclude_indices=mapped_indices)
+                        if idx != -1:
+                            date_str = date_val
+                            mapped_indices.add(idx)
+
+                    if ending_balance is None:
+                        bal_val, idx = find_column(['balance', 'ending', 'real', 'end balance'], is_numeric=True, exclude_indices=mapped_indices)
+                        if idx != -1:
+                            ending_balance = bal_val
+                            mapped_indices.add(idx)
+
+                    if starting_balance is None:
+                        # Attempt to find starting balance only if multiple numeric columns exist
+                        numeric_count = len([v for v in values if v.replace('$', '').replace(',', '').strip().replace('.', '').isdigit()])
+                        bal_val, idx = find_column(['starting', 'start balance', 'opening'], is_numeric=(numeric_count > 2), exclude_indices=mapped_indices)
+                        if idx != -1:
+                            starting_balance = bal_val
+                            mapped_indices.add(idx)
+
+                    if name is None:
+                        for i, val in enumerate(values):
+                            if i in mapped_indices: continue
+                            try:
+                                float(val.replace('$', '').replace(',', '').strip())
+                                continue
+                            except:
+                                try:
+                                    self._parse_date(val)
+                                    continue
+                                except:
+                                    name = val
+                                    mapped_indices.add(i)
+                                    break
+                    
+                    if not name and values:
+                        name = values[0]
+
+                    transaction_date = self._parse_date(date_str)
+                    clean_amount = self._parse_float(amount)
+                    clean_start_balance = self._parse_float(starting_balance)
+                    clean_end_balance = self._parse_float(ending_balance)
+
+                    # Ensure statement is balanced (End = Start + Amount) to prevent red state
+                    if starting_balance is not None and ending_balance is not None:
+                        b_start, b_end = clean_start_balance, clean_end_balance
+                        clean_amount = b_end - b_start
+                    elif ending_balance is not None:
+                        b_end = clean_end_balance
+                        b_start = b_end - clean_amount
+                    elif starting_balance is not None:
+                        b_start = clean_start_balance
+                        b_end = b_start + clean_amount
                     else:
-                        raise ValidationError(
-                            _("Invalid row format in CSV file. Ensure all required columns are present."))
+                        b_start, b_end = 0.0, clean_amount
+
+                    partner = False
+                    if partner_name:
+                        partner_name = partner_name.strip()
+                        if partner_name.lower() in ('bank', 'cash', 'main', 'demo', 'yourcompany'):
+                            partner_name = False
+                        if partner_name:
+                            partner = self.env['res.partner'].search([('name', '=', partner_name)], limit=1)
+                            if not partner and len(partner_name) > 1 and not partner_name.isdigit():
+                                try:
+                                    self._parse_date(partner_name)
+                                except:
+                                    raise ValidationError(_("Partner '%s' does not exist") % partner_name)
+
+                    statement = self.env['account.bank.statement'].create({
+                        'name': name,
+                        'journal_id': self.journal_id.id,
+                        'company_id': self.journal_id.company_id.id,
+                        'date': transaction_date,
+                        'balance_start': b_start,
+                        'balance_end_real': b_end,
+                        'line_ids': [(0, 0, {
+                            'date': transaction_date,
+                            'payment_ref': name or 'csv file',
+                            'partner_id': partner.id if partner else False,
+                            'journal_id': self.journal_id.id,
+                            'amount': clean_amount,
+                        })],
+                    })
+                    statement_id = statement.id
 
                 return {
                     'type': 'ir.actions.act_window',
@@ -155,8 +276,7 @@ class ImportBankStatement(models.TransientModel):
                     if line[0] and line[1] and line[3]:
                         partner = self.env['res.partner'].search(
                             [('name', '=', line[3])])
-                        date_obj = fields.Date.today() if not line[2] else \
-                            line[2].date()
+                        date_obj = self._parse_date(line[2])
                         # Creating record
                         if partner:
                             statement = self.env[
@@ -182,8 +302,7 @@ class ImportBankStatement(models.TransientModel):
                             raise ValidationError(
                                 _("Amount is not set"))
                         elif not line[3]:
-                            date_obj = fields.Date.today() if not line[2] else \
-                                line[2].date()
+                            date_obj = self._parse_date(line[2])
                             # Creating record
                             statement = self.env[
                                 'account.bank.statement'].create({
@@ -205,140 +324,123 @@ class ImportBankStatement(models.TransientModel):
                     'res_id': statement.id,
                 }
             elif split_tup[1] == '.ofx':
-                # Searching the path of the file
-                file_attachment = self.env["ir.attachment"].search(
-                    ['|', ('res_field', '!=', False),
-                     ('res_field', '=', False),
-                     ('res_id', '=', self.id),
-                     ('res_model', '=', 'import.bank.statement')],
-                    limit=1)
-                file_path = file_attachment._full_path(
-                    file_attachment.store_fname)
-                # Parsing the file
                 try:
-                    with codecs.open(file_path) as fileobj:
-                        ofx_file = OfxParser.parse(fileobj)
-                except:
-                    raise ValidationError(_("Wrong file format"))
-                if not ofx_file.account:
-                    raise ValidationError(
-                        _("No account information found in OFX file."))
-                if not ofx_file.account.statement:
-                    raise ValidationError(
-                        _("No statement information found in OFX file."))
-                statement_list = []
-                # Reading the content from file
-                for transaction in ofx_file.account.statement.transactions:
-                    if transaction.type == "debit" and transaction.amount != 0:
-                        payee = transaction.payee
-                        amount = transaction.amount
-                        date = transaction.date
-                        if not date:
-                            date = fields.Date.today()
-                        partner = self.env['res.partner'].search(
-                            [('name', '=', payee)])
-                        if partner:
-                            statement_list.append([partner.id, amount, date])
-                        else:
-                            raise ValidationError(_("Partner not exist"))
-                    if transaction.type == "credit" and transaction.amount != 0:
-                        payee = transaction.payee
-                        amount = transaction.amount
-                        date = transaction.date
-                        if not date:
-                            date = fields.Date.today()
-                        partner = self.env['res.partner'].search(
-                            [('name', '=', payee)])
-                        if partner:
-                            statement_list.append([partner.id, amount, date])
-                        else:
-                            raise ValidationError(_("Partner not exist"))
-                # Creating record
-                if statement_list:
-                    for item in statement_list:
-                        statement = self.env['account.bank.statement'].create({
-                            'name': ofx_file.account.routing_number,
-                            'line_ids': [
-                                (0, 0, {
-                                    'date': item[2],
-                                    'payment_ref': 'ofx file',
-                                    'partner_id': item[0],
-                                    'journal_id': self.journal_id.id,
-                                    'amount': item[1],
-                                }),
-                            ],
-                        })
-                    return {
-                        'type': 'ir.actions.act_window',
-                        'name': 'Statements',
-                        'view_mode': 'list',
-                        'res_model': 'account.bank.statement',
-                        'res_id': statement.id,
-                    }
-                else:
-                    raise ValidationError(_("There is no data to import"))
+                    file_data = base64.b64decode(self.attachment)
+                    ofx_file = OfxParser.parse(io.BytesIO(file_data))
+                except Exception as e:
+                    raise ValidationError(_("Wrong file format or parsing error: %s") % str(e))
+
+                if not ofx_file.account or not ofx_file.account.statement:
+                    raise ValidationError(_("No account information found in OFX file."))
+
+                statement_id = False
+                stmt = ofx_file.account.statement
+                
+                # Standardize balance extraction
+                ledger_bal = getattr(stmt, 'balance', getattr(stmt, 'ledger_balance', None))
+                final_balance = self._parse_float(ledger_bal) if ledger_bal is not None else 0.0
+                
+                for transaction in stmt.transactions:
+                    amount = self._parse_float(transaction.amount)
+                    if amount == 0:
+                        continue
+
+                    # Clean labels and match partners
+                    label = (transaction.memo or transaction.name or transaction.payee or 'ofx transaction').strip()
+                    payee_name = transaction.payee.strip() if transaction.payee else False
+                    
+                    partner = False
+                    if payee_name:
+                        # Shared noise-filtering for partners
+                        if payee_name.lower() in ('bank', 'cash', 'main', 'demo', 'yourcompany'):
+                            payee_name = False
+                        if payee_name:
+                            partner = self.env['res.partner'].search([('name', '=', payee_name)], limit=1)
+                    
+                    date = self._parse_date(transaction.date)
+                    b_end = final_balance
+                    b_start = b_end - amount
+
+                    statement = self.env['account.bank.statement'].create({
+                        'name': label,
+                        'journal_id': self.journal_id.id,
+                        'company_id': self.journal_id.company_id.id,
+                        'date': date,
+                        'balance_start': b_start,
+                        'balance_end_real': b_end,
+                        'line_ids': [(0, 0, {
+                            'date': date,
+                            'payment_ref': label,
+                            'partner_id': partner.id if partner else False,
+                            'journal_id': self.journal_id.id,
+                            'amount': amount,
+                        })],
+                    })
+                    statement_id = statement.id
+                
+                if not statement_id:
+                    raise ValidationError(_("No valid transactions found in the OFX file."))
+                
+                return {
+                    'type': 'ir.actions.act_window',
+                    'name': 'Statements',
+                    'view_mode': 'list',
+                    'res_model': 'account.bank.statement',
+                    'res_id': statement_id,
+                }
+
             elif split_tup[1] == '.qif':
-                # Searching the path of qif file
-                file_attachment = self.env["ir.attachment"].search(
-                    ['|', ('res_field', '!=', False),
-                     ('res_field', '=', False),
-                     ('res_id', '=', self.id),
-                     ('res_model', '=', 'import.bank.statement')],
-                    limit=1)
-                file_path = file_attachment._full_path(
-                    file_attachment.store_fname)
-                # Parsing the qif file
                 try:
-                    parser = QifParser()
-                    with open(file_path, 'r') as qiffile:
-                        qif = parser.parse(qiffile)
-                except:
-                    raise ValidationError(_("Wrong file format"))
-                file_string = str(qif)
-                file_item = file_string.split('^')
-                file_item[-1] = file_item[-1].rstrip('\n')
-                if file_item[-1] == '':
-                    file_item.pop()
-                statement_list = []
-                for item in file_item:
-                    if not item.startswith('!Type:Bank'):
-                        item = '!Type:Bank' + item
-                    data = item.split('\n')
-                    # Reading the file content
-                    date_entry = data[1][1:]
-                    amount = float(data[2][1:])
-                    payee = data[3][1:]
-                    if amount and payee:
-                        if not date_entry:
-                            date_entry = str(fields.Date.today())
-                        date_object = datetime.strptime(date_entry, '%d/%m/%Y')
-                        date = date_object.strftime('%Y-%m-%d')
-                        statement_list.append([payee, amount, date])
-                    else:
-                        if not amount:
-                            raise ValidationError(_("Amount is not set"))
-                        elif not payee:
-                            raise ValidationError(_("Payee is not set"))
-                # Creating record
-                if statement_list:
-                    for item in statement_list:
+                    file_data = base64.b64decode(self.attachment)
+                    file_string = file_data.decode('utf-8-sig')
+                    qif = QifParser().parse(io.StringIO(file_string))
+                except Exception as e:
+                    raise ValidationError(_("Error parsing QIF file: %s") % str(e))
+
+                statement_id = False
+                for account in qif.get_accounts():
+                    for transaction in qif.get_transactions(account):
+                        amount = self._parse_float(transaction.amount)
+                        if amount == 0:
+                            continue
+                            
+                        date = self._parse_date(transaction.date)
+                        label = (transaction.payee or transaction.memo or 'qif transaction').strip()
+                        payee_name = transaction.payee.strip() if transaction.payee else False
+                        
+                        partner = False
+                        if payee_name:
+                            if payee_name.lower() in ('bank', 'cash', 'main', 'demo', 'yourcompany'):
+                                payee_name = False
+                            if payee_name:
+                                partner = self.env['res.partner'].search([('name', '=', payee_name)], limit=1)
+                        
                         statement = self.env['account.bank.statement'].create({
-                            'name': item[0],
-                            'line_ids': [
-                                (0, 0, {
-                                    'date': item[2],
-                                    'payment_ref': 'qif file',
-                                    'journal_id': self.journal_id.id,
-                                    'amount': item[1],
-                                }),
-                            ],
+                            'name': label,
+                            'journal_id': self.journal_id.id,
+                            'company_id': self.journal_id.company_id.id,
+                            'date': date,
+                            'balance_start': 0.0,
+                            'balance_end_real': amount,
+                            'line_ids': [(0, 0, {
+                                'date': date,
+                                'payment_ref': label,
+                                'partner_id': partner.id if partner else False,
+                                'journal_id': self.journal_id.id,
+                                'amount': amount,
+                            })],
                         })
-                    return {
-                        'type': 'ir.actions.act_window',
-                        'name': 'Statements',
-                        'view_mode': 'list',
-                        'res_model': 'account.bank.statement',
-                        'res_id': statement.id,
-                    }
+                        statement_id = statement.id
+
+                if not statement_id:
+                    raise ValidationError(_("No valid transactions found in the QIF file."))
+
+                return {
+                    'type': 'ir.actions.act_window',
+                    'name': 'Statements',
+                    'view_mode': 'list',
+                    'res_model': 'account.bank.statement',
+                    'res_id': statement_id,
+                }
         else:
             raise ValidationError(_("Choose correct file"))

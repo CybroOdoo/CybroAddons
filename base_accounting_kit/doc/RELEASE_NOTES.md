@@ -15,3 +15,7 @@
 #### ADD
 - Fixed the issue in the bank statement import.
 
+#### 09.02.2026
+#### Version 19.0.2.2.0
+#### UPDT
+- Fixed the issues in the bank statement import of csv and ofx files.
