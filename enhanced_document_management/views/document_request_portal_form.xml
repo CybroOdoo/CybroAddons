@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--     Defines a navigation bar for document requests.-->
+    <template id="document_req_nav">
+        <div class="document_req_nav">
+            <ul class="nav">
+                <li t-attf-class="nav-item" role="presentation">
+                    <a id="my-nav-link" class="nav-link"
+                       href="/document_request">
+                        My
+                    </a>
+                </li>
+                <li t-attf-class="nav-item" role="presentation">
+                    <a id="nav-link" class="nav-link"
+                       href="/document_request/all">
+                        All
+                    </a>
+                </li>
+                <li t-attf-class="nav-item" role="presentation">
+                    <a id="nav-link" class="nav-link"
+                       href="/document_request/draft">
+                        New
+                    </a>
+                </li>
+                <li t-attf-class="nav-item" role="presentation">
+                    <a id="nav-link" class="nav-link"
+                       href="/document_request/document_approval">
+                        Document Approval
+                    </a>
+                </li>
+            </ul>
+            <a href="/document_request/new"
+               class="btn btn-primary create_req_btn mt24 mb8">
+                Create Request
+            </a>
+        </div>
+    </template>
+    <!--Template for displaying a message when there are no document request-->
+    <template id="no_request_template">
+        <div class="container-fluid mt32 mb80">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card-body">
+                        <div class="col-sm-12 text-center">
+                            <img src="/enhanced_document_management/static/src/img/document_request.png"
+                                 width="200px" height="auto"
+                                 class="img-fluid mb-4 mr-3"/>
+                            <h3>
+                                <strong>Currently No Requests !</strong>
+                            </h3>
+                            <h4>Request for your document here.</h4>
+                            <a href="/document_request/new"
+                               data-abc="true">New Request
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <!--    Template for displaying document requests.-->
+    <template id="document_request_template" name="Document Template Requests">
+        <t t-call="website.layout">
+            <div id="website234">
+                <div>
+                    <t t-call="enhanced_document_management.document_req_nav"/>
+                    <center>
+                        <t t-if="document_req_count==0">
+                            <t t-call="enhanced_document_management.no_request_template"/>
+                        </t>
+                        <t t-else="">
+                            <table class="table mt16 document_request_table">
+                                <tbody>
+                                    <t t-foreach="document_requests"
+                                       t-as="document_request">
+                                        <tr>
+                                            <td>
+                                                <div class="document_request_row">
+                                                    <div class="request_top">
+                                                        <span class="request-title">
+                                                            <h5>
+                                                                <a t-attf-href="/document_request/details/request/{{document_request.id}}"
+                                                                   class="document_request_name"
+                                                                   t-esc="document_request.document_id.name"/>
+                                                            </h5>
+                                                        </span>
+                                                        <span
+                                                                class="document_req_employee mr4">
+                                                            <t t-esc="document_request.employee_id.name"/>
+                                                        </span>
+                                                        <br/>
+                                                        <span class="service_req_category">
+                                                            Manager:
+                                                            <t t-esc="document_request.manager_id.name"/>
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                    </div>
+                                                    <div class="request_content">
+                                                        <span class="badge state_badge">
+                                                            <t t-esc="document_request.state"/>
+                                                        </span>
+                                                        <div class="document_request_date">
+                                                            <t t-if="document_request.requested_date">
+                                                                <span t-field="document_request.requested_date"
+                                                                      class="date"/>
+                                                            </t>
+                                                            <span t-field="document_request.create_user_avatar"
+                                                                  t-att-title="document_request.create_uid.name"
+                                                                  t-options="{'widget': 'image', 'class': 'img-rounded create_user_image'}"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                    </center>
+                </div>
+            </div>
+        </t>
+    </template>
+    <!--    Template for displaying details of a document request.-->
+    <template id="document_request_details">
+        <t t-call="website.layout">
+            <div class="document_request_details">
+                <div class="container-fluid">
+                    <div class="container">
+                        <!-- Main content -->
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <!-- Details -->
+                                <div class="card mt16 mb16">
+                                    <div class="card-body">
+                                        <div class="mb-3 d-flex justify-content-end">
+                                            <div class="document_req_head">
+                                                <span class="me-3">
+                                                    <t t-esc="document_request.requested_date"/>
+                                                </span>
+                                                <span class="badge state_badge rounded-pill cy-info">
+                                                    <t t-esc="document_request.state"/>
+                                                </span>
+                                            </div>
+                                            <a class="btn btn-primary download_doc"
+                                               t-attf-href="/document_request/download/{{document_request.id}}"
+                                               t-if="document_request.state == 'approved'"
+                                               t-att-id="document_request.id">
+                                                Download
+                                            </a>
+                                        </div>
+                                        <div class="document_req_name">
+                                            <h1>
+                                                <t t-esc="document_request.document_id.name"/>
+                                            </h1>
+                                        </div>
+                                        <hr/>
+                                        <table class="table table-borderless mt16">
+                                            <tbody>
+                                                <t t-if="document_request.employee_id">
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex mb-2">
+                                                                <div class="flex-lg-grow-1 ms-3">
+                                                                    <div class="d-flex align-items-center"
+                                                                         style="gap:10px;">
+                                                                        <h5>
+                                                                            Employee:
+                                                                        </h5>
+                                                                        <h5 class="details_input">
+                                                                            <t t-esc="document_request.employee_id.name"/>
+                                                                        </h5>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="document_request.manager_id">
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex mb-2">
+                                                                <div class="flex-lg-grow-1 ms-3">
+                                                                    <div class="d-flex align-items-center"
+                                                                         style="gap:10px;">
+                                                                        <h5>
+                                                                            Manager:
+                                                                        </h5>
+                                                                        <h5 class="details_input">
+                                                                            <t t-esc="document_request.manager_id.name"/>
+                                                                        </h5>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex mb-2">
+                                                            <div class="flex-lg-grow-1 ms-3">
+                                                                <div class="d-flex align-items-center"
+                                                                     style="gap:10px;">
+                                                                    <h5>
+                                                                        Template:
+                                                                    </h5>
+                                                                    <h5 class="details_input">
+                                                                        <t t-raw="document_request.template"/>
+                                                                    </h5>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div id="document_request_communication"
+                                     class="mt-4">
+                                    <h2>Chat</h2>
+                                    <t t-set="object"
+                                       t-value="document_request"/>
+                                    <t t-call="portal.message_thread"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    <!--    Template for a document request form.-->
+    <template id="document_request_form">
+        <t t-call="website.layout">
+            <div id="website" class="document_req_portal">
+                <section class="vh-100 gradient-custom" data-vcss="001"
+                         data-snippet="s_website_form">
+                    <div style="align-items: center; justify-content: center"
+                         class="container py-5 h-100 document_request_container">
+                        <form action="/document_request/submit" method="post"
+                              enctype="multipart/form-data"
+                              class="o_mark_required"
+                              data-mark="*" data-model_name=""
+                              data-success-page="">
+                            <input type="hidden" name="csrf_token"
+                                   t-att-value="request.csrf_token()"/>
+                            <h1 class="mb-2 text-uppercase"
+                                style="text-align: center;">Document Request
+                            </h1>
+                            <br/>
+                            <div class="row d-flex justify-content-center align-items-center h-100">
+                                <div style="width: 700px;margin-top:-27px"
+                                     id="form_steps"
+                                     class="col-12 col-md-8 col-lg-6 col-xl-5">
+                                    <div id="service_category_div">
+                                        <label class="col-form-label col-sm-auto s_website_form_label"
+                                               style="width: 200px"
+                                               for="studio1">
+                                            <span class="s_website_form_label_content">
+                                                Document Template
+                                            </span>
+                                        </label>
+                                        <div class="col-sm"
+                                             id="document_request_template">
+                                            <select id="document_request_template"
+                                                    name="document_request_template_id"
+                                                    t-attf-class="form-control s_website_form_input"
+                                                    required="1">
+                                                <option/>
+                                                <t t-foreach="templates or []"
+                                                   t-as="template">
+                                                    <option t-att-value="template.id">
+                                                        <t t-esc="template.name"/>
+                                                    </option>
+                                                </t>
+                                            </select>
+                                            <br/>
+                                            <div class="template_preview">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br/>
+                                    <button class="btn btn-primary"
+                                            type="submit">Submit
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+    <!--     Template for the document request submission confirmation page.-->
+    <template id="document_request_submit_template">
+        <t t-call="website.layout">
+            <div style="margin-top: 100px;" class="jumbotron text-center">
+                <h1 class="display-3">Thank You!</h1>
+                <p class="lead">Your request has been successfully submitted.
+                </p>
+            </div>
+        </t>
+    </template>
+</odoo>

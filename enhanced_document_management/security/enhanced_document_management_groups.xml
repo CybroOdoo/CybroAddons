@@ -1,0 +1,102 @@
+<odoo>
+    <!-- Define a module category for Document Management -->
+    <record id="module_document_module" model="ir.module.category">
+        <field name="name">Document Management</field>
+        <field name="description">Access for Document module</field>
+        <field name="sequence">50</field>
+    </record>
+    <!-- Define a group 'User' -->
+    <record id="view_own_document" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_document_module"/>
+    </record>
+    <!-- Define a group 'Manager' with implied 'User' group and associated users -->
+    <record id="view_all_document" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_document_module"/>
+        <field name="implied_ids" eval="[(4, ref('view_own_document'))]"/>
+        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+    </record>
+    <!-- Define an access rule 'Document Manager' -->
+    <record id="document_workspace_rule_manager" model="ir.rule">
+        <field name="name">Document Manager</field>
+        <field name="model_id" ref="model_document_workspace"/>
+        <field name="domain_force">['|',('privacy_visibility', '=',
+            'followers'), ('privacy_visibility', '=', 'employees')]
+        </field>
+        <field name="groups" eval="[(4, ref('view_all_document'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+    <!-- Define an access rule 'View visible Workspace' -->
+    <record id="document_workspace_rule_own" model="ir.rule">
+        <field name="name">View visible Workspace</field>
+        <field name="model_id" ref="model_document_workspace"/>
+        <field name="domain_force">['|',('privacy_visibility', '=',
+            'employees'),('message_partner_ids', 'in', [user.partner_id.id])]
+        </field>
+        <field name="groups" eval="[(4, ref('view_own_document'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="active" eval="True"/>
+    </record>
+    <!-- Define an access rule 'Document File Visibility' -->
+    <record id="document_file_rule_visibility" model="ir.rule">
+        <field name="name">Document File Visibility</field>
+        <field name="model_id" ref="model_document_file"/>
+        <field name="domain_force">['|',('workspace_id.privacy_visibility',
+            '=', 'employees'),('workspace_id.message_partner_ids', 'in',
+            [user.partner_id.id])]
+        </field>
+        <field name="groups" eval="[(4, ref('view_own_document'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="active" eval="True"/>
+    </record>
+    <!-- Define an access rule 'View Own Request' -->
+    <record id="request_document_rule_own" model="ir.rule">
+        <field name="name">View Own Request</field>
+        <field name="model_id" ref="model_request_document"/>
+        <field name="domain_force">
+            ['|',('requested_by_id', '=', user.id),
+            ('user_id', '=', user.id)]
+        </field>
+        <field name="groups" eval="[(4, ref('view_own_document'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+    <!-- Define an access rule 'View All Request' -->
+    <record id="request_document_rule_all" model="ir.rule">
+        <field name="name">View All Request</field>
+        <field name="model_id" ref="model_request_document"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('view_all_document'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+    <!-- Set default groups for the base.default_user -->
+    <record id="base.default_user" model="res.users">
+        <field name="groups_id"
+               eval="[(4,ref('enhanced_document_management.view_own_document'))]"/>
+    </record>
+    <!-- Access rule for document templates based on multi-company settings.-->
+    <record id="document_request_template_rule_comp" model="ir.rule">
+            <field name="name">Document template multi-company</field>
+            <field name="model_id" ref="model_document_request_template"/>
+            <field name="domain_force">['|', ('company_id', 'parent_of', company_ids), ('company_id', '=', False)]
+            </field>
+    </record>
+</odoo>

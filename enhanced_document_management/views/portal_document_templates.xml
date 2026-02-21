@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    This XML template defines a portal menu for documents.-->
+    <template id="portal_my_home_menu_doc" name="Portal layout : doc menu"
+              inherit_id="portal.portal_breadcrumbs" priority="20">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'document'">
+                <a t-if="document" t-attf-href="/my/documents">/ Documents</a>
+                <t t-else="">/ Documents</t>
+            </li>
+            <li t-if="document" class="breadcrumb-item active">
+                /
+                <t t-esc="name"/>
+            </li>
+        </xpath>
+    </template>
+    <!--        This template defines the layout and structure of a document view page in a web portal.-->
+    <template id="portal_my_document_view" name="Document Portal Template"
+              inherit_id="portal.portal_sidebar" primary="True">
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+            <div class="row mt16 o_portal_sale_sidebar">
+                <!-- Sidebar -->
+                <t t-call="portal.portal_record_sidebar">
+                    <t t-set="classes" t-value="'col-lg-auto d-print-none'"/>
+                    <t t-set="title">
+                        <h4 class="mb-0">
+                            <t t-esc="workspace_id"/>
+                        </h4>
+                    </t>
+                    <t t-set="entries">
+                        <ul class="list-group list-group-flush flex-wrap flex-row
+                    flex-lg-column">
+                            <li class="list-group-item d-grid align-content-start">
+                                <p align="center">
+                                    <t t-esc="date"/>
+                                </p>
+                            </li>
+                            <li class="list-group-item d-grid align-content-start">
+                                <t t-if="extension == 'url'">
+                                    <a class="btn btn-primary fa fa-download"
+                                       t-att-href="content_url"
+                                       target="_blank">
+                                        Open Url
+                                    </a>
+                                </t>
+                                <t t-else="">
+                                    <a class="btn btn-primary fa fa-download"
+                                       t-attf-href="/web/content/#{attachment_id}?download=true&amp;access_token=#{}"
+                                       target="_blank">
+                                        Download
+                                    </a>
+                                </t>
+                            </li>
+                            <li class="list-group-item d-grid align-content-start">
+                                <div class="small mb-1">
+                                    <strong class="text-muted">Owner</strong>
+                                </div>
+                                <div class="row flex-nowrap">
+                                    <div class="col flex-grow-0 pe-2">
+                                        <img class="rounded-circle mr4 float-start
+                                    o_portal_contact_img"
+                                             t-att-src="image_data_uri(owner.avatar_1024)"
+                                             alt="Contact"/>
+                                    </div>
+                                    <div class="col ps-0"
+                                         style="min-width: 150px">
+                                        <span t-esc="owner"
+                                              t-options='{
+                                        "widget": "contact",
+                                        "fields": ["name", "phone"],
+                                        "no_marker": True}'/>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </t>
+                </t>
+                <!-- Page content -->
+                <div id="document_content"
+                     class="col-12 col-lg justify-content-end">
+                    <div t-attf-class="card #{'pb-5' if report_type == 'html' else ''}"
+                         id="portal_doc_content">
+                        <div t-call="enhanced_document_management.doc_content_preview"/>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <!--     This template defines the structure for displaying the content of a Sales Order in a portal view.-->
+    <template id="doc_content_preview" name="Sales Order Portal Content">
+        <div id="introduction"
+             t-attf-class="pb-2 pt-3 #{'card-header cy-white' if report_type == 'html' else ''}"
+             style="height:700px;">
+            <h2>
+                <t t-esc="name"/>
+            </h2>
+            <t t-if="extension == 'url'">
+                <iframe width="100%" height="100%" t-att-src="preview"
+                        frameborder="0"/>
+            </t>
+        </div>
+    </template>
+</odoo>

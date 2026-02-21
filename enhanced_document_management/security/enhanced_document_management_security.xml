@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--  Record rule for Document Manager he can create/update his record-->
+    <record id="document_management_rule_manager" model="ir.rule">
+        <field name="name">Document Manager</field>
+        <field name="model_id" ref="model_document_file"/>
+        <field name="domain_force">['|', '|', ('security', '=', 'specific_users'),
+                                              ('security', '=', 'managers_and_owner'), '&amp;',
+                                              ('security', '=', 'private'),
+                                              ('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('document_management_group_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+    <!--  Record rule for Document Manager he can create/update record with security -->
+    <record id="document_management_rule_user" model="ir.rule">
+        <field name="name">View Own Document</field>
+        <field name="model_id" ref="model_document_file"/>
+        <field name="domain_force">['|', '|', '|', '|', ('user_ids', 'in', user.id), '&amp;',
+                                                        ('security', '=', 'specific_users'),
+                                                        ('user_ids', '=', False), '&amp;',
+                                                        ('security', '=', 'private'),
+                                                        ('user_id', '=', user.id), '&amp;',
+                                                        ('security', '=', 'managers_and_owner'),
+                                                        ('user_id', '=', user.id), '&amp;',
+                                                        ('user_ids', 'not in', user.id),
+                                                        ('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('document_management_group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="active" eval="True"/>
+    </record>
+    <!--  Record rule for Document user he can create/update his record  -->
+    <record id="document_management_rule_own" model="ir.rule">
+        <field name="name">View Own Request</field>
+        <field name="model_id" ref="model_request_document"/>
+        <field name="domain_force">
+            ['|',('requested_by', '=', user.id),
+            ('user_id', '=', user.id)]
+        </field>
+        <field name="groups" eval="[(4, ref('document_management_group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+    <!--  Record rule for Document manager he can create/update record that shared with him  -->
+    <record id="document_management_rule_all" model="ir.rule">
+        <field name="name">View All Request</field>
+        <field name="model_id" ref="model_request_document"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('document_management_group_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+
+    <!--  Record role for multy-company environment  -->
+    <record id="document_file_multy_company" model="ir.rule">
+        <field name="name">Documents multy-company</field>
+        <field name="model_id" ref="model_document_file"/>
+        <field name="domain_force">['|',('company_id', '=',False),('company_id', 'in', company_ids)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+
+    <!--  Record role for multy-company environment  -->
+    <record id="document_workspace_multy_company" model="ir.rule">
+        <field name="name">Document workspace multy-company</field>
+        <field name="model_id" ref="model_document_workspace"/>
+        <field name="domain_force">['|',('company_id', '=',False),('company_id', 'in', company_ids)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+
+    <!--  Record role for multy-company environment  -->
+    <record id="document_trash_multy_company" model="ir.rule">
+        <field name="name">Document trash multy-company</field>
+        <field name="model_id" ref="model_document_trash"/>
+        <field name="domain_force">['|',('company_id', '=',False),('company_id', 'in', company_ids)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+
+    <!--  Record role for multy-company environment  -->
+    <record id="document_requests_multy_company" model="ir.rule">
+        <field name="name">Document requests multy-company</field>
+        <field name="model_id" ref="model_request_document"/>
+        <field name="domain_force">['|',('company_id', '=',False),('company_id', 'in', company_ids)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>
