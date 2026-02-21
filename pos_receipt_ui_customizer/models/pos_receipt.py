@@ -3,8 +3,8 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2025-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Neeraj JR (<https://www.cybrosys.com>)
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Nubla Sherin k (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
@@ -39,3 +39,59 @@ class PosReceipt(models.Model):
     company_id = fields.Many2one('res.company', string='Company', readonly=True, index=True, required=True,
                                  default=lambda self: self.env.company)
     logo = fields.Binary(string='Logo', default=lambda self: self.env.company.logo)
+    selected_product_fields = fields.Text(
+        string="Selected Product Fields",
+        help="JSON list of product fields to show as receipt columns",
+        default='[]'
+    )
+    selected_columns_config = fields.Text(
+        default="[]",
+        help="Receipt column layout configuration"
+    )
+
+    enable_qr = fields.Boolean(
+        string="Enable Receipt QR",
+        default=False
+    )
+    enable_qr_section = fields.Boolean(
+        string="Enable QR Section",
+        default=False
+    )
+
+    qr_size = fields.Integer(
+        string='URL QR Code Size',
+        default=120,
+        help='Size of the URL QR code in pixels (80-300px)'
+    )
+
+    qr_position = fields.Selection([
+        ('left', 'Left'),
+        ('center', 'Center'),
+        ('right', 'Right')
+    ], string='URL QR Position', default='center',
+        help='Alignment position for the URL QR code')
+
+    receipt_qr_size = fields.Integer(
+        string='Receipt QR Code Size',
+        default=120,
+        help='Size of the receipt QR code in pixels (80-300px)'
+    )
+
+    receipt_qr_position = fields.Selection([
+        ('left', 'Left'),
+        ('center', 'Center'),
+        ('right', 'Right')
+    ], string='Receipt QR Position', default='center',
+        help='Alignment position for the receipt QR code')
+
+
+    def action_open_receipt_layout(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.client",
+            "tag": "pos_receipt_layout_client_action",
+            "target": "current",
+            "params": {
+                "receipt_id": self.id,
+            }
+        }

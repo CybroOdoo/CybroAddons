@@ -20,5 +20,29 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
-from . import models
-from . import controllers
+from odoo import models
+
+
+class PosSession(models.Model):
+    _inherit = 'pos.session'
+
+    def _pos_ui_models_to_load(self):
+        """
+        Ensure the 'pos.receipt' model is loaded in the POS frontend."""
+        res = super()._pos_ui_models_to_load()
+        if 'pos.receipt' not in res:
+            res.append('pos.receipt')
+        return res
+
+
+    def _loader_params_pos_receipt(self):
+        """
+               Specify the receipt and QR-related fields
+               that should be available in the POS UI.
+        """
+        return {
+            'search_params': {
+                'fields': ['id', 'design_receipt', 'design_receipt_font_style', 'qr_size', 'qr_position',
+                           'receipt_qr_size', 'receipt_qr_position', 'enable_qr', 'enable_qr_section'],
+            }
+        }

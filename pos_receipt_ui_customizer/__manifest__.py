@@ -3,8 +3,8 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2025-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Neeraj JR (<https://www.cybrosys.com>)
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Nubla Sherin k (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
@@ -22,7 +22,7 @@
 ################################################################################
 {
     'name': 'POS Receipt UI Customizer',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Point of Sale',
     'live_test_url': 'https://www.youtube.com/watch?v=sHQUam5F5Qs',
     'summary': "POS Receipt, Receipt Design, POS Receipt Template, Design "
@@ -42,12 +42,15 @@
         'data/pos_receipt_design3_data.xml',
         'views/pos_receipt_views.xml',
         'views/pos_config_views.xml',
-        'views/res_config_settings_views.xml',
+        'views/receipt_template.xml',
+        'report/receipt_report.xml',
     ],
     'assets': {
         'point_of_sale._assets_pos': [
             'pos_receipt_ui_customizer/static/src/js/receipt_design.js',
             'pos_receipt_ui_customizer/static/src/xml/order_receipt.xml',
+            'pos_receipt_ui_customizer/static/src/overrides/app/models/pos_order.js',
+
         ],
         'web.assets_backend': [
             'pos_receipt_ui_customizer/static/src/js/layout_customisation.js',
@@ -56,7 +59,9 @@
             'https://cdn.jsdelivr.net/npm/medium-editor@5.23.3/dist/js/medium-editor.min.js',
             'https://cdn.jsdelivr.net/npm/medium-editor@5.23.3/dist/css/medium-editor.min.css',
             'https://cdn.jsdelivr.net/npm/medium-editor@5.23.3/dist/css/themes/default.min.css',
+            'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
         ],
+
     },
     'images': ['static/description/banner.png'],
     'license': 'AGPL-3',

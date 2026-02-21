@@ -3,8 +3,8 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2025-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Neeraj JR (<https://www.cybrosys.com>)
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Nubla Sherin k (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
@@ -20,7 +20,7 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
-from odoo import fields, models
+from odoo import fields, models,api
 
 class PosConfig(models.Model):
     """
@@ -42,3 +42,63 @@ class PosConfig(models.Model):
         related='receipt_design_id.design_receipt_font_style',
         string='Receipt Font Style'
     )
+
+    selected_product_fields = fields.Text(
+        compute="_compute_selected_product_fields",
+        store=True
+    )
+    enable_qr = fields.Boolean(
+        string="Enable Receipt QR",
+        related='receipt_design_id.enable_qr',
+        readonly=False,
+        store=True,
+    )
+    enable_qr_section = fields.Boolean(
+        string="Enable QR Section",
+        related='receipt_design_id.enable_qr_section',
+        readonly=False,
+        store=True,
+    )
+
+    receipt_qr_size = fields.Integer(
+        string='Receipt QR Code Size',
+        related='receipt_design_id.receipt_qr_size',
+        readonly=False,
+        store=True,
+    )
+
+    receipt_qr_position = fields.Selection(
+        string='Receipt QR Position',
+        related='receipt_design_id.receipt_qr_position',
+        readonly=False,
+        store=True,
+    )
+
+    receipt_bg_color = fields.Char(
+        string="Receipt Background Color",
+        default="#abc64b"
+    )
+    receipt_bg_image = fields.Binary("Receipt Background Image")
+
+    @api.depends('receipt_design_id', 'receipt_design_id.selected_product_fields')
+    def _compute_selected_product_fields(self):
+        for rec in self:
+            if rec.receipt_design_id and rec.receipt_design_id.selected_product_fields:
+                rec.selected_product_fields = rec.receipt_design_id.selected_product_fields
+            else:
+                rec.selected_product_fields = '[]'
+
+    def action_open_receipt_editor(self):
+        self.ensure_one()
+
+        if not self.receipt_design_id:
+            return False
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "pos_receipt_layout_client_action",
+            "target": "current",
+            "params": {
+                "receipt_id": self.receipt_design_id.id,
+            }
+        }
