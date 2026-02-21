@@ -46,9 +46,5 @@ class ResConfigSettings(models.TransientModel):
     @api.model
     def _load_pos_data_fields(self, config_id):
         """Returns the list of fields to be loaded for POS data."""
-        result = super()._load_pos_data_fields(config_id)
-        result.append('display_stock')
-        result.append('stock_type')
-        result.append('stock_from')
-        result.append('stock_location_id')
-        return result
+        return ['display_stock', 'stock_type', 'stock_from', 'stock_location_id']
+

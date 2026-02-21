@@ -47,4 +47,7 @@ class PosConfig(models.Model):
         if self.location_from == 'all_warehouse':
             self.stock_location_id = False
         elif self.location_from == 'current_warehouse':
-            self.stock_location_id = self.pos_config_id.pos_stock_location_id
+            self.stock_location_id = self.pos_confid_id.pos_stock_location_id
+
+
+

@@ -30,9 +30,6 @@ class StockMoveLine(models.Model):
     @api.model
     def _load_pos_data_fields(self, config_id):
         """Returns the list of fields to be loaded for POS data."""
-        result = super()._load_pos_data_fields(config_id)
-        result.append('product_id')
-        result.append('location_dest_id')
-        result.append('quantity')
-        result.append('location_id')
-        return result
+        return [
+            'product_id', 'location_dest_id', 'quantity', 'location_id'
+        ]

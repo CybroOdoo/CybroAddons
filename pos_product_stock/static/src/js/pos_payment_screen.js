@@ -19,7 +19,6 @@ patch(PaymentScreen.prototype, {
             }else if (this.pos.res_setting['stock_type'] === 'outgoing_qty') {
                 lines.forEach((line) => {
                     var order_quantity = line.qty;
-
                 });
             } else if (this.pos.res_setting['stock_type'] === 'incoming_qty') {
                 lines.forEach((line) => {
