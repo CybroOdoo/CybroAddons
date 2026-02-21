@@ -39,6 +39,7 @@
         'point_of_sale._assets_pos': [
             'pos_product_stock/static/src/xml/product_item.xml',
             'pos_product_stock/static/src/css/product_quantity.scss',
+            'pos_product_stock/static/src/js/pos_location_stock_loader.js',
             'pos_product_stock/static/src/js/pos_location.js',
             'pos_product_stock/static/src/js/pos_payment_screen.js',
             'pos_product_stock/static/src/js/pos_session.js',

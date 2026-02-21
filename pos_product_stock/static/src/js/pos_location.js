@@ -28,27 +28,6 @@ patch(ProductCard.prototype, {
         return product[0];
     },
 
-    async _loadLocationStock(productId) {
-        const locationId = this.pos.config.pos_stock_location_id;
-        if (!locationId) return;
-
-        const quants = await this.orm.call(
-            "stock.quant",
-            "search_read",
-            [[["product_tmpl_id", "=", productId],["location_id", "=", locationId]],["quantity", "available_quantity", "product_id","product_tmpl_id" ,"location_id"]]);
-
-        this.location_stock_quant = quants.reduce(
-            (total, q) => total + (q.available_quantity || 0),
-            0
-        );
-    },
-
-    async after_load_server_data() {
-        await super.after_load_server_data(...arguments);
-        await this._loadLocationStock();
-    },
-
-
     async updateProductDetails() {
         const productId = this.props.productId;
         const locationId = this.pos.config.pos_stock_location_id;
@@ -81,13 +60,24 @@ patch(ProductCard.prototype, {
             let incoming_loc = 0;
             let outgoing_loc = 0;
             var flag = 0
-            this._loadLocationStock(productId).then(() => {
-                this.state.on_hand_loc = this.location_stock_quant;
-                this.pos.on_hand_loc = this.location_stock_quant;
-            });
 
-            const main_product = product_product.find(product => product.product_tmpl_id.id === current_product);
-            const main_prod_id = main_product?.id
+            const main_product = product_product.find(
+                    p => p.product_tmpl_id.id === productId);
+                const main_prod_id = main_product?.id
+
+                if (main_product) {
+                    const tmpl_id = main_product.raw.product_tmpl_id;
+
+                    const variants = product_product.filter(
+                        p => p.raw.product_tmpl_id === tmpl_id
+                    );
+
+                    variants.forEach(v => {
+                        on_hand_loc += this.pos.location_stock_map?.[v.id] || 0;
+                    });
+                }
+
+            this.state.on_hand_loc = on_hand_loc;
 
             move_line.forEach((line) => {
             if (line && line.product_id) {
@@ -103,22 +93,11 @@ patch(ProductCard.prototype, {
 
             this.updateProductDetails().then(() => {
                 this.state.main_prod = main_product?.display_name
-
                 this.state.qty_available = this.qty_available;
-                this.pos.all_on_hand = this.qty_available;
-
                 this.state.incoming_qty = this.productDetail?.incoming_qty;
-                this.pos.all_incoming = this.productDetail?.incoming_qty;
-
                 this.state.outgoing_qty = this.productDetail?.outgoing_qty;
-                this.pos.all_outgoing = this.productDetail?.outgoing_qty;
-
                 this.state.incoming_loc = incoming_loc;
-                this.pos.incoming_loc = incoming_loc;
-
                 this.state.outgoing_loc = outgoing_loc;
-                this.pos.outgoing_loc = outgoing_loc;
-
                 this.state.display_stock = false;
             });
             return { display_stock: this.pos.config.display_stock_setting };
