@@ -1,4 +1,4 @@
-    # -- coding: utf-8 --
+# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,30 +21,38 @@
 #############################################################################
 {
     'name': 'Instant Import',
-    'version': '17.0.1.0.0',
-    'category': 'Tools',
-    'summary': 'Module for fast bulk imports using PostgreSQL COPY',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer ': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
+    'version': '17.0.1.0.1',
     'depends': ['base', 'web', 'base_import'],
-    'data': [
-            'security/ir.model.access.csv',
-        ],
-    'assets': {
-            'web.assets_backend': [
-                'instant_import/static/src/js/import_component.js',
-                'instant_import/static/src/js/import_component.xml',
-                'instant_import/static/src/js/instant_import.js',
-                'instant_import/static/src/js/templates.xml',
-            ],
-        },
-    'images': ['static/description/banner.jpg'],
-    'license': 'LGPL-3',
-    'installable': True,
-    'auto_install': False,
+    'category': 'Tools',
+    'summary': 'Instant Import is a universal Odoo data import tool designed to import data into any Odoo model quickly and accurately.',
+    'description': """Instant Import is a powerful and user-friendly Odoo data import solution that enables businesses to import large 
+                      volumes of data quickly and accurately using Excel (XLS, XLSX) files.It allows you to import records into 
+                      any Odoo model with minimal setup and no complex configuration. Instant Import helps reduce manual entry, minimize errors, 
+                      and streamline operations across products, customers, vendors, invoices, inventory, and more.""",
+    'author': "Cybrosys Techno Solutions",
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
+    'website': "https://www.cybrosys.com",
     'application': True,
+    'sequence': -333,
+    'data': [
+        'security/ir.model.access.csv',
+    ],
+    'assets': {
+        'web.assets_backend': [
+            'instant_import/static/src/js/import_component.js',
+            'instant_import/static/src/js/import_component.xml',
+            'instant_import/static/src/js/instant_import.js',
+            'instant_import/static/src/js/templates.xml',
+        ],
+    },
+    'external_dependencies': {
+        'python': ['pandas'],
+    },
+    'images': [
+        'static/description/banner.jpg',
+    ],
+    'license': 'LGPL-3',
     'post_init_hook': 'setup_db_level_functions',
     'uninstall_hook': 'delete_contact',
 }
