@@ -170,20 +170,27 @@ class AgeReceivableReport(models.TransientModel):
                 val['diff4'] = val['debit'] if 90 < diffrence <= 120 else 0.0
                 val['diff5'] = val['debit'] if diffrence > 120 else 0.0
             move_line_list[partner_id.name] = move_line_data
+            debit_sum = sum(val['debit'] for val in move_line_data)
+            diff0_sum = round(sum(val['diff0'] for val in move_line_data), 2)
+            diff1_sum = round(sum(val['diff1'] for val in move_line_data), 2)
+            diff2_sum = round(sum(val['diff2'] for val in move_line_data), 2)
+            diff3_sum = round(sum(val['diff3'] for val in move_line_data), 2)
+            diff4_sum = round(sum(val['diff4'] for val in move_line_data), 2)
+            diff5_sum = round(sum(val['diff5'] for val in move_line_data), 2)
             partner_total[partner_id.name] = {
-                'debit_sum': sum(val['debit'] for val in move_line_data),
-                'diff0_sum': round(sum(val['diff0'] for val in move_line_data),
-                                   2),
-                'diff1_sum': round(sum(val['diff1'] for val in move_line_data),
-                                   2),
-                'diff2_sum': round(sum(val['diff2'] for val in move_line_data),
-                                   2),
-                'diff3_sum': round(sum(val['diff3'] for val in move_line_data),
-                                   2),
-                'diff4_sum': round(sum(val['diff4'] for val in move_line_data),
-                                   2),
-                'diff5_sum': round(sum(val['diff5'] for val in move_line_data),
-                                   2),
+                'debit_sum': debit_sum,
+                'diff0_sum': diff0_sum,
+                'diff0_sum_display': f"{diff0_sum:.2f}",
+                'diff1_sum': diff1_sum,
+                'diff1_sum_display': f"{diff1_sum:.2f}",
+                'diff2_sum': diff2_sum,
+                'diff2_sum_display': f"{diff2_sum:.2f}",
+                'diff3_sum': diff3_sum,
+                'diff3_sum_display': f"{diff3_sum:.2f}",
+                'diff4_sum': diff4_sum,
+                'diff4_sum_display': f"{diff4_sum:.2f}",
+                'diff5_sum': diff5_sum,
+                'diff5_sum_display': f"{diff5_sum:.2f}",
                 'currency_id': currency_id,
                 'partner_id': partner_id.id
             }

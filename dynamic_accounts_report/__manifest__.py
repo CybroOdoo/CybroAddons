@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Odoo18 Dynamic Accounting Reports',
-    'version': '18.0.1.3.3',
+    'version': '18.0.1.3.4',
     'category': 'Accounting',
     'summary': "Odoo 18 Accounting Financial Reports,Dynamic Accounting Reports, Dynamic Financial Reports,Dynamic Report Odoo18, Odoo18,Financial Reports, Odoo18 Accounting,Accounting, Odoo Apps",
     'description': "This module creates dynamic Accounting General Ledger, Trial"
