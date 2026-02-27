@@ -1,0 +1,48 @@
+<templates>
+
+    <t t-inherit="web.NavBar" t-inherit-mode="extension" owl="1">
+        <xpath expr="//header[hasclass('o_navbar')]" position="after">
+            <div class="sidebar" t-ref="sidebar">
+                <div class="wrapper">
+                    <ul class="sidebar_links">
+                        <t t-foreach="menuService.getApps()" t-as="app"
+                           t-key="app.id">
+                            <li t-attf-class="sidbar-item {{ app.id === state.activeApp ? 'active' : '' }}">
+                                <a role="menuitem"
+                                   t-attf-href="#menu_id={{app.id}}"
+                                   class="nav-link"
+                                   t-att-data-id="app.id"
+                                   t-att-data-menu-xmlid="app.xmlid"
+                                   t-att-data-section="app.id"
+                                   t-on-click="() => this.onAppClick(app)">
+                                    <!-- Handle PNG icons -->
+                                    <t t-if="app.webIcon and app.webIcon.includes('.png')">
+                                        <img class="sidebar_img"
+                                             t-att-src="app.webIconData"
+                                             t-att-title="app.name"
+                                             t-att-alt="app.name"/>
+                                    </t>
+                                    <!-- Handle SVG icons -->
+                                    <t t-if="app.webIcon and app.webIcon.includes('.svg')">
+                                        <img class="sidebar_img"
+                                             t-att-src="app.webIconData"
+                                             t-att-title="app.name"
+                                             t-att-alt="app.name"/>
+                                    </t>
+                                    <!-- Handle Bootstrap icons fallback -->
+                                    <t t-if="!app.webIcon">
+                                        <i t-attf-class="bi bi-{{ app.icon || 'app' }}"/>
+                                    </t>
+                                    <span class="a_app_menu_title">
+                                        <t t-esc="app.name"/>
+                                    </span>
+                                </a>
+
+                            </li>
+                        </t>
+                    </ul>
+                </div>
+            </div>
+        </xpath>
+    </t>
+</templates>
