@@ -5,3 +5,4 @@
 #### ADD
 
 - Initial commit for Theme Trading
+- Fixed the thumbnail issue by changing the name of thumbnail to theme_screenshot
