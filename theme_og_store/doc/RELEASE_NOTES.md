@@ -5,3 +5,4 @@
 #### ADD
 
 - Initial Commit for the module Theme OG Store
+- Fixed the thumbnail issue by changing the name of thumbnail to theme_screenshot
