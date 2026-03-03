@@ -126,7 +126,7 @@ class MailActivity(models.Model):
 
     def action_date(self):
         """ Function for automated actions for deadline"""
-        today = fields.date.today()
+        today = fields.Date.today()
         dates = self.env['mail.activity'].search(
             [('state', 'in', ['today', 'planned']),
              ('date_deadline', '=', today),

@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Activity Checklist",
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Extra Tools',
     'summary': """Create Todo List Using Activities""",
     'description': """Scheduling Activities For each model  and General 
