@@ -20,3 +20,8 @@
 #### Version 17.0.2.0.2
 #### UPDT
 - Incorporated condition when modifying Allowed Users.
+
+#### 20.01.2026
+#### Version 17.0.2.0.3
+#### UPDT
+- Resolved an issue where a validation error prevented users from accessing and updating settings.

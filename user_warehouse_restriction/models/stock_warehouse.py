@@ -32,55 +32,87 @@ class StockWarehouse(models.Model):
         comodel_name='res.users', string='Allowed Users',
         domain=lambda self: [
             ('groups_id', 'in', self.env.ref('stock.group_stock_user').id)],
-        # default=lambda self: self.env.user,
         help='Allowed users to this Warehouse.')
     restrict_location = fields.Boolean(
         string='Restrict Stock Location for this Warehouse',
         help='Restrict stock location of this warehouse to the selected '
              'users.')
 
-    @api.onchange('restrict_location', 'user_ids')
-    def _onchange_restrict_location(self):
-        if not self.company_id:
-            return
-
-        current_user = self.env.user
-        if current_user not in self.user_ids and self.restrict_location:
-            self.user_ids = [(4, current_user.id)]
-
-        # Filter valid users with access to the warehouse’s company
-        valid_users = self.user_ids.filtered(
-            lambda u: self.company_id in u.company_ids
-        )
-        if self.restrict_location:
-            valid_users.with_context(
-                allowed_company_ids=self.company_id.ids
-            ).write({
-                'restrict_location': True,
-                'allowed_warehouse_ids': [(4, self._origin.id)],
-            })
-        else:
-            valid_users.with_context(
-                allowed_company_ids=valid_users.company_ids.ids
-            ).write({
-                'restrict_location': True,
-                'location_ids': False,
-            })
+    @api.onchange('user_ids')
+    def _onchange_user_ids(self):
+        """Ensure current user is always included when restriction is enabled"""
+        if self.restrict_location and self.env.user not in self.user_ids:
+            self.user_ids = [(4, self.env.user.id)]
 
     def write(self, vals):
         """Override the write method to prevent the current user from being
-        removed from the user_ids Many2many field."""
-        res = super(StockWarehouse, self).write(vals)
+        removed from the user_ids Many2many field and update user settings."""
+
         if 'user_ids' in vals:
-            # Check if the current user is still in user_ids after the update
             current_user = self.env.user
             for warehouse in self:
-                if current_user not in warehouse.user_ids:
-                    raise ValidationError(
-                        "You cannot remove yourself from the allowed users "
-                        "of this warehouse."
-                    )
+                if warehouse.restrict_location:
+                    new_user_ids = self._compute_new_user_ids(warehouse.user_ids, vals['user_ids'])
+                    if current_user.id not in new_user_ids:
+                        raise ValidationError(
+                            "You cannot remove yourself from the allowed users "
+                            "of this warehouse."
+                        )
+
+        res = super(StockWarehouse, self).write(vals)
+
+        if 'user_ids' in vals or 'restrict_location' in vals:
+            self._update_user_restrictions()
+
         return res
+
+    def _compute_new_user_ids(self, current_user_ids, user_ids_commands):
+        """Compute the final user IDs after applying Many2many commands"""
+        user_ids = set(current_user_ids.ids)
+
+        for command in user_ids_commands:
+            if command[0] == 4:  # Add
+                user_ids.add(command[1])
+            elif command[0] == 3:  # Remove
+                user_ids.discard(command[1])
+            elif command[0] == 6:  # Replace
+                user_ids = set(command[2])
+            elif command[0] == 5:  # Clear
+                user_ids = set()
+
+        return list(user_ids)
+
+    def _update_user_restrictions(self):
+        """Update user restriction settings based on warehouse configuration"""
+        for warehouse in self:
+            if not warehouse.company_id:
+                continue
+
+            valid_users = warehouse.user_ids.filtered(
+                lambda u: warehouse.company_id in u.company_ids
+            )
+
+            if warehouse.restrict_location and valid_users:
+                valid_users.sudo().with_context(
+                    allowed_company_ids=warehouse.company_id.ids
+                ).write({
+                    'restrict_location': True,
+                    'allowed_warehouse_ids': [(4, warehouse.id)],
+                })
+            elif not warehouse.restrict_location and valid_users:
+                # Remove this warehouse from users' allowed warehouses
+                valid_users.sudo().with_context(
+                    allowed_company_ids=valid_users.mapped('company_ids').ids
+                ).write({
+                    'allowed_warehouse_ids': [(3, warehouse.id)],
+                })
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override create to set up user restrictions"""
+        warehouses = super(StockWarehouse, self).create(vals_list)
+        warehouses._update_user_restrictions()
+        return warehouses
 
     def action_open_users_view(self):
         """Return user basic form view to give restricted location for users"""
@@ -89,6 +121,6 @@ class StockWarehouse(models.Model):
             'name': 'Users',
             'view_mode': 'tree,form',
             'res_model': 'res.users',
-            'domain': [('id', 'in', [user.id for user in self.user_ids]),
+            'domain': [('id', 'in', self.user_ids.ids),
                        ('groups_id', 'not in',
                         [self.env.ref('base.group_system').id])]}
