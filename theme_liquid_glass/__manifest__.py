@@ -49,7 +49,7 @@
     },
     'images': [
         'static/description/banner.jpg',
-        'static/description/thumbnail.jpg',
+        'static/description/theme_screenshot.jpg',
         'static/description/icon.png',
     ],
     'installable': True,
