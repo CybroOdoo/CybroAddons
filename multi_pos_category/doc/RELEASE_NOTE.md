@@ -9,3 +9,8 @@
 #### Version 16.0.1.1.0
 ##### BUG FIX
 - Fixed the issue with POS restricted categories
+
+#### 27.02.2026
+#### Version 16.0.1.2.0
+##### BUG FIX
+- Fix category filtering so all assigned categories are matched

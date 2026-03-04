@@ -19,7 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, models
+from odoo import models
+from odoo.osv.expression import AND, OR
 
 
 class PosSession(models.Model):
@@ -27,38 +28,38 @@ class PosSession(models.Model):
     _inherit = 'pos.session'
 
     def _loader_params_product_product(self):
-        """Override to include pos_categ_ids in product.product loader"""
+        """Fix category filtering so ALL assigned categories are matched.
+        """
         result = super()._loader_params_product_product()
-        result['search_params']['fields'].append('pos_categ_ids')
-        result['search_params']['fields'].append(
-            'pos_categ_id')  # Also include computed field
+
+        if (self.config_id.limit_categories
+                and self.config_id.iface_available_categ_ids):
+            categ_ids = self.config_id.iface_available_categ_ids.ids
+
+            # Mirror what native _loader_params_product_product does, but
+            # replace pos_categ_id with pos_categ_ids so ALL categories match.
+            domain = [
+                '&', '&',
+                ('sale_ok', '=', True),
+                ('available_in_pos', '=', True),
+                '|',
+                ('company_id', '=', self.config_id.company_id.id),
+                ('company_id', '=', False),
+            ]
+            # Use pos_categ_ids: matches products regardless of category order
+            domain = AND([domain, [('pos_categ_ids', 'in', categ_ids)]])
+            # Re-apply tip product OR if that feature is enabled
+            if (self.config_id.iface_tipproduct
+                    and self.config_id.tip_product_id):
+                domain = OR([
+                    domain,
+                    [('id', '=', self.config_id.tip_product_id.id)]
+                ])
+
+            result['search_params']['domain'] = domain
+
+        # Always load pos_categ_ids so the JS side has the full category list
+        if 'pos_categ_ids' not in result['search_params']['fields']:
+            result['search_params']['fields'].append('pos_categ_ids')
+
         return result
-
-    def _get_pos_ui_product_product(self, params):
-        """Ensure products are filtered correctly based on restricted categories"""
-        config = self.config_id
-
-        # Check if category restriction is enabled
-        if config.iface_available_categ_ids and config.iface_available_categ_ids.ids:
-            # Create a domain that checks if product has at least one category
-            # in the allowed categories OR has no category assigned
-            domain = params['search_params'].get('domain', [])
-
-            # Remove any existing pos_categ_id domain filters from parent
-            domain = [d for d in domain if not (isinstance(d, (list, tuple)) and
-                                                len(d) == 3 and
-                                                d[0] == 'pos_categ_id')]
-
-            # For multi-category support, we need to check both pos_categ_ids AND pos_categ_id
-            # Products should appear if ANY of their categories are in the restricted list
-            domain.extend([
-                '|',  # OR condition - either condition should be true
-                ('pos_categ_ids', 'in', config.iface_available_categ_ids.ids),
-                # Any category in pos_categ_ids
-                ('pos_categ_id', 'in', config.iface_available_categ_ids.ids),
-                # OR the main category
-            ])
-
-            params['search_params']['domain'] = domain
-
-        return super()._get_pos_ui_product_product(params)
