@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="product_view_inherit" inherit_id="website_sale.product" priority="999">
+        <!--         replacing the product view -->
+        <xpath expr="//div[@class='row align-items-center']" position="attributes">
+            <attribute name="class">row align-items-center d-none</attribute>
+        </xpath>
+        <xpath expr="//div[@id='product_detail_main']" position="attributes">
+            <attribute name="class">d-none</attribute>
+        </xpath>
+        <xpath expr="//div[@id='product_detail_main']" position="after">
+            <div class="row custom_product_detail"
+                 data-name="Custom Product Page"
+                 t-att-data-image_width="website.product_page_image_width"
+                 t-att-data-image_layout="website.product_page_image_layout">
+
+                <div class="row">
+                    <div class="col-lg-6" style="background-color: #f5f5f5;">
+                        <div class="container-product-view p-5 float-left w-100">
+                            <div class="product-view-img text-center">
+                                <t t-call="website_sale.shop_product_images"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="item-details w-100 float-left text-right">
+                            <span style="margin-left:50%;">
+                                <a href="/shop">
+                                    <img src="/theme_kids_care/static/src/images/home-icon-detail-page.png"/>
+                                </a>
+                                /
+                                <span t-field="product.name"/>
+                            </span>
+                            <div class="float-left mt-3" style="display:flex; align-items:center;">
+                                <span class="span-star">☆ ☆ ☆ ☆ ☆</span>
+                                <!--                                 | 0 Review | &amp;nbsp; -->
+                                <!--                                 <button class="nav-link" id="nav-profile-tab"> -->
+                                <!--                                     <a href="#review-tab" style="text-decoration: none; color: black;">Add Review</a> -->
+                                <!--                                 </button> -->
+                            </div>
+                            <div class="float-left text-left w-100 mt-3">
+                                <span t-field="product.categ_id.name"/>
+                            </div>
+                            <h3 class="float-left mt-2">
+                                <b>
+                                    <span t-field="product.name"/>
+                                </b>
+                            </h3>
+                            <h4 class="text-dark float-left">
+                                <span>Products Details:</span>
+                            </h4>
+                            <div class="w-100 text-left">
+                                <!--                                 <p class="mb-1">Brand: Cloths -->
+                                <!--                                 </p> -->
+                                <!--                                 <p class="mb-1">Product Code: Product 4</p> -->
+                                <p class="mb-1">Availability: In Stock</p>
+                                <div class="price-small">
+                                    <t t-call="website_sale.product_price"/>
+                                    <small t-if="'base_unit_price' in combination_info"
+                                           class="ms-1 text-muted o_base_unit_price_wrapper d-none"
+                                           groups="website_sale.group_show_uom_price">
+                                        <t t-call="website_sale.base_unit_price"/>
+                                    </small>
+                                </div>
+                            </div>
+                            <form t-if="product._is_add_to_cart_possible()" action="/shop/cart/update" method="POST">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"
+                                       t-nocache="The csrf token must always be up to date."/>
+                                <div class="js_product js_main_product mb-3">
+                                    <t t-placeholder="select">
+                                        <input type="hidden" class="product_id" name="product_id"
+                                               t-att-value="product_variant.id"/>
+                                        <input type="hidden" class="product_template_id" name="product_template_id"
+                                               t-att-value="product.id"/>
+                                        <input t-if="product.public_categ_ids.ids" type="hidden"
+                                               class="product_category_id" name="product_category_id"
+                                               t-att-value="product.public_categ_ids.ids[0]"/>
+                                        <t t-call="website_sale.variants">
+                                            <t t-set="ul_class" t-value="'flex-column'"/>
+                                            <t t-set="parent_combination" t-value="None"/>
+                                            <t t-set="combination" t-value="combination_info['combination']"/>
+                                        </t>
+                                    </t>
+                                    <p t-if="True" class="css_not_available_msg alert alert-warning">This combination
+                                        does not exist.
+                                    </p>
+                                    <div class="d-flex align-items-center mt-3 qty-wrapper">
+                                        <span class="me-2 qty-label">Qty</span>
+
+                                        <div class="qty-box d-flex align-items-center">
+                                            <button type="button" class="qty-btn"
+                                                    onclick="var qty=this.nextElementSibling; qty.value=Math.max(1,parseInt(qty.value||1)-1)">
+                                                −
+                                            </button>
+
+                                            <input type="number" name="add_qty" class="qty-input"
+                                                   value="1" min="1"/>
+
+                                            <button type="button" class="qty-btn"
+                                                    onclick="var qty=this.previousElementSibling; qty.value=parseInt(qty.value||1)+1">
+                                                +
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div id="o_wsale_cta_wrapper" class="d-flex flex-wrap align-items-center">
+                                        <t t-set="hasQuantities" t-value="false"/>
+                                        <t t-set="hasBuyNow" t-value="false"/>
+                                        <!--  TODO: remove line below in master  -->
+                                        <t t-set="ctaSizeBig" t-value="not hasQuantities or not hasBuyNow"/>
+                                        <div id="product_option_block" class="d-flex flex-wrap w-100"/>
+                                        <div style="margin-top:10px; display:flex; align-items:center; justify-content:space-between; width:100%;">
+                                            <!--  Price  -->
+                                            <div style="font-size: 26px; font-weight: bold; display:flex; align-items:center;">
+                                                <t t-call="website_sale.product_price"/>
+                                                <small t-if="'base_unit_price' in combination_info"
+                                                       class="ms-1 text-muted o_base_unit_price_wrapper d-none"
+                                                       groups="website_sale.group_show_uom_price">
+                                                    <t t-call="website_sale.base_unit_price"/>
+                                                </small>
+                                            </div>
+                                            <!--  Add to Cart Button  -->
+                                            <div id="add_to_cart_wrap"
+                                                 t-attf-class="{{'d-none' if combination_info['prevent_zero_price_sale'] else 'd-flex'}} align-items-center">
+                                                <a data-animation-selector=".o_wsale_product_images" role="button"
+                                                   id="add_to_cart"
+                                                   t-attf-class="btn btn-primary js_check_product a-submit" href="#">Add
+                                                    to cart
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <t t-if="is_view_active('website_sale.product_tags')"
+                                       t-call="website_sale.product_tags">
+                                        <t t-set="all_product_tags" t-value="product_variant.all_product_tag_ids"/>
+                                    </t>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//div[@id='wrap']" position="after">
+            <!-- Description and reviews -->
+            <!--             <section class="section-description w-100 float-left mt-4 mb-4"> -->
+            <!--                 <div class="container"> -->
+            <!--                     <div class="row"> -->
+            <!--                         <div class="col-lg-12 pl-0 pr-0" id="review-tab"> -->
+            <!--                             <ul class="nav nav-tabs mt-5" role="tablist"> -->
+            <!--                                 <li class="nav-item"> -->
+            <!--                                     <a class="nav-link active" data-bs-toggle="tab" href="#home" -->
+            <!--                                        t-att-data-target="'#home'">Description -->
+            <!--                                     </a> -->
+            <!--                                 </li> -->
+            <!--                                 <li class="nav-item"> -->
+            <!--                                     <a class="nav-link" data-bs-toggle="tab" href="#menu1" t-att-data-target="'#menu1'"> -->
+            <!--                                         Reviews -->
+            <!--                                     </a> -->
+            <!--                                 </li> -->
+            <!--                             </ul> -->
+            <!--                             <div class="tab-content" style="max-height:200px; overflow-y:auto;"> -->
+            <!--                                 <div id="home" class="container tab-pane active"> -->
+            <!--                                     <br/> -->
+            <!--                                     <p> -->
+            <!--                                         <span t-field="product.description"/> -->
+            <!--                                     </p> -->
+            <!--                                 </div> -->
+            <!--                             </div> -->
+            <!--                             <div id="menu1" class="container tab-pane fade" style="max-height:300px; overflow-y:auto;"> -->
+            <!--                                 <div class="top"> -->
+            <!--                                     <div class="o_shop_discussion_rating"> -->
+            <!--                                         <section class="container mt16 mb16"> -->
+            <!--                                             <div class="row"> -->
+            <!--                                                 <div class="col-lg-8 offset-lg-2"> -->
+            <!--                                                     <t t-call="portal.message_thread"> -->
+            <!--                                                         <t t-set="object" t-value="product"/> -->
+            <!--                                                         <t t-set="display_rating" t-value="True"/> -->
+            <!--                                                     </t> -->
+            <!--                                                 </div> -->
+            <!--                                             </div> -->
+            <!--                                         </section> -->
+            <!--                                     </div> -->
+            <!--                                 </div> -->
+            <!--                             </div> -->
+            <!--                         </div> -->
+            <!--                     </div> -->
+            <!--                 </div> -->
+            <!--             </section> -->
+            <section class="section-description w-100 float-left mt-4 mb-4">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12 pl-0 pr-0">
+                            <ul class="nav nav-tabs mt-5" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-bs-toggle="tab" href="#home">Description</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-bs-toggle="tab" href="#menu1">Reviews (0)</a>
+                                </li>
+                            </ul>
+                            <!--  Tab panes  -->
+                            <div class="tab-content">
+                                <div id="home" class="container tab-pane active">
+                                    <br/>
+                                    <p>Embark on exciting imaginary adventures with our Explorer Play Tent. This
+                                        lightweight and easy-to-assemble tent is a portal to limitless possibilities.
+                                        Whether your child envisions a jungle expedition or a secret hideout, the play
+                                        tent offers a cozy and imaginative space for playtime fun and storytelling.
+                                        Introduce your child to the enchanting world of music with our Musical
+                                        Instrument Set. This collection includes a mini keyboard, xylophone, tambourine,
+                                        and maracas, allowing your little musician to explore different sounds and
+                                        rhythms. Watch as they develop a love for music and unleash their inner
+                                        rockstar.
+                                    </p>
+                                </div>
+                                <div id="menu1" class="container tab-pane fade">
+                                    <br/>
+                                    <h3>Menu 1</h3>
+                                    <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+                                        aliquip ex ea commodo consequat.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!--             Related Products -->
+            <section class="section-all-the-snekers mt-5 float-left w-100"
+                     data-snippet="theme_kids_care.all_products_snippet" data-name="All Products">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-6 pl-0">
+                            <h3 class="h3-all-sneakers">
+                                <b>Related Products</b>
+                            </h3>
+                        </div>
+                        <div class="col-lg-12">
+                            <div class="row">
+                                <div class="owl-carousel owl-theme mt-3">
+                                    <t t-set="products"
+                                       t-value="request.env['product.template'].sudo().search([('is_published', '=', True), ('categ_id', '=', product.categ_id.id)])"/>
+                                    <t t-foreach="products" t-as="product">
+                                        <div class="item">
+                                            <div class="container-swiper-slide mr-4 p-4">
+                                                <div class="w-100 float-left text-left">
+                                                    <h3 class="text-dark">
+                                                        <b>
+                                                            <t t-esc="product.name"/>
+                                                        </b>
+                                                        <span class="span-star">☆ ☆ ☆ ☆ ☆</span>
+                                                    </h3>
+                                                    <p class="mb-0">
+                                                        <t t-esc="product.categ_id.name"/>
+                                                    </p>
+                                                    <div class="kids-care-size float-left w-100 pt-3">
+                                                        <div class="kids-care-img"
+                                                             style="width: 200px; height: 200px; overflow: hidden; justify-self: end; margin-right: 0;">
+                                                            <img t-att-src="'/web/image/product.template/%s/image_512' % product.id"
+                                                                 alt=""
+                                                                 style="width: 200px; height: 200px; object-fit: contain; display: block; margin: 0 auto;"/>
+                                                        </div>
+                                                        <div class="container-size float-left">
+                                                            <br/>
+                                                            <br/>
+                                                            <br/>
+                                                            <br/>
+                                                            <div class="float-left w-100"></div>
+                                                            <p/>
+                                                            <div class="cart-container w-100 float-left pr-4">
+                                                                <h2 class="float-left">
+                                                                    <b>
+                                                                        <span t-esc="product.list_price"
+                                                                              t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                                                                    </b>
+                                                                </h2>
+                                                                <form action="/shop/cart/update" method="POST"
+                                                                      class="float-right">
+                                                                    <input type="hidden" name="csrf_token"
+                                                                           t-att-value="request.csrf_token()"
+                                                                           t-nocache="The csrf token must always be up to date."/>
+                                                                    <input type="hidden" name="product_id"
+                                                                           t-att-value="product.product_variant_id.id"/>
+                                                                    <input type="hidden" name="product_template_id"
+                                                                           t-att-value="product.id"/>
+                                                                    <input type="hidden" name="add_qty" value="1"/>
+                                                                    <button type="submit"
+                                                                            class="btn btn-primary btn-add-to-cart pr-5 pl-5 pt-3 pb-3 a-submit">
+                                                                        Add to Cart
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Related products section closed -->
+        </xpath>
+    </template>
+</odoo>
