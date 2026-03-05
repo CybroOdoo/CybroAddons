@@ -62,7 +62,7 @@
         ],
     },
     'images': ['static/description/banner.jpg',
-               'static/description/thumbnail.jpg'],
+               'static/description/theme_screenshot.jpg'],
     'license': 'LGPL-3',
     'installable': True,
     'application': False,
