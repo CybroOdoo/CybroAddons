@@ -72,7 +72,7 @@ class SaleReportInvoice(models.TransientModel):
         if self.to_date:
             domain.append(('date_order', '<=', self.to_date))
         if self.company_ids:
-            domain.append(('company_id', 'in', self.company_ids))
+            domain.append(('company_id', 'in', self.company_ids.ids))
         sales_order = self.env['sale.order'].search(domain)
         if not sales_order:
             raise ValidationError("No data available for printing.")
