@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--    res.partner inherited views-->
+    <record id="view_res_partner_filter" model="ir.ui.view">
+        <field name="name">res.partner.view.filter.inherit.vendor.portal.odoo</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='type_company']" position="after">
+                <filter string="Registered Vendors" name="is_registered"
+                        domain="[('is_registered','=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+<!--    Action Registered Vendors-->
+    <record id="res_partner_action_supplier_registered" model="ir.actions.act_window">
+        <field name="name">Registered Vendors</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'search_default_is_registered': True,'default_is_registered':True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new vendor
+            </p>
+            <p>
+                Odoo helps you easily track all activities related to a registered vendor.
+            </p>
+        </field>
+    </record>
+<!--    Res Partner View Form-->
+    <record id="view_partner_form" model="ir.ui.view">
+        <field name="name">res.partner.view.form.inherit.vendor.portal.odoo</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="priority" eval="9"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <field name="is_registered" invisible="1"/>
+                <button class="oe_stat_button" name="%(vendor_portal_odoo.register_vendor_action)d" type="action"
+                        icon="fa-user-plus" invisible="supplier_rank == 0">
+                    <field name="supplier_rank" invisible="1"/>
+                    <span class="o_stat_text" invisible="is_registered == True">Make Portal User
+                    </span>
+                    <span class="o_stat_text" invisible="is_registered == False">Registered</span>
+                </button>
+            </div>
+        </field>
+    </record>
+</odoo>
