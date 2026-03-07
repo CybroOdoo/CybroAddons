@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Template for cash flow report-->
+    <template id="cash_flow_pdf_report">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <div style="font-size:12px" class="col-4">
+                    <b>Report Date :</b>
+                    <span t-esc='today'/>
+                    <br/>
+                    <span t-esc='logged_users'/>
+                </div>
+                <br/>
+                <div class="page">
+                    <h4 style="padding-left:10px !important">Cash Flow
+                        statements
+                    </h4>
+                    <div style="width:90%;margin:1px auto;font-size:12px"
+                         class="row mt32 mb32">
+                        <div class="col-4">
+                            <strong>Target Moves:</strong>
+                            <p>
+                                <span t-if="target_move == 'posted'">All Posted
+                                    Entries
+                                </span>
+                                <span t-if="target_move == 'all'">All Entries
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-4">
+                            <p>
+                                <strong>Date from :</strong>
+                                <span t-esc='date_from'/>
+                                <br/>
+                                <strong>Date to :</strong>
+                                <span t-esc='date_to'/>
+                            </p>
+                        </div>
+                    </div>
+                    <table style="width:90%;margin:2px auto;"
+                           class="table table-condensed">
+                        <thead>
+                            <tr style="font-size:13px;  padding: 0.25rem !important;">
+                                <th style="text-align:left;">Name</th>
+                                <th style="text-align:right;">Cash In</th>
+                                <th style="text-align:right;">Cash Out</th>
+                                <th style="text-align:right;">Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody style="font-size:12px" t-foreach="fetched_data"
+                               t-as="fetch">
+                            <tr t-if="levels == 'summary'">
+                                <td>
+                                    <span t-esc="fetch.get('month_part')"/>
+                                    <span t-esc="int(fetch.get('year_part'))"/>
+                                </td>
+                                <td style="text-align:right;">
+                                    <span t-esc="fetch.get('total_debit')"
+                                          t-options="{'widget': 'monetary',
+                                               'display_currency': res_company.currency_id}"/>
+                                </td>
+                                <td style="text-align:right;">
+                                    <span t-esc="fetch.get('total_credit')"
+                                          t-options="{'widget': 'monetary',
+                                               'display_currency': res_company.currency_id}"/>
+                                </td>
+                                <td style="text-align:right;">
+                                    <span t-esc="fetch.get('total_balance')"
+                                          t-options="{'widget': 'monetary',
+                                               'display_currency': res_company.currency_id}"/>
+                                </td>
+                            </tr>
+                            <tr style="font-size:13px"
+                                t-if="levels == 'consolidated'">
+                                <td>
+                                    <span t-esc="fetch.get('name')"/>
+                                </td>
+                                <td style="text-align:right;">
+                                        <span t-esc="fetch.get('total_debit')"
+                                              t-options="{'widget': 'monetary',
+                                                  'display_currency': res_company.currency_id}"/>
+                                </td>
+                                <td style="text-align:right;">
+                                        <span t-esc="fetch.get('total_credit')"
+                                              t-options="{'widget': 'monetary',
+                                                  'display_currency': res_company.currency_id}"/>
+                                </td>
+                                <td style="text-align:right;">
+                                        <span t-esc="fetch.get('total_balance')"
+                                              t-options="{'widget': 'monetary',
+                                                  'display_currency': res_company.currency_id}"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody style="font-size:12px"
+                               t-if="levels == 'detailed'"
+                               t-foreach="journal_res" t-as="res">
+                            <tr t-if="fet.get('name') == res.get('account')"
+                                t-foreach="fetched_data" t-as="fet">
+                                <td>
+                                    <strong>
+                                        <span t-esc="fetch.get('code')"/>
+                                        <span t-esc="fetch.get('name')"/>
+                                    </strong>
+                                </td>
+                                <td style="text-align:right;">
+                                    <strong>
+                                        <span t-esc="fetch.get('total_debit')"
+                                              t-options="{'widget': 'monetary',
+                                                  'display_currency': res_company.currency_id}"/>
+                                    </strong>
+                                </td>
+                                <td style="text-align:right;">
+                                    <strong>
+                                        <span t-esc="fetch.get('total_credit')"
+                                              t-options="{'widget': 'monetary',
+                                                   'display_currency': res_company.currency_id}"/>
+                                    </strong>
+                                </td>
+                                <td style="text-align:right;">
+                                    <strong>
+                                        <span t-esc="fetch.get('total_debit') - fet.get('total_credit')"
+                                              t-options="{'widget': 'monetary',
+                                                   'display_currency': res_company.currency_id}"/>
+                                    </strong>
+                                </td>
+                                <tr t-foreach="res.get('journal_lines')"
+                                    t-as="mov">
+                                    <td style="text-align:right;padding-left:50px !important"
+                                        class="text-left">
+                                        <span t-esc="mov['name']"/>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <span t-esc="mov['total_debit']"
+                                              t-options="{'widget': 'monetary',
+                                               'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <span t-esc="mov['total_credit']"
+                                              t-options="{'widget': 'monetary',
+                                               'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <span t-esc="mov['total_debit'] - mov['total_credit']"
+                                              t-options="{'widget': 'monetary',
+                                               'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tr>
+                        </tbody>
+                        <tbody style="font-size:12px" t-if="levels == 'very'"
+                               t-foreach="account_res" t-as="res">
+                            <tr t-if="fet.get('name') == res.get('account')"
+                                t-foreach="fetched" t-as="fet">
+                                <td>
+                                    <strong>
+                                        <span t-esc="fet.get('code')"/>
+                                        <span t-esc="fet.get('name')"/>
+                                    </strong>
+                                </td>
+                                <td style="text-align:right;">
+                                    <strong>
+                                        <span t-esc="fet.get('total_debit')"
+                                              t-options="{'widget': 'monetary',
+                                                  'display_currency': res_company.currency_id}"/>
+                                    </strong>
+                                </td>
+                                <td style="text-align:right;">
+                                    <strong>
+                                        <span t-esc="fet.get('total_credit')"
+                                              t-options="{'widget': 'monetary',
+                                                   'display_currency': res_company.currency_id}"/>
+                                    </strong>
+                                </td>
+                                <td style="text-align:right;">
+                                    <strong>
+                                        <span t-esc="fet.get('total_debit') - fet.get('total_credit')"
+                                              t-options="{'widget': 'monetary',
+                                                   'display_currency': res_company.currency_id}"/>
+                                    </strong>
+                                </td>
+                                <tr t-if="line['account_name'] == res.get('account')"
+                                    t-foreach="res.get('journal_lines')"
+                                    t-as="line">
+                                    <td style="text-align:right;padding-left:20px !important">
+                                        <span t-esc="line['name']"/>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <span t-esc="line['total_debit']"
+                                              t-options="{'widget': 'monetary',
+                                               'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <span t-esc="line['total_credit']"
+                                              t-options="{'widget': 'monetary',
+                                               'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <span t-esc="line['total_debit'] - line['total_credit']"
+                                              t-options="{'widget': 'monetary',
+                                               'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <tr t-if="mov['name'] == line['name']"
+                                        t-foreach="res.get('move_lines')"
+                                        t-as="mov">
+                                        <td style="text-align:right;padding-left:50px !important">
+                                            <span t-esc="mov['move_name']"/>
+                                        </td>
+                                        <td style="text-align:right;">
+                                            <span t-esc="mov['total_debit']"
+                                                  t-options="{'widget': 'monetary',
+                                               'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td style="text-align:right;">
+                                            <span t-esc="mov['total_credit']"
+                                                  t-options="{'widget': 'monetary',
+                                               'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td style="text-align:right;">
+                                            <span t-esc="mov['total_debit'] - mov['total_credit']"
+                                                  t-options="{'widget': 'monetary',
+                                               'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                    </tr>
+                                </tr>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
