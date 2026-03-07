@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="product_multi_uom_pos.Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+
+        <xpath expr="//ul[hasclass('info-list')]" position="inside">
+            <t t-if="props.mode === 'receipt' and props.line.custom_uom_name">
+                <li style="list-style: none; font-weight: 600; color: #444; line-height: 1.2; margin-top: 2px; font-size: 0.85em;">
+                    <t t-esc="env.utils.formatCurrency(props.line.custom_uom_price || props.line.price_unit)"/> / <t t-esc="props.line.custom_uom_name"/>
+                </li>
+            </t>
+        </xpath>
+
+        <!-- Hide Odoo's native messy "Price per unit" line on the receipt -->
+<!--        <xpath expr="//li[hasclass('price-per-unit')]" position="attributes">-->
+<!--            <attribute name="t-if">vals.displayPriceUnit and props.mode !== 'receipt'</attribute>-->
+<!--        </xpath>-->
+
+        <xpath expr="//ul[hasclass('info-list')]" position="after">
+            <t t-set="uomList" t-value="getAvailableUoms()"/>
+            <t t-if="props.mode !== 'receipt' and uomList.length > 0">
+                <div class="uom-selector-area mt-1 p-2 border rounded bg-light">
+                    <div class="mb-1 small fw-bold text-primary">
+                        Selected: <t t-esc="getCurrentUomDisplay().uomName"/>
+                        (<t t-esc="env.utils.formatCurrency(getCurrentUomDisplay().price)"/>)
+                    </div>
+                    <div class="d-flex gap-1">
+                        <select class="form-select form-select-sm" t-on-change="onUomChange" t-on-click.stop="">
+                            <option value="">Change Uom</option>
+                            <t t-foreach="uomList" t-as="item" t-key="item.id">
+                                <option t-att-value="item.uom_id" t-att-selected="props.line.product_uom_id === item.uom_id">
+                                    <t t-esc="item.uom_name"/> - <t t-esc="env.utils.formatCurrency(item.price)"/>
+                                </option>
+                            </t>
+                        </select>
+                        <button t-if="props.line.custom_uom_name" class="btn btn-sm btn-outline-danger" t-on-click.stop="onReset">
+                            <i class="fa fa-undo"/>
+                        </button>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>
