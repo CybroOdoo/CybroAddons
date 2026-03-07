@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Laundry order form view -->
+    <record id="laundry_order_view_form" model="ir.ui.view">
+        <field name="name">laundry.order.view.form</field>
+        <field name="model">laundry.order</field>
+        <field name="arch" type="xml">
+            <form string="Laundry Order">
+                <header>
+                    <button name="confirm_order" class="oe_highlight"
+                            string="Confirm Order" type="object"
+                            invisible="state not in 'draft'"/>
+                    <button name="action_create_invoice" class="oe_highlight"
+                            string="Create Invoice" type="object"
+                            invisible="(invoice_status == 'invoiced') or (state != 'done')"/>
+                    <button name="action_return_dress" string="Return"
+                            class="oe_highlight" type="object"
+                            invisible="state not in 'done'"/>
+                    <button name="action_cancel_order"
+                            string="Cancel"
+                            type="object"
+                            groups="laundry_management.group_laundry_manager"
+                                invisible="state not in ('draft','order')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,order,done,return"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name='action_view_laundry_works'
+                                class="oe_stat_button" type="object"
+                                icon="fa-money"
+                                invisible="state not in ('order','done','return','process') or work_count==0">
+                            <field string="Works" name="work_count"
+                                   widget="statinfo"/>
+                        </button>
+                        <button name='action_view_invoice'
+                                class="oe_stat_button" type="object"
+                                icon="fa-money"
+                                invisible="state not in ('done','return') or invoice_count==0">
+                            <field string="Invoice" name="invoice_count"
+                                   widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"
+                                   readonly="state in ['done','return','cancel']"/>
+                            <field name="partner_invoice_id"
+                                   context="{'default_type':'invoice'}"
+                                   readonly="state in ['done','return','cancel']"/>
+                            <field name="partner_shipping_id"
+                                   context="{'default_type':'delivery'}"
+                                   readonly="state in ['done','return','cancel']"/>
+                        </group>
+                        <group>
+                            <field name="order_date"
+                                   readonly="state != 'draft'"/>
+                            <field name="currency_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="laundry_person_id"
+                                   readonly="state in ['return', 'cancel']"/>
+                            <field name="invoice_status" invisible="1"/>
+                            <field name="sale_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Order Lines">
+                            <field name="order_line_ids"
+                                   readonly="state != 'draft'">
+                                <list string="Laundry Order Lines"
+                                      editable="bottom"
+                                      decoration-info="state == 'draft'"
+                                      colors="grey:state == 'done';black:state == 'extra_work';green:state == 'wash';">
+                                    <field name="product_id"/>
+                                    <field name="description"/>
+                                    <field name="qty"/>
+                                    <field name="washing_type_id"/>
+                                    <field name="extra_work_ids"
+                                           widget="many2many_tags"/>
+                                    <field name="state"/>
+                                    <field name="amount"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right"
+                                   colspan="2" name="laundry_total">
+                                <field name="total_amount" widget='monetary'
+                                       options="{'currency_field': 'currency_id'}"/>
+                            </group>
+                            <field name="note" class="oe_inline"
+                                   placeholder="Setup default terms and conditions in your company settings."/>
+                            <div class="oe_clear"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- Laundry order list view -->
+    <record id="laundry_order_view_list" model="ir.ui.view">
+        <field name="name">laundry.order.view.list</field>
+        <field name="model">laundry.order</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'draft'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="order_date"/>
+                <field name="laundry_person_id"/>
+                <field name="total_amount"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+    <!--    Action for Laundry Order-->
+    <record id="laundry_order_action" model="ir.actions.act_window">
+        <field name="name">Laundry Management</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">laundry.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[]</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to create a New Order.
+            </p>
+        </field>
+    </record>
+    <!--    Defined Menus-->
+    <menuitem id="laundry_management_menu" name="Laundry Management"
+              web_icon="laundry_management,static/description/icon.png"/>
+    <menuitem id="laundry_management_sub_menu" name="Laundry Management"
+              parent="laundry_management_menu" sequence="1"/>
+    <menuitem id="laundry_management_menu_order" name="Laundry Order"
+              parent="laundry_management_sub_menu"
+              action="laundry_order_action" sequence="1"/>
+</odoo>
