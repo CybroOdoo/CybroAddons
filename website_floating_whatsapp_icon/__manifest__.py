@@ -42,7 +42,7 @@
             '/website_floating_whatsapp_icon/static/src/css/website_floating_whatsapp_icon.css',
         ],
     },
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
