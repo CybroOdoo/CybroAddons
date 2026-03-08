@@ -41,7 +41,7 @@
             'report/vat_invoice_report_templates.xml',
             'report/simplified_tax_report_templates.xml',
             ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'application': False,
