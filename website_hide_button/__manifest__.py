@@ -38,7 +38,7 @@
         'views/shop_templates.xml',
         'views/res_config_settings_views.xml'
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
