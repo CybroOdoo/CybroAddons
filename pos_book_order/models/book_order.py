@@ -23,6 +23,10 @@ from odoo import api, fields, models
 from odoo.fields import Command
 
 
+from odoo import api, fields, models
+from odoo.fields import Command
+
+
 class BookOrder(models.Model):
     """
        Model for managing booked orders in the POS system.
@@ -63,7 +67,7 @@ class BookOrder(models.Model):
                              default=fields.Date.today())
     amount_tax = fields.Float(compute='_compute_amount_all', string='Taxes',
                               help="Tax amount for the order",
-                              dig06its=0, default=1.2)
+                              digits=0, default=1.2)
     amount_total = fields.Float(compute='_compute_amount_all', string='Total',
                                 help="Total amount of the order",
                                 digits=0)
@@ -87,7 +91,7 @@ class BookOrder(models.Model):
                                               "for order",
                                          string='Fiscal Position')
     pos_order_uid = fields.Char(help="Related Pos order",
-                                         string='Related Pos order')
+                                string='Related Pos order')
     pickup_date = fields.Datetime(string='Pickup Date', readonly=True,
                                   help="Picking date of the order")
     deliver_date = fields.Datetime(string='Deliver Date', readonly=True,
@@ -125,16 +129,16 @@ class BookOrder(models.Model):
         return super(BookOrder, self).create(vals)
 
     def action_confirm(self):
-        """ Function to confirm the book order"""
+        """ Function to confirm the book order """
         self.write({
             'state': 'confirmed',
         })
         return self.pos_order_uid
 
-
     @api.model
     def create_booked_order(self, partner, phone, address, date, price_list,
-                            product, note, pickup_date, delivery_date,pos_order):
+                            product, note, pickup_date, pickup_time,
+                            delivery_date, delivery_time, pos_order):
         """ It creates a booked order based on the value in the booking popup
              in PoS ui.
              partner(int): id of partner
@@ -142,10 +146,13 @@ class BookOrder(models.Model):
              address(string): contact address of the customer
              date(date): ordered date
              price_list(int): price list id of order
-             product(dict): dictionary values with product ids and  quantity
+             product(dict): dictionary values with product ids and quantity
              note(string): Order note
-             pickup(date): pickup date of the booked order
-             delivery(date): delivery date of the booked order
+             pickup_date(date): pickup date of the booked order
+             pickup_time(string): pickup time in HH:MM format
+             delivery_date(date): delivery date of the booked order
+             delivery_time(string): delivery time in HH:MM format
+             pos_order: related pos order uid
         """
         order = self.create({
             'partner_id': partner,
@@ -153,7 +160,7 @@ class BookOrder(models.Model):
             'delivery_address': address,
             'pricelist_id': price_list if price_list else False,
             'date_quotation': fields.Date.today(),
-            'pos_order_uid':pos_order,
+            'pos_order_uid': pos_order,
             'book_line_ids': [Command.create({
                 'product_id': product['product_id'][i],
                 'qty': product['qty'][i],
@@ -162,9 +169,11 @@ class BookOrder(models.Model):
             'note': note,
         })
         if pickup_date:
-            order.write({'pickup_date': pickup_date + ' 00:00:00'})
+            time_str = pickup_time if pickup_time else '00:00'
+            order.write({'pickup_date': '{} {}:00'.format(pickup_date, time_str)})
         if delivery_date:
-            order.write({'deliver_date': delivery_date + ' 00:00:00'})
+            time_str = delivery_time if delivery_time else '00:00'    # NEW
+            order.write({'deliver_date': '{} {}:00'.format(delivery_date, time_str)})  # NEW
         return order.name
 
     @api.model
@@ -182,17 +191,28 @@ class BookOrder(models.Model):
                     'qty': line.qty,
                     'price': line.price_unit
                 })
-            values.append({'id': rec.id,
-                           'name': rec.name,
-                           'partner_id': rec.partner_id.id,
-                           'partner_name': rec.partner_id.name,
-                           'address': rec.delivery_address,
-                           'note': rec.note,
-                           'phone': rec.phone,
-                           'date': rec.date_quotation,
-                           'pickup': rec.pickup_date,
-                           'deliver': rec.deliver_date,
-                           'products': products,
-                           'total': rec.amount_total
-                           })
+            # Format pickup datetime to show both date and time
+            pickup_display = False
+            if rec.pickup_date:
+                pickup_display = rec.pickup_date.strftime('%Y-%m-%d %H:%M')
+
+            # Format deliver datetime to show both date and time
+            deliver_display = False
+            if rec.deliver_date:
+                deliver_display = rec.deliver_date.strftime('%Y-%m-%d %H:%M')
+
+            values.append({
+                'id': rec.id,
+                'name': rec.name,
+                'partner_id': rec.partner_id.id,
+                'partner_name': rec.partner_id.name,
+                'address': rec.delivery_address,
+                'note': rec.note,
+                'phone': rec.phone,
+                'date': rec.date_quotation,
+                'pickup': pickup_display,
+                'deliver': deliver_display,
+                'products': products,
+                'total': rec.amount_total
+            })
         return values

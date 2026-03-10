@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'POS Booking Order',
-    'version': '17.0.1.0.0',
+    'version': '17.0.2.0.0',
     'category': 'Point of Sale',
     'summary': """From a POS session, users can create pickup or 
     delivery orders, which they can then confirm as POS orders.""",

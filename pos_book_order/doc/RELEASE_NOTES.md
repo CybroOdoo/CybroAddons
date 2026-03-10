@@ -5,3 +5,8 @@
 ##### ADD
 - Initial Commit for POS Booking Order
 
+
+#### 05.03.2026
+#### Version 17.0.2.0.0
+##### UPDT
+- Updated the pos booking order with  pickup and delivery time 
