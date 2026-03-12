@@ -9,3 +9,8 @@
 #### Version 16.0.1.0.1
 ##### BUG_FIX
 - Issue resolved where Amount Due was incorrectly displayed as a negative value after the credit note had been fully settled.
+
+#### 19.02.2026
+#### Version 16.0.1.0.2
+##### BUG_FIX
+- Resolved the module issue where the amount due was incorrectly displayed for credit notes by mapping it to the amount_residual field in account.move.

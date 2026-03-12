@@ -80,19 +80,38 @@ class SaleOrder(models.Model):
             else:
                 order.payment_status = 'No invoice'
 
-    @api.depends('invoice_ids')
+    @api.depends(
+        'invoice_ids',
+        'invoice_ids.state',
+        'invoice_ids.move_type',
+        'invoice_ids.amount_residual',
+        'invoice_ids.payment_state',
+    )
     def _compute_invoice_state_and_amount_due(self):
         for rec in self:
-            amount_due = 0.0
             rec.invoice_state = 'No invoice'
 
-            valid_invoices = rec.invoice_ids.filtered(
+            posted_invoices = rec.invoice_ids.filtered(
                 lambda inv: inv.state == 'posted' and inv.move_type == 'out_invoice'
             )
+            posted_refunds = rec.invoice_ids.filtered(
+                lambda inv: inv.state == 'posted' and inv.move_type == 'out_refund'
+            )
 
-            if valid_invoices:
+            if posted_invoices:
                 rec.invoice_state = 'posted'
-            rec.amount_due = sum(valid_invoices.mapped('amount_residual'))
+
+            invoice_residual = sum(posted_invoices.mapped('amount_residual'))
+            refund_residual = sum(posted_refunds.mapped('amount_residual'))
+
+            # Subtract unreconciled credit note balances from total due
+            rec.amount_due = abs(invoice_residual - refund_residual)
+
+            print(f"[SALE ORDER] {rec.name} | amount_due: {rec.amount_due}")
+            for inv in posted_invoices:
+                print(f"[INVOICE] {inv.name} | amount_residual: {inv.amount_residual}")
+            for ref in posted_refunds:
+                print(f"[REFUND] {ref.name} | amount_residual: {ref.amount_residual}")
 
     def action_open_business_doc(self):
         """ This method is intended to be used in the context of an
