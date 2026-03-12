@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- LIST VIEW                                               -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <record id="view_anomaly_alert_list" model="ir.ui.view">
+        <field name="name">account.anomaly.alert.list</field>
+        <field name="model">account.anomaly.alert</field>
+        <field name="arch" type="xml">
+            <list string="Anomaly Alerts"
+                  decoration-danger="risk_level == 'critical'"
+                  decoration-warning="risk_level == 'high'"
+                  decoration-info="risk_level == 'medium'"
+                  default_order="anomaly_score desc, detected_date desc">
+                <header>
+                    <button name="action_batch_resolve" type="object"
+                            string="Mark Selected as Resolved"
+                            groups="account_anomaly_detector.group_anomaly_investigator"/>
+                    <button name="action_batch_false_positive" type="object"
+                            string="Mark as False Positive"
+                            groups="account_anomaly_detector.group_anomaly_investigator"/>
+                </header>
+                <field name="title"/>
+                <field name="alert_type"/>
+                <field name="risk_level" widget="badge"
+                       decoration-danger="risk_level == 'critical'"
+                       decoration-warning="risk_level == 'high'"
+                       decoration-info="risk_level == 'medium'"
+                       decoration-success="risk_level == 'low'"/>
+                <field name="anomaly_score" widget="progressbar"
+                       options="{'editable': false, 'current_value': 'anomaly_score', 'max_value': 100}"/>
+                <field name="move_id"/>
+                <field name="partner_id"/>
+                <field name="move_amount" widget="monetary"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="move_date"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'resolved'"
+                       decoration-danger="state == 'escalated'"
+                       decoration-info="state == 'investigating'"
+                       decoration-muted="state == 'false_positive'"/>
+                <field name="assigned_to" widget="many2one_avatar_user"/>
+                <field name="days_open"/>
+                <field name="detected_date"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- FORM VIEW                                               -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <record id="view_anomaly_alert_form" model="ir.ui.view">
+        <field name="name">account.anomaly.alert.form</field>
+        <field name="model">account.anomaly.alert</field>
+        <field name="arch" type="xml">
+            <form string="Anomaly Alert">
+                <header>
+                    <button name="action_investigate" type="object"
+                            string="Start Investigation"
+                            class="btn-primary"
+                            invisible="state != 'open'"
+                            groups="account_anomaly_detector.group_anomaly_investigator"/>
+                    <button name="action_resolve" type="object"
+                            string="Mark as Resolved"
+                            class="btn-success"
+                            invisible="state not in ['open', 'investigating', 'escalated']"
+                            groups="account_anomaly_detector.group_anomaly_investigator"/>
+                    <button name="action_mark_false_positive" type="object"
+                            string="False Positive"
+                            invisible="state not in ['open', 'investigating']"
+                            groups="account_anomaly_detector.group_anomaly_investigator"/>
+                    <button name="action_escalate" type="object"
+                            string="Escalate"
+                            class="btn-warning"
+                            invisible="state not in ['open', 'investigating']"
+                            groups="account_anomaly_detector.group_anomaly_investigator"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="open,investigating,escalated,resolved"/>
+                </header>
+                <sheet>
+                    <!-- Risk Banner -->
+                    <div class="alert alert-danger mb-3" role="alert"
+                         invisible="risk_level != 'critical'">
+                        <strong>🚨 CRITICAL RISK</strong> — This alert requires immediate attention.
+                    </div>
+                    <div class="alert alert-warning mb-3" role="alert"
+                         invisible="risk_level != 'high'">
+                        <strong>⚠️ HIGH RISK</strong> — This alert should be reviewed promptly.
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="alert_type_icon" readonly="1" nolabel="1"/>
+                            <field name="title" placeholder="Alert Title..."/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Alert Details">
+                            <field name="alert_type"/>
+                            <field name="risk_level" widget="priority"/>
+                            <field name="anomaly_score" widget="progressbar"
+                                   options="{'editable': false, 'current_value': 'anomaly_score', 'max_value': 100}"/>
+                            <field name="detected_date"/>
+                            <field name="days_open"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Assignment">
+                            <field name="assigned_to" widget="many2one_avatar_user"/>
+                            <field name="reviewed_by" widget="many2one_avatar_user"/>
+                            <field name="resolved_date" invisible="state not in ['resolved', 'false_positive']"/>
+                        </group>
+                    </group>
+
+                    <group string="Transaction Details">
+                        <group>
+                            <field name="move_id"/>
+                            <field name="partner_id"/>
+                            <field name="move_amount" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="move_date"/>
+                            <field name="move_ref"/>
+                        </group>
+                        <group>
+                            <button name="action_view_journal_entry"
+                                    type="object"
+                                    string="📂 Open Journal Entry"
+                                    class="btn-secondary"
+                                    invisible="not move_id"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Anomaly Description" name="description">
+                            <field name="description" placeholder="Detailed anomaly description..."/>
+                        </page>
+                        <page string="Related Transactions" name="related"
+                              invisible="not related_move_ids">
+                            <field name="related_move_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="partner_id"/>
+                                    <field name="amount_total" widget="monetary"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Resolution Notes" name="resolution">
+                            <field name="resolution_note"
+                                   placeholder="Enter resolution notes, findings, or justification..."/>
+                        </page>
+                        <page string="ML Analysis" name="ml">
+                            <group>
+                                <field name="detection_method"/>
+                            </group>
+                            <field name="ml_details" readonly="1"
+                                   placeholder="Machine learning analysis details will appear here."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- KANBAN VIEW                                             -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <record id="view_anomaly_alert_kanban" model="ir.ui.view">
+        <field name="name">account.anomaly.alert.kanban</field>
+        <field name="model">account.anomaly.alert</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="risk_level"
+                    class="o_kanban_small_column"
+                    quick_create="false">
+                <field name="title"/>
+                <field name="risk_level"/>
+                <field name="alert_type"/>
+                <field name="anomaly_score"/>
+                <field name="move_amount"/>
+                <field name="currency_id"/>
+                <field name="partner_id"/>
+                <field name="state"/>
+                <field name="detected_date"/>
+                <field name="assigned_to"/>
+                <field name="days_open"/>
+                <templates>
+                    <t t-name="card">
+                        <div t-attf-class="oe_kanban_card #{record.risk_level.raw_value == 'critical' ? 'border-danger' : record.risk_level.raw_value == 'high' ? 'border-warning' : ''}">
+                            <div class="d-flex justify-content-between">
+                                <strong>
+                                    <field name="alert_type_icon"/>
+                                    <field name="title"/>
+                                </strong>
+                                <span t-attf-class="badge #{record.risk_level.raw_value == 'critical' ? 'bg-danger' : record.risk_level.raw_value == 'high' ? 'bg-warning' : 'bg-info'}">
+                                    <field name="risk_level"/>
+                                </span>
+                            </div>
+                            <hr class="mt-1 mb-1"/>
+                            <div class="o_kanban_record_body">
+                                <div t-if="record.partner_id.value">
+                                    <i class="fa fa-user"/> <field name="partner_id"/>
+                                </div>
+                                <div>
+                                    <i class="fa fa-dollar"/> <field name="move_amount" widget="monetary"/>
+                                </div>
+                                <div>
+                                    Score: <field name="anomaly_score"/>/100
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_bottom mt-2">
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="assigned_to" widget="many2one_avatar_user"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <span class="text-muted small">
+                                        <field name="days_open"/> days open
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- SEARCH VIEW                                             -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <record id="view_anomaly_alert_search" model="ir.ui.view">
+        <field name="name">account.anomaly.alert.search</field>
+        <field name="model">account.anomaly.alert</field>
+        <field name="arch" type="xml">
+            <search string="Search Anomaly Alerts">
+                <field name="title"/>
+                <field name="partner_id"/>
+                <field name="move_id"/>
+                <field name="assigned_to"/>
+
+                <filter name="open" string="Open"
+                        domain="[('state', '=', 'open')]"/>
+                <filter name="investigating" string="Under Investigation"
+                        domain="[('state', '=', 'investigating')]"/>
+                <filter name="escalated" string="Escalated"
+                        domain="[('state', '=', 'escalated')]"/>
+                <filter name="active_alerts" string="All Active"
+                        domain="[('state', 'in', ['open', 'investigating', 'escalated'])]"/>
+                <separator/>
+                <filter name="critical" string="Critical"
+                        domain="[('risk_level', '=', 'critical')]"/>
+                <filter name="high" string="High Risk"
+                        domain="[('risk_level', '=', 'high')]"/>
+                <separator/>
+                <filter name="my_alerts" string="Assigned to Me"
+                        domain="[('assigned_to', '=', uid)]"/>
+                <filter name="unassigned" string="Unassigned"
+                        domain="[('assigned_to', '=', False)]"/>
+                <separator/>
+                <filter name="duplicates" string="Duplicate Bills"
+                        domain="[('alert_type', '=', 'duplicate_vendor_bill')]"/>
+                <filter name="amount_outliers" string="Amount Outliers"
+                        domain="[('alert_type', '=', 'amount_outlier')]"/>
+                <separator/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- ACTIONS                                                 -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <record id="action_anomaly_alerts" model="ir.actions.act_window">
+        <field name="name">Anomaly Alerts</field>
+        <field name="res_model">account.anomaly.alert</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('state', 'in', ['open', 'investigating', 'escalated'])]</field>
+        <field name="context">{'search_default_active_alerts': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No anomaly alerts detected!
+            </p>
+            <p>Run an anomaly scan to check your general ledger for suspicious transactions.</p>
+        </field>
+    </record>
+
+    <record id="action_all_anomaly_alerts" model="ir.actions.act_window">
+        <field name="name">All Alerts</field>
+        <field name="res_model">account.anomaly.alert</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No alerts found.</p>
+        </field>
+    </record>
+</odoo>
