@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--Inherited Form view project_task_form-->
+    <record id="view_task_form2" model="ir.ui.view">
+        <field name="name">project.task.view.form.inherit.task.overdue.email.odoo</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_ids']" position="after">
+                <field name="is_completed_task" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//header" position="inside">
+                <button name="action_task_completed" string="Task Completed"
+                        type="object" class="oe_highlight"
+                        invisible="is_completed_task != False"/>
+
+            </xpath>
+            <xpath expr="//div[hasclass('oe_button_box')]" position="before">
+                <widget name="web_ribbon" title="Completed" bg_color="bg-success"
+                        invisible="is_completed_task == False"/>
+            </xpath>
+
+        </field>
+    </record>
+    <!--Inherited the search filter to add 2 more fields in the tree search form-->
+    <record id="view_task_search_form" model="ir.ui.view">
+        <field name="name">project.task.view.search.inherit.task.overdue.email.odoo</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_search_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='unassigned']" position="after">
+                <filter string="Completed" name="completed_task"
+                        domain="[('is_completed_task','=',True)]"/>
+                <filter string="Not Completed" name="not_completed_task"
+                        domain="[('is_completed_task','!=',True)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
