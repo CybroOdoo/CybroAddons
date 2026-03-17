@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- FORM VIEW -->
+    <record id="view_churn_score_form" model="ir.ui.view">
+        <field name="name">churn.score.form</field>
+        <field name="model">churn.score</field>
+        <field name="arch" type="xml">
+            <form string="Customer Churn Score">
+                <header>
+                    <button name="action_compute_score"
+                            string="Recalculate Score"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-refresh"/>
+                    <field name="risk_level" widget="statusbar"
+                           statusbar_visible="low,medium,high,critical"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box"/>
+
+                    <!-- Risk badge -->
+                    <div class="oe_title">
+                        <h1>
+                            <field name="partner_id" readonly="1"/>
+                        </h1>
+                        <h2>
+                            <span class="badge"
+                                  invisible="risk_level == False">
+                                Churn Score:
+                                <field name="churn_score" nolabel="1"
+                                       widget="float" digits="[6,1]"/>
+                                / 100
+                            </span>
+                        </h2>
+                    </div>
+
+                    <group>
+                        <group string="Risk Assessment">
+                            <field name="risk_level"
+                                   decoration-danger="risk_level == 'critical'"
+                                   decoration-warning="risk_level == 'high'"
+                                   decoration-info="risk_level == 'medium'"
+                                   decoration-success="risk_level == 'low'"/>
+                            <field name="churn_score" widget="float"
+                                   digits="[6,1]"/>
+                            <field name="score_date"/>
+                            <field name="alert_sent"/>
+                        </group>
+                        <group string="Account">
+                            <field name="user_id" readonly="1"/>
+                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+
+                    <group string="Signal Details">
+                        <group string="Purchase &amp; Revenue">
+                            <field name="last_purchase_days"/>
+                            <field name="revenue_trend"
+                                   decoration-danger="revenue_trend == 'declining'"
+                                   decoration-success="revenue_trend == 'growing'"
+                                   decoration-muted="revenue_trend == 'stable'"/>
+                        </group>
+                        <group string="Support &amp; Engagement">
+                            <field name="ticket_count_90d"/>
+                            <field name="avg_resolution_time"/>
+                            <field name="last_contact_days"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Retention Recommendations" name="suggestions">
+                            <field name="suggested_actions"
+                                   widget="text"
+                                   placeholder="Run 'Recalculate Score' to generate recommendations…"
+                                   readonly="1"/>
+                        </page>
+
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- LIST VIEW -->
+    <record id="view_churn_score_list" model="ir.ui.view">
+        <field name="name">churn.score.list</field>
+        <field name="model">churn.score</field>
+        <field name="arch" type="xml">
+            <list string="Churn Risk Dashboard"
+                  decoration-danger="risk_level == 'critical'"
+                  decoration-warning="risk_level == 'high'"
+                  decoration-info="risk_level == 'medium'"
+                  decoration-success="risk_level == 'low'">
+                <field name="partner_id" string="Customer"/>
+                <field name="churn_score" string="Score" widget="float" digits="[6,1]"/>
+                <field name="risk_level" string="Risk Level" widget="badge"
+                       decoration-danger="risk_level == 'critical'"
+                       decoration-warning="risk_level == 'high'"
+                       decoration-info="risk_level == 'medium'"
+                       decoration-success="risk_level == 'low'"/>
+                <field name="last_purchase_days" string="Last Purchase (days)"/>
+                <field name="revenue_trend" string="Revenue Trend" widget="badge"
+                       decoration-danger="revenue_trend == 'declining'"
+                       decoration-success="revenue_trend == 'growing'"/>
+                <field name="ticket_count_90d" string="Tickets (90d)"/>
+                <field name="last_contact_days" string="Last Contact (days)"/>
+                <field name="user_id" string="Account Manager" optional="show"/>
+                <field name="score_date" string="Last Scored" optional="show"/>
+                <field name="alert_sent" string="Alert Sent" optional="show"/>
+                <button name="action_compute_score"
+                        string="Recalculate"
+                        type="object"
+                        icon="fa-refresh"
+                        title="Recalculate churn score"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- KANBAN VIEW -->
+    <record id="view_churn_score_kanban" model="ir.ui.view">
+        <field name="name">churn.score.kanban</field>
+        <field name="model">churn.score</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="risk_level"
+                    class="o_kanban_small_column"
+                    records_draggable="0">
+                <field name="partner_id"/>
+                <field name="churn_score"/>
+                <field name="risk_level"/>
+                <field name="revenue_trend"/>
+                <field name="last_purchase_days"/>
+                <field name="last_contact_days"/>
+                <field name="user_id"/>
+                <field name="color"/>
+                <field name="alert_sent"/>
+                <templates>
+                    <t t-name="card">
+                        <div t-attf-class="oe_kanban_color_#{record.color.raw_value} oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="partner_id"/>
+                                        </strong>
+                                    </div>
+                                    <div class="o_kanban_record_top_right">
+                                        <span t-attf-class="badge #{
+                                            record.risk_level.raw_value == 'critical' ? 'text-bg-danger' :
+                                            record.risk_level.raw_value == 'high'     ? 'text-bg-warning' :
+                                            record.risk_level.raw_value == 'medium'   ? 'text-bg-info' :
+                                                                                        'text-bg-success'}">
+                                            <field name="risk_level"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li>
+                                            <i class="fa fa-tachometer me-1"/>
+                                            Score: <strong><field name="churn_score" digits="[6,1]"/></strong> / 100
+                                        </li>
+                                        <li>
+                                            <i class="fa fa-shopping-cart me-1"/>
+                                            Last purchase: <field name="last_purchase_days"/> days ago
+                                        </li>
+                                        <li>
+                                            <i class="fa fa-envelope me-1"/>
+                                            Last contact: <field name="last_contact_days"/> days ago
+                                        </li>
+                                        <li>
+                                            <i class="fa fa-line-chart me-1"/>
+                                            Revenue: <field name="revenue_trend"/>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <field name="user_id" widget="many2one_avatar_user"/>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <t t-if="record.alert_sent.raw_value">
+                                            <span class="badge text-bg-secondary" title="Alert already sent">
+                                                <i class="fa fa-bell"/> Alerted
+                                            </span>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- SEARCH VIEW -->
+    <record id="view_churn_score_search" model="ir.ui.view">
+        <field name="name">churn.score.search</field>
+        <field name="model">churn.score</field>
+        <field name="arch" type="xml">
+            <search string="Search Churn Scores">
+                <!-- Quick search fields -->
+                <field name="partner_id" string="Customer"/>
+                <field name="user_id"    string="Account Manager"/>
+                <field name="risk_level"/>
+
+                <!-- Pre-defined filters -->
+                <separator/>
+                <filter string="Critical Risk"
+                        name="filter_critical"
+                        domain="[('risk_level', '=', 'critical')]"/>
+                <filter string="High Risk"
+                        name="filter_high"
+                        domain="[('risk_level', '=', 'high')]"/>
+                <filter string="Medium Risk"
+                        name="filter_medium"
+                        domain="[('risk_level', '=', 'medium')]"/>
+                <filter string="Low Risk"
+                        name="filter_low"
+                        domain="[('risk_level', '=', 'low')]"/>
+
+                <separator/>
+                <filter string="No Recent Purchase (&gt; 90 days)"
+                        name="filter_no_purchase"
+                        domain="[('last_purchase_days', '&gt;', 90)]"/>
+                <filter string="Uncontacted (&gt; 60 days)"
+                        name="filter_uncontacted"
+                        domain="[('last_contact_days', '&gt;', 60)]"/>
+                <filter string="Declining Revenue"
+                        name="filter_declining"
+                        domain="[('revenue_trend', '=', 'declining')]"/>
+                <filter string="Alert Not Yet Sent"
+                        name="filter_no_alert"
+                        domain="[('alert_sent', '=', False), ('risk_level', 'in', ['high', 'critical'])]"/>
+
+                <separator/>
+                <filter string="Scored Today"
+                        name="filter_today"
+                        domain="[('score_date', '=', today)]"/>
+
+                <!-- Group-by options -->
+                <group>
+                    <filter string="Risk Level"
+                            name="group_risk"
+                            context="{'group_by': 'risk_level'}"/>
+                    <filter string="Revenue Trend"
+                            name="group_revenue"
+                            context="{'group_by': 'revenue_trend'}"/>
+                    <filter string="Account Manager"
+                            name="group_manager"
+                            context="{'group_by': 'user_id'}"/>
+                    <filter string="Score Date"
+                            name="group_date"
+                            context="{'group_by': 'score_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- WINDOW ACTIONS -->
+
+    <!-- List/Kanban dashboard action -->
+    <record id="action_churn_score_dashboard" model="ir.actions.act_window">
+        <field name="name">Churn Predictor</field>
+        <field name="res_model">churn.score</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_churn_score_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No churn scores yet!
+            </p>
+            <p>
+                Run the daily scoring job or click
+                <strong>Recalculate Score</strong> on a customer record to get started.
+            </p>
+        </field>
+    </record>
+
+    <!-- Kanban-first action (for menu shortcut) -->
+    <record id="action_churn_score_kanban" model="ir.actions.act_window">
+        <field name="name">Risk Kanban Board</field>
+        <field name="res_model">churn.score</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'group_by': 'risk_level'}</field>
+        <field name="search_view_id" ref="view_churn_score_search"/>
+    </record>
+
+</odoo>

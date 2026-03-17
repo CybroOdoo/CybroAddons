@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         Record Rules for churn.score
+         ================================================================ -->
+
+    <!-- Churn Users see only scores for their own customers
+         (customers where partner.user_id == current user) -->
+    <record id="rule_churn_score_user" model="ir.rule">
+        <field name="name">Churn Score: Salesperson sees own customers</field>
+        <field name="model_id" ref="model_churn_score"/>
+        <field name="groups" eval="[(4, ref('crm_churn_predictor.group_churn_user'))]"/>
+        <field name="domain_force">
+            [('user_id', '=', user.id)]
+        </field>
+        <field name="perm_read"   eval="True"/>
+        <field name="perm_write"  eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- Churn Managers see ALL scores (no domain restriction) -->
+    <record id="rule_churn_score_manager" model="ir.rule">
+        <field name="name">Churn Score: Manager sees all</field>
+        <field name="model_id" ref="model_churn_score"/>
+        <field name="groups" eval="[(4, ref('crm_churn_predictor.group_churn_manager'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read"   eval="True"/>
+        <field name="perm_write"  eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+</odoo>
