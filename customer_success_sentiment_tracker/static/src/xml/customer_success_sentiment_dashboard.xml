@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!--Dashboard Template-->
+    <t t-name="customer_success_sentiment_tracker.Dashboard">
+        <div class="container-fluid p-3 p-lg-4 pt-4 pt-lg-5 bg-light d-flex flex-column h-100"
+             style="overflow-y: auto; overflow-x: hidden;">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 mb-lg-5 px-2 flex-shrink-0 gap-3">
+                <div>
+                    <h2 class="fw-bolder text-dark mb-2">Customer Sentiment Analytics Dashboard</h2>
+                    <div class="text-muted fw-medium" style="font-size: 1rem;">
+                        AI-powered analysis of support tickets and account risk
+                    </div>
+                </div>
+                <button class="btn btn-dark rounded-pill px-4 py-2 d-flex align-items-center gap-2"
+                        t-on-click="loadData"
+                        t-att-disabled="state.loading"
+                        style="box-shadow: 0 4px 12px rgba(33, 37, 41, 0.2);">
+                    <i class="fa fa-refresh" t-att-class="state.loading ? 'fa-spin' : ''"/>
+                    <span>Refresh Data</span>
+                </button>
+            </div>
+            <div class="row g-4 mb-4 mb-lg-5 px-2 flex-shrink-0">
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card rounded-4 h-100 bg-white" role="button"
+                         t-on-click="openHighRisk"
+                         style="border: none; border-top: 5px solid #dc3545; border-left: 5px solid #dc3545; box-shadow: 0 10px 30px rgba(0,0,0,0.06);">
+                        <div class="card-body p-4 d-flex flex-column justify-content-center">
+                            <div class="text-danger fw-bold text-uppercase mb-2"
+                                 style="font-size: 0.8rem; letter-spacing: 1px;">Critical Tickets</div>
+                            <div class="display-4 fw-bolder text-danger"><t t-esc="state.high_risk"/></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card rounded-4 h-100 bg-white" role="button"
+                         t-on-click="openMediumRisk"
+                         style="border: none; border-top: 5px solid #ffc107; border-left: 5px solid #ffc107; box-shadow: 0 10px 30px rgba(0,0,0,0.06);">
+                        <div class="card-body p-4 d-flex flex-column justify-content-center">
+                            <div class="text-warning fw-bold text-uppercase mb-2"
+                                 style="font-size: 0.8rem; letter-spacing: 1px;">Attention Needed</div>
+                            <div class="display-4 fw-bolder text-warning"><t t-esc="state.medium_risk"/></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card rounded-4 h-100 bg-white" role="button"
+                         t-on-click="openAllTickets"
+                         style="border: none; border-top: 5px solid #0dcaf0; border-left: 5px solid #0dcaf0; box-shadow: 0 10px 30px rgba(0,0,0,0.06);">
+                        <div class="card-body p-4 d-flex flex-column justify-content-center">
+                            <div class="text-info fw-bold text-uppercase mb-2"
+                                 style="font-size: 0.8rem; letter-spacing: 1px;">Open Tickets</div>
+                            <div class="display-4 fw-bolder text-info"><t t-esc="state.total"/></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card rounded-4 h-100 bg-white" role="button"
+                         t-on-click="openCustomersAtRisk"
+                         style="border: none; border-top: 5px solid #6f42c1; border-left: 5px solid #6f42c1; box-shadow: 0 10px 30px rgba(0,0,0,0.06);">
+                        <div class="card-body p-4 d-flex flex-column justify-content-center">
+                            <div class="fw-bold text-uppercase mb-2"
+                                 style="color: #6f42c1; font-size: 0.8rem; letter-spacing: 1px;">At-Risk Customers</div>
+                            <div class="display-4 fw-bolder" style="color: #6f42c1;"><t t-esc="state.customers_at_risk"/></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-4 px-2 pb-4 flex-grow-1" style="min-height: 0;">
+                <div class="col-xl-4 col-lg-5">
+                    <div class="card border-0 rounded-4 p-4 bg-white h-100 d-flex flex-column shadow-sm">
+                        <h5 class="fw-bold text-dark mb-4 flex-shrink-0">Open Ticket Sentiment</h5>
+                        <div class="position-relative flex-grow-1 d-flex align-items-center justify-content-center bg-light rounded-4 p-3"
+                             style="min-height: 0; border: 1px solid rgba(0,0,0,0.03);">
+                            <canvas t-ref="doughnutChart"></canvas>
+                            <div class="position-absolute top-50 start-50 translate-middle text-center mt-2"
+                                 style="pointer-events: none;">
+                                <div class="fs-1 fw-bolder text-dark lh-1"><t t-esc="state.total"/></div>
+                                <div class="text-muted fw-bold text-uppercase"
+                                     style="font-size: 0.7rem; letter-spacing: 1px;">Total</div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-center gap-3 mt-4 flex-shrink-0">
+                            <span class="small text-muted"><i class="fa fa-circle text-success me-1"></i>
+                                Positive</span>
+                            <span class="small text-muted"><i class="fa fa-circle text-secondary me-1"></i>
+                                Neutral</span>
+                            <span class="small text-muted"><i class="fa fa-circle text-danger me-1"></i>
+                                Negative</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-8 col-lg-7">
+                    <div class="card border-0 rounded-4 h-100 bg-white d-flex flex-column shadow-sm">
+                        <div class="card-header bg-white border-bottom pt-4 pb-3 px-4 flex-shrink-0 d-flex justify-content-between align-items-center">
+
+                            <h5 class="fw-bold text-dark mb-0">Top 5 At-Risk Customers</h5>
+                        </div>
+                        <div class="card-body p-0 d-flex flex-column">
+                            <div class="table-responsive flex-grow-1 d-flex flex-column">
+
+                                <table class="table table-hover table-borderless align-middle mb-0 flex-grow-1">
+                                    <thead class="bg-light text-muted text-uppercase"
+                                           style="font-size: 0.75rem; letter-spacing: 0.5px; position: sticky; top: 0; z-index: 1;">
+                                        <tr>
+                                            <th class="px-4 py-3 fw-bold">Customer Name</th>
+                                            <th class="py-3 fw-bold text-center">Health Status</th>
+                                            <th class="px-4 py-3 fw-bold text-end">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-if="state.top_customers.length === 0">
+                                            <tr>
+                                                <td colspan="3"
+                                                    class="text-center text-muted py-5 border-0">
+                                                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3 mt-4"
+                                                         style="width: 72px; height: 72px;">
+                                                        <i class="fa fa-check fa-2x text-success"/>
+                                                    </div>
+                                                    <h5 class="fw-bold text-dark mt-2">All Clear!</h5>
+                                                    <p class="mb-4 text-muted">No customers currently flagged or at risk.</p>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <t t-foreach="state.top_customers" t-as="partner"
+                                           t-key="partner.id">
+                                            <tr class="border-bottom" style="cursor: pointer;"
+                                                t-on-click="() => this.openPartner(partner.id)">
+                                                <td class="px-4">
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <img t-attf-src="/web/image/res.partner/{{partner.id}}/avatar_128"
+                                                             class="rounded-circle shadow-sm border border-secondary border-opacity-25"
+                                                             style="width: 42px; height: 42px; object-fit: cover;"
+                                                             t-att-alt="partner.name"/>
+                                                        <span class="fw-bold text-dark"
+                                                              style="font-size: 1.05rem;"><t t-esc="partner.name"/></span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span t-attf-class="badge rounded-pill px-3 py-2 border {{ partner.badge_class }}"
+                                                          style="font-size: 0.85rem;">
+                                                        <t t-esc="partner.customer_health_label"/>
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 text-end">
+                                                    <button class="btn btn-sm btn-outline-dark rounded-pill px-3 py-1 fw-medium">
+                                                        Review Profile
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
