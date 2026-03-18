@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_payment_risk_score_tree" model="ir.ui.view">
+        <field name="name">payment.risk.score.tree</field>
+        <field name="model">payment.risk.score</field>
+        <field name="arch" type="xml">
+            <list string="AI Payment Risk Scores"
+                  decoration-danger="risk_level == 'critical'"
+                  decoration-warning="risk_level == 'high'"
+                  decoration-info="risk_level == 'medium'"
+                  default_order="score desc">
+                <field name="partner_id"/>
+                <field name="score" widget="progressbar" options="{'max_value': 100}"/>
+                <field name="risk_level" widget="badge"
+                       decoration-danger="risk_level == 'critical'"
+                       decoration-warning="risk_level == 'high'"
+                       decoration-info="risk_level == 'medium'"
+                       decoration-success="risk_level == 'low'"/>
+                <field name="ai_powered" string="AI" optional="show"/>
+                <field name="avg_delay_days"/>
+                <field name="currently_overdue"/>
+                <field name="total_overdue_amount" widget="monetary"/>
+                <field name="suggested_credit_limit" widget="monetary"/>
+                <field name="last_computed"/>
+                <field name="currency_id" invisible="1"/>
+                <button name="action_compute_score" type="object"
+                        string="Re-score" icon="fa-magic" class="btn-sm btn-primary"/>
+                <button name="action_send_followup" type="object"
+                        string="Follow-up" icon="fa-envelope" class="btn-sm"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_payment_risk_score_form" model="ir.ui.view">
+        <field name="name">payment.risk.score.form</field>
+        <field name="model">payment.risk.score</field>
+        <field name="arch" type="xml">
+            <form string="AI Payment Risk Score">
+                <header>
+                    <button name="action_compute_score" type="object"
+                            string="Re-score with AI" class="btn-primary" icon="fa-magic"/>
+                    <button name="action_send_followup" type="object"
+                            string="Send AI Follow-up" class="btn-secondary" icon="fa-envelope"/>
+                </header>
+                <sheet>
+                    <field name="is_gemini_configured" invisible="1"/>
+                    <div class="alert alert-primary d-flex align-items-center gap-2 mb-3"
+                         invisible = "not ai_powered"
+                         style="background:linear-gradient(135deg,#eef2ff,#e0e7ff);border-left:5px solid #4f46e5;">
+                        <i class="fa fa-magic" style="font-size:1.3rem;color:#4f46e5;"/>
+                        <strong style="color:#4285F4;">Scored by Google Gemini AI</strong> <span class="text-muted small">(<field name="ai_backend" class="d-inline" readonly="1"/>)</span>
+                        <span class="text-muted small ms-2">Last updated:
+                            <field name="last_computed" widget="datetime" class="d-inline"/>
+                        </span>
+                    </div>
+                    <!-- Alert 1: Gemini NOT configured -->
+                    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3"
+                         invisible = "is_gemini_configured or ai_powered">
+                        <i class="fa fa-exclamation-triangle"/>
+                        <strong>Gemini AI not configured — add your free API key in Settings → Payment Risk AI.</strong>
+                    </div>
+                    <!-- Alert 2: Gemini IS configured but record not AI-scored -->
+                    <div class="alert alert-warning d-flex align-items-center gap-2 mb-3"
+                         invisible = "not is_gemini_configured or ai_powered or not total_invoices">
+                        <i class="fa fa-info-circle"/>
+                        <strong>Record not scored by AI — Click 'Re-score with AI' to use Google Gemini.</strong>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1><field name="partner_id" readonly="1"/></h1>
+                    </div>
+
+                    <div class="row align-items-stretch mb-3 g-2">
+                        <div class="col-lg-3 text-center p-3 rounded border">
+                            <field name="score" widget="gauge"
+                                   options="{'max_value': 100, 'style_string': 'width:170px;height:120px'}"/>
+                            <div class="mt-1 fs-4 fw-bold">
+                                <field name="score" digits="[5,0]"/> / 100
+                            </div>
+                            <field name="risk_level" widget="badge"
+                                   decoration-danger="risk_level == 'critical'"
+                                   decoration-warning="risk_level == 'high'"
+                                   decoration-info="risk_level == 'medium'"
+                                   decoration-success="risk_level == 'low'"/>
+                        </div>
+                        <div class="col p-3 rounded border">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="text-muted small">Avg Delay</div>
+                                    <div class="fw-bold fs-5"><field name="avg_delay_days"/> days</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-muted small">Total Overdue</div>
+                                    <div class="fw-bold fs-5 text-danger">
+                                        <field name="total_overdue_amount" widget="monetary"/>
+                                        <field name="currency_id" invisible="1"/>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-muted small">Overdue Invoices</div>
+                                    <div class="fw-bold fs-5"><field name="currently_overdue"/></div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-muted small">AI Credit Limit</div>
+                                    <div class="fw-bold fs-5">
+                                        <field name="suggested_credit_limit" widget="monetary"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded p-3 mb-3"
+                         invisible = "not ai_reasoning"
+                         style="background:#eef2ff;border-left:5px solid #4f46e5;">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="fa fa-comment text-primary"/>
+                            <strong class="text-primary">Gemini AI Reasoning</strong>
+                        </div>
+                        <field name="ai_reasoning" widget="text" readonly="1" nolabel="1"/>
+                    </div>
+
+                    <group>
+                        <group string="Score Breakdown">
+                            <field name="delay_score"       widget="progressbar" options="{'max_value': 30}"/>
+                            <field name="overdue_score"     widget="progressbar" options="{'max_value': 25}"/>
+                            <field name="consistency_score" widget="progressbar" options="{'max_value': 15}"/>
+                            <field name="recency_score"     widget="progressbar" options="{'max_value': 15}"/>
+                            <field name="volume_score"      widget="progressbar" options="{'max_value': 10}"/>
+                            <field name="trend_score"/>
+                        </group>
+                        <group string="Invoice Statistics">
+                            <field name="total_invoices"/>
+                            <field name="paid_on_time"/>
+                            <field name="paid_late"/>
+                            <field name="currently_overdue"/>
+                            <field name="avg_delay_days"/>
+                            <field name="max_delay_days"/>
+                            <field name="overdue_ratio"/>
+                            <field name="last_payment_date"/>
+                            <field name="days_since_last_payment"/>
+                        </group>
+                    </group>
+
+                    <group string="AI Follow-up Recommendation"
+                           invisible = "not followup_suggestion">
+                        <field name="followup_suggestion" nolabel="1" widget="text" readonly="1" colspan="2"/>
+                    </group>
+
+                    <group string="AI-Drafted Email" invisible = "not followup_email">
+                        <div class="alert alert-info rounded-3" style="white-space: nowrap;">
+                            <i class="fa fa-info-circle"/> Drafted by Google Gemini AI — review before sending.
+                        </div>
+                        <field name="followup_email" nolabel="1" widget="text" readonly="1" colspan="2"/>
+                    </group>
+
+                    <group string="Internal Notes">
+                        <field name="notes" nolabel="1" widget="text" colspan="2"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_payment_risk_score_search" model="ir.ui.view">
+        <field name="name">payment.risk.score.search</field>
+        <field name="model">payment.risk.score</field>
+        <field name="arch" type="xml">
+            <search string="AI Payment Risk Scores">
+                <field name="partner_id"/>
+                <filter string="Critical"     name="critical"  domain="[('risk_level','=','critical')]"/>
+                <filter string="High"         name="high"      domain="[('risk_level','=','high')]"/>
+                <filter string="Medium"       name="medium"    domain="[('risk_level','=','medium')]"/>
+                <filter string="Low"          name="low"       domain="[('risk_level','=','low')]"/>
+                <separator/>
+                <filter string="AI Scored"    name="ai_scored" domain="[('ai_powered','=',True)]"/>
+                <filter string="Has Overdue"  name="overdue"   domain="[('currently_overdue','>',0)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_payment_risk_scores" model="ir.actions.act_window">
+        <field name="name">AI Payment Risk Scores</field>
+        <field name="res_model">payment.risk.score</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_payment_risk_score_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No AI risk scores yet.</p>
+            <p>Go to <strong>Payment Risk > Compute All Scores</strong> or click
+               <strong>Re-score with AI</strong> on any customer.</p>
+        </field>
+    </record>
+</odoo>

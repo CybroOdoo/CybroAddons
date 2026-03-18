@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mail_template_payment_risk_alert" model="mail.template">
+        <field name="name">Payment Risk: High Risk Alert</field>
+        <field name="model_id" ref="model_payment_risk_score"/>
+        <field name="subject">Payment Risk Alert: {{ object.partner_id.name }}</field>
+        <field name="body_html"><![CDATA[
+<p>Dear Finance Team,</p>
+<p>
+    Customer <strong>{{ object.partner_id.name }}</strong> has been flagged
+    with a <strong>{{ object.risk_level | upper }} payment risk</strong>
+    (Score: {{ "%.0f"|format(object.score) }}/100).
+</p>
+<table style="border-collapse:collapse;width:100%">
+    <tr style="background:#f5f5f5">
+        <td style="padding:8px;border:1px solid #ddd"><strong>Average Delay</strong></td>
+        <td style="padding:8px;border:1px solid #ddd">{{ "%.1f"|format(object.avg_delay_days) }} days</td>
+    </tr>
+    <tr>
+        <td style="padding:8px;border:1px solid #ddd"><strong>Currently Overdue</strong></td>
+        <td style="padding:8px;border:1px solid #ddd">{{ object.currently_overdue }} invoice(s)</td>
+    </tr>
+    <tr style="background:#f5f5f5">
+        <td style="padding:8px;border:1px solid #ddd"><strong>Total Overdue Amount</strong></td>
+        <td style="padding:8px;border:1px solid #ddd">{{ object.total_overdue_amount }}</td>
+    </tr>
+    <tr>
+        <td style="padding:8px;border:1px solid #ddd"><strong>Suggested Credit Limit</strong></td>
+        <td style="padding:8px;border:1px solid #ddd">{{ object.suggested_credit_limit }}</td>
+    </tr>
+</table>
+<p><strong>Recommendation:</strong><br/>{{ object.followup_suggestion }}</p>
+<p>Please take appropriate action.</p>
+        ]]></field>
+        <field name="auto_delete">True</field>
+    </record>
+</odoo>

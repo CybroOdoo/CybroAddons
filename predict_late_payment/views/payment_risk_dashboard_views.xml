@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dashboard form (uses kanban-style layout) -->
+    <record id="view_payment_risk_dashboard" model="ir.ui.view">
+        <field name="name">payment.risk.score.dashboard</field>
+        <field name="model">payment.risk.score</field>
+        <field name="arch" type="xml">
+            <kanban class="o_risk_dashboard" default_order="score desc"
+                    group_by="risk_level" quick_create="false"
+                    records_draggable="false">
+                <field name="partner_id"/>
+                <field name="score"/>
+                <field name="risk_level"/>
+                <field name="risk_color"/>
+                <field name="avg_delay_days"/>
+                <field name="currently_overdue"/>
+                <field name="total_overdue_amount"/>
+                <field name="currency_id"/>
+                <field name="followup_suggestion"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_risk_card p-2"
+                             t-attf-style="border-left: 5px solid {{record.risk_color.value}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong><t t-esc="record.partner_id.value"/></strong>
+                                <span class="badge rounded-pill"
+                                      t-attf-style="background:{{record.risk_color.value}};color:#fff">
+                                    <t t-esc="record.score.value"/>/100
+                                </span>
+                            </div>
+                            <div class="text-muted small mt-1">
+                                Avg delay: <t t-esc="record.avg_delay_days.value"/> days
+                                | Overdue: <t t-esc="record.currently_overdue.value"/> inv.
+                            </div>
+                            <div class="mt-2">
+                                <button name="action_send_followup" type="object"
+                                        class="btn btn-sm btn-outline-primary">
+                                    Follow-up
+                                </button>
+                                <button name="action_compute_score" type="object"
+                                        class="btn btn-sm btn-outline-secondary ms-1">
+                                    Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Action: open dashboard (kanban, grouped by risk level) -->
+    <record id="action_payment_risk_dashboard" model="ir.actions.act_window">
+        <field name="name">Risk Dashboard</field>
+        <field name="res_model">payment.risk.score</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="view_ids" eval="[
+            (5, 0, 0),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('view_payment_risk_dashboard')}),
+            (0, 0, {'view_mode': 'list',   'view_id': ref('view_payment_risk_score_tree')}),
+            (0, 0, {'view_mode': 'form',   'view_id': ref('view_payment_risk_score_form')}),
+        ]"/>
+        <field name="context">{'group_by': 'risk_level'}</field>
+        <field name="search_view_id" ref="view_payment_risk_score_search"/>
+    </record>
+
+    <!-- Server action: compute all scores (manual trigger) -->
+    <record id="action_compute_all_risk_scores" model="ir.actions.server">
+        <field name="name">Compute All Payment Risk Scores</field>
+        <field name="model_id" ref="model_payment_risk_score"/>
+        <field name="state">code</field>
+        <field name="code">
+action = env['payment.risk.score'].action_compute_all_partners()
+        </field>
+    </record>
+
+</odoo>

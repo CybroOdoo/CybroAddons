@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inject risk badge into the customer invoice form -->
+    <record id="view_account_move_form_payment_risk" model="ir.ui.view">
+        <field name="name">account.move.form.payment.risk</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Smart button in the header stat-button area -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_compute_partner_risk" type="object"
+                        class="oe_stat_button" icon="fa-shield"
+                        invisible = "move_type not in ['out_invoice','out_refund']">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="invoice_payment_risk_score" widget="float" digits="[5,0]"/>
+                        </span>
+                        <span class="o_stat_text">Risk Score</span>
+                    </div>
+                </button>
+            </xpath>
+
+            <!-- Risk strip under the partner field -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <div class="o_invoice_risk_strip mt-1 mb-1 px-2 py-1 rounded d-flex align-items-center gap-2"
+                     invisible="move_type not in ['out_invoice','out_refund'] or not invoice_payment_risk_level"
+                     style="background: rgba(0,0,0,0.04); border-left: 4px solid #6c757d;">
+                    <span class="fw-bold">Customer Risk:</span>
+                    <field name="invoice_payment_risk_level" widget="badge"
+                           decoration-danger="invoice_payment_risk_level == 'critical'"
+                           decoration-warning="invoice_payment_risk_level == 'high'"
+                           decoration-info="invoice_payment_risk_level == 'medium'"
+                           decoration-success="invoice_payment_risk_level == 'low'"/>
+                    <span class="text-muted small">
+                        Score: <field name="invoice_payment_risk_score" widget="float" digits="[5,0]" class="d-inline"/>/100
+                    </span>
+                    <span class="text-danger ms-3 fw-bold"
+                          invisible = "invoice_days_overdue == 0">
+                        ⚠ <field name="invoice_days_overdue" widget="integer" class="d-inline"/> days overdue
+                    </span>
+                </div>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ── Invoice list: add risk column ─────────────────────────────────── -->
+    <record id="view_account_move_list_payment_risk" model="ir.ui.view">
+        <field name="name">account.move.list.payment.risk</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_out_invoice_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_partner_display_name']" position="after">
+                <field name="invoice_payment_risk_level" widget="badge" optional="show"
+                       string="Risk"
+                       decoration-danger="invoice_payment_risk_level == 'critical'"
+                       decoration-warning="invoice_payment_risk_level == 'high'"
+                       decoration-info="invoice_payment_risk_level == 'medium'"
+                       decoration-success="invoice_payment_risk_level == 'low'"/>
+                <field name="invoice_days_overdue" optional="show"
+                       string="Days Overdue"
+                       decoration-danger="invoice_days_overdue &gt; 30"
+                       decoration-warning="invoice_days_overdue &gt; 0"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inject risk score page into the customer form -->
+    <record id="view_res_partner_form_payment_risk" model="ir.ui.view">
+        <field name="name">res.partner.form.payment.risk</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Smart button at the top -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_risk_score" type="object"
+                        class="oe_stat_button" icon="fa-shield"
+                        invisible="customer_rank == 0">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="payment_risk_score" widget="float" digits="[5,0]"/>
+                            <span>/100</span>
+                        </span>
+                        <span class="o_stat_text">Risk Score</span>
+                    </div>
+                </button>
+            </xpath>
+
+            <!-- Risk page at the end of the notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Payment Risk" name="payment_risk"
+                      invisible="customer_rank == 0">
+                    <div class="o_payment_risk_header mb-3">
+                        <div class="row">
+                            <div class="col-3 text-center p-3 rounded me-2"
+                                 style="background:#f8f9fa; border-left: 5px solid var(--risk-color, #6c757d);">
+                                <div class="fs-1 fw-bold">
+                                    <field name="payment_risk_score" digits="[5,0]"/>
+                                </div>
+                                <div class="text-muted small">Risk Score / 100</div>
+                                <field name="payment_risk_level" widget="badge"
+                                       decoration-danger="payment_risk_level == 'critical'"
+                                       decoration-warning="payment_risk_level == 'high'"
+                                       decoration-info="payment_risk_level == 'medium'"
+                                       decoration-success="payment_risk_level == 'low'"/>
+                            </div>
+                            <div class="col-8">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Avg Payment Delay</strong>
+                                        <div><field name="payment_avg_delay"/> days</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Total Overdue</strong>
+                                        <div><field name="payment_overdue_amount" widget="monetary"/></div>
+                                    </div>
+                                    <div class="col-6 mt-2">
+                                        <strong>Score Last Computed</strong>
+                                        <div><field name="payment_last_computed" widget="datetime"/></div>
+                                    </div>
+                                    <div class="col-6 mt-2">
+                                        <button name="action_compute_risk_score" type="object"
+                                                string="Refresh Score" class="btn btn-sm btn-outline-primary mt-1"
+                                                icon="fa-refresh"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="o_field_widget o_field_text">
+                        <span class="o_form_label">Follow-up Recommendation</span>
+                        <field name="payment_followup_suggestion" widget="text" readonly="1"/>
+                    </div>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
