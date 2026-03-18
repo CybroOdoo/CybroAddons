@@ -151,16 +151,6 @@ class LinkedinSocial(http.Controller):
         else:
             raise Warning("Provide a Job description....")
 
-        return_uri = 'https://www.linkedin.com/oauth/v2/authorization'
-        li_permissions = [' w_organization_social_feed ', ' r_liteprofile ',
-                          ' r_organization_social_feed ', ' r_ads ',
-                          'w_member_social_feed', 'r_member_social',
-                          'r_compliance', 'w_compliance']
-
-        auth = linkedin.LinkedInAuthentication(li_credential['api_key'],
-                                               li_credential['secret_key'],
-                                               return_uri,
-                                               li_permissions)
         li_suit_credent = {}
         li_suit_credent['access_token'] = access_token
         li_credential['profile_urn'] = share_response_text['id']
