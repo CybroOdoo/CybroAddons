@@ -76,7 +76,8 @@ class DbBackupConfigure(models.Model):
         ('dropbox', 'Dropbox'),
         ('onedrive', 'Onedrive'),
         ('next_cloud', 'Next Cloud'),
-        ('amazon_s3', 'Amazon S3')
+        ('amazon_s3', 'Amazon S3'),
+        ('s3_compatible', 'S3 Compatible')
     ], string='Backup Destination', help='Destination of the backup')
     backup_frequency = fields.Selection([
         ('daily', 'Daily'),
@@ -207,6 +208,22 @@ class DbBackupConfigure(models.Model):
     aws_folder_name = fields.Char(string='File Name',
                                   help="field used to store the name of a"
                                        " folder in an Amazon S3 bucket.")
+    s3c_endpoint_url = fields.Char(
+        string='Endpoint URL',
+        help="Endpoint URL for the S3 compatible service "
+             "(e.g. https://s3-eu-central-1.ionoscloud.com).")
+    s3c_access_key = fields.Char(
+        string='S3 Compatible Access Key', copy=False,
+        help="Access key for the S3 compatible bucket.")
+    s3c_secret_access_key = fields.Char(
+        string='S3 Compatible Secret Key', copy=False,
+        help="Secret key for the S3 compatible bucket.")
+    s3c_bucket_name = fields.Char(
+        string='S3 Compatible Bucket Name',
+        help="Name of the S3 compatible bucket.")
+    s3c_folder_name = fields.Char(
+        string='S3 Compatible Folder Name',
+        help="Folder path inside the S3 compatible bucket.")
 
     def action_s3cloud(self):
         """If it has aws_secret_access_key, which will perform s3cloud
@@ -235,6 +252,51 @@ class DbBackupConfigure(models.Model):
                 raise UserError(
                     _("Bucket not found. Please check the bucket name and"
                       " try again."))
+            except Exception:
+                self.active = self.hide_active = False
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'type': 'danger',
+                        'title': _("Connection Test Failed!"),
+                        'message': _("An error occurred while testing the "
+                                     "connection."),
+                        'sticky': False,
+                    }
+                }
+
+    def action_s3compatible(self):
+        """Test connection to an S3 compatible storage service using
+         the provided endpoint URL, access key, and secret key."""
+        if self.s3c_access_key and self.s3c_secret_access_key and self.s3c_endpoint_url:
+            try:
+                s3_client = boto3.client(
+                    's3',
+                    endpoint_url=self.s3c_endpoint_url,
+                    aws_access_key_id=self.s3c_access_key,
+                    aws_secret_access_key=self.s3c_secret_access_key,
+                    config=boto3.session.Config(
+                        signature_version='s3v4',
+                        s3={'addressing_style': 'path'}
+                    )
+                )
+                response = s3_client.head_bucket(Bucket=self.s3c_bucket_name)
+                if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                    self.active = self.hide_active = True
+                    return {
+                        'type': 'ir.actions.client',
+                        'tag': 'display_notification',
+                        'params': {
+                            'type': 'success',
+                            'title': _("Connection Test Succeeded!"),
+                            'message': _("Everything seems properly set up!"),
+                            'sticky': False,
+                        }
+                    }
+                raise UserError(
+                    _("Bucket not found. Please check the bucket name and "
+                      "try again."))
             except Exception:
                 self.active = self.hide_active = False
                 return {
@@ -1024,6 +1086,79 @@ class DbBackupConfigure(models.Model):
                         _logger.info('Amazon S3 Exception: %s', error)
                         # If notify_user is enabled, email the user
                         # notifying them about the failed backup
+                        if rec.notify_user:
+                            mail_template_failed.send_mail(rec.id, force_send=True)
+            # S3 Compatible Backup (IONOS, Wasabi, Cloudflare R2, etc.)
+            elif rec.backup_destination == 's3_compatible':
+                if rec.s3c_access_key and rec.s3c_secret_access_key and rec.s3c_endpoint_url:
+                    try:
+                        s3c_config = boto3.session.Config(
+                            signature_version='s3v4',
+                            s3={'addressing_style': 'path'}
+                        )
+                        # Create a boto3 client for the S3 compatible service
+                        bo3 = boto3.client(
+                            's3',
+                            endpoint_url=rec.s3c_endpoint_url,
+                            aws_access_key_id=rec.s3c_access_key,
+                            aws_secret_access_key=rec.s3c_secret_access_key,
+                            config=s3c_config)
+                        # If auto_remove is enabled, remove backups older than
+                        # the specified number of days from the bucket
+                        if rec.auto_remove:
+                            folder_path = rec.s3c_folder_name
+                            response = bo3.list_objects(
+                                Bucket=rec.s3c_bucket_name,
+                                Prefix=folder_path)
+                            today = fields.date.today()
+                            for file in response.get('Contents', []):
+                                file_path = file['Key']
+                                last_modified = file['LastModified']
+                                date = last_modified.date()
+                                age_in_days = (today - date).days
+                                if age_in_days >= rec.days_to_remove:
+                                    bo3.delete_object(
+                                        Bucket=rec.s3c_bucket_name,
+                                        Key=file_path)
+                        # Create a boto3 resource for the S3 compatible service
+                        s3 = boto3.resource(
+                            's3',
+                            endpoint_url=rec.s3c_endpoint_url,
+                            aws_access_key_id=rec.s3c_access_key,
+                            aws_secret_access_key=rec.s3c_secret_access_key,
+                            config=s3c_config)
+                        # Create the folder in the bucket if it doesn't exist
+                        s3.Object(rec.s3c_bucket_name,
+                                  rec.s3c_folder_name + '/').put()
+                        bucket = s3.Bucket(rec.s3c_bucket_name)
+                        # Get all prefixes (folders) in the bucket
+                        prefixes = set()
+                        for obj in bucket.objects.all():
+                            key = obj.key
+                            if key.endswith('/'):
+                                prefix = key[:-1]
+                                prefixes.add(prefix)
+                        # Upload the backup if the folder is present
+                        if rec.s3c_folder_name in prefixes:
+                            temp = tempfile.NamedTemporaryFile(
+                                suffix='.%s' % rec.backup_format)
+                            with open(temp.name, "wb+") as tmp:
+                                self.dump_data(rec.db_name, tmp,
+                                               rec.backup_format, rec.backup_frequency)
+                            backup_file_name = temp.name
+                            remote_file_path = (
+                                f"{rec.s3c_folder_name}/{rec.db_name}_"
+                                f"{backup_time}.{rec.backup_format}"
+                            )
+                            s3.Object(rec.s3c_bucket_name,
+                                      remote_file_path).upload_file(
+                                backup_file_name)
+                            if rec.notify_user:
+                                mail_template_success.send_mail(rec.id,
+                                                                force_send=True)
+                    except Exception as error:
+                        rec.generated_exception = error
+                        _logger.info('S3 Compatible Exception: %s', error)
                         if rec.notify_user:
                             mail_template_failed.send_mail(rec.id, force_send=True)
 
