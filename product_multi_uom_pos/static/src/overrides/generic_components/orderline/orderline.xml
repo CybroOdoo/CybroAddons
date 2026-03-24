@@ -3,17 +3,12 @@
     <t t-name="product_multi_uom_pos.Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
 
         <xpath expr="//ul[hasclass('info-list')]" position="inside">
-            <t t-if="props.mode === 'receipt' and props.line.custom_uom_name">
+            <t t-if="props.mode === 'receipt' and props.line.custom_uom_name and props.line.custom_uom_price and props.line.custom_uom_price != props.line.price_unit">
                 <li style="list-style: none; font-weight: 600; color: #444; line-height: 1.2; margin-top: 2px; font-size: 0.85em;">
-                    <t t-esc="env.utils.formatCurrency(props.line.custom_uom_price || props.line.price_unit)"/> / <t t-esc="props.line.custom_uom_name"/>
+                    <t t-esc="env.utils.formatCurrency(props.line.custom_uom_price)"/> / <t t-esc="props.line.custom_uom_name"/>
                 </li>
             </t>
         </xpath>
-
-        <!-- Hide Odoo's native messy "Price per unit" line on the receipt -->
-<!--        <xpath expr="//li[hasclass('price-per-unit')]" position="attributes">-->
-<!--            <attribute name="t-if">vals.displayPriceUnit and props.mode !== 'receipt'</attribute>-->
-<!--        </xpath>-->
 
         <xpath expr="//ul[hasclass('info-list')]" position="after">
             <t t-set="uomList" t-value="getAvailableUoms()"/>

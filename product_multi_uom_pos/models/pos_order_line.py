@@ -28,6 +28,14 @@ class PosOrderLine(models.Model):
     custom_uom_price = fields.Float(string='Custom UoM Price')
 
     @api.model
+    def _load_pos_data_fields(self, config):
+        """Include custom UoM fields so they are sent to the POS frontend when
+        loading saved/shared orders in a different POS session."""
+        fields = super()._load_pos_data_fields(config)
+        fields += ['custom_uom_name', 'custom_uom_price']
+        return fields
+
+    @api.model
     def _order_line_fields(self, line, session_id=None):
         """Updating order line fields to include custom UoM name and price."""
         fields_res = super(PosOrderLine, self)._order_line_fields(line, session_id)
