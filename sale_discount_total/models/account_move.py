@@ -51,9 +51,20 @@ class AccountInvoice(models.Model):
         'line_ids.amount_residual',
         'line_ids.amount_residual_currency',
         'line_ids.payment_id.state',
-        'line_ids.full_reconcile_id')
+        'line_ids.full_reconcile_id',
+        'state')
     def _compute_amount(self):
         """This function computes amount based on taxed,untaxed"""
+        self.line_ids.fetch([
+            'debit',
+            'balance',
+            'amount_currency',
+            'amount_residual',
+            'amount_residual_currency',
+            'display_type',
+            'tax_repartition_line_id'
+        ])
+
         for move in self:
             total_untaxed, total_untaxed_currency = 0.0, 0.0
             total_tax, total_tax_currency = 0.0, 0.0
@@ -88,20 +99,16 @@ class AccountInvoice(models.Model):
                         total += line.balance
                         total_currency += line.amount_currency
             sign = move.direction_sign
-            move.amount_untaxed = sign * (total_untaxed_currency if len(
-                currencies) == 1 else total_untaxed)
-            move.amount_tax = sign * (
-                total_tax_currency if len(currencies) == 1 else total_tax)
+            move.amount_untaxed = sign * total_untaxed_currency
+            move.amount_tax = sign * total_tax_currency
             move.amount_total = sign * total_currency
             move.amount_residual = -sign * total_residual_currency
             move.amount_untaxed_signed = -total_untaxed
+            move.amount_untaxed_in_currency_signed = -total_untaxed_currency
             move.amount_tax_signed = -total_tax
-            move.amount_total_signed = abs(
-                total) if move.move_type == 'entry' else -total
+            move.amount_total_signed = abs(total) if move.move_type == 'entry' else -total
             move.amount_residual_signed = total_residual
-            move.amount_total_in_currency_signed = abs(
-                move.amount_total) if move.move_type == 'entry' else -(
-                    sign * move.amount_total)
+            move.amount_total_in_currency_signed = abs(move.amount_total) if move.move_type == 'entry' else -(sign * move.amount_total)
             currency = (len(
                 currencies) == 1 and currencies.pop() or
                         move.company_id.currency_id)
