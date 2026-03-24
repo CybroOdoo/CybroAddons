@@ -250,9 +250,7 @@ class TurnoverReport(models.TransientModel):
                 warehouse = quant.location_id.warehouse_id.name
                 last_count_date = quant.last_count_date
             average_stock = (opening_stock + closing_stock) / 2
-            stock_count = sales_count + opening_stock
-            turnover_ratio = 0 if average_stock == 0 or stock_count == 0 else \
-                stock_count / average_stock
+            turnover_ratio = 0 if average_stock == 0 else sales_count / average_stock
             turnover = round(turnover_ratio, 2)
             name = quant.product_id.display_name
             split_name = name.split(']')
