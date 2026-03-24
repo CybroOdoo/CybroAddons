@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Customer Success Sentiment Tracker',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Extra Tools',
     'sequence': 1,
     'summary': 'Customer Success Sentiment Tracker using AI',
@@ -30,7 +30,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['crm', 'helpdesk', 'website'],
+    'depends': ['helpdesk', 'website'],
     'data': [
         'views/helpdesk_ticket_views.xml',
         'views/res_config_settings_views.xml',
