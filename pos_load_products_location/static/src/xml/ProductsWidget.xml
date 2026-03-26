@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <!--  Inherit the 'ProductScreen' template to display products based on the Stock location -->
+    <t t-name="ProductsWidget" t-inherit="point_of_sale.ProductScreen"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[@t-elif='pos.productToDisplayByCateg.length > 0']" position="replace">
+
+            <div t-elif="pos.productsToDisplay.length > 0"
+                 t-attf-class="product-list {{this.pos.productListViewMode}} p-1">
+                        <div t-foreach="pos.productToDisplayByCateg" t-as="productCateg" t-key="productCateg[0]"
+                             class="product-list d-grid gap-1 gap-lg-2 px-2 pt-0 pb-2">
+                            <ProductCard
+                                    t-foreach="productCateg[1]" t-as="product" t-key="product.id"
+                                    productId="product.id"
+                                    product="product"
+                                    class="pos.productViewMode"
+                                    name="getProductName(product)"
+                                    color="product.color || product.pos_categ_ids?.at(-1)?.color"
+                                    imageUrl="pos.config.show_product_images and this.getProductImage(product)"
+                                    onClick.bind="() => this.addProductToOrder(product)"
+                                    t-on-mousedown="(event) => this.onMouseDown(event, product)"
+                                    t-on-mouseup="longPressHandlers.onMouseUp"
+                                    t-on-touchstart="(event) => this.onTouchStart(product)"
+                                    t-on-touchend="longPressHandlers.onTouchEnd"
+                                    productCartQty="this.state.quantityByProductTmplId[product.id]"/>
+                        </div>
+            </div>
+        </xpath>
+    </t>
+</templates>
