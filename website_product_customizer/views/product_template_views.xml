@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Extend Product Template Form View with Designer Tab -->
+    <record id="product_template_form_view_designer" model="ir.ui.view">
+        <field name="name">product.template.form.designer</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Add Designer toggle in the general section -->
+            <xpath expr="//group[@name='extra_info']" position="inside">
+                <field name="is_designable" widget="boolean_toggle"/>
+            </xpath>
+
+            <!-- Add Designer Notebook Page -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Product Designer" name="product_designer"
+                      invisible="not is_designable">
+
+                    <!-- ——— Row 1: General Settings (two columns) ——— -->
+                    <group string="General Settings">
+                        <group>
+                            <field name="design_category_id"/>
+                            <field name="has_front_back"/>
+                            <field name="production_time_days"/>
+                        </group>
+                        <group>
+                            <field name="min_order_quantity"/>
+                            <field name="max_order_quantity"/>
+                            <field name="shipping_weight_per_unit"/>
+                        </group>
+                    </group>
+
+                    <!-- ——— Row 2: Design Area + Images side-by-side ——— -->
+                    <group>
+                        <group string="Design Area — Front" groups="base.group_no_one">
+                            <field name="design_area_left"/>
+                            <field name="design_area_top"/>
+                            <field name="design_area_width"/>
+                            <field name="design_area_height"/>
+                        </group>
+                        <group string="Design Area — Back"
+                               invisible="not has_front_back" groups="base.group_no_one">
+                            <field name="design_area_back_left"/>
+                            <field name="design_area_back_top"/>
+                            <field name="design_area_back_width"/>
+                            <field name="design_area_back_height"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Design Base Images">
+                            <field name="design_base_image" widget="image"/>
+                            <field name="design_base_image_back" widget="image"
+                                   invisible="not has_front_back"/>
+                        </group>
+                    </group>
+
+                    <!-- ——— Row 3: Limits + Colors (two columns) ——— -->
+                    <group>
+                        <group string="Limits">
+                            <field name="design_max_texts"/>
+                            <field name="design_max_images"/>
+                            <field name="design_max_characters"/>
+                        </group>
+                        <group string="Colors &amp; Fonts">
+                            <field name="design_font_ids" widget="many2many_tags"/>
+                            <field name="design_bg_color_ids" widget="many2many_tags"/>
+                            <field name="design_text_color_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+
+
+
+                    <separator string="Customer Instructions"/>
+                    <field name="design_instruction"
+                           placeholder="Enter design instructions for customers..."/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
