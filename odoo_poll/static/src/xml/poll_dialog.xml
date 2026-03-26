@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="odoo_poll.PollDialog">
+        <Dialog title="'Create a Poll'" size="'md'">
+            <div class="o_poll_dialog">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Question</label>
+                    <input type="text"
+                           class="form-control form-control-lg"
+                           t-model="state.question"
+                           placeholder="What would you like to ask?"
+                           autofocus="autofocus"/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Options</label>
+                    <div class="o_poll_options">
+                        <t t-foreach="state.options" t-as="option" t-key="option_index">
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">
+                                    <t t-esc="option_index + 1"/>
+                                </span>
+                                <input type="text"
+                                       class="form-control"
+                                       t-att-value="option"
+                                       t-on-input="(ev) => this.updateOption(option_index, ev.target.value)"
+                                       t-att-placeholder="'Option ' + (option_index + 1)"/>
+                                <button class="btn btn-outline-danger"
+                                        type="button"
+                                        t-on-click="() => this.removeOption(option_index)"
+                                        t-att-disabled="state.options.length &lt;= 2">
+                                    <i class="fa fa-trash"/>
+                                </button>
+                            </div>
+                        </t>
+                        <button class="btn btn-sm btn-outline-primary"
+                                type="button"
+                                t-on-click="addOption">
+                            <i class="fa fa-plus"/> Add Option
+                        </button>
+                    </div>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           id="isMultipleChoice"
+                           t-model="state.isMultipleChoice"/>
+                    <label class="form-check-label" for="isMultipleChoice">
+                        Allow multiple choices
+                    </label>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="props.close">Cancel</button>
+                <button class="btn btn-primary" t-on-click="createPoll">
+                    <i class="fa fa-check"/> Create Poll
+                </button>
+            </t>
+        </Dialog>
+    </t>
+</templates>
