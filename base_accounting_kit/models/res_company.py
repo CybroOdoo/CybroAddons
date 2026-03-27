@@ -19,13 +19,51 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import models, _
+from datetime import datetime
+import calendar
+from odoo import models, api, _
 from odoo.exceptions import RedirectWarning
 
 
 class ResCompany(models.Model):
     """Model for inheriting res_company."""
     _inherit = "res.company"
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Ensure fiscal year day does not exceed the maximum valid day for the selected month during record creation."""
+        for vals in vals_list:
+            if 'fiscalyear_last_month' in vals and 'fiscalyear_last_day' in vals:
+                month = vals.get('fiscalyear_last_month')
+                day = vals.get('fiscalyear_last_day')
+                if month and day:
+                    if vals.account_opening_date:
+                        year = vals.account_opening_date.year
+                    else:
+                        year = datetime.now().year
+                    max_day = calendar.monthrange(year, int(month))[1]
+                    if int(day) > max_day:
+                        vals['fiscalyear_last_day'] = max_day
+        return super(ResCompany, self).create(vals_list)
+
+    def write(self, vals):
+        """Auto-correct fiscal year day to a valid value when month or day is updated to prevent invalid calendar dates."""
+        if 'fiscalyear_last_month' in vals or 'fiscalyear_last_day' in vals:
+            month = vals.get('fiscalyear_last_month')
+            day = vals.get('fiscalyear_last_day')
+            if month:
+                if self.account_opening_date:
+                    year = self.account_opening_date.year
+                else:
+                    year = datetime.now().year
+                max_day = calendar.monthrange(year, int(month))[1]
+                if not day:
+                    if any(company.fiscalyear_last_day > max_day for company in self):
+                        vals['fiscalyear_last_day'] = max_day
+                elif int(day) > max_day:
+                    vals['fiscalyear_last_day'] = max_day
+
+        return super(ResCompany, self).write(vals)
 
     def _validate_locks(self, values):
         """Validate the hard lock date by checking for unposted entries and unreconciled bank statement lines."""

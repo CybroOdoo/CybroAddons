@@ -19,3 +19,8 @@
 #### Version 19.0.2.2.0
 #### UPDT
 - Fixed the issues in the bank statement import of csv and ofx files.
+- 
+#### 25.03.2026
+#### Version 19.0.2.3.0
+#### UPDT
+- Fixed the issue in fiscal year dates.
