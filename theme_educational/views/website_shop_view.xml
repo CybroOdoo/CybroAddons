@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="custom_search_box" inherit_id="website.website_search_box_input" name="Custom Search Bar">
+        <xpath expr="//button[@type='submit']" position="replace">
+            <button type="submit" class="custom-search-btn">
+                <i class="fa fa-search"></i>
+            </button>
+        </xpath>
+    </template>
+
+    <template id="custom_product_filters_extension" inherit_id="website_sale.products" name="Product Category Filters Extension">
+        <xpath expr="//div[contains(@class, 'o_wsale_products_grid_before_rail')]" position="before">
+            <div class="card mb-3 oe_product_categories">
+                <div class="card-body">
+                    <h5 class="card-title">Filter by Category</h5>
+
+                    <div class="mt-3" t-if="all_categories">
+                        <form method="get" class="category-filter-form">
+                            <t t-if="search">
+                                <input type="hidden" name="search" t-att-value="search"/>
+                            </t>
+
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox"
+                                       name="recent" value="1" id="recent_filter_checkbox"
+                                       t-att-checked="is_recent_filter"/>
+                                <label class="form-check-label" for="recent_filter_checkbox">
+                                    Show Recently Viewed
+                                </label>
+                            </div>
+
+                            <h6 class="text-muted">Select Categories:</h6>
+                            <div class="category-checkboxes">
+                                <t t-foreach="all_categories" t-as="category_rec">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               name="category_ids[]" t-att-value="category_rec.id"
+                                               t-att-id="'all_category_' + str(category_rec.id)"
+                                               t-att-checked="category_rec.id in selected_category_ids_all"/>
+                                        <label class="form-check-label"
+                                               t-att-for="'all_category_' + str(category_rec.id)">
+                                            <t t-esc="category_rec.name"/>
+                                        </label>
+                                    </div>
+                                </t>
+                            </div>
+                            <button type="submit" class="btn btn-filter mt-3">Filter</button>
+                        </form>
+                    </div>
+
+                    <t t-if="not all_categories">
+                        <div class="text-muted">No categories available.</div>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

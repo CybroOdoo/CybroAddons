@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="product_detail_with_sidebar" inherit_id="website_sale.product" name="Product Detail with Full Course Description">
+
+        <xpath expr="//t[@t-call='website_sale.shop_product_images']" position="replace">
+            <div class="col-12 mt-lg-3">
+                <div class="course-description-box">
+                    <ul class="nav nav-tabs mb-3" id="productDescTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="overview-tab" data-bs-toggle="tab" href="#overview" role="tab">Overview</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="curriculum-tab" data-bs-toggle="tab" href="#curriculum" role="tab">Curriculum</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="instructor-tab" data-bs-toggle="tab" href="#instructor" role="tab">Instructor</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="reviews-tab" data-bs-toggle="tab" href="#reviews" role="tab">Reviews</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="faq-tab" data-bs-toggle="tab" href="#faq" role="tab">FAQ’s</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="productDescContent">
+                        <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                            <h5>Course Description</h5>
+                            <div class="product-description-content" t-field="product.website_description"/>
+                        </div>
+                        <div class="tab-pane fade" id="curriculum" role="tabpanel">
+                            <p>Curriculum content goes here...</p>
+                        </div>
+                        <div class="tab-pane fade" id="instructor" role="tabpanel">
+                            <p>Instructor details here...</p>
+                        </div>
+                        <div class="tab-pane fade" id="reviews" role="tabpanel">
+                            <p>Reviews content...</p>
+                        </div>
+                        <div class="tab-pane fade" id="faq" role="tabpanel">
+                            <p>FAQ content...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+
+        <xpath expr="//div[@id='product_details']/h1" position="after">
+            <t t-if="product.image_1920">
+                <img t-att-src="'data:image/png;base64,%s' % (product.image_1920.decode())"
+                     alt="Product Image"
+                     class="img-fluid rounded mb-3"/>
+            </t>
+        </xpath>
+
+    </template>
+
+    <template id="product_detail_recently_viewed" inherit_id="website_sale.product">
+        <xpath expr="//div[@id='product_details']" position="inside">
+            <t t-set="recent_products"
+               t-value="request.env['product.template'].browse(request.session.get('recently_viewed_products', []))"/>
+            <t t-if="recent_products">
+                <div class="recently-viewed-section container mt-5 mb-4">
+                    <h4 class="mb-4">Recently Viewed</h4>
+                    <div class="list-group list-group-flush">
+                        <t t-foreach="recent_products" t-as="recent_product" t-foreach-limit="3">
+                            <t t-if="recent_product.id != product.id">
+                                <a t-att-href="recent_product.website_url" class="list-group-item list-group-item-action d-flex align-items-center mb-3">
+                                    <img t-att-src="'/web/image/product.template/%s/image_1920' % recent_product.id"
+                                         class="recently-viewed-img me-3"
+                                         alt="recent_product.name"
+                                         loading="lazy"/>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold recently-viewed-title"><t t-esc="recent_product.name"/></div>
+                                        <div class="text-info recently-viewed-price">$130</div> </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="fw-bold me-1"><t t-esc="recent_product.rating_last_value"/></span>
+                                        <i class="fa fa-star text-warning"></i>
+                                    </div>
+                                </a>
+                            </t>
+                        </t>
+                    </div>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="container mt-5 mb-4">
+                    <div class="alert alert-info text-center">
+                        No recently viewed products yet.
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>
+
+

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="courses_all_inherit" inherit_id="website_slides.courses_all" name="Courses All Inherit">
+        <xpath expr="//div[@class='row mx-n2']" position="replace">
+            <div class="row">
+                <div class="col-12 col-md-9">
+                    <div class="course-container p-4 shadow-sm rounded bg-white">
+
+                        <t t-if="selected_tag_ids and recently_viewed_channels">
+                            <div class="row mb-4">
+                                <t t-foreach="recently_viewed_channels" t-as="channel">
+                                    <div class="col-12 col-md-4 mb-3 d-flex">
+                                        <t t-call="website_slides.course_card"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+
+                        <t t-if="not tag_ids">
+                            <div class="row">
+                                <t t-foreach="channels" t-as="channel">
+                                    <div class="col-12 col-md-4 mb-3 d-flex">
+                                        <t t-call="website_slides.course_card"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+
+                        <t t-if="pager">
+                            <div class="o_wslides_pager my-4 d-flex justify-content-center">
+                                <t t-call="website.pager"/>
+                            </div>
+                        </t>
+
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <div class="sidebar-container p-4 shadow-sm rounded bg-light">
+                        <h5 class="mb-3">Filter by Tags</h5>
+                        <form method="get" class="category-filter-form" action="/slides/all">
+                            <input type="hidden" name="page" value="1"/>
+                            <div class="category-checkboxes">
+                                <t t-foreach="all_tags" t-as="tag">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               name="tag_ids[]" t-att-value="tag.id"
+                                               t-att-id="'tag_' + str(tag.id)"
+                                               t-att-checked="tag.id in selected_tag_ids"/>
+                                        <label class="form-check-label" t-att-for="'tag_' + str(tag.id)">
+                                            <t t-esc="tag.name"/>
+                                        </label>
+                                    </div>
+                                </t>
+                            </div>
+                            <button type="submit" class="btn btn-filter mt-3">Filter</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
+

@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template id="educational_address_kanban" name="Educational Address Kanban"
+              inherit_id="website_sale.address_kanban">
+        <xpath expr="//div[@name='address_card']" position="replace">
+            <div
+                name="address_card"
+                t-attf-class="card position-relative h-100 #{selected and 'bg-primary border border-primary' or 'js_change_address'}"
+                t-att-data-address-type="address_type"
+                t-att-data-partner-id="contact.id"
+                style="background-color:#F16623 !important; border-color:#F16623 !important;"
+            >
+                <div class="card-body d-flex flex-column align-items-start">
+                    <t t-esc="contact" t-options="dict(widget='contact', fields=['name', 'address'], no_marker=True)"/>
+                    <t t-if="contact._can_be_edited_by_current_customer(website_sale_order, address_type)">
+                        <t t-set="new_address_href" t-value="'/shop/address?address_type=' + address_type"/>
+                        <a
+                            t-att-href="new_address_href + '&amp;partner_id=' + str(contact.id)"
+                            class="js_edit_address btn btn-link p-0 mt-auto"
+                            role="button"
+                            title="Edit this address"
+                            aria-label="Edit this address" style="color:#F16623 !important;">
+                            <i class="fa fa-pencil me-1"/>Edit
+                        </a>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+     <template id="educational_address_row" name="Educational Address Row"
+              inherit_id="website_sale.address_row">
+         <xpath expr="//div[1]" position="replace">
+             <div t-att-class="('all_billing' if is_invoice else 'all_delivery')
+                          + ' row row-cols-md-2 row-cols-lg-3 g-3 flex-nowrap flex-md-wrap'">
+                 <div t-foreach="addresses" t-as="addr" class="one_kanban col-md">
+                     <t t-call="website_sale.address_kanban">
+                        <t t-set="contact" t-value="addr"/>
+                        <t t-set="selected" t-value="addr == selected_address"/>
+                     </t>
+                 </div>
+                 <div
+                        t-if="is_invoice or not order.website_id.is_public_user()" class="one_kanban col-md">
+                     <!-- We don't allow public users to have multiple delivery addresses. -->
+                     <t t-if="is_invoice">
+                        <t t-set="new_address_href" t-valuef="/shop/address?address_type=billing"/>
+                     </t>
+                     <t t-else="">
+                        <t t-set="new_address_href"
+                        t-valuef="/shop/address?address_type=delivery&amp;use_delivery_as_billing={{use_delivery_as_billing}}"/>
+                     </t>
+                     <a
+                        role="button"
+                        t-att-href="new_address_href"
+                        t-att-data-address-type="is_invoice and 'billing' or 'delivery'"
+                        class="o_wsale_add_address d-flex align-items-center justify-content-center h-100 px-4 border rounded mx-auto no-decoration"
+                        style="color:#F16623 !important;">
+                         <i class="fa fa-plus me-md-2"/>
+                         <span class="d-none d-md-inline">Add address</span>
+                     </a>
+                 </div>
+             </div>
+         </xpath>
+     </template>
+
+    <template id="educational_address" name="Educational Address Management" inherit_id="website_sale.address">
+        <xpath expr="//button[@id='save_address']" position="attributes">
+            <attribute name="style">color:#ffffff;background-color:#F16623;border-color:#F16623;</attribute>
+        </xpath>
+    </template>
+
+    <template id="educational_total" name="Educational Total" inherit_id="website_sale.total">
+        <xpath expr="//table" position="replace">
+            <table class="table mb-0">
+                <tr
+                    t-if="website_sale_order._has_deliverable_products()"
+                    id="order_delivery">
+                    <td class="ps-0 pt-0 pb-2 text-muted" colspan="2" style="padding:90px;">
+                        Delivery
+                    </td>
+                    <td class="text-end pe-0 pt-0 pb-2">
+                        <span
+                            id="message_no_dm_set"
+                            t-att-class="'d-none' if website_sale_order.carrier_id else ''"
+                            title="Price will be updated after choosing a delivery method"
+                        >
+                            -
+                        </span>
+                        <span
+                            t-out="website_sale_order.amount_delivery"
+                            t-att-class="'monetary_field' + ('' if website_sale_order.carrier_id else ' d-none')"
+                            style="white-space: nowrap;"
+                            t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"
+                        />
+                    </td>
+                </tr>
+                <tr id="order_total_untaxed">
+                    <td id="cart_total_subtotal"
+                        class="pb-2 ps-0 pt-0 text-start text-muted"
+                        colspan="2" style="padding:90px;">
+                        Subtotal
+                    </td>
+                    <td class="text-end pb-2 pe-0 pt-0">
+                        <span t-field="website_sale_order.amount_untaxed"
+                              class="monetary_field"
+                              style="white-space: nowrap;"
+                              t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                    </td>
+                </tr>
+                <tr id="order_total_taxes">
+                    <td colspan="2" class="text-muted ps-0 pt-0 pb-3" style="padding:90px;">Taxes</td>
+                    <td class="text-end pe-0 pt-0 pb-3">
+                        <span t-field="website_sale_order.amount_tax"
+                              class="monetary_field"
+                              style="white-space: nowrap;"
+                              t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                    </td>
+                </tr>
+                <tr id="order_total" class="border-top">
+                    <td colspan="2" class="border-0 ps-0 pt-3"><strong>Total</strong></td>
+                    <td class="text-end border-0 px-0 pt-3">
+                        <strong t-field="website_sale_order.amount_total"
+                                class="monetary_field text-end p-0"
+                                t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                    </td>
+                </tr>
+                <tr t-if="not hide_promotions">
+                    <td colspan="3" class="text-end text-xl-end border-0 p-0">
+                    <span>
+                        <t t-set="force_coupon" t-value="website_sale_order.pricelist_id.code"/>
+                        <div t-if="not force_coupon" class="coupon_form">
+                            <t t-call="website_sale.coupon_form"/>
+                        </div>
+                    </span>
+                    </td>
+                </tr>
+            </table>
+        </xpath>
+    </template>
+
+    <template id="educational_coupon_form" name="Educational Coupon Form" inherit_id="website_sale.coupon_form">
+        <xpath expr="//a" position="attributes">
+            <attribute name="style">color:#ffffff;border-color:#F16623;background-color:#F16623;</attribute>
+        </xpath>
+    </template>
+
+    <template id="educational_navigation_buttons" name="Educational Navigation Button" inherit_id="website_sale.navigation_buttons">
+        <xpath expr="//a[@name='website_sale_main_button']" position="attributes">
+            <attribute name="style">color:#ffffff;border-color:#F16623;background-color:#F16623;</attribute>
+        </xpath>
+        <xpath expr="//a[@class='text-center']" position="attributes">
+            <attribute name="style">color:#F16623;</attribute>
+        </xpath>
+    </template>
+
+    <template id="educational_step_wizard" name="Educational Step Wizard" inherit_id="website.step_wizard">
+        <xpath expr="//div[hasclass('o_wizard_step-done')]" position="attributes">
+            <attribute name="style">color:#F16623;</attribute>
+        </xpath>
+    </template>
+
+    <template id="educational_address_on_payment" name="Educational Address on Payment" inherit_id="website_sale.address_on_payment">
+        <xpath expr="//a[@href='/shop/checkout']" position="attributes">
+            <attribute name="style">color:#F16623;</attribute>
+        </xpath>
+    </template>
+
+    <template id="educational_availability_report_button" name="Educational Availability Report Button" inherit_id="payment.availability_report_button">
+        <xpath expr="//a" position="attributes">
+            <attribute name="style">color:#F16623;</attribute>
+        </xpath>
+    </template>
+
+    <template id="educational_submit_button" name="Educational Submit Button" inherit_id="payment.submit_button">
+        <xpath expr="//button" position="attributes">
+            <attribute name="style">color:#ffffff;border-color:#F16623;background-color:#F16623;</attribute>
+        </xpath>
+    </template>
+
+    <template id="educational_confirmation" name="Educational Confirmation" inherit_id="website_sale.confirmation">
+        <xpath expr="//table" position="replace">
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <td colspan="2" class="ps-0 border-0">
+                            <t t-esc="tx_sudo.provider_id.name" />
+                        </td>
+                        <td class="text-end pe-0 border-0" width="100">
+                            <strong>Total:</strong>
+                        </td>
+                        <td class="text-end pe-0 border-0" width="100">
+                            <strong t-field="tx_sudo.amount" t-options="{'widget': 'monetary', 'display_currency': order.currency_id}" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </xpath>
+        <xpath expr="//a[@href='/shop/print']" position="attributes">
+            <attribute name="style">color:#ffffff;border-color:#F16623;background-color:#F16623;</attribute>
+        </xpath>
+    </template>
+
+    <template id="educational_payment_form" name="Educational Payment Form" inherit_id="payment.form">
+        <xpath expr="//button[@name='o_payment_expand_button']" position="attributes">
+            <attribute name="style">color:#F16623;</attribute>
+        </xpath>
+    </template>
+
+</odoo>
