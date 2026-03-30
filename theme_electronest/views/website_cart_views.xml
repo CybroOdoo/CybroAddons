@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit cart lines template to customize cart table layout and display cart totals with checkout button -->
+    <template id="website_cart_inherited"
+              inherit_id="website_sale.cart_lines">
+        <xpath expr="//div[@t-foreach='website_sale_order.website_order_line']"
+               position="replace">
+            <section class="section-shopping-cart-table">
+                <div class="container-fluid cmpad pb-5 slider">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="head-flex border-0 pb-4">
+                                <p class="mb-0">Home - Checkout</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-9 pb-3 pb-md-0">
+                            <div class="checkoutbox">
+                                <div class="table-responsive">
+                                    <table class="table table-borderless">
+                                        <thead>
+                                            <tr>
+                                                <th width="80"></th>
+                                                <th width="350">Product</th>
+                                                <th>Price</th>
+                                                <th>Quantity</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="website_sale_order.website_order_line" t-as="line">
+                                                <tr t-attf-class="o_cart_product #{'optional_product info' if line.linked_line_id else ''}">
+                                                    <td>
+                                                        <div class="probg">
+                                                            <span t-field="line.product_id.image_128"
+                                                                  t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'rounded'}"/>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <t t-esc="line.name_short"/>
+                                                    </td>
+                                                    <td>
+                                                        <div class="price checkprice">
+                                                            <h3>
+                                                                <span t-field="line.price_reduce_taxexcl"
+                                                                      t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                                            </h3>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="count css_quantity input-group"
+                                                             t-att-data-line-id="line.id"
+                                                             t-att-data-product-id="line.product_id.id">
+                                                            <t t-if="not line.is_delivery">
+                                                                <div class="input-group-prepend">
+                                                                    <a t-attf-href="#"
+                                                                       class="btn js_add_cart_json d-inline-block"
+                                                                       aria-label="Remove one" title="Remove one">
+                                                                        <i class="fa fa-minus d-none"/>
+                                                                        <img src="/theme_electronest/static/src/img/icons/minus.svg"
+                                                                             alt="" width="25"/>
+                                                                    </a>
+                                                                </div>
+                                                                <input type="text"
+                                                                       class="js_quantity form-control quantity text-center"
+                                                                       data-min="1"
+                                                                       t-att-data-line-id="line.id"
+                                                                       t-att-data-product-id="line.product_id.id"
+                                                                       t-att-value="int(line.product_uom_qty) == line.product_uom_qty and int(line.product_uom_qty) or line.product_uom_qty"/>
+                                                                <div class="input-group-append">
+                                                                    <a t-attf-href="#"
+                                                                       class="btn float_left js_add_cart_json d-inline-block"
+                                                                       aria-label="Add one" title="Add one">
+                                                                        <i class="fa fa-plus d-none"/>
+                                                                        <img src="/theme_electronest/static/src/img/icons/plus.svg"
+                                                                             alt="" width="25"/>
+                                                                    </a>
+                                                                </div>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <span class="text-muted w-100"
+                                                                      t-esc="int(line.product_uom_qty)"/>
+                                                            </t>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="price checkprice">
+                                                            <h3>
+                                                                <div class="d-flex gap-2 main align-items-center">
+                                                                    <span t-field="line.price_subtotal"
+                                                                          t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                                                </div>
+                                                            </h3>
+                                                            <a href="#" class="js_delete_product"
+                                                               aria-label="Remove from cart" title="Remove from cart">
+                                                                <img src="/theme_electronest/static/src/img/icons/close1.svg"
+                                                                     alt=""/>
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="checkoutbox px-3 py-3">
+                                <h5>Cart Totals</h5>
+                                <div class="d-flex justify-content-between pb-3">
+                                    <h3>Subtotal</h3>
+                                    <div class="price checkprice">
+                                        <h3>
+                                            <span t-field="website_sale_order.amount_untaxed"
+                                                  t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                        </h3>
+                                    </div>
+                                </div>
+                                <!-- Shipping removed for now as it's usually dynamic step -->
+                                <div class="d-flex justify-content-between pb-3" t-if="website_sale_order and website_sale_order.amount_delivery">
+                                    <h3>Shipping Charge</h3>
+                                    <div class="price checkprice">
+                                        <h3>
+                                            <span t-field="website_sale_order.amount_delivery"
+                                                  t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                        </h3>
+                                    </div>
+                                </div>
+                                <div class="carttotal">
+                                    <div class="d-flex justify-content-between align-items-center pb-3">
+                                        <h3 class="mb-0">Total :</h3>
+                                        <div class="price">
+                                            <h3>
+                                                <div class="d-flex gap-2 main align-items-center">
+                                                    <span t-field="website_sale_order.amount_total"
+                                                          t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                                </div>
+                                            </h3>
+                                        </div>
+                                    </div>
+                                    <a role="button" t-if="website_sale_order and website_sale_order.website_order_line"
+                                       class="bttn d-block w-100 text-center"
+                                       href="/shop/checkout?express=1">Place
+                                        Order
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+    </template>
+
+    <!-- Inherit cart page to modify summary display and remove default navigation elements -->
+    <template id="website_cart_page_inherited" inherit_id="website_sale.cart">
+        <xpath expr="//t[@t-set='show_shorter_cart_summary']" position="replace">
+            <t t-set="show_shorter_cart_summary" t-value="False"/>
+        </xpath>
+
+        <xpath expr="//t[@t-call='website_sale.checkout_layout']" position="inside">
+            <t t-set="show_navigation_button" t-value="False"/>
+        </xpath>
+
+        <xpath expr="//h3[@class='mb-4']" position="replace">
+        </xpath>
+    </template>
+
+    <!-- Inherit checkout layout to control cart summary visibility and adjust cart layout width -->
+    <template id="checkout_layout_summary_visibility_inherited" inherit_id="website_sale.checkout_layout">
+        <xpath expr="//div[@id='o_cart_summary']" position="attributes">
+            <attribute name="t-if">show_shorter_cart_summary and show_navigation_button</attribute>
+        </xpath>
+
+        <xpath expr="//div[@id='o_wsale_total_accordion']" position="attributes">
+            <attribute name="t-else" remove="1"/>
+            <attribute name="t-elif">show_navigation_button</attribute>
+        </xpath>
+
+        <xpath expr="//div[contains(@t-attf-class, 'oe_cart') and contains(@t-attf-class, 'col-lg-7')]"
+               position="attributes">
+            <attribute name="t-attf-class">oe_cart col-12 #{show_navigation_button and 'col-lg-7' or ''}</attribute>
+        </xpath>
+    </template>
+</odoo>
