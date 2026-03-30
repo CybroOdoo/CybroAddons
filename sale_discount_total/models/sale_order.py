@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models
+from odoo import api, fields, models, _
 
 
 class SaleOrder(models.Model):
@@ -143,3 +143,18 @@ class SaleOrder(models.Model):
           to the supply rate and always return True"""
         self.supply_rate()
         return True
+
+    def _confirmation_error_message(self):
+        """ Return whether order can be confirmed or not if not then returm error message. """
+        self.ensure_one()
+        if self.state not in {'draft', 'sent','waiting'}:
+            return _("Some orders are not in a state requiring confirmation.")
+        if any(
+            not line.display_type
+            and not line.is_downpayment
+            and not line.product_id
+            for line in self.order_line
+        ):
+            return _("A line on these orders missing a product, you cannot confirm it.")
+
+        return False

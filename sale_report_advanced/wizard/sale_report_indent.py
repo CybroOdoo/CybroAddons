@@ -84,10 +84,10 @@ class SaleReportIndent(models.TransientModel):
         domain = [('order_id.state', '!=', 'cancel')]
         if self.from_date:
             domain.append(('order_id.date_order', '>=', self.from_date))
-        elif self.to_date:
+        if self.to_date:
             domain.append(('order_id.date_order', '<=', self.to_date))
-        elif self.company_ids:
-            domain.append(('order_id.company_id', 'in', self.company_ids))
+        if self.company_ids:
+            domain.append(('order_id.company_id', 'in', self.company_ids.ids))
         sale_order_line = self.env['sale.order.line'].search(domain)
         res = self._get_orders(sale_order_line)
         if not res:

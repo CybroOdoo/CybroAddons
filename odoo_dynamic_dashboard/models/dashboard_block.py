@@ -79,6 +79,7 @@ class DashboardBlock(models.Model):
     fa_color = fields.Char(string="Icon Color", help='Icon Color of Tile')
     filter = fields.Char(string="Filter", help="Add filter")
     model_id = fields.Many2one('ir.model', string='Model',
+                               domain=[('model', '!=', '_unknown')],
                                help="Select the module name")
     model_name = fields.Char(related='model_id.model', string="Model Name",
                              help="Added model_id model")

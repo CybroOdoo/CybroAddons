@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Sale Discount on Total Amount',
-    'version': '18.0.1.1.0',
+    'version': '18.0.1.1.1',
     'category': 'Sales Management',
     'summary': "Discount on Total in Sale and Invoice With Discount Limit "
                "and Approval",
