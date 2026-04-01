@@ -63,6 +63,18 @@ class LoyaltyReward(models.Model):
                                           default=200,
                                           help="points required for claiming "
                                                "the reward")
+    min_redemption_amount = fields.Float(
+        string='Minimum Points to Redeem',
+        default=0.0,
+        help="Minimum number of points the customer must redeem at once")
+    rounding_precision = fields.Integer(
+        string='Decimal Places',
+        default=0,
+        help="Number of decimal places for earned points (0 = integers only)")
+    rounding_mode = fields.Selection(
+        [('normal', 'Normal'), ('up', 'Round Up'), ('down', 'Round Down')],
+        string='Rounding Mode',
+        help="How to round earned points. Leave empty to disable rounding.")
 
     @api.depends('reward_type', 'reward_product_id', 'discount_mode',
                  'discount', 'currency_id', 'discount_applicability',

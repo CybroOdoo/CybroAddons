@@ -22,15 +22,16 @@ export class RewardPopup extends AbstractAwaitablePopup {
             ev.state.redeemPoints = ev.points.el.value
         if (isNaN(ev.state.redeemPoints)) {
             ev.popup.add(ErrorPopup, {
-                body: _t(
-                    "Points to redeem should be a number."
-                ),
+                body: _t("Points to redeem should be a number."),
+            });
+        } else if (ev.props.min_redemption_points > 0 &&
+                   parseFloat(ev.state.redeemPoints) < ev.props.min_redemption_points) {
+            ev.popup.add(ErrorPopup, {
+                body: _t("You must redeem at least %s points.", ev.props.min_redemption_points),
             });
         } else if (ev.props.max_redemption_points < ev.state.redeemPoints) {
             ev.popup.add(ErrorPopup, {
-                body: _t(
-                "Points to redeem should be less than Maximum Redemption Point."
-                ),
+                body: _t("Points to redeem should be less than Maximum Redemption Point."),
             });
         }
     }

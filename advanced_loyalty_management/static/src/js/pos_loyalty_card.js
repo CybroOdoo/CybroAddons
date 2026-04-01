@@ -13,7 +13,39 @@ function _newRandomRewardCode() {
     return (Math.random() + 1).toString(36).substring(3);
 }
 
+function _applyRounding(points, precision, mode) {
+    const factor = Math.pow(10, precision);
+    switch (mode) {
+        case 'up':   return Math.ceil(points * factor) / factor;
+        case 'down': return Math.floor(points * factor) / factor;
+        default:     return Math.round(points * factor) / factor;
+    }
+}
+
 patch(Order.prototype,{
+
+    async _updatePrograms() {
+        await super._updatePrograms(...arguments);
+        for (const change of Object.values(this.couponPointChanges)) {
+            const program = this.pos.program_by_id[change.program_id];
+            if (!program) continue;
+            const redemptionReward = this.pos.rewards.find(
+                r => r.program_id === program && r.reward_type === 'redemption'
+            );
+            if (redemptionReward?.rounding_mode) {
+                change.points = _applyRounding(
+                    change.points,
+                    redemptionReward.rounding_precision ?? 0,
+                    redemptionReward.rounding_mode
+                );
+            }
+        }
+    },
+
+    set_pricelist(pricelist) {
+        super.set_pricelist(...arguments);
+        setTimeout(() => this._updateRewards?.(), 0);
+    },
 
     _getRewardLineValues(args) {
         //---added the new reward type to this function----
@@ -24,6 +56,26 @@ patch(Order.prototype,{
             return this._getRewardLineValuesProduct(args);
         } else if (reward.reward_type === "redemption"){
             return this._getRewardLineValuesRedemption(args)}
+    },
+
+    _applyReward(reward, coupon_id, args) {
+        const result = super._applyReward(...arguments);
+        
+        if (reward.reward_type === 'redemption' && result === true) {
+            const salesperson = this.get_order_salesperson?.() ||
+                                this.pos.get_cashier?.();
+            if (salesperson) {
+                for (const line of this._get_reward_lines()) {
+                    if (line.coupon_id === coupon_id &&
+                        line.reward_id === reward.id &&
+                        line.set_line_emp &&
+                        !line.get_line_emp?.()) {
+                        line.set_line_emp(salesperson);
+                    }
+                }
+            }
+        }
+        return result;
     },
 
     _getRewardLineValuesRedemption(args){
@@ -51,7 +103,7 @@ patch(Order.prototype,{
             points_cost: cost,
             reward_identifier_code: rewardCode,
             merge: false,
-            tax_ids: [],
+            tax_ids: discountProduct.taxes_id,
         },
         ]
     },
@@ -64,7 +116,6 @@ patch(Order.prototype,{
             const { coupon_id, points, program_id } = pointChange;
             const program = this.pos.program_by_id[program_id];
             if (program.program_type !== "loyalty") {
-                // Not a loyalty program, skip
                 continue;
             }
             const loyaltyCard = this.pos.couponCache[coupon_id] || /* or new card */ {
@@ -75,13 +126,29 @@ patch(Order.prototype,{
 
             var balance = loyaltyCard.balance;
             if(this.pos.get_order().convertToLoyalty == undefined){
-            won += points - this._getPointsCorrection(program);
+                won += points - this._getPointsCorrection(program);
             }
             else{
-            won += points - this._getPointsCorrection(program);
+                won += points - this._getPointsCorrection(program);
                 if(program_id === this.pos.get_order().programToAdd){
-                    won += this.pos.get_order().convertToLoyalty
+                    won += this.pos.get_order().convertToLoyalty;
+                }
             }
+            
+            for (const line of this._get_reward_lines()) {
+                if (!line.reward_id) continue;
+                const lineReward = this.pos.reward_by_id[line.reward_id];
+                if (lineReward?.reward_type === 'redemption' &&
+                    lineReward.program_id.id === program_id) {
+                    for (const rule of program.rules) {
+                        if (rule.reward_point_mode === 'money') {
+                            won -= round_pr(
+                                Math.abs(line.get_price_with_tax()) * rule.reward_point_amount,
+                                0.01
+                            );
+                        }
+                    }
+                }
             }
             if (coupon_id !== 0) {
                 for (const line of this._get_reward_lines()) {

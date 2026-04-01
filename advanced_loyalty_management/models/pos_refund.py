@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import models, fields
+from odoo import api, models, fields
 
 
 class PosOrder(models.Model):
@@ -79,4 +79,34 @@ class PosOrder(models.Model):
                                 lambda x: not x.is_reward_line).mapped('qty'))
                         reward_points = qty * points_granted
                         program.points += reward_points
+
         return res
+
+    @api.model
+    def _process_order(self, order, draft, existing_order):
+        """After saving the order, deduct loyalty points for unlinked refunds
+        (orders with negative quantities entered directly in the POS, without
+        linking to an original order through the ticket screen).
+        """
+        order_id = super()._process_order(order, draft, existing_order)
+        if draft:
+            return order_id
+        pos_order = self.browse(order_id)
+        if pos_order.refunded_order_ids or not pos_order.partner_id:
+            return order_id
+        non_reward_lines = pos_order.lines.filtered(lambda x: not x.is_reward_line)
+        if not any(line.qty < 0 for line in non_reward_lines):
+            return order_id
+        cards = self.env['loyalty.card'].search(
+            [('partner_id', '=', pos_order.partner_id.id)])
+        refund_total = sum(non_reward_lines.mapped('price_subtotal_incl'))
+        refund_qty = sum(non_reward_lines.mapped('qty'))
+        for card in cards:
+            for rule in card.program_id.rule_ids:
+                if rule.reward_point_mode == 'money':
+                    card.points += refund_total * rule.reward_point_amount
+                elif rule.reward_point_mode == 'unit':
+                    card.points += refund_qty * rule.reward_point_amount
+                elif rule.reward_point_mode == 'order':
+                    card.points -= rule.reward_point_amount
+        return order_id

@@ -37,9 +37,9 @@ class PosSession(models.Model):
         result = super()._loader_params_loyalty_reward()
         result['search_params']['fields'].extend(
             ['redemption_point', 'redemption_amount', 'max_redemption_amount',
-              'redemption_frequency',
-             'redemption_frequency_unit', 'redemption_eligibility',
-             'max_redemption_type'])
+             'redemption_frequency', 'redemption_frequency_unit',
+             'redemption_eligibility', 'max_redemption_type',
+             'min_redemption_amount', 'rounding_precision', 'rounding_mode'])
         return result
 
     def _loader_params_res_partner(self):

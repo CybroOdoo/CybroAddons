@@ -5,21 +5,18 @@ import { patch } from "@web/core/utils/patch";
 
 patch(PaymentScreen.prototype, {
     async afterOrderValidation(suggestToSync = true) {
-    //---remaining points calculated after claiming the reward is shown in the redemption history
-        const res = super.afterOrderValidation(...arguments);
-        if(this.pos.get_order().pointsCost != undefined){
-            const order = this.pos.get_order()
-            const coupon = order.selectedCoupon
-            let pointsOfPartner = 0
-            if(order.partner.loyalty_cards.length != undefined){
-                pointsOfPartner += order.partner.loyalty_cards[coupon].points
-            }
-            const pointsWon = order.couponPointChanges[coupon].points
-            const pointsSpent = order.pointsCost
-            const balance = pointsOfPartner + pointsWon - pointsSpent
-            const token = order.access_token
-            const remaining_points = this.env.services.orm.call('pos.order.line','remaining_points',[[balance],[token]])
+        const order = this.pos.get_order();
+        const coupon = order.selectedCoupon;
+        const pointsCost = order.pointsCost;
+
+        const res = await super.afterOrderValidation(...arguments);
+
+        if (pointsCost != undefined && coupon != undefined) {
+            await this.env.services.orm.call(
+                'pos.order.line', 'deduct_loyalty_points',
+                [[coupon], [pointsCost], [order.access_token]]
+            );
         }
-        return res
+        return res;
     },
 });

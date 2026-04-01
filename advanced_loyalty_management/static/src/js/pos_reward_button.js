@@ -157,7 +157,8 @@ patch(RewardButton.prototype,{
                    rewards: rewards,
                    selected_reward: selectedReward,
                    order: order,
-                   max_redemption_points : points[0],
+                   max_redemption_points: points[0],
+                   min_redemption_points: selectedReward.reward.min_redemption_amount || 0,
                    property: this
             });
             }

@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Advanced Loyalty Management',
-    'version': '17.0.1.0.3',
+    'version': '17.0.1.0.26',
     'category': 'Point of Sale',
     'summary': 'Advanced loyalty Management',
     'description': """When an order is refunded, any loyalty points gained from 
@@ -32,7 +32,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['pos_loyalty', 'sale'],
+    'depends': ['pos_loyalty','sale'],
     'data': [
         'views/loyalty_program_views.xml',
         'views/loyalty_reward_rule_views.xml',
