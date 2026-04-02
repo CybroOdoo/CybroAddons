@@ -42,11 +42,6 @@ patch(Order.prototype,{
         }
     },
 
-    set_pricelist(pricelist) {
-        super.set_pricelist(...arguments);
-        setTimeout(() => this._updateRewards?.(), 0);
-    },
-
     _getRewardLineValues(args) {
         //---added the new reward type to this function----
         const reward = args["reward"];
