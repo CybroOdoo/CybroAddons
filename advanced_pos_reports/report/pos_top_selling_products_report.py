@@ -66,7 +66,7 @@ class ReportPosTopSellingProducts(models.AbstractModel):
         }
 
     @api.model
-    def _get_report_values(self, data=None):
+    def _get_report_values(self, docids, data=None):
         """Get report values"""
         data = dict(data or {})
         data.update(
