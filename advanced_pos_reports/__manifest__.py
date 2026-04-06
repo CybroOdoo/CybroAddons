@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Advanced POS Reports',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Point of Sale',
     'summary': """Generates various reports from POS screen and reporting menu""",
     'description': """Generates various reports like, top 
