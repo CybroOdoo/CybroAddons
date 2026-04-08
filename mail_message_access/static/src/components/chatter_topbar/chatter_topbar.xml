@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <!-- Replace the buttons with the condition if the user have access or not -->
+    <t t-inherit="mail.Chatter" t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('o-mail-Chatter-sendMessage')]"
+               position="replace">
+            <button class="o-mail-Chatter-sendMessage btn text-nowrap me-1"
+                    t-if="state.access_send_message_btn" t-att-class="{
+                    'btn-primary': state.composerType !== 'note',
+                    'btn-secondary': state.composerType === 'note',
+                    'active': state.composerType === 'message',
+                    'my-2': !props.compactHeight
+                }"
+                    t-att-disabled="!state.thread.hasWriteAccess and !(state.thread.hasReadAccess and state.thread.canPostOnReadonly) and props.threadId"
+                    data-hotkey="m"
+                    t-on-click="() => this.toggleComposer('message')">
+                    Send message
+                </button>
+        </xpath>
+        <xpath expr="//button[hasclass('o-mail-Chatter-logNote')]"
+               position="replace">
+                <button class="o-mail-Chatter-logNote btn text-nowrap me-1"
+                        t-att-class="{
+                    'btn-primary active': state.composerType === 'note',
+                    'btn-secondary': state.composerType !== 'note',
+                    'my-2': !props.compactHeight
+                }" data-hotkey="shift+m" t-if="state.access_log_note_btn"
+                        t-on-click="() => this.toggleComposer('note')">
+                    Log note
+                </button>
+        </xpath>
+    </t>
+</templates>
