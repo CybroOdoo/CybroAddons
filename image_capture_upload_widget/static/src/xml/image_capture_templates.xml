@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="CaptureImage">
+        <div class="capture-container d-inline-block position-relative">
+            <!-- Floating top-right buttons -->
+            <div class="camera-floating-buttons">
+                <t t-if="!props.readonly">
+                    <!-- File uploader (edit + clear buttons) -->
+                    <FileUploader
+                        acceptedFileExtensions="props.acceptedFileExtensions"
+                        onUploaded.bind="onFileUploaded">
+
+                        <t t-set-slot="toggler">
+                            <button
+                                class="o_select_file_button btn btn-light border-0 rounded-circle p-1"
+                                data-tooltip="Edit"
+                                aria-label="Edit">
+                                <i class="fa fa-pencil fa-fw"/>
+                            </button>
+                        </t>
+                        <button
+                            t-if="props.value and state.isValid"
+                            class="o_clear_file_button btn btn-light border-0 rounded-circle p-1"
+                            data-tooltip="Clear"
+                            aria-label="Clear"
+                            t-on-click="onFileRemove">
+                            <i class="fa fa-trash-o fa-fw"/>
+                        </button>
+
+                    </FileUploader>
+                    <!-- Camera button -->
+                    <button
+                        class="o_upload_image_button btn btn-light border-0 rounded-circle p-1"
+                        data-tooltip="Upload"
+                        aria-label="Upload"
+                        id="camera"
+                        t-ref="camera"
+                        t-on-click="OnClickOpenCamera">
+                        <i class="fa fa-camera fa-fw"/>
+                    </button>
+
+                </t>
+            </div>
+            <!-- Preview Image -->
+            <t t-if="props.name">
+                <img
+                    class="img img-fluid w-100 capture-preview"
+                    alt="Binary file"
+                    t-att-src="getUrl(props.previewImage or props.name)"
+                    t-att-name="props.name"
+                    t-att-style="sizeStyle"
+                    t-on-error.stop="onLoadFailed"/>
+            </t>
+            <div class="capture-flex-row">
+                <video id="player"
+               class="capture-video capture-half d-none"
+               t-ref="player"
+               autoplay="true"></video>
+
+                    <canvas id="snapshot"
+                            width="320" height="240"
+                            class="capture-video capture-half d-none"></canvas>
+        </div>
+            <div class="capture-buttons">
+                <div id="capture"
+                     class="btn btn-primary d-none"
+                     t-on-click="OnClickCaptureImage"
+                     t-ref="capture">
+                    Capture
+                </div>
+
+                <div id="save_image"
+                     class="btn btn-success d-none"
+                     t-on-click="OnClickSaveImage"
+                     t-ref="save_image">
+                    Save Image
+                </div>
+            </div>
+            <input type="hidden" name="image" id="image"/>
+        </div>
+    </t>
+</templates>
