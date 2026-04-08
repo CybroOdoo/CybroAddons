@@ -6,16 +6,28 @@ import { patch } from "@web/core/utils/patch";
 patch(PaymentScreen.prototype, {
     async afterOrderValidation(suggestToSync = true) {
         const order = this.pos.get_order();
-        const coupon = order.selectedCoupon;
-        const pointsCost = order.pointsCost;
+        const rewardCouponIds = [
+            ...new Set(
+                (order?._get_reward_lines?.() || [])
+                    .filter((line) => line.coupon_id)
+                    .map((line) => line.coupon_id)
+            ),
+        ];
 
         const res = await super.afterOrderValidation(...arguments);
 
-        if (pointsCost != undefined && coupon != undefined) {
-            await this.env.services.orm.call(
+        if (rewardCouponIds.length) {
+            const remainingPoints = await this.env.services.orm.call(
                 'pos.order.line', 'deduct_loyalty_points',
-                [[coupon], [pointsCost], [order.access_token]]
+                [[], [], [order.access_token]]
             );
+            for (const couponId of rewardCouponIds) {
+                const currentCoupon = this.pos.couponCache[couponId];
+                const updatedBalance = remainingPoints?.[couponId];
+                if (currentCoupon && updatedBalance !== undefined) {
+                    currentCoupon.balance = updatedBalance;
+                }
+            }
         }
         return res;
     },

@@ -20,6 +20,7 @@
 #
 #############################################################################
 from odoo import api, models, fields
+from odoo.tools import float_round
 
 
 class PosOrderLine(models.Model):
@@ -38,32 +39,102 @@ class PosOrderLine(models.Model):
             [('is_reward_line', '=', 'true'), ('order_id', '=', order.id)])
         pos_order_line.points_remaining = balance[0]
 
+    def _apply_reward_points_rounding(self, points, reward):
+        """Apply the custom rounding configured on Redemption rewards."""
+        if not reward or not reward.rounding_mode:
+            return points
+        rounding_method = {
+            'normal': 'HALF-UP',
+            'up': 'UP',
+            'down': 'DOWN',
+        }.get(reward.rounding_mode, 'HALF-UP')
+        return float_round(
+            points,
+            precision_digits=reward.rounding_precision or 0,
+            rounding_method=rounding_method,
+        )
+
+    def _line_qualifies_for_program_rule(self, line, rule, program):
+        """Mirror the POS points computation for Redemption program rounding."""
+        if not (rule.any_product or line.product_id.id in rule.valid_product_ids.ids):
+            return False
+        if not line.is_reward_line:
+            return True
+        reward = line.reward_id
+        if not reward:
+            return False
+        if reward.reward_type == 'discount' and reward.program_id.trigger == 'auto':
+            return False
+        if reward.program_id == program or reward.program_id.program_type in ('gift_card', 'ewallet'):
+            return False
+        return True
+
+    def _compute_program_points_raw(self, order, program):
+        """Recompute raw points before custom Redemption rounding is applied."""
+        points = 0.0
+        order_lines = order.lines
+        for rule in program.rule_ids:
+            eligible_lines = order_lines.filtered(
+                lambda line: self._line_qualifies_for_program_rule(line, rule, program)
+            )
+            amount_with_tax = sum(eligible_lines.mapped('price_subtotal_incl'))
+            amount_without_tax = sum(eligible_lines.mapped('price_subtotal'))
+            amount_check = (
+                amount_with_tax
+                if rule.minimum_amount_tax_mode == 'incl' and amount_with_tax
+                else amount_without_tax
+            )
+            if rule.minimum_amount > amount_check:
+                continue
+            total_product_qty = sum(
+                eligible_lines.filtered(lambda line: not line.is_reward_line).mapped('qty')
+            )
+            if total_product_qty < rule.minimum_qty:
+                continue
+            if rule.reward_point_mode == 'order':
+                points += rule.reward_point_amount
+            elif rule.reward_point_mode == 'money':
+                points += float_round(
+                    rule.reward_point_amount * amount_with_tax,
+                    precision_digits=2,
+                    rounding_method='HALF-UP',
+                )
+            elif rule.reward_point_mode == 'unit':
+                points += rule.reward_point_amount * total_product_qty
+        return points
+
     @api.model
     def deduct_loyalty_points(self, coupon_id, points_spent, token):
-        """Deduct redeemed points from the customer's loyalty card and
-        correct for excess points generated on the redemption discount amount.
-        Records the resulting balance on the order line for Redemption History.
+        """Deduct all claimed reward points from the order loyalty cards.
+
+        The POS screen can contain multiple reward lines from different
+        programs/cards. We therefore recompute the deduction from the saved
+        order lines instead of relying on the last selected reward only.
         """
-        loyalty_card = self.env['loyalty.card'].sudo().browse(int(coupon_id[0]))
-        if not loyalty_card.exists():
+        order = self.env['pos.order'].search([('access_token', '=', token[0])], limit=1)
+        if not order:
             return
-        order = self.env['pos.order'].search([('access_token', '=', token[0])])
-
-        loyalty_card.points -= points_spent[0]
-
-        redemption_line = self.env['pos.order.line'].search([
-            ('order_id', '=', order.id),
-            ('is_reward_line', '=', True),
-            ('coupon_id', '=', loyalty_card.id),
-        ], limit=1)
-        if redemption_line:
-            discount_amount = abs(redemption_line.price_subtotal_incl)
-            for rule in loyalty_card.program_id.rule_ids:
-                if rule.reward_point_mode == 'money':
-                    loyalty_card.points -= discount_amount * rule.reward_point_amount
 
         reward_lines = self.env['pos.order.line'].search([
-            ('is_reward_line', '=', True),
             ('order_id', '=', order.id),
+            ('is_reward_line', '=', True),
+            ('coupon_id', '!=', False),
         ])
-        reward_lines.points_remaining = loyalty_card.points
+        if not reward_lines:
+            return
+
+        remaining_points = {}
+        for loyalty_card in reward_lines.mapped('coupon_id').sudo():
+            card_reward_lines = reward_lines.filtered(
+                lambda line: line.coupon_id.id == loyalty_card.id
+            )
+
+            loyalty_card.points -= sum(card_reward_lines.mapped('points_cost'))
+
+            remaining_points[loyalty_card.id] = loyalty_card.points
+
+        for reward_line in reward_lines:
+            reward_line.points_remaining = remaining_points.get(
+                reward_line.coupon_id.id, reward_line.points_remaining
+            )
+        return remaining_points
