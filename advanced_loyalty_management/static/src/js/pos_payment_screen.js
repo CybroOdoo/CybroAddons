@@ -5,21 +5,30 @@ import { patch } from "@web/core/utils/patch";
 
 patch(PaymentScreen.prototype, {
     async afterOrderValidation(suggestToSync = true) {
-    //---remaining points calculated after claiming the reward is shown in the redemption history
-        const res = super.afterOrderValidation(...arguments);
-        if(this.pos.get_order().pointsCost != undefined){
-            const order = this.pos.get_order()
-            const coupon = order.selectedCoupon
-            let pointsOfPartner = 0
-            if(order.partner.loyalty_cards.length != undefined){
-                pointsOfPartner += order.partner.loyalty_cards[coupon].points
+        const order = this.pos.get_order();
+        const rewardCouponIds = [
+            ...new Set(
+                (order?._get_reward_lines?.() || [])
+                    .filter((line) => line.coupon_id)
+                    .map((line) => line.coupon_id)
+            ),
+        ];
+
+        const res = await super.afterOrderValidation(...arguments);
+
+        if (rewardCouponIds.length) {
+            const remainingPoints = await this.env.services.orm.call(
+                'pos.order.line', 'deduct_loyalty_points',
+                [[], [], [order.access_token]]
+            );
+            for (const couponId of rewardCouponIds) {
+                const currentCoupon = this.pos.couponCache[couponId];
+                const updatedBalance = remainingPoints?.[couponId];
+                if (currentCoupon && updatedBalance !== undefined) {
+                    currentCoupon.balance = updatedBalance;
+                }
             }
-            const pointsWon = order.couponPointChanges[coupon].points
-            const pointsSpent = order.pointsCost
-            const balance = pointsOfPartner + pointsWon - pointsSpent
-            const token = order.access_token
-            const remaining_points = this.env.services.orm.call('pos.order.line','remaining_points',[[balance],[token]])
         }
-        return res
+        return res;
     },
 });

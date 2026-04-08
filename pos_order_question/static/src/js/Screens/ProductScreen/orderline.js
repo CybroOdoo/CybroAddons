@@ -39,5 +39,3 @@ patch(Orderline.prototype, {
         }
     },
 });
-
-
