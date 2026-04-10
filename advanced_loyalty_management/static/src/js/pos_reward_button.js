@@ -14,6 +14,10 @@ patch(RewardButton.prototype,{
         this.state = useState({
             frequency : 0,
         });
+        // Guardas para evitar loop infinito: check_redemption se llama solo
+        // cuando cambia el partner, y nunca concurrentemente.
+        this._lastCheckedPartnerId = null;
+        this._checkingRedemption = false;
     },
 
     _mergeFreeProductRewards(freeProductRewards, potentialFreeProductRewards,redemption) {
@@ -74,7 +78,18 @@ patch(RewardButton.prototype,{
         this._getBaseCouponBalance(coupon_id) >= (reward.redemption_eligibility || 0);
         });
         if(order.partner != null){
-            var checkFrequency =  this.check(rewards)
+            const partnerId = order.partner.id;
+            // Solo llamar a check_redemption si el partner cambió y no hay
+            // una llamada RPC en curso. Evita el loop infinito causado por
+            // useState reactivo que dispara re-renders al actualizar state.frequency.
+            if (partnerId !== this._lastCheckedPartnerId && !this._checkingRedemption) {
+                this._lastCheckedPartnerId = partnerId;
+                this.check(rewards);
+            }
+        } else {
+            // Si se quita el partner, resetear para que la próxima selección
+            // vuelva a consultar check_redemption.
+            this._lastCheckedPartnerId = null;
         }
         const potentialFreeProductRewards = this.pos.getPotentialFreeProductRewards()
         return discountRewards.concat(
@@ -82,9 +97,11 @@ patch(RewardButton.prototype,{
     },
 
     async check(rewards){
-    //---gives the number of times the reward is claimed---
+    //---da la cantidad de veces que el reward fue reclamado por el partner---
+        this._checkingRedemption = true;
         let count = 0;
         const partner_id = this.pos.get_order().partner.id
+        try {
             var checkRedemption = await this.env.services.orm.call("res.partner","check_redemption",[[partner_id]]).then((result) =>{
         const today = new Date()
         const year = today.getFullYear();
@@ -139,7 +156,10 @@ patch(RewardButton.prototype,{
         }
         return count
         });
-        this.state.frequency = checkRedemption
+            this.state.frequency = checkRedemption;
+        } finally {
+            this._checkingRedemption = false;
+        }
     },
 
      async click() {
