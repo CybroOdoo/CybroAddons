@@ -97,6 +97,8 @@ class SubscriptionContracts(models.Model):
 
     generate_invoice_button = fields.Boolean(string='Generate Invoice button visibility',
                                              default=False, help='Generate invoice button visibility')
+    amount_untaxed = fields.Monetary(string='Untaxed Amount', store=True, compute='_compute_amount_all')
+    amount_tax = fields.Monetary(string='Taxes', store=True, compute='_compute_amount_all')
 
     def action_to_confirm(self):
         """ Confirm the Contract """
@@ -121,11 +123,23 @@ class SubscriptionContracts(models.Model):
                     'price_unit': line.price_unit,
                     'tax_ids': line.tax_ids,
                     'discount': line.discount,
+                    'tax_ids': [(6, 0, line.tax_ids.ids)],
                 }) for line in self.contract_line_ids]
             })
         self.invoice_count = self.env['account.move'].search_count([
             ('contract_origin', '=', self.id)])
         self.generate_invoice_button = True
+
+    @api.depends('contract_line_ids.price_subtotal', 'contract_line_ids.price_total')
+    def _compute_amount_all(self):
+        for contract in self:
+            # Using mapped ensures we get the values even during the 'write' transition
+            untaxed = sum(contract.contract_line_ids.mapped('price_subtotal'))
+            total = sum(contract.contract_line_ids.mapped('price_total'))
+
+            contract.amount_untaxed = untaxed
+            contract.amount_total = total
+            contract.amount_tax = total - untaxed
 
     def action_lock(self):
         """ Lock subscription contract """

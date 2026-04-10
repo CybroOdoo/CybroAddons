@@ -57,9 +57,24 @@ class SubscriptionContractLines(models.Model):
                                help='Taxes to be added')
     discount = fields.Float(string="Discount (%)", digits='Discount',
                             store=True, readonly=False, help='Discount in %')
+    price_subtotal = fields.Monetary(
+        compute='_compute_amount',
+        string='Subtotal',
+        store=True,
+        precompute=True)  # precompute helps UI responsiveness
+
+    price_total = fields.Monetary(
+        compute='_compute_amount',
+        string='Total',
+        store=True,
+        precompute=True)
+
+    # Ensure your legacy field also stores correctly
     sub_total = fields.Monetary(
-        string="Total", compute='_compute_amount', store=True, precompute=True,
-        help='Sub Total Amount')
+        string="Total (Legacy)",
+        compute='_compute_amount',
+        store=True,
+        precompute=True)
 
     @api.depends('product_id')
     def _compute_description(self):
@@ -70,6 +85,15 @@ class SubscriptionContractLines(models.Model):
             product_lang = option.product_id.with_context(
                 lang=self.subscription_contract_id.partner_id.lang)
             option.description = product_lang.get_product_multiline_description_sale()
+
+    @api.onchange('product_id')
+    def _onchange_product_id_taxes(self):
+        """ Automatically fetch taxes when product is selected """
+        for rec in self:
+            if rec.product_id:
+                rec.tax_ids = rec.product_id.taxes_id.filtered(
+                    lambda t: t.company_id == rec.subscription_contract_id.company_id
+                )
 
     @api.depends('product_id')
     def _compute_product_uom(self):
@@ -83,10 +107,24 @@ class SubscriptionContractLines(models.Model):
         for rec in self:
             rec.price_unit = rec.product_id.lst_price
 
-    @api.depends('product_id', 'qty_ordered', 'discount', 'price_unit')
+    @api.depends('qty_ordered', 'price_unit', 'tax_ids', 'discount')
     def _compute_amount(self):
-        """ Compute total amount """
         for rec in self:
-            total = rec.price_unit * rec.qty_ordered
-            discount = total * rec.discount / 100
-            rec.sub_total = total - discount
+            # 1. Calculate price after discount
+            discount_factor = (1 - (rec.discount or 0.0) / 100.0)
+            price_after_discount = rec.price_unit * discount_factor
+
+            # 2. Use Odoo's tax engine
+            # We pass partner and currency to ensure rounding is correct on Save
+            taxes = rec.tax_ids.compute_all(
+                price_after_discount,
+                rec.currency_id,
+                rec.qty_ordered,
+                product=rec.product_id,
+                partner=rec.subscription_contract_id.partner_id
+            )
+
+            # 3. Assigning values - using .get() is safer during the Save process
+            rec.price_subtotal = taxes.get('total_excluded', 0.0)
+            rec.price_total = taxes.get('total_included', 0.0)
+            rec.sub_total = taxes.get('total_excluded', 0.0)

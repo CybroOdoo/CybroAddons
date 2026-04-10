@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
-    <!-- Template for my contracts menu in portal -->
     <template id="portal_my_home_contracts" name="My Contracts"
               customize_show="True" inherit_id="portal.portal_my_home">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
@@ -21,7 +20,6 @@
         </xpath>
     </template>
 
-    <!-- Template for my contracts -->
     <template id="tmp_contract_details" name="My Contracts">
         <t t-call="portal.portal_layout">
             <t t-set="breadcrumbs_searchbar" t-value="True"/>
@@ -40,8 +38,7 @@
                                 <th>Customer Name</th>
                                 <th>Start Date</th>
                                 <th>End Date</th>
-                                <th>Date of Next Invoice</th>
-                                <th>Stage</th>
+                                <th class="text-end">Total Amount</th> <th>Stage</th>
                                 <th>Print</th>
                             </tr>
                         </thead>
@@ -49,27 +46,17 @@
                             <t t-foreach="records" t-as="order">
                                 <tr>
                                     <td>
-                                        <a t-attf-href='/contracts/{{order.id}}/'
-                                           t-esc="order.name"/>
+                                        <a t-attf-href='/contracts/{{order.id}}/' t-esc="order.name"/>
                                     </td>
-                                    <td>
-                                        <span t-field="order.partner_id.name"/>
+                                    <td><span t-field="order.partner_id.name"/></td>
+                                    <td><span t-field="order.date_start"/></td>
+                                    <td><span t-field="order.date_end"/></td>
+                                    <td class="text-end"> <span t-field="order.amount_total"
+                                              t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
                                     </td>
+                                    <td><span t-field="order.state"/></td>
                                     <td>
-                                        <span t-field="order.date_start"/>
-                                    </td>
-                                    <td>
-                                        <span t-field="order.date_end"/>
-                                    </td>
-                                    <td>
-                                        <span t-field="order.next_invoice_date"/>
-                                    </td>
-                                    <td>
-                                        <span t-field="order.state"/>
-                                    </td>
-                                    <td>
-                                        <a t-attf-class='btn btn-success'
-                                           t-attf-href="/my/contracts/report/{{order.id}}">
+                                        <a t-attf-class='btn btn-success' t-attf-href="/my/contracts/report/{{order.id}}">
                                             Report
                                         </a>
                                     </td>
@@ -82,29 +69,18 @@
         </t>
     </template>
 
-    <!-- Template for Subscription contract details -->
     <template id="contract_details" name="Subscription contract details">
         <t t-call="portal.portal_layout">
             <div class="container" style="margin-bottom: 50px; width: 100%">
-                    <div class="page">
-                        <h2>
-                            <t t-esc='records.name'/>
-                        </h2>
+                <div class="page">
+                    <h2><t t-esc='records.name'/></h2>
 
                     <table class="table table-striped">
                         <tr>
                             <th>Customer:</th>
-                            <td>
-                                <t t-if="records.partner_id.name">
-                                    <t t-esc="records.partner_id.name"/>
-                                </t>
-                            </td>
+                            <td><t t-if="records.partner_id.name"><t t-esc="records.partner_id.name"/></t></td>
                             <th>Reference:</th>
-                            <td>
-                                <t t-if="records.reference">
-                                    <t t-esc="records.reference"/>
-                                </t>
-                            </td>
+                            <td><t t-if="records.reference"><t t-esc="records.reference"/></t></td>
                         </tr>
                         <tr>
                             <th>Recurring Period:</th>
@@ -115,41 +91,16 @@
                                 </t>
                             </td>
                             <th>Company:</th>
-                            <td>
-                                <t t-if="records.company_id">
-                                    <t t-esc="records.company_id.name"/>
-                                </t>
-                            </td>
+                            <td><t t-if="records.company_id"><t t-esc="records.company_id.name"/></t></td>
                         </tr>
                         <tr>
                             <th>Start Date:</th>
-                            <td>
-                                <t t-if="records.date_start">
-                                    <t t-esc="records.date_start"/>
-                                </t>
-                            </td>
+                            <td><t t-if="records.date_start"><t t-esc="records.date_start"/></t></td>
                             <th>End Date:</th>
-                            <td>
-                                <t t-if="records.date_end">
-                                    <t t-esc="records.date_end"/>
-                                </t>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Stage:</th>
-                            <td>
-                                <t t-if="records.state">
-                                    <span t-field="records.state"/>
-                                </t>
-                            </td>
-                            <th>Date of Next Invoice:</th>
-                            <td>
-                                <t t-if="records.next_invoice_date">
-                                    <t t-esc="records.next_invoice_date"/>
-                                </t>
-                            </td>
+                            <td><t t-if="records.date_end"><t t-esc="records.date_end"/></t></td>
                         </tr>
                     </table>
+
                     <h2>Contract Lines</h2>
                     <table class="table table-bordered">
                         <thead>
@@ -158,35 +109,57 @@
                                 <th scope="col">Description</th>
                                 <th scope="col">Order Qty</th>
                                 <th scope="col">Unit Price</th>
-                                <th scope="col">Subtotal</th>
+                                <th scope="col">Taxes</th> <th scope="col" class="text-end">Subtotal</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <t t-foreach="records.contract_line_ids"
-                               t-as='res'>
+                            <t t-foreach="records.contract_line_ids" t-as='res'>
                                 <tr>
-                                    <td>
-                                        <t t-esc="res.product_id.name"/>
-                                    </td>
-                                    <td>
-                                        <t t-esc="res.description"/>
-                                    </td>
+                                    <td><t t-esc="res.product_id.name"/></td>
+                                    <td><t t-esc="res.description"/></td>
                                     <td>
                                         <t t-esc="res.qty_ordered"/>
                                         <t t-esc='res.product_uom_id.name'/>
                                     </td>
                                     <td>
-                                        <t t-esc="res.price_unit"
-                                           t-options="{'widget': 'monetary', 'display_currency': res.currency_id}"/>
+                                        <t t-esc="res.price_unit" t-options="{'widget': 'monetary', 'display_currency': res.currency_id}"/>
                                     </td>
-                                    <td>
-                                        <t t-esc="res.sub_total"
-                                           t-options="{'widget': 'monetary', 'display_currency': res.currency_id}"/>
+                                    <td> <t t-foreach="res.tax_ids" t-as="tax">
+                                            <span class="badge rounded-pill bg-info text-dark" t-esc="tax.name"/>
+                                        </t>
+                                    </td>
+                                    <td class="text-end">
+                                        <t t-esc="res.price_subtotal" t-options="{'widget': 'monetary', 'display_currency': res.currency_id}"/>
                                     </td>
                                 </tr>
                             </t>
                         </tbody>
                     </table>
+
+                    <div class="row justify-content-end">
+                        <div class="col-4">
+                            <table class="table table-sm table-borderless">
+                                <tr class="border-black o_subtotal">
+                                    <td><strong>Untaxed Amount</strong></td>
+                                    <td class="text-end">
+                                        <span t-field="records.amount_untaxed" t-options="{'widget': 'monetary', 'display_currency': records.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Taxes</td>
+                                    <td class="text-end">
+                                        <span t-field="records.amount_tax" t-options="{'widget': 'monetary', 'display_currency': records.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <tr class="border-black o_total">
+                                    <td><strong>Total</strong></td>
+                                    <td class="text-end">
+                                        <span t-field="records.amount_total" t-options="{'widget': 'monetary', 'display_currency': records.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </t>
