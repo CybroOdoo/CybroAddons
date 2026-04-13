@@ -128,8 +128,38 @@ class PosOrderLine(models.Model):
             card_reward_lines = reward_lines.filtered(
                 lambda line: line.coupon_id.id == loyalty_card.id
             )
+            redemption_lines = card_reward_lines.filtered(
+                lambda line: line.reward_id.reward_type == 'redemption'
+            )
 
             loyalty_card.points -= sum(card_reward_lines.mapped('points_cost'))
+
+            if redemption_lines:
+                redemption_reward = redemption_lines[0].reward_id
+                raw_points = self._compute_program_points_raw(
+                    order,
+                    loyalty_card.program_id,
+                )
+                correction_points = 0.0
+                for redemption_line in redemption_lines:
+                    discount_amount = abs(redemption_line.price_subtotal_incl)
+                    for rule in loyalty_card.program_id.rule_ids:
+                        if rule.reward_point_mode == 'money':
+                            correction_points += (
+                                discount_amount * rule.reward_point_amount
+                            )
+
+                initial_awarded_points = self._apply_reward_points_rounding(
+                    raw_points,
+                    redemption_reward,
+                )
+                corrected_awarded_points = self._apply_reward_points_rounding(
+                    raw_points - correction_points,
+                    redemption_reward,
+                )
+                loyalty_card.points += (
+                    corrected_awarded_points - initial_awarded_points
+                )
 
             remaining_points[loyalty_card.id] = loyalty_card.points
 

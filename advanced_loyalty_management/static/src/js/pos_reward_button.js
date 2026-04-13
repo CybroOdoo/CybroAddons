@@ -3,9 +3,9 @@
 import { RewardPopup } from "@advanced_loyalty_management/js/pos_reward_redeem_popup";
 import { patch } from "@web/core/utils/patch";
 import { SelectionPopup } from "@point_of_sale/app/utils/input_popups/selection_popup";
+import { ErrorPopup } from "@point_of_sale/app/errors/popups/error_popup";
 import { RewardButton } from "@pos_loyalty/app/control_buttons/reward_button/reward_button";
 import { _t } from "@web/core/l10n/translation";
-import { session } from "@web/session";
 import { useState } from "@odoo/owl";
 
 patch(RewardButton.prototype,{
@@ -14,10 +14,6 @@ patch(RewardButton.prototype,{
         this.state = useState({
             frequency : 0,
         });
-        // Guardas para evitar loop infinito: check_redemption se llama solo
-        // cuando cambia el partner, y nunca concurrentemente.
-        this._lastCheckedPartnerId = null;
-        this._checkingRedemption = false;
     },
 
     _mergeFreeProductRewards(freeProductRewards, potentialFreeProductRewards,redemption) {
@@ -49,7 +45,6 @@ patch(RewardButton.prototype,{
      _getPotentialRewards() {
      //---Reward type redemption is included in the list of claimable rewards---
         const order = this.pos.get_order();
-        const partner_id = this.pos.get_order().partner
         let rewards = [];
         if (order) {
             const claimableRewards = order.getClaimableRewards();
@@ -77,89 +72,21 @@ patch(RewardButton.prototype,{
         reward.redemption_frequency > this.state.frequency &&
         this._getBaseCouponBalance(coupon_id) >= (reward.redemption_eligibility || 0);
         });
-        if(order.partner != null){
-            const partnerId = order.partner.id;
-            // Solo llamar a check_redemption si el partner cambió y no hay
-            // una llamada RPC en curso. Evita el loop infinito causado por
-            // useState reactivo que dispara re-renders al actualizar state.frequency.
-            if (partnerId !== this._lastCheckedPartnerId && !this._checkingRedemption) {
-                this._lastCheckedPartnerId = partnerId;
-                this.check(rewards);
-            }
-        } else {
-            // Si se quita el partner, resetear para que la próxima selección
-            // vuelva a consultar check_redemption.
-            this._lastCheckedPartnerId = null;
-        }
         const potentialFreeProductRewards = this.pos.getPotentialFreeProductRewards()
         return discountRewards.concat(
             this._mergeFreeProductRewards(freeProductRewards, potentialFreeProductRewards,redemption))
     },
 
-    async check(rewards){
-    //---da la cantidad de veces que el reward fue reclamado por el partner---
-        this._checkingRedemption = true;
-        let count = 0;
-        const partner_id = this.pos.get_order().partner.id
-        try {
-            var checkRedemption = await this.env.services.orm.call("res.partner","check_redemption",[[partner_id]]).then((result) =>{
-        const today = new Date()
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        const formattedDate = `${year}-${month}-${day}`;
-        const currentWeekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay());
-        const currentWeekEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + (6 - today.getDay()));
-        const formattedCurrentWeekStart = currentWeekStart.toISOString().split('T')[0];
-        const formattedCurrentWeekEnd = currentWeekEnd.toISOString().split('T')[0];
-        const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        const currentMonthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of current month
-        const formattedCurrentMonthStart = currentMonthStart.toISOString().split('T')[0];
-        const formattedCurrentMonthEnd = currentMonthEnd.toISOString().split('T')[0];
-        const currentYearStart = new Date(today.getFullYear(), 0, 1);
-        const currentYearEnd = new Date(today.getFullYear(), 11, 31);
-        const formattedCurrentYearStart = currentYearStart.toISOString().split('T')[0];
-        const formattedCurrentYearEnd = currentYearEnd.toISOString().split('T')[0];
-        for (const reward of rewards){
-        if(reward.reward.redemption_frequency_unit === 'day'){
-            for (let i = 0; i < result[1].length; i++) {
-                if (result[1][i] === formattedDate) {
-                    count ++;
-                }
-            }
+    async _getRedemptionFrequencyCount(reward) {
+        const partner = this.pos.get_order()?.partner;
+        if (!partner) {
+            return 0;
         }
-        else if(reward.reward.redemption_frequency_unit === 'week'){
-            for (let i = 0; i < result[1].length; i++) {
-                const date =(result[1][i]);
-                if (date >= formattedCurrentWeekStart && date <= formattedCurrentWeekEnd) {
-                    count++;
-                }
-            }
-        }
-        else if(reward.reward.redemption_frequency_unit === 'month'){
-            for (let i = 0; i < result[1].length; i++) {
-                const date =(result[1][i]);
-                if (date >= formattedCurrentMonthStart && date <= formattedCurrentMonthEnd) {
-                    count++;
-                }
-            }
-        }
-        else if(reward.reward.redemption_frequency_unit === 'year'){
-            for (let i = 0; i < result[1].length; i++) {
-                const date =(result[1][i]);
-                if (date >= formattedCurrentYearStart && date <= formattedCurrentYearEnd) {
-                    count ++
-
-                }
-            }
-        }
-        }
-        return count
-        });
-            this.state.frequency = checkRedemption;
-        } finally {
-            this._checkingRedemption = false;
-        }
+        return await this.env.services.orm.call(
+            "res.partner",
+            "get_redemption_frequency_count",
+            [partner.id, reward.redemption_frequency_unit]
+        );
     },
 
      async click() {
@@ -179,6 +106,14 @@ patch(RewardButton.prototype,{
             });
             if (confirmed) {
             if(selectedReward.reward.reward_type == "redemption"){
+            const frequencyCount = await this._getRedemptionFrequencyCount(selectedReward.reward);
+            this.state.frequency = frequencyCount;
+            if (frequencyCount >= selectedReward.reward.redemption_frequency) {
+                await this.popup.add(ErrorPopup, {
+                    body: _t("This reward has already reached its redemption frequency limit for the current period."),
+                });
+                return false;
+            }
             var points = []
             if(selectedReward.reward.max_redemption_type == 'points'){
                 points.push(selectedReward.reward.max_redemption_amount/selectedReward.reward.redemption_amount)

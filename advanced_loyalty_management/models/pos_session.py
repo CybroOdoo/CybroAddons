@@ -43,6 +43,4 @@ class PosSession(models.Model):
         return result
 
     def _loader_params_res_partner(self):
-        result = super()._loader_params_res_partner()
-        result['search_params']['fields'].extend(['pos_order_ids'])
-        return result
+        return super()._loader_params_res_partner()

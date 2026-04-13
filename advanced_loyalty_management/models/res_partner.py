@@ -19,7 +19,12 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+from datetime import datetime, time, timedelta
+
+import pytz
+
 from odoo import api, models, fields
+from odoo.fields import Datetime
 
 
 class ResPartner(models.Model):
@@ -44,15 +49,40 @@ class ResPartner(models.Model):
         }
 
     @api.model
-    def check_redemption(self, pid):
-        """to check number of times the reward is claimed"""
-        order = self.env['pos.order'].search([('partner_id', '=', pid[0])])
-        data = []
-        date = []
-        order_line = self.env['pos.order.line'].search(
-            [('is_reward_line', '=', 'true'), ('order_id', 'in', order.ids)])
-        for line in order_line:
-            data.append(line.order_id.id)
-            date.append(line.create_date.date())
+    def get_redemption_frequency_count(self, partner_id, frequency_unit):
+        """Count claimed reward lines for the partner in the active period."""
+        if not partner_id or frequency_unit not in ('day', 'week', 'month', 'year'):
+            return 0
 
-        return data, date
+        user_tz = pytz.timezone(self.env.context.get('tz') or self.env.user.tz or 'UTC')
+        today = fields.Date.context_today(self)
+
+        if frequency_unit == 'day':
+            start_date = today
+            end_date = today
+        elif frequency_unit == 'week':
+            start_date = today - timedelta(days=today.weekday())
+            end_date = start_date + timedelta(days=6)
+        elif frequency_unit == 'month':
+            start_date = today.replace(day=1)
+            if start_date.month == 12:
+                next_month = start_date.replace(year=start_date.year + 1, month=1)
+            else:
+                next_month = start_date.replace(month=start_date.month + 1)
+            end_date = next_month - timedelta(days=1)
+        else:
+            start_date = today.replace(month=1, day=1)
+            end_date = today.replace(month=12, day=31)
+
+        start_local = user_tz.localize(datetime.combine(start_date, time.min))
+        end_local = user_tz.localize(datetime.combine(end_date, time.max))
+        start_utc = Datetime.to_string(start_local.astimezone(pytz.UTC).replace(tzinfo=None))
+        end_utc = Datetime.to_string(end_local.astimezone(pytz.UTC).replace(tzinfo=None))
+
+        domain = [
+            ('is_reward_line', '=', True),
+            ('order_id.partner_id', '=', partner_id),
+            ('create_date', '>=', start_utc),
+            ('create_date', '<=', end_utc),
+        ]
+        return self.env['pos.order.line'].search_count(domain)

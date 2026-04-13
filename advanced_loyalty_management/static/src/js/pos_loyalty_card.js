@@ -22,14 +22,6 @@ function _applyRounding(points, precision, mode) {
     }
 }
 
-function _getRedemptionReward(pos, program) {
-    const programId = program?.id ?? program;
-    return pos.rewards.find((reward) => {
-        const rewardProgramId = reward.program_id?.id ?? reward.program_id;
-        return rewardProgramId === programId && reward.reward_type === 'redemption';
-    });
-}
-
 patch(Order.prototype,{
 
     async _updatePrograms() {
@@ -37,8 +29,11 @@ patch(Order.prototype,{
         for (const change of Object.values(this.couponPointChanges)) {
             const program = this.pos.program_by_id[change.program_id];
             if (!program) continue;
-            const redemptionReward = _getRedemptionReward(this.pos, program);
+            const redemptionReward = this.pos.rewards.find(
+                r => r.program_id === program && r.reward_type === 'redemption'
+            );
             if (redemptionReward?.rounding_mode) {
+                change.raw_points = change.points;
                 change.points = _applyRounding(
                     change.points,
                     redemptionReward.rounding_precision ?? 0,
@@ -46,6 +41,16 @@ patch(Order.prototype,{
                 );
             }
         }
+    },
+
+    _getProgramRedemptionReward(program) {
+        const programId = program?.id ?? program;
+        return this.pos.rewards.find(
+            (reward) => {
+                const rewardProgramId = reward.program_id?.id ?? reward.program_id;
+                return rewardProgramId === programId && reward.reward_type === 'redemption';
+            }
+        );
     },
 
     _getRewardLineValues(args) {
@@ -126,22 +131,42 @@ patch(Order.prototype,{
             let [won, spent, total] = [0, 0, 0];
 
             var balance = loyaltyCard.balance;
-            const redemptionReward = _getRedemptionReward(this.pos, program);
-            const correctionPoints = this._getPointsCorrection(program);
-            let earnedPoints = points - correctionPoints;
+            const redemptionReward = this._getProgramRedemptionReward(program);
+            const basePoints = redemptionReward?.rounding_mode &&
+                pointChange.raw_points !== undefined
+                ? pointChange.raw_points
+                : points;
+            if(this.pos.get_order().convertToLoyalty == undefined){
+                won += basePoints - this._getPointsCorrection(program);
+            }
+            else{
+                won += basePoints - this._getPointsCorrection(program);
+                if(program_id === this.pos.get_order().programToAdd){
+                    won += this.pos.get_order().convertToLoyalty;
+                }
+            }
+            
+            for (const line of this._get_reward_lines()) {
+                if (!line.reward_id) continue;
+                const lineReward = this.pos.reward_by_id[line.reward_id];
+                if (lineReward?.reward_type === 'redemption' &&
+                    lineReward.program_id.id === program_id) {
+                    for (const rule of program.rules) {
+                        if (rule.reward_point_mode === 'money') {
+                            won -= round_pr(
+                                Math.abs(line.get_price_with_tax()) * rule.reward_point_amount,
+                                0.01
+                            );
+                        }
+                    }
+                }
+            }
             if (redemptionReward?.rounding_mode) {
-                const rawProgramPoints = (this.pointsForPrograms([program])[program.id] || [])
-                    .reduce((sum, change) => sum + (change.points || 0), 0);
-                earnedPoints = _applyRounding(
-                    rawProgramPoints - correctionPoints,
+                won = _applyRounding(
+                    won,
                     redemptionReward.rounding_precision ?? 0,
                     redemptionReward.rounding_mode
                 );
-            }
-            won += earnedPoints;
-            if(this.pos.get_order().convertToLoyalty != undefined &&
-               program_id === this.pos.get_order().programToAdd){
-                won += this.pos.get_order().convertToLoyalty;
             }
             if (coupon_id !== 0) {
                 for (const line of this._get_reward_lines()) {
