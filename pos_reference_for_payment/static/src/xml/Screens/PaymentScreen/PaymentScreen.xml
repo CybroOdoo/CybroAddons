@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Inherited PaymentScreen template in order to add button for adding and
+    showing payment reference.-->
+<templates id="template" xml:space="preserve">
+  <t t-inherit="point_of_sale.PaymentScreenButtons" t-inherit-mode="extension">
+      <xpath expr="//div[hasclass('payment-buttons')]" position="inside">
+          <t t-if="env.services.pos.is_allow_payment_ref.length > 0 and env.services.pos.is_allow_payment_ref[env.services.pos.is_allow_payment_ref.length-1].is_allow_payment_ref == true">
+              <button class="button js_invoice btn btn-light py-3 text-start rounded-0 border-bottom"
+                      t-att-class="{ 'highlight text-bg-primary': currentOrder.is_to_invoice() }"
+                      t-on-click="IsPaymentReferenceButton">
+                  <div t-esc="state.code" class="d-none"/>
+                  <t t-if="env.services.pos.user_payment_reference.length > 0 and env.services.pos.user_payment_reference[env.services.pos.user_payment_reference.length-1].user_payment_reference != false">
+                        <div>
+                            Payment Reference : <t
+                                t-esc="env.services.pos.user_payment_reference[env.services.pos.user_payment_reference.length-1].user_payment_reference"/>
+                        </div>
+                  </t>
+                  <t t-if="env.services.pos.user_payment_reference.length == 0 and env.services.pos.user_payment_reference.user_payment_reference">
+                        <div>
+                            Payment Reference : <t
+                                t-esc="env.services.pos.user_payment_reference.user_payment_reference"/>
+                        </div>
+                  </t>
+                  <t t-else="env.services.pos.user_payment_reference[env.services.pos.user_payment_reference.length-1].user_payment_reference == false">
+                        <li class="info payment-reference">
+                            <i class="fa fa-credit-card"/>
+                            Add Payment-Reference
+                        </li>
+                  </t>
+            </button>
+          </t>
+      </xpath>
+  </t>
+</templates>
