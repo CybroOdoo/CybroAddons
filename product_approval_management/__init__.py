@@ -19,6 +19,7 @@
 #
 ###############################################################################
 from . import models
+from . import controllers
 
 
 def _default_product_confirm(env):

@@ -11,3 +11,7 @@
 #### UPDT
 - Fixed a bug in the confirm action of the module, implemented the functionality for Product Variants, and added a corresponding server action.
 
+#### 17.04.2026
+#### Version 18.0.1.1.1
+#### UPDT
+- Feature updates - added functionality for Product Variants and product catalog domain.

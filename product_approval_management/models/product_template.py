@@ -28,7 +28,8 @@ class ProductTemplate(models.Model):
     approve_state = fields.Selection([('draft', 'Draft'),
                                       ('confirmed', 'Confirmed')],
                                      default='draft', string='State',
-                                     help='State to approve')
+                                     help='State to approve',
+                                     tracking=True)
 
     def action_confirm_product_approval(self):
         """Confirm button on the product form page"""
@@ -45,3 +46,25 @@ class ProductTemplate(models.Model):
         active_ids = self.env.context.get('active_ids')
         products = self.env['product.template'].browse(active_ids)
         products.action_confirm_product_approval()
+
+    def write(self, vals):
+        """Reset to draft if any field is modified and the product was confirmed."""
+        if 'approve_state' not in vals:
+            for rec in self:
+                if rec.approve_state == 'confirmed':
+                    rec.action_reset_product_approval()
+                    # Also reset all variants
+                    rec.product_variant_ids.action_reset_product_approval()
+        return super(ProductTemplate, self).write(vals)
+
+    def _is_combination_possible(self, combination, parent_combination=None, ignore_no_variant=False):
+        """Combinations are only possible if the template AND the variant (if it exists) are confirmed."""
+        res = super()._is_combination_possible(combination, parent_combination=parent_combination, ignore_no_variant=ignore_no_variant)
+        if not res or self.approve_state != 'confirmed':
+            return False
+        
+        variant = self._get_variant_for_combination(combination)
+        if variant and variant.approve_state != 'confirmed':
+            return False
+            
+        return True

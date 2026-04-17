@@ -18,7 +18,14 @@
 #    (AGPL v3) along with this program.
 #
 ###############################################################################
-from . import product_template
-from . import sale_order_line
-from . import sale_order
-from . import product_product
+from odoo import models
+from odoo.osv import expression
+
+
+class SaleOrder(models.Model):
+    _inherit = 'sale.order'
+
+    def _get_product_catalog_domain(self):
+        """ Include approval state in the product catalog domain. """
+        domain = super()._get_product_catalog_domain()
+        return expression.AND([domain, [('approve_state', '=', 'confirmed')]])

@@ -20,7 +20,7 @@
 ###############################################################################
 {
     'name': "Product Approval",
-    'version': '18.0.1.0.1',
+    'version': '18.0.1.1.1',
     'category': "Extra tools",
     'summary': 'Product approval allow you to control the product creation',
     'description': "Using this module a user can create product which"

@@ -28,7 +28,8 @@ class ProductTemplate(models.Model):
     approve_state = fields.Selection([('draft', 'Draft'),
                                       ('confirmed', 'Confirmed')],
                                      default='draft', string='State',
-                                     help='State to approve')
+                                     help='State to approve',
+                                     tracking=True)
 
     def action_confirm_product_approval(self):
         """Confirm button on the product form page"""
@@ -36,7 +37,7 @@ class ProductTemplate(models.Model):
             rec.approve_state = 'confirmed'
 
     def action_reset_product_approval(self):
-        """Reset to draft state button on the product form page"""
+        """Reset to295.00 draft state button on the product form page"""
         for rec in self:
             rec.approve_state = 'draft'
 
@@ -45,3 +46,16 @@ class ProductTemplate(models.Model):
         active_ids = self.env.context.get('active_ids')
         products = self.env['product.product'].browse(active_ids)
         products.action_confirm_product_approval()
+
+    def write(self, vals):
+        """Reset to draft if any field is modified and the variant was confirmed."""
+        if 'approve_state' not in vals:
+            for rec in self:
+                if rec.approve_state == 'confirmed':
+                    rec.action_reset_product_approval()
+        return super(ProductTemplate, self).write(vals)
+
+    def _is_variant_possible(self, parent_combination=None):
+        """Only confirmed variants are considered possible in the configurator and elsewhere."""
+        res = super()._is_variant_possible(parent_combination=parent_combination)
+        return res and self.approve_state == 'confirmed'
