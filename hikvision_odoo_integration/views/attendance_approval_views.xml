@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="attendance_approval_view_tree" model="ir.ui.view">
+        <field name="name">attendance.approval.tree</field>
+        <field name="model">attendance.approval</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="total_hours"/>
+                <field name="minimum_hours"/>
+                <field name="activity_ids" widget="list_activity" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-muted="state == 'draft'"
+                       decoration-info="state == 'submitted'"
+                       decoration-success="state == 'approved'"
+                       decoration-danger="state == 'rejected'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="attendance_approval_view_form" model="ir.ui.view">
+        <field name="name">attendance.approval.form</field>
+        <field name="model">attendance.approval</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Approve" type="object" class="btn-success" invisible="state != 'submitted'" groups="hr.group_hr_manager,hr.group_hr_user"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="state != 'submitted'" groups="hr.group_hr_manager,hr.group_hr_user"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,rejected"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="employee_id"/>
+                        <field name="date"/>
+                        <field name="total_hours"/>
+                        <field name="minimum_hours"/>
+                    </group>
+                    <group>
+                        <field name="reason" readonly="state not in ('draft',)"/>
+                        <field name="rejected_reason" invisible="state != 'rejected'" readonly="1"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_attendance_approval" model="ir.actions.act_window">
+        <field name="name">Attendance Approvals</field>
+        <field name="res_model">attendance.approval</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

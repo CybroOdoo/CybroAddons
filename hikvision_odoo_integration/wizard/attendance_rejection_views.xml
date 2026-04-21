@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="attendance_rejection_wizard_view_form" model="ir.ui.view">
+        <field name="name">attendance.rejection.wizard.form</field>
+        <field name="model">attendance.rejection.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Reject Attendance Approval">
+                <group>
+                    <field name="approval_id" invisible="1"/>
+                    <field name="available_leave_info" nolabel="1" colspan="2"/>
+                    <field name="rejected_reason" placeholder="Please provide a reason for rejection..." required="1"/>
+                    <field name="leave_type" widget="radio" required="1"/>
+                    <field name="half_day_period"
+                           widget="radio"
+                           invisible="leave_type != 'half_day'"/>
+                </group>
+                <group invisible="leave_type == 'no_leave'">
+                    <field name="auto_select_leave" invisible="1"/>
+                    <field name="time_off_type_id"
+                           required="leave_type in ['half_day', 'full_day']"
+                           options="{'no_create': True, 'no_open': True}"/>
+                </group>
+                <footer>
+                    <button name="action_confirm_rejection"
+                            string="Confirm Rejection"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_attendance_rejection_wizard" model="ir.actions.act_window">
+        <field name="name">Reject Attendance Approval</field>
+        <field name="res_model">attendance.rejection.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

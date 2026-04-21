@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="email_template_attendance_approval_request" model="mail.template">
+        <field name="name">Attendance Approval Request</field>
+        <field name="model_id" ref="hikvision_odoo_integration.model_attendance_approval"/>
+        <field name="email_from">{{ object.employee_id.company_id.email or 'admin@example.com' }}</field>
+        <field name="email_to">{{ object.employee_id.work_email }}</field>
+        <field name="subject">Attendance Approval Required for {{ object.date }}</field>
+        <field name="body_html" type="html">
+            <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+                <p>
+                    Dear <strong><t t-esc="object.employee_id.name"/></strong>,
+                </p>
+                <p>
+                    Your recorded working hours on
+                    <strong><t t-esc="object.date"/></strong>
+                    total
+                    <strong><t t-esc="'%.2f' % object.total_hours"/></strong>
+                    hours, which is below the minimum of
+                    <strong><t t-esc="'%.2f' % object.minimum_hours"/></strong> hours.
+                </p>
+                <p>
+                    Please provide a reason and submit your approval request here:
+                    <a t-att-href="'/web?db=%s#id=%s&amp;model=attendance.approval&amp;
+                    view_type=form' % (ctx.get('dbname'), object.id)">
+                        Submit Reason
+                    </a>
+                </p>
+                <p>Thank you.</p>
+            </div>
+        </field>
+    </record>
+
+    <record id="email_template_attendance_approved" model="mail.template">
+        <field name="name">Attendance Approval - Approved</field>
+        <field name="model_id" ref="hikvision_odoo_integration.model_attendance_approval"/>
+        <field name="email_from">{{ object.employee_id.company_id.email or 'admin@example.com' }}</field>
+        <field name="email_to">{{ object.employee_id.work_email }}</field>
+        <field name="subject">Attendance Approved for {{ object.date }}</field>
+        <field name="body_html" type="html">
+            <div>
+                <h2>Attendance Approved</h2>
+                <p>Dear <strong><t t-esc="object.employee_id.name"/></strong>,</p>
+                <p>Your attendance approval request has been APPROVED.</p>
+
+                <table>
+                    <tr>
+                        <td>Date:</td>
+                        <td><t t-esc="object.date"/></td>
+                    </tr>
+                    <tr>
+                        <td>Total Hours:</td>
+                        <td><t t-esc="'%.2f' % object.total_hours"/> hours</td>
+                    </tr>
+                    <tr>
+                        <td>Your Reason:</td>
+                        <td><t t-esc="object.reason"/></td>
+                    </tr>
+                </table>
+
+                <p>Your attendance record has been accepted. No further action is required from your side.</p>
+                <p>If you have any questions, please contact your HR department.</p>
+                <p>Best regards,<br/>HR Department</p>
+            </div>
+        </field>
+    </record>
+
+    <record id="email_template_attendance_rejected" model="mail.template">
+        <field name="name">Attendance Approval - Rejected</field>
+        <field name="model_id" ref="hikvision_odoo_integration.model_attendance_approval"/>
+        <field name="email_from">{{ object.employee_id.company_id.email or 'admin@example.com' }}</field>
+        <field name="email_to">{{ object.employee_id.work_email }}</field>
+        <field name="subject">Attendance Rejected for {{ object.date }}</field>
+        <field name="body_html" type="html">
+            <div>
+                <h2>Attendance Rejected</h2>
+                <p>Dear <strong><t t-esc="object.employee_id.name"/></strong>,</p>
+                <p>Your attendance approval request has been REJECTED.</p>
+
+                <table>
+                    <tr>
+                        <td>Date:</td>
+                        <td><t t-esc="object.date"/></td>
+                    </tr>
+                    <tr>
+                        <td>Total Hours:</td>
+                        <td><t t-esc="'%.2f' % object.total_hours"/> hours</td>
+                    </tr>
+                    <tr>
+                        <td>Your Reason:</td>
+                        <td><t t-esc="object.reason"/></td>
+                    </tr>
+                    <tr>
+                        <td>Rejection Reason:</td>
+                        <td><t t-esc="object.rejected_reason"/></td>
+                    </tr>
+                </table>
+
+                <p>Note: A leave request may have been automatically created for this date. Please check your time-off records for more details.</p>
+                <p>If you need clarification or wish to discuss this further, please contact your HR department.</p>
+                <p>Best regards,<br/>HR Department</p>
+            </div>
+        </field>
+    </record>
+
+</odoo>
