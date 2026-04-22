@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <!-- This file defines the esg energy views. -->
+<record id="view_oil_esg_energy_form" model="ir.ui.view">
+        <field name="name">oil.esg.energy.form</field>
+        <field name="model">oil.esg.energy</field>
+        <field name="arch" type="xml">
+            <form string="Energy Record">
+                <header>
+                    <button name="action_log" type="object" string="Log"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_verify" type="object" string="Verify"
+                            class="btn-primary" groups="base.group_system"
+                            invisible="state != 'logged'"/>
+                    <button name="action_reset_draft" type="object" string="Reset"
+                            invisible="state not in ['logged', 'verified']"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,logged,verified"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Energy Details">
+                            <field name="date"/>
+                            <field name="site_id"/>
+                            <field name="business_segment"/>
+                            <field name="energy_source"/>
+                            <field name="is_renewable" readonly="1"/>
+                            <field name="energy_type"/>
+                        </group>
+                        <group string="Quantities">
+                            <field name="quantity_gj"/>
+                            <field name="quantity_kwh" readonly="1"/>
+                            <field name="production_boe"/>
+                            <field name="energy_intensity" readonly="1"/>
+                            <field name="period_year" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="notes" placeholder="Notes..."/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_oil_esg_energy_tree" model="ir.ui.view">
+        <field name="name">oil.esg.energy.tree</field>
+        <field name="model">oil.esg.energy</field>
+        <field name="arch" type="xml">
+            <list string="Energy Records" decoration-success="state=='verified'"
+                  decoration-muted="state=='draft'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="site_id"/>
+                <field name="business_segment" optional="show"/>
+                <field name="energy_source"/>
+                <field name="is_renewable" widget="boolean_toggle"/>
+                <field name="quantity_gj"/>
+                <field name="quantity_kwh"/>
+                <field name="energy_intensity"/>
+                <field name="period_year"/>
+                <field name="state" widget="badge"
+                       decoration-success="state=='verified'"
+                       decoration-info="state=='logged'"
+                       decoration-muted="state=='draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_oil_esg_energy_search" model="ir.ui.view">
+        <field name="name">oil.esg.energy.search</field>
+        <field name="model">oil.esg.energy</field>
+        <field name="arch" type="xml">
+            <search string="Search Energy">
+                <field name="name"/>
+                <field name="site_id"/>
+                <field name="period_year"/>
+                <separator/>
+                <filter string="Renewable Only" name="renewable"
+                        domain="[('is_renewable','=',True)]"/>
+                <filter string="This Year" name="this_year"
+                        domain="[('period_year','=', context_today().year)]"/>
+                <group name="group_by">
+                    <filter string="Site" name="group_site"
+                            context="{'group_by': 'site_id'}"/>
+                    <filter string="Source" name="group_source"
+                            context="{'group_by': 'energy_source'}"/>
+                    <filter string="Year" name="group_year"
+                            context="{'group_by': 'period_year'}"/>
+                    <filter string="Month" name="group_month"
+                            context="{'group_by': 'period_month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_oil_esg_energy_graph" model="ir.ui.view">
+        <field name="name">oil.esg.energy.graph</field>
+        <field name="model">oil.esg.energy</field>
+        <field name="arch" type="xml">
+            <graph string="Energy Consumption" type="bar">
+                <field name="period_month" type="row"/>
+                <field name="quantity_gj" type="measure"/>
+                <field name="energy_source" type="col"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_oil_esg_energy_pivot" model="ir.ui.view">
+        <field name="name">oil.esg.energy.pivot</field>
+        <field name="model">oil.esg.energy</field>
+        <field name="arch" type="xml">
+            <pivot string="Energy Analysis">
+                <field name="period_year" type="row"/>
+                <field name="energy_source" type="col"/>
+                <field name="quantity_gj" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+    <!--Client action for the esg energy-->
+    <record id="action_oil_esg_energy" model="ir.actions.act_window">
+        <field name="name">Energy Consumption</field>
+        <field name="res_model">oil.esg.energy</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="context">{'search_default_this_year': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Log your first energy record!</p>
+            <p>Track energy consumption, renewable share, and efficiency across all sites.</p>
+        </field>
+    </record>
+
+</odoo>
