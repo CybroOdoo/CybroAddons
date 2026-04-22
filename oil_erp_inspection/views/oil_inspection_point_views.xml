@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Search -->
+    <record id="view_oil_inspection_point_search" model="ir.ui.view">
+        <field name="name">oil.inspection.point.search</field>
+        <field name="model">oil.inspection.point</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="product_category_id"/>
+                <filter string="Active" name="active" domain="[('active','=',True)]"/>
+                <filter string="Archived" name="archived" domain="[('active','=',False)]"/>
+                <group>
+                    <filter string="Product" name="grp_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Category" name="grp_category" context="{'group_by': 'product_category_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- List -->
+    <record id="view_oil_inspection_point_list" model="ir.ui.view">
+        <field name="name">oil.inspection.point.list</field>
+        <field name="model">oil.inspection.point</field>
+        <field name="arch" type="xml">
+            <list string="Inspection Points">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="product_category_id"/>
+                <field name="responsible_id"/>
+                <field name="active" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form -->
+    <record id="view_oil_inspection_point_form" model="ir.ui.view">
+        <field name="name">oil.inspection.point.form</field>
+        <field name="model">oil.inspection.point</field>
+        <field name="arch" type="xml">
+            <form string="Inspection Point">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived"
+                            bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"
+                                   placeholder="Inspection Point Name..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Scope — Apply To">
+                            <field name="product_id"/>
+                            <field name="product_category_id"/>
+                        </group>
+                        <group string="Settings">
+                            <field name="sequence"/>
+                            <field name="responsible_id"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Checklist Criteria" name="criteria">
+                            <field name="criteria_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name" string="Check Item"/>
+                                    <field name="evaluation_type"/>
+                                    <field name="target_value"
+                                           invisible="evaluation_type != 'percentage'"
+                                           required="evaluation_type == 'percentage'"/>
+                                    <field name="guideline"/>
+                                    <field name="is_critical"
+                                           string="Critical"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Instructions" name="instructions">
+                            <field name="note"
+                                   placeholder="General guidance for the inspector..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_oil_inspection_point" model="ir.actions.act_window">
+        <field name="name">Inspection Points</field>
+        <field name="res_model">oil.inspection.point</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No Inspection Points yet.</p>
+            <p>Create an Inspection Point to define the checklist criteria that will be
+                used when inspecting a finished Manufacturing Order.
+            </p>
+        </field>
+    </record>
+
+</odoo>

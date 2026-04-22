@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Search -->
+    <record id="view_oil_inspection_order_search" model="ir.ui.view">
+        <field name="name">oil.inspection.order.search</field>
+        <field name="model">oil.inspection.order</field>
+        <field name="arch" type="xml">
+            <search string="Search Inspection Orders">
+                <field name="name"/>
+                <field name="responsible_id"/>
+                <field name="product_id"/>
+                <field name="production_id"/>
+                <separator/>
+                <filter string="Draft" name="draft" domain="[('state','=','draft')]"/>
+                <filter string="In Progress" name="in_progress" domain="[('state','=','in_progress')]"/>
+                <filter string="Passed" name="passed" domain="[('state','=','passed')]"/>
+                <filter string="Failed" name="failed" domain="[('state','=','failed')]"/>
+                <group>
+                    <filter string="Status" name="grp_state" context="{'group_by': 'state'}"/>
+                    <filter string="Product" name="grp_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Inspector" name="grp_user" context="{'group_by': 'responsible_id'}"/>
+                    <filter string="Month" name="grp_month" context="{'group_by': 'inspection_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- List -->
+    <record id="view_oil_inspection_order_list" model="ir.ui.view">
+        <field name="name">oil.inspection.order.list</field>
+        <field name="model">oil.inspection.order</field>
+        <field name="arch" type="xml">
+            <list string="Inspection Orders"
+                  decoration-success="state == 'passed'"
+                  decoration-danger="state == 'failed'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="production_id" string="Manufacturing Order"/>
+                <field name="product_id"/>
+                <field name="inspection_point_id" string="Inspection Point"
+                       optional="show"/>
+                <field name="responsible_id" string="Inspector"/>
+                <field name="inspection_date"/>
+                <field name="result" widget="badge"
+                       decoration-success="result == 'pass'"
+                       decoration-danger="result == 'fail'"
+                       decoration-warning="result == 'pending'"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'passed'"
+                       decoration-danger="state == 'failed'"
+                       decoration-info="state == 'in_progress'"
+                       decoration-muted="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form -->
+    <record id="view_oil_inspection_order_form" model="ir.ui.view">
+        <field name="name">oil.inspection.order.form</field>
+        <field name="model">oil.inspection.order</field>
+        <field name="arch" type="xml">
+            <form string="Inspection Order">
+                <header>
+                    <button name="action_start"
+                            string="Start Inspection"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_pass"
+                            string="Mark as Passed"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'in_progress' or result == 'fail'"/>
+                    <button name="action_fail"
+                            string="Mark as Failed"
+                            type="object"
+                            invisible="state != 'in_progress'"/>
+                    <button name="action_cancel"
+                            string="Cancel"
+                            type="object"
+                            invisible="state in ('passed', 'failed', 'cancelled')"/>
+                    <button name="action_reset_draft"
+                            string="Reset to Draft"
+                            type="object"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,in_progress,passed,failed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Inspection Details">
+                            <field name="production_id" readonly="1"/>
+                            <field name="product_id" readonly="1"/>
+                            <field name="inspection_point_id" readonly="1"/>
+                        </group>
+                        <group string="Assignment">
+                            <field name="responsible_id"/>
+                            <field name="inspection_date"/>
+                            <field name="result" widget="badge"
+                                   decoration-success="result == 'pass'"
+                                   decoration-danger="result == 'fail'"
+                                   decoration-warning="result == 'pending'"/>
+                            <field name="scrap_id" invisible="not scrap_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Checklist" name="checklist">
+                            <field name="line_ids"
+                                   readonly="state in ('passed', 'failed', 'cancelled')">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name" string="Check Item"/>
+                                    <field name="is_critical" string="Critical"
+                                           optional="show"/>
+                                    <field name="guideline" optional="show"/>
+                                    <field name="evaluation_type"
+                                           optional="hide" readonly="1"/>
+                                    <field name="target_value"
+                                           widget="percentage"
+                                           string="Target (%)" readonly="1"
+                                           invisible="evaluation_type != 'percentage'"/>
+                                    <field name="percentage" widget="percentage"
+                                           string="Val (%)"
+                                           invisible="evaluation_type != 'percentage'"
+                                           required="evaluation_type == 'percentage'"/>
+                                    <field name="result" widget="radio"
+                                           options="{'horizontal': True}"
+                                           readonly="evaluation_type == 'percentage'"
+                                           force_save="1"/>
+                                    <field name="remarks"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note"
+                                   placeholder="General observations or corrective actions..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_oil_inspection_order" model="ir.actions.act_window">
+        <field name="name">Inspection Orders</field>
+        <field name="res_model">oil.inspection.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_oil_inspection_order_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No Inspection Orders yet.
+            </p>
+            <p>Inspections are created from the Manufacturing Order once
+                production is done.
+            </p>
+        </field>
+    </record>
+
+</odoo>
