@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_expense_view_form_oil_erp" model="ir.ui.view">
+        <field name="name">hr.expense.view.form.inherit.oil.erp</field>
+        <field name="model">hr.expense</field>
+        <field name="inherit_id" ref="hr_expense.hr_expense_view_form"/>
+        <field name="arch" type="xml">
+            <field name="employee_id" position="after">
+                <field name="is_oil_gas_expense" readonly="state != 'draft'"/>
+                <field name="project_id" invisible="not is_oil_gas_expense" readonly="state != 'draft'"/>
+                <field name="task_id" invisible="not is_oil_gas_expense" readonly="state != 'draft'"/>
+            </field>
+            <xpath expr="//field[@name='product_id']" position="attributes">
+                <attribute name="domain">[('can_be_expensed', '=', True), '|', ('company_id', '=', False), ('company_id', '=', company_id), ('is_oil_gas_expense_category', '=', is_oil_gas_expense)]</attribute>
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <notebook>
+                    <page name="daily_expenses" string="Daily Expenses" invisible="not is_oil_gas_expense">
+                        <field name="daily_expense_line_ids" readonly="state != 'draft'">
+                            <list>
+                                <field name="date"/>
+                                <field name="employee_id"/>
+                                <field name="task_id"/>
+                                <field name="amount" sum="Total"/>
+                            </list>
+                        </field>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+</odoo>
