@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- This file defines the stock picking views. -->
+    <record id="view_picking_form_inherit_oil_erp_pipeline" model="ir.ui.view">
+        <field name="name">stock.picking.form.inherit.oil.erp.pipeline</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='is_oil_gas_transfer']" position="after">
+                <field name="is_pipeline_transfer"
+                       invisible="not is_oil_gas_transfer"
+                       readonly="state in ['done', 'cancel']"/>
+            </xpath>
+            <xpath expr="//page[@name='extra']/group/group[@name='other_infos']"
+                   position="after">
+                <group string="Pipeline" invisible="not is_pipeline_transfer">
+                    <field name="pipeline_delivery_start"
+                           readonly="state in ['done', 'cancel']"/>
+                    <field name="pipeline_delivery_end"
+                           readonly="state in ['done', 'cancel']"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_picking_form_inherit_oil_erp_pipeline_transport"
+            model="ir.ui.view">
+        <field name="name">
+            stock.picking.form.inherit.oil.erp.pipeline.transport
+        </field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id"
+               ref="oil_erp_transfers.view_picking_form_inherit_oil_erp_transfers"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='oil_gas_transport']//field[@name='vehicle_id']" position="attributes">
+                <attribute name="required">is_oil_gas_transfer and not is_pipeline_transfer</attribute>
+            </xpath>
+            <xpath expr="//page[@name='oil_gas_transport']//field[@name='driver_id']" position="attributes">
+                <attribute name="required">is_oil_gas_transfer and not is_pipeline_transfer</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_picking_form_inherit_oil_erp_pipeline_delivery" model="ir.ui.view">
+        <field name="name">stock.picking.form.inherit.oil.erp.pipeline.delivery</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock_delivery.view_picking_withcarrier_out_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='carrier_data']/field[@name='carrier_id']" position="attributes">
+                <attribute name="domain">is_pipeline_transfer and [('is_oil_gas_pipeline', '=', True)] or []</attribute>
+                <attribute name="required">is_pipeline_transfer</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_picking_tree_inherit_oil_erp_pipeline" model="ir.ui.view">
+        <field name="name">stock.picking.list.inherit.oil.erp.pipeline</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.vpicktree"/>
+        <field name="arch" type="xml">
+            <field name="origin" position="after">
+                <field name="is_pipeline_transfer" optional="hide"/>
+                <field name="carrier_id" optional="hide"/>
+                <field name="pipeline_delivery_start" optional="hide"/>
+                <field name="pipeline_delivery_end" optional="hide"/>
+            </field>
+        </field>
+    </record>
+</odoo>
