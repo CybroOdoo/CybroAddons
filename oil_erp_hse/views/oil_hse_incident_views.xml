@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Incident Form View -->
+    <record id="view_oil_hse_incident_form" model="ir.ui.view">
+        <field name="name">oil.hse.incident.form</field>
+        <field name="model">oil.hse.incident</field>
+        <field name="arch" type="xml">
+            <form string="HSE Incident">
+                <header>
+                    <button name="action_report" string="Report"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_investigate" string="Start Investigation"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'reported'"/>
+                    <button name="action_close" string="Close"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'under_investigation'"/>
+                    <button name="action_submit_regulatory" string="Submit to Regulatory"
+                            type="object"
+                            invisible="state != 'closed'"/>
+                    <button name="action_reset_draft" string="Reset to Draft"
+                            type="object"
+                            invisible="state not in ('reported', 'closed')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,reported,under_investigation,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Incident Details">
+                            <field name="incident_date"/>
+                            <field name="report_date"/>
+                            <field name="incident_type"/>
+                            <field name="severity"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Flags">
+                            <field name="is_lti"/>
+                            <field name="lti_days" invisible="not is_lti"/>
+                            <field name="is_fatality"/>
+                            <field name="is_regulatory_reportable"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Location &amp; People" name="location_people">
+                            <group>
+                                <group string="Location">
+                                    <field name="task_id"
+                                           domain="[('project_id.is_oil_gas_project', '=', True)]"/>
+                                    <field name="project_id"
+                                           domain="[('is_oil_gas_project', '=', True)]"/>
+                                    <field name="location_description"/>
+                                    <field name="equipment_id"/>
+                                </group>
+                                <group string="People">
+                                    <field name="reported_by"/>
+                                    <field name="injured_party_id"/>
+                                    <field name="injured_party_type"/>
+                                </group>
+                            </group>
+                            <group string="Witnesses">
+                                <field name="witness_ids" nolabel="1"
+                                       widget="many2many_tags"/>
+                            </group>
+                        </page>
+                        <page string="Investigation" name="investigation">
+                            <group>
+                                <group>
+                                    <field name="root_cause"/>
+                                    <field name="investigation_by"/>
+                                    <field name="investigation_deadline"/>
+                                </group>
+                            </group>
+                            <group string="Root Cause Detail">
+                                <field name="root_cause_detail" nolabel="1"/>
+                            </group>
+                            <group string="Immediate Corrective Action">
+                                <field name="immediate_action" nolabel="1"/>
+                            </group>
+                        </page>
+                        <page string="Corrective Actions" name="corrective_actions">
+                            <field name="rca_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="responsible_id"/>
+                                    <field name="deadline"/>
+                                    <field name="state"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Attachments" name="attachments">
+                            <field name="attachment_ids"
+                                   widget="many2many_binary"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Incident List View -->
+    <record id="view_oil_hse_incident_list" model="ir.ui.view">
+        <field name="name">oil.hse.incident.list</field>
+        <field name="model">oil.hse.incident</field>
+        <field name="arch" type="xml">
+            <list string="HSE Incidents" decoration-danger="severity == 'critical'"
+                  decoration-warning="severity == 'high'">
+                <field name="name"/>
+                <field name="incident_date"/>
+                <field name="incident_type"/>
+                <field name="severity"/>
+                <field name="project_id" optional="show"/>
+                <field name="task_id" optional="show"/>
+                <field name="reported_by"/>
+                <field name="is_lti"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Incident Search View -->
+    <record id="view_oil_hse_incident_search" model="ir.ui.view">
+        <field name="name">oil.hse.incident.search</field>
+        <field name="model">oil.hse.incident</field>
+        <field name="arch" type="xml">
+            <search string="Search Incidents">
+                <field name="name"/>
+                <field name="task_id"
+                       domain="[('project_id.is_oil_gas_project', '=', True)]"/>
+                <field name="reported_by"/>
+                <filter string="Draft" name="draft"
+                        domain="[('state','=','draft')]"/>
+                <filter string="Reported" name="reported"
+                        domain="[('state','=','reported')]"/>
+                <filter string="Under Investigation" name="under_investigation"
+                        domain="[('state','=','under_investigation')]"/>
+                <filter string="Closed" name="closed"
+                        domain="[('state','=','closed')]"/>
+
+                <filter string="Lost Time Injuries" name="lti"
+                        domain="[('is_lti','=',True)]"/>
+                <filter string="Fatalities" name="fatality"
+                        domain="[('is_fatality','=',True)]"/>
+                <filter string="Regulatory Reportable" name="regulatory"
+                        domain="[('is_regulatory_reportable','=',True)]"/>
+
+                <filter string="Critical" name="critical"
+                        domain="[('severity','=','critical')]"/>
+                <filter string="High" name="high"
+                        domain="[('severity','=','high')]"/>
+                <group>
+                    <filter string="Status" name="group_state"
+                            context="{'group_by': 'state'}"/>
+                    <filter string="Severity" name="group_severity"
+                            context="{'group_by': 'severity'}"/>
+                    <filter string="Incident Type" name="group_type"
+                            context="{'group_by': 'incident_type'}"/>
+                    <filter string="Well / Task" name="group_task"
+                            context="{'group_by': 'task_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Incident Action -->
+    <record id="action_oil_hse_incident" model="ir.actions.act_window">
+        <field name="name">Incidents</field>
+        <field name="res_model">oil.hse.incident</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No incidents recorded yet.
+            </p>
+            <p>Record HSE incidents and near-misses to track safety performance.</p>
+        </field>
+    </record>
+
+
+    <!-- Configuration > Upstream > HSE -->
+    <menuitem id="menu_oil_config_hse"
+              name="HSE"
+              parent="oil_erp_base.menu_oil_root"
+              sequence="50"/>
+
+    <!-- Configuration > Upstream > HSE > Incidents -->
+    <menuitem id="menu_oil_config_hse_incident"
+              name="Incidents"
+              parent="menu_oil_config_hse"
+              action="action_oil_hse_incident"
+              sequence="10"/>
+</odoo>

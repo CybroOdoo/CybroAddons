@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Risk Search View -->
+    <record id="view_oil_hse_risk_search" model="ir.ui.view">
+        <field name="name">oil.hse.risk.search</field>
+        <field name="model">oil.hse.risk</field>
+        <field name="arch" type="xml">
+            <search string="Search Risks">
+                <field name="name"/>
+                <field name="project_id"
+                       domain="[('is_oil_gas_project', '=', True)]"/>
+                <filter string="High" name="high"
+                        domain="[('risk_level','=','high')]"/>
+                <filter string="Medium" name="medium"
+                        domain="[('risk_level','=','medium')]"/>
+                <filter string="Low" name="low"
+                        domain="[('risk_level','=','low')]"/>
+                <group>
+                    <filter string="Risk Level" name="group_level"
+                            context="{'group_by': 'risk_level'}"/>
+                    <filter string="Project" name="group_project"
+                            context="{'group_by': 'project_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Risk List View -->
+    <record id="view_oil_hse_risk_list" model="ir.ui.view">
+        <field name="name">oil.hse.risk.list</field>
+        <field name="model">oil.hse.risk</field>
+        <field name="arch" type="xml">
+            <list string="Risk Assessments"
+                  decoration-danger="risk_level == 'high'"
+                  decoration-warning="risk_level == 'medium'">
+                <field name="name"/>
+                <field name="risk_level"/>
+                <field name="project_id" optional="show"/>
+                <field name="task_id" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Risk Form View -->
+    <record id="view_oil_hse_risk_form" model="ir.ui.view">
+        <field name="name">oil.hse.risk.form</field>
+        <field name="model">oil.hse.risk</field>
+        <field name="arch" type="xml">
+            <form string="Risk Assessment">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="risk_level"/>
+                        </group>
+                        <group>
+                            <field name="project_id"
+                                   domain="[('is_oil_gas_project', '=', True)]"/>
+                            <field name="task_id"
+                                   domain="[('project_id.is_oil_gas_project', '=', True), ('project_id', '=?', project_id)]"/>
+                        </group>
+                    </group>
+                    <group col="1">
+                        <group string="Description" col="1">
+                            <field name="description" nolabel="1" colspan="2"/>
+                        </group>
+                        <group string="Mitigation Plan" col="1">
+                            <field name="mitigation_plan" nolabel="1"
+                                   colspan="2"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Risk Action -->
+    <record id="action_oil_hse_risk" model="ir.actions.act_window">
+        <field name="name">Risk Assessments</field>
+        <field name="res_model">oil.hse.risk</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No risk assessments created yet.
+            </p>
+            <p>Identify hazards and document mitigation plans.</p>
+        </field>
+    </record>
+
+    <!-- Configuration > Upstream > HSE > Risk Assessments -->
+    <menuitem id="menu_oil_config_hse_risk"
+              name="Risk Assessments"
+              parent="menu_oil_config_hse"
+              action="action_oil_hse_risk"
+              sequence="40"/>
+</odoo>

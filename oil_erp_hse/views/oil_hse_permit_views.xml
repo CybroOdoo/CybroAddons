@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Permit Search View -->
+    <record id="view_oil_hse_permit_search" model="ir.ui.view">
+        <field name="name">oil.hse.permit.search</field>
+        <field name="model">oil.hse.permit</field>
+        <field name="arch" type="xml">
+            <search string="Search Permits">
+                <field name="name"/>
+                <field name="project_id"
+                       domain="[('is_oil_gas_project', '=', True)]"/>
+                <filter string="Draft" name="draft"
+                        domain="[('state','=','draft')]"/>
+                <filter string="Approved" name="approved"
+                        domain="[('state','=','approved')]"/>
+                <filter string="Expired" name="expired"
+                        domain="[('state','=','expired')]"/>
+                <group>
+                    <filter string="Permit Type" name="group_type"
+                            context="{'group_by': 'permit_type'}"/>
+                    <filter string="Status" name="group_state"
+                            context="{'group_by': 'state'}"/>
+                    <filter string="Project" name="group_project"
+                            context="{'group_by': 'project_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Permit List View -->
+    <record id="view_oil_hse_permit_list" model="ir.ui.view">
+        <field name="name">oil.hse.permit.list</field>
+        <field name="model">oil.hse.permit</field>
+        <field name="arch" type="xml">
+            <list string="HSE Permits"
+                  decoration-muted="state == 'expired'"
+                  decoration-danger="state == 'cancelled'">
+                <field name="name"/>
+                <field name="permit_type"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="project_id" optional="show"/>
+                <field name="task_id" optional="show"/>
+                <field name="approved_by"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Permit Form View -->
+    <record id="view_oil_hse_permit_form" model="ir.ui.view">
+        <field name="name">oil.hse.permit.form</field>
+        <field name="model">oil.hse.permit</field>
+        <field name="arch" type="xml">
+            <form string="HSE Work Permit">
+                <header>
+                    <button name="action_approve" string="Approve"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_expire" string="Mark Expired"
+                            type="object"
+                            invisible="state != 'approved'"/>
+                    <button name="action_cancel" string="Cancel"
+                            type="object"
+                            invisible="state in ('expired', 'cancelled')"/>
+                    <button name="action_reset_draft" string="Reset to Draft"
+                            type="object"
+                            invisible="state not in ('cancelled', 'expired')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="permit_type"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                        </group>
+                        <group>
+                            <field name="project_id" domain="[('is_oil_gas_project', '=', True)]"/>
+                            <field name="task_id"
+                                   domain="[('project_id.is_oil_gas_project', '=', True), ('project_id', '=?', project_id)]"/>
+                            <field name="approved_by"/>
+                            <field name="from_stage_id" readonly="1"/>
+                            <field name="to_stage_id" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Permit Action -->
+    <record id="action_oil_hse_permit" model="ir.actions.act_window">
+        <field name="name">Work Permits</field>
+        <field name="res_model">oil.hse.permit</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No work permits created yet.
+            </p>
+            <p>Manage permits to work for hot work, confined space entry, and other operations.</p>
+        </field>
+    </record>
+
+    <!-- Configuration > Upstream > HSE > Work Permits -->
+    <menuitem id="menu_oil_config_hse_permit"
+              name="Work Permits"
+              parent="menu_oil_config_hse"
+              action="action_oil_hse_permit"
+              sequence="30"/>
+</odoo>
