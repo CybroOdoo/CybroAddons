@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Royalty Search View -->
+    <record id="oil_royalty_view_search" model="ir.ui.view">
+        <field name="name">oil.royalty.view.search</field>
+        <field name="model">oil.royalty</field>
+        <field name="arch" type="xml">
+            <search string="Search Royalties">
+                <field name="name"/>
+                <field name="sequence_royalty"/>
+                <field name="lease_id"/>
+                <field name="lessor_id"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Confirmed" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Billed" name="billed" domain="[('state', '=', 'billed')]"/>
+                <separator/>
+                <group name="group_by">
+                    <filter string="Lease" name="group_by_lease" context="{'group_by': 'lease_id'}"/>
+                    <filter string="Property Owner" name="group_by_lessor" context="{'group_by': 'lessor_id'}"/>
+                    <filter string="Status" name="group_by_state" context="{'group_by': 'state'}"/>
+                    <filter string="Royalty Date" name="group_by_date" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Royalty List View -->
+    <record id="oil_royalty_view_list" model="ir.ui.view">
+        <field name="name">oil.royalty.view.list</field>
+        <field name="model">oil.royalty</field>
+        <field name="arch" type="xml">
+            <list string="Royalties"
+                  decoration-info="state == 'draft'"
+                  decoration-success="state == 'billed'"
+                  decoration-warning="state == 'confirmed'">
+                <field name="name"/>
+                <field name="sequence_royalty"/>
+                <field name="lease_id"/>
+                <field name="lessor_id"/>
+                <field name="date"/>
+                <field name="royalty_type"/>
+                <field name="total_production"/>
+                <field name="total_royalty_amount"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'confirmed'"
+                       decoration-success="state == 'billed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Royalty Form View -->
+    <record id="oil_royalty_view_form" model="ir.ui.view">
+        <field name="name">oil.royalty.view.form</field>
+        <field name="model">oil.royalty</field>
+        <field name="arch" type="xml">
+            <form string="Royalty">
+                <header>
+                    <button name="action_confirm" string="Confirm"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_create_bill" string="Create Bill"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_set_to_draft" string="Set to Draft"
+                            type="object"
+                            invisible="state != 'confirmed'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,billed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_bill" type="object"
+                                class="oe_stat_button" icon="fa-pencil-square-o"
+                                invisible="not bill_id">
+                            <field name="bill_count" widget="statinfo"
+                                   string="Vendor Bill"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <div class="oe_title">
+                        <h4>
+                            <field name="sequence_royalty"
+                                   invisible="sequence_royalty == 'New'"
+                                   readonly="1"/>
+                        </h4>
+                    </div>
+                    <group>
+                        <group string="Royalty Details">
+                            <field name="lease_id" readonly="state != 'draft'"/>
+                            <field name="lessor_id"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="currency_id"
+                                   readonly="state != 'draft'"
+                                   groups="base.group_multi_currency"/>
+                        </group>
+                        <group string="Rate Configuration">
+                            <field name="royalty_type"
+                                   readonly="state != 'draft'"/>
+                            <field name="royalty_rate"
+                                   invisible="royalty_type != 'percentage'"
+                                   readonly="state != 'draft'"/>
+                            <field name="fixed_rate"
+                                   invisible="royalty_type != 'fixed_per_unit'"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="lines" string="Production Lines">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="product_id"/>
+                                    <field name="description"/>
+                                    <field name="production_volume"/>
+                                    <field name="unit_price"/>
+                                    <field name="currency_id"
+                                           column_invisible="True"/>
+                                    <field name="gross_revenue"/>
+                                    <field name="royalty_amount"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_production"/>
+                                <field name="total_gross_revenue"/>
+                                <field name="total_royalty_amount"
+                                       class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                        <page name="notes" string="Notes">
+                            <field name="notes"
+                                   placeholder="Additional notes or payment instructions..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Royalty Action -->
+    <record id="action_oil_royalty" model="ir.actions.act_window">
+        <field name="name">Royalties</field>
+        <field name="res_model">oil.royalty</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="oil_royalty_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Royalty calculation!
+            </p>
+            <p>
+                Track royalty payments based on production volume and lease agreements.
+            </p>
+        </field>
+    </record>
+
+    <!-- Royalty menu under Oil ERP > Configuration > Upstream -->
+    <menuitem id="menu_oil_royalty"
+              name="Royalties"
+              parent="oil_erp_base.menu_oil_config_upstream"
+              action="action_oil_royalty"
+              sequence="30"/>
+</odoo>
