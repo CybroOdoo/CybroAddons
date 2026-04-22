@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- This file defines the oil ERP settings views. -->
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.oil.erp</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="90"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Oil ERP" string="Oil ERP" name="oil_erp_base"
+                     groups="oil_erp_base.group_oil_manager">
+                    <block title="E&amp;P Operations"
+                           name="upstream_operations">
+                        <setting string="Lease Management"
+                                 help="Manage lease agreements and documents">
+                            <field name="module_oil_erp_lease"/>
+                        </setting>
+                        <setting string="Reservoir Management"
+                                 help="Track underground reservoirs and reserves">
+                            <field name="module_oil_erp_reservoir"/>
+                        </setting>
+                        <setting string="Projects &amp; Tasks"
+                                 help="Field projects, well tasks, routing">
+                            <field name="module_oil_erp_project"/>
+                        </setting>
+                        <setting string="Equipment Management"
+                                 help="Manage drilling rigs, pumps, compressors">
+                            <field name="module_oil_erp_equipment"/>
+                        </setting>
+                        <setting string="Royalty Management"
+                                 help="Calculate royalties for landowners/government">
+                            <field name="module_oil_erp_royalty"/>
+                        </setting>
+                        <setting string="HSE"
+                                 help="Health safety, checklist, incident reporting">
+                            <field name="module_oil_erp_hse"/>
+                        </setting>
+                        <setting string="Employee Management"
+                                 help="Manage employee on the project tasks.">
+                            <field name="module_oil_erp_employee"/>
+                        </setting>
+                    </block>
+
+                    <block title="Pipeline &amp; Transport"
+                           name="midstream_operations">
+                        <setting string="Transfers"
+                                 help="Product transfer workflow, fleet">
+                            <field name="module_oil_erp_transfers"/>
+                        </setting>
+                        <setting string="Pipeline Management"
+                                 help="Manage pipeline delivery methods, operators, and pipeline-specific transfer tracking">
+                            <field name="module_oil_erp_pipeline"/>
+                        </setting>
+                        <setting string="Gate Pass System"
+                                 help="Vehicle entry/exit, weight tracking">
+                            <field name="module_oil_erp_gate_pass"/>
+                        </setting>
+                    </block>
+
+                    <block title="Refinery Operations"
+                           name="downstream_operations">
+                        <setting string="Manufacturing Base"
+                                 help="Refinery manufacturing, BoM">
+                            <field name="module_oil_erp_manufacturing"/>
+                        </setting>
+                        <setting string="Inspection &amp; Checklist"
+                                 help="Enable manufacturing inspection orders and checklist engine">
+                            <field name="module_oil_erp_inspection"/>
+                        </setting>
+                        
+                    </block>
+                    <block title="Integrations" name="integrations">
+                        <setting string="Enable Real-Time Energy Benchmarks"
+                                 id="oil_live_price_integration_setting">
+                            <field name="enable_live_oil_api"/>
+
+                            <div class="o_eia_api_key_section">
+                                <div class="o_eia_api_key_help">
+                                    <div class="o_eia_api_key_help_title">
+                                        High-Performance Market Feed
+                                    </div>
+                                    <div class="o_eia_api_key_help_text">
+                                        Fetch real-time prices for Brent, WTI, and Natural Gas. Data is processed in parallel to ensure optimal dashboard performance. No API key or subscription is required.
+                                    </div>
+                                </div>
+                            </div>
+                        </setting>
+
+                        <setting string="Enable News Integration"
+                                 id="oil_news_integration_setting">
+                            <field name="enable_news_api"/>
+
+                            <div class="o_eia_api_key_section">
+                                <div class="o_eia_api_key_help">
+                                    <div class="o_eia_api_key_help_title">
+                                        Need a news API key?
+                                    </div>
+                                    <div class="o_eia_api_key_help_text">
+                                        Register on GNews, generate your API key, and paste it above to load live energy headlines.
+                                        <br/>
+                                        <span class="text-danger">Note: Ensure your GNews email is verified after setup to activate the API.</span>
+                                    </div>
+                                    <a href="https://gnews.io/"
+                                       target="_blank"
+                                       class="oe_link o_eia_api_key_link">
+                                        <i class="fa fa-arrow-right"/>
+                                        Get your API key
+                                    </a>
+                                </div>
+
+                                <div class="o_eia_api_key_field_group"
+                                     help="GNews API key for fetching live dashboard headlines"
+                                     invisible="enable_news_api == False">
+                                    <div class="o_eia_api_key_label">
+                                        API Key:
+                                    </div>
+                                    <field name="news_api_key" password="True"/>
+                                </div>
+
+                                <div class="o_eia_api_key_field_group"
+                                     invisible="enable_news_api == False">
+                                    <div class="o_eia_api_key_label">
+                                        Search Query:
+                                    </div>
+                                    <field name="news_search_query"
+                                           placeholder="oil OR gas OR energy OR crude"/>
+                                </div>
+
+                                <div class="o_eia_api_key_field_group"
+                                     invisible="enable_news_api == False">
+                                    <div class="o_eia_api_key_label">
+                                        Article Limit:
+                                    </div>
+                                    <field name="news_article_limit"/>
+                                    <span class="text-muted">Maximum 10</span>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_oil_config_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'module': 'oil_erp_base', 'bin_size': False}
+        </field>
+    </record>
+
+</odoo>
