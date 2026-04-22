@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- This file defines the oil project views. -->
+    <record id="project_project_view_form_simplified_footer" model="ir.ui.view">
+        <field name="name">project.project.kanabn.form.view.inherit.oil</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id"
+               ref="project.project_project_view_form_simplified_footer"/>
+        <field name="arch" type="xml">
+            <!-- Add fields to an existing group -->
+            <xpath expr="//field[@name='alias_name']" position="after">
+                <field name="is_oil_gas_project" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="edit_project_inherit_oil" model="ir.ui.view">
+        <field name="name">project.project.form.inherit.oil</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_storage_locations" type="object"
+                        class="oe_stat_button" icon="fa-warehouse"
+                        invisible="not is_oil_gas_project or not storage_location_id">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Storage</span>
+                        <span class="o_stat_text">Location</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="storage_location_id"/>
+                <field name="is_oil_gas_project"/>
+                <field name="project_code" invisible="not is_oil_gas_project"/>
+                <field name="operator_id" invisible="not is_oil_gas_project"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Oil &amp; Gas Details" name="oil_gas_details"
+                      invisible="not is_oil_gas_project">
+                    <group>
+                        <group string="Location &amp; Block">
+                            <field name="block_number"/>
+                            <field name="country_id"/>
+                            <field name="state_id"/>
+                            <field name="field_name"/>
+                        </group>
+                        <group string="Reservoir &amp; Geology">
+                            <field name="primary_fluid_type"/>
+                            <field name="formation"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Commercial &amp; Contract">
+                            <field name="license_number"/>
+                            <field name="license_expiry"/>
+                            <field name="working_interest"/>
+                            <field name="net_revenue_interest"/>
+                            <field name="contract_type"/>
+                        </group>
+                        <group string="Joint Venture Partners"
+                               invisible="contract_type != 'jv'">
+                            <field name="jv_partner_ids" nolabel="1"
+                                   widget="many2many_tags"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="open_view_project_oil" model="ir.actions.act_window">
+        <field name="name">Projects</field>
+        <field name="path">project-oil</field>
+        <field name="res_model">project.project</field>
+        <field name="domain">[("is_template", "=", False), ("is_oil_gas_project", "=", True)]</field>
+        <field name="context">{'display_milestone_deadline': True, 'default_is_oil_gas_project': True}</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="view_id" ref="project.view_project_kanban"/>
+        <field name="search_view_id" ref="project.view_project_project_filter"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No projects found. Let's create one!
+            </p>
+            <p>
+                Create projects to organize your tasks. Define a different workflow for each project.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_oil_project"
+              name="Projects"
+              parent="oil_erp_base.menu_oil_upstream_root"
+              action="open_view_project_oil"
+              sequence="10"/>
+</odoo>

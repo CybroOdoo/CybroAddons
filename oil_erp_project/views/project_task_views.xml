@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- This file defines the project task views. -->
+    <record id="view_task_form_inherit_oil" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.oil</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//header" position="inside">
+                <field name="is_production_stage" invisible="1"/>
+                <button name="action_open_production_wizard"
+                        type="object"
+                        class="oe_highlight"
+                        string="Production"
+                        invisible="not is_production_stage"/>
+            </xpath>
+            <xpath expr="//field[@name='project_id']" position="after">
+                <field name="is_oil_gas_well"/>
+            </xpath>
+            <xpath expr="//notebook/page[@name='description_page']" position="after">
+                <page string="Well Identity" name="well_identity"
+                      invisible="not is_oil_gas_well">
+                    <group>
+                        <group string="Classification">
+                            <field name="well_api_number"/>
+                            <field name="well_type"/>
+                            <field name="operator_id"/>
+                            <field name="field_name"/>
+                        </group>
+                        <group string="Location &amp; GPS">
+                            <field name="latitude"/>
+                            <field name="longitude"/>
+                            <field name="state_id"/>
+                            <field name="country_id"/>
+                        </group>
+                    </group>
+                </page>
+                <page string="Drilling &amp; Technical" name="well_drilling"
+                      invisible="not is_oil_gas_well">
+                    <group>
+                        <group string="Drilling Data">
+                            <field name="spud_date"/>
+                            <field name="completion_date"/>
+                            <field name="total_depth_ft"/>
+                            <field name="true_vertical_depth_ft"/>
+                            <field name="formation"/>
+                            <field name="well_direction"/>
+                        </group>
+                        <group string="Regulatory &amp; Compliance">
+                            <field name="permit_number"/>
+                            <field name="permit_date"/>
+                            <field name="regulatory_id"/>
+                            <field name="maasp_psi"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_task_tree_inherit_oil" model="ir.ui.view">
+        <field name="name">project.task.list.inherit.oil</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_tree2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='project_id']" position="after">
+                <field name="is_oil_gas_well" optional="show"/>
+                <field name="well_api_number" optional="hide"/>
+                <field name="well_type" optional="hide"/>
+                <field name="field_name" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_task_search_inherit_oil" model="ir.ui.view">
+        <field name="name">project.task.search.inherit.oil</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_search_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <field name="well_api_number"/>
+                <field name="field_name"/>
+                <filter string="Oil Wells" name="oil_wells"
+                        domain="[('is_oil_gas_well','=',True)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
