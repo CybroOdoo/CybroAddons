@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Pivot View for stock.picking (Transfers) -->
+    <record id="view_stock_picking_oil_transfer_pivot" model="ir.ui.view">
+        <field name="name">stock.picking.oil.transfer.pivot</field>
+        <field name="model">stock.picking</field>
+        <field name="arch" type="xml">
+            <pivot string="Transfer Analysis" display_quantity="1" sample="1">
+                <field name="vehicle_id" type="row"/>
+                <field name="product_type" type="col"/>
+                <field name="net_weight" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Graph View for stock.picking (Transfers) -->
+    <record id="view_stock_picking_oil_transfer_graph" model="ir.ui.view">
+        <field name="name">stock.picking.oil.transfer.graph</field>
+        <field name="model">stock.picking</field>
+        <field name="arch" type="xml">
+            <graph string="Transfer Analysis" type="bar" sample="1">
+                <field name="vehicle_id"/>
+                <field name="net_weight" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Action for Transfer Reporting -->
+    <record id="action_oil_transfer_reporting" model="ir.actions.act_window">
+        <field name="name">Transfer Net Weight by Vehicle</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="domain">[('is_oil_gas_transfer', '=', True)]</field>
+        <field name="context">{'search_default_oil_gas_transfers': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No oil and gas transfers found for reporting.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item in Reporting > Midstream -->
+    <menuitem id="menu_oil_reporting_midstream_transfers"
+              name="Transfer Net Weight by Vehicle"
+              parent="oil_erp_base.menu_oil_reporting_midstream"
+              action="action_oil_transfer_reporting"
+              sequence="10"/>
+</odoo>
