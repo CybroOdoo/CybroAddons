@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- This file defines the lease agreement views. -->
+    <record id="oil_lease_agreement_view_tree" model="ir.ui.view">
+        <field name="name">oil.lease.agreement.view.list</field>
+        <field name="model">oil.lease.agreement</field>
+        <field name="arch" type="xml">
+            <list string="Lease Agreements" decoration-info="state == 'draft'"
+                  decoration-success="state == 'active'"
+                  decoration-warning="state == 'expired'"
+                  decoration-muted="state == 'terminated'">
+                <field name="name"/>
+                <field name="lessor_id"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="land_type"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'active'"
+                       decoration-warning="state == 'expired'"
+                       decoration-danger="state == 'terminated'"/>
+                <field name="activity_ids" widget="list_activity"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="oil_lease_agreement_view_form" model="ir.ui.view">
+        <field name="name">oil.lease.agreement.view.form</field>
+        <field name="model">oil.lease.agreement</field>
+        <field name="arch" type="xml">
+            <form string="Lease Agreement">
+                <header>
+                    <button name="action_activate" string="Activate"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_renew" string="Renew Lease"
+                            type="object" class="oe_highlight"
+                            invisible="state not in ['active', 'expired'] or not renewal_option or not renewal_date"/>
+                    <button name="action_terminate" string="Terminate"
+                            type="object" invisible="state != 'active'"/>
+                    <button name="action_set_to_draft" string="Set to Draft"
+                            type="object"
+                            invisible="state not in ['expired', 'terminated']"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,active,expired,terminated"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_reservoirs" type="object"
+                                class="oe_stat_button" icon="fa-database">
+                            <field name="reservoir_count" widget="statinfo"
+                                   string="Reservoirs"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group name="general_info" string="General Information">
+                            <field name="lessor_id"/>
+                            <field name="lessee_id"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <field name="renewal_option"/>
+                            <field name="renewal_date"
+                                   invisible="not renewal_option"/>
+                        </group>
+                        <group name="location_details"
+                               string="Location &amp; Land Details">
+                            <field name="land_type"/>
+                            <field name="survey_number"/>
+                            <field name="acreage"/>
+                            <field name="latitude"/>
+                            <field name="longitude"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="technical_details"
+                              string="Technical Details">
+                            <group>
+                                <group>
+                                    <field name="license_number"/>
+                                    <field name="permit_number"/>
+                                    <field name="estimated_reserves"/>
+                                </group>
+                                <group>
+                                    <field name="production_limit"/>
+                                    <field name="water_cut_limit"/>
+                                    <field name="gas_ratio_limit"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page name="documents" string="Documents">
+                            <group>
+                                <group string="Core Documents">
+                                    <field name="agreement_document"
+                                           widget="binary" filename="name"/>
+                                    <field name="map_attachment" widget="binary"
+                                           filename="name"/>
+                                </group>
+                                <group string="Related Documents">
+                                    <field name="document_ids"
+                                           widget="many2many_binary"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page name="description" string="Description">
+                            <field name="description"
+                                   placeholder="Additional lease terms or notes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter>
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </chatter>
+            </form>
+        </field>
+    </record>
+
+    <record id="oil_lease_agreement_view_search" model="ir.ui.view">
+        <field name="name">oil.lease.agreement.view.search</field>
+        <field name="model">oil.lease.agreement</field>
+        <field name="arch" type="xml">
+            <search string="Search Lease Agreements">
+                <field name="name"/>
+                <field name="lessor_id"/>
+                <field name="land_type"/>
+                <field name="survey_number"/>
+                <filter string="Draft" name="draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter string="Active" name="active"
+                        domain="[('state', '=', 'active')]"/>
+                <filter string="Expired" name="expired"
+                        domain="[('state', '=', 'expired')]"/>
+                <group name="group_by">
+                    <filter string="Property Owner" name="group_by_lessor"
+                            context="{'group_by': 'lessor_id'}"/>
+                    <filter string="Status" name="group_by_state"
+                            context="{'group_by': 'state'}"/>
+                    <filter string="Land Type" name="group_by_land_type"
+                            context="{'group_by': 'land_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_oil_lease_agreement" model="ir.actions.act_window">
+        <field name="name">Lease Agreements</field>
+        <field name="res_model">oil.lease.agreement</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="oil_lease_agreement_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Lease Agreement!
+            </p>
+            <p>
+                Manage mineral, surface, and other lease agreements with land
+                and technical details.
+            </p>
+        </field>
+    </record>
+
+    <!-- Top-level menu for Lease and Land -->
+    <menuitem id="menu_oil_lease_agreement"
+              name="Lease Agreements"
+              parent="oil_erp_base.menu_oil_upstream_root"
+              groups="oil_erp_base.group_oil_manager,oil_erp_base.group_oil_admin"
+              action="action_oil_lease_agreement"
+              sequence="0"/>
+</odoo>
