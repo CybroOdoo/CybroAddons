@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Odoo 19 Full Accounting Kit for Community',
-    'version': '19.0.2.3.0',
+    'version': '19.0.2.3.1',
     'category': 'Accounting',
     'live_test_url': 'https://kit.easyinstance.com/web/login?redirect=/odoo/accounting',
     'summary': """Odoo 19 Accounting, Odoo 19 Accounting Reports, Odoo18 Accounting, Odoo Accounting, Odoo19 Financial Reports, Odoo19 Asset, Odoo19 Profit and Loss, PDC, Followups, Odoo19, Accounting, Odoo Apps, Reports""",
