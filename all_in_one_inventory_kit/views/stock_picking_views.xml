@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--  Stock picking form view-->
+    <record id="view_picking_form" model="ir.ui.view">
+        <field name="name">stock.picking.view.form.inherit.all.in.one.inventory.kit</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <!--   Order line product description-->
+            <field name="product_id" position="after">
+                <field name="name"/>
+            </field>
+            <xpath expr="//field[@name='location_id']" position="after">
+                <field name="barcode"/>
+                <field name="invoice_created" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='move_ids_without_package']/list/field[@name='product_id']"
+                   position="before">
+                <field name="barcode"/>
+            </xpath>
+            <xpath expr="//field[@name='picking_type_id']" position="after">
+                <field name="operation_code" invisible="1"/>
+                <field name="is_return" invisible="1"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_picking_invoice" type="object"
+                        class="oe_stat_button" icon="fa-file-text"
+                        invisible="invoice_count == 0">
+                    <field name="invoice_count" widget="statinfo"/>
+                </button>
+            </xpath>
+            <xpath expr="//button[@name='action_cancel']" position="before">
+                <button name="action_create_invoice" class="oe_highlight"
+                        string="Create Invoice" type="object"
+                        invisible="invoice_count != 0 or state !='done' or operation_code == 'incoming' or is_return == True and invoice_created == True"/>
+                <button name="action_create_bill" class="oe_highlight"
+                        string="Create Bill" type="object"
+                        invisible="invoice_count != 0 or state !='done' or operation_code =='outgoing' or is_return == True and invoice_created == True"/>
+                <button name="action_create_customer_credit" class="oe_highlight"
+                        string="Create Credit Note" type="object"
+                        invisible="invoice_count != 0 or state !='done' or operation_code =='outgoing' or is_return == False"/>
+                <button name="action_create_vendor_credit" class="oe_highlight"
+                        string="Create Vendor Credit" type="object"
+                        invisible="invoice_count != 0 or state !='done' or operation_code =='incoming' or is_return == False"/>
+            </xpath>
+            <xpath expr="//field[@name='product_id']" position="after">
+                <field name="cw_hide" invisible="1"/>
+                <field name="cw_demand"
+                       readonly="is_initial_demand_editable == False or parent.show_allocation == True and is_locked == True and is_initial_demand_editable == False"
+                       invisible="cw_hide == False"/>
+                <field name="cw_reserved"
+                       column_invisible="parent.state  in ['draft', 'done'] or parent.picking_type_code != 'outgoing'"
+                       invisible="cw_hide == False"/>
+                <field name="cw_done"
+                       readonly="product_id == False" column_invisible="parent.state == 'draft'"
+                       invisible="cw_hide == False"/>
+                <field name="category_id" invisible="1"/>
+                <field name="cw_uom_id"
+                       invisible="cw_hide == False"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

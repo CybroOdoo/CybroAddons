@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <!--
+    Amazon S3 Dashboard Template
+
+    This template renders a user interface for viewing and managing files
+    stored in an Amazon S3 bucket. It includes:
+    - Upload button for adding new files
+    - Search input for filtering files by name
+    - File type filter dropdown
+    - Sortable table displaying file details (name, type, date, size)
+    - Clickable file links using pre-signed URLs
+
+    Data is dynamically populated using Owl/QWeb rendering.
+-->
+    <template id="amazon_s3">
+        <t t-name="AmazonDashboard">
+            <section class="amazon_dashboard_main_section">
+
+                <img src="/amazon_s3_connector/static/src/img/s3_icon.png"
+                     style="width:150px; margin:5px;"/>
+
+                <img src="/amazon_s3_connector/static/src/img/amazon_s3_text.png"
+                     style="width:220px; margin:-10px;"/>
+
+                <input class="btn amazon_upload"
+                       type="button"
+                       value="Upload"
+                       t-on-click="upload"/>
+
+                <input type="search"
+                       class="amazon_header-search-input"
+                       placeholder="Search Files"
+                       t-on-keyup="search_file"/>
+
+                <label for="filter"> <select id="filter" class="form-select files_select" t-on-click="filter_files"> <option value="ALL FILES">ALL FILES</option> <option value="pdf">PDF</option> <option value="image">IMAGE</option> <option value="zip">ZIP</option> <option value="txt">TEXT</option> <option value="xlsx">EXCEL</option> </select> </label>
+
+                <div class="amazon_content">
+                    <table class="table table-light table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th t-on-click="sort_number">SL NO</th>
+                                <th t-on-click="sort_name">Name</th>
+                                <th>Type</th>
+                                <th>Last Modified</th>
+                                <th>Size</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <t t-foreach="filteredFiles" t-as="file" t-key="file.index">
+                                <tr>
+                                    <td>
+                                        <t t-esc="file.index"/>
+                                    </td>
+                                    <td>
+                                        <a t-att-href="file.url" target="_blank">
+                                            <t t-esc="file.name"/>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <t t-esc="file.owner"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="file.date"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="file.size"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+
+                    </table>
+                </div>
+            </section>
+        </t>
+    </template>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Inherited form view of sale order for adding the sale quotation revision feature-->
+    <record id="view_order_form" model="ir.ui.view">
+        <field name="name">
+            sale.order.view.form.inherit.sale.quotation.revision
+        </field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="after">
+                <div class="alert alert-danger text-center o_form_header"
+                     invisible="not is_revised"
+                     role="status">
+                    <strong>Quotation is Revised.
+                    </strong>
+                </div>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button class="oe_stat_button" type="object"
+                        name="get_revised_orders"
+                        icon="fa-shopping-bag" invisible="not rev_ord_count">
+                    <field string="Revised Orders" name="rev_ord_count"
+                           widget="statinfo"/>
+                </button>
+            </xpath>
+            <xpath expr="//header" position="inside">
+                <button name="action_revise_quotation" string="Revise Quotation"
+                        type="object"
+                        invisible="state != 'sent'"
+                        class="btn-primary"/>
+            </xpath>
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="is_revised" readonly="1" />
+                <field name="org_sale_id" readonly="1" invisible="not is_revised"/>
+            </xpath>
+            <xpath expr="//notebook/page[@name='other_information']"
+                   position="after">
+                <page name="sale_history" string="Sale Revisions" invisible="not is_revised"
+                    readonly="True">
+                    <field name="rev_sale_ids" readonly="1">
+                        <list>
+                            <field name="date_order"/>
+                            <field name='name'/>
+                            <field name="partner_id"/>
+                            <field name='user_id'/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

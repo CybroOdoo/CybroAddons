@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherited the res.config.settings form view for adding new fields to
+        choose lot/serial number in product wise or globally-->
+    <record id="res_config_settings_view_form_purchase" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.auto.generate.lot.number</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="purchase.res_config_settings_view_form_purchase"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@data-string='Purchase']" position="inside">
+                <block title="Auto Generate Lot Number" name="purchase_setting_container">
+                    <setting id="auto_generate_lot_number_setting" help="Configure how Lot/Serial numbers are automatically generated.">
+                        <field name="is_auto_generate"/>
+                        <div class="content-group" invisible="not is_auto_generate">
+                            <div class="row mt16">
+                                <label for="serial_number_type" class="col-lg-4 o_light_label"/>
+                                <field name="serial_number_type" widget="radio" class="col-lg-8"/>
+                            </div>
+                            <!-- Show Product redirect button in Product Wise mode -->
+                            <div class="mt8" invisible="serial_number_type != 'product'">
+                                <button name="%(product.product_template_action)d" 
+                                        icon="oi-arrow-right" 
+                                        type="action" 
+                                        string="Configure Product Sequences" 
+                                        class="btn-link p-0"/>
+                            </div>
+                            <!-- Updated Prefix and Digits to have identical layout and widths -->
+                            <div class="mt16" invisible="serial_number_type != 'global'">
+                                <div class="row">
+                                    <label for="prefix" class="col-lg-4 o_light_label"/>
+                                    <field name="prefix" class="col-lg-3 oe_inline"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="digits" class="col-lg-4 o_light_label"/>
+                                    <field name="digits" class="col-lg-3 oe_inline"/>
+                                </div>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

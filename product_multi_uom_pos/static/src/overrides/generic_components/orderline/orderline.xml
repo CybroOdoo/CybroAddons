@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Extends the Order line template to add UOM selection -->
+    <t t-name="product_multi_uom_pos.Orderline"
+       t-inherit="point_of_sale.Orderline"
+       t-inherit-mode="extension">
+
+        <xpath expr="//ul[hasclass('info-list')]" position="after">
+            <t t-if="env.services.pos.config.pos_multi_uom and props.line.getUom and props.line.getUom.length > 0">
+                <div class="uom-controls" style="display: flex; align-items: center; margin-top: 15px; margin-left: 10px;">
+                    <select style="width: 70%; height: 25px; border-radius: 5px; border: 1px solid transparent;
+                                   background: rgb(95 115 116 / 20%); margin-right: 10px;"
+                            class="select_uom"
+                            t-on-change="onRandomChange"
+                            t-ref="uom_value">
+                        <option value="change_uom" selected="selected" disabled="disabled">
+                            Change UoM
+                        </option>
+                        <t t-foreach="props.line.getUom" t-as="item" t-key="item.uom_id">
+                            <option class="select_uom"
+                                   t-att-data-value="item.uom_id"
+                                   t-att-data-price="item.price"
+                                   t-att-data-name="item.uom_name"
+                                   t-att-data-uom_id="item.uom_id">
+                                $ <t t-esc="item.price"/> per <t t-esc="item.uom_name"/>
+                            </option>
+                        </t>
+                    </select>
+                    <button class="reset-uom-btn"
+                            t-on-click="onReset"
+                            style="background: transparent; border: transparent; cursor: pointer;">
+                        <i class="fa fa-rotate-left"/>
+                    </button>
+                </div>
+            </t>
+        </xpath>
+
+        <xpath expr="//li[@class='price-per-unit']/t[@t-if='line.unit'][@t-esc='line.unit']" position="replace">
+            <!-- Unit props replacement here -->
+            <t t-if="state.unit" t-esc="state.unit" />
+        </xpath>
+    </t>
+</templates>

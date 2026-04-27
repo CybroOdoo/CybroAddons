@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+    <record model="ir.module.category" id="module_category_odoo_poll">
+            <field name="name">Odoo Poll</field>
+            <field name="sequence">13</field>
+            <field name="description">roles and permissions </field>
+        </record>
+
+     <!-- Poll User Group -->
+    <record id="group_odoo_poll_user" model="res.groups">
+        <field name="name">user</field>
+        <field name="category_id" ref="odoo_poll.module_category_odoo_poll"/>
+
+    </record>
+
+    <!-- Poll Manager Group -->
+    <record id="group_odoo_poll_manager" model="res.groups">
+        <field name="name">manager</field>
+        <field name="category_id" ref="odoo_poll.module_category_odoo_poll"/>
+
+    </record>
+
+    <!-- Record Rule: Users see only their own polls for modification/delete -->
+    <!-- This rule doesn't restrict reading (as global rules will handle company isolation) -->
+    <record id="poll_user_own_rule" model="ir.rule">
+        <field name="name">User: Own Polls Only (Write/Create/Unlink)</field>
+        <field name="model_id" ref="odoo_poll.model_discuss_poll"/>
+        <field name="groups" eval="[(4, ref('odoo_poll.group_odoo_poll_user'))]"/>
+        <field name="domain_force">[('author_id', '=', user.partner_id.id)]</field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Global Multi-company isolation rules -->
+    <record id="poll_multi_company_rule" model="ir.rule">
+        <field name="name">Poll: Multi-Company Isolation</field>
+        <field name="model_id" ref="odoo_poll.model_discuss_poll"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="poll_option_multi_company_rule" model="ir.rule">
+        <field name="name">Poll Option: Multi-Company Isolation</field>
+        <field name="model_id" ref="odoo_poll.model_poll_option"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('poll_id.company_id', '=', False), ('poll_id.company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="poll_vote_multi_company_rule" model="ir.rule">
+        <field name="name">Poll Vote: Multi-Company Isolation</field>
+        <field name="model_id" ref="odoo_poll.model_poll_vote"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('poll_id.company_id', '=', False), ('poll_id.company_id', 'in', company_ids)]</field>
+    </record>
+
+
+
+    </data>
+</odoo>

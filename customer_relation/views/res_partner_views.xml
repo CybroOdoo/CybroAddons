@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form" model="ir.ui.view">
+        <field name="name">res.partner.view.form.inherit.customer_relation</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Relationships" name="relationships">
+                    <field name="partner_relation_ids" mode="kanban">
+                        <kanban class="o_kanban_small_column">
+                            <templates>
+                                <t t-name="kanban-box">
+                                    <div class="d-flex align-items-center">
+                                        <aside class="o_kanban_image pe-2">
+                                            <a type="open"
+                                               class="o_kanban_record_clickable">
+                                                <field name="relation_avatar"
+                                                       widget="image"
+                                                       class="o_kanban_image_fill rounded-circle"
+                                                       options="{'size': 64}"/>
+                                            </a>
+                                        </aside>
+                                        <div>
+                                            <div class="fw-bold">
+                                                <a type="object"
+                                                   class="oe_kanban_action oe_kanban_action_a"
+                                                   name="open_related_contact">
+                                                    <field name="relation_name"/>
+                                                </a>
+                                            </div>
+                                            <div>
+                                                <field name="relation_type_id"/>
+                                            </div>
+                                            <div t-if="record.relation_email.raw_value">
+                                                <field name="relation_email"
+                                                       widget="email"/>
+                                            </div>
+                                            <div t-if="record.relation_phone.raw_value">
+                                                <i class="fa fa-phone"
+                                                   aria-hidden="true"/>
+                                                <field name="relation_phone"/>
+                                            </div>
+                                            <div t-if="record.relation_mobile.raw_value">
+                                                <i class="fa fa-mobile"
+                                                   aria-hidden="true"/>
+                                                <field name="relation_mobile"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </templates>
+                        </kanban>
+                        <!-- Form view inside tab -->
+                        <form string="Contact Relation">
+                            <sheet>
+                                <group>
+                                    <group>
+                                        <field name="relation_contact_id"
+                                               widget="res_partner_many2one"
+                                               options="{'no_quick_create': True}"/>
+                                        <field name="relation_type_id"/>
+                                        <field name="reverse_relation_type_id"
+                                               string="Reciprocal Type"/>
+                                    </group>
+
+                                    <group>
+                                        <field name="relation_email"
+                                               readonly="1"/>
+                                        <field name="relation_phone"
+                                               readonly="1"/>
+                                        <field name="relation_mobile"
+                                               readonly="1"/>
+                                    </group>
+                                </group>
+                            </sheet>
+                        </form>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_res_partner_filter" model="ir.ui.view">
+        <field name="name">res.partner.view.search.inherit.customer_relation</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+
+            <filter name="type_company" position="after">
+                <separator/>
+                <filter string="Has Relationship"
+                        name="has_relation"
+                        domain="[('is_related', '=', True)]"/>
+            </filter>
+
+            <field name="category_id" position="after">
+                <field name="relation_type_names"
+                       string="Relation Type"/>
+                <field name="relation_category_names"
+                       string="Relation Type Categories"/>
+            </field>
+
+            <group name="group_by" position="inside">
+                <filter string="Relation Type"
+                        name="group_relation_type"
+                        context="{'group_by':'relation_type_names'}"/>
+                <filter string="Relation Category"
+                        name="groupby_relation_category"
+                        context="{'group_by':'relation_category_names'}"/>
+            </group>
+        </field>
+    </record>
+</odoo>

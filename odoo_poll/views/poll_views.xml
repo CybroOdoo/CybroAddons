@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Poll Tree View -->
+    <record id="view_discuss_poll_tree" model="ir.ui.view">
+        <field name="name">discuss.poll.tree</field>
+        <field name="model">discuss.poll</field>
+        <field name="arch" type="xml">
+            <list string="Polls">
+                <field name="question"/>
+                <field name="author_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="total_votes"/>
+                <field name="is_multiple_choice"/>
+                <field name="is_closed" widget="boolean_toggle"/>
+                <field name="create_date"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Poll Form View -->
+    <record id="view_discuss_poll_form" model="ir.ui.view">
+        <field name="name">discuss.poll.form</field>
+        <field name="model">discuss.poll</field>
+        <field name="arch" type="xml">
+            <form string="Poll">
+                <header>
+                    <button name="action_close" string="Close Poll" type="object"
+                            class="btn btn-primary" invisible="is_closed"/>
+                    <button name="action_reopen" string="Reopen Poll" type="object"
+                            class="btn btn-primary" invisible="not is_closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="question" placeholder="Poll Question..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="author_id"/>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                            <field name="is_multiple_choice"/>
+                        </group>
+                        <group>
+                            <field name="total_votes"/>
+                            <field name="is_closed"/>
+                            <field name="create_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Options">
+                            <field name="option_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="vote_count" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Votes">
+                            <field name="vote_ids">
+                                <list>
+                                    <field name="voter_id"/>
+                                    <field name="option_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View with Filter -->
+    <!-- Search View with Filter -->
+    <record id="view_discuss_poll_search" model="ir.ui.view">
+        <field name="name">discuss.poll.search</field>
+        <field name="model">discuss.poll</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="question"/>
+                <field name="author_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+
+                <filter string="My Polls" name="my_polls"
+                        domain="[('author_id', '=', uid)]"/>
+                <filter string="Open Polls" name="open_polls"
+                        domain="[('is_closed', '=', False)]"/>
+                <filter string="Closed Polls" name="closed_polls"
+                        domain="[('is_closed', '=', True)]"/>
+
+                <separator/>
+                <filter string="Multiple Choice" name="multiple_choice"
+                        domain="[('is_multiple_choice', '=', True)]"/>
+                <filter string="Single Choice" name="single_choice"
+                        domain="[('is_multiple_choice', '=', False)]"/>
+
+                <group expand="0" string="Group By">
+                    <filter string="Author" name="group_author"
+                            context="{'group_by': 'author_id'}"/>
+                    <filter string="Company" name="group_company"
+                            context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                    <filter string="Status" name="group_status"
+                            context="{'group_by': 'is_closed'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Poll Action -->
+    <record id="action_discuss_poll" model="ir.actions.act_window">
+        <field name="name">Polls</field>
+        <field name="res_model">discuss.poll</field>
+        <field name="view_mode">list,form</field>
+<!--        <field name="context">{'search_default_my_polls': 1}</field>-->
+    </record>
+
+    <!-- Poll Server Action for Menu Filtering -->
+    <record id="action_discuss_poll_menu" model="ir.actions.server">
+        <field name="name">Polls</field>
+        <field name="model_id" ref="model_discuss_poll"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.action_open_polls()
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_discuss_poll" name="Polls"
+              parent="mail.menu_root_discuss"
+              action="action_discuss_poll_menu"
+              sequence="20"/>
+</odoo>
