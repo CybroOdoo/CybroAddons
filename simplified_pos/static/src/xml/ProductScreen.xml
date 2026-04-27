@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Inherit ProductScreen to Modify it -->
+    <t t-name="simplified_pos.ProductScreen"
+       t-inherit="point_of_sale.ProductScreen"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('product-screen')]" position="replace">
+            <div>
+                 <div class="leftpane pane-border d-flex flex-column" style="height: 100vh;">
+                     <div class="test-order-summary">
+                         <OrderSummary/>
+                     </div>
+                     <CategorySelector t-if="!ui.isSmall || !pos.scanning" class="'p-2'" categories="getCategoriesAndSub()" onClick="(id) => this.pos.setSelectedCategory(id)"/>
+                     <div class="product-card-scroll-container" style="flex-grow: 1; min-height: 0; overflow-y: auto;">
+                        <div t-if="productsToDisplay.length != 0 and pos.session._has_available_products"
+                             t-attf-class="product-list {{this.pos.productListViewMode}} px-2 pt-0 pb-2">
+                            <ProductCard
+                                t-foreach="productsToDisplay" t-as="product" t-key="product.id"
+                                productId="product.id"
+                                product="product"
+                                class="pos.productViewMode"
+                                name="getProductName(product)"
+                                color="product.color || product.pos_categ_ids?.at(-1)?.color"
+                                imageUrl="pos.config.show_product_images and this.getProductImage(product)"
+                                onClick.bind="() => this.addProductToOrder(product)"
+                                productInfo="true"
+                                productCartQty="this.state.quantityByProductTmplId[product.raw.product_tmpl_id]"
+                                onProductInfoClick.bind="() => this.onProductInfoClick(product)" />
+                        </div>
+                    </div>
+
+                    <!-- Numpad always at the bottom -->
+                    <div class="pads">
+                        <div class="subpads d-flex flex-column gap-2">
+                            <Numpad t-if="!currentOrder?.is_empty() and pos.get_order()?.uiState.selected_orderline_uuid" class="'d-grid m-n1'" buttons="getNumpadButtons()" onClick.bind="onNumpadClick"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="right"><br/><br/><br/><br/><br/><br/>
+                    <div class="head"><center><h2>CUSTOMER</h2></center></div>
+                    <br/><br/>
+                    <t t-call="CustomerDetails"/>
+                    <br/><br/>
+                    <center>
+                        <button class="customer-button"
+                                t-on-click="() => this.pos.selectPartner()">
+                            <i class="fa fa-search"/>
+                        </button>
+                    </center>
+                    <div class="button nextorder validation"
+                         t-att-class="{ highlight: !locked }"
+                         t-on-click="orderDone" style="background:#39B8B8;">
+                        <div class="pay-circle">
+                            <i class="fa fa-chevron-right" role="img"
+                               aria-label="Pay" title="Pay"/>
+                        </div>
+                        New Order
+                    </div>
+                </div>
+                <div class="center d-flex flex-column justify-between" style="height: 100vh;">
+                    <PaymentScreenStatus order="currentOrder"/>
+                    <div class="paymentmethods-container" style="flex-grow: 1;">
+                        <div class="paymentmethods">
+                            <p class="title-category">Payment method</p>
+                            <t t-foreach="payment_methods_from_config"
+                               t-as="paymentMethod"
+                               t-key="paymentMethod.id">
+                                <div class="button paymentmethod"
+                                     t-on-click="() => this.addNewPaymentLine(paymentMethod)">
+                                    <div class="payment-name">
+                                        <t t-esc="paymentMethod.name"/>
+                                    </div>
+                                </div>
+                            </t>
+                            <div class="summary">
+                                <p class="title-category">SUMMARY</p>
+                            </div>
+                            <PaymentScreenPaymentLines paymentLines="paymentLines"
+                                                       deleteLine.bind="deletePaymentLine"
+                                                       sendForceDone.bind="sendForceDone"
+                                                       selectLine.bind="selectPaymentLine"
+                                                       sendPaymentReverse="sendPaymentReverse"
+                                                       sendPaymentCancel="sendPaymentCancel"
+                                                       sendPaymentRequest="sendPaymentRequest"
+                                                       updateSelectedPaymentline="updateSelectedPaymentline"/>
+                        </div>
+                    </div>
+                    <div class="button next validation mt-2"
+                         t-on-click="confirmOrder" style="background:#39B8B8;">
+                        <div class="pay-circle">
+                            <i class="fa fa-chevron-right" role="img" aria-label="Pay" title="Pay"/>
+                        </div>
+                        <span class="next_text">Validate</span>
+                    </div>
+                </div>
+
+            </div>
+        </xpath>
+    </t>
+    <t t-name="CustomerDetails" owl="1">
+        <div class="_o_customer">
+            <t t-if="this.currentOrder.get_partner()">
+               <h4>Name:</h4>
+                <t t-esc="this.currentOrder.get_partner().name"/>
+                <h4>Address:</h4>
+                <t t-esc="this.currentOrder.get_partner().address"/>
+                <h4>Email:</h4>
+                <t t-esc="this.currentOrder.get_partner().email"/>
+                <h4>Phone:</h4>
+                <t t-esc="this.currentOrder.get_partner().phone"/>
+            </t>
+        </div>
+    </t>
+</templates>
