@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <!-- Action for labour supply -->
+    <record id="labour_supply_action" model="ir.actions.act_window">
+        <field name="name">Labour Supply</field>
+        <field name="res_model">labour.supply</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <!-- List view for labour supply -->
+    <record id="labour_supply_view_tree" model="ir.ui.view">
+        <field name="name">labour.supply.view.tree</field>
+        <field name="model">labour.supply</field>
+        <field name="arch" type="xml">
+            <list default_order='create_date desc'>
+                <field name="sequence_number"/>
+                <field name="customer_id"/>
+                <field name="from_date"/>
+                <field name="to_date"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+    <!-- Form view for labour supply -->
+    <record id="labour_supply_view_form" model="ir.ui.view">
+        <field name="name">labour.supply.view.form</field>
+        <field name="model">labour.supply</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" type="object"
+                            class="oe_highlight" string="Confirm"
+                            invisible="state != 'ready'"/>
+                    <button name="action_create_invoice" type="object"
+                            class="oe_highlight" string="Create Invoice"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_draft" type="object" string="Edit"
+                            invisible="not is_alert and state != 'ready'"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state in ['expired', 'draft', 'canceled']"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div name="button_box" position="inside">
+                        <button type="object" class="oe_stat_button"
+                                icon="fa-pencil-square-o"
+                                name="action_labour_supply_invoices"
+                                invisible="state != 'invoiced'">
+                            <span>Invoice</span>
+                        </button>
+                    </div>
+                    <header>
+                        <h1>
+                            <field name="sequence_number"/>
+                        </h1>
+                    </header>
+                    <div class="alert alert-info mb-0" role="alert"
+                          invisible="not is_alert">
+                        labour allocated is less than requested.
+                    </div>
+                    <br/>
+                    <group>
+                        <field name="customer_id"
+                               invisible="state not in ['draft']"/>
+                        <field name="company_id"/>
+                        <field name="is_alert" string="Shortage in Labour"
+                               readonly="True" invisible="1"/>
+                    </group>
+                    <notebook>
+                        <page name="Worker's Skill ">
+                            <field name="skill_ids" required="True"
+                                   readonly="state not in ['draft']"/>
+                            <button name="action_fetch" type="object"
+                                    class="oe_highlight" string="Fetch"
+                                    invisible="state != 'draft'"/>
+                        </page>
+                        <page name="Workers"
+                              invisible="not view_workers_page">
+                            <field name="workers_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="phone_number"/>
+                                    <field name="rate"/>
+                                </list>
+                            </field>
+                            <field name="view_workers_page" invisible="1"/>
+                            <div align="right">
+                                <span>Total Amount</span>
+                                <h3>
+                                    <field name="total_amount"/>
+                                </h3>
+                            </div>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- Search view for labour supply -->
+    <record id="labour_supply_view_search" model="ir.ui.view">
+        <field name="name">labour.supply.view.search</field>
+        <field name="model">labour.supply</field>
+        <field name="arch" type="xml">
+            <search string="search">
+                <field name="customer_id"/>
+                <separator/>
+                <filter string="Invoiced" name="invoiced"
+                        domain="[('state', '=', 'invoiced')]"/>
+                <filter string="Expired" name="expired"
+                        domain="[('state', '=', 'expired')]"/>
+                <filter string="Draft" name="draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <group>
+                    <filter string="State" name="state"
+                            context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Menu for Manpower Supply Operation -->
+    <menuitem id="labour_supply_menu_root" name="Operation"
+              parent="labour_supply_main_menu_root" sequence="2">
+        <!-- Menu action for labour supply -->
+        <menuitem id="labour_supply_menu_action" action="labour_supply_action"/>
+    </menuitem>
+</odoo>
