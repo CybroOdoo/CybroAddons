@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
 #############################################################################
 #    Cybrosys Technologies Pvt. Ltd.
 #
@@ -66,9 +65,6 @@ class ResConfigSettings(models.TransientModel):
     module_oil_erp_inspection = fields.Boolean("Inspection & Checklist",
                                                help="Enable this when module oil"
                                                     " erp inspection applies.")
-    module_oil_erp_scada = fields.Boolean("SCADA Integration")
-    module_oil_erp_contract = fields.Boolean("Contract Management")
-    module_oil_erp_tender = fields.Boolean("Tender Management")
     enable_live_oil_api = fields.Boolean("Enable Real-Time Energy Benchmarks",
                                          compute="_compute_live_oil_settings",
                                          inverse="_inverse_enable_live_oil_api",

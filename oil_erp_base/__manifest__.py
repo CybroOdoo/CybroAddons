@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
 #############################################################################
 #    Cybrosys Technologies Pvt. Ltd.
 #
@@ -40,7 +39,6 @@ Provides core configuration, custom theme, shared models, and basic security gro
         'purchase',
         'account',
         'base_accounting_kit',
-        'uom',
     ],
     'data': [
         'security/oil_security.xml',
@@ -65,9 +63,6 @@ Provides core configuration, custom theme, shared models, and basic security gro
             'oil_erp_base/static/src/dashboard/dashboard.js',
             'oil_erp_base/static/src/dashboard/dashboard.xml',
             'oil_erp_base/static/src/dashboard/dashboard.scss',
-            'oil_erp_base/static/src/dashboard/operation_dashboard.js',
-            'oil_erp_base/static/src/dashboard/operation_dashboard.xml',
-            'oil_erp_base/static/src/dashboard/operation_dashboard.scss',
         ],
     },
     'images': [

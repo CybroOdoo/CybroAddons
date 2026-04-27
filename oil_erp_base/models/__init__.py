@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
 #############################################################################
 #    Cybrosys Technologies Pvt. Ltd.
 #
@@ -19,6 +18,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import dashboard
 from . import res_config_settings
 from . import res_users
