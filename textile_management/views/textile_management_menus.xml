@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Main Menu for Textile Management-->
+    <record id="product_template_textile_action" model="ir.actions.act_window">
+        <field name="name">Products</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'default_textile_product': True}</field>
+        <field name="domain">[('textile_product', '=', True)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new product
+            </p><p>
+                You must define a product for everything you sell or purchase,
+                whether it's a storable product, a consumable or a service.
+            </p>
+        </field>
+    </record>
+    <menuitem id="textile_management_menu_root" name="Textile Management"
+              action="product_template_textile_action"
+               web_icon="textile_management,static/description/icon.png"
+              sequence="1"/>
+    <!--    Menu product-->
+    <menuitem id="product_menu_do_stuff" name="Product"
+              parent="textile_management_menu_root" sequence="3"/>
+<!--    Submenu product-->
+    <menuitem id="product_template_menu_do_stuff" name="Products"
+              action="product_template_textile_action"
+              parent="product_menu_do_stuff" sequence="4"/>
+    <menuitem id="order_menu_do_stuff" name="Orders"
+              parent="textile_management_menu_root" sequence="2"/>
+    <!--    Action for sale order menu-->
+    <record id="sale_order_action" model="ir.actions.act_window">
+        <field name="name">Sales Orders</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,kanban,form,calendar,pivot,graph,activity</field>
+        <field name="context">{'default_is_textile_sale_order': True}</field>
+        <field name="domain">[('is_textile_sale_order', '=', True)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new quotation, the first step of a new sale!
+            </p>
+            <p>
+                Once the quotation is confirmed, it becomes a sales order.
+                <br/>
+                You will be able to create an invoice and collect the payment.
+            </p>
+        </field>
+    </record>
+    <!--    Menu sale orders-->
+    <menuitem id="sale_order_menu_do_stuff" name="Sale Orders"
+              action="sale_order_action"
+              parent="order_menu_do_stuff" sequence="11"/>
+    <!--    Action for purchase order menu-->
+    <record id="purchase_order_action" model="ir.actions.act_window">
+        <field name="name">Purchase Orders</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">list,kanban,form,pivot,graph,calendar,activity</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('purchase.purchase_order_view_tree')}),
+                (0, 0, {'view_mode': 'kanban', 'view_id': ref('purchase.purchase_order_view_kanban_without_dashboard')}),
+            ]"/>
+        <field name="context">{'default_is_textile_purchase_order': True}</field>
+        <field name="domain">[('is_textile_purchase_order', '=', True)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No purchase order found. Let's create one!
+            </p>
+            <p>
+                Once you ordered your products to your supplier, confirm your
+                request for quotation, and it will turn into a purchase order.
+            </p>
+        </field>
+    </record>
+    <!--    Menu purchase order-->
+    <menuitem id="purchase_order_menu_do_stuff" name="Purchase Orders"
+              action="purchase_order_action"
+              parent="order_menu_do_stuff" sequence="12"/>
+    <!--    Action for manufacturing order menu-->
+    <record id="mrp_production_textile_action" model="ir.actions.act_window">
+            <field name="name">Manufacturing Orders</field>
+            <field name="res_model">mrp.production</field>
+            <field name="view_mode">list,kanban,form,calendar,pivot,graph,activity</field>
+            <field name="view_id" eval="False"/>
+            <field name="context">{'default_is_textile_mrp_order': True}</field>
+            <field name="domain">[('is_textile_mrp_order', '=', True)]</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                No manufacturing order found. Let's create one.
+              </p><p>
+                Use Manufacturing Orders (MO) to build finished products while consuming components: i.e. 1 Table = 4 Table Legs + 1 Table Top
+              </p>
+            </field>
+        </record>
+    <!--    Menu for manufacturing order-->
+    <menuitem id="mrp_production_menu_do_stuff" name="Manufacturing Order"
+              action="mrp_production_textile_action"
+              parent="order_menu_do_stuff" sequence="13"/>
+    <!--    Action for bill of material menu-->
+    <record id="mrp_bom_action" model="ir.actions.act_window">
+            <field name="name">Bills of Materials</field>
+            <field name="res_model">mrp.bom</field>
+            <field name="domain">[]</field> <!-- force empty -->
+            <field name="view_mode">list,kanban,form</field>
+             <field name="context">{'default_is_textile_bill_of_material': True}</field>
+            <field name="domain">[('is_textile_bill_of_material', '=', True)]</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                No bill of materials found. Let's create one!
+              </p><p>
+                Bills of materials allow you to define the list of required raw
+                materials used to make a finished product; through a manufacturing
+                order or a pack of products.
+              </p>
+            </field>
+        </record>
+    <!--    Menu for bill of material-->
+    <menuitem id="mrp_bom_menu_do_stuff" name="Bill of material"
+              action="mrp_bom_action"
+              parent="order_menu_do_stuff" sequence="14"/>
+    <!--    Menu website-->
+    <menuitem id="website_menu_do_stuff" name="Website"
+              parent="textile_management_menu_root" sequence="20"/>
+<!--    Submenu Home page-->
+    <menuitem id="menu_website_preview"
+            sequence="10"
+            name="Homepage"
+               parent="website_menu_do_stuff"
+            action="website.website_preview"/>
+    <!--    Menu website order-->
+    <menuitem id="website_order_menu_do_stuff"
+              name="Website Order"
+              action="website_sale.action_orders_ecommerce"
+              parent="website_menu_do_stuff"
+              sequence="22"/>
+    <!--    Menu reporting-->
+    <menuitem id="reporting_menu_do_stuff" name="Reporting"
+              parent="textile_management_menu_root" sequence="30"/>
+    <!--    Menu configuration-->
+    <menuitem id="configuration_menu_do_stuff" name="Configuration"
+              parent="textile_management_menu_root" sequence="40"/>
+    <!--    Menu for routes-->
+    <menuitem id="stock_route_menu_do_stuff"
+              name="Routes"
+              action="stock.action_routes_form"
+              parent="configuration_menu_do_stuff"
+              sequence="41"/>
+<!--    Menu for attributes-->
+    <menuitem id="product_attribute_menu_do_stuff"
+              name="Attribute"
+              action="product.attribute_action"
+              parent="configuration_menu_do_stuff"
+              sequence="42"/>
+<!--    Website menu-->
+    <record id="inquiry_form" model="website.menu">
+        <field name="name">Inquiry Form</field>
+        <field name="url">/textile/inquiry/form</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence">55</field>
+    </record>
+</odoo>

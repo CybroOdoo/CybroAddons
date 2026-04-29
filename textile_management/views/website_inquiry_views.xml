@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Tree views for website inquiry-->
+    <record id="website_inquiry_view_tree" model="ir.ui.view">
+        <field name="name">website.inquiry.view.tree</field>
+        <field name="model">website.inquiry</field>
+        <field name="arch" type="xml">
+            <list string="Website Inquiry List View" sample="1">
+                <field name="name"/>
+                <field name="inquirer"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+<!--    Search View-->
+    <record id="website_inquiry_view_search" model="ir.ui.view">
+            <field name="name">website.inquiry.view.search</field>
+            <field name="model">website.inquiry</field>
+            <field name="arch" type="xml">
+                <search string="Search">
+                    <filter string="Draft" name="Draft"
+                            domain="[('state', '=', 'draft')]"/>
+                    <filter string="Verified" name="Verified"
+                            domain="[('state', '=', 'verified')]"/>
+                    <filter string="Replied" name="Replied"
+                            domain="[('state', '=', 'replied')]"/>
+                </search>
+            </field>
+        </record>
+    <!--    Form view of website inquiry-->
+    <record id="website_inquiry_view_form" model="ir.ui.view">
+        <field name="name">website.inquiry.view.form</field>
+        <field name="model">website.inquiry</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button name="action_verified"
+                            id="action_verified"
+                            invisible="state not in ('draft')"
+                            string="Verified"
+                            class="btn-primary"
+                            type="object"/>
+                    <button name="action_replied"
+                            id="action_replied"
+                            invisible="state not in ('verified')"
+                            string="Replied"
+                            class="btn-primary"
+                            type="object"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="inquirer"/>
+                            <field name="email"/>
+                            <field name="phone_number"/>
+                        </group>
+                        <group>
+                            <field name="created_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description"
+                              name="inquiry_description"
+                              autofocus="autofocus">
+                            <field name="description"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!--    Action for the menu -->
+    <record id="website_inquiry_action" model="ir.actions.act_window">
+        <field name="name">Website Inquiry</field>
+        <field name="res_model">website.inquiry</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <!--    Menu for website inquiry-->
+    <menuitem id="website_inquiry_menu"
+              name="Website Inquiry"
+              action="website_inquiry_action"
+              parent="textile_management.website_menu_do_stuff"
+              sequence="21"
+    />
+</odoo>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--The 'POS_multi_currency.PosMultiCurrency' class extends the `point_of_sale.PaymentScreen` class and adds-->
+    <!--multicurrency features to the Point of Sale interface.-->
+    <t t-name="multi_currency_payment_in_pos.PaymentScreenButtons"
+       t-inherit="point_of_sale.PaymentScreenMethods"
+       t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('paymentmethods')]" position="after">
+            <div class="currency-container"
+                 style="margin-left: 25%; margin-top: 3%;">
+                <div t-if="env.services.pos.config.enable_multicurrency"
+                     class="pos_multicurrency"
+                     style="display:flex; align-items:center; gap:10px; padding-left:1%;"
+                     id="pos_multicurrency">
+
+                    <h3 style="margin:0; font-size:15px; font-weight:600; color:#121212;">Multicurrency</h3>
+                    <input type="checkbox"
+                           id="multi_currency_check"
+                           name="multi_currency_check"
+                           t-on-click="show_options"
+                           style="opacity:0; position:absolute; width:0; height:0;"/>
+
+                    <div id="mc_track"
+                         onclick="
+                             const cb = document.getElementById('multi_currency_check');
+                             cb.click();
+                             const track = document.getElementById('mc_track');
+                             const thumb = document.getElementById('mc_thumb');
+                             track.style.background = cb.checked ? '#534AB7' : '#ccc';
+                             thumb.style.transform = cb.checked ? 'translateX(14px)' : 'translateX(0)';
+                         "
+                         style="position:relative; width:32px; height:18px; background:#ccc; border-radius:9px; cursor:pointer; transition:background 0.25s; flex-shrink:0;">
+                        <div id="mc_thumb"
+                             style="position:absolute; top:2px; left:2px; width:14px; height:14px; background:#fff; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,0.3); transition:transform 0.25s; pointer-events:none;"/>
+                    </div>
+
+                </div>
+
+                <div class="multicurrency_container"
+                     id="multicurrency_container"
+                     style="display:none; display:">
+                    <div>
+                        <h4>Select Currency</h4>
+                        <select class="currency_list"
+                                style="background: #ffff;border: none;border-radius: 2px; width: 120px;"
+                                t-on-change="compute_currency">
+                            <t t-foreach="multi_currency.currencies"
+                               t-as="currency" t-key="currency.id">
+                                <option t-att-id="currency.id"><t t-esc="currency.name"/></option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="conversion_container"
+                         style="display:none; margin-top: 3%;"
+                         id="conversion_container">
+                        <div>
+                            <h4>Currency Conversion</h4>
+                        </div>
+                        <div>
+                            <div class="rate_string"/>
+                            <div>1 USD = <span class="usdamount"/>
+                                <t t-esc="multi_currency.usd_val"/>
+                                <t t-esc="multi_currency.name"/></div>
+                        </div>
+                        <div>
+                            <div class="rate_string"/>
+                            <div>Total Amount = <span class="total_amount"/>
+                                <t t-esc="multi_currency.total"/>
+                                <t t-esc="multi_currency.symbol"/></div>
+                        </div>
+                        <br/>
+                        <div style="width: 150px;">
+                            <div>Payment Amount In</div>
+                            <input type="number" id="multicurrency_input"
+                                   class="multicurrency_input"/>
+                        </div>
+                        <br/>
+                        <div class="button addpayment"
+                             style="display:flex;align-items:center;"
+                             t-on-click="(ev) => this.multi_currency_payment_line(payment_methods_from_config[0])">
+                            <div style="border:2px solid black;padding:5px;width: 54%;">
+                                Add Cash Payment
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </t>
+    <!--    This XML code represents an extension of a PaymentLine component in a Point of Sale system.-->
+    <!--It adds a display for the converted currency amount and symbol after the payment name.-->
+    <t t-name="POS_multi_currency.PaymentScreenPaymentLines"
+       t-inherit="point_of_sale.PaymentScreenPaymentLines"
+       t-inherit-mode="extension">
+        <xpath expr="//t[@t-if='line.isSelected()']//span[hasclass('payment-name')]"
+               position="after">
+            <div class="payment-currency"
+                 style="margin-left: 10px;margin-right: 10px;padding: 1rem;">
+                <t t-if="line.converted_currency">
+                    (<t t-esc="line.converted_currency.amount"/>
+                    <t t-esc="line.converted_currency.symbol"/>)
+                </t>
+            </div>
+        </xpath>
+        <xpath expr="//t[@t-else='']//div[hasclass('payment-amount')]"
+               position="before">
+            <div class="payment-currency"
+                 style="margin-left: 10px;margin-right: 10px;padding: 1rem;">
+                <t t-if="line.converted_currency">
+                    (<t t-esc="line.converted_currency.amount"/>
+                    <t t-esc="line.converted_currency.symbol"/>)
+                </t>
+            </div>
+        </xpath>
+    </t>
+    <!--    This XML code represents an extension of a PaymentLine component in a Point of Sale system.-->
+    <!--It adds a display for the converted currency amount and symbol after the payment name.-->
+    <t t-name="POS_multi_currency.OrderReceipt"
+       t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+           <xpath expr="//t[@t-esc='line.name']" position="after">
+                <t t-if="line.converted_currency_amount">
+                    <span>
+                        (<t t-esc="line.converted_currency_symbol"/><t t-esc="line.converted_currency_amount.toFixed(2)"/>)
+                    </span>
+                </t>
+            </xpath>
+    </t>
+</templates>
