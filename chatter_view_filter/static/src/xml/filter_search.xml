@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="FilterChatter"
+       t-inherit="mail.SearchMessageInput"
+       t-inherit-mode="extension">
+
+        <xpath expr="//*[contains(@class, 'o_searchview_input_container')]" position="inside">
+            <div class="o_chatter_filter_dropdown d-flex align-items-center">
+                <!-- Loading indicator -->
+                <t t-if="props.messageSearch.searching">
+                    <div class="o_loading me-2">
+                        <i class="fa fa-refresh fa-spin"/>
+                    </div>
+                </t>
+
+                <!-- Filter button with active state -->
+                <div class="btn-group" t-att-class="{'o_filter_active': props.messageSearch.searched}">
+                    <button type="button"
+                        class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center"
+                        data-bs-toggle="dropdown"
+                        t-att-disabled="props.messageSearch.searching"
+                        t-att-title="props.messageSearch.searching ? 'Searching...' : 'Filter messages'">
+                        <i class="fa fa-filter"/>
+                        <t t-if="props.messageSearch.searched">
+                            <span class="badge rounded-pill bg-primary ms-2">
+                                <t t-esc="props.messageSearch.count"/>
+                                <span class="visually-hidden">results</span>
+                            </span>
+                        </t>
+                     </button>
+
+
+                    <!-- Dropdown menu -->
+                    <ul class="dropdown-menu p-2 o_chatter_filter_menu" style="min-width: 250px;">
+                        <!-- Clear filters -->
+                        <li t-if="props.messageSearch.searched" class="px-2 mb-2">
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-danger w-100"
+                                    t-on-click="() => this.clearFilters()">
+                                <i class="fa fa-times me-1"/> Clear Filters
+                            </button>
+                        </li>
+                        <li t-if="props.messageSearch.searched"><hr class="dropdown-divider"/></li>
+
+                        <!-- Followers section -->
+                        <li class="fw-bold px-2 text-muted">Filter by Follower</li>
+
+                        <!-- Self follower -->
+                        <li t-if="props.thread.selfFollower">
+                            <button type="button" 
+                                    class="dropdown-item d-flex justify-content-between align-items-center"
+                                    t-on-click="() => this.onAddUserFilterClick(props.thread.selfFollower.id)"
+                                    t-att-class="{'active': props.messageSearch.followerSearch_id === props.thread.selfFollower.id}">
+                                <span><i class="fa fa-user me-2"/><t t-esc="props.thread.selfFollower.partner.name"/></span>
+                                <t t-if="props.messageSearch.followerSearch_id === props.thread.selfFollower.id">
+                                    <i class="fa fa-check"/>
+                                </t>
+                            </button>
+                        </li>
+
+                        <!-- Other followers -->
+                        <t t-foreach="props.thread.followers" t-as="follower" t-key="follower.id">
+                            <li t-if="!follower.is_self">
+                                <button type="button" 
+                                        class="dropdown-item d-flex justify-content-between align-items-center"
+                                        t-on-click="() => this.onAddUserFilterClick(follower.id)"
+                                        t-att-class="{'active': props.messageSearch.followerSearch_id === follower.id}">
+                                    <span><i class="fa fa-user me-2"/><t t-esc="follower.partner.name"/></span>
+                                    <t t-if="props.messageSearch.followerSearch_id === follower.id">
+                                        <i class="fa fa-check"/>
+                                    </t>
+                                </button>
+                            </li>
+                        </t>
+
+                        <li><hr class="dropdown-divider"/></li>
+
+                        <!-- Date filter -->
+                        <li class="fw-bold px-2 text-muted">Filter by Date</li>
+                        <li class="px-2 mb-2">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text"><i class="fa fa-calendar"/></span>
+                                <input type="date" 
+                                       class="form-control form-control-sm"
+                                       t-att-value="state.searchDate"
+                                       t-on-change="(ev) => this.onDateChange(ev)"
+                                       t-att-disabled="props.messageSearch.searching"/>
+                                <button t-if="state.searchDate"
+                                        class="btn btn-outline-secondary" 
+                                        type="button"
+                                        t-on-click="() => this.clearDate()">
+                                    <i class="fa fa-times"/>
+                                </button>
+                            </div>
+                        </li>
+
+                        <!-- Search button -->
+                        <li class="px-2">
+                            <button type="button"
+                                    class="btn btn-primary btn-sm w-100"
+                                    t-att-disabled="props.messageSearch.searching || (!state.searchTerm &amp;&amp; !state.searchDate &amp;&amp; !props.messageSearch.followerSearch_id)"
+                                    t-on-click="() => this.DateMessageSearch()">
+                                <t t-if="props.messageSearch.searching">
+                                    <i class="fa fa-spinner fa-spin me-1"/> Searching...
+                                </t>
+                                <t t-else="">
+                                    <i class="fa fa-search me-1"/> Search
+                                </t>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </xpath>
+    </t>
+</templates>
+
+
+
+
+
+
+
+
+
+
