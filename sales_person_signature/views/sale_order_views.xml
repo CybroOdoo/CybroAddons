@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Sale Order view form-->
+    <record id="view_order_form" model="ir.ui.view">
+        <field name="name">sale.order.view.form.inherit.sales_person_signature
+        </field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="is_user_salesperson" invisible="1"/>
+                <field name="sale_person_signature" widget="signature"
+                       invisible="user_id != uid"/>
+                <field name="is_check_signature" invisible="1"/>
+                <field name="is_settings_approval" invisible="1"/>
+            </xpath>
+            <xpath expr="//button[@name='action_confirm' and @id='action_confirm']"
+                   position="attributes">
+                <attribute name="invisible">state != 'sent' or (is_settings_approval and not is_check_signature)
+                </attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_confirm' and not(@id)]"
+                   position="attributes">
+                <attribute name="invisible">state != 'draft' or (is_settings_approval and not is_check_signature)
+                </attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
