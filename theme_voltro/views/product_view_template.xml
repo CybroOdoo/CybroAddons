@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="voltro_product_view"
+              name="Voltro Product View"
+              inherit_id="website_sale.product">
+        <!-- Replace ONLY the inner layout -->
+        <xpath expr="//div[@id='product_detail_main']" position="replace">
+            <div id="product_detail_main"
+                 class="row align-items-lg-start"
+                 t-att-data-image_layout="website.product_page_image_layout">
+                <!-- =========================
+                     PRODUCT IMAGES
+                ========================== -->
+                <div class="o_wsale_product_images col-lg-7 o_wsale_sticky_object">
+                    <t t-call="website_sale.shop_product_images"/>
+                </div>
+                <!-- =========================
+                     PRODUCT DETAILS
+                ========================== -->
+                <div id="product_details"
+                     class="col-lg-5 position-relative position-lg-sticky o_wsale_sticky_object">
+                    <div class="js_product js_main_product o_wsale_content_contained container">
+                        <!-- PRODUCT NAME -->
+                        <h1 itemprop="name" t-field="product.name"/>
+                        <!-- PRICE -->
+                        <div class="mb-3">
+                            <t t-call="website_sale.product_price"/>
+                            <small t-if="combination_info.get('base_unit_price')"
+                                   class="ms-1 text-muted o_base_unit_price_wrapper d-none">
+                                <t t-call="website_sale.base_unit_price"/>
+                            </small>
+                        </div>
+                        <!-- SHORT DESCRIPTION -->
+                        <t t-if="product.description_sale">
+                            <p class="text-muted my-2"
+                               t-field="product.description_sale"/>
+                        </t>
+                        <!-- FULL DESCRIPTION -->
+                        <div t-field="product.description_ecommerce"
+                             class="oe_structure"/>
+                        <div t-field="product.product_highlights"
+                             class="oe_structure"/>
+                        <!-- =========================
+                             ADD TO CART FORM
+                        ========================== -->
+                        <form t-if="product._is_add_to_cart_possible()"
+                              action="/shop/cart/update"
+                              method="POST">
+                            <!-- CSRF -->
+                            <input type="hidden"
+                                   name="csrf_token"
+                                   t-att-value="request.csrf_token()"/>
+                            <!--  REQUIRED FOR ODOO 19 (DO NOT REMOVE) -->
+                            <input type="hidden"
+                                   name="product_template_id"
+                                   class="product_template_id"
+                                   t-att-value="product.id"/>
+                            <!--  REQUIRED FOR VARIANT JS -->
+                            <input type="hidden"
+                                   name="product_id"
+                                   class="product_id"
+                                   t-att-value="product_variant_id"/>
+                            <!-- CATEGORY (OPTIONAL) -->
+                            <input t-if="product.public_categ_ids"
+                                   type="hidden"
+                                   name="product_category_id"
+                                   t-att-value="product.public_categ_ids[0].id"/>
+                            <!-- =========================
+                                 VARIANTS
+                            ========================== -->
+                            <div class="mb-4">
+                                <t t-call="website_sale.variants">
+                                    <t t-set="ul_class" t-value="'flex-column'"/>
+                                    <t t-set="parent_combination" t-value="None"/>
+                                    <t t-set="combination"
+                                       t-value="combination_info['combination']"/>
+                                </t>
+                            </div>
+                            <!-- =========================
+                                 CTA + QUANTITY
+                            ========================== -->
+                            <div id="o_wsale_cta_wrapper"
+                                 class="d-flex align-items-center gap-3 mb-4"
+                                 t-attf-class="{{'d-none' if combination_info['prevent_zero_price_sale'] else ''}}">
+                                <!-- ADD TO CART -->
+                                <a id="add_to_cart"
+                                   role="button"
+                                   href="#"
+                                   class="btn btn-primary js_check_product a-submit flex-grow-1 btn-lg">
+                                    <i class="fa fa-shopping-cart me-2"/>
+                                    Add To Cart
+                                </a>
+                                <!-- QUANTITY -->
+                                <div class="css_quantity input-group">
+                                    <a href="#"
+                                       class="btn btn-minus js_add_cart_json">
+                                        <i class="fa fa-minus"/>
+                                    </a>
+                                    <input type="text"
+                                           class="form-control input-number"
+                                           name="add_qty"
+                                           t-att-value="add_qty or 1"/>
+                                    <a href="#"
+                                       class="btn btn-plus js_add_cart_json">
+                                        <i class="fa fa-plus"/>
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                        <!-- CONTACT US (ZERO PRICE) -->
+                        <div t-if="combination_info['prevent_zero_price_sale']"
+                             class="mt-3">
+                            <a t-att-href="website.contact_us_button_url"
+                               class="btn btn-primary">
+                                Contact Us
+                            </a>
+                        </div>
+                        <!-- =========================
+                             ATTRIBUTES TABLE
+                        ========================== -->
+                        <t t-set="single_value_attributes"
+                           t-value="product.valid_product_template_attribute_line_ids
+                                        ._prepare_single_value_for_display()"/>
+                        <table t-if="single_value_attributes"
+                               class="table table-sm text-muted mt-4">
+                            <t t-foreach="single_value_attributes"
+                               t-as="attribute">
+                                <tr>
+                                    <td>
+                                        <strong t-field="attribute.name"/>:
+                                        <t t-foreach="single_value_attributes[attribute]"
+                                           t-as="ptal">
+                                            <span t-field="ptal.product_template_value_ids
+                                                           ._only_active().name"/>
+                                            <t t-if="not ptal_last">, </t>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </t>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Main carousel template inheritance -->
+    <template id="voltro_product_carousel"
+              inherit_id="website_sale.shop_product_carousel"
+              name="Voltro Product Carousel">
+        <!-- Replace the carousel-inner conditionally -->
+        <xpath expr="//div[hasclass('carousel-inner')]" position="replace">
+            <!-- Check if there's only one image -->
+            <t t-if="len(product_images) == 1">
+                <!-- Keep original single image layout -->
+                <div class="carousel-inner h-100">
+                    <t t-set="image_classes"
+                       t-value="'d-flex align-items-center justify-content-center h-100'"/>
+                    <t t-foreach="product_images" t-as="product_image">
+                        <div t-attf-class="carousel-item h-100 text-center#{' active' if product_image_first else ''}">
+                            <t t-call="website_sale.shop_product_image"/>
+                        </div>
+                    </t>
+                </div>
+            </t>
+            <!-- Use new grid layout for multiple images -->
+            <t t-else="">
+                <t t-set="image_classes"
+                   t-value="'d-flex align-items-center justify-content-center h-100'"/>
+                <div class="carousel-inner h-100">
+                    <!-- Group images in sets of 4 -->
+                    <t t-set="image_classes" t-value="'d-flex align-items-center justify-content-center h-100'"/>
+                    <t t-foreach="product_images" t-as="product_image">
+                        <div t-attf-class="carousel-item h-100 w-100 text-center#{' active' if product_image_first else ''}">
+                            <t t-call="website_sale.shop_product_image"/>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>
