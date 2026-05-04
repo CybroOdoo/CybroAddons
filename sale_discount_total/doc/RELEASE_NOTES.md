@@ -10,3 +10,9 @@
 #### Version 16.0.1.1.1
 #### UPDT
 - bug fix in discount rounding
+
+
+#### 30.03.2026
+#### Version 16.0.1.0.1
+#### BUGFIX
+- Overrides the default _compute_amount function.
