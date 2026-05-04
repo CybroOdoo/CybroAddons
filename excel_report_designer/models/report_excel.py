@@ -33,46 +33,53 @@ from odoo.tools import json_default
 
 
 class ReportExcel(models.Model):
+    """this is used to create the a binding action"""
     _name = 'report.excel'
-    _description = "Excel Report"
+    _description = "report excel"
+    _rec_name = 'name'
 
-    name = fields.Char(string='Name')
+    name = fields.Char(string='Name', help='Name')
     model_id = fields.Many2one('ir.model', string='Model',
                                required=True,
                                ondelete="cascade", help="The binding model")
     fields_ids = fields.Many2many('ir.model.fields',
                                   string='Fields',
                                   required=True, ondelete="cascade",
-                                  help="The fields to be printed in the report")
+                                  help="the fields to be printed in the report")
     date_field = fields.Many2one('ir.model.fields',
                                  string='Date Filter',
                                  ondelete="cascade",
-                                 help="Filter on the basis of date")
-    start_date = fields.Date(string='Start Date')
-    end_date = fields.Date(string='End Date')
-    field_order = fields.Char(string="Field Order", default='[]')
+                                 help="filter on the basis of date")
+    start_date = fields.Date(string='Start Date', help="start date")
+    end_date = fields.Date(string='End Date', help="end date")
+    field_order = fields.Char(string="Field Order", default='[]',
+                              help="the field order")
     action_button = fields.Boolean(default=False, string="Action",
-                                   help="Visibility of action")
+                                   help="visibility of action")
     state = fields.Selection([
         ('code', 'Execute Python Code'),
         ('object_create', 'Create a new Record'),
         ('object_write', 'Update the Record'),
         ('multi', 'Execute several actions')], string='Action To Do',
         default='code', required=True, copy=True,
-        help="To execute the code on the basis")
+        help="to execute the code on the basis")
     binding_model_id = fields.Many2one('ir.model',
                                        ondelete="cascade",
                                        string="Binding Model Id",
-                                       help="Binding model id")
+                                       help="binding model id")
     binding_type = fields.Selection([('action', 'Action'),
                                      ('report', 'Report')],
                                     required=True, default='action',
-                                    string="Binding Type")
+                                    string="Binding Type",
+                                    help="binding type")
     ir_act_server_ref = fields.Many2one('ir.actions.act_window',
                                         readonly=True,
-                                        copy=False, string="Action Reference")
-    fields_ids_domain = fields.Char(compute="_compute_fields_ids_domain")
-    date_field_domain = fields.Char(compute="_compute_date_field_domain")
+                                        copy=False, string="Action Reference",
+                                        help="action reference")
+    fields_ids_domain = fields.Char(compute="_compute_fields_ids_domain",
+                                    readonly=True, store=False)
+    date_field_domain = fields.Char(compute="_compute_date_field_domain",
+                                    readonly=True, store=False)
 
     @api.depends('model_id')
     def _compute_fields_ids_domain(self):
@@ -99,7 +106,7 @@ class ReportExcel(models.Model):
             self.fields_ids = False
             self.date_field = False
 
-    def action_print_report(self):
+    def print_report(self):
         """Create a function for printing reports"""
         for rec in self:
             data = {
@@ -125,7 +132,7 @@ class ReportExcel(models.Model):
             }
 
     def get_xlsx_report(self, data, response):
-        """Print the report of all records"""
+        """this is used to print the report of all records"""
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         sheet = workbook.add_worksheet()
@@ -335,6 +342,7 @@ class ReportExcel(models.Model):
 
     @api.onchange('fields_ids')
     def onchange_fields(self):
+        """this is used to find the fields of new models"""
         self.fields_ids = []
         if self.fields_ids:
             self.field_order = str(self.fields_ids._origin.ids)

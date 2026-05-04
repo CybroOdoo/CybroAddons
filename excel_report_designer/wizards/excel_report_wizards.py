@@ -3,7 +3,7 @@
 #
 #   Cybrosys Technologies Pvt. Ltd.
 #
-#   Copyright (C) 2026-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
+#   Copyright (C) 2024-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
 #   Author: Cybrosys Techno Solutions (<https://www.cybrosys.com>)
 #
 #   This program is free software: you can modify
@@ -37,6 +37,7 @@ class ExcelReportWizards(models.TransientModel):
     _description = "excel report wizard"
 
     def print_excel_report(self):
+        """this is used to do the report action"""
         excel_report_id = self.env['report.excel'].browse(
             self._context.get('excel'))
         for rec in excel_report_id:
@@ -156,9 +157,6 @@ class ExcelReportWizards(models.TransientModel):
                         else:
                             o2m_list.append('')
                     record_dict[field] = o2m_list
-                elif field_type == 'selection':
-                    selection_dict = dict(self.env[data['model_name']]._fields[field_name].selection)
-                    record_dict[field] = [selection_dict.get(record[field_name], '')]
                 else:
                     record_dict[field] = [record[field_name]]
             new_table.append(record_dict)
@@ -177,7 +175,6 @@ class ExcelReportWizards(models.TransientModel):
                                         format10)
                         elif isinstance(record[field][0], bool):
                             if not field:
-                                sheet.write(row_num, col_num, " ", format5)
                                 sheet.write(row_num, col_num, " ", format5)
                             else:
                                 sheet.write(row_num, col_num, "Yes", format5)

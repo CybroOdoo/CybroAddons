@@ -23,14 +23,14 @@
 {
     'name': 'Excel Report Designer',
     'version': '19.0.1.0.0',
-    'category': 'Extra Tools',
-    'summary': 'Create Customised Excel Reports for Any Models. ',
-    'description': """This module is used to  create reports for'
-               ' models and can be select the fields the user want to print.""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
+    'category': 'Extra Tools',
+    'summary': 'This module is used to  create reports for'
+               ' models and can be select the fields the user want to print.',
+    'description': """Create Excel Reports for Any Models""",
     'depends': ['sale', 'purchase', 'account', 'base'],
     'data': [
         'security/ir.model.access.csv',
