@@ -41,7 +41,10 @@
             'theme_liquid_glass/static/src/scss/kanban.scss',
             'theme_liquid_glass/static/src/scss/modals.scss',
             'theme_liquid_glass/static/src/scss/navbar.scss',
+            'theme_liquid_glass/static/src/scss/sidebar.scss',
             'theme_liquid_glass/static/src/scss/glass_theme.scss',
+            'theme_liquid_glass/static/src/xml/navbar.xml',
+            'theme_liquid_glass/static/src/js/navbar.js',
         ],
         'web.assets_backend_lazy': [
             'theme_liquid_glass/static/src/js/canvas_text.js',
