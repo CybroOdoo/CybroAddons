@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Inherited template to add portal menu for my claims-->
+    <!-- Template for adding the table of claim data records in the portal   -->
+    <template id="portal_warranty_claims" name="Warranty Portal">
+        <t t-call="portal.portal_layout">
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Warranty Registrations &amp; Claims</t>
+            </t>
+            
+            <div class="mt-4">
+                <h3>My Warranty Registrations</h3>
+                <t t-if="not registration_data">
+                    <p class="alert alert-info">You have no active warranty registrations.</p>
+                </t>
+                <t t-else="">
+                    <t t-call="portal.portal_table">
+                        <thead>
+                            <tr class="active">
+                                <th>Product</th>
+                                <th>Order</th>
+                                <th>Start Date</th>
+                                <th>Expiry Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <t t-foreach="registration_data" t-as="reg">
+                            <tr>
+                                <td><span t-field="reg.product_id.name"/></td>
+                                <td><span t-field="reg.sale_order_id.name"/></td>
+                                <td><span t-field="reg.start_date"/></td>
+                                <td><span t-field="reg.expiry_date"/></td>
+                                <td>
+                                    <span t-attf-class="badge rounded-pill {{ 'bg-success' if reg.state == 'active' else 'bg-danger' if reg.state == 'expired' else 'bg-info' }}">
+                                        <t t-esc="reg.state.capitalize()"/>
+                                    </span>
+                                    <t t-if="reg.state == 'active'">
+                                        <br/>
+                                        <a t-attf-href="/warranty/renewal/#{reg.id}" class="small text-primary"><i class="fa fa-refresh"/> Request Renewal</a>
+                                    </t>
+                                </td>
+                            </tr>
+                        </t>
+                    </t>
+                </t>
+            </div>
+
+            <div class="mt-5">
+                <h3>My Warranty Claims</h3>
+                <t t-if="not claim_data">
+                    <p class="alert alert-info">You have no warranty claims.</p>
+                </t>
+                <t t-else="">
+                    <t t-call="portal.portal_table">
+                        <thead>
+                            <tr class="active">
+                                <th>Product</th>
+                                <th>Order</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <t t-foreach="claim_data" t-as="claim">
+                            <tr>
+                                <td><span t-field="claim.product_id.name"/></td>
+                                <td><span t-field="claim.sale_order_id.name"/></td>
+                                <td><span t-field="claim.claim_type"/></td>
+                                <td>
+                                    <span t-attf-class="badge rounded-pill {{ 'bg-success' if claim.state == 'approved' else 'bg-danger' if claim.state == 'rejected' else 'bg-info' }}">
+                                        <t t-esc="claim.state.capitalize()"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+                    </t>
+                </t>
+            </div>
+            
+            <div class="mt-4 mb-5">
+                <a href="/warranty/register" class="btn btn-success rounded-pill me-2">Register New Product</a>
+                <a href="/warranty" class="btn btn-primary rounded-pill">Submit a Claim</a>
+            </div>
+        </t>
+    </template>
+    <!--    Template to add bread crumbs-->
+    <template id="portal_my_home_warranty_entry" name="My Warranties Entry"
+              customize_show="True" inherit_id="portal.portal_my_home">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">My Warranties &amp; Claims</t>
+                <t t-set="url" t-value="'/my/claims'"/>
+                <t t-set="placeholder_count" t-value="'warranty_count'"/>
+            </t>
+        </xpath>
+    </template>
+</odoo>

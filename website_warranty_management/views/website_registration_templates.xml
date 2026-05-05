@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template for the Warranty Claim page -->
+    <template id="warranty_claim_page" name="Warranty Claim">
+        <t t-call="website.layout">
+            <div id="wrap" class="warranty-claim-widget py-5 bg-light">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="card shadow border-0 rounded-lg">
+                                <div class="card-header bg-primary text-white text-center py-4">
+                                    <h2 class="mb-0">Warranty Claim Request</h2>
+                                    <p class="mb-0 opacity-75">Submit a request for your product warranty</p>
+                                </div>
+                                <div class="card-body p-5">
+                                    <form t-attf-action="/warranty/claim/submit" method="post" id="form_submit">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <input type="hidden" name="customer_id" t-att-value="customers.id"/>
+                                        
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold" for="customer_name">Customer Name</label>
+                                            <input type="text" class="form-control bg-light" id="customer_name" t-att-value="customers.name" readonly="1"/>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold" for="sale_order_id">Select Sale Order *</label>
+                                            <select id="sale_order_id" name="sale_order_id" class="form-select border-primary" required="true">
+                                                <option value="">Choose an order...</option>
+                                                <t t-foreach='sale_orders' t-as="sale_order">
+                                                    <option t-esc='sale_order.name' t-att-value='sale_order.id'/>
+                                                </t>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold" for="products_id">Select Product *</label>
+                                            <select id="products_id" name="products_id" class="form-select border-primary" required="true">
+                                                <option value="">Choose a product...</option>
+                                                <t t-foreach='products' t-as="product">
+                                                    <option t-esc='product.name' t-att-value='product.id'/>
+                                                </t>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold" for="additional_field">Issue Description</label>
+                                            <textarea class="form-control border-primary" id="additional_field" name="additional_field" rows="4" placeholder="Please describe the issue in detail..."></textarea>
+                                        </div>
+
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-primary btn-lg rounded-pill shadow-sm">
+                                                Submit Claim Request
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Template for the Warranty Registration page -->
+    <template id="warranty_registration_page" name="Warranty Registration">
+        <t t-call="website.layout">
+            <div id="wrap" class="warranty-registration-widget py-5 bg-light">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="card shadow border-0 rounded-lg">
+                                <div class="card-header bg-success text-white text-center py-4">
+                                    <h2 class="mb-0">Warranty Registration</h2>
+                                    <p class="mb-0 opacity-75">Register your newly purchased product</p>
+                                </div>
+                                <div class="card-body p-5">
+                                    <form t-attf-action="/warranty/register/submit" method="post" id="registration_form">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <input type="hidden" name="customer_id" t-att-value="customer.id"/>
+                                        
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold" for="customer_name">Customer Name</label>
+                                            <input type="text" class="form-control bg-light" id="customer_name" t-att-value="customer.name" readonly="1"/>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold" for="sale_order_id">Select Sale Order *</label>
+                                            <select id="sale_order_id" name="sale_order_id" class="form-select border-success" required="true">
+                                                <option value="">Choose an order...</option>
+                                                <t t-foreach='sale_orders' t-as="sale_order">
+                                                    <option t-esc='sale_order.name' t-att-value='sale_order.id'/>
+                                                </t>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold" for="products_id">Select Product *</label>
+                                            <select id="products_id" name="products_id" class="form-select border-success" required="true">
+                                                <option value="">Choose a product...</option>
+                                                <t t-foreach='products' t-as="product">
+                                                    <option t-esc='product.name' t-att-value='product.id'/>
+                                                </t>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold" for="serial_no">Serial Number</label>
+                                            <input type="text" class="form-control border-success" id="serial_no" name="serial_no" placeholder="Enter product serial number if available"/>
+                                        </div>
+
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-success btn-lg rounded-pill shadow-sm">
+                                                Register Product Warranty
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="claim_thanks_view">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <div class="container py-5 text-center">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-6 shadow p-5 rounded-lg bg-white">
+                            <span class="d-block fa fa-5x fa-check-circle text-primary mb-4"/>
+                            <h1 class="display-4 fw-bold text-primary">Success!</h1>
+                            <hr class="w-25 mx-auto mb-4 border-primary"/>
+                            <h3 class="mb-4">Your Claim Request has been submitted successfully.</h3>
+                            <p class="text-muted mb-4">Our support team will review your request and get back to you shortly.</p>
+                            <a href="/my/claims" class="btn btn-primary btn-lg rounded-pill px-5">View My Claims</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="registration_thanks_view">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <div class="container py-5 text-center">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-6 shadow p-5 rounded-lg bg-white">
+                            <span class="d-block fa fa-5x fa-shield text-success mb-4"/>
+                            <h1 class="display-4 fw-bold text-success">Registered!</h1>
+                            <hr class="w-25 mx-auto mb-4 border-success"/>
+                            <h3 class="mb-4">Your Product Warranty is now active.</h3>
+                            <p class="text-muted mb-4">A confirmation email has been sent to your registered address with all the details.</p>
+                            <a href="/my/home" class="btn btn-success btn-lg rounded-pill px-5">Go to My Account</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    <template id="renewal_thanks_view">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <div class="container py-5 text-center">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-6 shadow p-5 rounded-lg bg-white">
+                            <span class="d-block fa fa-5x fa-refresh text-warning mb-4"/>
+                            <h1 class="display-4 fw-bold text-warning">Request Received!</h1>
+                            <hr class="w-25 mx-auto mb-4 border-warning"/>
+                            <h3 class="mb-4">Your Warranty Renewal Request has been submitted.</h3>
+                            <p class="text-muted mb-4">Our team will process your renewal request and contact you for any payment if applicable.</p>
+                            <a href="/my/claims" class="btn btn-warning btn-lg rounded-pill px-5 text-white">Back to My Claims</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    <template id="warranty_expired_view">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <div class="container py-5 text-center">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-6 shadow p-5 rounded-lg bg-white border-top border-danger border-5">
+                            <span class="d-block fa fa-5x fa-calendar-times-o text-danger mb-4"/>
+                            <h1 class="display-4 fw-bold text-danger">Warranty Expired</h1>
+                            <hr class="w-25 mx-auto mb-4 border-danger"/>
+                            <h3 class="mb-4">Unable to Submit Claim</h3>
+                            <p class="text-muted mb-4">
+                                We are sorry, but the warranty for <strong><t t-esc="product_name"/></strong> expired on 
+                                <strong class="text-danger"><t t-esc="expiry_date"/></strong>.
+                            </p>
+                            <p class="text-muted mb-4">
+                                Standard claims are no longer available for this product. 
+                                You may request a warranty renewal from your portal if eligible.
+                            </p>
+                            <div class="d-grid gap-2 d-md-block">
+                                <a href="/my/claims" class="btn btn-outline-danger btn-lg rounded-pill px-5 me-md-2">View My Warranties</a>
+                                <a href="/contactus" class="btn btn-danger btn-lg rounded-pill px-5">Contact Support</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

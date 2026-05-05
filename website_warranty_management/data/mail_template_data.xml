@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="email_template_warranty_registration" model="mail.template">
+        <field name="name">Warranty Registration: Confirmation</field>
+        <field name="model_id" ref="website_warranty_management.model_warranty_registration"/>
+        <field name="subject">Warranty Confirmation for {{ object.product_id.name }}</field>
+        <field name="partner_to">{{ object.customer_id.id }}</field>
+        <field name="description">Sent to customers when their warranty registration is created</field>
+        <field name="body_html" type="html">
+            <div style="margin: 0px; padding: 0px;">
+                <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                    Hello <t t-out="object.customer_id.name"/>,<br/><br/>
+                    Your warranty for <strong><t t-out="object.product_id.name"/></strong> has been successfully registered.
+                    <br/><br/>
+                    <strong>Warranty Details:</strong>
+                    <ul>
+                        <li>Order: <t t-out="object.sale_order_id.name"/></li>
+                        <li>Start Date: <t t-out="object.start_date"/></li>
+                        <li>Expiry Date: <t t-out="object.expiry_date"/></li>
+                        <li>Warranty Type: <t t-out="object.warranty_type"/></li>
+                    </ul>
+                    <br/>
+                    You can view your warranty details in your account dashboard on our website.
+                    <br/><br/>
+                    Thank you for choosing us!
+                </p>
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+    <record id="email_template_warranty_claim_notification" model="mail.template">
+        <field name="name">Warranty Claim: Salesperson Notification</field>
+        <field name="model_id" ref="website_warranty_management.model_warranty_claim"/>
+        <field name="subject">New Warranty Claim/Renewal: {{ object.sale_order_id.name }}</field>
+        <field name="partner_to">{{ object.sale_order_id.user_id.partner_id.id }}</field>
+        <field name="description">Sent to salespeople when a customer submits a warranty claim or renewal request</field>
+        <field name="body_html" type="html">
+            <div style="margin: 0px; padding: 0px;">
+                <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                    Hello <t t-out="object.sale_order_id.user_id.name"/>,<br/><br/>
+                    A new <t t-out="object.claim_type == 'renewal' and 'renewal request' or 'warranty claim'"/> has been submitted for:
+                    <br/><br/>
+                    <strong>Claim Details:</strong>
+                    <ul>
+                        <li>Customer: <t t-out="object.customer_id.name"/></li>
+                        <li>Sale Order: <t t-out="object.sale_order_id.name"/></li>
+                        <li>Product: <t t-out="object.product_id.name"/></li>
+                        <li>Type: <t t-out="object.claim_type"/></li>
+                    </ul>
+                    <br/>
+                    Please review this request in the backend to approve or reject.
+                    <br/><br/>
+                    Thank you!
+                </p>
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+</odoo>
