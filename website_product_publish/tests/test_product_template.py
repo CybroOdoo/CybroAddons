@@ -25,6 +25,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class TestProductTemplate(common.TransactionCase):
+    """ Test class for product template publish functionality """
     @classmethod
     def setUpClass(cls):
         super(TestProductTemplate, cls).setUpClass()
@@ -44,5 +45,13 @@ class TestProductTemplate(common.TransactionCase):
         self.assertFalse(self.product_template.is_published)
 
     def test_quick_publish_products(self):
+        # Initial state is published (from setup)
+        self.assertTrue(self.product_template.is_published)
+        
+        # First call: should toggle to False
         self.product_template.quick_publish_products()
-        self.assertFalse(self.product_template.is_published)
+        self.assertFalse(self.product_template.is_published, "Should be unpublished after first toggle")
+        
+        # Second call: should toggle back to True
+        self.product_template.quick_publish_products()
+        self.assertTrue(self.product_template.is_published, "Should be published after second toggle")

@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Quick Product Publish/Unpublish',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Website,eCommerce',
     'summary': """Quick Product Publish & Un publish on
      Website Shop""",

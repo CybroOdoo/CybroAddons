@@ -26,22 +26,45 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class TestProductCategory(common.TransactionCase):
+    """ Test class for product category publish functionality """
 
     @classmethod
     def setUpClass(cls):
         super(TestProductCategory, cls).setUpClass()
-        cls.count_01 = cls.env['product.category'].create({
-            'name': "New category",
+        cls.category = cls.env['product.category'].create({
+            'name': "Test Category",
         })
-        cls.products_02 = cls.env['product.category'].create(
-            {'name': 'Veg'})
-        cls.count_02 = cls.env['product.template'].create({'name': 'vegproduct',
-                                                        'categ_id':
-                                                            cls.products_02.id,
-                                                        })
+        # Published product
+        cls.product_1 = cls.env['product.template'].create({
+            'name': 'Published Product',
+            'categ_id': cls.category.id,
+            'is_published': True,
+            'sale_ok': True,
+        })
+        # Unpublished product
+        cls.product_2 = cls.env['product.template'].create({
+            'name': 'Unpublished Product',
+            'categ_id': cls.category.id,
+            'is_published': False,
+            'sale_ok': True,
+        })
+        # Product not for sale (should be ignored in counts and publish all)
+        cls.product_3 = cls.env['product.template'].create({
+            'name': 'Internal Product',
+            'categ_id': cls.category.id,
+            'is_published': False,
+            'sale_ok': False,
+        })
+
+    def test_compute_published_count(self):
+        """Test if the counts are correctly computed"""
+        self.category._compute_published_count()
+        self.assertEqual(self.category.published_count, 1, "Should have 1 published product")
+        self.assertEqual(self.category.unpublished_count, 1, "Should have 1 unpublished product (ignoring sale_ok=False)")
 
     def test_action_publish_all_products(self):
-        self.products_02.action_publish_all_products()
-        value = self.count_02.is_published
-        message = "Product is published"
-        self.assertTrue(value, message)
+        """Test publishing all products in a category"""
+        self.category.action_publish_all_products()
+        self.assertTrue(self.product_1.is_published)
+        self.assertTrue(self.product_2.is_published, "Unpublished product should now be published")
+        self.assertFalse(self.product_3.is_published, "Product with sale_ok=False should remain unpublished")
