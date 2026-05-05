@@ -105,16 +105,11 @@ export class PollMessage extends Component {
                 poll_id: this.props.pollId,
                 context: user.context,
             });
-
-            if (result.error) {
-                this.notification.add(result.error, { type: "danger" });
-            } else {
-                this.state.pollData = result;
-                this.state.selectedOptions = [];
-                this.notification.add("Vote removed", { type: "info" });
-            }
+            this.state.pollData = result;
+            this.state.selectedOptions = [];
+            this.notification.add("Vote removed", { type: "info" });
         } catch (error) {
-            this.notification.add("Failed to remove vote", { type: "danger" });
+            console.error("Error removing votes:", error);
         }
     }
 

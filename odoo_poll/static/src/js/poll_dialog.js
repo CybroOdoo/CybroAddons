@@ -46,6 +46,12 @@ export class PollDialog extends Component {
 
     //Creates poll
     async createPoll() {
+        console.log("DEBUG CREATE POLL JS:");
+        console.log("  user.context:", user.context);
+        if (user.context.allowed_company_ids) {
+            console.log("  allowed_company_ids:", user.context.allowed_company_ids);
+        }
+
         if (!this.state.question.trim()) {
             this.notification.add("Please enter a question", { type: "warning" });
             return;

@@ -20,9 +20,7 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
-from odoo import api, fields, models
-from odoo.exceptions import ValidationError
-
+from odoo import models, fields
 
 class DiscussPollOption(models.Model):
     """Model representing individual options for a poll"""
@@ -33,19 +31,7 @@ class DiscussPollOption(models.Model):
 
     poll_id = fields.Many2one("discuss.poll", required=True, ondelete="cascade")
     name = fields.Char(required=True)
-    vote_count = fields.Integer(compute='_compute_vote_count', string='Vote Count', store=True)
+    vote_count = fields.Integer(default=0)
     sequence = fields.Integer(string='Sequence', default=10)
     vote_ids = fields.One2many('poll.vote', 'option_id', string="Votes")
 
-    @api.depends('vote_ids')
-    def _compute_vote_count(self):
-        """Compute the number of votes for each option."""
-        for option in self:
-            option.vote_count = len(option.vote_ids)
-
-    def unlink(self):
-        """Prevent deletion of options that have already been voted on."""
-        for option in self:
-            if option.vote_count > 0:
-                raise ValidationError("You cannot delete an option that has already been voted on.")
-        return super(DiscussPollOption, self).unlink()

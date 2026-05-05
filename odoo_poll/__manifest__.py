@@ -23,13 +23,13 @@
 {
     'name': 'Odoo Poll',
     'version': '19.0.1.0.0',
-    'category': 'Productivity/Discuss',
-    'summary': 'Create and vote on polls in Discuss channels',
-    'description': """Create polls with multiple options""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
+    'category': 'Productivity/Discuss',
+    'summary': 'Create and vote on polls in Discuss channels',
+    'description': """Create polls with multiple options""",
     'depends': ['mail','web'],
     'data': [
              'security/odoo_poll_security.xml',
@@ -48,13 +48,12 @@
             "odoo_poll/static/src/xml/poll_dialog.xml",
             "odoo_poll/static/src/xml/poll_message.xml",
             "odoo_poll/static/src/xml/message_patch.xml",
+
         ]
     },
-    'images': [
-        'static/description/banner.jpg'
-    ],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
     'application': False,
+
 }

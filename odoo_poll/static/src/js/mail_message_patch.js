@@ -24,6 +24,7 @@ patch(Message.prototype, {
 
         if (match) {
             this.pollId = parseInt(match[1]);
+            console.log("Poll detected:", this.pollId);
         }
     },
 });

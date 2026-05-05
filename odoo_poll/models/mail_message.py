@@ -24,7 +24,6 @@ from odoo import fields, models
 
 
 class MailMessage(models.Model):
-    """Extends mail.message to link it with discuss polls."""
     _inherit = 'mail.message'
 
     poll_id = fields.Many2one('discuss.poll', string='Poll', ondelete='cascade')

@@ -4,24 +4,24 @@
 
 Odoo Poll
 ==============================================
-This module allows to create polls with multiple options
+This module allow to manage certificates and licenses.
 
 Configuration
 =============
 * No configuration is required
-
-Company
--------
-* `Cybrosys Techno Solutions <https://cybrosys.com/>`__
 
 License
 =======
 GNU AFFERO GENERAL PUBLIC LICENSE v3.0 (AGPL-3)
 (https://www.gnu.org/licenses/agpl-3.0-standalone.html)
 
+Company
+-------
+* `Cybrosys Techno Solutions <https://cybrosys.com/>`__
+
 Credits
 -------
-Developer: (V19) Rose Mary K A
+Developer: (V18) Rose Mary K A
 
 Contact: odoo@cybrosys.com
 

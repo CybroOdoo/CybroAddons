@@ -47,7 +47,7 @@ patch(Composer.prototype, {
             threadId: threadId,
             threadModel: threadModel,
             onPollCreated: () => {
-                // Refreshing results might be needed if state is managed globally
+                console.log("Poll created successfully!");
             },
         });
     },

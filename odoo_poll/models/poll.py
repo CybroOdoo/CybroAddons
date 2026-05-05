@@ -30,21 +30,20 @@ class DiscussPoll(models.Model):
     _description = 'Discuss Poll'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'create_date desc'
-    _rec_name = 'question'
 
     question = fields.Char(string='Question', required=True)
     option_ids = fields.One2many('poll.option', 'poll_id', string='Options')
     vote_ids = fields.One2many('poll.vote', 'poll_id', string='Votes')
-    message_id = fields.Many2one('mail.message', string='Message', ondelete='cascade',
-                                 help="Related chatter message where this poll is posted")
+    message_id = fields.Many2one('mail.message', string='Message', ondelete='cascade' ,help="Related chatter message where this poll is posted")
     author_id = fields.Many2one('res.partner', string='Author', required=True,
                                 default=lambda self: self.env.user.partner_id)
     is_multiple_choice = fields.Boolean(string='Multiple Choice', default=False)
     is_closed = fields.Boolean(string='Closed', default=False)
     total_votes = fields.Integer(string='Total Votes', compute='_compute_total_votes', store=True)
     company_id = fields.Many2one('res.company', string='Company', required=True,
-                                 default=lambda self: self.env.company,
-                                 help="Poll belongs to this company")
+                                default=lambda self: self.env.company,
+                                help="Poll belongs to this company")
+
 
     @api.depends('vote_ids.voter_id')
     def _compute_total_votes(self):
@@ -68,6 +67,13 @@ class DiscussPoll(models.Model):
 
     def get_results(self):
         """Get poll results with vote counts and percentages"""
+        import logging
+        _logger = logging.getLogger(__name__)
+        _logger.info("DEBUG MODEL GET_RESULTS for Poll %s:", self.id)
+        _logger.info("  Record Company: %s (%s)", self.company_id.name, self.company_id.id)
+        _logger.info("  Env Company: %s (%s)", self.env.company.name, self.env.company.id)
+        _logger.info("  Env Companies: %s", self.env.companies.ids)
+
         self.ensure_one()
         current_user_votes = self.vote_ids.filtered(
             lambda v: v.voter_id == self.env.user.partner_id
@@ -109,12 +115,6 @@ class DiscussPoll(models.Model):
 
     @api.model
     def action_open_polls(self):
-        """
-        Return an action to open the poll view.
-
-        If the user is not a poll manager, they can only see
-        polls they have authored.
-        """
         domain = []
         if not self.env.user.has_group('odoo_poll.group_odoo_poll_manager'):
             domain.append(('author_id', '=', self.env.user.partner_id.id))

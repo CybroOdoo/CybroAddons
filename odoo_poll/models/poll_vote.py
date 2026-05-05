@@ -20,7 +20,7 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
-from odoo import api, fields, models
+from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
 
@@ -53,18 +53,11 @@ class DiscussPollVote(models.Model):
                     ('id', '!=', vote.id)
                 ])
                 if existing_votes:
-                    raise ValidationError('You can only vote for one option in this poll.')
+                    raise ValidationError(_('You can only vote for one option in this poll.'))
 
     @api.constrains('poll_id')
     def _check_poll_closed(self):
-        """Prevent voting if the poll is already closed."""
+        """Prevent voting if the poll is already closed"""
         for vote in self:
             if vote.poll_id.is_closed:
-                raise ValidationError('This poll is closed.')
-
-    def unlink(self):
-        """Prevent removing votes if the poll is closed."""
-        for vote in self:
-            if vote.poll_id.is_closed:
-                raise ValidationError("You cannot remove your vote after the poll is closed.")
-        return super(DiscussPollVote, self).unlink()
+                raise ValidationError(_('This poll is closed.'))
