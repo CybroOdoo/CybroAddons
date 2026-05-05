@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <!--
+        Template to restrict the Rewards button in POS based on user and session.
+    -->
+    <t t-name="pos_button_visibility.RewardButton"
+       t-inherit="point_of_sale.ControlButtons"
+       t-inherit-mode="extension">
+        <xpath expr="//button[@t-on-click='() => this.clickRewards()']"
+               position="replace">
+
+            <!-- Define restriction condition -->
+            <t t-set="isRestricted"
+               t-value="
+                   this.state.buttons and
+                   this.state.buttons.includes('Reward') and
+                   this.pos_session_ids and
+                   this.pos_session_ids.includes(this.pos.config.current_session_id?.id)
+               "/>
+            <button class="control-button"
+                    t-att-class="isRestricted ? buttonClass + ' disabled' : buttonClass"
+                    t-attf-class="{{getPotentialRewards().length ? 'highlight text-action' : 'disabled'}}"
+                    t-att-disabled="isRestricted"
+                    t-on-click="() => this.clickRewards()">
+                <i class="fa fa-star me-1"/>
+                Rewards
+            </button>
+        </xpath>
+    </t>
+</templates>

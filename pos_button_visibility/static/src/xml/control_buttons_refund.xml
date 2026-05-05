@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <!--
+        Template to restrict the Refund button in POS based on user and session.
+    -->
+
+    <t t-name="pos_button_visibility.RefundButton"
+       t-inherit="point_of_sale.ControlButtons"
+       t-inherit-mode="extension">
+
+        <xpath expr="//button[@t-on-click='() => this.clickRefund()']"
+               position="replace">
+
+            <!-- Define restriction condition -->
+            <t t-set="isRestricted"
+               t-value="
+                   this.state.buttons and
+                   this.state.buttons.includes('Refund') and
+                   this.pos_session_ids and
+                   this.pos_session_ids.includes(this.pos.config.current_session_id?.id)
+               "/>
+
+            <button class="btn btn-secondary btn-lg py-5"
+                    t-att-class="isRestricted ? 'btn btn-secondary btn-lg py-5 disabled' : 'btn btn-secondary btn-lg py-5'"
+                    t-att-disabled="isRestricted"
+                    t-on-click="() => this.clickRefund()">
+
+                <i class="fa fa-undo me-1"
+                   role="img"
+                   aria-label="Refund"
+                   title="Refund"/>
+
+                Refund
+
+            </button>
+
+        </xpath>
+    </t>
+</templates>
