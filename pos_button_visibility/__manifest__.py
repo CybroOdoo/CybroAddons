@@ -32,7 +32,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['pos_sale'],
+    'depends': ['pos_sale', 'pos_loyalty'],
     'data': [
         'security/ir.model.access.csv',
         'data/pos_button_data.xml',
