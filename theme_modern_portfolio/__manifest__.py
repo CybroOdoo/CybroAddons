@@ -21,7 +21,7 @@
 ############################################################################-
 {
     'name': 'Theme Modern Portfolio',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Theme/Website',
     'summary': 'Modern Portfolio Theme for Odoo Website',
     'description': 'A modern portfolio theme with hero sections, portfolio grid, stats counter, and contact forms.',
