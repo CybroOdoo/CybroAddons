@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Theme Interioro',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.2',
     'category': 'Theme/Corporate',
     'summary': 'Modern Interior Design Website Theme',
     'description': 'Modern Interior Design Website Theme',
