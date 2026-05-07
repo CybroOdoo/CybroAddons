@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Duplicate Product BOM',
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     'category': 'Manufacturing',
     'summary': """Duplicating a product will duplicate the
      products BOM also""",

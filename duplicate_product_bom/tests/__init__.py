@@ -19,28 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import models
-
-
-class ProductTemplate(models.Model):
-    """
-    Inherits from 'product.template' model and extends the 'copy' method.
-    """
-    _inherit = 'product.template'
-
-    def copy(self, default=None):
-        """ Overrides the default 'copy' method to copy BOM information along
-        with the template.
-        Args:
-            default (dict, optional): Default values for the new record
-            being created.
-        Returns:
-            ProductTemplate: A new instance of the product template with
-            copied BOM information.
-        """
-        result = super().copy(default)
-        for bom in self.bom_ids:
-            bom.copy({
-                'product_tmpl_id': result.id,
-            })
-        return result
+from . import test_duplicate_product_bom
