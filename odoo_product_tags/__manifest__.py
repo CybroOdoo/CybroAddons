@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Odoo Product Tags",
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     "category": 'Inventory',
     'summary': """This Module helps to manage products easily using tags""",
     'description': """This Module helps to manage the products easily using 
