@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Template for rearranging fields from my_account page in website  -->
+    <template id="website_geolocation_fields"
+              inherit_id="portal.portal_my_details_fields">
+        <xpath expr="//input[@name='city']" position="replace">
+            <input type="text" id="cities" name="city"
+                   t-attf-class="form-control #{error.get('city') and 'is-invalid' or ''}"
+                   t-att-value="city or partner.city"/>
+        </xpath>
+        <xpath expr="//input[@name='zipcode']" position="replace">
+            <input type="text" name="zipcode" id="p_code"
+                   t-attf-class="form-control #{error.get('zip') and 'is-invalid' or ''}"
+                   t-att-value="zipcode or partner.zip"/>
+        </xpath>
+        <xpath expr="//select[@name='country_id']" position="replace">
+            <br/>
+            <input class="form-control" style="width: 100%" type="text"
+                   name="country_id" id="country_show"
+                   t-att-value=""/>
+        </xpath>
+        <xpath expr="//select[@name='state_id']" position="replace">
+            <select name="state_id" id="state_geo"
+                    t-attf-class="form-select #{error.get('state_id') and 'is-invalid' or ''}">
+                <option value="">select...</option>
+                <t t-foreach="states or []" t-as="state">
+                    <option t-att-value="state.id" style="display:none;"
+                            t-att-data-country_id="state.country_id.id"
+                            t-att-selected="state.id == int(state_id) if state_id else state.id == partner.state_id.id">
+                        <t t-esc="state.name"/>
+                    </option>
+                </t>
+            </select>
+        </xpath>
+    </template>
+    <!--    Template for adding GoogleMap to our website  -->
+    <template id="website_geolocation" inherit_id="portal.portal_my_details">
+        <xpath expr="//div[hasclass('o_portal_details')]" position="inside">
+            <div id="wrap">
+                <div class="map_containers">
+                    <t t-if="provider == 'google'">
+                        <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+                        <script src="https://www.npmjs.com/package/@googlemaps/js-api-loader"></script>
+                        <t t-if="api">
+                            <script defer="defer" t-attf-src="https://maps.googleapis.com/maps/api/js?key={{api}}&amp;callback=_onMapLoads&amp;v=weekly&amp;sensor=false&amp;libraries=places,marker"></script>
+                            <div class="row" style="float: right;width: 100%;height: 450px;" id="map" />
+                            <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"/>
+                            <script>
+                                _onMapLoads = async function () {
+                                    var address = document.getElementById("cities").value;
+                                    $.ajax({
+                                        url: '/geo/location/' + address,
+                                        type: 'post',
+                                        contentType: 'Application/json',
+                                        dataType: 'Application/json',
+                                        data: JSON.stringify({main: address}),
+                                        success: async function(data) {
+                                            var lat_lng = JSON.parse(data);
+                                            if (lat_lng.result) {
+                                                var lat = lat_lng.result.lat;
+                                                var lng = lat_lng.result.lng;
+                                                $('#country_show').val(lat_lng.result.country);
+                                                $('#p_code').val(lat_lng.result.p_code);
+
+                                                if (lat === 0 &amp;&amp; lng === 0) return;
+
+                                                const location = { lat: lat, lng: lng };
+                                                const { Map } = await google.maps.importLibrary("maps");
+                                                const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
+                                                const map = new Map(document.getElementById("map"), {
+                                                    zoom: 12,
+                                                    center: location,
+                                                    mapId: "DEMO_MAP_ID",
+                                                });
+
+                                                const marker = new AdvancedMarkerElement({
+                                                    map: map,
+                                                    position: location,
+                                                    title: "Location",
+                                                });
+                                                
+                                                map.addListener("click", (mapsMouseEvent) => {
+                                                    const clickedLoc = mapsMouseEvent.latLng.toJSON();
+                                                    new google.maps.InfoWindow({
+                                                        position: mapsMouseEvent.latLng,
+                                                        content: JSON.stringify(clickedLoc, null, 2),
+                                                    }).open(map);
+                                                    
+                                                    var coordinates = JSON.stringify(clickedLoc);
+                                                    $.ajax({
+                                                        url: '/geo/change/' + coordinates,
+                                                        type: 'post',
+                                                        contentType: 'Application/json',
+                                                        data: JSON.stringify({main: coordinates}),
+                                                        error: function(resp) {
+                                                            var addrs = JSON.parse(resp.responseText);
+                                                            if (addrs &amp;&amp; addrs.result) {
+                                                                if (addrs.result.suburb) $('#cities').val(addrs.result.suburb);
+                                                                else $('#cities').val(addrs.result.city);
+                                                                $('#p_code').val(addrs.result.p_code);
+                                                                $('#country_show').val(addrs.result.country);
+                                                                $('#geo_state').val("2");
+                                                            }
+                                                        }
+                                                    });
+                                                });
+                                            }
+                                        },
+                                        error: function(data) { console.error("Geo Error", data); }
+                                    });
+                                }
+                                document.getElementById("cities").addEventListener("change", _onMapLoads);
+                            </script>
+                        </t>
+                        <t t-else="">
+                            <div class="alert alert-warning">
+                                Google Maps API Key is missing. Please configure 'base_geolocalize.google_map_api_key' in System Parameters, or switch 'base_geolocalize.geo_provider' to 'openstreetmap'.
+                            </div>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <!-- OpenStreetMap (Leaflet) -->
+                        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+                        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+                        <div class="row" style="float: right;width: 100%;height: 450px;" id="map" />
+
+                        <script>
+                            var map;
+                            var marker;
+                            async function _initLeaflet() {
+                                var address = document.getElementById("cities").value;
+                                if (!address) return;
+                                
+                                try {
+                                    const response = await fetch('/geo/location/' + address, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        },
+                                        body: JSON.stringify({main: address}),
+                                    });
+                                    const data = await response.json();
+                                    
+                                    // Parse inner JSON if needed or use directly
+                                    // Odoo controllers sometimes double encode or just return dict
+                                    let lat_lng;
+                                    try {
+                                        lat_lng = JSON.parse(data.result);
+                                    } catch(e) {
+                                        lat_lng = data.result || data;
+                                    }
+
+                                    const result = lat_lng.result || lat_lng;
+
+                                    if (result) {
+                                        var lat = result.lat;
+                                        var lng = result.lng;
+                                        
+                                        var countryInput = document.getElementById('country_show');
+                                        if (countryInput) countryInput.value = result.country;
+                                        
+                                        var pCodeInput = document.getElementById('p_code');
+                                        if (pCodeInput) pCodeInput.value = result.p_code;
+
+                                        if (lat === 0 &amp;&amp; lng === 0) return;
+
+                                        if (!map) {
+                                            map = L.map('map').setView([lat, lng], 13);
+                                            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                                maxZoom: 19,
+                                                attribution: '&amp;copy; &lt;a href="http://www.openstreetmap.org/copyright"&gt;OpenStreetMap&lt;/a&gt;'
+                                            }).addTo(map);
+                                        } else {
+                                            map.setView([lat, lng], 13);
+                                        }
+
+                                        if (marker) map.removeLayer(marker);
+                                        marker = L.marker([lat, lng]).addTo(map).bindPopup("Location").openPopup();
+
+                                        map.off('click');
+                                        map.on('click', async function(e) {
+                                            var coord = {lat: e.latlng.lat, lng: e.latlng.lng};
+                                            if (marker) map.removeLayer(marker);
+                                            marker = L.marker([coord.lat, coord.lng]).addTo(map);
+                                            
+                                            var coordinates = JSON.stringify(coord);
+                                            
+                                            try {
+                                                const resp = await fetch('/geo/change/' + coordinates, {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                    },
+                                                    body: JSON.stringify({main: coordinates}),
+                                                });
+                                                
+                                                const respData = await resp.json();
+                                                let addrs;
+                                                try {
+                                                    addrs = JSON.parse(respData.result);
+                                                } catch (e) {
+                                                    addrs = respData.result || respData;
+                                                }
+
+                                                if (addrs &amp;&amp; addrs.result) {
+                                                    var cityInput = document.getElementById("cities");
+                                                    if (cityInput) {
+                                                        if (addrs.result.suburb) cityInput.value = addrs.result.suburb;
+                                                        else cityInput.value = addrs.result.city;
+                                                    }
+                                                    
+                                                    if (pCodeInput) pCodeInput.value = addrs.result.p_code;
+                                                    if (countryInput) countryInput.value = addrs.result.country;
+                                                    
+                                                    var stateInput = document.getElementById('geo_state');
+                                                    if (stateInput) stateInput.value = "2";
+                                                }
+                                            } catch (err) {
+                                                console.error("Geo Change Error", err);
+                                            }
+                                        });
+                                    }
+                                } catch (error) {
+                                    console.error("Geo Location Error", error);
+                                }
+                            }
+                            
+                            var citiesInput = document.getElementById("cities");
+                            if (citiesInput) {
+                                citiesInput.addEventListener("change", _initLeaflet);
+                            }
+                            
+                            document.addEventListener("DOMContentLoaded", function() {
+                                _initLeaflet();
+                            });
+                        </script>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+<!-- This template used to hide the price form the comparison page-->
+    <template id="compare_hide_price" inherit_id="website_sale_comparison.product_compare">
+        <xpath expr="//span[hasclass('o_comparison_price')]" position="replace">
+            <t t-if="product.price_call"/>
+        </xpath>
+        <xpath expr="//form[hasclass('o_add_cart_form_compare')]" position="replace">
+            <t t-if="product.price_call"/>
+            <t t-else="">
+                <form action="/shop/cart/update" method="post" class="text-center o_add_cart_form_compare">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <input name="product_id" t-att-value="product.id" type="hidden"
+                           t-att-data-product-tracking-info="json.dumps(request.env['product.template'].get_google_analytics_data(combination_info))"/>
+                    <a t-if="combination_info['prevent_zero_price_sale']" t-att-href="website.contact_us_button_url"
+                       class="btn btn-primary btn_cta">Contact Us
+                    </a>
+                    <a t-else="" role="button" class="btn btn-primary d-block a-submit" href="#">
+                        <i class="fa fa-shopping-cart me-2"/>Add to Cart
+                    </a>
+                </form>
+            </t>
+        </xpath>
+    </template>
+<!-- This template used to hide price from product comparison tool page-->
+    <template id="compare_hide_price_product" inherit_id="website_sale_comparison.product_product">
+        <xpath expr="//div[hasclass('ps-2')]" position="replace">
+            <t t-if="product.price_call">
+                <div class="col-8 ps-2">
+                    <h6>
+                        <a t-att-href="product.website_url">
+                            <t t-esc="combination_info['display_name']"/>
+                        </a>
+                        <br/>
+                    </h6>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="col-8 ps-2">
+                    <h6>
+                        <a t-att-href="product.website_url">
+                            <t t-esc="combination_info['display_name']"/>
+                        </a>
+                        <br/>
+                        <div t-attf-class="{{'d-none' if combination_info['prevent_zero_price_sale'] else ''}}">
+                            <del t-attf-class="text-danger mr8 {{'' if combination_info['has_discounted_price'] else 'd-none'}}"
+                                 style="white-space: nowrap;" t-esc="combination_info['list_price']"
+                                 t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            <span t-esc="combination_info['price']"
+                                  t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        </div>
+                        <div t-attf-class="{{'' if combination_info['prevent_zero_price_sale'] else 'd-none'}}"
+                             t-field="website.prevent_zero_price_sale_text"/>
+                    </h6>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>
