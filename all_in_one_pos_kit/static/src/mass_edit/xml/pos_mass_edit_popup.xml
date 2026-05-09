@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Provides a popup to edit order line details like quantity, price, and discount directly in POS. -->
+<templates id="template" xml:space="preserve">
+    <t t-name="all_in_one_pos_kit.MassEditPopup" owl="1">
+        <Dialog title="props.title" bodyClass="'mass-edit-popup'">
+            <main class="body">
+                <div class="section-product-info-title">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th><b>Product</b></th>
+                                <th><b>Quantity</b></th>
+                                <th><b>Unit</b></th>
+                                <th><b>Price</b></th>
+                                <th t-if="env.services.pos.config.manual_discount"><b>Discount</b></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="props.body" t-as="line" t-key="line.id">
+                                <tr>
+                                    <td style="padding: 10px;">
+                                        <b><t t-esc="line.product_id.display_name"/></b>
+                                    </td>
+                                    <td style="padding: 10px;">
+                                        <input t-att-value="line.qty" type="number" name="quantity" class="form-control"
+                                               t-on-change="(ev) => this.onQtyChange(line, ev)"/>
+                                    </td>
+                                    <td style="padding: 10px;">
+                                        <b><t t-esc="line.product_id.uom_id.name"/></b>
+                                    </td>
+                                    <td style="padding: 10px;">
+                                        <input t-att-value="line.price_unit" type="number" name="unitPrice" class="form-control"
+                                               t-on-change="(ev) => this.onPriceChange(line, ev)"/>
+                                    </td>
+                                    <td t-if="env.services.pos.config.manual_discount" style="padding: 10px;">
+                                        <input t-att-value="line.discount" type="number" name="discount" class="form-control"
+                                               t-on-change="(ev) => this.onDiscountChange(line, ev)"/>
+                                    </td>
+                                    <td style="padding: 10px;">
+                                        <button class="btn btn-danger"
+                                                t-on-click="() => this.sendInput(line)">
+                                            <i class="fa fa-trash"/>
+                                         </button>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+            <t t-set-slot="footer">
+                <button class="button confirm highlight btn btn-primary" t-on-click="confirm">
+                    <t t-esc="props.confirm"/>
+                </button>
+                <button class="button cancel btn btn-secondary" t-on-click="cancel">
+                    <t t-esc="props.cancel"/>
+                </button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

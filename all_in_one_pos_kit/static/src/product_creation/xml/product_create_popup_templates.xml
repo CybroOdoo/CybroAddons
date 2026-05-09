@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Adds a POS popup to create products and a control button for quick product creation. -->
+<templates id="template" xml:space="preserve">
+    <t t-name="CreateProductPopup">
+        <Dialog title="'Create Product'" size="'md'">
+            <div class="product-line-popup" style="padding:1%;">
+                <form class="form-group">
+                    <div class="product-img-create-popup" style="text-align: center; margin-bottom: 20px;">
+                         <img t-if="state.imageUrl" t-att-src="state.imageUrl" style="max-width: 150px; max-height: 150px;"/>
+                         <img t-else="" t-att-src="'/web/static/img/placeholder.png'" style="max-width: 150px; max-height: 150px;"/>
+                    </div>
+                    <div class="field_div" style="display:flex; margin-bottom: 15px;">
+                        <label class="field_label" style="width: 120px;">Image</label>
+                        <input type="file" id="img_field" t-on-change="_onChangeImgField" class="field_input" accept="image/*"/>
+                    </div>
+                    <div class="field_div" style="display:flex; margin-bottom: 15px;">
+                        <label class="field_label" style="width: 120px;">Name</label>
+                        <input type="text" class="field_input" id="display_name"/>
+                    </div>
+                    <div class="field_type" style="display:flex; margin-bottom: 15px;">
+                        <label class="field_label" style="width: 120px;">Type</label>
+                        <select class="field_input" id="type">
+                            <option value="consu">Consumable</option>
+                            <option value="service">Service</option>
+                            <option value="product">Storable Product</option>
+                        </select>
+                    </div>
+                    <div class="field_div" style="display:flex; margin-bottom: 15px;">
+                        <label class="field_label" style="width: 120px;">Price</label>
+                        <input type="number" class="field_input" id="list_price"/>
+                    </div>
+                    <div class="field_div" style="display:flex; margin-bottom: 15px;">
+                        <label class="field_label" style="width: 120px;">Cost</label>
+                        <input type="number" class="field_input" id="cost_price"/>
+                    </div>
+                    <div class="field_div" style="display:flex; margin-bottom: 15px;">
+                        <label class="field_label" style="width: 120px;">Barcode</label>
+                        <input type="text" class="field_input" id="barcode"/>
+                    </div>
+                    <div class="field_div" style="display:flex; margin-bottom: 15px;">
+                        <label class="field_label" style="width: 120px;">Default Code</label>
+                        <input type="text" class="field_input" id="default_code"/>
+                    </div>
+                    <div class="field_div" style="display:flex; margin-bottom: 15px;">
+                        <label class="field_label" style="width: 120px;">Category</label>
+                        <select class="field_input" id="product_category">
+                            <t t-foreach="pos.models['pos.category'].getAll()" t-as="category" t-key="category.id">
+                                <option t-att-value="category.id" t-esc="category.name"/>
+                            </t>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-on-click="confirm">Confirm</button>
+                <button class="btn btn-secondary" t-on-click="cancel">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="all_in_one_pos_kit.ProductCreateButton" t-inherit="point_of_sale.ControlButtons" t-inherit-mode="extension">
+        <xpath expr="//OrderlineNoteButton[last()]" position="after">
+            <button class="control-button btn btn-light rounded-0 fw-bolder" 
+                    t-on-click="onClickCreateProduct">
+                <i class="fa fa-plus" />
+                Create Product
+            </button>
+        </xpath>
+    </t>
+</templates>
