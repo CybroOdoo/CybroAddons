@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': "PSQL Query Execute",
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Extra Tools',
     'summary': """Odoo19 PSQL Query Execute, Run the PSQL query in the Odoo user interface.""",
     'description': """PSQL Query Execute, SQL, PSQL, psql, query, odoo query, query run, database,""",
@@ -38,7 +38,7 @@
             'psql_query_execute/static/src/js/action_manager.js',
         ],
     },
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': "LGPL-3",
     'installable': True,
     'auto_install': False,

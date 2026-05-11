@@ -46,15 +46,15 @@ class PsqlQuery(models.Model):
         """Execute the query operation"""
         try:
             if self.query_name:
-                self._cr.execute(self.query_name)
-                keys = [i[0] for i in self._cr.description]
+                self.env.cr.execute(self.query_name)
+                keys = [i[0] for i in self.env.cr.description]
                 table_header = ''
                 table_datas = ''
                 for key in keys:
                     table_header += (
                             "<th style='border:1px solid black !important'>%s"
                             "</th>" % key)
-                query_result = self._cr.fetchall()
+                query_result = self.env.cr.fetchall()
                 for query_res in query_result:
                     table_datas += "<tr>"
                     for res in query_res:
@@ -80,9 +80,9 @@ class PsqlQuery(models.Model):
         keys = ''
         try:
             if self.query_name:
-                self._cr.execute(self.query_name)
-                keys = [i[0] for i in self._cr.description]
-            for data in self._cr.fetchall():
+                self.env.cr.execute(self.query_name)
+                keys = [i[0] for i in self.env.cr.description]
+            for data in self.env.cr.fetchall():
                 result.append(data)
         except Exception as error:
             raise ValidationError(_('Error executing SQL query: %s ', error))
