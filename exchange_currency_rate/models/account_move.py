@@ -29,26 +29,30 @@ class AccountMove(models.Model):
     the exchange rate through the 'rate' field."""
     _inherit = 'account.move'
 
-    is_exchange = fields.Boolean(string="Apply Manual Exchange", compute="_compute_is_exchange",
+    is_exchange = fields.Boolean(string="Apply Manual Exchange",
+                                 compute="_compute_is_exchange",
                                  inverse="_inverse_is_exchange",
-                                 store=True, help='Check this box if you want to manually '
-                                                  'apply an exchange rate for this '
-                                                  'transaction.')
+                                 precompute=True,
+                                 store=True,
+                                 help='Check this box if you want to manually '
+                                      'apply an exchange rate for this '
+                                      'transaction.')
 
-    rate = fields.Float(string="Exchange Rate", compute="_compute_rate", inverse="_inverse_rate", store=True,
+    rate = fields.Float(string="Exchange Rate", compute="_compute_rate",
+                        inverse="_inverse_rate", store=True, precompute=True,
                         help='specify the rate')
 
-    sale_order_id = fields.Many2one('sale.order', string="Sale Order", compute="_compute_sale_order",
-                                    store=True,help="Linking corresponding Sale Order")
-    purchase_order_id = fields.Many2one('purchase.order', string="Purchase Order",
-                                        compute="_compute_purchase_order", store=True,help="Linking Purchase Order")
+    sale_order_id = fields.Many2one('sale.order', string="Sale Order",
+                                    compute="_compute_sale_order",
+                                    store=True, precompute=True,
+                                    help="Linking corresponding Sale Order")
+    purchase_order_id = fields.Many2one('purchase.order',
+                                        string="Purchase Order",
+                                        compute="_compute_purchase_order",
+                                        store=True, precompute=True,
+                                        help="Linking Purchase Order")
 
-    @api.constrains('company_currency_id', 'currency_id')
-    def _onchange_different_currency(self):
-        """ When the Currency is changed back to company currency, the boolean field is disabled """
-        if self.company_currency_id == self.currency_id:
-            if self.is_exchange:
-                self.is_exchange = False
+
 
     @api.depends('line_ids.sale_line_ids.order_id')
     def _compute_sale_order(self):
@@ -62,9 +66,11 @@ class AccountMove(models.Model):
         """ Compute Function to Update the Corresponding Purchase Order """
         for move in self:
             purchase_orders = move.line_ids.mapped('purchase_line_id.order_id')
-            move.purchase_order_id = purchase_orders and purchase_orders[0] or False
+            move.purchase_order_id = purchase_orders and purchase_orders[
+                0] or False
 
-    @api.depends('currency_id', 'company_currency_id', 'company_id', 'invoice_date', 'rate', 'is_exchange')
+    @api.depends('currency_id', 'company_currency_id', 'company_id',
+                 'invoice_date', 'rate', 'is_exchange')
     def _compute_invoice_currency_rate(self):
         """Overriding the Default Compute function to include the Manual Rate Also."""
         for move in self:
@@ -74,7 +80,8 @@ class AccountMove(models.Model):
                         rate = move.rate if move.rate else 1
                         move.invoice_currency_rate = rate
                         continue
-                    move.invoice_currency_rate = self.env['res.currency']._get_conversion_rate(
+                    move.invoice_currency_rate = self.env[
+                        'res.currency']._get_conversion_rate(
                         from_currency=move.company_currency_id,
                         to_currency=move.currency_id,
                         company=move.company_id,
@@ -83,11 +90,14 @@ class AccountMove(models.Model):
                 else:
                     move.invoice_currency_rate = 1
 
-    @api.depends('sale_order_id.is_exchange', 'purchase_order_id.is_exchange')
+    @api.depends('sale_order_id.is_exchange', 'purchase_order_id.is_exchange',
+                 'currency_id', 'company_id')
     def _compute_is_exchange(self):
         """ Compute Function to Update the Exchange Boolean based on Sale Order and Purchase Order"""
         for move in self:
-            if move.sale_order_id:
+            if move.currency_id == move.company_currency_id:
+                move.is_exchange = False
+            elif move.sale_order_id:
                 move.is_exchange = move.sale_order_id.is_exchange
             elif move.purchase_order_id:
                 move.is_exchange = move.purchase_order_id.is_exchange
@@ -108,11 +118,11 @@ class AccountMove(models.Model):
                 move.rate = move.purchase_order_id.rate
             else:
                 move.rate = move.env['res.currency']._get_conversion_rate(
-                from_currency=move.company_currency_id,
-                to_currency=move.currency_id,
-                company=move.company_id,
-                date=move.date,
-            )
+                    from_currency=move.company_currency_id,
+                    to_currency=move.currency_id,
+                    company=move.company_id,
+                    date=move.date,
+                )
 
     def _inverse_rate(self):
         """ Allow manual editing of rate in account.move """
