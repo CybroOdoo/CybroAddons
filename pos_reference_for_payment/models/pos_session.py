@@ -63,8 +63,14 @@ class PosSessionLoadFields(models.Model):
         """ Load res config settings parameters to pos session.
             params(dict):dictionary of search param with dictionary of
                          field to load.
-            list: Returns list of dictionary with search param values."""
-        return self.env['res.config.settings'].search_read(
+            list: Returns list of dictionary with search param values.
+
+            PARCHE LOCAL (Forum): el search_read va con sudo() porque
+            res.config.settings sólo permite lectura al grupo Settings
+            (admin) y el cajero PDV no lo tiene; sin sudo el load_pos_data
+            corta con AccessError al abrir el POS para usuarios no admin.
+            Documentado en memoria del proyecto."""
+        return self.env['res.config.settings'].sudo().search_read(
             **params['search_params'])
 
     def _loader_params_pos_payment(self):
