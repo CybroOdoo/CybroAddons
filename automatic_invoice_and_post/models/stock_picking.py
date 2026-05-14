@@ -21,7 +21,6 @@
 #############################################################################
 from odoo import models
 import base64
-import logging
 
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
@@ -36,13 +35,17 @@ class StockPicking(models.Model):
         auto_send_invoice = self.env['ir.config_parameter'].sudo().get_param(
             'automatic_invoice_and_post.is_auto_send_invoice')
 
+        done_pickings = self.filtered(
+            lambda p: p.state == 'done' and p.picking_type_code == 'outgoing' and p.sale_id
+        )
+        if not done_pickings:
+            return res
+
         if auto_validate_invoice or auto_send_invoice:
             if any(rec.product_id.invoice_policy == 'delivery' for rec in
                    self.move_ids) or not self.sale_id.invoice_ids:
-
                 invoice_created = self.sale_id._create_invoices(
                     self.sale_id) if self.sale_id else False
-
                 if invoice_created:
                     invoice_created.action_post()
 
