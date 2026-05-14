@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 #############################################################################
 #
@@ -48,23 +49,33 @@ class StockPicking(models.Model):
             'automatic_invoice_and_post.is_create_invoice_delivery_validate')
         auto_send_invoice = self.env['ir.config_parameter'].sudo().get_param(
             'automatic_invoice_and_post.is_auto_send_invoice')
-        if auto_validate_invoice:
-            if any(rec.product_id.invoice_policy == 'delivery' for rec in
-                   self.move_ids) or not self.sale_id.invoice_ids:
-                # Call the _create_invoices function on the associated sale
-                # to create the invoice
-                invoice_created = self.sale_id._create_invoices(
-                    self.sale_id) if self.sale_id else False
-                # Post the created invoice
-                if invoice_created:
-                    invoice_created.action_post()
-                    # If automatic invoice sending is enabled and the customer
-                    # has an email address,send the invoice to the customer
-                    if auto_send_invoice and invoice_created.partner_id.email:
-                        template = self.env.ref(
-                            'account.email_template_edi_invoice').sudo()
-                        template.send_mail(invoice_created.id, force_send=True,
-                                           email_values={
-                                               'email_to': invoice_created.partner_id.email
-                                           })
+        done_pickings = self.filtered(
+            lambda p: p.state == 'done' and p.picking_type_code == 'outgoing' and p.sale_id
+        )
+        if not done_pickings:
+            return res
+
+        sale_orders = done_pickings.mapped('sale_id').filtered(
+            lambda so: so.state == 'sale' and so.invoice_status == 'to invoice'
+        )
+        if not sale_orders:
+            return res
+
+        invoices = sale_orders.with_context(
+            raise_if_nothing_to_invoice=False
+        )._create_invoices()
+
+        draft_invoices = invoices.filtered(lambda inv: inv.state == 'draft')
+        if draft_invoices:
+            draft_invoices.action_post()
+
+        if auto_send_invoice and draft_invoices:
+            template = self.env.ref('account.email_template_edi_invoice').sudo()
+            for invoice in draft_invoices.filtered(lambda inv: inv.partner_id.email):
+                template.send_mail(
+                    invoice.id,
+                    force_send=True,
+                    email_values={'email_to': invoice.partner_id.email},
+                )
+
         return res

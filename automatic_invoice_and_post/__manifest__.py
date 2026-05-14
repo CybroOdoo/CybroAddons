@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Automatic Invoice And Post',
-    'version': "18.0.1.0.1",
+    'version': "18.0.1.1.0",
     'category': 'Sales,Warehouse,Accounting',
     'summary': """ Auto Invoice Generation and Auto Sending of Invoice on 
      Delivery validation.""",
