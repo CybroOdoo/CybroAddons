@@ -9,3 +9,8 @@
 #### Version 17.0.1.0.1
 ##### UPDT
 - Commit for Bug fixing
+
+#### 11.05.2026
+#### Version 17.0.1.1.0
+##### UPDT
+- Commit for update logic to manage partial delivery process.
