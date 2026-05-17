@@ -1,0 +1,54 @@
+.. image:: https://img.shields.io/badge/license-LGPL--3-blue.svg
+    :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
+    :alt: License: LGPL-3
+
+Employee Bonus
+==============
+This module will help you in managing employee bonus.
+
+Configuration
+=============
+* Add users to the three user groups
+    - User: can create and submit the bonus request
+    - Department Head: can approve the bonus request of users
+    - Manager(HR Manager): can approve the bonus request of users
+
+Company
+-------
+* `Cybrosys Techno Solutions <https://cybrosys.com/>`__
+
+License
+-------
+General Public License, Version 3 (LGPL v3).
+(https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
+
+Credits
+-------
+Developer : (V15) Ruksana P,
+            (V16) Sabeel B,
+            (V17) Sabeel B,
+            (V18) Ammu Raj,
+            (V19) Safa KB
+Contact:odoo@cybrosys.com
+
+Contacts
+--------
+* Mail Contact : odoo@cybrosys.com
+* Website : https://cybrosys.com
+
+Bug Tracker
+-----------
+Bugs are tracked on GitHub Issues. In case of trouble, please check there if your issue has already been reported.
+
+Maintainer
+==========
+.. image:: https://cybrosys.com/images/logo.png
+   :target: https://cybrosys.com
+
+This module is maintained by Cybrosys Technologies.
+
+For support and more information, please visit `Our Website <https://cybrosys.com/>`__
+
+Further information
+===================
+HTML Description: `<static/description/index.html>`__

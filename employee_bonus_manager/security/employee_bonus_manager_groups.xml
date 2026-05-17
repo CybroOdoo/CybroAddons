@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Module category for the module to add the security groups -->
+    <record id="module_employee_bonus_manager" model="ir.module.category">
+        <field name="name">Employee Bonus</field>
+        <field name="description">Access for Employee Bonus module</field>
+        <field name="sequence">50</field>
+    </record>
+    <!-- The security groups for the module -->
+    <!-- The User group for creating bonus request -->
+     <record model="res.groups.privilege" id="res_groups_privilege_employee_bonus">
+        <field name="name">Employee Bonus</field>
+        <field name="category_id" ref="module_employee_bonus_manager"/>
+    </record>
+
+    <record id="employee_bonus_manager_group_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="privilege_id" ref="res_groups_privilege_employee_bonus"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+
+    <!-- The Department Head group for validating bonus request -->
+<!--     <record model="res.groups.privilege" id="res_groups_privilege_employee_bonus_manager_group_department">-->
+<!--        <field name="name">Department Head Privilege</field>-->
+<!--        <field name="category_id" ref="module_employee_bonus_manager"/>-->
+<!--    </record>-->
+
+    <record id="employee_bonus_manager_group_department" model="res.groups">
+        <field name="name">Department Head</field>
+        <field name="privilege_id" ref="res_groups_privilege_employee_bonus"/>
+        <field name="implied_ids" eval="[(4, ref('employee_bonus_manager_group_user'))]"/>
+    </record>
+
+
+    <!-- The Manager group for approving bonus request -->
+<!--    <record model="res.groups.privilege" id="res_groups_privilege_employee_bonus_manager_group_manager">-->
+<!--        <field name="name">Manager Privilege</field>-->
+<!--        <field name="category_id" ref="module_employee_bonus_manager"/>-->
+<!--    </record>-->
+
+    <record id="employee_bonus_manager_group_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="privilege_id" ref="res_groups_privilege_employee_bonus"/>
+        <field name="implied_ids" eval="[(4, ref('employee_bonus_manager_group_department'))]"/>
+        <field name="user_ids"
+               eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+
+    <!-- Add the default user to the security group User -->
+    <record id="base.user_demo" model="res.users">
+        <field name="group_ids"
+               eval="[(4,ref('employee_bonus_manager_group_user'))]"/>
+    </record>
+</odoo>
