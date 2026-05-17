@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Process Cost of Manufacturing Orders</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
+    <style>
+        body { font-family: "Montserrat", sans-serif; background-color: #71639e08; }
+        .section-pad { padding: 0 40px; }
+        .highlight-card { background-color: #8d76d51f; backdrop-filter: blur(20px); border-radius: 10px; padding: 32px; border: 2px solid #71639e1a; }
+        .card-icon { width: 60px; height: 60px; border-radius: 10px; margin-bottom: 24px; background-color: #71639e; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .section-title { font-size: 2rem; font-weight: 700; color: black; }
+        .section-title span { color: #71639e; }
+        .screenshot-heading { font-size: 1.5rem; font-weight: 700; color: #121212; text-align: center; margin-bottom: 0.6rem; margin-top: 3rem; }
+        .screenshot-heading.accent { color: #71639e; }
+        .screenshot-desc { font-size: 15px; color: #6b7280; text-align: center; max-width: 80%; margin: 0 auto 1.5rem; line-height: 1.7; }
+        .screenshot-wrap { border-radius: 10px; overflow: hidden; border: 2px solid #e7e7e7; margin-bottom: 1.5rem; }
+        .screenshot-wrap img { max-width: 100%; height: auto; display: block; }
+        .nav-pills .nav-link { width: max-content; border-radius: 50px; margin: 0 5px; padding: 12px 24px; font-weight: 500; border: 2px solid #e9ecef; color: #333; }
+        .nav-pills .nav-link.active { background-color: #71639e; border-color: #71639e; color: white; }
+        .accordion-btn-custom { box-shadow: unset !important; border: none !important; padding: 1.5rem 2rem !important; font-weight: 600 !important; font-size: 1.05rem !important; color: #71639e !important; background-color: #e3e3f3a9 !important; border-radius: 10px !important; }
+        .feature-number { width: 45px; height: 45px; background-color: #7877c633; border-radius: 50%; font-size: 1.1rem; font-weight: 600; color: #71639e; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════ HEADER ═══════════════════════ -->
+<div class="container-fluid section-pad">
+    <div class="my-3 py-3" style="border: 2px solid #e9ecef; padding: 0 35px; border-radius: 10px; background-color: white;">
+        <div class="row justify-content-between align-items-center">
+            <div class="col-lg-3">
+                <div class="my-3 mx-auto mx-sm-0" style="width: 230px;">
+                    <img src="./assets/misc/Cybrosys R.png" style="width: 100%;">
+                </div>
+            </div>
+            <div class="col-lg-9">
+                <div class="row">
+                    <div class="my-2 d-flex align-items-center justify-content-center justify-content-sm-end">
+                        <span class="me-3"><b>Supports: </b></span>
+                        <div class="text-center" style="background-color:#71639e; font-size:0.9rem; color:#fff; font-weight:500; padding:7px 16px; margin:0 3px; border-radius:50px; min-width:130px;">
+                            Community
+                        </div>
+                        <div class="text-center" style="background-color:#875A7B; font-size:0.9rem; color:#fff; font-weight:500; padding:7px 16px; margin:0 3px; border-radius:50px; min-width:130px;">
+                            Enterprise
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 8px;">
+                    <div class="d-flex align-items-center justify-content-center justify-content-sm-end flex-wrap gap-2">
+                        <span class="me-3"><b>Availability: </b></span>
+                        <div class="d-flex align-items-center justify-content-center gap-2 text-center"
+                             style="border:2px solid #ebebeb; font-size:0.9rem; color:#333; font-weight:500; padding:7px 16px; border-radius:20px; min-width:150px;">
+                            <img src="./assets/icons/close.png" alt="" width="16" height="16"> Odoo Online
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center gap-2 text-center"
+                             style="border:2px solid #ebebeb; font-size:0.9rem; color:#333; font-weight:500; padding:7px 16px; border-radius:20px; min-width:150px;">
+                            <img src="./assets/icons/tick.png" alt="" width="16" height="16"> Odoo.sh
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center gap-2 text-center"
+                             style="border:2px solid #ebebeb; font-size:0.9rem; color:#333; font-weight:500; padding:7px 16px; border-radius:20px; min-width:150px;">
+                            <img src="./assets/icons/tick.png" alt="" width="16" height="16"> On Premise
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<div class="container-fluid section-pad text-center py-5">
+    <h1 style="font-size:2.4rem; padding-top:1rem; font-weight:700; color:black;">
+        Process Cost of Manufacturing Orders
+    </h1>
+    <p style="font-size:18px; color:#6b7280; max-width:700px; margin:1rem auto 2rem; line-height:1.7;">
+        Manufacturing Process Costing with Material Cost, Labour Cost and Overhead Cost based on Work Center
+    </p>
+    <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <a href="mailto:"
+           style="padding:14px 28px; border:none; border-radius:50px; font-size:15px; font-weight:600; text-decoration:none; color:white; cursor:pointer; min-width:190px; display:inline-flex; justify-content:center; align-items:center; gap:8px; background-color:#4facfe;">
+            <img src="./assets/icons/mail.png" alt="" width="22" height="22"> Email Us
+        </a>
+        <a href="skype:"
+           style="padding:14px 28px; border:none; border-radius:50px; font-size:15px; font-weight:600; text-decoration:none; color:white; cursor:pointer; min-width:190px; display:inline-flex; justify-content:center; align-items:center; gap:8px; background-color:#555ecb;">
+            <img src="./assets/icons/tms.png" alt="" width="26" height="26"> Teams
+        </a>
+        <a href="https://wa.me/919074270811"
+           style="padding:14px 28px; border:none; border-radius:50px; font-size:15px; font-weight:600; text-decoration:none; color:white; cursor:pointer; min-width:190px; display:inline-flex; justify-content:center; align-items:center; gap:8px; background-color:#25d366;">
+            <img src="./assets/icons/whatsapp.png" alt="" width="22" height="22"> +91 9074270811
+        </a>
+    </div>
+</div>
+
+<!-- ═══════════════════════ KEY HIGHLIGHTS ═══════════════════════ -->
+<div class="container-fluid section-pad py-2 py-md-5">
+    <h2 class="section-title text-center mb-4">Key <span>Highlights</span></h2>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="highlight-card h-100">
+                <div class="card-icon"><img src="./assets/icons/chart.png" alt="" width="30" height="30"></div>
+                <h3 style="font-size:18px; font-weight:600; color:black; margin-bottom:10px;">Material Cost, Labour Cost and Overhead Cost for Production</h3>
+                <p style="font-size:15px; color:#6b7280; margin:0; line-height:1.6;">Capture and track all three cost components for every manufacturing order.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="highlight-card h-100">
+                <div class="card-icon"><img src="./assets/icons/chart.png" alt="" width="30" height="30"></div>
+                <h3 style="font-size:18px; font-weight:600; color:black; margin-bottom:10px;">Calculates Estimated Cost and Real Cost</h3>
+                <p style="font-size:15px; color:#6b7280; margin:0; line-height:1.6;">Compare planned costs against actual costs to monitor production efficiency.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="highlight-card h-100">
+                <div class="card-icon"><img src="./assets/icons/chart.png" alt="" width="30" height="30"></div>
+                <h3 style="font-size:18px; font-weight:600; color:black; margin-bottom:10px;">Production Cost Report for BOM and Manufacturing Order</h3>
+                <p style="font-size:15px; color:#6b7280; margin:0; line-height:1.6;">Generate detailed cost reports for Bill of Materials and individual manufacturing orders.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════ TABS ═══════════════════════ -->
+<div class="container-fluid section-pad py-2 py-md-5">
+    <ul class="nav nav-pills justify-content-start justify-content-md-center pb-4"
+        style="flex-flow:nowrap; overflow:hidden; overflow-x:auto;" id="pills1" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" data-bs-toggle="pill" data-bs-target="#screenshot" type="button" role="tab">Screenshots</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" data-bs-toggle="pill" data-bs-target="#features" type="button" role="tab">Features</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" data-bs-toggle="pill" data-bs-target="#faq" type="button" role="tab">Frequent Questions</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" data-bs-toggle="pill" data-bs-target="#latest-release" type="button" role="tab">Latest Release</a>
+        </li>
+    </ul>
+
+    <div class="tab-content bg-white" style="border:2px solid #e9ecef; border-radius:10px;" id="pills1Content">
+
+        <!-- ── SCREENSHOTS ── -->
+        <div class="tab-pane fade show active" id="screenshot" role="tabpanel">
+            <div class="p-3 py-md-5">
+
+                <h2 class="screenshot-heading">Process Cost Configuration</h2>
+                <p class="screenshot-desc">Go to <strong>Manufacturing → Configuration → Settings</strong>. Select the manufacture process costing method as <strong>Manually</strong> or <strong>Work-Center</strong>.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/1.png" alt="Process Cost Configuration"></div>
+
+                <h2 class="screenshot-heading accent">1. Costing Method — Manually</h2>
+                <p class="screenshot-desc">After setting the process costing method to <strong>Manually</strong>, go to <strong>Products → Bill of Materials</strong> and create a Bill of Materials.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/2.png" alt="Bill of Materials"></div>
+
+                <h2 class="screenshot-heading">Material Cost</h2>
+                <p class="screenshot-desc">Add the components. The <strong>Material Cost</strong> is calculated automatically based on the components added.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/3.png" alt="Add Components"></div>
+
+                <h2 class="screenshot-heading">Add Operations</h2>
+                <p class="screenshot-desc">Add the operations to the Bill of Materials to configure labour and overhead costing.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/4.png" alt="Add Operations"></div>
+
+                <h2 class="screenshot-heading">Labour Cost</h2>
+                <p class="screenshot-desc">The <strong>Labour Cost</strong> is added automatically based on the operations. You can also enter the Cost/Minute manually.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/5.png" alt="Labour Cost"></div>
+
+                <h2 class="screenshot-heading">Overhead Cost</h2>
+                <p class="screenshot-desc">The <strong>Overhead Cost</strong> is added automatically based on the operations. You can also enter the Cost/Minute manually.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/6.png" alt="Overhead Cost"></div>
+
+                <h2 class="screenshot-heading">Costing Summary in BOM</h2>
+                <p class="screenshot-desc">In the <strong>Costing</strong> tab, all values are computed automatically based on Material Cost, Labour Cost and Overhead Cost.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/7.png" alt="Costing Summary"></div>
+
+                <h2 class="screenshot-heading">Create a Manufacturing Order</h2>
+                <p class="screenshot-desc">Go to <strong>Operations → Manufacturing Orders</strong> and create a new Manufacturing Order. Setting the Bill of Materials loads all data from the corresponding BOM automatically. You can also add Components and Work Orders which will reflect in costs.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/8.png" alt="Manufacturing Order"></div>
+
+                <h2 class="screenshot-heading">Plan the Manufacturing Order</h2>
+                <p class="screenshot-desc">View the Work Orders and plan the manufacturing order accordingly.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/9.png" alt="Work Orders"></div>
+
+                <h2 class="screenshot-heading">Material, Labour and Overhead — Actual Costs</h2>
+                <p class="screenshot-desc">Go to the <strong>Material Cost</strong>, <strong>Labour Cost</strong> and <strong>Overhead Cost</strong> tabs to change the Actual Quantity and Actual Minutes manually.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/10.png" alt="Material Cost Tab"></div>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/11.png" alt="Labour Cost Tab"></div>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/12.png" alt="Overhead Cost Tab"></div>
+
+                <h2 class="screenshot-heading">Estimated vs Actual Cost</h2>
+                <p class="screenshot-desc">In the <strong>Costing</strong> tab, both the estimated cost and actual cost are calculated and displayed side by side.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/13.png" alt="Estimated vs Actual Cost"></div>
+
+                <h2 class="screenshot-heading accent">2. Costing Method — Automated Work-Center Process</h2>
+                <p class="screenshot-desc">Go to <strong>Configuration → Settings</strong>, enable the <strong>Work Orders</strong> feature and set the Process Costing Method to <strong>Work Center</strong>.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/14.png" alt="Work Center Settings"></div>
+
+                <h2 class="screenshot-heading">Configure Work Centers</h2>
+                <p class="screenshot-desc">Go to <strong>Configuration → Work Centers</strong> and add the Actual Costing details for each work center.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/15.png" alt="Work Centers"></div>
+
+                <h2 class="screenshot-heading">Bill of Materials — Components and Operations</h2>
+                <p class="screenshot-desc">Go to <strong>Products → Bill of Materials</strong> and configure the Components and Operations.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/16.png" alt="BOM Components"></div>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/17.png" alt="BOM Operations"></div>
+
+                <h2 class="screenshot-heading">Auto-Calculated Costs from Work Center</h2>
+                <p class="screenshot-desc">The estimated <strong>Material Cost</strong>, <strong>Labour Cost</strong> and <strong>Overhead Cost</strong> are calculated automatically based on the Work Center configuration.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/18.png" alt="Auto Calculated Costs"></div>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/19.png" alt="Auto Calculated Costs Detail"></div>
+
+                <h2 class="screenshot-heading">Total Cost Summary</h2>
+                <p class="screenshot-desc">View the total cost of Material, Labour and Overhead in a consolidated summary.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/20.png" alt="Total Cost Summary"></div>
+
+                <h2 class="screenshot-heading">Manufacturing Order — Work-Center Costing Flow</h2>
+                <p class="screenshot-desc">Create a Manufacturing Order, confirm it, then plan and start the Work Order. The Work Order's real duration is reflected in Labour and Overhead Actual Minutes. Material Actual Quantity comes from the components.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/21.png" alt="MO Flow 1"></div>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/22.png" alt="MO Flow 2"></div>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/23.png" alt="MO Flow 3"></div>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/24.png" alt="MO Flow 4"></div>
+
+                <h2 class="screenshot-heading">Final Costing Tab</h2>
+                <p class="screenshot-desc">Under the <strong>Costing</strong> tab you can see all estimated costs and actual costs calculated for the completed manufacturing order.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/25.png" alt="Final Costing Tab"></div>
+
+                <h2 class="screenshot-heading">Cancel Reason for Manufacturing Orders</h2>
+                <p class="screenshot-desc">When you cancel a Manufacturing Order, a popup wizard appears where you can provide a reason before confirming the cancellation.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/26.png" alt="Cancel Reason Wizard"></div>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/27.png" alt="Cancel Confirmation"></div>
+
+                <h2 class="screenshot-heading">Manage Cancel Reasons</h2>
+                <p class="screenshot-desc">Under <strong>Configuration → Cancel Reasons</strong>, view and manage all reasons configured for canceling Manufacturing Orders.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/28.png" alt="Cancel Reasons List"></div>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/29.png" alt="Cancel Reasons Form"></div>
+
+                <h2 class="screenshot-heading">Bill of Material Report</h2>
+                <p class="screenshot-desc">Print the <strong>Bill of Material Report</strong> directly from the BOM menu.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/30.png" alt="BOM Report Button"></div>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/31.png" alt="BOM Report Output"></div>
+
+                <h2 class="screenshot-heading">Manufacturing Orders Report</h2>
+                <p class="screenshot-desc">Print the <strong>Manufacturing Order Report</strong> directly from the Manufacturing Orders menu.</p>
+                <div class="screenshot-wrap"><img src="./assets/screenshots/32.png" alt="Manufacturing Order Report"></div>
+
+            </div>
+        </div>
+
+        <!-- ── FEATURES ── -->
+        <div class="tab-pane fade" id="features" role="tabpanel">
+            <div class="p-3 py-md-5">
+                <h2 class="section-title text-center mb-4">Our <span>Features</span></h2>
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="d-flex flex-column align-items-center justify-content-center text-center h-100"
+                             style="padding:28px; background-color:#637eea0d; border-radius:10px;">
+                            <div class="feature-number">01</div>
+                            <h3 style="font-size:1.05rem; font-weight:600; color:black; line-height:1.4; margin:0;">Material Cost, Labour Cost and Overhead Cost for Production</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="d-flex flex-column align-items-center justify-content-center text-center h-100"
+                             style="padding:28px; background-color:#637eea0d; border-radius:10px;">
+                            <div class="feature-number">02</div>
+                            <h3 style="font-size:1.05rem; font-weight:600; color:black; line-height:1.4; margin:0;">Calculates Estimated Cost and Real Cost</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="d-flex flex-column align-items-center justify-content-center text-center h-100"
+                             style="padding:28px; background-color:#637eea0d; border-radius:10px;">
+                            <div class="feature-number">03</div>
+                            <h3 style="font-size:1.05rem; font-weight:600; color:black; line-height:1.4; margin:0;">Production Cost Report for BOM and Manufacturing Order</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="d-flex flex-column align-items-center justify-content-center text-center h-100"
+                             style="padding:28px; background-color:#637eea0d; border-radius:10px;">
+                            <div class="feature-number">04</div>
+                            <h3 style="font-size:1.05rem; font-weight:600; color:black; line-height:1.4; margin:0;">Provide Cancel Reason for Canceling Manufacturing Orders</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="d-flex flex-column align-items-center justify-content-center text-center h-100"
+                             style="padding:28px; background-color:#637eea0d; border-radius:10px;">
+                            <div class="feature-number">05</div>
+                            <h3 style="font-size:1.05rem; font-weight:600; color:black; line-height:1.4; margin:0;">Print Costing Report</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── FAQ ── -->
+        <div class="tab-pane fade" id="faq" role="tabpanel">
+            <div class="p-3 py-md-5">
+                <h2 class="section-title text-center mb-4">Frequently Asked <span>Questions</span></h2>
+                <div class="accordion accordion-flush" id="accordionFaq">
+
+                    <div class="accordion-item" style="margin-bottom:1rem; overflow:hidden; background-color:white; border:2px solid #e2e8f0 !important; border-radius:10px !important;">
+                        <h2 class="accordion-header">
+                            <a class="accordion-button collapsed accordion-btn-custom" type="button"
+                               data-bs-toggle="collapse" data-bs-target="#faqOne" aria-expanded="false">
+                                Which costing types are supported?
+                            </a>
+                        </h2>
+                        <div id="faqOne" class="accordion-collapse collapse" data-bs-parent="#accordionFaq" style="border-top:1px solid #e2e8f0;">
+                            <div class="accordion-body" style="background-color:#71639e05; line-height:1.7; font-size:1rem; padding:1.5rem 2rem !important;">
+                                Both <strong>Manual process costing</strong> and <strong>Work-Center based automated process costing</strong> are supported.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item" style="margin-bottom:1rem; overflow:hidden; background-color:white; border:2px solid #e2e8f0 !important; border-radius:10px !important;">
+                        <h2 class="accordion-header">
+                            <a class="accordion-button collapsed accordion-btn-custom" type="button"
+                               data-bs-toggle="collapse" data-bs-target="#faqTwo" aria-expanded="false">
+                                When you choose manual costing, what do you enter and where?
+                            </a>
+                        </h2>
+                        <div id="faqTwo" class="accordion-collapse collapse" data-bs-parent="#accordionFaq" style="border-top:1px solid #e2e8f0;">
+                            <div class="accordion-body" style="background-color:#71639e05; line-height:1.7; font-size:1rem; padding:1.5rem 2rem !important;">
+                                Estimated costing is calculated from the Bill of Materials. You can manually enter or override labour and overhead costs in the corresponding cost tabs of the Manufacturing Order.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item" style="margin-bottom:1rem; overflow:hidden; background-color:white; border:2px solid #e2e8f0 !important; border-radius:10px !important;">
+                        <h2 class="accordion-header">
+                            <a class="accordion-button collapsed accordion-btn-custom" type="button"
+                               data-bs-toggle="collapse" data-bs-target="#faqThree" aria-expanded="false">
+                                How is the actual cost calculated in Work-Center mode?
+                            </a>
+                        </h2>
+                        <div id="faqThree" class="accordion-collapse collapse" data-bs-parent="#accordionFaq" style="border-top:1px solid #e2e8f0;">
+                            <div class="accordion-body" style="background-color:#71639e05; line-height:1.7; font-size:1rem; padding:1.5rem 2rem !important;">
+                                The Work Order's real duration is automatically reflected in Labour and Overhead Actual Minutes. The Material Actual Quantity is derived from the components consumed during production.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item" style="margin-bottom:1rem; overflow:hidden; background-color:white; border:2px solid #e2e8f0 !important; border-radius:10px !important;">
+                        <h2 class="accordion-header">
+                            <a class="accordion-button collapsed accordion-btn-custom" type="button"
+                               data-bs-toggle="collapse" data-bs-target="#faqFour" aria-expanded="false">
+                                Can I print a cost report for a Manufacturing Order?
+                            </a>
+                        </h2>
+                        <div id="faqFour" class="accordion-collapse collapse" data-bs-parent="#accordionFaq" style="border-top:1px solid #e2e8f0;">
+                            <div class="accordion-body" style="background-color:#71639e05; line-height:1.7; font-size:1rem; padding:1.5rem 2rem !important;">
+                                Yes. You can print the Manufacturing Order Report directly from the Manufacturing Orders menu and the Bill of Material Report from the BOM menu.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ── LATEST RELEASE ── -->
+        <div class="tab-pane fade" id="latest-release" role="tabpanel">
+            <div class="p-3 py-md-5">
+                <h2 class="section-title text-center mb-4">Latest <span>Releases</span></h2>
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div style="padding:30px; border:2px solid #71639e24; border-radius:15px; height:100%;">
+                            <div style="display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:0.75rem;">
+                                <div style="font-size:1.1rem; font-weight:700; color:#1a202c;">Latest Release 19.0.1.0.0</div>
+                                <div style="padding:0.25rem 0.75rem; border-radius:20px; font-size:0.75rem; font-weight:600; text-transform:uppercase; background-color:#9ae6b4; color:#2d7d32; border:2px solid #68d391;">Add</div>
+                                <div style="color:#64748b; font-size:0.875rem; font-weight:500;">
+                                    <img src="./assets/icons/calendar.png" alt="" width="14" height="14" style="margin-right:5px;">
+                                    12th February, 2026
+                                </div>
+                            </div>
+                            <div style="background-color:#f5f5f5; border-radius:10px; padding:14px 18px;">
+                                <div style="color:#6b7280; line-height:1.6; font-size:0.95rem;">Initial Commit</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ═══════════════════════ OUR SERVICES ═══════════════════════ -->
+<div class="container-fluid section-pad py-2 py-md-5">
+    <h2 class="section-title text-center mb-4">Our <span>Services</span></h2>
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="highlight-card h-100 d-flex flex-column justify-content-center align-items-center text-center">
+                <div class="card-icon"><img src="./assets/icons/setting.png" alt="" width="30" height="30"></div>
+                <h3 style="font-size:17px; font-weight:600; color:black; margin:0;">Odoo Customization</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="highlight-card h-100 d-flex flex-column justify-content-center align-items-center text-center">
+                <div class="card-icon"><img src="./assets/icons/imple.png" alt="" width="30" height="30"></div>
+                <h3 style="font-size:17px; font-weight:600; color:black; margin:0;">Odoo Implementation</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="highlight-card h-100 d-flex flex-column justify-content-center align-items-center text-center">
+                <div class="card-icon"><img src="./assets/icons/support.png" alt="" width="30" height="30"></div>
+                <h3 style="font-size:17px; font-weight:600; color:black; margin:0;">Odoo Support</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="highlight-card h-100 d-flex flex-column justify-content-center align-items-center text-center">
+                <div class="card-icon"><img src="./assets/icons/transfer.png" alt="" width="30" height="30"></div>
+                <h3 style="font-size:17px; font-weight:600; color:black; margin:0;">Odoo Migration</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="highlight-card h-100 d-flex flex-column justify-content-center align-items-center text-center">
+                <div class="card-icon"><img src="./assets/icons/idea.png" alt="" width="30" height="30"></div>
+                <h3 style="font-size:17px; font-weight:600; color:black; margin:0;">Odoo Integration</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="highlight-card h-100 d-flex flex-column justify-content-center align-items-center text-center">
+                <div class="card-icon"><img src="./assets/icons/chat.png" alt="" width="30" height="30"></div>
+                <h3 style="font-size:17px; font-weight:600; color:black; margin:0;">Odoo Consultancy</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="highlight-card h-100 d-flex flex-column justify-content-center align-items-center text-center">
+                <div class="card-icon"><img src="./assets/icons/chart.png" alt="" width="30" height="30"></div>
+                <h3 style="font-size:17px; font-weight:600; color:black; margin:0;">Odoo Licensing</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="highlight-card h-100 d-flex flex-column justify-content-center align-items-center text-center">
+                <div class="card-icon"><img src="./assets/icons/people.png" alt="" width="30" height="30"></div>
+                <h3 style="font-size:17px; font-weight:600; color:black; margin:0;">Hire Odoo Developer</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════ RELATED MODULES ═══════════════════════ -->
+<div class="container-fluid section-pad py-2 py-md-5">
+    <h2 class="section-title text-center mb-4">Related <span>Modules</span></h2>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <a href="https://apps.odoo.com/apps/modules/19.0/base_accounting_kit" style="text-decoration:none;">
+                <div style="background-color:white; border-radius:10px; padding:24px; border:2px solid #71639e1a; height:100%;">
+                    <div style="border:2px solid #71639e1c; margin-bottom:1rem; border-radius:10px; overflow:hidden;">
+                        <img src="./assets/modules/module1.gif" alt="" style="width:100%;">
+                    </div>
+                    <h3 style="font-size:17px; font-weight:600; color:black; margin-bottom:8px;">Odoo 19 Full Accounting Kit for Community</h3>
+                    <p style="font-size:14px; color:#6b7280; margin:0; line-height:1.6;">A Full-Fledged Accounting kit For Every Organization.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4 mb-4">
+            <a href="https://apps.odoo.com/apps/modules/19.0/auto_database_backup" style="text-decoration:none;">
+                <div style="background-color:white; border-radius:10px; padding:24px; border:2px solid #71639e1a; height:100%;">
+                    <div style="border:2px solid #71639e1c; margin-bottom:1rem; border-radius:10px; overflow:hidden;">
+                        <img src="./assets/modules/module2.gif" alt="" style="width:100%;">
+                    </div>
+                    <h3 style="font-size:17px; font-weight:600; color:black; margin-bottom:8px;">Automatic Database Backup — Odoo 19</h3>
+                    <p style="font-size:14px; color:#6b7280; margin:0; line-height:1.6;">This Module Helps To Generate Automated Backup Of Databases.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4 mb-4">
+            <a href="https://apps.odoo.com/apps/modules/19.0/hide_menu_user" style="text-decoration:none;">
+                <div style="background-color:white; border-radius:10px; padding:24px; border:2px solid #71639e1a; height:100%;">
+                    <div style="border:2px solid #71639e1c; margin-bottom:1rem; border-radius:10px; overflow:hidden;">
+                        <img src="./assets/modules/module3.png" alt="" style="width:100%;">
+                    </div>
+                    <h3 style="font-size:17px; font-weight:600; color:black; margin-bottom:8px;">Hide Any Menu User Wise</h3>
+                    <p style="font-size:14px; color:#6b7280; margin:0; line-height:1.6;">This Module Helps To Hide any Menu items user wise.</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
