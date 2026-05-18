@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="arrival_product" name="Product Arrivals">
+        <section class="new_arrivals" data-snippet="arrival_product" data-name="Product Arrivals">
+            <t t-call="theme_voltro.arrival_product_show">
+                <t t-set="new_arrivals" t-value="[{'id': 0, 'name': 'Product Name', 'categ_id': [0, 'Category'], 'list_price': 0, 'image_url': '/theme_voltro/static/src/snippets/new_arrivals.jpg', 'rating_count': 0, 'product_variant_id': [0]}] * 4"/>
+                <t t-set="symbol" t-value="'$'"/>
+                <t t-set="in_wish" t-value="False"/>
+            </t>
+        </section>
+    </template>
+    <template id="arrival_snippet_carousel_thumbnail"
+              inherit_id="website.snippets" priority="8">
+        <xpath expr="//snippets[@id='snippet_groups']"
+               position="inside">
+            <t t-snippet="theme_voltro.arrival_product"
+               t-thumbnail="/theme_voltro/static/src/snippets/new_arrivals.jpg"/>
+        </xpath>
+    </template>
+    <!--  templates/snippets.xml  -->
+    <template id="arrival_product_show" name="Product Arrival Template">
+        <div class="wrapper">
+            <div class="container">
+                <div class="section_left_heading w-100">
+                    <div class="ft_wrapp">
+                        <h3 class="pb-2">New Arrivals</h3>
+                        <p>Experience cutting-edge technology and seamless
+                            performance with our latest gadgets, designed to
+                            elevate your everyday life.
+                        </p>
+                    </div>
+                    <div class="right_btn_wrapp">
+                        <a href="/shop" class="btn btn-secondary">All
+                            Products
+                        </a>
+                    </div>
+                </div>
+                <div class="new_arrivals_content">
+                    <div class="owl-carousel" id="new_arrivals">
+                        <t t-foreach="new_arrivals" t-as="product" t-key="product['id']">
+                            <div class="item">
+                                <div class="voltro_product_card">
+                                    <a t-att-href="'/shop/product/%s' % product['id']"
+                                       class="block">
+                                        <div class="type"
+                                             t-esc="product['categ_id'][1]"/>
+                                        <h6 t-esc="product['name']"/>
+                                        <div class="fix_height"
+                                             style="margin-top:29px;">
+                                            <div class="img_wrapper">
+                                                <t t-if="product.get('image_url')">
+                                                    <img t-att-src="product['image_url']" class="h-100"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <span t-esc="product.get('image_1920')"
+                                                          t-options="{'widget': 'image', 'preview_image': 'image_1920'}"
+                                                          class=" h-100 "/>
+                                                </t>
+                                            </div>
+                                        </div>
+                                        <div class="card_bottom">
+                                            <div class="rating"
+                                                 style="visibility:hidden;">
+                                                <t t-foreach="range(5)"
+                                                   t-as="star">
+                                                    <a href="#">
+                                                        <img src="/theme_voltro/static/src/images/product_card/star (2) 1.svg"
+                                                             alt="star"/>
+                                                    </a>
+                                                </t>
+                                                <span t-esc="'(%s)' % product['rating_count']"/>
+                                            </div>
+                                            <div class="price_icons">
+                                                <span t-esc="symbol + ' ' + str(product['list_price'])"/>
+                                                <div class="icons">
+                                                    <button t-if="product['product_variant_id'][0]"
+                                                            type="button"
+                                                            role="button"
+                                                            class="btn btn-link voltro_icon_link o_add_wishlist"
+                                                            t-att-disabled="in_wish or None"
+                                                            title="Add to Wishlist"
+                                                            t-att-data-product-template-id="product['id']"
+                                                            t-att-data-product-product-id="product['product_variant_id'][0]"
+                                                            data-action="o_wishlist">
+                                                        <img src="/theme_voltro/static/src/images/product_card/heart (1).svg"
+                                                             alt="Favorite"
+                                                             class="voltro_icon_img"/>
+                                                    </button>
+                                                    <a t-att-href="'/shop/product/%s' % product['id']">
+                                                        <img src="/theme_voltro/static/src/images/product_card/view (1).svg"
+                                                             alt="view"/>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</odoo>
