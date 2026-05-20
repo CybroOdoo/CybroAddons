@@ -18,8 +18,11 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
+from odoo.orm.table_objects import Constraint
 from odoo.exceptions import ValidationError
+
 from odoo.tools.translate import _
 
 
@@ -32,9 +35,11 @@ class OilGatePass(models.Model):
     _name = "oil.gate.pass"
     _description = "Oil Gate Pass"
     _order = "date desc, id desc"
-    _sql_constraints = [
-        ("name_unique", "unique(name)", "The Gate Pass reference must be unique!")
-    ]
+    _name_unique = Constraint(
+        "UNIQUE(name)",
+        "The Gate Pass reference must be unique!"
+    )
+
 
     name = fields.Char(string="Name", required=True, copy=False, default=lambda self: _("New"))
     date = fields.Datetime(string="Date", required=True, default=fields.Datetime.now)
@@ -49,22 +54,22 @@ class OilGatePass(models.Model):
         string="Status",
         default="draft",
         required=True,
-        help="Choose the status.")
+        help="Current workflow status of this gate pass.")
     gate_pass_type = fields.Selection(
         [("in", "Inward"), ("out", "Outward"), ("internal", "Internal")],
         string="Gate Pass Type",
         required=True,
-        help="Choose the gate Pass Type.")
+        help="Direction of material movement: inward, outward, or internal.")
     partner_id = fields.Many2one("res.partner", string="Partner",
-                                 help="Select the partner.")
+                                 help="Business partner associated with this gate pass.")
     driver_name = fields.Char(string="Driver Name",
-                              help="Enter the driver Name.")
+                              help="Name of the driver operating the vehicle.")
     vehicle_id = fields.Many2one("fleet.vehicle", string="Vehicle",
-                                 help="Select the vehicle.")
+                                 help="Fleet vehicle assigned to this gate pass.")
     vehicle_number = fields.Char(string="Vehicle Number",
-                                 help="Enter the vehicle Number.")
+                                 help="License plate or registration number of the vehicle.")
     transporter_id = fields.Many2one("res.partner", string="Transporter",
-                                     help="Select the transporter.")
+                                     help="Transport company responsible for the shipment.")
     product_line_ids = fields.One2many("oil.gate.pass.line", "gate_pass_id",
                                        string="Products", copy=True,
                                        help="Lists the products.")
@@ -81,19 +86,19 @@ class OilGatePass(models.Model):
     destination_location_id = fields.Many2one("stock.location",
                                               string="Destination Location",
                                               help="Select the destination Location.")
-    density = fields.Float(string="Density", help="Enter the density.")
+    density = fields.Float(string="Density", help="Product density measurement at the time of transfer.")
     temperature = fields.Float(string="Temperature",
-                               help="Enter the temperature.")
-    pressure = fields.Float(string="Pressure", help="Enter the pressure.")
-    gross_qty = fields.Float(string="Gross Qty", help="Enter the gross Qty.")
-    net_qty = fields.Float(string="Net Qty", help="Enter the net Qty.")
+                               help="Product temperature at the time of transfer.")
+    pressure = fields.Float(string="Pressure", help="Product pressure reading at the time of transfer.")
+    gross_qty = fields.Float(string="Gross Qty", help="Total quantity including container or vehicle weight.")
+    net_qty = fields.Float(string="Net Qty", help="Actual product quantity after deducting tare.")
     loss_qty = fields.Float(string="Loss Qty", compute="_compute_loss_qty",
                             store=True, help="Enter the loss Qty.")
     gate_in_time = fields.Datetime(string="Gate In Time",
                                    help="Select the date and time for gate In Time.")
     gate_out_time = fields.Datetime(string="Gate Out Time",
                                     help="Select the date and time for gate Out Time.")
-    remarks = fields.Text(string="Remarks", help="Enter the remarks.")
+    remarks = fields.Text(string="Remarks", help="Additional notes or observations about this gate pass.")
     picking_id = fields.Many2one("stock.picking", string="Picking",
                                  help="Select the picking.")
     sale_order_id = fields.Many2one("sale.order", string="Sale Order",
@@ -106,7 +111,7 @@ class OilGatePass(models.Model):
     approval_date = fields.Datetime(string="Approval Date", readonly=True,
                                     help="Select the date and time for approval Date.")
     security_check = fields.Boolean(string="Security Inspection Completed",
-                                    help="Enable this when security Inspection Completed applies.")
+                                    help="Indicates that the security inspection has been completed.")
     company_id = fields.Many2one(
         "res.company",
         string="Company",
@@ -198,7 +203,7 @@ class OilGatePass(models.Model):
         self.write({"state": "cancel"})
 
     def action_reset_draft(self):
-        """Set the record state to 'reset draft'."""
+        """Reset the gate pass back to draft state."""
         self.write({"state": "draft"})
 
     def action_view_picking(self):

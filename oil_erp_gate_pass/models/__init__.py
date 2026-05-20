@@ -18,5 +18,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from . import gate_pass
 from . import stock_picking

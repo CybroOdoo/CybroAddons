@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': 'Oil & Gas Gate Pass System',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Inventory',
     'summary': 'Gate Pass Management for Oil ERP',
     'description': """
@@ -42,7 +42,7 @@ and integration with stock pickings, sale orders and purchase orders.
     ],
     'data': [
         'security/ir.model.access.csv',
-        'data/gate_pass_sequence.xml',
+        'data/ir_sequence_data.xml',
         'wizard/create_gate_pass_wizard_views.xml',
         'views/gate_pass_views.xml',
         'views/stock_picking_views.xml',

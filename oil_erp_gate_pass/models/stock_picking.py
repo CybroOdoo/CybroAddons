@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.tools.translate import _
 
@@ -31,10 +32,10 @@ class StockPicking(models.Model):
 
     gate_pass_ids = fields.One2many("oil.gate.pass", "picking_id",
                                     string="Gate Passes",
-                                    help="Lists the gate Passes.")
+                                    help="Gate passes created from this stock transfer.")
     gate_pass_count = fields.Integer(string="Gate Pass Count",
                                      compute="_compute_gate_pass_count",
-                                     help="Enter the gate Pass Count.")
+                                     help="Number of gate passes linked to this transfer.")
 
     @api.depends("gate_pass_ids")
     def _compute_gate_pass_count(self):
@@ -60,15 +61,11 @@ class StockPicking(models.Model):
         If there is only one, it opens in form view; otherwise, it opens in list view.
         """
         self.ensure_one()
-        action = self.env.ref("oil_erp_gate_pass.action_oil_gate_pass").read()[
-            0]
+        action = self.env.ref("oil_erp_gate_pass.action_oil_gate_pass").read()[0]
+        action["domain"] = [("picking_id", "=", self.id)]
         if len(self.gate_pass_ids) == 1:
-            action.update(
-                {
-                    "view_mode": "form",
-                    "res_id": self.gate_pass_ids.id,
-                }
-            )
-        else:
-            action["domain"] = [("id", "in", self.gate_pass_ids.ids)]
+            action.update({
+                "view_mode": "form",
+                "res_id": self.gate_pass_ids.id,
+            })
         return action
