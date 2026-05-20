@@ -12,7 +12,8 @@ Oil & Gas Core
 
 Configuration
 =============
-* Set EIA api key in configuration.
+* Set GNEWS api key in configuration.
+* Set up SCADA api key in the configuration.
 
 Company
 =======
@@ -27,7 +28,9 @@ Credits
 =======
 * Developers:   (V19) Mohammed Fawas M P,
                       Swathy K S,
-                      Deepika V
+                      Deepika V,
+                      Aflah M
+
 
 
 Contacts

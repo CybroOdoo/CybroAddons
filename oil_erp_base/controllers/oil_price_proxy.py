@@ -98,6 +98,7 @@ class OilPriceProxyController(http.Controller):
 
     @http.route('/oil_erp/oil_price_proxy', type='jsonrpc', auth='user')
     def oil_price_proxy(self, by_code):
+        """Fetch a single commodity price by code and return it as JSON."""
         config = request.env['ir.config_parameter'].sudo()
         enabled = config.get_param('oil_erp_base.enable_live_oil_api') == 'True'
         if not enabled:

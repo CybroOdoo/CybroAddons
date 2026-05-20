@@ -18,5 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+from . import dashboard
+from . import oil_reference_master
 from . import res_config_settings
 from . import res_users

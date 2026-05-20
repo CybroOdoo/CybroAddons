@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': 'Oil & Gas Core',
-    'version': '19.0.1.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Oil ERP/Foundation',
     'summary': 'Core configuration, shared models, settings, security groups for Oil ERP',
     'description': """
@@ -39,10 +39,12 @@ Provides core configuration, custom theme, shared models, and basic security gro
         'purchase',
         'account',
         'base_accounting_kit',
+        'uom',
     ],
     'data': [
         'security/oil_security.xml',
         'security/ir.model.access.csv',
+        'data/oil_reference_master_data.xml',
         'views/dashboard_views.xml',
         'views/res_config_settings_views.xml',
         'views/oil_menus.xml',
@@ -63,6 +65,9 @@ Provides core configuration, custom theme, shared models, and basic security gro
             'oil_erp_base/static/src/dashboard/dashboard.js',
             'oil_erp_base/static/src/dashboard/dashboard.xml',
             'oil_erp_base/static/src/dashboard/dashboard.scss',
+            'oil_erp_base/static/src/dashboard/operation_dashboard.js',
+            'oil_erp_base/static/src/dashboard/operation_dashboard.xml',
+            'oil_erp_base/static/src/dashboard/operation_dashboard.scss',
         ],
     },
     'images': [

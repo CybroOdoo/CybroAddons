@@ -29,42 +29,57 @@ class ResConfigSettings(models.TransientModel):
     """
     _inherit = 'res.config.settings'
 
-    module_oil_erp_lease = fields.Boolean("Upstream Lease Management",
-                                          help="Enable this when module oil "
-                                               "erp lease applies.")
-    module_oil_erp_reservoir = fields.Boolean("Reservoir Management",
-                                              help="Enable this when module oil "
-                                                   "erp reservoir applies.")
-    module_oil_erp_project = fields.Boolean("Upstream Projects & Tasks",
-                                            help="Enable this when module oil "
-                                                 "erp project applies.")
-    module_oil_erp_equipment = fields.Boolean("Equipment Management",
-                                              help="Enable this when module "
-                                                   "oil erp equipment applies.")
-    module_oil_erp_royalty = fields.Boolean("Royalty Management",
-                                            help="Enable this when module "
-                                                 "oil erp royalty applies.")
-    module_oil_erp_hse = fields.Boolean("Health Safety, Checklist",
-                                        help="Enable this when module oil "
-                                             "erp hse applies.")
-    module_oil_erp_employee = fields.Boolean("Employee Management",
-                                             help="Enable this when module oil "
-                                                  "erp employee applies.")
-    module_oil_erp_transfers = fields.Boolean("Transfers",
-                                              help="Enable this when module oil "
-                                                   "erp transfers applies.")
-    module_oil_erp_pipeline = fields.Boolean("Pipeline Management",
-                                             help="Enable this when module oil "
-                                                  "erp pipeline applies.")
-    module_oil_erp_gate_pass = fields.Boolean("Gate Pass System",
-                                              help="Enable this when module oil"
-                                                   " erp gate pass applies.")
-    module_oil_erp_manufacturing = fields.Boolean("Downstream Manufacturing",
-                                                  help="Enable this when module"
-                                                       " oil erp manufacturing applies.")
-    module_oil_erp_inspection = fields.Boolean("Inspection & Checklist",
-                                               help="Enable this when module oil"
-                                                    " erp inspection applies.")
+    module_oil_erp_lease = fields.Boolean(
+        "Upstream Lease Management",
+        help="Install the lease management module for tracking land and mineral rights agreements.")
+    module_oil_erp_reservoir = fields.Boolean(
+        "Reservoir Management",
+        help="Install the reservoir management module for geological and reserve tracking.")
+    module_oil_erp_project = fields.Boolean(
+        "Upstream Projects & Tasks",
+        help="Install the project management module for upstream oil and gas field operations.")
+    module_oil_erp_equipment = fields.Boolean(
+        "Equipment Management",
+        help="Install the equipment management module for field asset tracking and maintenance.")
+    module_oil_erp_royalty = fields.Boolean(
+        "Royalty Management",
+        help="Install the royalty management module for production-based payment calculations.")
+    module_oil_erp_hse = fields.Boolean(
+        "Health Safety, Checklist",
+        help="Install the HSE module for health, safety, and environmental incident management.")
+    module_oil_erp_employee = fields.Boolean(
+        "Employee Management",
+        help="Install the employee module for workforce cost tracking on project tasks.")
+    module_oil_erp_transfers = fields.Boolean(
+        "Transfers",
+        help="Install the transfers module for oil and gas internal logistics operations.")
+    module_oil_erp_pipeline = fields.Boolean(
+        "Pipeline Management",
+        help="Install the pipeline module for pipeline delivery method management.")
+    module_oil_erp_gate_pass = fields.Boolean(
+        "Gate Pass System",
+        help="Install the gate pass module for vehicle entry and exit tracking at facilities.")
+    module_oil_erp_manufacturing = fields.Boolean(
+        "Downstream Manufacturing",
+        help="Install the manufacturing module for downstream refinery operations.")
+    module_oil_erp_inspection = fields.Boolean(
+        "Inspection & Checklist",
+        help="Install the inspection module for quality control on manufactured products.")
+    module_oil_erp_scada = fields.Boolean(
+        "SCADA Integration",
+        help="Install the SCADA integration module for real-time sensor data collection.")
+    module_oil_erp_contract = fields.Boolean(
+        "Contract Management",
+        help="Install the contract management module for vendor and service agreements.")
+    module_oil_erp_tender = fields.Boolean(
+        "Tender Management",
+        help="Install the tender management module for procurement bidding workflows.")
+    module_oil_erp_jv = fields.Boolean(
+        "Joint Venture Management",
+        help="Install the joint venture module for partnership accounting and cost sharing.")
+    module_oil_erp_esg = fields.Boolean(
+        "ESG Tracking",
+        help="Install the ESG module for environmental, social, and governance reporting.")
     enable_live_oil_api = fields.Boolean("Enable Real-Time Energy Benchmarks",
                                          compute="_compute_live_oil_settings",
                                          inverse="_inverse_enable_live_oil_api",
@@ -111,6 +126,7 @@ class ResConfigSettings(models.TransientModel):
                                        help="Backward-compatible alias for the news article limit.")
 
     def _sanitize_article_limit(self, value):
+        """Clamp the article limit value to the allowed range of 1 to 10."""
         return min(max(int(value or 1), 1), 10)
 
     @api.depends_context('uid')
@@ -144,12 +160,15 @@ class ResConfigSettings(models.TransientModel):
             record.ocn_article_limit = article_limit
 
     def _set_news_param(self, key, value):
+        """Persist a news integration parameter to ir.config_parameter."""
         self.env['ir.config_parameter'].sudo().set_param(key, value)
 
     def _set_live_oil_param(self, key, value):
+        """Persist a live oil integration parameter to ir.config_parameter."""
         self.env['ir.config_parameter'].sudo().set_param(key, value)
 
     def _inverse_enable_live_oil_api(self):
+        """Write the live oil API toggle to the system parameters."""
         for record in self:
             record._set_live_oil_param(
                 'oil_erp_base.enable_live_oil_api',
@@ -157,6 +176,7 @@ class ResConfigSettings(models.TransientModel):
             )
 
     def _inverse_live_oil_api_key(self):
+        """Write the live oil API key to the system parameters."""
         for record in self:
             record._set_live_oil_param(
                 'oil_erp_base.live_oil_api_key',
@@ -164,36 +184,44 @@ class ResConfigSettings(models.TransientModel):
             )
 
     def _inverse_enable_news_api(self):
+        """Write the news API toggle to the system parameters."""
         for record in self:
             record._set_news_param('oil_erp_base.enable_news_api', bool(record.enable_news_api))
 
     def _inverse_news_api_key(self):
+        """Write the news API key to the system parameters."""
         for record in self:
             record._set_news_param('oil_erp_base.news_api_key', record.news_api_key or '')
 
     def _inverse_news_search_query(self):
+        """Write the news search query to the system parameters."""
         for record in self:
             record._set_news_param('oil_erp_base.news_search_query', record.news_search_query or '')
 
     def _inverse_news_article_limit(self):
+        """Sanitize and write the news article limit to the system parameters."""
         for record in self:
             limit = record._sanitize_article_limit(record.news_article_limit)
             record.news_article_limit = limit
             record._set_news_param('oil_erp_base.news_article_limit', limit)
 
     def _inverse_enable_ocn(self):
+        """Write the OCN toggle to the system parameters (backward-compatible alias)."""
         for record in self:
             record._set_news_param('oil_erp_base.enable_news_api', bool(record.enable_ocn))
 
     def _inverse_ocn_api_key(self):
+        """Write the OCN API key to the system parameters (backward-compatible alias)."""
         for record in self:
             record._set_news_param('oil_erp_base.news_api_key', record.ocn_api_key or '')
 
     def _inverse_ocn_search_query(self):
+        """Write the OCN search query to the system parameters (backward-compatible alias)."""
         for record in self:
             record._set_news_param('oil_erp_base.news_search_query', record.ocn_search_query or '')
 
     def _inverse_ocn_article_limit(self):
+        """Sanitize and write the OCN article limit to the system parameters (backward-compatible alias)."""
         for record in self:
             limit = record._sanitize_article_limit(record.ocn_article_limit)
             record.ocn_article_limit = limit
@@ -246,8 +274,10 @@ class ResConfigSettings(models.TransientModel):
 
     @api.onchange('news_article_limit')
     def _onchange_news_article_limit(self):
+        """Clamp the news article limit to the valid range when changed in the UI."""
         self.news_article_limit = self._sanitize_article_limit(self.news_article_limit)
 
     @api.onchange('ocn_article_limit')
     def _onchange_ocn_article_limit(self):
+        """Clamp the OCN article limit to the valid range when changed in the UI."""
         self.ocn_article_limit = self._sanitize_article_limit(self.ocn_article_limit)
