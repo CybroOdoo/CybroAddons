@@ -20,15 +20,26 @@
 #############################################################################
 
 from odoo import fields, models
+from odoo.tools.translate import _
 
 
-class OilReservoir(models.Model):
-    """
-    Extends 'oil.reservoir' to link it with lease agreements.
-    """
-    _inherit = 'oil.reservoir'
+class ProjectTask(models.Model):
+    """Extends project.task to show a lease expiry warning inherited
+    from the parent project's lease agreement."""
+    _inherit = 'project.task'
 
-    lease_id = fields.Many2one('oil.lease.agreement',
-                               'Lease Agreement',
-                               domain=[('state', '=', 'active')],
-                               help='Lease Agreement')
+    lease_expiry_warning = fields.Text(
+        string='Lease Expiry Warning',
+        compute='_compute_lease_expiry_warning',
+        help="Warning if the project's lease agreement has expired.")
+
+    def _compute_lease_expiry_warning(self):
+        """Shows warning if the parent project's lease has expired."""
+        for record in self:
+            lease = record.project_id.lease_id if record.project_id else False
+            if lease and lease.state == 'expired':
+                record.lease_expiry_warning = _(
+                    "Lease Agreement '%s' linked to project '%s' has "
+                    "expired.", lease.name, record.project_id.name)
+            else:
+                record.lease_expiry_warning = False

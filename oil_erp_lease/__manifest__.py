@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': 'Oil & Gas Lease',
-    'version': '19.0.1.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Oil ERP/Upstream',
     'summary': 'Manage lease agreements and documents',
     'description': """
@@ -39,8 +39,12 @@ Provides functionality to track lease agreements, land details, and related docu
         'security/oil_lease_security.xml',
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
+        'data/ir_cron_data.xml',
         'views/lease_agreement_views.xml',
         'views/oil_reservoir_views.xml',
+        'views/project_project_stage_views.xml',
+        'views/project_project_views.xml',
+        'views/project_task_views.xml',
     ],
     'images': [
         'static/description/banner.jpg',

@@ -24,8 +24,9 @@ General Public License, Version 3 (LGPL v3).
 Credits
 =======
 * Developers:   (V19) Mohammed Fawas M P,
-                      Swathy K S ,
-                      Deepika V
+                      Swathy K S,
+                      Deepika V,
+                      Aflah M
 
 
 Contacts

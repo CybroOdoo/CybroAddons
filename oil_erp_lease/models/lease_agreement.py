@@ -18,10 +18,13 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from datetime import timedelta
 from odoo import api, fields, models
+from odoo.orm.table_objects import Constraint
 from odoo.tools.translate import _
 from odoo.exceptions import UserError, ValidationError
+
 
 
 class OilLeaseAgreement(models.Model):
@@ -32,12 +35,15 @@ class OilLeaseAgreement(models.Model):
     _name = 'oil.lease.agreement'
     _description = 'Lease Agreement'
     _inherit = ['mail.thread', 'mail.activity.mixin']
-    _sql_constraints = [
-        ('license_number_unique', 'unique(license_number, company_id)',
-         'The License Number must be unique per company!'),
-        ('survey_number_unique', 'unique(survey_number, company_id)',
-         'The Survey Number must be unique per company!')
-    ]
+    _license_number_unique = Constraint(
+        'UNIQUE(license_number, company_id)',
+        'The License Number must be unique per company!'
+    )
+    _survey_number_unique = Constraint(
+        'UNIQUE(survey_number, company_id)',
+        'The Survey Number must be unique per company!'
+    )
+
 
     name = fields.Char(string='Lease Reference', required=True, copy=False,
                        readonly=True, default=lambda self: _('New'),
@@ -131,7 +137,7 @@ class OilLeaseAgreement(models.Model):
     )
     reservoir_count = fields.Integer(string='Reservoirs',
                                      compute='_compute_reservoir_count',
-                                     help="Enter the reservoirs.")
+                                     help="Number of reservoirs linked to this lease agreement.")
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -285,33 +291,71 @@ class OilLeaseAgreement(models.Model):
         action['context'] = {'default_lease_id': self.id}
         return action
 
-    def cron_check_lease_expiry(self):
-        """
-        Scheduled task to notify lessors of upcoming expiry and transition states.
-        """
+    @api.model
+    def _cron_check_lease_expiry(self):
+        """Scheduled action: expire active leases past end_date and
+        notify related parties. Also cancels/expires related contracts
+        and warns on related royalties."""
         today = fields.Date.today()
-        agreements = self.search([('state', '=', 'active')])
+        upcoming = today + timedelta(days=7)
 
-        for rec in agreements:
-            if rec.end_date == today:
+        # --- Send reminders for leases expiring within 7 days ---
+        expiring_soon = self.search([
+            ('state', '=', 'active'),
+            ('end_date', '>=', today),
+            ('end_date', '<=', upcoming),
+        ])
+        for rec in expiring_soon:
+            if rec.lessor_id and rec.lessor_id.email:
+                self.env['mail.mail'].sudo().create({
+                    'subject': _('Lease Expiry Reminder - %s', rec.name),
+                    'email_to': rec.lessor_id.email,
+                    'body_html': _(
+                        '<p>Dear %(name)s,</p>'
+                        '<p>Lease agreement <strong>%(lease)s</strong> '
+                        'is expiring on <strong>%(date)s</strong>.</p>'
+                        '<p>Please take the necessary steps.</p>',
+                        name=rec.lessor_id.name,
+                        lease=rec.name,
+                        date=rec.end_date,
+                    ),
+                    'auto_delete': True,
+                }).send()
 
-                # 📧 Mail to Lessor
-                if rec.lessor_id and rec.lessor_id.email:
-                    self.env['mail.mail'].sudo().create({
-                        'subject': f'Lease Expiry Reminder - {rec.name}',
-                        'email_to': rec.lessor_id.email,
-                        'body_html': f"""
-                                        <p>Dear {rec.lessor_id.name},</p>
-                                        <p>This is to inform you that the lease agreement
-                                        <strong>{rec.name}</strong> is expiring today on
-                                        <strong>{rec.end_date}</strong>.</p>
-                                        <p>Kindly take the necessary steps before the agreement expires.</p>
-                                        <br/>
-                                        <p>Thank you,</p>
-                                    """,
-                        'auto_delete': True,
-                    }).send()
+        # --- Expire leases that are past end_date ---
+        expired = self.search([
+            ('state', '=', 'active'),
+            ('end_date', '<', today),
+        ])
+        for rec in expired:
+            rec.write({'state': 'expired'})
+            rec.message_post(
+                body=_("Lease automatically expired on %s.", today),
+                message_type='notification')
 
-            #  Expire the record the next day
-            if rec.end_date == today - timedelta(days=1):
-                rec.state = 'expired'
+            # Expire related active contracts (if module installed)
+            if 'oil.contract' in self.env:
+                contracts = self.env['oil.contract'].search([
+                    ('lease_id', '=', rec.id),
+                    ('state', 'in', ('draft', 'confirmed')),
+                ])
+                for contract in contracts:
+                    contract.write({'state': 'expired'})
+                    contract.message_post(
+                        body=_("Contract expired because lease '%s' "
+                               "expired.", rec.name),
+                        message_type='notification')
+
+            # Post warning on related confirmed royalties
+            # (if module installed)
+            if 'oil.royalty' in self.env:
+                royalties = self.env['oil.royalty'].search([
+                    ('lease_id', '=', rec.id),
+                    ('state', '=', 'confirmed'),
+                ])
+                for royalty in royalties:
+                    royalty.message_post(
+                        body=_("Warning: Lease Agreement '%s' has "
+                               "expired. Please review this royalty.",
+                               rec.name),
+                        message_type='notification')

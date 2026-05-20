@@ -20,3 +20,7 @@
 #############################################################################
 from . import lease_agreement
 from . import oil_reservoir
+from . import dashboard_upstream
+from . import project_prject_stage
+from . import project_project
+from . import project_task

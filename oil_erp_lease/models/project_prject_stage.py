@@ -22,13 +22,14 @@
 from odoo import fields, models
 
 
-class OilReservoir(models.Model):
+class ProjectProjectStage(models.Model):
     """
-    Extends 'oil.reservoir' to link it with lease agreements.
+    Extends 'project.project.stage' to flag stages specifically designated
+    for oil lease requirement.
     """
-    _inherit = 'oil.reservoir'
+    _inherit = 'project.project.stage'
 
-    lease_id = fields.Many2one('oil.lease.agreement',
-                               'Lease Agreement',
-                               domain=[('state', '=', 'active')],
-                               help='Lease Agreement')
+    is_lease_required = fields.Boolean(
+        string='Is Lease Required',
+        help='If checked, lease will be required for the reservoir that hold the project.'
+    )
