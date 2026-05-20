@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.exceptions import ValidationError
@@ -57,7 +58,7 @@ class OilHseRisk(models.Model):
         string='Company',
         default=lambda self: self.env.company,
         required=True,
-        help="Select the company.")
+        help="Company responsible for this risk assessment.")
     mitigation_plan = fields.Text(
         string='Mitigation Plan',
         help='Controls or actions planned to reduce the risk.')

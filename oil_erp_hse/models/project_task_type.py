@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.exceptions import ValidationError
@@ -33,7 +34,7 @@ class ProjectTaskType(models.Model):
     is_work_permit_required = fields.Boolean('Is Work Permit Required',
                                              help='Enable if this stage requires any work permit approval.')
     is_waiting_stage = fields.Boolean("Is Waiting Stage",
-                                      help="Enable this when is waiting stage applies.")
+                                      help="Designate this stage as the permit waiting stage where tasks pause for approval.")
 
     def write(self, vals):
         """

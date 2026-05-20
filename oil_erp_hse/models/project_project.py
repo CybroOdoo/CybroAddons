@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import fields, models
 from odoo.tools.translate import _
 
@@ -32,19 +33,19 @@ class ProjectProject(models.Model):
     hse_incident_count = fields.Integer(
         string='Incidents',
         compute='_compute_hse_counts',
-        help="Enter the incidents.")
+        help="Total HSE incidents linked to this project.")
     hse_inspection_count = fields.Integer(
         string='Inspections',
         compute='_compute_hse_counts',
-        help="Enter the inspections.")
+        help="Total HSE inspections linked to this project.")
     hse_permit_count = fields.Integer(
         string='Work Permits',
         compute='_compute_hse_counts',
-        help="Enter the work Permits.")
+        help="Total work permits linked to this project.")
     hse_risk_count = fields.Integer(
         string='Risk Assessments',
         compute='_compute_hse_counts',
-        help="Enter the risk Assessments.")
+        help="Total risk assessments linked to this project.")
 
     def _hse_project_domain(self):
         """

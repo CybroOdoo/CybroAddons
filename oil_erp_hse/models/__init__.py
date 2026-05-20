@@ -18,11 +18,14 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import maintenance_equipment
+
 from . import oil_hse_incident
 from . import oil_hse_inspection
-from . import oil_hse_permit
 from . import oil_hse_risk
+from . import oil_hse_permit
+from . import maintenance_equipment
 from . import project_project
 from . import project_task
+
 from . import project_task_type
+from . import dashboard_hse

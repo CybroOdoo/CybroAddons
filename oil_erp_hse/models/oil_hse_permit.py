@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.exceptions import ValidationError
@@ -58,7 +59,7 @@ class OilHsePermit(models.Model):
         string='Company',
         default=lambda self: self.env.company,
         required=True,
-        help="Select the company.")
+        help="Company responsible for this work permit.")
 
     start_date = fields.Datetime(
         string='Start Date',

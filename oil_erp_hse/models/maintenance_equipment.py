@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import models
 
 
@@ -57,20 +58,20 @@ class MaintenanceEquipment(models.Model):
                 task_id = task.id
                 project_id = task.project_id.id
 
-        if not task_id:
+        if not task_id and hasattr(self, 'well_site_ids') and self.well_site_ids:
             active_tasks = self.well_site_ids.filtered(
                 lambda t: not t.stage_id.is_closed)
             if active_tasks:
                 task_id = active_tasks[0].id
                 project_id = active_tasks[0].project_id.id
 
-        inspection = self.env['oil.hse.inspection'].create([{
+        inspection = self.env['oil.hse.inspection'].create({
             'equipment_id': self.id,
             'task_id': task_id,
             'project_id': project_id,
             'inspection_type': 'equipment',
             'state': 'draft',
-        }])
+        })
 
         return {
             'name': 'Inspection',

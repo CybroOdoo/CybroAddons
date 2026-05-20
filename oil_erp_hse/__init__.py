@@ -18,7 +18,9 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from . import models
+
 
 def create_task_stages(env):
     """
@@ -29,4 +31,4 @@ def create_task_stages(env):
         {'name': 'Waiting', 'sequence': 100, 'is_oil_gas_task_stage': True,
          'fold': True, 'user_id': False},
     ]
-    projects = env['project.task.type'].sudo().create(stages)
+    env['project.task.type'].sudo().create(stages)

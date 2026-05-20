@@ -19,8 +19,9 @@
 #
 #############################################################################
 
-from datetime import timedelta
+
 from odoo import fields, models
+from datetime import timedelta
 from odoo.tools.translate import _
 
 
@@ -59,33 +60,33 @@ class ProjectTask(models.Model):
         'project.task.type',
         string='Previous Stage',
         copy=False,
-        help="Select the previous Stage.")
+        help="Stage the task was in before entering the permit waiting stage.")
     requested_stage_id = fields.Many2one(
         'project.task.type',
         string='Requested Stage',
         copy=False,
-        help="Select the requested Stage.")
+        help="Target stage that requires a work permit before the task can proceed.")
 
     hse_incident_count = fields.Integer(
         string='Incidents',
         compute='_compute_hse_counts',
-        help="Enter the incidents.")
+        help="Total HSE incidents linked to this task.")
     hse_inspection_count = fields.Integer(
         string='Inspections',
         compute='_compute_hse_counts',
-        help="Enter the inspections.")
+        help="Total HSE inspections linked to this task.")
     hse_permit_count = fields.Integer(
         string='Work Permits',
         compute='_compute_hse_counts',
-        help="Enter the work Permits.")
+        help="Total work permits linked to this task.")
     hse_risk_count = fields.Integer(
         string='Risk Assessments',
         compute='_compute_hse_counts',
-        help="Enter the risk Assessments.")
+        help="Total risk assessments linked to this task.")
     is_waiting_stage = fields.Boolean(
         compute="_compute_is_waiting_stage",
         store=False,
-        help="Enable this when is waiting stage applies.")
+        help="Indicates whether this task is currently in a permit waiting stage.")
 
     def _compute_is_waiting_stage(self):
         """

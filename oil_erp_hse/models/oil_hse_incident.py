@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.exceptions import ValidationError
@@ -63,15 +64,10 @@ class OilHseIncident(models.Model):
         help='Company responsible for the incident record.',
     )
 
-    incident_type = fields.Selection(
-        [
-            ('accident', 'Accident'),
-            ('near_miss', 'Near Miss'),
-            ('dangerous_occurrence', 'Dangerous Occurrence'),
-            ('environmental', 'Environmental'),
-            ('property_damage', 'Property Damage'),
-        ],
+    incident_type_id = fields.Many2one(
+        'oil.reference.master',
         string='Incident Type',
+        domain="[('reference_type', '=', 'incident_type')]",
         required=True,
         tracking=True,
         help='Classify the event so reporting and follow-up stay consistent.',
@@ -300,7 +296,7 @@ class OilHseIncident(models.Model):
         Ensures required fields like type and severity are filled.
         """
         for rec in self:
-            if not rec.incident_type or not rec.severity:
+            if not rec.incident_type_id or not rec.severity:
                 raise ValidationError(
                     _('Incident type and severity are required before reporting the incident.'))
         self.write({'state': 'reported'})

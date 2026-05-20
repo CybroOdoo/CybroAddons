@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': 'Oil & Gas HSE',
-    'version': '19.0.1.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Oil ERP',
     'summary': 'Health, Safety & Environment Management for Oil & Gas',
     'description': """
@@ -54,6 +54,7 @@ HSE module for upstream oil & gas operations.
         'views/project_task_views.xml',
         'views/project_task_type_views.xml',
         'views/hse_reporting_views.xml',
+        'views/hse_dashboard_views.xml',
     ],
     'images': [
         'static/description/banner.jpg',

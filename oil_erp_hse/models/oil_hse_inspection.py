@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.exceptions import ValidationError
@@ -65,7 +66,7 @@ class OilHseInspection(models.Model):
         string='Company',
         default=lambda self: self.env.company,
         required=True,
-        help="Select the company.")
+        help="Company responsible for this inspection.")
 
     project_id = fields.Many2one(
         'project.project',
@@ -96,7 +97,7 @@ class OilHseInspection(models.Model):
         default='draft',
         required=True,
         tracking=True,
-        help="Choose the status.")
+        help="Current workflow status of this inspection (draft or completed).")
     checklist_line_ids = fields.One2many(
         'oil.hse.checklist.line',
         'inspection_id',
