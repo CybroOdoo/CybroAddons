@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': 'Oil & Gas Manufacturing',
-    'version': '19.0.1.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Oil ERP/Downstream',
     'summary': 'Manufacturing and refinery operations for Oil ERP',
     'description': """
