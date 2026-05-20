@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.exceptions import UserError
@@ -68,6 +69,8 @@ class ProductionWizard(models.TransientModel):
             if task.project_id and task.project_id.storage_location_id:
                 res[
                     'storage_location_id'] = task.project_id.storage_location_id.id
+            if task.project_id.reservoir_id.lease_id:
+                res['lease_id'] = task.project_id.reservoir_id.lease_id
         return res
 
     def action_confirm(self):

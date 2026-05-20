@@ -18,6 +18,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
+from odoo import api, fields, models
 import logging
 
 from odoo import api, fields, models
@@ -48,16 +50,10 @@ class ProjectTask(models.Model):
     well_api_number = fields.Char(
         string='API / UWI Number',
         help='Official well identifier (e.g. 42-123-00001-00-00).')
-    well_type = fields.Selection(
-        [
-            ('oil', 'Oil'),
-            ('gas', 'Gas'),
-            ('water_injection', 'Water Injection'),
-            ('disposal', 'Disposal'),
-            ('observation', 'Observation'),
-            ('dry', 'Dry'),
-        ],
+    well_type_id = fields.Many2one(
+        'oil.reference.master',
         string='Well Type',
+        domain="[('reference_type', '=', 'well_type')]",
         tracking=True,
         help='Primary purpose of the well.')
     operator_id = fields.Many2one(
@@ -125,6 +121,23 @@ class ProjectTask(models.Model):
     maasp_psi = fields.Float(
         string='MAASP (PSI)',
         help='Maximum Allowable Annular Surface Pressure in PSI.')
+
+    def init(self):
+        self.env.cr.execute("""
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_name = 'project_task'
+              AND column_name = 'well_type'
+        """)
+        if self.env.cr.fetchone():
+            self.env.cr.execute("""
+                UPDATE project_task task
+                SET well_type_id = ref.id
+                FROM oil_reference_master ref
+                WHERE task.well_type_id IS NULL
+                  AND task.well_type = ref.code
+                  AND ref.reference_type = 'well_type'
+            """)
 
     # ── Constraints ──
     @api.constrains('spud_date', 'completion_date')

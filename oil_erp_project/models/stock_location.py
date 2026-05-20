@@ -19,4 +19,19 @@
 #
 #############################################################################
 
-from . import production_wizard
+from odoo import fields, models
+
+class StockLocation(models.Model):
+    """
+    Extends 'stock.location' to link it directly with an oil & gas project.
+    This field is defined here to provide visibility in the base project module,
+    while automation features remain in the SCADA module.
+    """
+    _inherit = 'stock.location'
+
+    tank_project_id = fields.Many2one(
+        'project.project',
+        string='Project',
+        index=True,
+        help="The Oil & Gas project this storage location belongs to."
+    )

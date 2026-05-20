@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': 'Oil & Gas Project',
-    'version': '19.0.1.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Oil ERP/Project Management',
     'summary': 'Project module customisation for Oil and Gas ERP',
     'description': """
@@ -46,6 +46,7 @@ Project customizations for Oil & Gas industry:
         'views/project_task_views.xml',
         'views/project_task_type_views.xml',
         'views/project_task_reporting_views.xml',
+        'views/stock_location_views.xml',
     ],
     'images': [
         'static/description/banner.jpg',

@@ -7,9 +7,15 @@
         <field name="inherit_id"
                ref="project.project_project_view_form_simplified_footer"/>
         <field name="arch" type="xml">
-            <!-- Add fields to an existing group -->
-            <xpath expr="//field[@name='alias_name']" position="after">
+            <xpath expr="//div[@name='alias_def']" position="after">
                 <field name="is_oil_gas_project" invisible="1"/>
+
+                <label for="warehouse_id" invisible="not is_oil_gas_project"/>
+
+                <field name="warehouse_id"
+                       invisible="not is_oil_gas_project"
+                       required="is_oil_gas_project"
+                       options="{'no_create': True}"/>
             </xpath>
         </field>
     </record>
@@ -19,18 +25,74 @@
         <field name="model">project.project</field>
         <field name="inherit_id" ref="project.edit_project"/>
         <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']/button[@name='action_view_tasks']"
+                   position="replace">
+                <button class="oe_stat_button" type="object" name="action_view_tasks"
+                        icon="fa-check" invisible="is_oil_gas_project">
+                    <div class="o_field_widget o_stat_info">
+                        <field name="label_tasks" readonly="1"/>
+                        <span class="o_stat_value">
+                            <field name="closed_task_count"/>
+                            /
+                            <field name="task_count"/>
+                            (<field name="task_completion_percentage"
+                                    widget="percentage"
+                                    options="{'digits': [1, 0]}"/>)
+                        </span>
+                    </div>
+                </button>
+                <button class="oe_stat_button" type="object" name="action_view_tasks"
+                        icon="fa-check" invisible="not is_oil_gas_project">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Wells</span>
+                        <span class="o_stat_value">
+                            <field name="closed_task_count"/>/
+                            <field name="task_count"/>
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//div[@name='button_box']/button[@name='project_update_all_action']"
+                   position="replace">
+                <button class="oe_stat_button" name="project_update_all_action"
+                        type="object" groups="project.group_project_user"
+                        context="{'active_id': id}"
+                        invisible="is_template or is_oil_gas_project">
+                    <field name="last_update_color" invisible="1"/>
+                    <div class="o_stat_info">
+                        <field name="update_count" invisible="1"/>
+                        <field name="last_update_status" readonly="1"
+                               widget="status_with_color"
+                               status_label="Dashboard" hideStatusName="True"/>
+                    </div>
+                </button>
+                <button class="oe_stat_button" name="project_update_all_action"
+                        type="object" groups="project.group_project_user"
+                        context="{'active_id': id}"
+                        invisible="is_template or not is_oil_gas_project">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Dashboard</span>
+                        <span class="o_stat_value">
+                            <field name="update_count"/>
+                        </span>
+                    </div>
+                </button>
+            </xpath>
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button name="action_view_storage_locations" type="object"
-                        class="oe_stat_button" icon="fa-warehouse"
+                        class="oe_stat_button" icon="fa-list"
                         invisible="not is_oil_gas_project or not storage_location_id">
                     <div class="o_field_widget o_stat_info">
-                        <span class="o_stat_text">Storage</span>
-                        <span class="o_stat_text">Location</span>
+                        <span class="o_stat_text">Products</span>
                     </div>
                 </button>
             </xpath>
             <xpath expr="//field[@name='user_id']" position="after">
                 <field name="storage_location_id"/>
+                <field name="warehouse_id"
+                       invisible="not is_oil_gas_project"
+                       required="is_oil_gas_project"
+                       options="{'no_create': True}"/>
                 <field name="is_oil_gas_project"/>
                 <field name="project_code" invisible="not is_oil_gas_project"/>
                 <field name="operator_id" invisible="not is_oil_gas_project"/>
@@ -46,7 +108,7 @@
                             <field name="field_name"/>
                         </group>
                         <group string="Reservoir &amp; Geology">
-                            <field name="primary_fluid_type"/>
+                            <field name="primary_fluid_type_id"/>
                             <field name="formation"/>
                         </group>
                     </group>
@@ -87,6 +149,12 @@
             </p>
         </field>
     </record>
+
+    <menuitem id="menu_oil_upstream_dashboard_project"
+              name="Dashboard"
+              parent="oil_erp_base.menu_oil_upstream_root"
+              action="oil_erp_base.action_oil_dashboard_upstream"
+              sequence="0"/>
 
     <menuitem id="menu_oil_project"
               name="Projects"

@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 
 class ProjectTaskType(models.Model):
@@ -28,12 +29,12 @@ class ProjectTaskType(models.Model):
     _inherit = 'project.task.type'
 
     is_oil_gas_task_stage = fields.Boolean('Is Oil Gas Task Stage',
-                                           help='Enable if it is oil and gas task stage.')
+                                           help='Designate this stage for use in oil and gas well task pipelines.')
     is_production = fields.Boolean(
         string='Is Production Stage',
-        help='Enable to show the Production button on tasks in this stage.',
+        help='Show the production recording button on tasks in this stage.',
     )
-    is_closed = fields.Boolean('Is Closed', help='Enable if it is closed or not.')
+    is_closed = fields.Boolean('Is Closed', help='Mark this stage as a closing stage where tasks are considered complete.')
 
     @api.model
     def default_get(self, fields_list):

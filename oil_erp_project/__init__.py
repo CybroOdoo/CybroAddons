@@ -30,8 +30,8 @@ def create_task_stages(env):
     stages = [
         {'name': 'Planned', 'sequence': 10, 'is_oil_gas_task_stage': True, 'fold': False, 'user_id': False},
         {'name': 'Drilling', 'sequence': 20, 'is_oil_gas_task_stage': True, 'fold': False, 'user_id': False},
-        {'name': 'Producing', 'sequence': 30, 'is_oil_gas_task_stage': True, 'fold': True, 'user_id': False},
-        {'name': 'Shut - in', 'sequence': 40, 'is_oil_gas_task_stage': True, 'fold': True, 'user_id': False},
+        {'name': 'Producing', 'sequence': 30, 'is_oil_gas_task_stage': True, 'fold': False, 'user_id': False},
+        {'name': 'Shut - in', 'sequence': 40, 'is_oil_gas_task_stage': True, 'fold': False, 'user_id': False},
         {'name': 'Abandoned', 'sequence': 50, 'is_oil_gas_task_stage': True, 'fold': True, 'user_id': False},
     ]
     projects = env['project.task.type'].sudo().create(stages)
