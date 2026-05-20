@@ -27,8 +27,8 @@ Credits
 =======
 * Developers:   (V19) Mohammed Fawas M P,
                       Swathy K S,
-                      Deepika V
-
+                      Deepika V,
+                      Aflah M
 
 Contacts
 ========

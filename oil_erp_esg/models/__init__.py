@@ -26,3 +26,4 @@ from . import esg_initiative
 from . import esg_compliance
 from . import oil_hse_incident
 from . import esg_site
+from . import dashboard_esg

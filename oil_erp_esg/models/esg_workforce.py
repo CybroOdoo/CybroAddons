@@ -67,10 +67,6 @@ class EsgWorkforceSocial(models.Model):
     # Headcount
     total_employees = fields.Integer(string='Total Employees',
                                      help="Enter the total Employees.")
-    male_employees = fields.Integer(string='Male Employees',
-                                    help="Enter the male Employees.")
-    female_employees = fields.Integer(string='Female Employees',
-                                      help="Enter the female Employees.")
     local_employees = fields.Integer(string='Local Hires',
                                      help="Enter the local Hires.")
     contractor_count = fields.Integer(string='Contractors',
@@ -79,8 +75,6 @@ class EsgWorkforceSocial(models.Model):
                                    help="Enter the nationalities Represented.")
 
     # Computed diversity metrics
-    female_ratio = fields.Float(string='Female %', compute='_compute_diversity',
-                                store=True, help="Enter the female %.")
     local_hire_ratio = fields.Float(string='Local Hire %',
                                     compute='_compute_diversity', store=True,
                                     help="Enter the local Hire %.")
@@ -145,14 +139,12 @@ class EsgWorkforceSocial(models.Model):
                     _("The To Date must be greater than or equal to the From Date.")
                 )
 
-    @api.depends('total_employees', 'female_employees', 'local_employees')
+    @api.depends('total_employees','local_employees')
     def _compute_diversity(self):
         """
-        Calculates the percentage of female and local hires in the workforce.
+        Calculates the percentage of local hires in the workforce.
         """
         for rec in self:
-            rec.female_ratio = (rec.female_employees / rec.total_employees * 100
-                                if rec.total_employees else 0.0)
             rec.local_hire_ratio = (
                 rec.local_employees / rec.total_employees * 100
                 if rec.total_employees else 0.0)

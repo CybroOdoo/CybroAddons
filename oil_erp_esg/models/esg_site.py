@@ -31,9 +31,9 @@ class EsgSite(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
     name = fields.Char(string='Site Name', required=True, tracking=True,
-                       help="Enter the site Name.")
+                       help="Operational name identifying this ESG monitoring site.")
     code = fields.Char(string='Site Code', size=10, required=True,
-                       help="Enter the site Code.")
+                       help="Short unique code for this site used in reports and references.")
     project_id = fields.Many2one('project.project', string='Project',
                                  domain="[('is_oil_gas_project', '=', True)]",
                                  help="Link this ESG site to an Oil & Gas project.")
@@ -52,16 +52,16 @@ class EsgSite(models.Model):
         ('terminal', 'Terminal / Storage'),
         ('corporate', 'Corporate Office'),
     ], string='Site Type', required=True, default='upstream', tracking=True,
-        help="Choose the site Type.")
+        help="Operational classification of this site within the value chain.")
     country_id = fields.Many2one('res.country', string='Country',
-                                 help="Select the country.")
+                                 help="Country where this site is physically located.")
     state_id = fields.Many2one('res.country.state', string='State/Region',
                                domain="[('country_id', '=', country_id)]",
-                               help="Select the state/Region.")
+                               help="State or region within the country.")
     latitude = fields.Float(string='Latitude', digits=(10, 6),
-                            help="Enter the latitude.")
+                            help="GPS latitude coordinate of the site.")
     longitude = fields.Float(string='Longitude', digits=(10, 6),
-                             help="Enter the longitude.")
+                             help="GPS longitude coordinate of the site.")
     operator = fields.Char(string='Operator (Legacy)',
                            help="Legacy operator text kept for compatibility.")
     operator_id = fields.Many2one(
@@ -89,10 +89,10 @@ class EsgSite(models.Model):
                                  help="Link to a fleet vehicle for transport-based midstream sites.")
 
     production_capacity = fields.Float(string='Production Capacity (boe/day)',
-                                       help="Enter the production Capacity (boe/day).")
+                                       help="Maximum daily production capacity in barrels of oil equivalent.")
     active = fields.Boolean(default=True,
-                            help="Enable this when active applies.")
-    notes = fields.Text(string='Notes', help="Enter the notes.")
+                            help="Uncheck to archive this site without deleting it.")
+    notes = fields.Text(string='Notes', help="Additional notes or observations about this site.")
 
     @api.onchange('business_segment')
     def _onchange_business_segment(self):
@@ -131,23 +131,23 @@ class EsgSite(models.Model):
 
     emission_ids = fields.One2many('oil.esg.emission', 'site_id',
                                    string='Emissions',
-                                   help="Lists the emissions.")
+                                   help="GHG emission records linked to this site.")
     energy_ids = fields.One2many('oil.esg.energy', 'site_id',
                                  string='Energy Records',
-                                 help="Lists the energy Records.")
+                                 help="Energy consumption records linked to this site.")
     water_ids = fields.One2many('oil.esg.water', 'site_id',
                                 string='Water Records',
-                                help="Lists the water Records.")
+                                help="Water, waste, and spill records linked to this site.")
     hse_ids = fields.One2many('oil.hse.incident', 'esg_site_id', string='HSE Incidents',
-                              help="Lists the HSE Incidents.")
+                              help="HSE incident records linked to this site.")
 
     emission_count = fields.Integer(compute='_compute_counts',
                                     string='Emissions Count',
-                                    help="Enter the emissions.")
+                                    help="Total GHG emission records for this site.")
     energy_count = fields.Integer(compute='_compute_counts', string='Energy',
-                                  help="Enter the energy.")
+                                  help="Total energy consumption records for this site.")
     hse_count = fields.Integer(compute='_compute_counts', string='HSE Count',
-                               help="Enter the HSE.")
+                               help="Total HSE incident records for this site.")
 
     @api.depends('emission_ids', 'energy_ids', 'hse_ids')
     def _compute_counts(self):

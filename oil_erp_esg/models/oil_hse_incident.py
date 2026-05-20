@@ -21,8 +21,9 @@
 from odoo import fields,models
 
 
-class OilHseIncident(models.Model):
+class OilHseIncidentESG(models.Model):
     _inherit = 'oil.hse.incident'
+
 
     esg_site_id = fields.Many2one('oil.esg.site', string='ESG Field Site',
                                   help="Link this incident to an ESG field site.")

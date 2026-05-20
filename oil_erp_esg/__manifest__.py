@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': 'Oil & Gas ESG',
-    'version': '19.0.1.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Industries/Oil & Gas',
     'summary': 'Environmental, Social & Governance Management for Oil & Gas ERP',
     'description': """
@@ -59,7 +59,7 @@ Features:
     ],
     'data': [
         'security/ir.model.access.csv',
-        'data/esg_data.xml',
+        'data/ir_sequence_data.xml',
         'views/esg_emission_views.xml',
         'views/esg_energy_views.xml',
         'views/esg_water_views.xml',
