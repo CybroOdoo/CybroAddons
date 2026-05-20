@@ -30,28 +30,28 @@ class DailyExpenseWizard(models.TransientModel):
     _description = 'Daily Expense Wizard'
 
     task_id = fields.Many2one('project.task', string="Task", required=True,
-                              help="Select the task.")
+                              help="Task for which daily expenses will be calculated.")
     date = fields.Date(string="Date", required=True,
                        default=fields.Date.context_today,
-                       help="Select the date for date.")
+                       help="Date for which to compute expenses from timesheet entries.")
     product_id = fields.Many2one(
         'product.product',
         string="Expense Category",
         domain="[('is_oil_gas_expense_category', '=', True)]",
         required=True,
-        help="Select the expense category."
+        help="Expense product category applied to the generated HR expense records."
     )
     task_employee_ids = fields.Many2many(
         'hr.employee',
         compute='_compute_task_employee_ids',
         string="Task Employees",
-        help="Lists the task Employees and Assignees."
+        help="All employees and assignees available on the selected task."
     )
     excluded_employee_ids = fields.Many2many(
         'hr.employee',
         string="Excluded Employees",
         domain="[('id', 'in', task_employee_ids)]",
-        help="Lists the excluded Employees."
+        help="Employees to exclude from the daily expense calculation."
     )
 
     @api.depends('task_id', 'task_id.employee_ids', 'task_id.user_ids.employee_id')
@@ -81,11 +81,14 @@ class DailyExpenseWizard(models.TransientModel):
                 ])
                 total_hours = sum(timesheet_lines.mapped('unit_amount'))
                 amount = total_hours * employee.hourly_wage
+                if amount <= 0:
+                    continue
 
                 # Check for existing draft oil and gas expense for this employee
                 hr_expense = hr_expense_env.search([
                     ('employee_id', '=', employee.id),
                     ('state', '=', 'draft'),
+                    ('task_id', '=', wizard.task_id.id),
                     ('is_oil_gas_expense', '=', True)
                 ], limit=1)
 
@@ -103,10 +106,22 @@ class DailyExpenseWizard(models.TransientModel):
 
                     hr_expense = hr_expense_env.create(hr_expense_vals)
 
-                expense_env.create([{
-                    'employee_id': employee.id,
-                    'task_id': wizard.task_id.id,
-                    'date': wizard.date,
-                    'amount': amount,
-                    'expense_id': hr_expense.id,
-                }])
+                existing_daily = expense_env.search([
+                    ('employee_id', '=', employee.id),
+                    ('task_id', '=', wizard.task_id.id),
+                    ('date', '=', wizard.date),
+                ], limit=1)
+
+                if existing_daily:
+                    # Update the expense amount
+                    existing_daily.amount = amount
+                    existing_daily.expense_id = hr_expense.id
+                else:
+                    # Create only if not exists
+                    expense_env.create({
+                        'employee_id': employee.id,
+                        'task_id': wizard.task_id.id,
+                        'date': wizard.date,
+                        'amount': amount,
+                        'expense_id': hr_expense.id,
+                    })

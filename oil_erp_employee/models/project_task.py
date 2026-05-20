@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import fields, models
 from odoo.tools.translate import _
 
@@ -31,15 +32,15 @@ class ProjectTask(models.Model):
 
     employee_ids = fields.Many2many('hr.employee',
                                     string='Employees',
-                                    help="Lists the employees."
+                                    help="Employees assigned to work on this task."
                                     )
     expense_count = fields.Integer(string='Expense Count',
                                    compute='_compute_expense_count',
-                                   help="Enter the expense Count."
+                                   help="Total number of oil and gas daily expenses recorded for this task."
                                    )
 
     def _compute_expense_count(self):
-        """ Function for computing the HR expense count."""
+        """ Count the oil and gas related HR expenses linked to this task."""
         for rec in self:
             rec.expense_count = self.env['hr.expense'].search_count([
                 ('task_id', '=', rec.id),
@@ -47,7 +48,7 @@ class ProjectTask(models.Model):
             ])
 
     def action_calculate_daily_expense(self):
-        """ Function for opening the wizard for recording the expense. """
+        """ Open the daily expense wizard to record employee expenses for this task. """
         self.ensure_one()
         return {
             'name': 'Daily Expense',
@@ -61,7 +62,7 @@ class ProjectTask(models.Model):
         }
 
     def action_view_expenses(self):
-        """ Function for viewing the linked HR expenses on the task. """
+        """ Open the list of oil and gas HR expenses linked to this task. """
         self.ensure_one()
         action = {
             'name': _('HR Expenses'),
@@ -75,9 +76,7 @@ class ProjectTask(models.Model):
                 'search_default_draft': 1
             },
         }
-        # If redirect directly to form view when only one draft expense logic is needed:
-        # User specified "on clicking that redirect to its corresponding form view",
-        # if only 1 expense, show form view directly:
+        # Open form view directly when only one expense exists
         expense_ids = self.env['hr.expense'].search([('task_id', '=', self.id), ('is_oil_gas_expense', '=', True)])
         if len(expense_ids) == 1:
             action['view_mode'] = 'form'

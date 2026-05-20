@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 #############################################################################
-#
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
@@ -19,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 
 
@@ -49,6 +49,7 @@ class HrExpense(models.Model):
 
     @api.depends('is_oil_gas_expense', 'daily_expense_line_ids', 'daily_expense_line_ids.amount')
     def _compute_total_amount_currency(self):
+        """Compute the total expense amount from daily expense lines for oil and gas expenses."""
         super()._compute_total_amount_currency()
         for rec in self:
             if rec.is_oil_gas_expense and rec.daily_expense_line_ids:

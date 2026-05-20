@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import fields, models
 
 
@@ -29,4 +30,4 @@ class HrEmployee(models.Model):
     _inherit = 'hr.employee'
 
     hourly_wage = fields.Monetary(string='Hourly Wage',
-                                  help="Enter the hourly Wage.")
+                                  help="Hourly wage rate used to calculate daily expenses from timesheet hours.")

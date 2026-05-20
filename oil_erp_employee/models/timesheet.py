@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.exceptions import ValidationError
@@ -26,14 +27,15 @@ from odoo.exceptions import ValidationError
 class AccountAnalyticLine(models.Model):
     """
     Inherits from 'account.analytic.line' (Timesheets) to enforce that only employees
-    assigned to a task can record time against it.
+    assigned to a task can record time against it. Constraint is scoped to oil & gas
+    project tasks to avoid interfering with standard Odoo timesheet demo data.
     """
     _inherit = 'account.analytic.line'
 
     employee_id = fields.Many2one(
         'hr.employee',
         string="Employee",
-        help="Select the employee."
+        help="Employee recording time on this task."
     )
 
     @api.onchange('task_id')

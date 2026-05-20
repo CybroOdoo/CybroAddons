@@ -1,6 +1,6 @@
-.. image:: https://img.shields.io/badge/licence-LGPL--3-green.svg
-   :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
-   :alt: License: LGPL-3
+.. image:: https://img.shields.io/badge/license-LGPL--3-green.svg
+    :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
+    :alt: License: LGPL-3
 
 Oil & Gas Employee
 ==================
@@ -21,14 +21,14 @@ Company
 License
 =======
 General Public License, Version 3 (LGPL v3).
-(http://www.gnu.org/licenses/lgpl-3.0-standalone.html)
+(https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
 
 Credits
 =======
 * Developers:   (V19) Mohammed Fawas M P,
                       Swathy K S,
-                      Deepika V
-
+                      Deepika V,
+                      Aflah M
 
 Contacts
 ========
@@ -45,7 +45,7 @@ Maintainer
    :target: https://cybrosys.com
 
 This module is maintained by Cybrosys Technologies.
-For support and more information, please visit https://www.openhrms.com or https://www.cybrosys.com
+For support and more information, please visit https://www.cybrosys.com
 
 Further information
 ===================

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 #############################################################################
-#
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
@@ -19,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import fields, models
 
 class ProductTemplate(models.Model):

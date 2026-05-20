@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 #############################################################################
-
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
@@ -19,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -33,25 +33,25 @@ class TaskDailyExpense(models.Model):
 
     task_id = fields.Many2one('project.task',
                               string="Task",
-                              help="Select the task.")
+                              help="Project task this daily expense is recorded against.")
     employee_id = fields.Many2one('hr.employee',
                                   string="Employee", required=True,
-                                  help="Select the employee."
+                                  help="Employee who incurred this daily expense."
                                   )
     project_id = fields.Many2one('project.project',
                                  related='task_id.project_id',
-                                 help="Select the project id."
+                                 help="Project derived from the linked task (auto-populated)."
                                  )
     date = fields.Date(string="Date", default=fields.Date.context_today,
-                       help="Select the date for date.")
+                       help="Date when this expense was incurred.")
     amount = fields.Float(string="Expense Amount",
-                          help="Enter the expense Amount.")
+                          help="Total expense amount calculated from timesheet hours and hourly wage.")
     company_id = fields.Many2one(
         'res.company',
         string='Company',
         default=lambda self: self.env.company,
         required=True,
-        help="Select the company."
+        help="Company responsible for this expense record."
     )
     expense_id = fields.Many2one('hr.expense',
                                  string="Expense",
