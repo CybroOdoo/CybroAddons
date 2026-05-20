@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Form View -->
+        <record id="view_oil_contract_form" model="ir.ui.view">
+            <field name="name">oil.contract.form</field>
+            <field name="model">oil.contract</field>
+            <field name="arch" type="xml">
+                <form string="Contract">
+                    <header>
+                        <button name="action_confirm" string="Confirm"
+                                type="object" class="oe_highlight"
+                                invisible="state != 'draft'"/>
+                        <button name="action_create_bill"
+                                string="Create Bill" type="object"
+                                class="oe_highlight"
+                                invisible="state != 'confirmed'"/>
+                        <button name="action_cancel" string="Cancel"
+                                type="object"
+                                invisible="state in ('billed', 'cancelled', 'expired')"/>
+                        <button name="action_set_to_draft"
+                                string="Set to Draft" type="object"
+                                invisible="state not in ('expired', 'cancelled')"/>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,confirmed,billed"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_bill" type="object"
+                                    class="oe_stat_button"
+                                    icon="fa-pencil-square-o"
+                                    invisible="bill_count == 0">
+                                <field name="bill_count" widget="statinfo"
+                                       string="Invoices"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <div class="alert alert-warning" role="alert"
+                             invisible="not expiry_warning">
+                            <strong>Warning:</strong>
+                            <field name="expiry_warning" nolabel="1"/>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="vendor_id"/>
+                                <field name="lease_id"/>
+                                <field name="amount"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="start_date"/>
+                                <field name="end_date"/>
+                                <field name="select_type" widget="radio"
+                                       required="1"
+                                       options="{'horizontal': true}"/>
+                                <field name="project_id"
+                                       invisible="select_type != 'project'"
+                                       domain="[('is_oil_gas_project', '=', True)]"/>
+                                <field name="reservoir_id"
+                                       invisible="select_type != 'reservoir'"/>
+                                <field name="equipment_id"
+                                       invisible="select_type != 'equipment'"
+                                       domain="[('is_oil_equipment', '=', True)]"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- List View -->
+        <record id="view_oil_contract_list" model="ir.ui.view">
+            <field name="name">oil.contract.list</field>
+            <field name="model">oil.contract</field>
+            <field name="arch" type="xml">
+                <list string="Contracts"
+                      decoration-info="state == 'draft'"
+                      decoration-success="state == 'confirmed'"
+                      decoration-warning="state == 'expired'"
+                      decoration-muted="state == 'cancelled'">
+                    <field name="name"/>
+                    <field name="vendor_id"/>
+                    <field name="lease_id" optional="show"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                    <field name="amount" sum="Total"/>
+                    <field name="currency_id" column_invisible="True"/>
+                    <field name="state" widget="badge"
+                           decoration-info="state == 'draft'"
+                           decoration-success="state == 'confirmed'"
+                           decoration-warning="state == 'expired'"
+                           decoration-danger="state == 'cancelled'"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_oil_contract" model="ir.actions.act_window">
+            <field name="name">Contracts</field>
+            <field name="res_model">oil.contract</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a new contract!
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_oil_contract_action"
+                  name="Contracts"
+                  parent="oil_erp_base.menu_oil_procurement_root"
+                  action="action_oil_contract"
+                  sequence="20"/>
+
+    </data>
+</odoo>
