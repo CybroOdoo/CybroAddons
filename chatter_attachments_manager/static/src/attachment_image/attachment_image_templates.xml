@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <!--
+        Extends mail.AttachmentList to inject our custom ⋮ context menu into
+        every attachment card.  The card structure (image/thumbnail/filename bar)
+        is preserved exactly as Odoo core renders it so that PDFs, videos and
+        other non-image files display correctly.
+    -->
+    <t name="AttachmentImageTools"
+       t-inherit="mail.AttachmentList"
+       t-inherit-mode="extension"
+       owl="1">
+
+        <!--
+            Inject our ⋮ trigger inside every attachment container.
+            We use position="inside" on the container div so we do NOT disturb
+            the existing image / card / hover markup that Odoo renders.
+        -->
+        <xpath expr="//div[hasclass('o-mail-AttachmentContainer')]" position="inside">
+            <!-- TUI image editor modal (rendered once per card; unique ID per attachment) -->
+            <center>
+                <div t-attf-id="imageEditor_{{attachment.id}}" class="modal" style="width:35%; height:58%;">
+                    <div class="modal-content">
+                        <header>
+                            <div class="tui-image-editor-container" t-attf-id="tui-image-editor-container_{{attachment.id}}"/>
+                        </header>
+                    </div>
+                </div>
+            </center>
+
+            <!-- Hidden inline menu — content is cloned into the floating portal by JS -->
+            <div class="am-ctx-menu--hidden" t-att-data-attachment-id="attachment.id" style="display:none;">
+                <div class="am-ctx-item am-ctx-item--edit">Edit Record</div>
+                <div class="am-ctx-item am-ctx-item--editor">Image Editor</div>
+                <div class="am-ctx-item am-ctx-item--delete">Delete</div>
+            </div>
+
+            <!-- Visible ⋮ trigger button -->
+            <div class="am-cog-btn" title="Options"
+                 t-on-click.stop="(ev) => this.onClickCogBtn(ev, attachment)">
+                <i class="fa fa-ellipsis-v"/>
+            </div>
+        </xpath>
+    </t>
+</templates>

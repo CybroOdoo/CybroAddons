@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t name="mail.AttachmentControlPanel"
+       t-inherit="mail.Chatter"
+       t-inherit-mode="extension"
+       owl="1">
+       <xpath expr="//div[hasclass('o-mail-AttachmentBox')]"
+              position="before">
+
+            <!-- ── Attachment Manager Control Bar ── -->
+            <div class="am-control-bar">
+                <!-- Download All -->
+                <button title="Download All Attachments"
+                        type="button"
+                        class="am-btn am-btn-outline"
+                        t-on-click="onClickDownloadAll">
+                    <i class="fa fa-download am-btn-icon"/>
+                    <span class="am-btn-label">Download All</span>
+                </button>
+
+                <!-- Upload dropdown wrapper -->
+                <div class="am-upload-wrapper">
+                    <button title="Add Attachment"
+                            type="button"
+                            class="am-btn am-btn-primary"
+                            t-on-click="onClickUpload">
+                        <i class="fa fa-paperclip am-btn-icon"/>
+                        <span class="am-btn-label">Add Attachment</span>
+                        <i class="fa fa-chevron-down am-btn-caret"/>
+                    </button>
+
+                    <!-- Dropdown menu -->
+                    <div class="am-dropdown-menu"
+                         style="display:none;"
+                         t-ref="control_menu_dropdown">
+
+                        <FileUploader
+                                fileUploadClass="'o-mail-Chatter-fileUploader'"
+                                onUploaded.bind="onUploaded"
+                                onClick="(ev) => this.onClickAttachFile(ev)">
+                            <t t-set-slot="toggler">
+                                <div class="am-menu-item">
+                                    <span class="am-menu-icon-wrap am-icon-device">
+                                        <i class="fa fa-folder-open-o"/>
+                                    </span>
+                                    <div class="am-menu-text">
+                                        <span class="am-menu-title">My Device</span>
+                                        <span class="am-menu-desc">Upload from local files</span>
+                                    </div>
+                                </div>
+                            </t>
+                        </FileUploader>
+
+                        <div class="am-menu-item" t-on-click="onClickCamera">
+                            <span class="am-menu-icon-wrap am-icon-camera">
+                                <i class="fa fa-camera-retro"/>
+                            </span>
+                            <div class="am-menu-text">
+                                <span class="am-menu-title">Capture Image</span>
+                                <span class="am-menu-desc">Use your webcam</span>
+                            </div>
+                        </div>
+
+                        <div class="am-menu-item" t-on-click="onClickScreenRec">
+                            <span class="am-menu-icon-wrap am-icon-screen">
+                                <i class="fa fa-video-camera"/>
+                            </span>
+                            <div class="am-menu-text">
+                                <span class="am-menu-title">Record Screen</span>
+                                <span class="am-menu-desc">Capture your screen</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Camera / Screen Recorder Modal ── -->
+            <div class="am-modal-overlay" id="myModal" t-ref="myModal" style="display:none;">
+                <div class="am-modal-box">
+
+                    <!-- Camera view -->
+                    <div class="am-modal-header">
+                        <span class="am-modal-title" id="am-modal-title">Webcam Capture</span>
+                    </div>
+                    <div class="am-modal-body">
+                        <video id="videoCam" class="am-video-preview" t-ref="videoCamera" autoplay=""/>
+
+                        <!-- Screen recorder controls -->
+                        <div id="screen_recording_container" class="am-screen-rec" style="display:none">
+                            <div class="am-screen-rec-controls">
+                                <button id="start_record_button" class="am-btn am-btn-success">
+                                    <i class="fa fa-circle"/> Start Recording
+                                </button>
+                                <button id="stop_record_button" class="am-btn am-btn-danger">
+                                    <i class="fa fa-stop"/> Stop Recording
+                                </button>
+                            </div>
+                            <video id="recorded_video" class="am-recorded-preview" controls=""/>
+                        </div>
+                    </div>
+
+                    <!-- Camera capture buttons -->
+                    <div class="am-modal-footer" id="capture">
+                        <button class="am-btn am-btn-outline" id="stop-camera-button">
+                            <i class="fa fa-times"/> Cancel
+                        </button>
+                        <button class="am-btn am-btn-primary" id="click_photo" t-on-click="ImageCapture">
+                            <i class="fa fa-camera"/> Capture Photo
+                        </button>
+                    </div>
+
+                    <span hidden="hidden">
+                        <canvas id="canvas" width="150" height="100"/>
+                    </span>
+                </div>
+            </div>
+
+        </xpath>
+    </t>
+</templates>
