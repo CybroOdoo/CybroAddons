@@ -41,7 +41,7 @@ class ProjectTask(models.Model):
     equipment_count = fields.Integer(
         string='Equipment Count',
         compute='_compute_equipment_count',
-        help="Enter the equipment Count."
+        help="Number of equipment items linked to this task."
     )
     available_equipment_ids = fields.Many2many(
         'maintenance.equipment',
@@ -52,8 +52,7 @@ class ProjectTask(models.Model):
 
     def _compute_equipment_count(self):
         """
-        Calculates the total number of unique equipment items linked to all tasks
-        in this project.
+        Count the equipment items assigned to this task.
         """
         for rec in self:
             rec.equipment_count = len(rec.equipment_ids)
@@ -102,7 +101,7 @@ class ProjectTask(models.Model):
 
     def action_view_equipment(self):
         """
-        Returns an action to view all equipment linked to any task in this project.
+        Open the list of equipment assigned to this task.
         """
         self.ensure_one()
         action = self.env['ir.actions.actions']._for_xml_id(

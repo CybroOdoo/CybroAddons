@@ -30,7 +30,7 @@ class ProjectProject(models.Model):
     equipment_count = fields.Integer(
         string='Equipment Count',
         compute='_compute_equipment_count',
-        help="Enter the equipment Count."
+        help="Total unique equipment items deployed across all tasks in this project."
     )
 
     def _compute_equipment_count(self):

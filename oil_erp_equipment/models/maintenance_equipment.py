@@ -33,8 +33,7 @@ class MaintenanceEquipment(models.Model):
 
     is_oil_equipment = fields.Boolean(string='Oil & Gas Equipment',
                                       default=False,
-                                      help="Enable this when oil & Gas "
-                                           "Equipment applies.")
+                                      help="Mark this equipment as an oil and gas field asset for industry-specific tracking.")
 
     # Oil & Gas Classification
     criticality = fields.Selection(
@@ -47,7 +46,7 @@ class MaintenanceEquipment(models.Model):
         string='Criticality',
         default='medium',
         tracking=True,
-        help="Choose the criticality."
+        help="Operational criticality level determining maintenance priority and spare parts strategy."
     )
     location_type = fields.Selection(
         [
@@ -55,14 +54,14 @@ class MaintenanceEquipment(models.Model):
             ('offshore', 'Offshore'),
         ],
         string='Location Type',
-        help="Choose the location Type."
+        help="Whether this equipment is deployed at an onshore or offshore site."
     )
 
     # Installation & Inspection
     installation_date = fields.Date(string='Installation Date',
-                                    help="Select the date for installation Date.")
+                                    help="Date when this equipment was installed at the site.")
     last_inspection_date = fields.Date(string='Last Inspection Date',
-                                       help="Select the date for last Inspection Date.")
+                                       help="Date of the most recent physical inspection of this equipment.")
 
     # Operating Parameters
     operating_pressure = fields.Float(
@@ -80,9 +79,9 @@ class MaintenanceEquipment(models.Model):
 
     # Certification & Compliance
     certification_number = fields.Char(string='Certification Number',
-                                       help="Enter the certification Number.")
+                                       help="Certificate or compliance number issued by the certifying authority.")
     certification_expiry = fields.Date(string='Certification Expiry',
-                                       help="Select the date for certification Expiry.")
+                                       help="Expiration date of the current certification, after which re-certification is required.")
 
     # Well / Site Reference
     well_site_ids = fields.Many2many(
@@ -104,11 +103,10 @@ class MaintenanceEquipment(models.Model):
                 raise ValidationError(
                     _("Certification expiry cannot be earlier than the installation date."))
 
-    @api.constrains('operating_pressure', 'operating_temperature',
-                    'max_capacity')
+    @api.constrains('operating_pressure', 'max_capacity')
     def _check_operating_params(self):
         """
-        Ensures that operating pressure and maximum capacity are not negative.
+        Ensure operating pressure and maximum capacity are non-negative.
         """
         for rec in self:
             if rec.operating_pressure < 0:
