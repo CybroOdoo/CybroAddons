@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<template>
+    <t t-name="CustomDashBoard">
+        <div class="oh_dashboards o_action">
+            <div class="container-fluid o_pj_dashboard o_content">
+                <div class="row align-items-end g-3 mb-5">
+                    <div class="col-12 col-md-8 col-lg-6">
+                        <h1 class="mb-4" style="font-weight: 900; color: var(--slate-800); font-size: 2.5rem; letter-spacing: -0.025em;">Fleet Analytics</h1>
+                        <label class="form-label fw-bold mb-2 ms-1" style="color: var(--slate-400); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em;">Filter by Date Range</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa fa-calendar me-2"/> From</span>
+                            <input type="date" id="start_date" name="start_date" class="form-control" t-ref="start_date"/>
+                            <span class="input-group-text">To</span>
+                            <input type="date" id="end_date" name="end_date" class="form-control" t-ref="end_date"/>
+                            <button class="btn btn-primary" t-on-click="onApplyFilter">Refine Dashboard</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal" id="modal_warning" tableindex="-1" role="dialog" t-ref="modal_warning">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content border-0 shadow-xl" style="border-radius: 1.5rem;">
+                            <div class="modal-header border-0 pb-0">
+                                <h4 class="modal-title fw-bold" style="color: var(--danger);">Invalid Date Range</h4>
+                            </div>
+                            <div class="modal-body py-4">
+                                <p class="message mb-0" style="color: var(--slate-600); font-size: 1.1rem;">
+                                    The start date must be earlier than the end date to process the report.
+                                </p>
+                            </div>
+                            <div class="modal-footer border-0 pt-0">
+                                <button type="button" t-on-click="closeModal" class="btn btn-light px-4 py-2" style="border-radius: 0.75rem; font-weight: 600;" data-dismiss="modal">I'll fix it</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mt-2">
+                    <div class="col-12">
+                        <div class="mb-2">
+                            <h3 class="fw-bold" style="color: var(--slate-800);">Top Customers</h3>
+                            <p class="text-muted small">Our most valuable rental partners</p>
+                        </div>
+                        <div class="row g-3">
+                            <t t-foreach="state.top_customers" t-as="customer" t-key="customer.name">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="dashboard-card h-100">
+                                        <div class="my_lead">
+                                            <t t-if="customer.image">
+                                                <img t-att-src="'data:image/png;base64,'+customer.image" alt="Avatar" width="56" height="56"/>
+                                            </t>
+                                            <t t-else="">
+                                                <div class="dashboard-card__icon-container">
+                                                    <i class="fa fa-user"/>
+                                                </div>
+                                            </t>
+                                            <div class="dashboard-card__details overflow-hidden">
+                                                <h4 class="text-truncate fw-bold mb-0" t-esc="customer.name"/>
+                                                <p class="text-truncate mb-0 small text-muted" t-esc="customer.email" style="cursor: pointer;"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mt-4">
+                    <div class="col-12 col-xl-5">
+                        <div class="chart-container">
+                            <h2 class="text-center-mobile">Most Rented Vehicles</h2>
+                            <div class="graph_canvas bar_canvas" style="min-height: 450px;">
+                                <canvas class="most_rented_cars" t-ref="most_rented_cars_bar"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-5 col-xl-3">
+                        <div class="chart-container available_cars">
+                            <h2 class="text-center-mobile">Fleet Status</h2>
+                            <div class="crm_dash_cards row g-3 mb-4">
+                                <div class="col-6">
+                                    <div class="dashboard-card flex-column align-items-center text-center p-3">
+                                        <div class="dashboard-card__icon-container mx-auto mb-2" style="background: var(--slate-100); color: var(--success);">
+                                            <i class="fa fa-check-circle"/>
+                                        </div>
+                                        <h3 class="mb-0"><span t-esc="state.available_cars"/></h3>
+                                        <h4 class="mb-0">Ready</h4>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="dashboard-card flex-column align-items-center text-center p-3">
+                                        <div class="dashboard-card__icon-container mx-auto mb-2" style="background: var(--slate-100); color: var(--primary);">
+                                            <i class="fa fa-road"/>
+                                        </div>
+                                        <h3 class="mb-0"><span t-esc="state.running_cars"/></h3>
+                                        <h4 class="mb-0">On Road</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive" style="max-height: 250px;">
+                                <table class="table table-hover mb-0">
+                                    <thead class="sticky-top">
+                                        <tr><th class="ps-3">Available Models</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="state.available_vehicle_details" t-as="available_car" t-key="available_car['available_car']">
+                                            <tr><td class="ps-3"><t t-esc="available_car['available_car']"/></td></tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-7 col-xl-4">
+                        <div class="chart-container running_vehicle_contact">
+                            <h2 class="text-center-mobile">Active Contracts</h2>
+                            <div class="table-responsive" style="max-height: 480px;">
+                                <table class="table table-hover mb-0">
+                                    <thead class="sticky-top">
+                                        <tr>
+                                            <th>Vehicle</th>
+                                            <th>Due Date</th>
+                                            <th>Renter</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="state.running_vehicle_details" t-as="data" t-key="data['vehicle']">
+                                            <tr>
+                                                <td class="text-truncate fw-bold"><t t-esc="data['vehicle']"/></td>
+                                                <td><span class="badge rounded-pill bg-light text-dark px-3 py-2"><t t-esc="data['end_date']"/></span></td>
+                                                <td class="text-truncate"><t t-esc="data['customer']"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mt-4 pb-5">
+                    <div class="col-12 col-lg-6">
+                        <div class="chart-container">
+                            <h2 class="text-center-mobile">Market Share (Pie)</h2>
+                            <div class="graph_canvas pie_canvas" style="min-height: 450px;">
+                                <canvas class="most_rented_cars_pie" t-ref="most_rented_cars_pie"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6">
+                        <div class="chart-container">
+                            <h2 class="text-center-mobile">Rental Trends (Line)</h2>
+                            <div class="graph_canvas line_canvas" style="min-height: 450px;">
+                                <canvas class="most_rented_cars_line" t-ref="most_rented_cars_line"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</template>
