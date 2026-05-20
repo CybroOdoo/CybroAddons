@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Employee task report Email template -->
+    <record id="email_template_work_report_from_timesheet"
+            model="mail.template">
+        <field name="name">WorkReport: Task report from timesheet</field>
+        <field name="model_id"
+               ref="work_report_from_timesheet.model_account_analytic_line"/>
+        <field name="subject">Task report_ {{ object.date.strftime('%b-%d-%Y') }} - {{ object.employee_id.name }}</field>
+        <field name="description">Send Daily work report of employee to the manager</field>
+        <field name="email_from">{{ (object.user_id.email_formatted or user.email_formatted) }}</field>
+        <field name="body_html" type="html">
+            <div>
+                Hello,<br/><br/>
+                Here is a report on my daily work.<br/><br/>
+                <table width="100%"
+                       style="color:#454748; font-size:12px; border:1px solid black; border-collapse:collapse; table-layout: fixed;">
+                    <thead>
+                        <tr style="background-color:rgb(183,183,183); font-weight:bold;">
+                            <td width="5%" style="border:1px solid black;" align="center">Sl.no</td>
+                            <td width="15%" style="border:1px solid black;" align="center">Project</td>
+                            <td width="20%" style="border:1px solid black;" align="center">Task</td>
+                            <td width="15%" style="border:1px solid black;" align="center">Status</td>
+                            <td width="15%" style="border:1px solid black;" align="center">Hours spent</td>
+                            <td width="30%" style="border:1px solid black;" align="center">Remark</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="font-size:10px;">
+                            <td style="border:1px solid black;" align="center">1</td>
+                            <td style="border:1px solid black; word-break: break-all; word-wrap: break-word;" align="center">
+                                <t t-out="object.project_id.name or ''"/>
+                            </td>
+                            <td style="border:1px solid black; word-break: break-all; word-wrap: break-word;" align="center">
+                                <t t-out="object.task_id.name or ''"/>
+                            </td>
+                            <t t-set="status_style" t-value="'border:1px solid black;'"/>
+                            <t t-if="object.status in ['ongoing', 'Ongoing']" t-set="status_style" t-value="status_style + ' background-color:rgb(255,217,102); color: black;'"/>
+                            <t t-if="object.status in ['completed', 'Completed']" t-set="status_style" t-value="status_style + ' background-color:rgb(106,168,79); color: white;'"/>
+                            <td t-att-style="status_style" align="center">
+                                <t t-out="object.status.title() if object.status else ''"/>
+                            </td>
+                            <td style="border:1px solid black;" align="center">
+                                <t t-out="object.unit_amount"/>
+                            </td>
+                            <td style="border:1px solid black; word-break: break-all; word-wrap: break-word;" align="center">
+                                <t t-out="object.name"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br/>
+                <table width="590" style="font-size:11px;">
+                    <tr>
+                        <td>Thanks &amp; Regards,</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <t t-out="object.employee_id.name"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <t t-out="user.company_id.name"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="opacity:.7;">
+                            <t t-out="user.company_id.phone or ''"/>
+                            <t t-if="user.company_id.phone and user.company_id.email">
+                                |
+                            </t>
+                            <t t-if="user.company_id.email">
+                                <a t-att-href="'mailto:%s' % user.company_id.email"
+                                   style="text-decoration:none; color:#454748;">
+                                    <t t-out="user.company_id.email"/>
+                                </a>
+                            </t>
+                            <t t-if="user.company_id.email and user.company_id.website">
+                                |
+                            </t>
+                            <t t-if="user.company_id.website">
+                                <a t-att-href="user.company_id.website"
+                                   style="text-decoration:none; color:#454748;">
+                                    <t t-out="user.company_id.website"/>
+                                </a>
+                            </t>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+    </record>
+    <record id="email_template_daily_report_from_timesheet"
+            model="mail.template">
+        <field name="name">WorkReport: Daily Work report from timesheet</field>
+        <field name="model_id"
+               ref="work_report_from_timesheet.model_account_analytic_line"/>
+        <field name="body_html" type="html">
+            <div>
+                Hello,<br/><br/>
+                Here is a report on my daily work.<br/><br/>
+                <table width="100%"
+                       style="color:#454748; font-size:12px; border:1px solid black; border-collapse:collapse; table-layout: fixed;">
+                    <thead>
+                        <tr style="background-color:rgb(183,183,183); font-weight:bold;">
+                            <td width="5%" style="border:1px solid black;" align="center">Sl.no</td>
+                            <td width="15%" style="border:1px solid black;" align="center">Project</td>
+                            <td width="20%" style="border:1px solid black;" align="center">Task</td>
+                            <td width="15%" style="border:1px solid black;" align="center">Status</td>
+                            <td width="15%" style="border:1px solid black;" align="center">Hours spent</td>
+                            <td width="30%" style="border:1px solid black;" align="center">Remark</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="i" t-value="1"/>
+                        <t t-foreach="ctx.get('data')" t-as="data">
+                            <tr style="font-size:10px;">
+                                <td style="border:1px solid black;" align="center">
+                                    <t t-out="i"/>
+                                    <t t-set="i" t-value="i+1"/>
+                                </td>
+                                <td style="border:1px solid black; word-break: break-all; word-wrap: break-word;" align="center">
+                                    <t t-out="data.project_id.name or ''"/>
+                                </td>
+                                <td style="border:1px solid black; word-break: break-all; word-wrap: break-word;" align="center">
+                                    <t t-out="data.task_id.name or ''"/>
+                                </td>
+                                <t t-set="status_style" t-value="'border:1px solid black;'"/>
+                                <t t-if="data.status in ['ongoing', 'Ongoing']" t-set="status_style" t-value="status_style + ' background-color:rgb(255,217,102); color: black;'"/>
+                                <t t-if="data.status in ['completed', 'Completed']" t-set="status_style" t-value="status_style + ' background-color:rgb(106,168,79); color: white;'"/>
+                                <td t-att-style="status_style" align="center">
+                                    <t t-out="data.status.title() if data.status else ''"/>
+                                </td>
+                                <td style="border:1px solid black;" align="center">
+                                    <t t-out="data.unit_amount"/>
+                                </td>
+                                <td style="border:1px solid black; word-break: break-all; word-wrap: break-word;" align="center">
+                                    <t t-out="data.name"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+                <br/>
+                <table width="590" style="font-size:11px;">
+                    <tr>
+                        <td>Thanks &amp; Regards,</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <t t-out="object.employee_id.name"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <t t-out="user.company_id.name"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="opacity:.7;">
+                            <t t-out="user.company_id.phone or ''"/>
+                            <t t-if="user.company_id.phone and user.company_id.email">
+                                |
+                            </t>
+                            <t t-if="user.company_id.email">
+                                <a t-att-href="'mailto:%s' % user.company_id.email"
+                                   style="text-decoration:none; color:#454748;">
+                                    <t t-out="user.company_id.email"/>
+                                </a>
+                            </t>
+                            <t t-if="user.company_id.email and user.company_id.website">
+                                |
+                            </t>
+                            <t t-if="user.company_id.website">
+                                <a t-att-href="user.company_id.website"
+                                   style="text-decoration:none; color:#454748;">
+                                    <t t-out="user.company_id.website"/>
+                                </a>
+                            </t>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+    </record>
+</odoo>
