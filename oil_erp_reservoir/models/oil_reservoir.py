@@ -18,9 +18,12 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
+from odoo.orm.table_objects import Constraint
 from odoo.tools.translate import _
 from odoo.exceptions import ValidationError
+
 
 
 class OilReservoir(models.Model):
@@ -32,47 +35,49 @@ class OilReservoir(models.Model):
     _name = 'oil.reservoir'
     _description = 'Oil Reservoir Management'
     _inherit = ['mail.thread', 'mail.activity.mixin']
-    _sql_constraints = [
-        ('name_unique', 'unique(name, company_id)',
-         'The Reservoir Name must be unique per company!'),
-        ('code_unique', 'unique(code, company_id)',
-         'The Reservoir Code must be unique per company!')
-    ]
+    _name_unique = Constraint(
+        'UNIQUE(name, company_id)',
+        'The Reservoir Name must be unique per company!'
+    )
+    _code_unique = Constraint(
+        'UNIQUE(code, company_id)',
+        'The Reservoir Code must be unique per company!'
+    )
+
 
     def _get_default_stage_id(self):
         """ Gives default stage_id """
         return self.env.ref('oil_erp_reservoir.project_stage_exploration').id
 
     name = fields.Char(string='Reservoir Name', required=True, tracking=True,
-                       help="Enter the reservoir Name.")
+                       help="Name identifying this underground reservoir.")
     code = fields.Char(string='Reference/Code', copy=False, tracking=True,
-                       help="Enter the reference/Code.")
+                       help="Short unique reference code for this reservoir.")
     location = fields.Char(string='Geographical Location',
-                           help="Enter the geographical Location.")
+                           help="Geographical location or area description.")
 
     # Geological Info
     formation = fields.Char(string='Geological Formation',
-                            help="Enter the geological Formation.")
+                            help="Target geological formation containing the reservoir.")
     depth_ft = fields.Float(string='Depth (ft)', tracking=True,
-                            help="Enter the depth (ft).")
+                            help="Total measured depth of the reservoir in feet.")
     porosity = fields.Float(string='Porosity (%)',
                             help="Percentage of void space in the rock.")
     permeability = fields.Float(string='Permeability (mD)',
                                 help="Ability of the rock to transmit fluids.")
-    fluid_type = fields.Selection([
-        ('oil', 'Oil (Black/Crude)'),
-        ('gas', 'Natural Gas'),
-        ('condensate', 'Gas Condensate'),
-        ('water', 'Water/Brine')
-    ], string='Primary Fluid Type', tracking=True,
-        help="Choose the primary Fluid Type.")
+    fluid_type_id = fields.Many2one(
+        'oil.reference.master',
+        string='Primary Fluid Type',
+        domain="[('reference_type', '=', 'primary_fluid_type')]",
+        tracking=True,
+        help="Primary fluid type produced from this reservoir.")
 
     # Reserves Estimation
     estimated_reserves = fields.Float(string='Estimated Reserves (MMboe)',
                                       tracking=True,
                                       help="Millions of Barrels of Oil Equivalent")
     recovery_factor = fields.Float(string='Recovery Factor (%)',
-                                   help="Enter the recovery Factor (%).")
+                                   help="Expected percentage of reserves that can be economically recovered.")
 
     # Status
     stage_id = fields.Many2one(
@@ -82,26 +87,50 @@ class OilReservoir(models.Model):
         domain="[('is_oil_project_stage', '=', True)]",
         default=lambda self: self._get_default_stage_id(),
         copy=False,
-        help="Select the stage.")
+        help="Current lifecycle stage of this reservoir.")
     project_id = fields.Many2one('project.project', string='Project',
                                  readonly=True, copy=False,
-                                 help="Select the project.")
+                                 help="Upstream project automatically created for this reservoir.")
+    warehouse_id = fields.Many2one(
+        'stock.warehouse',
+        string='Warehouse',
+        required=True,
+        tracking=True,
+        help="Warehouse owning the storage location of the auto-created project. "
+             "Passed through to the project's storage location as its parent.")
 
     notes = fields.Text(string='Geological Notes',
-                        help="Enter the geological Notes.")
+                        help="Geological notes, observations, and technical remarks.")
     active = fields.Boolean(default=True,
-                            help="Enable this when active applies.")
+                            help="Uncheck to archive this reservoir without deleting it.")
     company_id = fields.Many2one(
         'res.company',
         string='Company',
         default=lambda self: self.env.company,
         required=True,
-        help="Select the company.")
+        help="Company that owns this reservoir record.")
     task_ids = fields.One2many('project.task', related='project_id.task_ids',
-                               help="Lists the task ids.")
+                               help="Well tasks linked to this reservoir project.")
     task_count = fields.Integer(string='Tasks Count',
                                 compute='_compute_task_count',
-                                help="Enter the tasks Count.")
+                                help="Number of well tasks in this reservoir project.")
+
+    def init(self):
+        self.env.cr.execute("""
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_name = 'oil_reservoir'
+              AND column_name = 'fluid_type'
+        """)
+        if self.env.cr.fetchone():
+            self.env.cr.execute("""
+                UPDATE oil_reservoir reservoir
+                SET fluid_type_id = ref.id
+                FROM oil_reference_master ref
+                WHERE reservoir.fluid_type_id IS NULL
+                  AND reservoir.fluid_type = ref.code
+                  AND ref.reference_type = 'primary_fluid_type'
+            """)
 
     @api.constrains('depth_ft', 'porosity', 'permeability', 'recovery_factor')
     def _check_geology_values(self):
@@ -178,6 +207,8 @@ class OilReservoir(models.Model):
                     'is_oil_gas_project': True,
                     'description': f"Auto-created project for Reservoir {reservoir.name}",
                     'reservoir_id': reservoir.id,
+                    'warehouse_id': reservoir.warehouse_id.id,
+                    'primary_fluid_type_id': reservoir.fluid_type_id.id,
                 }
                 if reservoir.stage_id:
                     project_vals['stage_id'] = reservoir.stage_id.id
@@ -192,8 +223,10 @@ class OilReservoir(models.Model):
         upstream project.
         """
         res = super().write(vals)
-        if 'stage_id' in vals:
+        if 'stage_id' in vals or 'fluid_type_id' in vals:
             for record in self:
                 if record.project_id and record.project_id.stage_id != record.stage_id:
                     record.project_id.stage_id = record.stage_id.id
+                if record.project_id and record.project_id.primary_fluid_type_id != record.fluid_type_id:
+                    record.project_id.primary_fluid_type_id = record.fluid_type_id.id
         return res

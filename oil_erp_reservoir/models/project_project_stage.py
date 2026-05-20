@@ -18,7 +18,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+
+from odoo import api, fields, models
 
 
 class ProjectProjectStage(models.Model):

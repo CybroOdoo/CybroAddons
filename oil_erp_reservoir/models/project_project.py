@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 
 class Project(models.Model):
@@ -30,11 +31,11 @@ class Project(models.Model):
     reservoir_id = fields.Many2one(
         'oil.reservoir',
         string='Reservoir',
-        help="Select the reservoir.")
+        help="Oil reservoir linked to this upstream project.")
     stage_id_domain = fields.Char(
         compute='_compute_stage_id_domain',
         store=False,
-        help="Enter the stage id domain.")
+        help="Dynamic domain restricting available stages for oil and gas projects.")
 
     @api.depends('is_oil_gas_project')
     def _compute_stage_id_domain(self):

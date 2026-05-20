@@ -21,3 +21,4 @@
 from . import oil_reservoir
 from . import project_project
 from . import project_project_stage
+from . import dashboard_upstream

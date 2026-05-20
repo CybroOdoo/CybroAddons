@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': 'Oil & Gas Reservoir',
-    'version': '19.0.1.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Oil ERP/Reservoir Management',
     'summary': 'Track underground reservoirs, reserves, geology data',
     'description': """
