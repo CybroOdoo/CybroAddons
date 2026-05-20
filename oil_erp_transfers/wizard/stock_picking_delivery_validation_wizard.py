@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.exceptions import UserError
@@ -254,5 +255,3 @@ class StockPickingDeliveryValidationWizardLine(models.TransientModel):
             if line.actual_qty < 0:
                 raise UserError(
                     _("Actual delivered quantity cannot be negative."))
-            # if line.actual_qty > line.planned_qty:
-            #     raise UserError(_("Actual delivered quantity cannot exceed planned quantity for a product line."))

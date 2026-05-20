@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': 'Oil & Gas Transfers',
-    'version': '19.0.1.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Oil ERP/Midstream',
     'summary': 'Manage internal transfers using Fleet and Inventory (Stock Picking)',
     'description': """
@@ -47,6 +47,7 @@ Key Features:
         'oil_erp_base',
     ],
     'data': [
+        'data/stock_location_group_data.xml',
         'security/oil_transfer_security.xml',
         'security/ir.model.access.csv',
         'views/fleet_vehicle_views.xml',

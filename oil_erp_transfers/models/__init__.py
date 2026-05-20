@@ -20,3 +20,4 @@
 #############################################################################
 from . import fleet_vehicle
 from . import stock_picking
+from . import dashboard_midstream

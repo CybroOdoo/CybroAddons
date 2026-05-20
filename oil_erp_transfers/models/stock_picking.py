@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.exceptions import UserError, ValidationError
@@ -31,16 +32,10 @@ class StockPicking(models.Model):
     """
     _inherit = "stock.picking"
 
-    product_type = fields.Selection(
-        selection=[
-            ("crude_oil", "Crude Oil"),
-            ("gas_condensation", "Gas Condensation"),
-            ("produced_water", "Produced Water"),
-            ("refinery_product", "Refinery Product"),
-            ("natural_gas_liquid", "Natural Gas Liquid"),
-            ("other", "Other"),
-        ],
+    product_type_id = fields.Many2one(
+        "oil.reference.master",
         string="Product Type",
+        domain="[('reference_type', '=', 'transfer_product_type')]",
         help="Classifies the material being moved through the internal transfer.",
     )
     is_oil_gas_transfer = fields.Boolean(
@@ -175,6 +170,24 @@ class StockPicking(models.Model):
         help="Tank capacity of the assigned vehicle for quick reference during dispatch.",
     )
 
+    def init(self):
+        """Migrate legacy product_type selection values to the new product_type_id Many2one reference."""
+        self.env.cr.execute("""
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_name = 'stock_picking'
+              AND column_name = 'product_type'
+        """)
+        if self.env.cr.fetchone():
+            self.env.cr.execute("""
+                UPDATE stock_picking picking
+                SET product_type_id = ref.id
+                FROM oil_reference_master ref
+                WHERE picking.product_type_id IS NULL
+                  AND picking.product_type = ref.code
+                  AND ref.reference_type = 'transfer_product_type'
+            """)
+
     @api.onchange("vehicle_id")
     def _onchange_vehicle_id(self):
         """
@@ -292,15 +305,7 @@ class StockPicking(models.Model):
         for picking in self:
             picking.quantity_loss = picking.planned_qty - picking.actual_qty
 
-    # @api.constrains("picking_type_id", "is_oil_gas_transfer", "vehicle_id")
-    # def _check_internal_transfer_vehicle(self):
-    #     for picking in self:
-    #
-    #         if not picking.is_oil_gas_transfer:
-    #             continue
-    #         if picking.picking_type_id.code != "internal":
-    #             raise ValidationError(_("Oil and gas transfers must use an internal transfer operation type."))
-    #         if not picking.product_type:
+    #         if not picking.product_type_id:
     #             raise ValidationError(_("Product type is required for oil and gas transfers."))
     #         if not picking.vehicle_id:
     #             raise ValidationError(_("Vehicle is required for oil and gas transfers."))
