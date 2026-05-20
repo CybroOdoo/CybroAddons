@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.exceptions import ValidationError
@@ -41,9 +42,9 @@ class OilInspectionPoint(models.Model):
         required=True,
         help='Name of this inspection point / checklist template.',
     )
-    sequence = fields.Integer(default=10, help="Enter the sequence.")
+    sequence = fields.Integer(default=10, help="Order in which this item appears.")
     active = fields.Boolean(default=True,
-                            help="Enable this when active applies.")
+                            help="Uncheck to archive without deleting.")
     company_id = fields.Many2one(
         'res.company',
         string='Company',
@@ -75,7 +76,7 @@ class OilInspectionPoint(models.Model):
     def matches_product(self, product):
         """
         Determines if this inspection point template applies to the given product 
-        base on product-specific or category-specific rules.
+        based on product-specific or category-specific rules.
         """
         self.ensure_one()
         if not self.product_id and not self.product_category_id:
@@ -116,7 +117,7 @@ class OilInspectionPointCriteria(models.Model):
         string='Evaluation Type',
         default='manual',
         required=True,
-        help="Choose the evaluation Type.")
+        help="Whether this criterion is evaluated manually (pass/fail) or by percentage threshold.")
     target_value = fields.Float(
         string='Target Value (%)',
         default=0.5,

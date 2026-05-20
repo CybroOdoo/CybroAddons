@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -47,11 +48,11 @@ class MrpProduction(models.Model):
         'oil.inspection.order',
         'production_id',
         string='Inspection Orders',
-        help="Lists the inspection Orders.")
+        help="Quality inspection orders linked to this manufacturing order.")
     inspection_count = fields.Integer(
         string='Inspections',
         compute='_compute_inspection_count',
-        help="Enter the inspections.")
+        help="Number of inspection orders linked to this manufacturing order.")
     inspection_state = fields.Selection(
         [
             ('none', 'No Inspection'),
@@ -62,7 +63,7 @@ class MrpProduction(models.Model):
         string='Inspection Status',
         compute='_compute_inspection_state',
         store=True,
-        help="Choose the inspection Status.")
+        help="Overall inspection status for this manufacturing order.")
 
     # ─── Computed fields ───────────────────────────────────────────────────────
 
@@ -125,7 +126,7 @@ class MrpProduction(models.Model):
                         'is_critical': criteria.is_critical,
                         'sequence': criteria.sequence,
                         'evaluation_type': criteria.evaluation_type,
-                        'target_value': criteria.target_value,
+                        'target_value': criteria.target_value / 100,
                     })
                     for criteria in point.criteria_ids
                 ],

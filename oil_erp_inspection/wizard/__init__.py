@@ -18,4 +18,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from . import inspection_fail_wizard

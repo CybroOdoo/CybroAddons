@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.tools.translate import _
 
@@ -31,29 +32,29 @@ class OilInspectionFailWizard(models.TransientModel):
         'oil.inspection.order',
         string='Inspection',
         required=True,
-        help="Select the inspection.")
+        help="Inspection order that failed quality checks.")
     product_id = fields.Many2one(
         'product.product',
         string='Product',
         related='inspection_id.product_id',
-        help="Select the product.")
+        help="Product to be scrapped from the failed inspection.")
     quantity = fields.Float(
         string='Original Quantity',
         related='inspection_id.production_id.product_qty',
-        help="Enter the original Quantity.")
+        help="Original quantity from the manufacturing order.")
     scrap_qty = fields.Float(
         string='Scrap Quantity',
         required=True,
-        help="Enter the scrap Quantity.")
+        help="Quantity of product to scrap due to inspection failure.")
     scrap_reason = fields.Char(
         string='Scrap Reason',
         required=True,
-        help="Enter the scrap Reason.")
+        help="Reason for scrapping the product.")
     scrap_location_id = fields.Many2one(
         'stock.location',
         string='Scrap Location',
         required=True,
-        help="Select the scrap Location.")
+        help="Warehouse location where scrapped products are stored.")
 
     @api.model
     def default_get(self, fields_list):

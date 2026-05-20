@@ -18,6 +18,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from . import oil_inspection_point
 from . import oil_inspection_order
 from . import mrp_production
+from . import dashboard_downstream

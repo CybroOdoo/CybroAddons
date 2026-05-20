@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.exceptions import ValidationError
@@ -44,7 +45,7 @@ class OilInspectionOrder(models.Model):
         copy=False,
         readonly=True,
         default=lambda self: _('New'),
-        help="Enter the reference.")
+        help="Auto-generated unique reference for this inspection order.")
     state = fields.Selection(
         [
             ('draft', 'Draft'),
@@ -57,7 +58,7 @@ class OilInspectionOrder(models.Model):
         default='draft',
         required=True,
         tracking=True,
-        help="Choose the status.")
+        help="Current workflow status of this inspection order.")
     company_id = fields.Many2one(
         'res.company',
         string='Company',
@@ -104,7 +105,7 @@ class OilInspectionOrder(models.Model):
         'oil.inspection.order.line',
         'order_id',
         string='Checklist',
-        help="Lists the checklist.")
+        help="Individual checklist items to be evaluated during inspection.")
 
     # ── Computed Result ──
     result = fields.Selection(
@@ -117,13 +118,13 @@ class OilInspectionOrder(models.Model):
         compute='_compute_result',
         store=True,
         tracking=True,
-        help="Choose the result.")
+        help="Overall inspection result computed from individual checklist items.")
     scrap_id = fields.Many2one(
         'stock.scrap',
         string='Scrap Movement',
         readonly=True,
-        help="Select the scrap Movement.")
-    note = fields.Html(string='Notes', help="Enter the notes.")
+        help="Scrap record created when the inspection fails.")
+    note = fields.Html(string='Notes', help="Additional inspection notes and observations.")
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -229,25 +230,25 @@ class OilInspectionOrderLine(models.Model):
     _description = 'Oil Inspection Order Line'
     _order = 'sequence, id'
 
-    sequence = fields.Integer(default=10, help="Enter the sequence.")
+    sequence = fields.Integer(default=10, help="Order of this item in the checklist.")
     order_id = fields.Many2one(
         'oil.inspection.order',
         string='Inspection Order',
         required=True,
         ondelete='cascade',
-        help="Select the inspection Order.")
+        help="Parent inspection order this item belongs to.")
     name = fields.Char(
         string='Check Item',
         required=True,
-        help="Enter the check Item.")
+        help="Description of the quality check to perform.")
     guideline = fields.Text(
         string='Guideline',
         readonly=True,
-        help="Enter the guideline.")
+        help="Instructions for the inspector on how to evaluate this item.")
     is_critical = fields.Boolean(
         string='Critical',
         default=False,
-        help="Enable this when critical applies.")
+        help="If checked, a failure on this item automatically fails the entire inspection.")
     result = fields.Selection(
         [('pass', 'Pass'),('fail', 'Fail'),
         ],
@@ -256,17 +257,17 @@ class OilInspectionOrderLine(models.Model):
     percentage = fields.Float(
         string='Percentage (%)',
         digits=(5, 2),
-        help="Enter the percentage (%).")
+        help="Measured percentage value for threshold-based evaluation.")
     evaluation_type = fields.Selection(
         [('manual', 'Pass/Fail'), ('percentage', 'Percentage')],
         string='Evaluation Type',
-        help="Choose the evaluation Type.")
+        help="Whether this item is evaluated manually or by percentage.")
     target_value = fields.Float(
         string='Target Value (%)',
-        help="Enter the target Value (%).")
+        help="Minimum percentage threshold required to pass.")
     remarks = fields.Text(
         string='Remarks',
-        help="Enter the remarks.")
+        help="Inspector notes explaining the evaluation result.")
 
     @api.onchange('percentage', 'evaluation_type', 'target_value')
     def _onchange_percentage(self):

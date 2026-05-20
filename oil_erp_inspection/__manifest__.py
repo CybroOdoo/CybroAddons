@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': 'Oil & Gas Inspection',
-    'version': '19.0.1.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Oil ERP/Downstream',
     'summary': 'Manufacturing Inspection for Oil & Gas Downstream',
     'description': """
