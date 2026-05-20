@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- JIB Search View -->
+    <record id="oil_jv_jib_view_search" model="ir.ui.view">
+        <field name="name">oil.jv.jib.view.search</field>
+        <field name="model">oil.jv.jib</field>
+        <field name="arch" type="xml">
+            <search string="Search JIBs">
+                <field name="name"/>
+                <field name="agreement_id"/>
+                <field name="afe_id"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Confirmed" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Billed" name="billed" domain="[('state', '=', 'billed')]"/>
+                <separator/>
+                <group name="group_by">
+                    <filter string="JOA" name="group_by_agreement" context="{'group_by': 'agreement_id'}"/>
+                    <filter string="Period" name="group_by_period" context="{'group_by': 'period_date:month'}"/>
+                    <filter string="Status" name="group_by_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- JIB List View -->
+    <record id="oil_jv_jib_view_list" model="ir.ui.view">
+        <field name="name">oil.jv.jib.view.list</field>
+        <field name="model">oil.jv.jib</field>
+        <field name="arch" type="xml">
+            <list string="Joint Interest Billings"
+                  decoration-info="state == 'draft'"
+                  decoration-warning="state == 'confirmed'"
+                  decoration-success="state == 'billed'">
+                <field name="name"/>
+                <field name="agreement_id"/>
+                <field name="afe_id" optional="show"/>
+                <field name="period_date"/>
+                <field name="total_costs"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="bill_count"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'confirmed'"
+                       decoration-success="state == 'billed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- JIB Form View -->
+    <record id="oil_jv_jib_view_form" model="ir.ui.view">
+        <field name="name">oil.jv.jib.view.form</field>
+        <field name="model">oil.jv.jib</field>
+        <field name="arch" type="xml">
+            <form string="Joint Interest Billing">
+                <header>
+                    <button name="action_compute_allocations"
+                            string="Compute Allocations"
+                            type="object"
+                            invisible="state != 'draft'"/>
+                    <button name="action_confirm" string="Confirm"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_generate_invoices"
+                            string="Generate Invoices"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_set_to_draft" string="Reset to Draft"
+                            type="object"
+                            invisible="state != 'confirmed'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,billed"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not expiry_warning">
+                        <strong>Warning:</strong>
+                        <field name="expiry_warning" nolabel="1"/>
+                    </div>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoices" type="object"
+                                class="oe_stat_button" icon="fa-pencil-square-o"
+                                invisible="bill_count == 0">
+                            <field name="bill_count" widget="statinfo"
+                                   string="Invoices"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"
+                                   invisible="name == 'New'"
+                                   readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="JIB Details">
+                            <field name="agreement_id" readonly="state != 'draft'"/>
+                            <field name="afe_id" readonly="state != 'draft'"/>
+                            <field name="period_date" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Totals">
+                            <field name="total_costs"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="cost_lines" string="Actual Costs">
+                            <field name="cost_line_ids" readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="cost_category"/>
+                                    <field name="description"/>
+                                    <field name="vendor_id" optional="show"/>
+                                    <field name="bill_reference" optional="hide"/>
+                                    <field name="account_id" optional="hide"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="amount"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_costs"
+                                       class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                        <page name="allocations" string="Partner Allocations">
+                            <field name="allocation_ids">
+                                <list>
+                                    <field name="partner_id"/>
+                                    <field name="working_interest"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="allocated_amount"/>
+                                    <field name="invoice_id" optional="show"/>
+                                    <field name="payment_status" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page name="notes" string="Notes">
+                            <field name="notes"
+                                   placeholder="Additional notes about this JIB..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- JIB Action -->
+    <record id="action_oil_jv_jib" model="ir.actions.act_window">
+        <field name="name">Joint Interest Billings</field>
+        <field name="res_model">oil.jv.jib</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="oil_jv_jib_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Joint Interest Billing!
+            </p>
+            <p>
+                Split actual costs across JV partners based on their Working Interest.
+            </p>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add JV Agreement field + Revenue smart button + Create Revenue
+         button to the Royalty form -->
+    <record id="oil_royalty_view_form_inherit_jv" model="ir.ui.view">
+        <field name="name">oil.royalty.view.form.inherit.jv</field>
+        <field name="model">oil.royalty</field>
+        <field name="inherit_id" ref="oil_erp_royalty.oil_royalty_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Hide base lease_expiry_warning — replaced by the
+                 combined expiry_warning below that covers both
+                 lease + JOA -->
+            <xpath expr="//div[hasclass('alert')][.//field[@name='lease_expiry_warning']]"
+                   position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Combined expiry warning banner (lease + JOA) -->
+            <xpath expr="//div[@name='button_box']" position="before">
+                <div class="alert alert-warning" role="alert"
+                     invisible="not expiry_warning">
+                    <strong>Warning:</strong>
+                    <field name="expiry_warning" nolabel="1"/>
+                </div>
+            </xpath>
+
+            <!-- Add JV Agreement field after lease_id -->
+            <xpath expr="//field[@name='lease_id']"
+                   position="after">
+                <field name="jv_agreement_id"
+                       readonly="state != 'draft'"/>
+            </xpath>
+
+            <!-- Ensure Property Owner is visible (used for billing in JV Revenue) -->
+            <xpath expr="//field[@name='lessor_id']" position="attributes">
+                <attribute name="invisible">0</attribute>
+                <attribute name="required">1</attribute>
+            </xpath>
+
+            <!-- Ensure Rate Configuration group is visible -->
+            <xpath expr="//field[@name='royalty_type']/parent::group" position="attributes">
+                <attribute name="invisible">0</attribute>
+            </xpath>
+
+            <!-- Hide original single-bill button when JV is set
+                 (replaced by the JV Bills button below) -->
+            <xpath expr="//div[@name='button_box']/button[@name='action_view_bill']"
+                   position="attributes">
+                <attribute name="invisible">not bill_id or jv_agreement_id</attribute>
+            </xpath>
+
+            <!-- Add Revenue + Bills smart buttons in button_box -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_jv_revenues" type="object"
+                        class="oe_stat_button" icon="fa-bar-chart"
+                        invisible="jv_revenue_count == 0">
+                    <field name="jv_revenue_count" widget="statinfo"
+                           string="Revenue Dist."/>
+                </button>
+                <button name="action_view_jv_bills" type="object"
+                        class="oe_stat_button" icon="fa-pencil-square-o"
+                        invisible="jv_bill_count == 0">
+                    <field name="jv_bill_count" widget="statinfo"
+                           string="Bills"/>
+                </button>
+            </xpath>
+
+            <!-- Hide direct "Create Bill" when JV agreement is set;
+                 billing goes through Revenue Distribution instead -->
+            <xpath expr="//header/button[@name='action_create_bill']"
+                   position="attributes">
+                <attribute name="invisible">state != 'confirmed' or jv_agreement_id</attribute>
+            </xpath>
+
+            <!-- Add "Create Revenue Distribution" button in header -->
+            <xpath expr="//header/button[@name='action_create_bill']"
+                   position="after">
+                <button name="action_create_revenue_distribution"
+                        string="Create Revenue Distribution"
+                        type="object"
+                        invisible="state != 'confirmed' or not jv_agreement_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add JV Agreement column to the Royalty list view -->
+    <record id="oil_royalty_view_list_inherit_jv" model="ir.ui.view">
+        <field name="name">oil.royalty.view.list.inherit.jv</field>
+        <field name="model">oil.royalty</field>
+        <field name="inherit_id" ref="oil_erp_royalty.oil_royalty_view_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='lease_id']" position="after">
+                <field name="jv_agreement_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add JV Agreement filter to the Royalty search view -->
+    <record id="oil_royalty_view_search_inherit_jv" model="ir.ui.view">
+        <field name="name">oil.royalty.view.search.inherit.jv</field>
+        <field name="model">oil.royalty</field>
+        <field name="inherit_id" ref="oil_erp_royalty.oil_royalty_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='lease_id']" position="after">
+                <field name="jv_agreement_id"/>
+            </xpath>
+            <xpath expr="//filter[@name='group_by_lease']" position="after">
+                <filter string="JV Agreement" name="group_by_jv"
+                        context="{'group_by': 'jv_agreement_id'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Revenue Distribution Search View -->
+    <record id="oil_jv_revenue_view_search" model="ir.ui.view">
+        <field name="name">oil.jv.revenue.view.search</field>
+        <field name="model">oil.jv.revenue</field>
+        <field name="arch" type="xml">
+            <search string="Search Revenue Distributions">
+                <field name="name"/>
+                <field name="agreement_id"/>
+                <filter string="Draft" name="draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter string="Confirmed" name="confirmed"
+                        domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Distributed" name="distributed"
+                        domain="[('state', '=', 'distributed')]"/>
+                <separator/>
+                <group name="group_by">
+                    <filter string="JOA" name="group_by_agreement"
+                            context="{'group_by': 'agreement_id'}"/>
+                    <filter string="Period" name="group_by_period"
+                            context="{'group_by': 'period_date:month'}"/>
+                    <filter string="Status" name="group_by_state"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Revenue Distribution List View -->
+    <record id="oil_jv_revenue_view_list" model="ir.ui.view">
+        <field name="name">oil.jv.revenue.view.list</field>
+        <field name="model">oil.jv.revenue</field>
+        <field name="arch" type="xml">
+            <list string="Revenue Distributions"
+                  decoration-info="state == 'draft'"
+                  decoration-warning="state == 'confirmed'"
+                  decoration-success="state == 'distributed'">
+                <field name="name"/>
+                <field name="agreement_id"/>
+                <field name="period_date"/>
+                <field name="total_gross_revenue" optional="show"/>
+                <field name="total_net_revenue"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="bill_count"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'confirmed'"
+                       decoration-success="state == 'distributed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Revenue Distribution Form View -->
+    <record id="oil_jv_revenue_view_form" model="ir.ui.view">
+        <field name="name">oil.jv.revenue.view.form</field>
+        <field name="model">oil.jv.revenue</field>
+        <field name="arch" type="xml">
+            <form string="Revenue Distribution">
+                <header>
+                    <button name="action_import_from_royalty"
+                            string="Import from Royalty"
+                            type="object"
+                            invisible="state != 'draft' or not royalty_id"/>
+                    <button name="action_compute_allocations"
+                            string="Compute Allocations"
+                            type="object"
+                            invisible="state != 'draft'"/>
+                    <button name="action_confirm" string="Confirm"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_generate_bills"
+                            string="Generate Bills"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_set_to_draft"
+                            string="Reset to Draft"
+                            type="object"
+                            invisible="state != 'confirmed'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,distributed"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not expiry_warning">
+                        <strong>Warning:</strong>
+                        <field name="expiry_warning" nolabel="1"/>
+                    </div>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_bills" type="object"
+                                class="oe_stat_button"
+                                icon="fa-pencil-square-o"
+                                invisible="bill_count == 0">
+                            <field name="bill_count" widget="statinfo"
+                                   string="Bills"/>
+                        </button>
+                        <button name="action_view_royalty" type="object"
+                                class="oe_stat_button"
+                                icon="fa-percent"
+                                invisible="not royalty_id">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Royalty</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"
+                                   invisible="name == 'New'"
+                                   readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Revenue Details">
+                            <field name="agreement_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="royalty_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="period_date"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Totals">
+                            <field name="total_gross_revenue"/>
+                            <field name="total_royalty_deduction"/>
+                            <field name="total_other_deductions"/>
+                            <field name="total_net_revenue"
+                                   class="oe_subtotal_footer_separator"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="revenue_lines"
+                              string="Revenue Lines">
+                            <field name="revenue_line_ids"
+                                   readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="product_id"/>
+                                    <field name="description"/>
+                                    <field name="production_volume"/>
+                                    <field name="uom"/>
+                                    <field name="unit_price"/>
+                                    <field name="gross_revenue"/>
+                                    <field name="royalty_deduction"/>
+                                    <field name="other_deductions"
+                                           optional="show"/>
+                                    <field name="net_revenue"/>
+                                    <field name="currency_id"
+                                           column_invisible="True"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_net_revenue"
+                                       class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                        <page name="allocations"
+                              string="Partner Allocations">
+                            <field name="allocation_ids">
+                                <list>
+                                    <field name="partner_id"/>
+                                    <field name="is_royalty_allocation" column_invisible="True"/>
+                                    <field name="interest_type"/>
+                                    <field name="interest_pct"/>
+                                    <field name="currency_id"
+                                           column_invisible="True"/>
+                                    <field name="allocated_amount"/>
+                                    <field name="bill_id" optional="show"/>
+                                    <field name="payment_status"
+                                           optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page name="notes" string="Notes">
+                            <field name="notes"
+                                   placeholder="Additional notes about this revenue distribution..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Revenue Distribution Action -->
+    <record id="action_oil_jv_revenue" model="ir.actions.act_window">
+        <field name="name">Revenue Distributions</field>
+        <field name="res_model">oil.jv.revenue</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="oil_jv_revenue_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Revenue Distribution!
+            </p>
+            <p>
+                Split production revenue across JV partners based on their
+                Net Revenue Interest or Working Interest.
+            </p>
+        </field>
+    </record>
+</odoo>
