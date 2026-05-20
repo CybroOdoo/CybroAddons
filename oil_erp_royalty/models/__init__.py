@@ -20,3 +20,4 @@
 #############################################################################
 from . import oil_royalty
 from . import lease_agreement
+from . import dashboard_upstream

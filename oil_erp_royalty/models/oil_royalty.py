@@ -18,6 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+
 from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.exceptions import UserError, ValidationError
@@ -39,14 +40,14 @@ class OilRoyalty(models.Model):
         string='Name',
         required=True,
         copy=False,
-        help="Enter the name.")
+        help="Descriptive name for this royalty record.")
     sequence_royalty = fields.Char(
         string='Royalty Reference',
         required=True,
         copy=False,
         readonly=True,
         default=lambda self: _('New'),
-        help="Enter the royalty Reference.")
+        help="Auto-generated unique reference number.")
 
     lease_id = fields.Many2one(
         'oil.lease.agreement',
@@ -54,18 +55,24 @@ class OilRoyalty(models.Model):
         required=True,
         tracking=True,
         domain="[('state', '=', 'active')]",
-        help="Select the lease Agreement.")
+        help="Lease agreement under which this royalty is calculated.")
+    lease_expiry_warning = fields.Text(
+        string='Lease Expiry Warning',
+        compute='_compute_lease_expiry_warning',
+        help="Warning if the related lease agreement has expired.")
     lessor_id = fields.Many2one(
         related='lease_id.lessor_id',
         string='Property Owner',
         store=True,
-        help="Select the property Owner.")
+        readonly=False,
+        help="Property owner entitled to royalty payments (from lease).")
+    notes = fields.Text(string='Notes', help="Enter the notes.")
     currency_id = fields.Many2one(
         'res.currency',
         string='Currency',
         required=True,
         default=lambda self: self.env.company.currency_id,
-        help="Select the currency.")
+        help="Currency for all monetary values in this record.")
     company_id = fields.Many2one(
         'res.company',
         string='Company',
@@ -77,7 +84,7 @@ class OilRoyalty(models.Model):
         required=True,
         default=fields.Date.today,
         tracking=True,
-        help="Select the date for royalty Date.")
+        help="Date of this royalty calculation period.")
     royalty_type = fields.Selection(
         [
             ('percentage', 'Percentage of Revenue'),
@@ -87,12 +94,13 @@ class OilRoyalty(models.Model):
         required=True,
         default='percentage',
         tracking=True,
-        help="Choose the royalty Type.")
+        help="Method used to calculate royalty: percentage of revenue or fixed per unit.")
     royalty_rate = fields.Float(
         string='Royalty Rate (%)',
         digits=(6, 2),
+        default=10.0,
         tracking=True,
-        help="Percentage rate when type is 'Percentage of Revenue'.",)
+        help="Percentage rate when type is 'Percentage of Revenue'. Defaults to 10%.",)
     fixed_rate = fields.Float(
         string='Fixed Rate Per Unit',
         digits=(10, 2),
@@ -107,7 +115,7 @@ class OilRoyalty(models.Model):
         string='Status',
         default='draft',
         tracking=True,
-        help="Choose the status.")
+        help="Current workflow status of this royalty record.")
     line_ids = fields.One2many(
         'oil.royalty.line',
         'royalty_id',
@@ -117,24 +125,33 @@ class OilRoyalty(models.Model):
         string='Total Production',
         compute='_compute_totals',
         store=True,
-        help="Enter the total Production.")
+        help="Total production volume aggregated from all lines.")
     total_gross_revenue = fields.Monetary(
         string='Total Gross Revenue',
         compute='_compute_totals',
         store=True,
         currency_field='currency_id',
-        help="Enter the total Gross Revenue.")
+        help="Total gross revenue aggregated from all lines.")
     total_royalty_amount = fields.Monetary(
         string='Total Royalty Amount',
         compute='_compute_totals',
         store=True,
         currency_field='currency_id',
-        help="Enter the total Royalty Amount.")
+        help="Total royalty payment amount aggregated from all lines.")
     bill_id = fields.Many2one('account.move', string='Associated Bill',
                                readonly=True, copy=False, help="The vendor bill created for this royalty.")
     bill_count = fields.Integer(string='Bill Count', compute='_compute_bill_count',
                                 help="Number of associated bills.")
-    notes = fields.Text(string='Notes', help="Enter the notes.")
+
+    def _compute_lease_expiry_warning(self):
+        """Shows warning if the lease agreement has expired."""
+        for record in self:
+            if record.lease_id and record.lease_id.state == 'expired':
+                record.lease_expiry_warning = _(
+                    "Lease Agreement '%s' has expired.",
+                    record.lease_id.name)
+            else:
+                record.lease_expiry_warning = False
 
     def _compute_bill_count(self):
         """
@@ -310,17 +327,18 @@ class OilRoyaltyLine(models.Model):
         string='Royalty',
         required=True,
         ondelete='cascade',
-        help="Select the royalty.")
+        help="Parent royalty record this line belongs to.")
     currency_id = fields.Many2one(
         related='royalty_id.currency_id',
-        help="Select the currency id.")
+        help="Currency from the parent royalty record.")
     product_id = fields.Many2one('product.product',
                                  'Product',
-                                 help="Select the product id.")
+                                 required=True,
+                                 help="Product for which production and revenue are recorded.")
     description = fields.Char(string='Description',
-                              help="Enter the description.")
+                              help="Description of the production or revenue line item.")
     date = fields.Date(string='Period Date', required=True,
-                       help="Select the date for period Date.")
+                       help="Production period date for this line.")
     production_volume = fields.Float(
         string='Production Volume',
         digits=(12, 2),
@@ -334,13 +352,13 @@ class OilRoyaltyLine(models.Model):
         compute='_compute_amounts',
         store=True,
         currency_field='currency_id',
-        help="Enter the gross Revenue.")
+        help="Gross revenue calculated as volume multiplied by unit price.")
     royalty_amount = fields.Monetary(
         string='Royalty Amount',
         compute='_compute_amounts',
         store=True,
         currency_field='currency_id',
-        help="Enter the royalty Amount.")
+        help="Royalty payment amount calculated based on the royalty type.")
 
     @api.constrains('production_volume')
     def _check_production_volume(self):
@@ -374,6 +392,19 @@ class OilRoyaltyLine(models.Model):
                 raise ValidationError(
                     _("Line period date cannot be in the future.")
                 )
+
+    @api.onchange('product_id')
+    def _onchange_product_id(self):
+        """Default the unit price from the product's sale price.
+
+        Behaves like a sale order line: the price is pre-filled but the
+        user can override it on the line.
+        """
+        for line in self:
+            if line.product_id:
+                line.unit_price = line.product_id.lst_price
+                if not line.description:
+                    line.description = line.product_id.display_name
 
     @api.depends('production_volume', 'unit_price', 'royalty_id.royalty_type',
                  'royalty_id.royalty_rate', 'royalty_id.fixed_rate')

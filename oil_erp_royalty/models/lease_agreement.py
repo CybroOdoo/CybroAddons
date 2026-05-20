@@ -18,7 +18,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+
+from odoo import api, fields, models
 
 
 class OilLeaseAgreement(models.Model):
@@ -32,11 +33,11 @@ class OilLeaseAgreement(models.Model):
         'oil.royalty',
         'lease_id',
         string='Royalties',
-        help="Lists the royalties.")
+        help="Royalty records linked to this lease agreement.")
     royalty_count = fields.Integer(
         string='Royalty Count',
         compute='_compute_royalty_count',
-        help="Enter the royalty Count.")
+        help="Total number of royalty records for this lease.")
 
     def _compute_royalty_count(self):
         """

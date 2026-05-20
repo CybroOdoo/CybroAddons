@@ -18,10 +18,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from __future__ import annotations
-
 from typing import Any
-
 from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.exceptions import UserError

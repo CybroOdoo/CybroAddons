@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': 'Oil & Gas Royalty',
-    'version': '19.0.1.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Oil ERP/Upstream',
     'summary': 'Calculate and track royalty payments linked to lease agreements',
     'description': """
