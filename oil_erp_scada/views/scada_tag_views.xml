@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ── List view ─────────────────────────────────────────────── -->
+    <record id="view_scada_tag_list" model="ir.ui.view">
+        <field name="name">scada.tag.list</field>
+        <field name="model">scada.tag</field>
+        <field name="arch" type="xml">
+            <list string="SCADA Tags" decoration-danger="last_quality == 'bad'"
+                  decoration-warning="last_quality == 'uncertain'">
+                <field name="name"/>
+                <field name="tag_path"/>
+                <field name="odoo_model"/>
+                <field name="equipment_id" optional="show"/>
+                <field name="project_id" optional="show"/>
+                <field name="well_id" optional="show"/>
+                <field name="workcenter_id" optional="hide"/>
+
+                <field name="last_quality" widget="badge"
+                       decoration-success="last_quality == 'good'"
+                       decoration-danger="last_quality == 'bad'"
+                       decoration-warning="last_quality == 'uncertain'"/>
+                <field name="last_sync"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── Form view ─────────────────────────────────────────────── -->
+    <record id="view_scada_tag_form" model="ir.ui.view">
+        <field name="name">scada.tag.form</field>
+        <field name="model">scada.tag</field>
+        <field name="arch" type="xml">
+            <form string="SCADA Tag">
+
+                <header>
+                    <button name="action_simulate_reading" string="Simulate Reading"
+                            type="object" class="btn-primary"
+                            icon="fa-flask" help="Manually push a reading to test Odoo workflow."/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_storage_location" type="object"
+                                class="oe_stat_button" icon="fa-cubes"
+                                invisible="odoo_model != 'project.project' or not project_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Storage</span>
+                                <span class="o_stat_text">Location</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Tag name…"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Tag Identity">
+                            <field name="tag_path"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" widget="boolean_toggle"/>
+                            <field name="is_production_tag" widget="boolean_toggle"/>
+                            <field name="product_ids" widget="many2many_tags" invisible="not is_production_tag"/>
+                            <field name="lease_id" invisible="not is_production_tag"/>
+                        </group>
+                        <group string="Measurements">
+                            <field name="measure_pressure" widget="boolean_toggle"/>
+                            <field name="measure_temperature" widget="boolean_toggle"/>
+                            <field name="measure_flow_rate" widget="boolean_toggle"/>
+                            <field name="measure_level" widget="boolean_toggle"/>
+                            <field name="measure_gas_ppm" widget="boolean_toggle"/>
+                            <field name="measure_vibration" widget="boolean_toggle"/>
+                            <field name="measure_valve_position" widget="boolean_toggle"/>
+                            <field name="measure_cumulative" widget="boolean_toggle"/>
+                            <field name="measure_other" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Live State">
+                            <field name="last_quality" widget="badge"
+                                   decoration-success="last_quality == 'good'"
+                                   decoration-danger="last_quality == 'bad'"
+                                   decoration-warning="last_quality == 'uncertain'"/>
+                            <field name="last_sync"/>
+                        </group>
+                    </group>
+                    <group string="Odoo Write-back Target" name="write_back_target">
+                        <field name="odoo_model"/>
+
+                        <field name="equipment_id"
+                               invisible="odoo_model != 'maintenance.equipment'"
+                               required="odoo_model == 'maintenance.equipment'"/>
+
+                        <field name="project_id"
+                               invisible="odoo_model != 'project.project'"
+                               required="odoo_model == 'project.project'"/>
+
+                        <field name="well_id"
+                               invisible="odoo_model != 'project.project'"
+                               domain="[('project_id', '=', project_id), ('is_oil_gas_well', '=', True)]"/>
+
+                        <field name="carrier_id"
+                               invisible="odoo_model != 'delivery.carrier'"
+                               required="odoo_model == 'delivery.carrier'"
+                               domain="[('is_oil_gas_pipeline', '=', True)]"/>
+                    </group>
+                    <group string="Data Retention Policy">
+                        <group>
+                            <field name="has_retention" widget="boolean_toggle"/>
+                            <label for="retention_period" string="Retention Period" invisible="not has_retention"/>
+                            <div class="o_row" invisible="not has_retention">
+                                <field name="retention_period" class="oe_inline"/>
+                                <field name="retention_unit" class="oe_inline"/>
+                            </div>
+                        </group>
+                        <group invisible="not has_retention">
+                            <button name="action_purge_readings" type="object"
+                                    string="Purge Old Readings Now"
+                                    class="btn-secondary"
+                                    confirm="Are you sure you want to delete readings based on the current retention policy?"
+                                    help="Permanently delete readings older than the specified period."/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Readings Log" name="readings_log">
+                            <field name="reading_ids" readonly="1">
+                                <list create="false" edit="false" delete="false" editable="bottom"
+                                      decoration-danger="quality == 'bad'"
+                                      decoration-warning="quality == 'uncertain'">
+                                    <field name="timestamp"/>
+                                    <field name="val_pressure" column_invisible="parent.measure_pressure == False"/>
+                                    <field name="val_temperature"
+                                           column_invisible="parent.measure_temperature == False"/>
+                                    <field name="val_flow_rate" column_invisible="parent.measure_flow_rate == False"/>
+                                    <field name="val_level" column_invisible="parent.measure_level == False"/>
+                                    <field name="val_gas_ppm" column_invisible="parent.measure_gas_ppm == False"/>
+                                    <field name="val_vibration" column_invisible="parent.measure_vibration == False"/>
+                                    <field name="val_valve_position"
+                                           column_invisible="parent.measure_valve_position == False"/>
+                                    <field name="val_cumulative" column_invisible="parent.measure_cumulative == False"/>
+                                    <field name="val_other" column_invisible="parent.measure_other == False"/>
+                                    <field name="quality" widget="badge"
+                                           decoration-success="quality == 'good'"
+                                           decoration-danger="quality == 'bad'"
+                                           decoration-warning="quality == 'uncertain'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Production Logs" name="production_logs" invisible="not is_production_tag">
+                            <field name="production_log_ids" readonly="1">
+                                <list string="Production" create="false" edit="false" delete="false" editable="bottom">
+                                    <field name="timestamp"/>
+                                    <field name="product_id"/>
+                                    <field name="produced_qty"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Alert Thresholds">
+                            <field name="threshold_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="applies_to" optional="show"
+                                           decoration-muted="applies_to == 'any'"/>
+                                    <field name="operator"/>
+                                    <field name="threshold_value"/>
+                                    <field name="severity" widget="badge"
+                                           decoration-danger="severity in ('high','critical')"
+                                           decoration-warning="severity == 'medium'"
+                                           decoration-info="severity == 'low'"/>
+                                    <field name="action"/>
+                                    <field name="cooldown_minutes"/>
+                                    <field name="last_triggered"/>
+                                    <field name="trigger_count"/>
+                                    <field name="send_sms" widget="boolean_toggle"/>
+                                    <field name="active" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Action ────────────────────────────────────────────────── -->
+    <record id="action_scada_tag" model="ir.actions.act_window">
+        <field name="name">SCADA Tags</field>
+        <field name="res_model">scada.tag</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Register your first SCADA tag
+            </p>
+            <p>
+                Each tag maps one Ignition OPC-UA sensor path to an Odoo
+                equipment, project, well, or pipeline record.
+            </p>
+        </field>
+    </record>
+    <menuitem id="menu_scada_tags"
+              name="Tag Registry"
+              parent="menu_scada_live"
+              action="action_scada_tag"
+              sequence="10"/>
+</odoo>

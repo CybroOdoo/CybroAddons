@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ── Downtime list view ──────────────────────────────────────── -->
+    <record id="view_workcenter_downtime_list" model="ir.ui.view">
+        <field name="name">mrp.workcenter.downtime.list</field>
+        <field name="model">mrp.workcenter.downtime</field>
+        <field name="arch" type="xml">
+            <list string="Downtime Log"
+                  decoration-danger="state=='open'"
+                  decoration-muted="state=='closed'">
+                <field name="workcenter_id"/>
+                <field name="start_time"/>
+                <field name="end_time"/>
+                <field name="duration_minutes" string="Duration (min)"/>
+                <field name="downtime_type"/>
+                <field name="reason"/>
+                <field name="state" widget="badge"
+                       decoration-danger="state=='open'"
+                       decoration-success="state=='closed'"/>
+                <button name="action_close" string="Close"
+                        type="object" icon="fa-check"
+                        invisible="state == 'closed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── Work Center form extension ────────────────────────────────── -->
+    <record id="view_workcenter_scada_form" model="ir.ui.view">
+        <field name="name">mrp.workcenter.form.scada</field>
+        <field name="model">mrp.workcenter</field>
+        <field name="inherit_id" ref="mrp.mrp_workcenter_view"/>
+        <field name="arch" type="xml">
+            <!-- Smart buttons -->
+            <div name="button_box" position="inside">
+                <button name="action_view_scada_tags" type="object"
+                        class="oe_stat_button" icon="fa-signal">
+                    <field name="scada_tag_count" widget="statinfo" string="SCADA Tags"/>
+                </button>
+                <button name="action_view_downtime" type="object"
+                        class="oe_stat_button" icon="fa-clock-o">
+                    <field name="downtime_count" widget="statinfo" string="Downtimes"/>
+                </button>
+            </div>
+
+            <!-- Inject SCADA tab after the last existing tab -->
+            <page name="general_info" position="after">
+                <page string="SCADA Integration">
+                    <group>
+                        <group string="Live State">
+                            <field name="live_machine_state" readonly="1" widget="badge"
+                                   decoration-success="live_machine_state=='running'"
+                                   decoration-danger="live_machine_state=='fault'"
+                                   decoration-warning="live_machine_state in ('stopped','setup')"
+                                   decoration-info="live_machine_state=='idle'"/>
+                            <field name="live_output_count" readonly="1"/>
+                            <field name="live_energy_kwh" readonly="1"/>
+                            <field name="live_temperature" readonly="1"/>
+                            <field name="live_pressure" readonly="1"/>
+                            <field name="last_scada_sync" readonly="1"/>
+                            <field name="last_state_change" readonly="1"/>
+                        </group>
+                        <group string="OEE">
+                            <field name="oee_availability" readonly="1"/>
+                            <field name="oee_performance" readonly="1"/>
+                            <field name="oee_quality" readonly="1"/>
+                            <field name="oee_overall" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="SCADA Tag Assignments">
+                        <field name="state_tag_id"/>
+                        <field name="output_tag_id"/>
+                        <field name="energy_tag_id"/>
+                        <field name="temperature_tag_id"/>
+                        <field name="pressure_tag_id"/>
+                    </group>
+                    <group string="Auto Work Order Control">
+                        <field name="auto_start_workorder"/>
+                        <field name="auto_pause_workorder"/>
+                        <field name="auto_log_downtime"/>
+                    </group>
+                    <field name="downtime_ids">
+                        <list>
+                            <field name="start_time"/>
+                            <field name="end_time"/>
+                            <field name="duration_minutes" string="Min"/>
+                            <field name="downtime_type"/>
+                            <field name="reason"/>
+                            <field name="state" widget="badge"
+                                   decoration-danger="state=='open'"
+                                   decoration-success="state=='closed'"/>
+                        </list>
+                    </field>
+                </page>
+            </page>
+        </field>
+    </record>
+
+    <!-- ── Extend SCADA Tag form to show Work Center fields ──────────── -->
+    <record id="view_scada_tag_workcenter_form" model="ir.ui.view">
+        <field name="name">scada.tag.form.workcenter</field>
+        <field name="model">scada.tag</field>
+        <field name="inherit_id" ref="oil_erp_scada.view_scada_tag_form"/>
+        <field name="arch" type="xml">
+            <!-- Inject workcenter fields after the write-back target group (stable name anchor) -->
+            <group name="write_back_target" position="after">
+                <group string="Work Center Routing"
+                       invisible="odoo_model != 'none'">
+                    <field name="workcenter_id"/>
+                    <field name="workcenter_tag_role"
+                           invisible="not workcenter_id"/>
+                </group>
+            </group>
+        </field>
+    </record>
+
+    <!-- ── Downtime action ───────────────────────────────────────────── -->
+    <record id="action_workcenter_downtime" model="ir.actions.act_window">
+        <field name="name">Downtime Log</field>
+        <field name="res_model">mrp.workcenter.downtime</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ── Menu under SCADA > Production Accounting ─────────────────── -->
+    <menuitem id="menu_workcenter_downtime"
+              name="Downtime Log"
+              parent="oil_erp_scada.menu_scada_pra"
+              action="action_workcenter_downtime"
+              sequence="30"
+              groups="oil_erp_scada.group_scada_user"/>
+</odoo>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ── List ──────────────────────────────────────────────────── -->
+    <record id="view_scada_reading_list" model="ir.ui.view">
+        <field name="name">scada.reading.list</field>
+        <field name="model">scada.reading</field>
+        <field name="arch" type="xml">
+            <list string="SCADA Readings" create="false" edit="false"
+                  decoration-danger="quality == 'bad'"
+                  decoration-warning="quality == 'uncertain'">
+                <field name="timestamp"/>
+                <field name="tag_id"/>
+                <field name="tag_path"/>
+                <field name="equipment_id" optional="show"/>
+                <field name="project_id" optional="hide"/>
+                <field name="well_id" optional="hide"/>
+                <field name="storage_location_id" optional="hide"/>
+
+                <field name="carrier_id" optional="hide"/>
+
+                <field name="val_pressure" optional="show"/>
+                <field name="val_temperature" optional="show"/>
+                <field name="val_flow_rate" optional="show"/>
+                <field name="val_level" optional="show"/>
+                <field name="val_gas_ppm" optional="show"/>
+                <field name="val_vibration" optional="hide"/>
+                <field name="val_valve_position" optional="hide"/>
+                <field name="val_cumulative" optional="hide"/>
+                <field name="val_other" optional="hide"/>
+                <field name="quality" widget="badge"
+                       decoration-success="quality == 'good'"
+                       decoration-danger="quality == 'bad'"
+                       decoration-warning="quality == 'uncertain'"/>
+                <field name="source"/>
+            </list>
+        </field>
+    </record>
+
+
+    <!-- ── Graph ─────────────────────────────────────────────────── -->
+    <record id="view_scada_reading_graph" model="ir.ui.view">
+        <field name="name">scada.reading.graph</field>
+        <field name="model">scada.reading</field>
+        <field name="arch" type="xml">
+            <graph string="Readings Trend" type="line">
+                <field name="timestamp" type="row"/>
+                <field name="val_pressure" type="measure"/>
+                <field name="val_temperature" type="measure"/>
+                <field name="val_flow_rate" type="measure"/>
+                <field name="val_level" type="measure"/>
+                <field name="val_gas_ppm" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ── Search ────────────────────────────────────────────────── -->
+    <record id="view_scada_reading_search" model="ir.ui.view">
+        <field name="name">scada.reading.search</field>
+        <field name="model">scada.reading</field>
+        <field name="arch" type="xml">
+            <search string="Search Readings">
+                <field name="tag_id"/>
+                <field name="tag_path"/>
+
+                <filter string="Tag"
+                        name="group_by_tag"
+                        context="{'group_by': 'tag_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Action ────────────────────────────────────────────────── -->
+    <record id="action_scada_reading" model="ir.actions.act_window">
+        <field name="name">Readings Log</field>
+        <field name="res_model">scada.reading</field>
+        <field name="view_mode">list,graph</field>
+        <field name="search_view_id" ref="view_scada_reading_search"/>
+        <field name="context">{'search_default_group_by_tag': 1}</field>
+    </record>
+    <menuitem id="menu_scada_readings"
+              name="Readings Log"
+              parent="menu_scada_live"
+              action="action_scada_reading"
+              sequence="20"/>
+</odoo>
