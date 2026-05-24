@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <!--
+        This template defines a popup in POS to display available carry bag
+        products based on the selected category, allowing users to add them to the order.
+    -->
+    <t t-name="carry_bag_pos.BagPopup" owl="1">
+        <Dialog title="'Available Bags'">
+            <div class="modal-body">
+                <div t-if="products.length" class="product-list row g-2" style="max-height: 60vh; overflow-y: auto;">
+                    <div t-foreach="products" t-as="product" t-key="product.id" class="col-6 col-md-4">
+                        <article t-on-click="() => this._onClickProduct(product.id)"
+                                 class="product btn btn-light d-flex flex-column align-items-center p-2 h-100 cursor-pointer">
+                            <div class="product-img mb-2" style="width: 80px; height: 80px;">
+                                <img class="w-100 h-100"
+                                     style="object-fit: contain;"
+                                     t-att-alt="product.display_name"
+                                     t-att-src="`/web/image?model=product.product&amp;field=image_128&amp;id=${product.id}`"/>
+                            </div>
+                            <div class="product-content text-center">
+                                <div class="fw-bold small mb-1" t-esc="product.display_name"/>
+                                <span class="text-primary" t-esc="product.lst_price"/>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+                <div t-else="" class="alert alert-danger">
+                    No Bags are available in this category
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="props.close">
+                    Close
+                </button>
+            </t>
+        </Dialog>
+    </t>
+</templates>
