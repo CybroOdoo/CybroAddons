@@ -8,7 +8,7 @@ Automatic Database Backup To Local Server, Remote Server, Google Drive, Dropbox,
 
 Configuration
 ============
-- www.odoo.com/documentation/18.0/setup/install.html
+- www.odoo.com/documentation/19.0/setup/install.html
 - Install our custom addon
 
 License
