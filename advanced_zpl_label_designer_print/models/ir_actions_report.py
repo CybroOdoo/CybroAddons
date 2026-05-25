@@ -30,7 +30,7 @@ class IrActionsReport(models.Model):
         """Render ZPL label designer reports as text printer commands."""
         report = self._get_report_from_name(report_ref)
 
-        if report and report.report_name == 'zpl_label_designer.report_zpl_view':
+        if report and report.report_name == 'advanced_zpl_label_designer_print.report_zpl_view':
             template_id = False
             if res_ids:
                 template_id = res_ids[0] if isinstance(res_ids, list) else res_ids

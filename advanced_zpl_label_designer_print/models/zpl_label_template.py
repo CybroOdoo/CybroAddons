@@ -47,7 +47,7 @@ class ZplLabelTemplate(models.Model):
         """Open the report preview for the current ZPL template."""
         self.ensure_one()
         action = self.env.ref(
-            'zpl_label_designer.action_report_zpl_label_instance'
+            'advanced_zpl_label_designer_print.action_report_zpl_label_instance'
         ).report_action(self)
         return action
 

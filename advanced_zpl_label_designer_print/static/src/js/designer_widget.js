@@ -6,7 +6,7 @@ import { useService } from "@web/core/utils/hooks";
 import { ZplDesignerCanvas } from "./designer_canvas";
 
 export class ZplDesignerWidget extends Component {
-    static template = "zpl_label_designer.DesignerWidget";
+    static template = "advanced_zpl_label_designer_print.DesignerWidget";
 
     setup() {
         this.orm = useService("orm");

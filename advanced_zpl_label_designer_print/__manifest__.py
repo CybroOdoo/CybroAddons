@@ -46,9 +46,9 @@
     'assets': {
         'web.assets_backend': [
             'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js',
-            'zpl_label_designer/static/src/js/designer_canvas.js',
-            'zpl_label_designer/static/src/js/designer_widget.js',
-            'zpl_label_designer/static/src/xml/designer_templates.xml',
+            'advanced_zpl_label_designer_print/static/src/js/designer_canvas.js',
+            'advanced_zpl_label_designer_print/static/src/js/designer_widget.js',
+            'advanced_zpl_label_designer_print/static/src/xml/designer_templates.xml',
         ],
     },
     'images': [

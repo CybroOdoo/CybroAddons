@@ -34,12 +34,12 @@ class ProductLabelLayout(models.TransientModel):
     )
 
     print_format = fields.Selection(selection_add=[
-        ('zpl_label_designer', 'ZPL Label Designer')
-    ], ondelete={'zpl_label_designer': 'set default'})
+        ('advanced_zpl_label_designer_print', 'ZPL Label Designer')
+    ], ondelete={'advanced_zpl_label_designer_print': 'set default'})
 
     def process(self):
         """Print product labels using the selected ZPL template when needed."""
-        if self.print_format == 'zpl_label_designer':
+        if self.print_format == 'advanced_zpl_label_designer_print':
             if not self.zpl_template_id:
                 raise UserError("Please select a ZPL Template before printing.")
 
@@ -52,7 +52,7 @@ class ProductLabelLayout(models.TransientModel):
             else:
                 target_ids = products.ids
 
-            return self.env.ref('zpl_label_designer.action_report_zpl_label_instance').report_action(
+            return self.env.ref('advanced_zpl_label_designer_print.action_report_zpl_label_instance').report_action(
                 self.zpl_template_id,
                 data={
                     'zpl_template_id': self.zpl_template_id.id,
