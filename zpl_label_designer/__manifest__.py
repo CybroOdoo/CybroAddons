@@ -19,16 +19,15 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-"""Manifest file for ZPL Label Designer."""
 {
     'name': 'ZPL Label Designer',
     'version': '19.0.1.0.0',
     'summary': 'Interactive ZPL Label Designer for Odoo',
     'description': """
         Design ZPL labels using an interactive drag-and-drop designer.
-        - Support for text, barcodes, and images.
-        - Custom label sizes and DPI settings.
-        - Real-time ZPL generation.
+        Support for text, barcodes, and images.
+        Custom label sizes and DPI settings.
+        Real-time ZPL generation.
     """,
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
