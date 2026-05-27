@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="reflect_products_item"
+              name="Reflect — Product Card"
+              inherit_id="website_sale.products_item"
+              priority="20">
+
+        <xpath expr="//div[contains(@t-attf-class, 'oe_product_image')]" position="attributes">
+            <attribute name="class">reflect-product-img</attribute>
+        </xpath>
+
+        <xpath expr="//div[hasclass('o_wsale_product_information')]" position="replace">
+            <div class="o_wsale_product_information reflect-product-info flex-grow-1 flex-shrink-1">
+
+                <div class="o_wsale_product_info_attributes_wrapper">
+                    <t t-if="product_ptavs_data" t-call="website_sale.product_variant_preview"/>
+
+                    <div class="o_wsale_product_information_text">
+                        <div class="product-row">
+                            <span t-esc="product.name" class="product-title"/>
+                            <span class="product-price">
+                                <t t-if="product_price">
+                                    <span t-out="product_price"/>
+                                </t>
+                                <!-- Default Odoo Price -->
+                                <t t-else="">
+                                    <t t-set="template_price_vals"
+                                       t-value="get_product_prices(product)"/>
+                                    <!-- Sale Price -->
+                                    <span t-if="template_price_vals['price_reduce'] or not website.prevent_zero_price_sale"
+                                          t-out="template_price_vals['price_reduce']"
+                                          t-options="{
+                                  'widget': 'monetary',
+                                  'display_currency': website.currency_id
+                                      }"/>
+                                    <!-- Old Price -->
+                                    <del t-if="
+                                        'base_price' in template_price_vals
+                                        and template_price_vals['base_price'] > template_price_vals['price_reduce']
+                                     "
+                                         class="text-muted ms-1">
+                                        <small t-esc="template_price_vals['base_price']"
+                                               t-options="{
+                                               'widget': 'monetary',
+                                               'display_currency': website.currency_id
+                                           }"/>
+
+                                    </del>
+
+                                </t>
+                            </span>
+                        </div>
+                        <!-- Description — visibility helper preserved so editor toggle works -->
+                        <t t-call="website_sale.product_tile_element_visibility">
+                            <t t-set="visible_element_class" t-value="'o_wsale_products_opt_has_description'"/>
+                            <div class="oe_subdescription_wrapper">
+                                <div class="oe_subdescription reflect-product-desc text-muted small"
+                                     contenteditable="false">
+                                    <div t-field="product.description_sale"/>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- Rating -->
+                        <t t-if="is_view_active('website_sale.product_comment')"
+                           t-call="website_sale.product_tile_element_visibility">
+                            <t t-set="visible_element_class" t-value="'o_wsale_products_opt_has_rating'"/>
+                            <div class="o_wsale_product_rating_wrapper">
+                                <t t-call="portal_rating.rating_widget_stars_static">
+                                    <t t-set="rating_avg" t-value="product.sudo().rating_avg"/>
+                                    <t t-set="rating_count" t-value="product.rating_count"/>
+                                </t>
+                            </div>
+                        </t>
+
+                        <t t-if="product_extra_information" t-out="product_extra_information"/>
+
+                    </div>
+                </div>
+
+                <!-- Add-to-cart + wishlist — untouched -->
+                <div class="o_wsale_product_sub justify-content-between gap-2">
+                    <div class="o_wsale_product_btn">
+                        <t t-if="product_actions" t-out="product_actions"/>
+                        <t t-else="" t-call="website_sale.shop_product_buttons"/>
+                    </div>
+                </div>
+
+                <!-- Extra actions e.g. wishlist remove -->
+                <t t-if="extra_actions" t-out="extra_actions"/>
+            </div>
+        </xpath>
+
+    </template>
+
+</odoo>

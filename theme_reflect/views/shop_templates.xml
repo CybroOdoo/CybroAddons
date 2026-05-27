@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- New in product page section -->
+    <template id="new_in_products_page" name="Theme Reflect New In Products Page">
+        <t t-call="website.layout">
+            <div id="wrap" class="reflect-shop-wrapper">
+                <section class="cmpad py-5">
+                    <div class="shop-header mb-4">
+                        <div class="products_header d-flex flex-column gap-2">
+                            <h1 class="o_wsale_shop_title h4-fs mb-0">New in</h1>
+                            <p class="text-muted mb-0 reflect-cat-subtitle" style="max-width:580px; font-size:15px; line-height:1.7;">
+                                Latest arrivals curated for this week.
+                                (<t t-out="len(products)"/> products)
+                            </p>
+                        </div>
+                    </div>
+                    <div class="reflect-products-area">
+                        <div class="row g-4">
+                            <t t-foreach="products" t-as="product">
+                                <t t-set="product_variant" t-value="product._create_first_product_variant()"/>
+                                <t t-set="in_wish" t-value="product_variant and product_variant._is_in_wishlist()"/>
+                                <div class="col-6 col-md-4 col-lg-3">
+                                    <div class="card border-0 h-100 bg-transparent">
+                                        <a t-att-href="product.website_url" class="text-decoration-none text-dark d-block">
+                                            <div class="bg-light overflow-hidden">
+                                                <img t-att-src="'/web/image/product.template/%s/image_1024' % product.id"
+                                                     t-att-alt="product.name"
+                                                     class="img-fluid w-100"/>
+                                            </div>
+                                            <div class="pt-3">
+                                                <h6 class="mb-1 fw-medium" t-esc="product.name"/>
+                                                <p class="mb-0 text-muted">
+                                                    <span t-field="product.list_price"
+                                                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                                </p>
+                                            </div>
+                                        </a>
+                                        <div class="d-flex justify-content-end gap-2 pt-2">
+                                            <button type="button"
+                                                    class="reflect-newin-add-cart btn btn-sm btn-light border"
+                                                    t-att-data-product-template-id="product.id"
+                                                    t-att-data-product-product-id="product_variant.id"
+                                                    aria-label="Add to cart"
+                                                    title="Add to cart">
+                                                <i class="fa fa-shopping-cart"/>
+                                            </button>
+                                            <button t-if="request.env.registry.get('product.wishlist') and product_variant"
+                                               t-att-data-product-template-id="product.id"
+                                               t-att-data-product-product-id="product_variant.id"
+                                               t-attf-class="reflect-newin-wishlist btn btn-sm btn-light border #{in_wish and 'o_in_wishlist' or ''}"
+                                               title="Add to wishlist"
+                                               aria-label="Add to wishlist">
+                                                <i t-attf-class="fa o_not-animable #{in_wish and 'fa-heart text-danger' or 'fa-heart-o'}"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+</odoo>

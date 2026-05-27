@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ── Categories ── -->
+    <template id="s_reflect_categories" name="Reflect Categories">
+        <section class="s_reflect_categories o_cc o_cc1" data-snippet="s_reflect_categories"
+                 data-name="Reflect Categories" style="background:#f7f7f7; padding:80px 0;">
+            <div class="container">
+                <t t-set="current_website" t-value="request.env['website'].get_current_website()"/>
+                <t t-set="essential_products"
+                   t-value="request.env['product.template'].with_context(website_id=current_website.id).search([('website_published', '=', True), ('sale_ok', '=', True)], limit=3, order='website_sequence asc, id desc')"/>
+                <span class="d-block mb-3 text-uppercase text-muted small fw-bold" style="letter-spacing:1px;">Shop by
+                    Category
+                </span>
+                <div class="d-flex justify-content-between align-items-end mb-5 flex-wrap gap-3">
+                    <h2 class="display-5 fw-medium m-0" style="letter-spacing:-0.5px;">Curated Essentials</h2>
+                    <a href="/shop" class="btn btn-outline-dark px-4 py-2 border-1 rounded-0">View All</a>
+                </div>
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-3 g-4 mt-2">
+                    <t t-foreach="essential_products" t-as="product">
+                        <t t-set="display_price" t-value="product.product_variant_id.lst_price or product.list_price"/>
+                        <div class="col">
+                            <a t-att-href="product.website_url" class="text-decoration-none d-block">
+                                <div class="cat-img position-relative overflow-hidden mb-3" style="aspect-ratio:1/1;">
+                                    <img t-if="product.image_1920" t-att-src="image_data_uri(product.image_1920)"
+                                         t-att-alt="product.name" class="w-100 h-100" style="object-fit:cover;"/>
+                                    <img t-else="" src="/theme_reflect/static/img/2.jpg" t-att-alt="product.name"
+                                         class="w-100 h-100" style="object-fit:cover;"/>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-baseline gap-2">
+                                    <h4 class="text-dark fw-bold mb-1" style="font-size:16px;" t-field="product.name"/>
+                                    <span class="text-dark fw-bold small"
+                                          t-esc="display_price"
+                                          t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                                </div>
+                                <p class="text-muted small text-truncate" t-field="product.description_sale"/>
+                            </a>
+                        </div>
+                    </t>
+                    <t t-if="not essential_products">
+                        <div class="col">
+                            <a href="/shop/category/women" class="text-decoration-none d-block">
+                                <div class="cat-img position-relative overflow-hidden mb-3" style="aspect-ratio:1/1;">
+                                    <img src="/theme_reflect/static/img/2.jpg" alt="Women" class="w-100 h-100"
+                                         style="object-fit:cover;"/>
+                                </div>
+                                <h4 class="text-dark fw-bold mb-1" style="font-size:16px;">Women</h4>
+                                <p class="text-muted small">Elevated daily wear</p>
+                            </a>
+                        </div>
+                        <div class="col">
+                            <a href="/shop/category/men" class="text-decoration-none d-block">
+                                <div class="cat-img position-relative overflow-hidden mb-3" style="aspect-ratio:1/1;">
+                                    <img src="/theme_reflect/static/img/4.jpg" alt="Men" class="w-100 h-100"
+                                         style="object-fit:cover;"/>
+                                </div>
+                                <h4 class="text-dark fw-bold mb-1" style="font-size:16px;">Men</h4>
+                                <p class="text-muted small">Modern silhouettes</p>
+                            </a>
+                        </div>
+                        <div class="col">
+                            <a href="/shop/category/accessories" class="text-decoration-none d-block">
+                                <div class="cat-img position-relative overflow-hidden mb-3" style="aspect-ratio:1/1;">
+                                    <img src="/theme_reflect/static/img/3.jpg" alt="Accessories" class="w-100 h-100"
+                                         style="object-fit:cover;"/>
+                                </div>
+                                <h4 class="text-dark fw-bold mb-1" style="font-size:16px;">Accessories</h4>
+                                <p class="text-muted small">The finishing touch</p>
+                            </a>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </section>
+    </template>
+
+</odoo>

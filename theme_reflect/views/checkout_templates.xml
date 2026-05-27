@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Override Checkout Layout
+        Creating the primary 2-column structure for the entire checkout flow.
+    -->
+    <template id="reflect_checkout_layout" inherit_id="website_sale.checkout_layout" name="Reflect Checkout Layout" priority="99">
+
+        <!-- 1. Remove standard breadcrumbs / wizard checkout -->
+        <xpath expr="//div[contains(@class, 'o_website_sale_checkout_container')]//t[@t-call='website_sale.wizard_checkout']/.." position="replace"/>
+
+        <!-- 2. Refactor the main row to be full height and borderless -->
+        <xpath expr="//div[contains(@class, 'o_website_sale_checkout_container')]/div[1]" position="attributes">
+            <attribute name="class" add="g-0 flex-grow-1" separator=" "/>
+        </xpath>
+
+        <!-- 3. Left Column (Form Content) Style - White Background -->
+        <xpath expr="//div[contains(@t-attf-class, 'oe_cart')]" position="attributes">
+            <attribute name="t-attf-class">oe_clear_stucture oe_cart col-12 #{'col-lg-12' if (website_sale_order and website_sale_order.website_order_line and hide_cart) else ('col-lg-7' if website_sale_order and website_sale_order.website_order_line else '')}</attribute>
+            <attribute name="class" remove="col-lg-7" separator=" "/>
+            <attribute name="class" remove="col-lg-6 col-xl-7" separator=" "/>
+            <attribute name="class" add="px-lg-5 py-4 bg-white" separator=" "/>
+            <attribute name="t-att-style">'max-height: unset !important;' if hide_cart else 'max-height: 600px !important;' </attribute>
+        </xpath>
+
+        <!-- 4. Right Column (Summary Content) Style -->
+        <xpath expr="//div[contains(@class, 'o_website_sale_checkout_container')]/div[1]/div[contains(@class, 'col-lg-5')]" position="attributes">
+            <attribute name="class" remove="col-lg-5 col-xxl-4 rounded offset-xxl-1" separator=" "/>
+            <attribute name="class" add="col-lg-6 col-xl-5 reflect-checkout-summary-section px-lg-5 py-4 d-none d-lg-block" separator=" "/>
+        </xpath>
+
+        <!-- 4b. Ensure shorter cart summary is full-width and stacks correctly on mobile -->
+        <xpath expr="//div[hasclass('o_wsale_shorter_cart_summary')]" position="attributes">
+            <attribute name="class" add="col-12 mt-3 mt-lg-0" separator=" "/>
+        </xpath>
+
+        <!-- 5. Remove the card styling from the summary -->
+        <xpath expr="//div[contains(@class, 'o_total_card')]" position="attributes">
+            <attribute name="class" remove="card border shadow-sm" separator=" "/>
+        </xpath>
+        <xpath expr="//div[contains(@class, 'o_total_card')]/div[contains(@class, 'card-body')]" position="attributes">
+            <attribute name="class" remove="card-body p-lg-4 pt-lg-3" separator=" "/>
+            <attribute name="class" add="p-0" separator=" "/>
+        </xpath>
+        <xpath expr="//div[contains(@class, 'o_total_card')]//div[contains(@class, 'd-none d-lg-block')][1]" position="attributes">
+            <attribute name="t-att-style">'display: none !important;' if hide_cart else ''</attribute>
+        </xpath>
+
+        <!-- 6. Secure checkout badge in the summary -->
+        <xpath expr="//t[@t-call='website_sale.total']" position="after">
+            <div class="reflect-secure-checkout mt-4 text-muted small px-0 text-start d-flex align-items-center opacity-75">
+                <i class="fa fa-lock me-2"/>Secure checkout
+            </div>
+        </xpath>
+    </template>
+
+    <!--
+        Override Cart Summary Content
+        Implementing quantity bubbles and premium type.
+    -->
+    <template id="reflect_cart_summary_content" inherit_id="website_sale.cart_summary_content" name="Reflect Cart Summary Content" priority="99">
+        <xpath expr="//td[hasclass('td-product_name')]" position="attributes">
+            <attribute name="class" add="ps-3" separator=" "/>
+        </xpath>
+        <xpath expr="//td[hasclass('td-price')]" position="attributes">
+            <attribute name="class" add="text-dark" separator=" "/>
+        </xpath>
+    </template>
+
+    <!--
+        Checkout Page Header — title + return to cart (restored)
+    -->
+    <template id="reflect_checkout_header" inherit_id="website_sale.checkout" priority="99">
+        <xpath expr="//div[@id='shop_checkout']" position="before">
+            <div class="d-flex justify-content-between align-items-center mb-5 mt-4">
+                <h2 class="mb-0 fw-bold font-head h1 text-black">Checkout</h2>
+                <a href="/shop?open_cart=1" class="text-muted small text-decoration-none reflect_cart_link">
+                    <span class="me-1 opacity-50">&lt;</span> Return to cart
+                </a>
+            </div>
+        </xpath>
+    </template>
+
+    <!--
+        Payment Page Header — title + return to cart (restored)
+    -->
+    <template id="reflect_payment_header" inherit_id="website_sale.payment" priority="99">
+        <xpath expr="//div[@id='payment_method']" position="before">
+            <div class="d-flex justify-content-between align-items-center mb-5 mt-4">
+                <h2 class="mb-0 fw-bold font-head h1 text-black">Checkout</h2>
+                <a href="/shop?open_cart=1" class="text-muted small text-decoration-none reflect_cart_link">
+                    <span class="me-1 opacity-50">&lt;</span>
+                    Return to cart
+                </a>
+            </div>
+        </xpath>
+    </template>
+
+    <!--
+        Confirmation Page (/shop/confirmation)
+        Styled to match order-success reference design.
+    -->
+    <template id="reflect_shop_confirmation" inherit_id="website_sale.confirmation" priority="99">
+        <xpath expr="//t[@t-call='website_sale.cart_summary_content']" position="replace">
+        </xpath>
+        <xpath expr="//t[@t-call='website_sale.checkout_layout']" position="replace">
+            <t t-call="website_sale.checkout_layout">
+                <t t-set="show_wizard_checkout" t-value="False"/>
+                <t t-set="show_mobile_cart_summary" t-value="False"/>
+                <t t-set="show_navigation_button" t-value="False"/>
+                <t t-set="show_footer" t-value="True"/>
+                <t t-set="additional_title">Shop - Confirmed</t>
+                <t t-set="hide_promotions" t-value="True"/>
+                <t t-set="oe_structure">
+                    <div class="oe_structure" id="oe_structure_website_sale_confirmation_3"/>
+                </t>
+
+                <style>
+                    .reflect-os-wrap{max-width:640px;margin:0 auto 3rem;background:#fff;padding:48px 40px 80px}
+                    .reflect-os-check{width:46px;height:46px;border-radius:999px;background:#0f5132;color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:24px}
+                    .reflect-os-order-num{margin:0 0 8px;font-size:14px;color:#6c757d}
+                    .reflect-os-title{margin:0 0 12px;font-size:38px;line-height:1.2;font-weight:700;color:#111}
+                    .reflect-os-desc{margin:0 0 28px;color:#555;line-height:1.6}
+                    .reflect-os-card{border:1px solid #e8e8e8;border-radius:8px;padding:24px;margin-bottom:28px}
+                    .reflect-os-card-title{font-size:16px;font-weight:600;color:#111;margin-bottom:18px}
+                    .reflect-os-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px 28px}
+                    .reflect-os-label{font-size:13px;color:#777;margin-bottom:8px}
+                    .reflect-os-value{font-size:14px;line-height:1.6;color:#1f1f1f}
+                    .reflect-os-btn{display:inline-block;padding:12px 24px;background:#111;color:#fff!important;text-decoration:none;border-radius:2px;font-size:14px;font-weight:500}
+                    .reflect-os-links{margin-top:28px;display:flex;flex-wrap:wrap;gap:14px}
+                    .reflect-os-links a{font-size:13px;color:#666;text-decoration:none}
+                    @media (max-width: 767px){
+                        .reflect-os-wrap{padding:32px 20px 40px}
+                        .reflect-os-title{font-size:30px}
+                        .reflect-os-grid{grid-template-columns:1fr}
+                    }
+                </style>
+
+                <div class="cmpad">
+                    <div class="reflect-os-wrap">
+                        <div t-set="tx_sudo" t-value="order.get_portal_last_transaction()"/>
+                        <div class="reflect-os-check">
+                            <i class="fa fa-check"/>
+                        </div>
+
+                        <p class="reflect-os-order-num">
+                            <span>Order </span><span t-field="order.name"/>
+                        </p>
+                        <h1 class="reflect-os-title">
+                            <span>Thank you, </span><span t-out="order.partner_id.name or 'Customer'"/>!
+                        </h1>
+                        <p class="reflect-os-desc">Your order is confirmed. We've accepted your order and we're getting it ready.</p>
+
+                        <div class="reflect-os-card">
+                            <div class="reflect-os-card-title">Customer information</div>
+                            <div class="reflect-os-grid">
+                                <div>
+                                    <div class="reflect-os-label">Contact information</div>
+                                    <div class="reflect-os-value" t-out="order.partner_id.email or '-'"/>
+                                </div>
+                                <div>
+                                    <div class="reflect-os-label">Payment method</div>
+                                    <div class="reflect-os-value">
+                                        <t t-if="tx_sudo and tx_sudo.provider_id">
+                                            <span t-out="tx_sudo.provider_id.name"/>
+                                        </t>
+                                        <t t-else="">Payment</t>
+                                        <br/>
+                                        <span t-field="order.amount_total" t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="reflect-os-label">Shipping address</div>
+                                    <div class="reflect-os-value">
+                                        <span t-out="order.partner_shipping_id.name or '-'"/><br/>
+                                        <span t-out="order.partner_shipping_id.street or ''"/><br t-if="order.partner_shipping_id.street2"/>
+                                        <span t-if="order.partner_shipping_id.street2" t-out="order.partner_shipping_id.street2"/><br/>
+                                        <span t-out="order.partner_shipping_id.city or ''"/>
+                                        <t t-if="order.partner_shipping_id.state_id">
+                                            <span>, </span><span t-out="order.partner_shipping_id.state_id.name"/>
+                                        </t>
+                                        <span t-if="order.partner_shipping_id.zip"> <span t-out="order.partner_shipping_id.zip"/></span><br/>
+                                        <span t-out="order.partner_shipping_id.country_id.name or ''"/>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="reflect-os-label">Shipping method</div>
+                                    <div class="reflect-os-value">
+                                        <span t-out="order.carrier_id.name or 'Standard Shipping'"/><br/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a href="/shop" class="reflect-os-btn">Continue shopping</a>
+
+                        <div class="reflect-os-links">
+                            <a href="#">Refund policy</a>
+                            <a href="#">Shipping policy</a>
+                            <a href="#">Privacy policy</a>
+                            <a href="/terms">Terms of service</a>
+                        </div>
+
+                        <div class="oe_structure clearfix mt-3" id="oe_structure_website_sale_confirmation_1"/>
+                        <div class="oe_structure mt-3" id="oe_structure_website_sale_confirmation_2"/>
+                        <input t-if='website.plausible_shared_key' type='hidden' class='js_plausible_push' data-event-name='Shop' t-attf-data-event-params='{"CTA": "Order Confirmed", "amount": "#{"%3s-%3s" % (max(0, round(website_sale_order.amount_total/100)*100 - 50), round(website_sale_order.amount_total/100)*100 + 50)}"}' />
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

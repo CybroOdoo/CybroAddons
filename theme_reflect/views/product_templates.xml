@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Override Product Detail Page (Non-Invasive) -->
+    <template id="custom_product_page" inherit_id="website_sale.product" name="Custom Product Page" priority="99">
+
+        <!-- Replace breadcrumb area — now shows Home / Product -->
+        <xpath expr="//div[hasclass('o_wsale_content_contained')][1]" position="replace">
+            <div class="container pt-4 pb-2">
+                <div class="reflect-breadcrumb breadcrumb mb-0">
+                    <a href="/" class="breadcrumb-item">Home</a>
+                    <span class="sep px-2 text-muted">/</span>
+                    <a t-if="category" t-att-href="'/shop/category/%s' % slug(category)" class="breadcrumb-item" t-esc="category.name"/>
+                    <span t-if="category" class="sep px-2 text-muted">/</span>
+                    <a t-if="not category" href="/shop" class="breadcrumb-item">Shop</a>
+                    <span t-if="not category" class="sep px-2 text-muted">/</span>
+                    <span t-field="product.name" class="breadcrumb-item active current"/>
+                </div>
+            </div>
+        </xpath>
+
+        <!-- Replace main product area -->
+        <xpath expr="//div[@id='product_detail_main']" position="replace">
+            <div class="container py-lg-5 py-4 reflect-product-detail-area" id="product_detail_main">
+
+                <!-- Defensive Variable Setup -->
+                <t t-set="combination" t-value="product._get_first_possible_combination()"/>
+                <t t-set="combination_info" t-value="product._get_combination_info(combination, add_qty=add_qty or 1)"/>
+                <t t-set="product_variant_id" t-value="product._get_first_possible_variant_id()"/>
+
+                <!-- Main 3-Column Layout -->
+                <div class="product-editorial-layout">
+
+                    <!-- 1. Thumbnail Strip (Left) -->
+                    <div class="product-thumbnails-col d-flex">
+                        <t t-set="product_images"
+                           t-value="product_variant._get_images() if product_variant else product._get_images()"/>
+                        <t t-foreach="product_images" t-as="pimg">
+                            <div t-attf-class="thumb-item #{'active' if pimg_index == 0 else ''}"
+                                 t-att-data-image-id="pimg.id">
+                                <t t-if="pimg._name == 'product.image'">
+                                    <span t-field="pimg.image_1920"
+                                          t-options="{'widget': 'image', 'preview_image': 'image_128', 'class': 'img img-fluid'}"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-field="product.image_1920"
+                                          t-options="{'widget': 'image', 'preview_image': 'image_128', 'class': 'img img-fluid'}"/>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- 2. Main Image (Center) -->
+                    <div class="product-main-view o_wsale_product_images">
+                        <div class="main-image-wrap o_product_detail_img_wrapper d-flex align-items-start justify-content-center h-100 w-100 oe_unmovable">
+                            <span t-field="product.image_1024"
+                                  t-options="{'widget': 'image', 'preview_image': 'image_1024', 'class': 'oe_unmovable product_detail_img w-100 h-100', 'itemprop': 'image'}"/>
+                        </div>
+                    </div>
+
+                    <!-- 3. Product Info (Right) -->
+                    <div class="product-info-col">
+                        <div class="info-sticky-content">
+
+                            <!-- Title + Price -->
+                            <div class="pd-header-row">
+                                <h1 class="pd-title" t-field="product.name"/>
+                                <div class="pd-price-wrap">
+                                    <t t-call="website_sale.product_price"/>
+                                </div>
+                            </div>
+
+                            <!-- Short description -->
+                            <div class="pd-desc-short" t-field="product.description_sale"/>
+
+                            <!-- Variants + Add to Cart Form -->
+                            <form t-if="product._is_add_to_cart_possible()"
+                                  action="/shop/cart/update" method="POST" class="mt-4 reflect-product-form">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                <div class="js_product js_main_product">
+                                    <t t-set="wishlist_installed" t-value="bool(request.env.registry.get('product.wishlist'))"/>
+                                    <t t-set="compare_installed" t-value="bool(request.env.registry.get('website.comparison.mixin'))"/>
+                                    <t t-set="product_variant" t-value="product_variant or product._create_first_product_variant()"/>
+                                    <t t-placeholder="select">
+                                        <input type="hidden" class="product_id" name="product_id"
+                                               t-att-value="product_variant_id"/>
+                                        <input type="hidden" class="product_template_id"
+                                               name="product_template_id" t-att-value="product.id"/>
+                                        <t t-call="website_sale.variants">
+                                            <t t-set="ul_class" t-value="'flex-column'"/>
+                                            <t t-set="parent_combination" t-value="None"/>
+                                        </t>
+                                    </t>
+
+                                    <!-- Qty + Add to Cart -->
+                                    <div class="pd-actions">
+                                        <div class="css_quantity input-group reflect-qty-selector"
+                                             t-if="not combination_info.get('prevent_zero_price_sale')">
+                                            <button type="button" class="btn reflect-qty-btn-sub" aria-label="Remove one">&#8722;</button>
+                                            <input type="text" class="form-control quantity reflect-qty-input" data-min="1" name="add_qty" t-att-value="add_qty or 1"/>
+                                            <button type="button" class="btn reflect-qty-btn-add" aria-label="Add one">&#43;</button>
+                                        </div>
+
+                                        <button id="reflect_add_to_cart" type="button" class="btn btn-black btn-lg a-submit">Add to Cart</button>
+                                    </div>
+
+                                    <div t-if="(wishlist_installed and product_variant) or (compare_installed and is_view_active('website_sale_comparison.product_add_to_compare'))" class="pd-secondary-actions">
+                                        <a t-if="wishlist_installed and product_variant"
+                                           t-att-data-product-template-id="product.id"
+                                           t-att-data-product-product-id="product_variant.id"
+                                           t-att-disabled="product_variant._is_in_wishlist()"
+                                           class="o_add_wishlist_dyn btn reflect-wishlist-btn"
+                                           data-action="o_wishlist"
+                                           title="Add to wishlist">
+                                            <i class="fa fa-heart-o me-2" role="img" aria-label="Add to wishlist"/>
+                                            <span>Add to wishlist</span>
+                                        </a>
+                                        <button t-if="compare_installed and is_view_active('website_sale_comparison.product_add_to_compare') and product_variant and product.valid_product_template_attribute_line_ids._prepare_categories_for_display()"
+                                                type="button"
+                                                class="o_add_compare_dyn btn reflect-compare-btn"
+                                                aria-label="Add to compare"
+                                                title="Add to compare"
+                                                t-att-data-product-product-id="product_variant.id"
+                                                t-att-data-product-template-id="product.id"
+                                                data-action="o_comparelist">
+                                            <span class="fa fa-exchange me-2" role="presentation"/>
+                                            <span>Add to compare</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <!-- Accordions -->
+                            <div class="pd-accordions-group">
+                                <div class="pd-acc-item active">
+                                    <div class="pd-acc-trigger"><span>Details &amp; Care</span><span class="acc-icon acc-icon--minus">&#8722;</span></div>
+                                    <div class="pd-acc-content">
+                                        <div class="pd-acc-inner">
+                                            <p t-if="product.description_sale" t-field="product.description_sale"/>
+                                            <p t-else="">Designed for daily wear with a clean, refined finish and a balanced silhouette.</p>
+                                            <p>Handle with care, store in a cool dry place, and follow the garment-specific cleaning instructions to preserve shape, texture, and finish.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="pd-acc-item">
+                                    <div class="pd-acc-trigger"><span>Shipping &amp; Returns</span><span class="acc-icon">&#43;</span></div>
+                                    <div class="pd-acc-content"><div class="pd-acc-inner"><p>Free standard shipping on orders over $150. Returns accepted within 30 days.</p></div></div>
+                                </div>
+                                <div class="pd-acc-item">
+                                    <div class="pd-acc-trigger"><span>Sustainability</span><span class="acc-icon">&#43;</span></div>
+                                    <div class="pd-acc-content"><div class="pd-acc-inner"><p>Produced with a focus on lasting materials, reduced waste, and timeless styling designed to stay relevant across seasons.</p></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+
+        <!-- Suppress default Odoo blocks -->
+        <xpath expr="//div[@id='product_full_description']" position="replace"/>
+        <xpath expr="//div[contains(@class,'oe_structure') and contains(@class,'oe_empty') and not(@id='product_detail')]" position="replace" optional="1"/>
+
+    </template>
+</odoo>

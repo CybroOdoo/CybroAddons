@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ── Products ── -->
+    <template id="s_reflect_products" name="Reflect Products">
+        <section class="s_reflect_products o_cc o_cc1" data-snippet="s_reflect_products" data-name="Reflect Products"
+                 style="background:#fafafa; padding:80px 0;">
+            <div class="container">
+                <t t-set="current_website" t-value="request.env['website'].get_current_website()"/>
+                <t t-set="bestseller_candidates"
+                   t-value="request.env['product.template'].with_context(website_id=current_website.id).search([('website_published', '=', True), ('sale_ok', '=', True)], limit=12, order='website_sequence asc, id desc')"/>
+                <t t-set="bestseller_products"
+                   t-value="bestseller_candidates.sorted(key=lambda product: product.sales_count, reverse=True)[:3]"/>
+                <span class="d-block mb-3 text-uppercase text-muted small fw-bold" style="letter-spacing:1px;">Featured
+                    Edit
+                </span>
+                <h2 class="display-5 fw-medium mb-5" style="letter-spacing:-0.5px;">Best Sellers</h2>
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-3 g-4">
+                    <t t-foreach="bestseller_products" t-as="product">
+                        <t t-set="display_price" t-value="product.product_variant_id.lst_price or product.list_price"/>
+                        <div class="col">
+                            <a t-att-href="product.website_url" class="text-decoration-none d-block">
+                                <div class="product-img position-relative overflow-hidden mb-3"
+                                     style="aspect-ratio:3/4;">
+                                    <span t-if="product.publish_date"
+                                          class="position-absolute translate-middle-y translate-middle-x top-0 start-0 m-4 badge bg-white text-dark py-2 px-3 fw-bold text-uppercase"
+                                          style="font-size:11px; z-index:2; border-radius:0;">New
+                                    </span>
+                                    <img t-if="product.image_1920" t-att-src="image_data_uri(product.image_1920)"
+                                         t-att-alt="product.name" class="w-100 h-100" style="object-fit:cover;"/>
+                                    <img t-else="" src="/theme_reflect/static/img/6.jpg" t-att-alt="product.name"
+                                         class="w-100 h-100" style="object-fit:cover;"/>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-baseline mb-1 gap-2">
+                                    <span class="fw-medium text-dark" t-field="product.name"/>
+                                    <span class="fw-bold text-dark"
+                                          t-esc="display_price"
+                                          t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                                </div>
+                                <p class="text-muted small text-truncate" t-field="product.description_sale"/>
+                            </a>
+                        </div>
+                    </t>
+                    <t t-if="not bestseller_products">
+                        <div class="col">
+                            <a href="/shop" class="text-decoration-none d-block">
+                                <div class="product-img position-relative overflow-hidden mb-3"
+                                     style="aspect-ratio:3/4;">
+                                    <span class="position-absolute translate-middle-y translate-middle-x top-0 start-0 m-4 badge bg-white text-dark py-2 px-3 fw-bold text-uppercase"
+                                          style="font-size:11px; z-index:2; border-radius:0;">New
+                                    </span>
+                                    <img src="/theme_reflect/static/img/6.jpg" alt="Tailored Day Blazer"
+                                         class="w-100 h-100" style="object-fit:cover;"/>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-baseline mb-1">
+                                    <span class="fw-medium text-dark">Tailored Day Blazer</span>
+                                    <span class="fw-bold text-dark">$148</span>
+                                </div>
+                                <p class="text-muted small">Soft structure with a straight fit.</p>
+                            </a>
+                        </div>
+                        <div class="col">
+                            <a href="/shop" class="text-decoration-none d-block">
+                                <div class="product-img position-relative overflow-hidden mb-3"
+                                     style="aspect-ratio:3/4;">
+                                    <img src="/theme_reflect/static/img/7.jpg" alt="Minimalist Knit Polo"
+                                         class="w-100 h-100" style="object-fit:cover;"/>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-baseline mb-1">
+                                    <span class="fw-medium text-dark">Minimalist Knit Polo</span>
+                                    <span class="fw-bold text-dark">$85</span>
+                                </div>
+                                <p class="text-muted small">100% organic cotton weave.</p>
+                            </a>
+                        </div>
+                        <div class="col">
+                            <a href="/shop" class="text-decoration-none d-block">
+                                <div class="product-img position-relative overflow-hidden mb-3"
+                                     style="aspect-ratio:3/4;">
+                                    <img src="/theme_reflect/static/img/8.jpg" alt="Everyday Trousers"
+                                         class="w-100 h-100" style="object-fit:cover;"/>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-baseline mb-1">
+                                    <span class="fw-medium text-dark">Everyday Trousers</span>
+                                    <span class="fw-bold text-dark">$120</span>
+                                </div>
+                                <p class="text-muted small">A versatile cornerstone piece.</p>
+                            </a>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </section>
+    </template>
+</odoo>

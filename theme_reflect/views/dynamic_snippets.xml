@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Category Card Template ── -->
+    <template id="s_dynamic_snippet_product_category_template">
+        <div class="o_category_card cat-card reflect-hidden" t-foreach="records" t-as="record">
+            <a t-att-href="'/shop/category/%s' % record.id" style="text-decoration:none; color:inherit; display:block;">
+                <div class="cat-img">
+                    <img t-if="record.image_512" t-att-src="image_data_uri(record.image_512)" 
+                         t-att-alt="record.name" style="width:100%; height:100%; object-fit:cover; display:block;"/>
+                    <img t-else="" src="/theme_reflect/static/img/2.jpg" 
+                         t-att-alt="record.name" style="width:100%; height:100%; object-fit:cover; display:block;"/>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:16px;">
+                    <span style="font-size:18px; font-weight:500; color:#111;" t-field="record.name"/>
+                    <span style="font-size:15px; color:#666;">
+                        <t t-esc="len(record.product_tmpl_ids)"/> styles
+                    </span>
+                </div>
+            </a>
+        </div>
+    </template>
+
+    <!-- ── Product Card Template ── -->
+    <template id="s_dynamic_snippet_products_template">
+        <div class="o_product_card product-card reflect-hidden" t-foreach="records" t-as="record">
+             <t t-set="combination_info" t-value="record._get_combination_info()"/>
+             <a t-att-href="record.website_url" style="text-decoration:none; color:inherit; display:block;">
+                <div class="product-img">
+                    <!-- Labels can be dynamic if we want, for now minimal -->
+                    <span t-if="record.website_published and record.create_date" 
+                          style="position:absolute; top:12px; left:12px; background:#fff; color:#000; font-size:11px; font-weight:700; padding:4px 8px; text-transform:uppercase; letter-spacing:0.5px; z-index:2;">
+                        New
+                    </span>
+                    <img t-att-src="image_data_uri(record.image_512)" 
+                         t-att-alt="record.name" 
+                         style="width:100%; height:100%; object-fit:cover; display:block; position:absolute; top:0; left:0;"/>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; margin-top:16px;">
+                    <span style="font-size:18px; font-weight:500; color:#111;" t-field="record.name"/>
+                    <span style="font-size:20px; font-weight:700; color:#111;" t-esc="combination_info['price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                </div>
+                <div style="font-size:15px; color:#666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" t-field="record.description_sale"/>
+            </a>
+        </div>
+    </template>
+
+</odoo>

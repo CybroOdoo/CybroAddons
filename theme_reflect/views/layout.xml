@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Custom Header Layout -->
+    <template id="reflect_header" inherit_id="website.layout" name="Reflect Header" priority="99">
+        <xpath expr="//header" position="replace">
+            <t t-set="reflect_accessories_url" t-value="'/shop/category/%s' % slug(request.env.ref('theme_reflect.category_accessories').sudo())"/>
+            <header class="header o_affix_enabled">
+                <div class="cmpad">
+                    <div class="navbar flex-between h-auto py-3">
+                        <a href="/" class="logo text-decoration-none text-dark fw-bold" style="letter-spacing: -0.02em;">REFLECT</a>
+                        
+                        <!-- Desktop Nav -->
+                        <nav class="nav-links d-none d-lg-flex gap-4 align-items-center">
+                            <a href="/" t-attf-class="text-decoration-none text-dark #{'active' if request.httprequest.path == '/' else ''}">Home</a>
+                            <a href="/shop/new" t-attf-class="text-decoration-none text-dark #{'active' if request.httprequest.path.startswith('/shop/new') else ''}">New In</a>
+                            <a href="/shop" t-attf-class="text-decoration-none text-dark #{'active' if request.httprequest.path == '/shop' and not request.httprequest.query_string else ''}">Shop</a>
+                            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                <t t-if="submenu.is_visible and submenu._clean_url() not in ['/', '/shop', '/shop/new', reflect_accessories_url]">
+                                    <a t-att-href="submenu._clean_url()"
+                                       t-attf-class="text-decoration-none text-dark #{'active' if submenu._is_active() else ''}"
+                                       t-att-target="'_blank' if submenu.new_window else None">
+                                        <t t-esc="submenu.name"/>
+                                    </a>
+                                </t>
+                            </t>
+                        </nav>
+
+                        <div class="nav-actions d-flex align-items-center gap-3">
+                            <t t-set="wishlist_installed" t-value="bool(request.env.registry.get('product.wishlist'))"/>
+                            <a class="nav-icon cursor-pointer d-flex align-items-center justify-content-center text-decoration-none"
+                               data-bs-target="#o_search_modal" data-bs-toggle="modal" role="button" href="#"
+                               aria-label="Search">
+                                <i class="fa fa-search text-dark" style="font-size:18px;"></i>
+                            </a>
+                            <a t-if="wishlist_installed"
+                               href="/shop/wishlist"
+                               class="nav-icon cursor-pointer d-none d-lg-flex align-items-center justify-content-center text-decoration-none position-relative o_wsale_my_wish"
+                               aria-label="Favorites">
+                                <t t-set="wishcount" t-value="len(request.env['product.wishlist'].current())"/>
+                                <i class="fa fa-heart-o text-dark" style="font-size:18px;"></i>
+                                <sup t-out="wishcount"
+                                     t-attf-class="my_wish_quantity badge bg-dark rounded-pill position-absolute top-0 start-100 translate-middle #{'d-none' if (wishcount == 0) else ''}"
+                                     style="font-size:10px; min-width:18px; line-height:1.2;"/>
+                            </a>
+                            <!-- Cart button refined for mobile -->
+                            <div id="reflect_cart_btn" class="cart-btn reflect-cart-toggle cursor-pointer d-flex align-items-center gap-2 px-3 py-2 border rounded-pill bg-white text-dark shadow-sm" style="font-size: 13px; font-weight: 600;">
+                                <i class="fa fa-shopping-bag small"></i>
+                                <t t-set="website_sale_cart_quantity" t-value="request.session.get('website_sale_cart_quantity', request.cart.cart_quantity) or 0"/>
+                                <span class="d-none d-md-inline">Cart</span> (<span class="o_wsale_cart_quantity"><t t-esc="website_sale_cart_quantity"/></span>)
+                            </div>
+                            <!-- Mobile Menu Toggle -->
+                            <div class="nav-icon d-lg-none reflect-menu-toggle ms-1" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMobileMenu">
+                                <i class="fa fa-bars text-dark" style="font-size:22px;"></i>
+                            </div>
+                            <!-- Desktop CTA -->
+                            <a href="/shop" class="btn btn-dark d-none d-lg-block reflect-shop-btn px-4 py-2 fw-bold text-uppercase" style="font-size: 13px; border-radius: 4px;">
+                                Shop collection
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Mobile Menu Offcanvas (Moved outside header for global stacking) -->
+            <div class="offcanvas offcanvas-end reflect-mobile-menu" tabindex="-1" id="offcanvasMobileMenu" aria-labelledby="offcanvasMobileMenuLabel">
+                <div class="offcanvas-header border-bottom py-4 px-4">
+                    <h5 class="offcanvas-title fw-bold" id="offcanvasMobileMenuLabel" style="letter-spacing: -0.02em;">REFLECT</h5>
+                    <button type="button" class="btn-close text-reset shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body p-0">
+                    <div class="d-flex flex-column h-100">
+                        <nav class="mobile-nav-links p-4">
+                            <a href="/" class="nav-link-mobile py-3 border-bottom d-block text-decoration-none text-dark fs-5 fw-medium">Home</a>
+                            <a href="/shop/new" class="nav-link-mobile py-3 border-bottom d-block text-decoration-none text-dark fs-5 fw-medium">New In</a>
+                            <a href="/shop" class="nav-link-mobile py-3 border-bottom d-block text-decoration-none text-dark fs-5 fw-medium">Shop All</a>
+                            <t t-set="is_mobile" t-value="True"/>
+                            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                <t t-if="submenu.is_visible and submenu._clean_url() not in ['/', '/shop', '/shop/new', reflect_accessories_url]">
+                                    <a t-att-href="submenu._clean_url()"
+                                       class="nav-link-mobile py-3 border-bottom d-block text-decoration-none text-dark fs-5 fw-medium"
+                                       t-att-target="'_blank' if submenu.new_window else None">
+                                        <t t-esc="submenu.name"/>
+                                    </a>
+                                </t>
+                            </t>
+                        </nav>
+                        <div class="mt-auto p-4 bg-light border-top">
+                            <a href="/shop" class="btn btn-dark w-100 py-3 fw-bold text-uppercase" style="border-radius: 4px; letter-spacing: 1px;">Shop collection</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade css_editable_mode_hidden" id="o_search_modal" aria-hidden="true" tabindex="-1">
+                <div class="modal-dialog modal-lg pt-5">
+                    <div class="modal-content mt-5">
+                        <t t-call="website.header_search_box_input">
+                            <t t-set="_classes" t-value="'input-group-lg'"/>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Custom Footer Layout -->
+    <template id="reflect_footer" inherit_id="website.layout" name="Reflect Footer" priority="99">
+        <xpath expr="//footer" position="replace">
+            <footer class="footer py-0" style="background:#fff;">
+                <!-- Newsletter Section -->
+                <section class="s_reflect_newsletter o_cc o_cc1 px-3 px-md-4 px-lg-5" data-snippet="s_reflect_newsletter" data-name="Reflect Newsletter" style="padding-top:80px; padding-bottom:80px; text-align:center; background:#f7f7f7;">
+                    <div class="cmpad">
+                        <span style="font-size:13px; text-transform:uppercase; letter-spacing:1px; color:#666; display:block; margin-bottom:16px; font-weight: 600;">Join The List</span>
+                        <h2 class="px-2" style="font-size:clamp(28px, 5vw, 32px); font-weight:500; margin-bottom:16px; color:#111;">Exclusive access to new drops.</h2>
+                        <p class="px-2" style="font-size:15px; color:#666; line-height:1.5; max-width:550px; margin:0 auto 48px;">Stay close to the collection without the noise. Early access to capsule launches, restocks, and curated outfit edits.</p>
+                        <div class="s_newsletter_subscribe_form s_newsletter_list js_subscribe" data-vxml="001" data-list-id="0" style="max-width:550px; margin:0 auto;">
+                            <div class="js_subscribed_wrap d-none">
+                                <p class="h4-fs text-center text-success mb-0 py-3"><i class="fa fa-check-circle-o" role="img"/> Thanks for registering!</p>
+                            </div>
+                            <div class="js_subscribe_wrap d-flex flex-column flex-sm-row" style="border:1px solid #e5e5e5; overflow:hidden;">
+                                <input type="email" name="email" class="js_subscribe_value w-100" placeholder="Enter your email address" style="flex:1; border:none; padding:18px 24px; font-size:14px; outline:none; background:#fafafa; min-height:56px;"/>
+                                <button class="js_subscribe_btn o_submit w-100 w-sm-auto" style="background:#000; color:#fff; border:none; padding:18px 32px; font-size:14px; font-weight:500; cursor:pointer; text-transform: uppercase; min-height:56px;">Subscribe</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="cmpad px-3 px-md-4 px-lg-0" style="padding-top: 80px; padding-bottom: 60px;">
+                    <div class="footer-top">
+                        <div class="footer-brand">
+                            <h2 class="logo" style="font-size: 24px; margin-bottom: 24px;">REFLECT</h2>
+                            <p style="font-size: 15px; color: #666; line-height: 1.6; max-width: 300px;">Modern essentials for a quieter wardrobe. Premium fashion presented with a spacious ecommerce experience that puts the product first.</p>
+                        </div>
+                        <div class="footer-links">
+                            <h4 style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 24px;">Shop</h4>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><a href="/shop" class="text-decoration-none text-muted">New Arrivals</a></li>
+                                <li class="mb-2"><a href="/shop" class="text-decoration-none text-muted">Women</a></li>
+                                <li class="mb-2"><a href="/shop" class="text-decoration-none text-muted">Men</a></li>
+                                <li class="mb-2"><a href="/shop" class="text-decoration-none text-muted">Accessories</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-links">
+                            <h4 style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 24px;">About</h4>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Editorial</a></li>
+                                <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Journal</a></li>
+                                <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Stores</a></li>
+                                <li class="mb-2"><a href="/contactus" class="text-decoration-none text-muted">Contact</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-links">
+                            <h4 style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 24px;">Support</h4>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Shipping</a></li>
+                                <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Returns</a></li>
+                                <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Size guide</a></li>
+                                <li class="mb-2"><a href="#" class="text-decoration-none text-muted">FAQ</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom py-4" style="border-top: 1px solid #f0f0f0;">
+                    <div class="cmpad flex-between px-3 px-md-4 px-lg-0 flex-column flex-md-row gap-3">
+                        <p class="mb-0" style="font-size: 13px; color: #999;">© 2026 Reflect. All rights reserved.</p>
+                        <div class="footer-legal d-flex gap-4 flex-wrap justify-content-center justify-content-md-end">
+                            <span style="font-size: 13px; color: #999;">Privacy Policy</span>
+                            <span style="font-size: 13px; color: #999;">Terms of Service</span>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </xpath>
+    </template>
+
+    <!-- Cart Sidebar Drawer -->
+    <template id="reflect_cart_sidebar" inherit_id="website.layout" name="Reflect Cart Sidebar" priority="100">
+        <xpath expr="//div[@id='wrapwrap']" position="inside">
+            <div id="reflect_cart_sidebar" class="reflect-cart-sidebar">
+                <div class="cart-sidebar-inner">
+                    <div class="cart-sidebar-header flex-between">
+                        <h3 class="mb-0" style="font-size: 18px; font-weight: 600;">Your Cart (<span class="sidebar-cart-count">0</span>)</h3>
+                        <button class="btn btn-link text-dark p-0 close-cart-sidebar" style="font-size: 20px;">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="cart-sidebar-body mt-4">
+                        <div id="cart_sidebar_loading" class="text-center py-5 d-none">
+                            <div class="spinner-border spinner-border-sm text-dark" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="cart-sidebar-items-list" id="cart_sidebar_list">
+                            <!-- Items populated via JS -->
+                        </div>
+                    </div>
+
+                    <div class="cart-sidebar-footer mt-auto pt-4" style="border-top: 1px solid #eee;">
+                        <div class="flex-between mb-2">
+                            <span class="fw-bold">Subtotal</span>
+                            <span class="fw-bold sidebar-cart-total">$0.00</span>
+                        </div>
+                        <p class="text-muted mb-4" style="font-size: 12px;">Shipping and taxes calculated at checkout.</p>
+                        <a href="/shop/checkout" class="btn btn-black w-100 py-3 fw-bold text-uppercase" style="border-radius: 4px; letter-spacing: 0.5px;">
+                            Checkout
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div id="reflect_cart_backdrop" class="reflect-cart-backdrop"></div>
+        </xpath>
+    </template>
+
+</odoo>

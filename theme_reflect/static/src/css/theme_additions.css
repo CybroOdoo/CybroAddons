@@ -1,0 +1,656 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   APPEND THIS BLOCK to the bottom of:
+   theme_reflect/static/src/css/theme.css
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* ── Scroll-reveal animations ───────────────────────────────────────────── */
+/* Sections are visible by default now, only animate cards if needed */
+.s_reflect_categories .cat-card,
+.s_reflect_products .product-card {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.s_reflect_categories .cat-card.reflect-visible,
+.s_reflect_products .product-card.reflect-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* stagger category cards */
+.s_reflect_categories .cat-card:nth-child(2) { transition-delay: 0.08s; }
+.s_reflect_categories .cat-card:nth-child(3) { transition-delay: 0.16s; }
+.s_reflect_categories .cat-card:nth-child(4) { transition-delay: 0.24s; }
+
+/* stagger product cards */
+.s_reflect_products .product-card:nth-child(2) { transition-delay: 0.08s; }
+.s_reflect_products .product-card:nth-child(3) { transition-delay: 0.16s; }
+.s_reflect_products .product-card:nth-child(4) { transition-delay: 0.24s; }
+
+/* ── Hero ready state is handled by reflect-in-view; no extra rules needed ── */
+
+/* ── Category card hover lift ───────────────────────────────────────────── */
+.cat-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: block;
+    border-radius: var(--reflect-radius-md);
+    overflow: hidden;
+}
+.cat-card.is-hovered,
+.cat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.10);
+}
+
+/* ── Newsletter invalid state ───────────────────────────────────────────── */
+.s_reflect_newsletter input.reflect-invalid {
+    border-color: #e55 !important;
+    animation: reflect-shake 0.3s ease;
+}
+@keyframes reflect-shake {
+    0%, 100% { transform: translateX(0); }
+    25%       { transform: translateX(-6px); }
+    75%       { transform: translateX(6px); }
+}
+
+/* ── Subscribe button states ─────────────────────────────────────────────── */
+.reflect-subscribe-btn:disabled {
+    background: var(--reflect-muted);
+    cursor: default;
+    opacity: 0.8;
+}
+
+/* ── Responsive additions ────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .s_reflect_newsletter .newsletter-form {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .s_reflect_newsletter input[type="email"] {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .s_reflect_newsletter h2 {
+        font-size: clamp(1.4rem, 6vw, 2rem);
+    }
+    .cat-card img {
+        aspect-ratio: 3/4;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   REFLECT SHOP PAGE — sidebar, grid, pager, state, scroll-reveal
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* ── Shop layout: sidebar + products two-column grid ───────────────────── */
+.reflect-shop-wrapper .shop-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 48px;
+    padding: 40px 0 80px;
+    align-items: start;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
+.reflect-sidebar {
+    position: sticky;
+    top: 90px;
+}
+.reflect-sidebar .accordion-item {
+    border-bottom: 1px solid #e5e5e5;
+}
+.reflect-sidebar .accordion-trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    cursor: pointer;
+    user-select: none;
+}
+.reflect-sidebar .accordion-trigger-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+.reflect-sidebar .accordion-icon {
+    font-size: 18px;
+    color: #999;
+    line-height: 1;
+    transition: transform 0.25s ease;
+}
+.reflect-sidebar .accordion-item.open .accordion-icon {
+    transform: rotate(180deg);
+}
+.reflect-sidebar .accordion-body {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease;
+}
+.reflect-sidebar .accordion-item.open .accordion-body {
+    max-height: 500px;
+}
+.reflect-sidebar .accordion-inner {
+    padding: 8px 2px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.reflect-sidebar .filter-check-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+.reflect-sidebar .filter-check-row input[type="checkbox"],
+.reflect-sidebar .filter-check-row input[type="radio"] {
+    width: 15px;
+    height: 15px;
+    accent-color: #111;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.reflect-sidebar .filter-check-label {
+    font-size: 13px;
+    color: #555;
+    flex: 1;
+}
+.reflect-sidebar .filter-check-count {
+    font-size: 12px;
+    color: #bbb;
+}
+
+/* ── Products area ──────────────────────────────────────────────────────── */
+.reflect-products-area {
+    min-width: 0; /* prevent grid blowout */
+}
+
+/* ── Product grid ───────────────────────────────────────────────────────── */
+.reflect-shop-wrapper .product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+}
+@media (max-width: 1200px) {
+    .reflect-shop-wrapper .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ── Pager ──────────────────────────────────────────────────────────────── */
+.reflect-pager {
+    display: flex;
+    justify-content: center;
+    margin-top: 48px;
+    padding-bottom: 24px;
+}
+.reflect-pager .page-item .page-link {
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    color: #111;
+    font-size: 14px;
+    padding: 8px 14px;
+    margin: 0 2px;
+    transition: background 0.2s;
+}
+.reflect-pager .page-item.active .page-link,
+.reflect-pager .page-item .page-link:hover {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+}
+
+
+/* Container Spacing */
+.product-grid.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px 20px; /* Vertical and Horizontal spacing */
+}
+
+/* Card Styling */
+.reflect-product-card {
+    border: none !important;
+    background: transparent !important;
+    margin-bottom: 20px;
+}
+
+.product-link {
+    text-decoration: none !important;
+    color: #111 !important;
+}
+
+/* Image Styling */
+.product-image-container {
+    background-color: #f6f6f6; /* Light grey background like the photo */
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 4 / 5; /* Common for fashion products */
+}
+
+.product-img-main {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.reflect-product-card:hover .product-img-main {
+    transform: scale(1.05);
+    cursor: pointer;
+}
+
+/* Typography */
+.product-info-wrapper {
+    padding-top: 15px;
+}
+
+.product-main-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.product-name {
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    margin: 0 !important;
+    font-family: 'Inter', sans-serif; /* Replace with your site font */
+}
+
+.product-price-box {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.product-short-desc {
+    font-size: 13px;
+    color: #767676;
+    margin-top: 4px;
+    font-weight: 400;
+}
+
+/* Ribbon Styling */
+.product-ribbon {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #fff;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    z-index: 10;
+}
+
+
+/* ── Sort area ──────────────────────────────────────────────────────────── */
+.shop-sort-area .o_wsale_sort_by {
+    padding: 9px 36px 9px 14px;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #111;
+    background: #fff;
+    appearance: none;
+    cursor: pointer;
+    outline: none;
+}
+.shop-sort-area .o_wsale_sort_by:hover {
+    border-color: #999;
+}
+
+/* ── Empty-state ────────────────────────────────────────────────────────── */
+.reflect-empty-state {
+    text-align: center;
+    padding: 80px 24px;
+    color: #555;
+}
+.reflect-empty-state h3 {
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: #111;
+}
+.reflect-empty-state p {
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* ── Scroll-reveal (JS adds reflect-hidden / reflect-visible) ───────────── */
+.reflect-hidden {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reflect-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+/* stagger for grid children */
+.product-grid .oe_product_cart:nth-child(2) { transition-delay: 0.06s; }
+.product-grid .oe_product_cart:nth-child(3) { transition-delay: 0.12s; }
+.product-grid .oe_product_cart:nth-child(4) { transition-delay: 0.18s; }
+.product-grid .oe_product_cart:nth-child(5) { transition-delay: 0.24s; }
+.product-grid .oe_product_cart:nth-child(6) { transition-delay: 0.30s; }
+
+/* ── Responsive: collapse sidebar at tablet ─────────────────────────────── */
+@media (max-width: 991px) {
+    .reflect-shop-wrapper .shop-layout {
+        grid-template-columns: 1fr;
+    }
+    .reflect-sidebar {
+        position: static;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0 24px;
+    }
+    .reflect-sidebar .accordion-item {
+        break-inside: avoid;
+    }
+    .reflect-shop-wrapper .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 576px) {
+    .reflect-sidebar {
+        grid-template-columns: 1fr;
+    }
+    .reflect-shop-wrapper .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   BEST SELLERS — static fallback / dynamic coexistence
+   ─────────────────────────────────────────────────────────────────────────
+   Show static grid only when the dynamic snippet has no rendered content.
+   When Odoo renders products into .dynamic_snippet_template, the static grid
+   hides itself via JS (see theme.js). As a CSS-only guard, if the dynamic
+   block has children we add d-none via JS; otherwise the static grid shows. */
+.reflect-static-products {
+    /* Visible by default; JS hides when dynamic products are present */
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   SECTION-LABEL — ensure consistent uppercase tracking
+   ───────────────────────────────────────────────────────────────────────── */
+.section-label {
+    text-transform: uppercase;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   HERO cmpad override — hero section needs no horizontal cmpad padding
+   because the two-column grid handles its own spacing inside .hero
+   ───────────────────────────────────────────────────────────────────────── */
+.s_reflect_hero.cmpad {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+@media (max-width: 991px) {
+    .reflect-static-products {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 575px) {
+    .reflect-static-products {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+}
+/* ── Newsletter Section ── */
+.s_reflect_newsletter h2 {
+    font-size: 32px;
+    letter-spacing: -0.5px;
+    color: #111;
+}
+.s_reflect_newsletter .js_subscribe_wrap {
+    background: #fafafa;
+    border-radius: 4px;
+    transition: box-shadow 0.3s ease;
+}
+.s_reflect_newsletter .js_subscribe_wrap:focus-within {
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
+}
+.s_reflect_newsletter input[type="email"]::placeholder {
+    color: #aaa;
+}
+
+/* ── Footer ── */
+.footer-brand .logo {
+    letter-spacing: -0.5px;
+}
+.footer-links h4 {
+    color: #111;
+}
+.footer-links a:hover {
+    color: #111 !important;
+    text-decoration: underline !important;
+}
+.footer-bottom {
+    font-weight: 400;
+}
+.footer-legal span:hover {
+    color: #111 !important;
+    text-decoration: underline;
+}
+
+/* ── Header ── */
+header.header {
+    border-bottom: 1px solid #f0f0f0;
+}
+header.header .logo {
+    font-size: 24px;
+    letter-spacing: -0.5px;
+}
+.cart-btn {
+    transition: all 0.2s ease;
+}
+.cart-btn:hover {
+    border-color: #111 !important;
+    background: #fcfcfc !important;
+}
+.reflect-shop-btn:hover {
+    background: #333 !important;
+    transform: translateY(-1px);
+}
+
+/* ── Image Hover Zoom Effects ────────────────────────────────────────────── */
+.cat-img, .product-img {
+    overflow: hidden !important;
+    position: relative;
+}
+.cat-img img, .product-img img {
+    transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+}
+.cat-img:hover img, .product-img:hover img {
+    transform: scale(1.08) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   CART SIDEBAR DRAWER
+   ───────────────────────────────────────────────────────────────────────── */
+.reflect-cart-sidebar {
+    position: fixed;
+    top: 0;
+    right: -550px;
+    width: 450px;
+    height: 100vh;
+    background: #fff;
+    z-index: 9999;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.1);
+    transition: right 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+    padding: 0; /* padding inside inner */
+}
+
+@media (max-width: 576px) {
+    .reflect-cart-sidebar {
+        width: 100%;
+        right: -100%;
+    }
+}
+
+.reflect-cart-sidebar.open {
+    right: 0;
+}
+
+.cart-sidebar-inner {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 40px;
+}
+
+.cart-sidebar-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px; /* offset the scrollbar slightly */
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Custom slight scrollbar for the sidebar */
+.cart-sidebar-body::-webkit-scrollbar {
+    width: 4px;
+}
+.cart-sidebar-body::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+    border-radius: 4px;
+}
+
+.reflect-cart-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.4);
+    z-index: 9998;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease;
+    backdrop-filter: blur(2px);
+}
+
+.reflect-cart-backdrop.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+body.reflect-cart-scroll-lock {
+    position: fixed;
+    width: 100%;
+    overflow: hidden;
+}
+
+.cart-item-row {
+    display: flex;
+    gap: 20px;
+    padding: 24px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.cart-item-img {
+    width: 90px;
+    height: 120px;
+    background: #f7f7f7;
+    flex-shrink: 0;
+}
+
+.cart-item-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cart-item-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.cart-item-title-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.cart-item-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111;
+}
+
+.cart-item-price {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.cart-item-desc {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 15px;
+}
+
+.cart-item-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+.sidebar-qty-selector {
+    display: flex;
+    border: 1px solid #eee;
+    height: 36px;
+    align-items: center;
+    border-radius: 2px;
+}
+
+.sidebar-qty-selector button {
+    border: none;
+    background: transparent;
+    width: 32px;
+    height: 100%;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-qty-selector input {
+    border: none !important;
+    width: 36px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 0;
+    background: transparent;
+}
+
+.remove-cart-item {
+    font-size: 12px;
+    color: #999;
+    text-decoration: none;
+    background: none;
+    border: none;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.remove-cart-item:hover {
+    color: #111;
+    text-decoration: underline;
+}
