@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Views for managing selection field configurator -->
+
+    <!-- List view -->
+    <record id="ir_model_fields_view_list" model="ir.ui.view">
+        <field name="name">ir.model.fields.view.list</field>
+        <field name="model">ir.model.fields</field>
+        <field name="arch" type="xml">
+            <list string="Selection Fields List View" create="false" delete="false">
+                <field name="display_name" string="Name"/>
+                <field name="name"/>
+                <field name="model_id"/>
+            </list>
+        </field>
+    </record>
+    <!-- Form view -->
+    <record id="ir_model_fields_view_form" model="ir.ui.view">
+        <field name="name">ir.model.fields.view.form</field>
+        <field name="model">ir.model.fields</field>
+        <field name="arch" type="xml">
+            <form string="Selection Fields Form View" create="0">
+                <div class="oe_title">
+                    <h1>
+                        <field name="display_name" readonly="1"/>
+                    </h1>
+                </div>
+                <field name="selection_ids">
+                    <list string="Selections One2Many List View"
+                          editable="bottom">
+                        <field name="sequence" widget="handle"/>
+                        <field name="value"/>
+                        <field name="name"/>
+                    </list>
+                </field>
+            </form>
+        </field>
+    </record>
+    <!-- Action -->
+    <record id="ir_model_fields_action" model="ir.actions.act_window">
+        <field name="name">Selection Fields</field>
+        <field name="res_model">ir.model.fields</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="base.view_model_fields_search"/>
+        <field name="domain">[('ttype','=','selection')]</field>
+        <field name="view_ids"
+               eval="[(5, 0, 0),(0, 0, {'view_mode': 'list', 'view_id': ref('ir_model_fields_view_list')}),(0, 0, {'view_mode': 'form', 'view_id': ref('ir_model_fields_view_form')})]"/>
+    </record>
+    <!-- Menu -->
+    <menuitem id="ir_model_fields_menu_root"
+              name="Selection Field Configurator"
+              web_icon="odoo_selection_field_configurator,static/description/icon.png"
+              action="ir_model_fields_action"/>
+</odoo>
