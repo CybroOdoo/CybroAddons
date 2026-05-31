@@ -1,0 +1,6 @@
+## Module <purchase_global_discount>
+
+#### 07.03.2026
+#### Version 18.0.1.0.0
+##### ADD
+- Initial Commit for Purchase Global Discount.
