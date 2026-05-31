@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ai_model_view_tree" model="ir.ui.view">
+        <field name="name">ai.model.view.tree</field>
+        <field name="model">ai.model</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="provider_id"/>
+                <field name="model_use"/>
+                <field name="default"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ai_model_view_form" model="ir.ui.view">
+        <field name="name">ai.model.view.form</field>
+        <field name="model">ai.model</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="provider_id"/>
+                        </group>
+                        <group>
+                            <field name="model_use"/>
+                            <field name="default"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Configuration Guide" name="setup_guide">
+                            <field name="setup_guide" widget="html" readonly="1" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="ai_model_view_search" model="ir.ui.view">
+        <field name="name">ai.model.view.search</field>
+        <field name="model">ai.model</field>
+        <field name="arch" type="xml">
+            <search string="Search Models">
+                <field name="name" string="Model Name"/>
+                <field name="provider_id" string="Provider"/>
+
+                <filter name="filter_active" string="Active" domain="[('active', '=', True)]"/>
+                <filter name="filter_inactive" string="Inactive" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter name="filter_chat" string="Chat" domain="[('model_use', '=', 'chat')]"/>
+                <filter name="filter_embedding" string="Embedding" domain="[('model_use', '=', 'embedding')]"/>
+                <filter name="filter_multimodal" string="Multimodal" domain="[('model_use', '=', 'multimodal')]"/>
+                <separator/>
+                <filter name="filter_default" string="Default Models" domain="[('default', '=', True)]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_provider" string="Provider" context="{'group_by': 'provider_id'}"/>
+                    <filter name="group_use" string="Use Type" context="{'group_by': 'model_use'}"/>
+                    <filter name="group_service" string="Service" context="{'group_by': 'service'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="ai_model_action" model="ir.actions.act_window">
+        <field name="name">AI Models</field>
+        <field name="res_model">ai.model</field>
+        <field name="view_mode">list,form</field>
+        <!-- Default: show only active models -->
+        <field name="context">{'search_default_filter_active': 1}</field>
+    </record>
+</odoo>

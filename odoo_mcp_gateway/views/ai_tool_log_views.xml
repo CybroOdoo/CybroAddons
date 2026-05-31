@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ai_tool_log_view_tree" model="ir.ui.view">
+        <field name="name">ai.tool.log.view.tree</field>
+        <field name="model">ai.tool.log</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false">
+                <field name="timestamp"/>
+                <field name="source" widget="badge"
+                       decoration-info="source == 'mcp'"
+                       decoration-warning="source == 'rpc'"
+                       decoration-success="source == 'bot'"/>
+                <field name="call_label" string="Tool / Action"/>
+                <field name="user_id"/>
+                <field name="provider_name" optional="hide"/>
+                <field name="model_used" optional="hide"/>
+                <field name="execution_time_ms"/>
+                <field name="status" decoration-success="status == 'success'" decoration-danger="status == 'error'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ai_tool_log_view_form" model="ir.ui.view">
+        <field name="name">ai.tool.log.view.form</field>
+        <field name="model">ai.tool.log</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="source"/>
+                            <field name="call_label" string="Tool / Action"/>
+                            <field name="tool_id"/>
+                            <field name="user_id"/>
+                            <field name="provider_name"/>
+                            <field name="model_used"/>
+                        </group>
+                        <group>
+                            <field name="timestamp"/>
+                            <field name="execution_time_ms"/>
+                            <field name="status"/>
+                        </group>
+                    </group>
+                    <group string="Input Parameters">
+                        <field name="input_params" nolabel="1" widget="ace" options="{'language': 'json'}"/>
+                    </group>
+                    <group string="Result" invisible="status != 'success'">
+                        <field name="result_preview" nolabel="1"/>
+                    </group>
+                    <group string="Error Details" invisible="status != 'error'">
+                        <field name="error_message" nolabel="1"/>
+                        <separator string="Full Traceback"/>
+                        <field name="error_traceback" nolabel="1" widget="ace" options="{'language': 'python'}"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="ai_tool_log_view_search" model="ir.ui.view">
+        <field name="name">ai.tool.log.view.search</field>
+        <field name="model">ai.tool.log</field>
+        <field name="arch" type="xml">
+            <search string="Search Logs">
+                <field name="tool_id" string="Tool"/>
+                <field name="user_id" string="User"/>
+                <field name="provider_name" string="Provider"/>
+                <field name="error_message" string="Error"/>
+
+                <filter name="filter_errors" string="Errors" domain="[('status', '=', 'error')]"/>
+                <filter name="filter_success" string="Success" domain="[('status', '=', 'success')]"/>
+                <separator/>
+                <filter name="filter_mcp" string="MCP Gateway" domain="[('source', '=', 'mcp')]"/>
+                <filter name="filter_rpc" string="Direct RPC" domain="[('source', '=', 'rpc')]"/>
+                <filter name="filter_bot" string="Bot" domain="[('source', '=', 'bot')]"/>
+                <separator/>
+                <filter name="filter_ask_ai" string="ask_ai" domain="[('call_label', '=', 'ask_ai')]"/>
+                <filter name="filter_analyze" string="analyze_records" domain="[('call_label', '=', 'analyze_records')]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_source" string="Source" context="{'group_by': 'source'}"/>
+                    <filter name="group_tool" string="Tool / Action" context="{'group_by': 'call_label'}"/>
+                    <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                    <filter name="group_user" string="User" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_provider" string="Provider" context="{'group_by': 'provider_name'}"/>
+                    <filter name="group_date" string="Date" context="{'group_by': 'timestamp:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="ai_tool_log_action" model="ir.actions.act_window">
+        <field name="name">Tool Execution Logs</field>
+        <field name="res_model">ai.tool.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_filter_today': 1}</field>
+    </record>
+</odoo>

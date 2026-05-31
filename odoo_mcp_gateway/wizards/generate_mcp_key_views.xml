@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ai_generate_mcp_key_view_form" model="ir.ui.view">
+        <field name="name">ai.generate.mcp.key.view.form</field>
+        <field name="model">ai.generate.mcp.key</field>
+        <field name="arch" type="xml">
+            <form string="Generate MCP Key">
+                <sheet>
+                    <!-- Input State -->
+                    <group invisible="state != 'input'">
+                        <field name="platform"/>
+                        <field name="name" placeholder="e.g. Claude Desktop on My Laptop"/>
+                    </group>
+
+                    <!-- Result State: key details -->
+                    <group invisible="state != 'result'">
+                        <div class="alert alert-warning mb-0" role="alert">
+                            <strong>Save this key now!</strong> It will not be shown again.
+                        </div>
+                        <field name="key" readonly="1" widget="CopyClipboardChar"/>
+                        <field name="mcp_url" readonly="1"/>
+                        <field name="platform"/>
+                    </group>
+
+                    <!-- Result State: setup instructions -->
+                    <group invisible="state != 'result'" string="Setup Instructions">
+                        <field name="setup_instruction" widget="ai_instruction" readonly="1" nolabel="1"/>
+                    </group>
+
+                    <!-- Result State: platform configuration to copy-paste -->
+                    <group invisible="state != 'result'" string="Platform Configuration">
+                        <field name="claude_config" widget="ai_json_editor" readonly="1" nolabel="1"/>
+                    </group>
+
+                    <field name="state" invisible="1"/>
+                </sheet>
+                <footer>
+                    <button name="action_generate" string="Generate Key" type="object"
+                            class="oe_highlight" invisible="state != 'input'"/>
+                    <button string="Close" class="btn-secondary" special="cancel"
+                            invisible="state != 'input'"/>
+                    <button string="Done" class="btn-primary" special="cancel"
+                            invisible="state != 'result'"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="ai_generate_mcp_key_action" model="ir.actions.act_window">
+        <field name="name">Generate MCP Key</field>
+        <field name="res_model">ai.generate.mcp.key</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
