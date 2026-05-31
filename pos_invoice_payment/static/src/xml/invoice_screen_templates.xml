@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Defines a POS invoicing screen to display invoices and enable confirmation and payment registration actions -->
+<templates id="template" xml:space="preserve">
+   <t t-name="pos_invoice_payment.InvoicingScreen" owl="1">
+       <div class="clientlist-screen screen">
+           <div class="screen-content">
+               <div class="top-content">
+                   <div class="button back" t-on-click="() => this.back()">
+                       <i class="fa fa-angle-double-left"/> Back
+                   </div>
+               </div>
+               <section class="full-content">
+                   <div class="client-window">
+                       <section>
+                           <div>
+                               <div class="scrollable-y" style="overflow-y: scroll;height: 100vh;">
+                                   <table class="table table-striped invoice-list" style="width: 100%;">
+                                       <thead>
+                                           <tr style="text-align: left;">
+                                               <th style="padding: 10px;"> Invoice </th>
+                                               <th style="padding: 10px;"> Customer Ref </th>
+                                               <th style="padding: 10px;"> Total Amount </th>
+                                               <th style="padding: 10px;"> Due Amount </th>
+                                               <th style="padding: 10px;"> State </th>
+                                               <th style="padding: 10px;"> Payment State </th>
+                                               <th style="padding: 10px;"> Actions </th>
+                                           </tr>
+                                       </thead>
+                                       <tbody>
+                                           <t t-foreach="props.invoices" t-as="invoice" t-key="invoice.invoice_id">
+                                               <tr>
+                                                   <td style="padding: 10px;"><t t-esc="invoice.payment_reference || ''"/></td>
+                                                   <td style="padding: 10px;"><t t-esc="invoice.partner_id"/></td>
+                                                   <td style="padding: 10px;"><t t-esc="invoice.amount_total"/></td>
+                                                   <td style="padding: 10px;"><t t-esc="invoice.amount_residual"/></td>
+                                                   <td style="padding: 10px;"><t t-esc="invoice.state"/></td>
+                                                   <td style="padding: 10px;"><t t-esc="invoice.payment_state"/></td>
+                                                   
+                                                   <td style="padding: 10px;">
+                                                       <t t-if="invoice.state == 'draft'">
+                                                           <div class="button highlight" t-on-click="() => this.Confirm(invoice.invoice_id)" style="cursor: pointer; padding: 5px 10px; background-color: #71639e; color: white; border-radius: 3px; display: inline-block;">
+                                                               <i class="fa fa-money" role="img" aria-label="Confirm" title="Confirm"/> Confirm
+                                                           </div>
+                                                       </t>
+                                                       <t t-if="invoice.payment_state != 'paid' and invoice.state == 'posted'">
+                                                           <div class="button highlight" t-on-click="() => this.registerPayment(invoice.invoice_id)" style="cursor: pointer; padding: 5px 10px; background-color: #71639e; color: white; border-radius: 3px; display: inline-block;">
+                                                               <i class="fa fa-money" role="img" aria-label="Register Payment" title="Register Payment"/> Register Payment
+                                                           </div>
+                                                       </t>
+                                                   </td>
+                                               </tr>
+                                           </t>
+                                       </tbody>
+                                   </table>
+                               </div>
+                           </div>
+                       </section>
+                   </div>
+               </section>
+           </div>
+       </div>
+   </t>
+</templates>
