@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <templates id="template" xml:space="preserve">
+        <t t-name="client_action.file_explorer">
+            <h1><center><span class="file_explorer_heading">File Explorer</span></center></h1>
+            <div class="FTP_dash">
+                <div>
+                <input type="text" name="host" class="input_host" placeholder="Host" t-ref="input_host" t-model="state.host_id"/>
+                <label class="label_host">Host</label>
+                <input type="text" name="user_name" class="input_user" placeholder="User Name" t-ref="input_user" t-model="state.user_name"/>
+                <label class="label_user">User Name</label>
+                    <input type="password" name="password" class="input_password" placeholder="Password" t-model="state.pass"/>
+                <label class="label_password">Password</label>
+                    <input type="number" name="port_number" class="input_port" placeholder="Port" t-model="state.port"/>
+                <label class="label_port">Port Number</label>
+                    <button type="button" class="submit_btn" t-on-click="onClickConnect">Connect</button>
+                </div>
+                <div class="toolbar_container">
+                    <div class="toolbar_items">
+                    <img t-attf-src="file_explorer/static/src/img/back.png" class="back_button" t-on-click="RedirectBack"/>
+                    <img t-attf-src="file_explorer/static/src/img/upload-file.png" class="upload_button" t-on-click="UploadFile"/>
+                        <t t-if="state.showFileInput">
+                        <div class="file_input_field">
+                            <UploadFile class='file_upload' hostId="state.host_id" username="state.user_name" password="state.pass" port="state.port" upload="state.upload_loc"/>
+                        </div>
+                    </t>
+                    </div>
+                </div>
+                <div class="window-content">
+        <!-- Container for grid items -->
+                <div class="grid-container">
+                    <t t-foreach="state.files" t-as="file" t-key="file.path">
+                        <div class="grid-item" t-att-id="file.path" t-on-click="onClickFileRemoteLocal">
+                            <t t-if="file.type == 'directory'">
+                                <img t-attf-src="/file_explorer/static/src/img/folder.png" class="grid-icon"/>
+                            </t>
+                            <t t-else="">
+                                <img t-attf-src="/file_explorer/static/src/img/file.png" class="grid-icon"/>
+                            </t>
+                            <div class="grid-filename">
+                                <t t-esc="file.name" readonly="true"/>
+                            </div>
+                            <t t-if="!file.remote">
+                                <img t-attf-src="/file_explorer/static/src/img/download.png"
+                                     class="download_button"
+                                    t-on-click.prevent.stop="()=> this.DownloadFile(file)"/>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+             </div>
+            </div>
+                <t t-if="state.isModalOpen">
+        <div class="modal fade show" tabindex="-1" style="display: block;" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Download File</h5>
+                        <button type="button" class="btn-close" aria-label="Close" t-on-click="closeModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Download Location</label>
+                            <input type="text" class="form-control" t-model="state.downloadLocation" placeholder="Enter download location"/>
+<!--                                    <input type="file" style="display: none;" webkitdirectory directory t-on-change="setDownloadLocation" ref="directoryInput"/>-->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" t-on-click="confirmDownload">Download</button>
+                        <button type="button" class="btn btn-secondary" t-on-click="closeModal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div> <!-- Adds the dark background overlay -->
+    </t>
+
+        </t>
+
+    </templates>
+
