@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Odoo CyberSource Payment Gateway',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'eCommerce ',
     'summary': """Make payments using Cybersource payment provider from website
      shop.""",
@@ -35,9 +35,9 @@
     'website': 'https://www.cybrosys.com',
     'depends': ['payment', 'website_sale'],
     'data': [
+        'views/payment_templates.xml',
         'data/cybersource_payment_method_data.xml',
         'data/cybersource_payment_provider_data.xml',
-        'views/payment_templates.xml',
         'views/payment_provider_views.xml',
         'views/payment_transaction_views.xml',
     ],
