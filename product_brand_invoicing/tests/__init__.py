@@ -19,28 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
-
-
-class AccountInvoiceReport(models.Model):
-    _inherit = "account.invoice.report"
-
-    brand_id = fields.Many2one('product.brand', string='Brand',
-                               help="Product Brand")
-
-    def _select(self):
-        """
-        This method adds the selection of 'template.brand_id' in addition to the
-        existing 'template.categ_id' to the SQL SELECT clause for the Account
-        Invoice Report.
-        :return: The extended SQL SELECT clause as a string.
-        """
-        res = super()._select()
-        query = res.split(
-            'template.categ_id                                           ' +
-            'AS product_categ_id,', 1)
-        res = (query[0] + 'template.categ_id as product_categ_id,' +
-               'template.brand_id as brand_id,' + query[1])
-        return res
-
-
+from . import test_product_brand
