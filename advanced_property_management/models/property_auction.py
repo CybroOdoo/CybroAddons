@@ -79,14 +79,15 @@ class PropertyAuction(models.Model):
                                   related='company_id.currency_id',
                                   required=True)
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """Supering the create function inorder to set the auction_seq number
         """
-        if vals.get('auction_seq', 'New') == 'New':
-            vals['auction_seq'] = self.env['ir.sequence'].next_by_code(
-                'property.auction') or 'New'
-        res = super(PropertyAuction, self).create(vals)
+        for vals in vals_list:
+            if vals.get('auction_seq', 'New') == 'New':
+                vals['auction_seq'] = self.env['ir.sequence'].next_by_code(
+                    'property.auction') or 'New'
+        res = super(PropertyAuction, self).create(vals_list)
         return res
 
     @api.constrains('start_time', 'end_time')

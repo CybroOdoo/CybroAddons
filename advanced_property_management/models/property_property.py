@@ -203,14 +203,15 @@ class Property(models.Model):
         string="Rent/Month", help="Rent price per month", tracking=True
     )
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """Generating sequence number at the time of creation of record"""
-        if vals.get("code", "New") == "New":
-            vals["code"] = (
-                self.env["ir.sequence"].next_by_code("property.property") or "New"
-            )
-        res = super(Property, self).create(vals)
+        for vals in vals_list:
+            if vals.get("code", "New") == "New":
+                vals["code"] = (
+                    self.env["ir.sequence"].next_by_code("property.property") or "New"
+                )
+        res = super(Property, self).create(vals_list)
         return res
 
     def _compute_total_sq_feet(self):

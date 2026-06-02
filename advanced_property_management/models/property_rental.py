@@ -63,7 +63,7 @@ class PropertyRental(models.Model):
                              help='The starting date of the rent')
     end_date = fields.Date(string='End Date', required=True,
                            help='The Ending date of the rent')
-    invoice_count = fields.Integer(strinf='Invoice Count',
+    invoice_count = fields.Integer(string='Invoice Count',
                                    compute='_compute_invoice_count',
                                    help='The Invoices related to this rental')
     rental_bills_ids = fields.One2many('rental.bill', 'rental_id')
@@ -78,13 +78,14 @@ class PropertyRental(models.Model):
     currency_id = fields.Many2one('res.currency', string='Currency',
                                   related='company_id.currency_id')
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """Setting the sequence when record is created"""
-        if vals.get('name', 'New') == 'New':
-            vals['name'] = self.env['ir.sequence'].next_by_code(
-                'property.rent') or 'New'
-        res = super(PropertyRental, self).create(vals)
+        for vals in vals_list:
+            if vals.get('name', 'New') == 'New':
+                vals['name'] = self.env['ir.sequence'].next_by_code(
+                    'property.rent') or 'New'
+        res = super(PropertyRental, self).create(vals_list)
         return res
 
     def _compute_invoice_count(self):

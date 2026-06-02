@@ -12,7 +12,9 @@ publicWidget.registry.PropertyView = publicWidget.Widget.extend({
         },
          //hide and show the properties according to the action_id
          async _changeView(ev) {
+            console.log('inside the _changeView function...........')
             var action_id = this.$(ev.currentTarget).data('action')
+            console.log(action_id,'action id')
             this.$('.property_action_buttons').removeClass('active')
             this.$('#property_item_view').hide()
             this.$('#property_sales_view').hide()
@@ -53,13 +55,17 @@ publicWidget.registry.PropertyView = publicWidget.Widget.extend({
             }
             var toast = this.$('.toast')
             if (bid_amount && last_bid && bid_start) {
+                console.log(bid_amount,'bid_amount')
                 if (bid_amount <= last_bid || bid_amount <= bid_start) {
                     toast.addClass('show');
                 }
                 else
                 {
+                    console.log(property_id,'routeeeeeeeeee')
+
                     const auction_data = await rpc(`/property/auction/${property_id}/bid`,{
                                             bid_amount: bid_amount});
+                    console.log('auction_data',auction_data)
                     if(auction_data){
                         $('#auction_button').click()
                     }

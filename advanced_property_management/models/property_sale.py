@@ -85,13 +85,14 @@ class PropertySale(models.Model):
                                 compute='_compute_bill_count',
                                 help='The Commission Bills related to this sale')
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """Generate Reference for the sale order"""
-        if vals.get('name', _('New')) == _('New'):
-            vals['name'] = self.env['ir.sequence'].next_by_code(
-                'property.sale') or 'New'
-        res = super(PropertySale, self).create(vals)
+        for vals in vals_list:
+            if vals.get('name', _('New')) == _('New'):
+                vals['name'] = self.env['ir.sequence'].next_by_code(
+                    'property.sale') or 'New'
+        res = super(PropertySale, self).create(vals_list)
         return res
 
     @api.depends('commission_plan_id', 'sale_price')

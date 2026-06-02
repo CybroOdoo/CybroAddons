@@ -29,7 +29,7 @@
     'author': "Cybrosys Techno Solutions",
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
+    'website': 'https://cybrosys.com',
     'depends': ['base', 'mail', 'sale_management', 'website',
                 'base_geolocalize'],
     'data': [
