@@ -47,7 +47,7 @@ Credits
               (V15) Noushid Khan,
               (V16) Minhaj T,
               (V17) Ammu Raj,
-              (V18) Bhagyadev
+              (V18) Abhinav V
 * Contact: odoo@cybrosys.com
 
 Contacts

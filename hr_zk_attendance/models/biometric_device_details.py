@@ -2,8 +2,8 @@
 ################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2025-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Bhagyadev KP (odoo@cybrosys.com)
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author:  Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
@@ -173,7 +173,7 @@ class BiometricDeviceDetails(models.Model):
             self.action_set_timezone()
             if conn:
                 conn.disable_device()  # Device Cannot be used during this time.
-                user = conn.get_users()
+                users = conn.get_users()
                 attendance = conn.get_attendance()
                 if attendance:
                     for each in attendance:
@@ -186,7 +186,7 @@ class BiometricDeviceDetails(models.Model):
                         atten_time = datetime.datetime.strptime(
                             utc_dt, "%Y-%m-%d %H:%M:%S")
                         atten_time = fields.Datetime.to_string(atten_time)
-                        for uid in user:
+                        for uid in users:
                             if uid.user_id == each.user_id:
                                 get_user_id = self.env['hr.employee'].search(
                                     [('device_id_num', '=', each.user_id)])

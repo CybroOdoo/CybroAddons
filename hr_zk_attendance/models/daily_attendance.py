@@ -2,8 +2,8 @@
 ################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2025-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Bhagyadev KP (odoo@cybrosys.com)
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author:  Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
@@ -49,6 +49,8 @@ class DailyAttendance(models.Model):
     def init(self):
         """Retrieve the data's for attendance report"""
         tools.drop_view_if_exists(self._cr, 'daily_attendance')
+        if not tools.sql.table_exists(self._cr, 'zk_machine_attendance'):
+            return
         query = """
                 create or replace view daily_attendance as (
                     select

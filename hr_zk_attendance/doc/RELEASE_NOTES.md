@@ -1,6 +1,6 @@
 ## Module <hr_zk_attendance>
 
-#### 26.03.2025
+#### 30.03.2026
 #### Version 18.0.1.0.0
 ##### ADD
 
