@@ -21,7 +21,7 @@
 ###############################################################################
 import subprocess
 from odoo import fields, models, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import AccessError, ValidationError
 
 
 class PipInstall(models.TransientModel):
@@ -35,6 +35,8 @@ class PipInstall(models.TransientModel):
 
     def action_done(self):
         """Function for executing the pip commands in terminal"""
+        if not self.env.user.has_group('pip_installer.group_pip_installer_admin'):
+            raise AccessError(_('Only Pip Installer Administrators can execute pip commands.'))
         command = self.name
         try:
             if command.startswith("pip"):
