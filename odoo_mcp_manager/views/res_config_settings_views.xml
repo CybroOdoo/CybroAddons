@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.odoo_mcp_manager</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="100"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="MCP Gateway" string="MCP Gateway" name="odoo_mcp_manager">
+
+                    <block title="AI Model Configuration" name="ai_model_config">
+                        <setting title="AI Providers"
+                                 help="Configure API keys and models for each AI provider.">
+                            <div class="mt16">
+                                <button name="%(odoo_mcp_manager.ai_provider_action)d"
+                                        icon="oi-arrow-right"
+                                        type="action"
+                                        string="Configure Providers"
+                                        class="btn-link"/>
+                            </div>
+                        </setting>
+                    </block>
+
+                    <block title="Bot Integration Layer" name="bot_config">
+
+                        <!-- Webhook Secret -->
+                        <setting title="Webhook Secret"
+                                 help="Appended to all bot webhook URLs as ?secret=. Generated automatically when you first connect a bot channel. Regenerating will disconnect all active bots.">
+                            <div class="content-group">
+                                <div class="row mt16 align-items-center">
+                                    <label string="Secret" for="bot_webhook_secret" class="col-lg-3 o_light_label"/>
+                                    <div class="col-lg-6">
+                                        <field name="bot_webhook_secret"
+                                               widget="CopyClipboardChar"
+                                               readonly="1"
+                                               placeholder="Auto-generated on first bot connect"/>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <button name="action_generate_webhook_secret"
+                                                type="object"
+                                                string="Regenerate"
+                                                icon="fa-refresh"
+                                                class="btn btn-secondary btn-sm"
+                                                confirm="This will invalidate all current bot webhooks. Continue?"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </setting>
+
+                        <!-- MCP API Key -->
+                        <setting title="MCP API Key"
+                                 help="Used by the bot gateway to call internal Odoo tools via /mcp_gateway. Required for the bot to answer questions and perform actions.">
+                            <div class="content-group">
+                                <div class="row mt16 align-items-center">
+                                    <label string="API Key" for="bot_mcp_api_key" class="col-lg-3 o_light_label"/>
+                                    <div class="col-lg-6">
+                                        <field name="bot_mcp_api_key"
+                                               widget="CopyClipboardChar"
+                                               readonly="1"
+                                               placeholder="Click Generate"/>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <button name="action_generate_mcp_api_key"
+                                                type="object"
+                                                string="Generate"
+                                                icon="fa-key"
+                                                class="btn btn-secondary btn-sm"/>
+                                    </div>
+                                </div>
+                                <div class="row mt4" invisible="not bot_mcp_api_key">
+                                    <div class="col-lg-3"/>
+                                    <div class="col-lg-9">
+                                        <span class="badge text-bg-success">
+                                            <i class="fa fa-check me-1"/>MCP API Key is set
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </setting>
+
+                        <!-- Bot Channels shortcut -->
+                        <setting title="Bot Channels"
+                                 help="Connect Telegram, WhatsApp, or Web bots here.">
+                            <div class="mt16">
+                                <button name="%(odoo_mcp_manager.ai_bot_channel_action)d"
+                                        icon="oi-arrow-right"
+                                        type="action"
+                                        string="Manage Bot Channels"
+                                        class="btn-link"/>
+                            </div>
+                        </setting>
+
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="res_config_settings_action" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'odoo_mcp_manager'}</field>
+    </record>
+</odoo>

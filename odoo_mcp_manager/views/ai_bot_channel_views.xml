@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- List view -->
+    <record id="ai_bot_channel_view_list" model="ir.ui.view">
+        <field name="name">ai.bot.channel.view.list</field>
+        <field name="model">ai.bot.channel</field>
+        <field name="arch" type="xml">
+            <list string="Bot Channels">
+                <field name="name"/>
+                <field name="platform"/>
+                <field name="bot_username"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'active'"
+                       decoration-warning="status == 'draft'"
+                       decoration-danger="status == 'error'"/>
+                <field name="webhook_url" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="ai_bot_channel_view_form" model="ir.ui.view">
+        <field name="name">ai.bot.channel.view.form</field>
+        <field name="model">ai.bot.channel</field>
+        <field name="arch" type="xml">
+            <form string="Bot Channel">
+                <header>
+                    <button name="action_connect"
+                            type="object"
+                            string="Connect"
+                            class="oe_highlight"
+                            invisible="status == 'active'"/>
+                    <button name="action_disconnect"
+                            type="object"
+                            string="Disconnect"
+                            class="btn-secondary"
+                            invisible="status != 'active'"
+                            confirm="Remove the webhook from this platform?"/>
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="draft,active"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Customer Support Bot"/></h1>
+                    </div>
+
+                    <!-- Platform and token -->
+                    <group>
+                        <group string="Platform">
+                            <field name="platform"/>
+                            <field name="custom_webhook_base"
+                                   invisible="platform == 'web'"
+                                   placeholder="https://yourdomain.com  (leave blank to use web.base.url)"/>
+                        </group>
+                        <group string="Credentials">
+                            <field name="api_token"
+                                   password="True"
+                                   placeholder="Paste token / API key here"/>
+                            <!-- WhatsApp-only -->
+                            <field name="whatsapp_phone_id"
+                                   invisible="platform != 'whatsapp'"
+                                   placeholder="Meta Console → Phone Number ID"/>
+                        </group>
+                    </group>
+
+                    <!-- Connection details — shown after connect -->
+                    <group string="Connection Details" invisible="status == 'draft'">
+                        <group>
+                            <field name="webhook_url" readonly="1" widget="CopyClipboardChar"/>
+                            <field name="bot_link"
+                                   widget="url"
+                                   readonly="1"
+                                   invisible="not bot_link"
+                                   string="Open on Phone"/>
+                            <field name="bot_username"
+                                   readonly="1"
+                                   invisible="not bot_username"/>
+                        </group>
+                        <group>
+                            <field name="error_message"
+                                   readonly="1"
+                                   invisible="status != 'error'"
+                                   string="Last Error"/>
+                        </group>
+                    </group>
+
+                    <!-- Platform setup guide -->
+                    <group string="Setup Guide" invisible="status == 'active'">
+                        <div class="text-muted">
+                            <div invisible="platform != 'telegram'">
+                                <p><strong>Telegram</strong></p>
+                                <ol>
+                                    <li>Open Telegram → search <strong>@BotFather</strong></li>
+                                    <li>Send <code>/newbot</code> and follow prompts</li>
+                                    <li>Copy the token and paste it above</li>
+                                    <li>Telegram requires a <strong>public HTTPS URL</strong>. If you are running Odoo locally, use <strong>ngrok</strong>:
+                                        <br/><code>ngrok http 8018</code>
+                                        <br/>Copy the <code>https://....ngrok.io</code> URL into the <strong>Public HTTPS Base URL</strong> field above.
+                                    </li>
+                                    <li>Click <strong>Connect</strong> — Odoo registers the webhook automatically</li>
+                                </ol>
+                            </div>
+                            <div invisible="platform != 'whatsapp'">
+                                <p><strong>WhatsApp</strong></p>
+                                <ol>
+                                    <li>Go to <strong>Meta Developer Console</strong> → WhatsApp → API Setup</li>
+                                    <li>Copy <strong>Permanent Token</strong> and <strong>Phone Number ID</strong></li>
+                                    <li>Paste them above and click <strong>Connect</strong></li>
+                                    <li>Use the displayed Webhook URL + Verify Token to complete setup in Meta Console</li>
+                                </ol>
+                            </div>
+                            <div invisible="platform != 'web'">
+                                <p><strong>Web Widget</strong></p>
+                                <p>No external credentials needed. Click <strong>Connect</strong> to generate the endpoint URL, then POST messages to it from your web app.</p>
+                            </div>
+                        </div>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="ai_bot_channel_action" model="ir.actions.act_window">
+        <field name="name">Bot Channels</field>
+        <field name="res_model">ai.bot.channel</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

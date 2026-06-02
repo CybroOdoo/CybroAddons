@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ai_tool_view_tree" model="ir.ui.view">
+        <field name="name">ai.tool.view.tree</field>
+        <field name="model">ai.tool</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="implementation"/>
+                <field name="default_provider_id" optional="show"/>
+                <field name="default_model_id" optional="show"/>
+                <field name="requires_user_consent"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ai_tool_view_form" model="ir.ui.view">
+        <field name="name">ai.tool.view.form</field>
+        <field name="model">ai.tool</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="%(odoo_mcp_manager.ai_test_tool_wizard_action)d" string="Test Tool" type="action" class="oe_highlight" context="{'default_tool_id': id}" groups="odoo_mcp_manager.group_mcp_consent_approver"/>
+                    <button name="sync_tools" string="Sync Decorated Tools" type="object"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Tool Name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="implementation"/>
+                            <field name="requires_user_consent"/>
+                            <field name="active"/>
+                        </group>
+                        <group invisible="implementation != 'decorator'">
+                            <field name="decorator_model"/>
+                            <field name="decorator_method"/>
+                        </group>
+                    </group>
+
+                    <!-- Default AI model — applies to ask_ai and analyze_records -->
+                    <group string="Default AI Model"
+                           invisible="implementation != 'builtin'"
+                           help="When this tool calls an AI, it uses this provider and model unless the request overrides them.">
+                        <group>
+                            <field name="default_provider_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="default_model_id"
+                                   options="{'no_create': True}"
+                                   domain="[('provider_id', '=', default_provider_id)]"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <field name="description"/>
+                        <field name="input_schema" widget="ace"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="ai_tool_view_search" model="ir.ui.view">
+        <field name="name">ai.tool.view.search</field>
+        <field name="model">ai.tool</field>
+        <field name="arch" type="xml">
+            <search string="Search Tools">
+                <field name="name" string="Tool Name"/>
+                <field name="description" string="Description"/>
+
+                <filter name="filter_active" string="Active" domain="[('active', '=', True)]"/>
+                <filter name="filter_inactive" string="Inactive" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter name="filter_builtin" string="Built-in" domain="[('implementation', '=', 'builtin')]"/>
+                <filter name="filter_decorator" string="Decorated" domain="[('implementation', '=', 'decorator')]"/>
+                <filter name="filter_consent" string="Requires Consent" domain="[('requires_user_consent', '=', True)]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_implementation" string="Implementation" context="{'group_by': 'implementation'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="ai_tool_action" model="ir.actions.act_window">
+        <field name="name">AI Tools</field>
+        <field name="res_model">ai.tool</field>
+        <field name="view_mode">list,form</field>
+        <!-- Default: show only active tools -->
+        <field name="context">{'search_default_filter_active': 1}</field>
+    </record>
+</odoo>

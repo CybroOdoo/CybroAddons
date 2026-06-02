@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         ai.bot.conversation — list view
+    ================================================================ -->
+    <record id="ai_bot_conversation_view_list" model="ir.ui.view">
+        <field name="name">ai.bot.conversation.list</field>
+        <field name="model">ai.bot.conversation</field>
+        <field name="arch" type="xml">
+            <list string="Bot Conversations" decoration-muted="not active">
+                <field name="bot_channel_id" string="Bot"/>
+                <field name="platform"/>
+                <field name="platform_user_name" string="User Name"/>
+                <field name="platform_user_id" string="User ID" optional="hide"/>
+                <field name="odoo_user_id"/>
+                <field name="message_count" string="Messages"/>
+                <field name="last_message_date" string="Last Message"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ai.bot.conversation — form view -->
+    <record id="ai_bot_conversation_view_form" model="ir.ui.view">
+        <field name="name">ai.bot.conversation.form</field>
+        <field name="model">ai.bot.conversation</field>
+        <field name="arch" type="xml">
+            <form string="Bot Conversation">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="session_key"/></h1>
+                    </div>
+                    <group>
+                        <group string="Platform">
+                            <field name="bot_channel_id" string="Bot Channel"/>
+                            <field name="platform"/>
+                            <field name="platform_user_name" string="User Name"/>
+                            <field name="platform_user_id" string="User ID"/>
+                        </group>
+                        <group string="Odoo Link">
+                            <field name="odoo_user_id"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Messages" name="messages">
+                            <field name="message_ids" nolabel="1">
+                                <list string="Messages" create="false">
+                                    <field name="create_date" string="Time"/>
+                                    <field name="role"/>
+                                    <field name="content"/>
+                                    <field name="tool_used"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ai.bot.conversation — action -->
+    <record id="action_ai_bot_conversation" model="ir.actions.act_window">
+        <field name="name">Bot Conversations</field>
+        <field name="res_model">ai.bot.conversation</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No bot conversations yet.
+            </p>
+            <p>
+                Conversations appear here once a user sends a message
+                through any of the connected chat platforms.
+            </p>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         Menu item — under existing MCP Gateway > Operations menu
+    ================================================================ -->
+    <menuitem
+        id="menu_ai_bot_conversation"
+        name="Bot Conversations"
+        parent="mcp_gateway_menu_ops"
+        action="action_ai_bot_conversation"
+        sequence="30"/>
+
+</odoo>

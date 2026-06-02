@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Generic Search Tool -->
+        <record id="tool_search_records" model="ai.tool">
+            <field name="name">search_records</field>
+            <field name="description">Search for Odoo records in a specific model using a domain.</field>
+            <field name="implementation">builtin</field>
+            <field name="input_schema">{
+                "type": "object",
+                "properties": {
+                    "model": {"type": "string", "description": "Odoo model name (e.g. res.partner)"},
+                    "domain": {"type": "array", "description": "Odoo domain list (e.g. [['name', 'ilike', 'John']])"},
+                    "limit": {"type": "integer", "default": 5}
+                },
+                "required": ["model"]
+            }</field>
+        </record>
+
+        <!-- Generic Create Tool -->
+        <record id="tool_create_record" model="ai.tool">
+            <field name="name">create_record</field>
+            <field name="description">Create a new record in an Odoo model.</field>
+            <field name="implementation">builtin</field>
+            <field name="input_schema">{
+                "type": "object",
+                "properties": {
+                    "model": {"type": "string", "description": "Odoo model name"},
+                    "values": {"type": "object", "description": "Field values to set"}
+                },
+                "required": ["model", "values"]
+            }</field>
+        </record>
+
+        <!-- Generic Update Tool -->
+        <record id="tool_update_record" model="ai.tool">
+            <field name="name">update_record</field>
+            <field name="description">Update an existing Odoo record by ID.</field>
+            <field name="implementation">builtin</field>
+            <field name="input_schema">{
+                "type": "object",
+                "properties": {
+                    "model": {"type": "string", "description": "Odoo model name"},
+                    "res_id": {"type": "integer", "description": "Record ID"},
+                    "values": {"type": "object", "description": "Field values to update"}
+                },
+                "required": ["model", "res_id", "values"]
+            }</field>
+        </record>
+
+        <!-- Unlink Record Tool -->
+        <record id="tool_unlink_record" model="ai.tool">
+            <field name="name">unlink_record</field>
+            <field name="description">Remove the link between an Odoo record and one or more related records on a many2many or many2one field, without deleting either record. For many2many fields provide a list of related_ids to detach. For many2one fields the field is simply cleared.</field>
+            <field name="implementation">builtin</field>
+            <field name="input_schema">{
+                "type": "object",
+                "properties": {
+                    "model": {"type": "string", "description": "Odoo model name (e.g. project.task)"},
+                    "res_id": {"type": "integer", "description": "ID of the record to modify"},
+                    "field": {"type": "string", "description": "Name of the relational field (many2many or many2one) to unlink from"},
+                    "related_ids": {"type": "array", "items": {"type": "integer"}, "description": "List of related record IDs to remove from a many2many field (not required for many2one)"}
+                },
+                "required": ["model", "res_id", "field"]
+            }</field>
+        </record>
+
+        <!-- Delete Record Tool -->
+        <record id="tool_delete_record" model="ai.tool">
+            <field name="name">delete_record</field>
+            <field name="description">Permanently delete an Odoo record by its ID. Use with caution — this action is irreversible. Requires explicit confirmation from the user before execution.</field>
+            <field name="implementation">builtin</field>
+            <field name="requires_user_consent">True</field>
+            <field name="input_schema">{
+                "type": "object",
+                "properties": {
+                    "model": {"type": "string", "description": "Odoo model technical name (e.g. res.partner, sale.order)"},
+                    "res_id": {"type": "integer", "description": "ID of the record to permanently delete"}
+                },
+                "required": ["model", "res_id"]
+            }</field>
+        </record>
+
+        <!-- Analyze Records Tool -->
+        <record id="tool_analyze_records" model="ai.tool">
+            <field name="name">analyze_records</field>
+            <field name="description">Fetch records from an Odoo model and send them to an AI provider to answer a question about the data (e.g. summarize, compare, detect anomalies).</field>
+            <field name="implementation">builtin</field>
+            <field name="input_schema">{
+                "type": "object",
+                "properties": {
+                    "model": {"type": "string", "description": "Odoo model technical name (e.g. sale.order, res.partner)"},
+                    "question": {"type": "string", "description": "The question or analysis task to perform on the fetched records"},
+                    "domain": {"type": "array", "description": "Optional Odoo domain to filter records (e.g. [['state', '=', 'sale']])"},
+                    "fields": {"type": "array", "items": {"type": "string"}, "description": "Optional list of field names to include. If omitted, key fields are selected automatically."},
+                    "limit": {"type": "integer", "description": "Maximum number of records to fetch (default: 20)"},
+                    "provider": {"type": "string", "description": "Optional AI provider name. Defaults to the first active provider."},
+                    "ai_model": {"type": "string", "description": "Optional model name to use for the AI call (e.g. gpt-4o, claude-sonnet-4-6)."}
+                },
+                "required": ["model", "question"]
+            }</field>
+        </record>
+
+        <!-- Ask AI Tool -->
+        <record id="tool_ask_ai" model="ai.tool">
+            <field name="name">ask_ai</field>
+            <field name="description">Send a prompt to the configured AI provider and return the response. Optionally specify a provider name or model to target.</field>
+            <field name="implementation">builtin</field>
+            <field name="input_schema">{
+                "type": "object",
+                "properties": {
+                    "prompt": {"type": "string", "description": "The message or question to send to the AI"},
+                    "provider": {"type": "string", "description": "Optional provider name (e.g. OpenAI, Anthropic, Local Ollama). Defaults to first active provider."},
+                    "model": {"type": "string", "description": "Optional model name (e.g. gpt-4o, claude-sonnet-4-6, llama3). Defaults to provider default."}
+                },
+                "required": ["prompt"]
+            }</field>
+        </record>
+    </data>
+</odoo>

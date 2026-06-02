@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ai_provider_view_tree" model="ir.ui.view">
+        <field name="name">ai.provider.view.tree</field>
+        <field name="model">ai.provider</field>
+        <field name="arch" type="xml">
+            <list default_order="priority asc">
+                <field name="priority" optional="show"/>
+                <field name="name"/>
+                <field name="service"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ai_provider_view_form" model="ir.ui.view">
+        <field name="name">ai.provider.view.form</field>
+        <field name="model">ai.provider</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_fetch_models" string="Fetch Models" type="object" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="e.g. My OpenAI"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="service"/>
+                            <field name="api_key" password="True"/>
+                            <field name="api_base" placeholder="https://api.openai.com/v1"/>
+                        </group>
+                        <group>
+                            <field name="priority"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Models" name="models">
+                            <field name="model_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="model_use"/>
+                                    <field name="default"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Fallbacks" name="fallbacks">
+                            <field name="fallback_provider_ids"/>
+                        </page>
+                        <page string="Configuration Guide" name="setup_guide">
+                            <field name="setup_guide" widget="html" readonly="1" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="ai_provider_view_search" model="ir.ui.view">
+        <field name="name">ai.provider.view.search</field>
+        <field name="model">ai.provider</field>
+        <field name="arch" type="xml">
+            <search string="Search Providers">
+                <field name="name" string="Provider Name"/>
+
+                <filter name="filter_active" string="Active" domain="[('active', '=', True)]"/>
+                <filter name="filter_inactive" string="Inactive" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter name="filter_openai" string="OpenAI" domain="[('service', '=', 'openai')]"/>
+                <filter name="filter_anthropic" string="Anthropic" domain="[('service', '=', 'anthropic')]"/>
+                <filter name="filter_google" string="Google Gemini" domain="[('service', '=', 'google')]"/>
+                <filter name="filter_ollama" string="Ollama" domain="[('service', '=', 'ollama')]"/>
+                <filter name="filter_custom" string="Custom" domain="[('service', '=', 'custom')]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_service" string="Service" context="{'group_by': 'service'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="ai_provider_action" model="ir.actions.act_window">
+        <field name="name">AI Providers</field>
+        <field name="res_model">ai.provider</field>
+        <field name="view_mode">list,form</field>
+        <!-- Default: show only active providers -->
+        <field name="context">{'search_default_filter_active': 1}</field>
+    </record>
+</odoo>
