@@ -40,7 +40,7 @@ class ClassType(models.Model):
     service_id = fields.Many2one('service.type', string='Services',
                                  help='Type of service.')
     instrument_id = fields.Many2one('product.product',
-                                    String='Instrument',
+                                    string='Instrument',
                                     domain=[('music_instrument', '=', True)],
                                     help='Instrument used in the music class.')
     teacher_id = fields.Many2one('hr.employee', string='Teacher',
@@ -58,15 +58,14 @@ class ClassType(models.Model):
         default='draft', help='State of the class.')
     lesson_ids = fields.One2many('class.lesson',
                                  'relation_id',
-                                 String='Class Lessons',
+                                 string='Class Lessons',
                                  help='Daily class lessons records.')
     student_ids = fields.Many2many('res.partner', string='Student',
                                    domain=[('student', '=', True)],
-                                   String='Student ID',
                                    help='Student who joined in the class.',
                                    required=True)
     order_count = fields.Integer(compute='_compute_order_count',
-                                 String='Order Count',
+                                 string='Order Count',
                                  help='Total count of the invoice.')
     sunday = fields.Boolean(string='Sunday', help='Mark the day as a workday.')
     monday = fields.Boolean(string='Monday', help='Mark the day as a workday.')
@@ -107,7 +106,7 @@ class ClassType(models.Model):
                     if current_date.weekday() < 5:
                         num_work_days += 1
                     current_date += timedelta(days=1)
-                self.duration = num_work_days
+                records.duration = num_work_days
 
     def action_button_class_start(self):
         """Change the corresponding class state to start."""
@@ -155,4 +154,4 @@ class ClassType(models.Model):
         """To compute the total count of the invoice."""
         for record in self:
             record.order_count = self.env['account.move'].search_count(
-                [('partner_id', 'in', self.student_ids.ids), ('class_id', '=', self.id)])
+                [('partner_id', 'in', record.student_ids.ids), ('class_id', '=', record.id)])

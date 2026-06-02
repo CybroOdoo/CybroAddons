@@ -31,7 +31,7 @@ class ResPartner(models.Model):
     class_id = fields.Many2one('class.type', string='Joined Class',
                               help='Relation field use to connect the class '
                                    'type to the contact.')
-    attendance_count = fields.Integer(String='Attendance Count',
+    attendance_count = fields.Integer(string='Attendance Count',
                                       compute='_compute_attendance_count',
                                       help='Attendance count displaying field.')
     student_type = fields.Selection(
