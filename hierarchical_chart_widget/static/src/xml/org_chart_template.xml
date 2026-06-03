@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <!-- Template for Org Chart Widget -->
+    <t t-name="CustomerChartWidget">
+        <div class="org-chart-wrapper"> <!-- Added a wrapper for overall styling if needed -->
+            <div class="org-chart">
+                <t t-if="values.parent || (values.child and values.child.length)">
+                    <p class="org-hierarchy-title">
+                        <u>HIERARCHY</u>
+                    </p>
+                </t>
+
+                <t t-if="values.parent">
+                    <div class="org-node parent-node"
+                         t-on-click="onChildClick(this)"
+                         t-att-value="values.parent.id">
+                        <t t-esc="values.parent.name"/>
+                    </div>
+                    <div class="vl"/> <!-- Vertical line from parent -->
+                </t>
+
+                <div class="org-parent"> <!-- "Self" node container -->
+                    <!-- Self Node Display Logic -->
+                    <t t-if="values.self">
+                        <div t-attf-class="org-node self-node {{ values.parent ? 'o_treeEntry' : '' }} {{ (values.child and values.child.length) ? 'has-children' : '' }}">
+                            <!-- Check if values.self is an object with a name property, or just a string -->
+                            <p> <!-- Allow click if it can be navigated, e.g., if parent implies self is also a record -->
+                                <t t-esc="typeof values.self === 'object' ? values.self.name : values.self"/>
+                            </p>
+                        </div>
+                    </t>
+                    <!-- Vertical line from self, only if there are children -->
+                    <div t-if="values.child and values.child.length"
+                         class="vl2"/>
+                </div>
+
+                <t t-if="values.child and values.child.length">
+                    <div class="org-children"> <!-- Container for child nodes -->
+                        <t t-foreach="values.child" t-as="child_data"
+                           t-key="child_data.id || child_data_index">
+                            <div class="org-node child-node o_treeEntry" t-on-click="onChildClick(this)"
+                         t-att-value="child_data.id">
+                                <t t-esc="child_data.name"/>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,134 @@
+.org-chart-wrapper {
+    display: flex;
+    justify-content: center; /* Center the chart on the page */
+    padding: 20px;
+    font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif; /* Odoo-like font stack */
+}
+
+.org-chart {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center items vertically in the column */
+}
+
+.org-hierarchy-title {
+    font-weight: 500;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+    color: #555;
+}
+
+.org-node {
+    border: 1px solid #d3d3d3; /* Light grey border */
+    padding: 10px 15px;
+    border-radius: 4px;
+    background-color: #ffffff;
+    display: inline-block; /* Fit content */
+    margin-bottom: 0px; /* Lines will handle spacing */
+    text-align: center;
+    min-width: 120px; /* Ensure nodes have some width */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.org-node p {
+    margin: 0;
+    font-size: 0.9em;
+}
+
+/* Specific Node Styles */
+.parent-node {
+    background-color: #f8f9fa; /* Lighter background for parent */
+}
+.parent-node p {
+    font-weight: bold;
+}
+
+.self-node {
+    background-color: #e9ecef; /* Slightly different for self */
+}
+.self-node p {
+    font-weight: bold;
+    font-size: 1em; /* Make self slightly more prominent */
+}
+
+.child-node {
+    background-color: #f8f9fa;
+}
+
+/* Clickable styles for nodes with o_treeEntry */
+.org-node.o_treeEntry {
+    cursor: pointer;
+}
+.org-node.o_treeEntry:hover {
+    border-color: #80bdff; /* Odoo's primary color focus */
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+/* Vertical Lines */
+.vl, .vl2 {
+    width: 2px; /* Line thickness */
+    background-color: #adb5bd; /* Grey color for lines */
+    margin: 0 auto; /* Center the line horizontally */
+    height: 20px; /* Fixed height for vertical connectors */
+}
+
+/* Self node container (for positioning purposes) */
+.org-parent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative; /* Needed for absolute positioning of pseudo-elements if used */
+}
+
+/* Children container */
+.org-children {
+    display: flex; /* Arrange children side-by-side */
+    justify-content: center; /* Center children if they don't fill available width */
+    position: relative; /* Crucial for ::before pseudo-element */
+    padding-top: 20px; /* Space for the horizontal line to be drawn into */
+    margin-top: 0; /* vl2 should connect directly to this space */
+}
+
+/* Horizontal connecting line for children (drawn above them) */
+.org-children::before {
+    content: '';
+    position: absolute;
+    top: 0; /* Position at the very top of .org-children (in its padding space) */
+    left: 10%;  /* Default width, make it stretch almost full width of children area */
+    right: 10%; /* Adjust these percentages based on how wide you want the line */
+    height: 2px; /* Line thickness */
+    z-index: 1; /* Ensure it's behind nodes if they overlap (though they shouldn't) */
+}
+
+/* Adjust horizontal line for a single child to be just a small segment */
+.org-children:has(> .org-node.child-node:only-child)::before {
+    left: calc(50% - 10px); /* Short segment in the middle */
+    right: calc(50% - 10px);
+}
+/* Fallback if :has is not supported (Odoo 18 should be fine):
+   If you can add a class like "single-child-container" via JS when there's only one child:
+.org-children.single-child-container::before {
+    left: calc(50% - 10px);
+    right: calc(50% - 10px);
+}
+*/
+
+
+/* Each child node and its connector up to the horizontal line */
+.org-node.child-node {
+    position: relative; /* For its ::before pseudo-element */
+    margin-left: 10px;  /* Spacing between child nodes */
+    margin-right: 10px;
+    /* z-index: 2; /* Nodes above lines if any complex overlap, usually not needed */
+}
+
+.org-node.child-node::before {
+    content: '';
+    position: absolute;
+    bottom: 100%; /* Start from the top edge of the child node box */
+    left: 50%;
+    transform: translateX(-50%); /* Center the line above the node */
+    width: 2px; /* Line thickness */
+    height: 20px; /* Height of the line, should match .org-children padding-top */
+    background-color: #adb5bd; /* Match other lines */
+}
