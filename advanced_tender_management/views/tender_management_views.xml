@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <!-- Action to open Tender Management records in tree and form view -->
+    <record id="tender_management_action" model="ir.actions.act_window">
+        <field name="name">Tender Management</field>
+        <field name="res_model">tender.management</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+        <!-- Tree view to display basic tender records -->
+    <record id="tender_management_view_tree" model="ir.ui.view">
+        <field name="name">tender.management.view.tree</field>
+        <field name="model">tender.management</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+        <!-- Form view for complete tender lifecycle management -->
+    <record id="tender_management_view_form" model="ir.ui.view">
+        <field name="name">tender.management.view.form</field>
+        <field name="model">tender.management</field>
+        <field name="arch" type="xml">
+            <form string="Tender Management Form">
+                <header>
+                    <button string="Confirm" name="action_confirm_tender"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="not tender_state=='draft'"
+                    />
+                    <button string="Select/Change Bid"
+                            name="action_select_final_bid"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="not tender_state=='bid_selection' or not tender_type=='single_vendor'"
+                    />
+                    <button name="action_confirm_bids" string="Confirm Bids"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="not tender_state=='bid_selection' or not tender_type=='product_wise_vendor'"
+                    />
+                    <button
+                            name="action_print_xlsx_report"
+                            string="Export Product Template"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="not tender_state=='draft'"
+                    />
+                    <button name="action_import_tender_product_wizard"
+                            string="Import Product Template"
+                            type="object"
+                            class="oe_highlight"
+                            context="{'default_tender_id':id}"
+                            invisible="not tender_state=='draft'"
+                    />
+                    <button name="action_bid_evaluation" string="Bid Evaluation"
+                            class="oe_highlight"
+                            type="object"
+                            invisible="not tender_state=='bid_submission'"
+                    />
+                    <field name="tender_state" widget="statusbar"
+                           statusbar_visible="draft,confirm,bid_submission,bid_evaluation,bid_selection,close,cancel"
+                           options="{'clickable': True}"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" class="oe_stat_button"
+                                icon="fa-folder-o" name="action_get_bids">
+                            <field name="all_bid_count" widget="statinfo"
+                                   string="All Bids"/>
+                        </button>
+                        <button type="object" class="oe_stat_button"
+                                icon="fa-folder-o"
+                                name="action_get_qualified_bids">
+                            <field name="qualified_bid_count" widget="statinfo"
+                                   string="Qualified Bids"/>
+                        </button>
+                        <button type="object" class="oe_stat_button"
+                                icon="fa-folder-o"
+                                name="action_get_evaluation_bids"
+                                invisible="tender_type != 'product_wise_vendor' or tender_state not in ['bid_evaluation','bid_selection']">
+                            <field name="evaluation_bid_count" widget="statinfo"
+                                   string="Bids Evaluation"/>
+                        </button>
+                        <button type="object" class="oe_stat_button"
+                                icon="fa-folder-o" name="action_get_legit_bids"
+                                invisible="tender_type != 'single_vendor' or not tender_state in ['bid_evaluation','bid_selection']">
+                            <field name="legit_bid_count" widget="statinfo"
+                                   string="Legit Bids"/>
+                        </button>
+                        <button type="object" class="oe_stat_button"
+                                icon="fa-folder-o"
+                                name="action_get_purchase_order"
+                                invisible="not purchase_confirmed or not tender_state=='bid_selection'">
+                            <field name="tender_purchase_count"
+                                   widget="statinfo" string="Purchase"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title mb24">
+                        <h1>
+                            <field options="{'line_breaks': True}"
+                                   class="text-break" name="name"
+                                   default_focus="1"
+                                   placeholder="e.g. New Tender"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="purchase_confirmed" invisible="1"/>
+                            <field name="responsible_id"
+                                   readonly="tender_state not in ('draft')"/>
+                            <field name="tender_category_id"
+                                   readonly="tender_state not in ('draft')"/>
+                            <field name="tender_start_date"
+                                   readonly="tender_state not in ('draft')"/>
+                            <field name="tender_end_date"
+                                   readonly="tender_state not in ('draft')"/>
+                            <field name="bid_start_date"
+                                   readonly="tender_state not in ('draft')"/>
+                            <field name="bid_end_date"
+                                   readonly="tender_state not in ('draft')"/>
+                        </group>
+                        <group>
+                            <field name="tender_type"
+                                   readonly="tender_state not in ('draft')"/>
+                            <span class="o_form_label o_td_label">
+                                Tender Address
+                            </span>
+                            <div class="o_address_format">
+                                <field name="address_street"
+                                       placeholder="Street..."
+                                       readonly="tender_state not in ('draft')"/>
+                                <field name="address_city" placeholder="City"
+                                       readonly="tender_state not in ('draft')"/>
+                                <field name="address_state_id"
+                                       placeholder="State"
+                                       domain="[('country_id', '=', address_country_id)]"
+                                       readonly="tender_state not in ('draft')"/>
+                                <field name="address_country_id"
+                                       placeholder="Country"
+                                       readonly="tender_state not in ('draft')"/>
+                            </div>
+                            <field name="registered_vendors_ids"
+                                   widget="many2many_tags"
+                                   readonly="tender_state not in ('draft')"/>
+                            <field name="purchase_order_ids"
+                                   widget="many2many_tags"
+                                   readonly="tender_state not in ('draft')"/>
+                        </group>
+                        <notebook>
+                            <page string="Product">
+                                <field name="tender_product_line_ids"
+                                       widget="section_and_note_one2many">
+                                    <tree edit="1" editable="bottom">
+                                        <control>
+                                            <create name="add_product_control"
+                                                    string="Add a product"/>
+                                            <create name="add_section_control"
+                                                    string="Add a section"
+                                                    context="{'default_display_type': 'line_section'}"/>
+                                        </control>
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="display_type"
+                                               column_invisible="True"/>
+                                        <field name="product_id"
+                                               required="not display_type"/>
+                                        <field name="name"
+                                               widget="section_and_note_text"/>
+                                        <field name="product_code"/>
+                                        <field name="product_qty"/>
+                                        <field name="product_uom_id"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Documents">
+                                <field name="tender_file_ids">
+                                    <tree editable="bottom">
+                                        <field name="name" required="1"/>
+                                        <field name="filename" required="1"/>
+                                        <field name="attachment"/>
+                                        <field name="note"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Description">
+                                <group>
+                                    <field name="description" widget="html"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+</odoo>

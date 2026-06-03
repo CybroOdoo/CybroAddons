@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="tender_details" name="Tender Details">
+        <!-- Template to display detailed tender information and bidding form -->
+        <t t-call="website.layout">
+            <div class="tender_details_page">
+                <div class="tender-note-container">
+                    <span>Note</span>
+                    <t t-if="record.tender_type=='product_wise_vendor'">
+                        <p>This tender follows a 'product-wise tender' approach meaning that if you enter a zero price
+                            for a
+                            product/Item, it will not be considered as a valid bid, and not taken into consideration
+                            during
+                            the
+                            selection process.
+                        </p>
+                    </t>
+                    <t t-if="record.tender_type=='single_vendor'">
+                        <p>This tender follows a 'single-vendor tender' approach meaning that if you enter a zero price
+                            for a
+                            product/Item, it will not be considered as a legit bid, and will be disqualified from the
+                            selection process.
+                        </p>
+                    </t>
+                </div>
+                <div class="page-heading">
+                    <strong t-out="record.name"/>
+                </div>
+                <form action="/bid/submit" method="post" enctype="multipart/form-data" class="tender-bid-form">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <input type="hidden" class="hidden_tender_id" name="tender_id" t-att-value="record.id"/>
+                    <div class="tender-container">
+                        <section>
+                            <t t-if="bid_record">
+                                <span>Bid Reference :
+                                    <strong t-esc="bid_record.name" t-att-data-bid_id="bid_record.id"
+                                            class="bid_info"/>
+                                </span>
+                            </t>
+                            <div class="rank-container">
+                                <t t-if="record.tender_type=='single_vendor' and bid_record and bid_record.qualification_stage=='qualified' and not bid_record.bidding_state=='bid'">
+                                    <span>Your Rank</span>
+                                    <div class="rank">
+                                        <strong class="vendor-rank" t-out="bid_record.vendor_rank"/>
+                                    </div>
+                                </t>
+                            </div>
+                            <hr/>
+                            <div class="tender-category-group">
+                                <div>
+                                    <span class="form-label">Tender Category :
+                                        <strong t-attf-class="row-content"
+                                                t-out="record.tender_category_id.name"/>
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="form-label">Type :
+                                        <strong t-attf-class="row-content"
+                                                t-out="dict(record._fields['tender_type'].selection).get(record.tender_type)"/>
+                                    </span>
+                                </div>
+                            </div>
+                            <hr/>
+                            <div class="tender-date-address-group">
+                                <div class="tender-date-group">
+                                    <div class="mb-3">
+                                        <span class="form-label date-label">Tender Start Date</span>
+                                        <span>: &#160;</span>
+
+                                        <strong t-attf-class="row-content" t-out="record.tender_start_date"/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <span class="form-label date-label">Tender End Date</span>
+                                        <span>: &#160;</span>
+
+                                        <strong t-attf-class="row-content" t-out="record.tender_end_date"/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <span class="form-label date-label">Bid Start Date</span>
+                                        <span>: &#160;</span>
+
+                                        <strong t-attf-class="row-content" t-out="record.bid_start_date"/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <span class="form-label date-label">Bid End Date</span>
+                                        <span>: &#160;</span>
+                                        <strong t-attf-class="row-content" t-out="record.bid_end_date"/>
+                                    </div>
+                                </div>
+                                <div class="tender-address-group">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <span class="form-label">Location : &#160;</span>
+                                            <div>
+                                                <strong t-attf-class="row-content" t-out="record.address_street"/>
+                                                <strong t-attf-class="row-content" t-out="record.address_city"/>
+                                                <strong t-attf-class="row-content"
+                                                        t-out="record.address_state_id.name"/>
+                                                <strong t-attf-class="row-content"
+                                                        t-out="record.address_country_id.name"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr/>
+                        </section>
+                        <section>
+                            <div class="section-head">
+                                <strong>Products</strong>
+                            </div>
+                            <t t-if="bid_record">True
+                                <span t-out="bid_record.bidding_state"/>
+                            </t>
+                            <div class="product-container">
+                                <table class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Description</th>
+                                            <th>Qty</th>
+                                            <th>Unit of Measure</th>
+                                            <th>Your Price</th>
+                                            <th>Total Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Registered Users -->
+                                        <t t-if="bid_record and not bid_record.bidding_state=='bid'">
+                                            <t t-foreach="bid_product_lines" t-as="product">
+                                                <t t-if="product['display_type']=='line_section'">
+                                                    <tr>
+                                                        <td colspan="5">
+                                                            <strong t-esc="product['name']"/>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                                <t t-elif="not product['display_type']">
+                                                    <tr class="product_row">
+                                                        <td t-esc="product['name']"/>
+                                                        <td t-esc="product['product_qty']" class="product_qty"/>
+                                                        <td t-esc="product['product_uom_id'].name"/>
+                                                        <td t-esc="product['product_price']"/>
+                                                        <td t-esc="product['product_total']"/>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                            <tr>
+                                                <td colspan="4" class="text-right">
+                                                    <strong>Total</strong>
+                                                </td>
+                                                <td>
+                                                    <strong>
+                                                        <t t-esc="sum(line['product_total'] for line in bid_product_lines if not line['display_type'])"/>
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <!-- Non-Registered Users and Edit-Requested Users-->
+                                        <t t-else="">
+                                            <t t-foreach="tender_products" t-as="product">
+                                                <t t-if="product['display_type']=='line_section'">
+                                                    <tr>
+                                                        <td colspan="5">
+                                                            <strong t-esc="product['name']"/>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                                <t t-elif="not product['display_type']">
+                                                    <tr class="product_row">
+                                                        <td t-esc="product['name']"/>
+                                                        <td class="product_qty" t-esc="product['product_qty']"/>
+                                                        <td t-esc="product['product_uom_id'][1]"/>
+                                                        <td>
+                                                            <input t-att-product_id="product['product_id'][0]"
+                                                                   type="number"
+                                                                   min="0"
+                                                                   value=""
+                                                                   required="required"
+                                                                   placeholder="price"
+                                                                   class="vendor_bid"
+                                                            />
+                                                        </td>
+                                                        <td class="total_price">0.00</td>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                            <tr class="total_row">
+                                                <td colspan="4" class="text-right">
+                                                    <strong>Total</strong>
+                                                </td>
+                                                <td>
+                                                    <strong class="grand_total">0.00</strong>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+
+                            </div>
+                        </section>
+                        <section>
+                            <div class="section-head">
+                                <strong>Tender Documents</strong>
+                            </div>
+                            <div class="documents-container">
+                                <table class="table table-striped o_list_view table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Document</th>
+                                            <th>Note</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="record.tender_file_ids" t-as="file">
+                                            <tr>
+                                                <td>
+                                                    <span t-out="file.name"/>
+                                                </td>
+                                                <td>
+                                                    <a t-att-href="'/download/file/%s' % file.id" target="_blank">
+                                                        <i class="fa fa-cloud-download" aria-hidden="true"/>
+                                                        <span t-out="file.filename"/>
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <span t-out="file.note"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </section>
+                        <section>
+                            <div class="section-head">
+                                <strong>Description</strong>
+                            </div>
+                            <div class="tender-description">
+                                <t t-out="record.description"/>
+                            </div>
+                        </section>
+                        <t t-if="not bid_record or bid_record.bidding_state=='bid'">
+                            <section>
+                                <div class="section-head">
+                                    <strong>Upload Documents</strong>
+                                </div>
+                                <div class="doc-file-upload mb-4">
+                                    <label for="att" class="vendor-file-upload">
+                                        Upload Your Documents
+                                    </label>
+                                    <input type="file" id="att" name="att" required="1" accept=".pdf"
+                                           style="display: none;"/>
+                                </div>
+                            </section>
+                        </t>
+                        <hr/>
+                        <t t-if="not bid_record or bid_record.bidding_state=='bid'">
+                            <div class="oe_button_box mb-3" name="tender_button_box">
+                                <button type="submit" class="btn btn-primary">
+                                    Register
+                                </button>
+                            </div>
+                        </t>
+                        <t t-if="bid_record and not bid_record.bidding_state=='bid'">
+                            <div class="oe_button_box mb-3" name="tender_button_box">
+                                <button type="button" class="btn btn-primary edit-request-btn">
+                                    Request edit
+                                </button>
+                            </div>
+                        </t>
+                    </div>
+                </form>
+            </div>
+        </t>
+    </template>
+    <template id="bid_submitted_thankyou_page" name="Bid Submit Thank You Page">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <section class="s_text_block pt40 pb40 o_colored_level" data-snippet="s_text_block">
+                    <div class="container s_allow_columns">
+                        <div class="row">
+                            <div class="col-lg-7 col-xl-6 me-lg-auto">
+                                <span class="d-block fa fa-4x fa-thumbs-up mx-auto rounded-circle bg-primary"/>
+                                <br/>
+                                <h1 class="text-center">Thank You!</h1>
+                                <div class="pb16 pt16 s_hr" data-snippet="s_hr" data-name="Separator">
+                                    <hr class="mx-auto border-top w-50 border-dark text-center"/>
+                                </div>
+                                <h5 class="text-center">
+                                    <span class="fa fa-check-circle"/>
+                                    <span>Your Bid Has Been Submitted
+                                        <b>Successfully</b>
+                                    </span>
+                                </h5>
+                            </div>
+                            <div class="col-lg-4">
+                                <ul class="list-unstyled mb-0 ps-2">
+                                    <li style="margin-bottom: 10px;">
+                                        <i class="fa fa-building fa-fw me-2"></i>
+                                        <t t-esc="env.user.company_id.name"/>
+                                    </li>
+                                    <li style="margin-bottom: 10px;">
+                                        <i class="fa fa-map-marker fa-fw me-2"></i>
+                                        <t t-esc="env.user.company_id.street"/>
+                                        <t t-esc="env.user.company_id.city"/>
+                                        <t t-esc="env.user.company_id.zip"/>
+                                    </li>
+                                    <li style="margin-bottom: 10px;">
+                                        <i class="fa fa-phone fa-fw me-2"></i>
+                                        <t t-esc="env.user.company_id.phone"/>
+                                    </li>
+                                    <li>
+                                        <i class="fa fa-envelope fa-fw me-2"></i>
+                                        <t t-esc="env.user.company_id.email"/>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <template id="edit_request_submitted_page" name="Edit Request Submitted">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <section class="s_text_block pt40 pb40 o_colored_level" data-snippet="s_text_block">
+                    <div class="container s_allow_columns">
+                        <div class="row">
+                            <div class="col-lg-7 col-xl-6 me-lg-auto">
+                                <span class="d-block fa fa-4x fa-thumbs-up mx-auto rounded-circle bg-primary"/>
+                                <br/>
+                                <h1 class="text-center">Thank You!</h1>
+                                <div class="pb16 pt16 s_hr" data-snippet="s_hr" data-name="Separator">
+                                    <hr class="mx-auto border-top w-50 border-dark text-center"/>
+                                </div>
+                                <h5 class="text-center">
+                                    <span class="fa fa-check-circle"/>
+                                    <span>Your Edit Request Has Been Submitted
+                                        <b>Successfully</b>
+                                    </span>
+                                </h5>
+                            </div>
+                            <div class="col-lg-4">
+                                <ul class="list-unstyled mb-0 ps-2">
+                                    <li style="margin-bottom: 10px;">
+                                        <i class="fa fa-building fa-fw me-2"></i>
+                                        <t t-esc="env.user.company_id.name"/>
+                                    </li>
+                                    <li style="margin-bottom: 10px;">
+                                        <i class="fa fa-map-marker fa-fw me-2"></i>
+                                        <t t-esc="env.user.company_id.street"/>
+                                        <t t-esc="env.user.company_id.city"/>
+                                        <t t-esc="env.user.company_id.zip"/>
+                                    </li>
+                                    <li style="margin-bottom: 10px;">
+                                        <i class="fa fa-phone fa-fw me-2"></i>
+                                        <t t-esc="env.user.company_id.phone"/>
+                                    </li>
+                                    <li>
+                                        <i class="fa fa-envelope fa-fw me-2"></i>
+                                        <t t-esc="env.user.company_id.email"/>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+</odoo>

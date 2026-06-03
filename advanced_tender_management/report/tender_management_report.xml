@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Defines a QWeb PDF report for the tender management model. -->
+    <record id="action_report_tender_management" model="ir.actions.report">
+        <field name="name">Tender Report</field>
+        <field name="model">tender.management</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">advanced_tender_management.report_tender_management</field>
+        <field name="report_file">advanced_tender_management.report_tender_management</field>
+        <field name="print_report_name">'Tender Report - %s' % (object.name)
+        </field>
+        <field name="binding_model_id"
+               ref="advanced_tender_management.model_tender_management"/>
+        <field name="binding_type">report</field>
+    </record>
+    <!-- Template for generating the tender management report in PDF format. -->
+    <template id="report_tender_management">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="page"
+                     style="font-family: 'Verdana', sans-serif; color: #333; padding: 20px;">
+                    <div class="header">
+                        <!-- Company Information -->
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <h2 style="font-size: 28px; margin-bottom: 5px; color: #004080;">
+                                <t t-esc="o.responsible_id.company_id.name or ''"/>
+                            </h2>
+                            <p style="font-size: 16px; margin: 0;">
+                                <t t-esc="o.responsible_id.company_id.street or ''"/>
+                                <br/>
+                                <t t-esc="o.responsible_id.company_id.city or ''"/>
+                                -
+                                <t t-esc="o.responsible_id.company_id.zip or ''"/>
+                                <br/>
+                                <t t-esc="o.responsible_id.company_id.state_id.name or ''"/>
+                                -
+                                <t t-esc="o.responsible_id.company_id.country_id.name or ''"/>
+                            </p>
+                        </div>
+                    </div>
+                    <div style="break-inside: avoid;">
+                        <!-- Header -->
+                        <div class="row text-center">
+                            <div class="col-12">
+                                <h1 style="color: #002147; font-size: 32px;">
+                                    <strong t-out="o.name"/>
+                                </h1>
+                                <hr style="border: 1px solid #dcdcdc;"/>
+                            </div>
+                        </div>
+
+                        <!-- Tender and Bid Details Table Layout -->
+                        <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
+                            <tr>
+                                <td style="width: 50%; padding-right: 20px;">
+                                    <h5 style="margin-bottom: 12px; color: #0066cc;">
+                                        Tender Start Date:
+                                    </h5>
+                                    <strong style="font-size: 20px; margin: 0;"
+                                            t-out="o.tender_start_date"/>
+
+                                    <h5 style="margin-bottom: 12px; margin-top: 24px; color: #0066cc;">
+                                        Tender End
+                                        Date:
+                                    </h5>
+                                    <strong style="font-size: 20px; margin: 0;"
+                                            t-out="o.tender_end_date"/>
+
+                                    <h5 style="margin-bottom: 12px; margin-top: 24px; color: #0066cc;">
+                                        Bid Start Date:
+                                    </h5>
+                                    <strong style="font-size: 20px; margin: 0;"
+                                            t-out="o.bid_start_date"/>
+
+                                    <h5 style="margin-bottom: 12px; margin-top: 24px; color: #0066cc;">
+                                        Bid End Date:
+                                    </h5>
+                                    <strong style="font-size: 20px; margin: 0;"
+                                            t-out="o.bid_end_date"/>
+                                </td>
+                                <td style="width: 50%;">
+                                    <t t-if="o.tender_type=='single_vendor'">
+                                        <h5 style="margin-bottom: 12px; color: #0066cc;">
+                                            Bid Reference:
+                                        </h5>
+                                        <strong style="font-size: 20px; margin: 0;"
+                                                t-out="o.best_bid_id.name"/>
+                                    </t>
+                                    <h5 style="margin-bottom: 12px; margin-top: 24px; color: #0066cc;">
+                                        Purchase
+                                        Order:
+                                    </h5>
+                                    <t t-foreach="o.purchase_order_ids"
+                                       t-as="rec">
+                                        <strong style="font-size: 20px; margin: 0;"
+                                                t-out="rec.name"/>
+                                        <br/>
+                                    </t>
+
+                                    <h5 style="margin-bottom: 12px; margin-top: 24px; color: #0066cc;">
+                                        Address:
+                                    </h5>
+                                    <div>
+                                        <strong style="font-size: 20px; margin: 0;"
+                                                t-out="o.address_street"/>
+                                        <br/>
+                                        <strong style="font-size: 20px; margin: 0;"
+                                                t-out="o.address_city"/>
+                                        <br/>
+                                        <strong style="font-size: 20px; margin: 0;"
+                                                t-out="o.address_state_id.name"/>
+                                        <br/>
+                                        <strong style="font-size: 20px; margin: 0;"
+                                                t-out="o.address_country_id.name"/>
+                                        <br/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Description Section -->
+                        <div class="row text-center" style="margin-top: 32px;">
+                            <div class="col-12">
+                                <hr style="border: 1px solid #dcdcdc;"/>
+                                <h3 style="color: #004080; font-size: 28px;">
+                                    <strong>Description</strong>
+                                </h3>
+                                <p style="margin-top: 12px; font-size: 20px;">
+                                    <span t-esc="o.description"/>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Bid Details Section -->
+                        <div class="row text-center" style="margin-top: 32px;">
+                            <div class="col-12">
+                                <hr style="border: 1px solid #dcdcdc;"/>
+                                <h3 style="color: #004080; font-size: 28px;">
+                                    <strong>Bid Details</strong>
+                                </h3>
+                            </div>
+                        </div>
+                        <t t-foreach="o.purchase_order_ids" t-as="rec">
+                            <!-- Vendor Information -->
+                            <table style="width: 100%; margin-top: 24px; border-collapse: collapse;">
+                                <tr>
+                                    <td style="width: 50%; padding-right: 20px;">
+                                        <h5 style="margin-bottom: 12px; color: #0066cc;">
+                                            Vendor:
+                                        </h5>
+                                        <strong style="font-size: 20px; margin: 0;"
+                                                t-out="rec.partner_id.name"/>
+                                    </td>
+                                    <td style="width: 50%;">
+                                        <h5 style="margin-bottom: 12px; color: #0066cc;">
+                                            Expected Arrival Date:
+                                        </h5>
+                                        <strong style="font-size: 20px; margin: 0;"
+                                                t-out="rec.date_planned"/>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Bid Product Details Table -->
+                            <div style="margin-top: 32px;">
+                                <table class="table table-bordered text-center"
+                                       style="width: 100%; border: 1px solid #ddd; background-color: #f8f9fa; font-size: 20px;">
+                                    <thead style="background-color: #004080; color: #fff;">
+                                        <tr>
+                                            <th style="padding: 16px;">
+                                                Description
+                                            </th>
+                                            <th style="padding: 16px;">Qty</th>
+                                            <th style="padding: 16px;">UOM</th>
+                                            <th style="padding: 16px;">
+                                                Price/Qty
+                                            </th>
+                                            <th style="padding: 16px;">Total
+                                                Price
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-set="total_amount" t-value="0"/>
+
+                                        <t t-foreach="rec.order_line"
+                                           t-as="record">
+
+                                            <t t-if="record.display_type">
+                                                <tr style="background-color: #f1f1f1;">
+                                                    <td colspan="5"
+                                                        style="padding: 16px;">
+                                                        <strong t-esc="record.name"/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                            <t t-if="not record.display_type">
+                                                <tr>
+                                                    <td style="padding: 16px;">
+                                                        <span t-esc="record.name"/>
+                                                    </td>
+                                                    <td style="padding: 16px;">
+                                                        <span t-esc="record.product_qty"/>
+                                                    </td>
+                                                    <td style="padding: 16px;">
+                                                        <span t-esc="record.product_uom.name"/>
+                                                    </td>
+                                                    <td style="padding: 16px;">
+                                                        <span t-esc="record.price_unit"/>
+                                                    </td>
+                                                    <td style="padding: 16px;">
+                                                        <span t-esc="record.price_subtotal"/>
+                                                    </td>
+                                                </tr>
+                                                <t t-set="total_amount"
+                                                   t-value="total_amount + record.price_subtotal"/>
+                                            </t>
+                                        </t>
+                                        <tr style="background-color: #f1f1f1;">
+                                            <td colspan="3"
+                                                style="padding: 16px;"/>
+                                            <td style="padding: 16px;">
+                                                <strong>Total</strong>
+                                            </td>
+                                            <td style="padding: 16px;">
+                                                <strong t-esc="total_amount"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <!-- Action to open Tender Bidding records with default grouping by tender -->
+    <record id="tender_bidding_action" model="ir.actions.act_window">
+        <field name="name">Tender Bidding</field>
+        <field name="res_model">tender.bidding</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{"search_default_filter_group_by_tender": 1}</field>
+    </record>
+        <!-- Tree view to display bidding records with status-based decorations -->
+    <record id="tender_bidding_view_tree" model="ir.ui.view">
+        <field name="name">tender.bidding.view.tree</field>
+        <field name="model">tender.bidding</field>
+        <field name="arch" type="xml">
+            <tree default_order="total_bidding_amount asc" decoration-warning="bidding_state == 'bid'"
+                  decoration-success="bidding_state == 'bid_close'">
+                <field name="name"/>
+                <field name="vendor_id"/>
+                <field name="total_bidding_amount"/>
+                <field name="bidding_state" invisible="1" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+        <!-- Form view for managing tender bidding details -->
+    <record id="tender_bidding_view_form" model="ir.ui.view">
+        <field name="name">tender.bidding.view.form</field>
+        <field name="model">tender.bidding</field>
+        <field name="arch" type="xml">
+            <form string="Tender Bidding Form">
+                <header>
+                    <field name="bidding_state" widget="statusbar"
+                           statusbar_visible="pre_qualification,bid,bid_close,won,lost"
+                           options="{'clickable': True}"/>
+                    <button name="action_qualify" type="object" class="oe_highlight qualified-btn"
+                            invisible="qualification_stage=='qualified'">
+                        Qualify Bid
+                    </button>
+                    <button name="action_disqualify" type="object" class="oe_highlight disqualified-btn"
+                            invisible="qualification_stage=='disqualified'">
+                        Disqualify Bid
+                    </button>
+                    <button name="action_approve_edit_request" type="object" class="oe_highlight edit-request-btn"
+                            invisible="not edit_request">
+                        Approve Edit Request
+                    </button>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Pending" bg_color="text-bg-danger"
+                            invisible="not bidding_state=='bid'"/>
+                    <widget name="web_ribbon" title="Confirmed" bg_color="text-bg-success"
+                            invisible="not bidding_state=='bid_close'"/>
+                    <div class="oe_title mb24">
+                        <h1>
+                            <field options="{'line_breaks': True}" class="text-break" name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="bidding_date"/>
+                            <field name="vendor_id"/>
+                        </group>
+                        <group>
+                            <field name="tender_id"/>
+                            <field name="legit_bid" invisible="1"/>
+                            <field name="edit_request" invisible="1"/>
+                            <field name="qualification_stage" readonly="1"/>
+                            <field name="vendor_rank" invisible="1"/>
+                        </group>
+                        <notebook>
+                            <page string="Bidding">
+                                <field name="tender_bid_products_ids" widget="section_and_note_one2many">
+                                    <tree edit="1" editable="bottom">
+                                        <control>
+                                            <create name="add_product_control" string="Add a product"/>
+                                            <create name="add_section_control" string="Add a section"
+                                                    context="{'default_display_type': 'line_section'}"/>
+                                        </control>
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="display_type" column_invisible="True"/>
+                                        <field name="product_id" required="not display_type"/>
+                                        <field name="name" widget="section_and_note_text"/>
+                                        <field name="tender_id"/>
+                                        <field name="product_code"/>
+                                        <field name="product_qty"/>
+                                        <field name="product_uom_id"/>
+                                        <field name="product_price"/>
+                                        <field name="product_total"/>
+                                    </tree>
+                                </field>
+                                <group>
+                                    <field name="total_bidding_amount"/>
+                                </group>
+                            </page>
+                            <page string="Documents">
+                                <field name="vendor_attachments_ids"/>
+                            </page>
+                        </notebook>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+        <!-- Form view for managing tender bidding details -->
+    <record id="tender_bidding_view_search" model="ir.ui.view">
+        <field name="name">tender.bidding.view.search</field>
+        <field name="model">tender.bidding</field>
+        <field name="arch" type="xml">
+            <search>
+                <group string="Group By">
+                    <filter string="Tender" name="filter_group_by_tender"
+                            context="{'group_by':'tender_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

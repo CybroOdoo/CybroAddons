@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Defines a QWeb PDF report for the tender bidding model. -->
+    <record id="action_report_tender_bidding" model="ir.actions.report">
+        <field name="name">Bidding Report</field>
+        <field name="model">tender.bidding</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">advanced_tender_management.report_tender_bidding</field>
+        <field name="report_file">advanced_tender_management.report_tender_bidding</field>
+        <field name="print_report_name">'Tender Report - %s' % (object.name)
+        </field>
+        <field name="binding_model_id"
+               ref="advanced_tender_management.model_tender_bidding"/>
+        <field name="binding_type">report</field>
+    </record>
+    <!-- Template for generating the tender bidding report in PDF format. -->
+    <template id="report_tender_bidding">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="page"
+                     style="font-family: 'Verdana', sans-serif; color: #333; padding: 20px;">
+                    <div class="header">
+                        <!-- Company Information -->
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <h2 style="font-size: 28px; margin-bottom: 5px; color: #004080;">
+                                <t t-esc="o.tender_id.responsible_id.company_id.name or ''"/>
+                            </h2>
+                            <p style="font-size: 16px; margin: 0;">
+                                <t t-esc="o.tender_id.responsible_id.company_id.street or ''"/>
+                                <br/>
+                                <t t-esc="o.tender_id.responsible_id.company_id.city or ''"/>
+                                -
+                                <t t-esc="o.tender_id.responsible_id.company_id.zip or ''"/>
+                                <br/>
+                                <t t-esc="o.tender_id.responsible_id.company_id.state_id.name or ''"/>
+                                -
+                                <t t-esc="o.tender_id.responsible_id.company_id.country_id.name or ''"/>
+                            </p>
+                        </div>
+                    </div>
+                    <div style="break-inside: avoid;">
+                        <!-- Bid Details Section -->
+                        <div class="row text-center" style="margin-top: 32px;">
+                            <div class="col-12">
+                                <hr style="border: 1px solid #dcdcdc;"/>
+                                <h3 style="color: #004080; font-size: 28px;">
+                                    <strong>Bid Details</strong>
+                                </h3>
+                            </div>
+                        </div>
+
+                        <!-- Vendor Information -->
+                        <table style="width: 100%; margin-top: 24px; border-collapse: collapse;">
+                            <tr>
+                                <td style="width: 50%; padding-right: 20px;">
+                                    <h5 style="margin-bottom: 12px; color: #0066cc;">
+                                        Vendor:
+                                    </h5>
+                                    <strong style="font-size: 20px; margin: 0;"
+                                            t-out="o.vendor_id.name"/>
+                                </td>
+                                <td style="width: 50%;">
+                                    <h5 style="margin-bottom: 12px; color: #0066cc;">
+                                        Bid Date:
+                                    </h5>
+                                    <strong style="font-size: 20px; margin: 0;"
+                                            t-out="o.bidding_date"/>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Bid Product Details Table -->
+                        <div style="margin-top: 32px;">
+                            <table class="table table-bordered text-center"
+                                   style="width: 100%; border: 1px solid #ddd; background-color: #f8f9fa; font-size: 20px;">
+                                <thead style="background-color: #004080; color: #fff;">
+                                    <tr>
+                                        <th style="padding: 16px;">Description
+                                        </th>
+                                        <th style="padding: 16px;">Code</th>
+                                        <th style="padding: 16px;">Qty</th>
+                                        <th style="padding: 16px;">UOM</th>
+                                        <th style="padding: 16px;">Price/Qty
+                                        </th>
+                                        <th style="padding: 16px;">Total Price
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="o.tender_bid_products_ids"
+                                       t-as="rec">
+                                        <t t-if="rec.display_type">
+                                            <tr style="background-color: #f1f1f1;">
+                                                <td style="padding: 16px;">
+                                                    <strong t-esc="rec.name"/>
+                                                </td>
+                                                <td/>
+                                                <td/>
+                                                <td/>
+                                                <td/>
+                                                <td/>
+                                            </tr>
+                                        </t>
+                                        <t t-else="">
+                                            <tr>
+                                                <td style="padding: 16px;">
+                                                    <span t-esc="rec.name"/>
+                                                </td>
+                                                <td style="padding: 16px;">
+                                                    <span t-esc="rec.product_code"/>
+                                                </td>
+                                                <td style="padding: 16px;">
+                                                    <span t-esc="rec.product_qty"/>
+                                                </td>
+                                                <td style="padding: 16px;">
+                                                    <span t-esc="rec.product_uom_id.name"/>
+                                                </td>
+                                                <td style="padding: 16px;">
+                                                    <span t-esc="rec.product_price"/>
+                                                </td>
+                                                <td style="padding: 16px;">
+                                                    <span t-esc="rec.product_total"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                    <tr style="background-color: #f1f1f1;">
+                                        <td colspan="4" style="padding: 16px;"/>
+                                        <td style="padding: 16px;">
+                                            <strong>Total</strong>
+                                        </td>
+                                        <td style="padding: 16px;"
+                                            t-esc="o.total_bidding_amount"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
