@@ -16,6 +16,8 @@ patch(PaymentScreen.prototype, {
 //    extending  the validate order to add the below fields
         let receipt_order = await super.validateOrder(arguments);
 
+        console.log('this',this.currentOrder)
+
         const partner = this.currentOrder.get_partner();
         if (partner) {
             this.pos.mobile = partner.mobile;

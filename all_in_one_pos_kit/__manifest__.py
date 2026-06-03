@@ -51,7 +51,7 @@
         'point_of_sale._assets_pos': [
             'all_in_one_pos_kit/static/src/exchange_product/scss/pos.scss',
             'all_in_one_pos_kit/static/src/order_line_image/css/order_line_image.css',
-            'all_in_one_pos_kit/static/src/product_creation/css/*',
+                'all_in_one_pos_kit/static/src/product_creation/css/*',
             'all_in_one_pos_kit/static/src/mass_edit/js/*',
             'all_in_one_pos_kit/static/src/service_charge/js/*',
             'all_in_one_pos_kit/static/src/exchange_product/js/*',

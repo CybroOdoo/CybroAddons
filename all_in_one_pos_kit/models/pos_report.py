@@ -118,14 +118,13 @@ class PosReportGenerator(models.Model):
         filter_dict.update(default_filters)
         return filter_dict
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """
         Create a new instance of the PosReportGenerator model with the provided
         values.
         """
-        res = super(PosReportGenerator, self).create(vals)
-        return res
+        return super().create(vals_list)
 
     def write(self, vals):
         """

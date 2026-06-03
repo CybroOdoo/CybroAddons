@@ -32,21 +32,22 @@ class ProductTemplate(models.Model):
                                           "restricted")
     product_template_ids = fields.One2many('multi.barcode.products',
                                               'product_template_id',
-                                              string='Barcodes',
+                                              string='Template Barcodes',
                                               help='Add multi barcode for the '
                                                    'module')
     to_make_mrp = fields.Boolean(string='To Create MRP Order',
                                  help="Check if the product should be make mrp "
                                       "order")
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """Super the create function to update the field product_template_ids"""
-        res = super(ProductTemplate, self).create(vals)
-        res.product_template_ids.update({
-            'product_id': res.product_variant_id.id
-        })
-        return res
+        templates = super().create(vals_list)
+        for template in templates:
+            template.product_template_ids.update({
+                'product_id': template.product_variant_id.id
+            })
+        return templates
 
     def write(self, vals):
         """Super the write function to update the field product_template_ids"""

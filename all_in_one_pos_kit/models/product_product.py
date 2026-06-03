@@ -28,7 +28,7 @@ class ProductProduct(models.Model):
 
     product_multi_barcodes_ids = fields.One2many('multi.barcode.products',
                                              'product_id',
-                                                 string='Barcodes',
+                                                 string='Product Barcodes',
                                              help='Add multi barcode for '
                                                   'product')
 
@@ -41,15 +41,16 @@ class ProductProduct(models.Model):
         result.append('to_make_mrp')
         return result
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """Super the create function to update the field
         product_multi_barcodes_ids"""
-        res = super(ProductProduct, self).create(vals)
-        res.product_multi_barcodes_ids.update({
-            'product_template_id': res.product_tmpl_id.id
-        })
-        return res
+        products = super().create(vals_list)
+        for product in products:
+            product.product_multi_barcodes_ids.update({
+                'product_template_id': product.product_tmpl_id.id
+            })
+        return products
 
     def write(self, vals):
         """Super the write function to update the field

@@ -111,6 +111,7 @@ export class PosReport extends Component {
             var report_res = this.root.el.querySelector('#report_res')
             filter_data_selected.report_type = this.root.el.querySelector('.report_type').value
             report_res.value = this.root.el.querySelector('.report_type').value
+//
         }
         self.orm.call('pos.report', 'write', [self.wizard_id, filter_data_selected]).then((res) => {
             self.initial_render = false;

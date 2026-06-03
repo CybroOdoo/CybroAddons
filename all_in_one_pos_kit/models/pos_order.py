@@ -20,7 +20,6 @@
 #
 ###############################################################################
 import logging
-import pytz
 from twilio.rest import Client
 from datetime import datetime
 from odoo import api, fields, models
@@ -49,7 +48,7 @@ class PosOrder(models.Model):
         """ Function to get the order details of company wise"""
 
         company_id = self.env.company.id
-        user_tz = self.env.user.tz if self.env.user.tz else pytz.UTC
+        user_tz = self.env.user.tz or 'UTC'
         config_ids = self.env.user.pos_config_ids.ids
         config_filter = ""
         params = [user_tz, company_id]
@@ -315,8 +314,11 @@ class PosOrder(models.Model):
     :param id: The POS reference ID to search for.
     :return: A dictionary containing the invoice details.
     :rtype: dict"""
-        invoice_id = self.env['account.move'].search(
-            [('ref', '=', self.search([('pos_reference', '=', id)]).name)])
+        pos_order = self.search([('pos_reference', '=', id)], limit=1)
+        invoice_id = self.env['account.move']
+        if pos_order:
+            invoice_id = self.env['account.move'].search(
+                [('ref', '=', pos_order.name)], limit=1)
         return {'invoice_id': invoice_id.id, 'invoice_name': invoice_id.name,
                 'base_url': self.env['ir.config_parameter'].get_param(
                     'web.base.url'), 'barcode': invoice_id.account_barcode}

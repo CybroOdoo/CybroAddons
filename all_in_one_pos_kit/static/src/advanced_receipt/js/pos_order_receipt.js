@@ -18,6 +18,7 @@ patch(PosOrder.prototype, {
         const barcodeValue = this.name || this.pos_reference || "";
         result.headerData.barcode = barcodeValue;
         result.headerData.barcode_url = `/pos/qrcode?value=${encodeURIComponent(barcodeValue)}`;
+        console.log('Receipt Header Data:', result.headerData);
         return result;
     },
 });

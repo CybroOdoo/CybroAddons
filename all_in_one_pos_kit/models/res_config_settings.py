@@ -93,17 +93,17 @@ class ResConfigSettings(models.TransientModel):
         help='Enable or disable the display of customer VAT number')
     customer_msg = fields.Boolean('POS Greetings',
                                   config_parameter='all_in_one_pos_kit.customer_msg',
-                                  Help='Create an account if you '
+                                  help='Create an account if you '
                                        'ever create an account')
     twilio_auth_token = fields.Char('Auth Token',
                              config_parameter='all_in_one_pos_kit.twilio_auth_token',
-                             Help='Copy the token from your twilio console '
+                             help='Copy the token from your twilio console '
                                   'window and paste here')
     account_sid = fields.Char('Account SID',
                               config_parameter='all_in_one_pos_kit.account_sid')
     twilio_number = fields.Char('Twilio Number',
                                 config_parameter='all_in_one_pos_kit.twilio_number',
-                                Help='The number provided by '
+                                help='The number provided by '
                                      'twilio used to send '
                                      'text messages')
     sms_body = fields.Char('Body', config_parameter='all_in_one_pos_kit.sms_body')

@@ -32,14 +32,15 @@ class AccountMove(models.Model):
                                   help='Barcode associated with the account '
                                        'move.')
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """Super the create function to It generates an EAN barcode based on
         the ID of the created record and assigns it to the `account_barcode`
          field."""
-        res = super(AccountMove, self).create(vals)
-        res.account_barcode = self.generate_ean(str(res.id))
-        return res
+        moves = super().create(vals_list)
+        for move in moves:
+            move.account_barcode = self.generate_ean(str(move.id))
+        return moves
 
     def ean_checksum(self, eancode):
         """Returns the checksum of an ean string of length 13, returns -1 if
