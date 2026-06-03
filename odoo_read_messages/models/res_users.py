@@ -3,23 +3,23 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Cybrosys Technologies (contact@cybrosys.com)
 #
-#    You can modify it under the terms of the GNU LESSER
-#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#    This program is under the terms of the Odoo Proprietary License v1.0 (OPL-1)
+#    It is forbidden to publish, distribute, sublicense, or sell copies
+#    of the Software or modified copies of the Software.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
-#
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
+#    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+#    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+#    DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+#    OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+#    USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import models
 
 
 class ResUsers(models.Model):
@@ -28,30 +28,30 @@ class ResUsers(models.Model):
 
     def action_read_messages(self):
         """Read all Messages"""
-        # Cancel exception notifications
+        # Cancel exception notifications for current partner only
         exception_notifications = self.env['mail.notification'].sudo().search([
             ('notification_status', '=', 'exception'),
+            ('res_partner_id', '=', self.env.user.partner_id.id),
         ])
         exception_notifications.write({'notification_status': 'canceled'})
-        # Mark unread notifications as read
-        # Reading the messages from the channels.
+
+        # Mark all needaction notifications (Inbox) as read
+        self.env['mail.message'].mark_all_as_read()
+
+        # Mark unread channel/chat messages as read
         channel_members = self.env['discuss.channel.member'].search([
             ('partner_id', '=', self.env.user.partner_id.id)
         ])
-        # Fetch the latest message
-        latest_message = self.env['mail.message'].search([
-            ('model', '=', 'mail.channel'),
-            ('message_type', 'not in', ['notification', 'user_notification']),
-            (
-                'id', '>',
-                max(channel_members.mapped('seen_message_id.id') or [0]))
-        ], limit=1, order='id desc')
-        if latest_message:
-            channel_members.write({
-                'seen_message_id': latest_message.id,
-                'fetched_message_id': latest_message.id,
-                'last_seen_dt': fields.Datetime.now(),
-            })
+        for member in channel_members:
+            latest_message = self.env['mail.message'].search([
+                ('model', '=', 'discuss.channel'),
+                ('res_id', '=', member.channel_id.id),
+                ('message_type', 'not in', ['notification', 'user_notification']),
+                ('id', '>', member.seen_message_id.id or 0)
+            ], limit=1, order='id desc')
+            if latest_message:
+                member.channel_id._set_last_seen_message(latest_message)
+
         return {
             'type': 'ir.actions.client',
             'tag': 'reload',
