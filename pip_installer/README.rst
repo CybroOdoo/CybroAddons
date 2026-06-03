@@ -22,7 +22,8 @@ Company
 
 Credits
 -------
-* Developer : (V17) Ashok P K, (V18) Javid A,
+* Developer :   (V17) Ashok P K,
+                (V18) Javid A, VISHNURAJ P
   Contact: odoo@cybrosys.com
 
 Contacts

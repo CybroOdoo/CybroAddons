@@ -19,9 +19,10 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
+import shlex
 import subprocess
 from odoo import fields, models, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import AccessError, ValidationError
 
 
 class PipInstall(models.TransientModel):
@@ -35,11 +36,14 @@ class PipInstall(models.TransientModel):
 
     def action_done(self):
         """Function for executing the pip commands in terminal"""
+        if not self.env.user.has_group('pip_installer.group_pip_installer_admin'):
+            raise AccessError(_('Only Pip Installer Administrators can execute pip commands.'))
         command = self.name
         try:
-            if command.startswith("pip"):
+            if command and command.startswith("pip"):
+                args = shlex.split(command)
                 process = subprocess.Popen(['yes'], stdout=subprocess.PIPE)
-                result = subprocess.run(command, shell=True, check=True,
+                result = subprocess.run(args, check=True,
                                         stdin=process.stdout,
                                         stdout=subprocess.PIPE, text=True)
                 message = self.env['import.message'].create([{'message': result.stdout}])
@@ -54,6 +58,8 @@ class PipInstall(models.TransientModel):
                     }
             else:
                 raise ValidationError(_('Please enter a proper pip command'))
+        except ValueError:
+            raise ValidationError(_('Please enter a proper pip command'))
         except subprocess.CalledProcessError:
             raise ValidationError(_('Please enter a proper pip command'))
         except TypeError:
