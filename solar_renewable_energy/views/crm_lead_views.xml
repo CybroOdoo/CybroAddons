@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--    Action for Renewable Request-->
+    <record id="renewable_request_action" model="ir.actions.act_window">
+        <field name="name">Requests</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('type', '=', 'lead')]</field>
+        <field name="context">{}</field>
+    </record>
+<!--    Action for Renewable Pipeline-->
+    <record id="renewable_pipeline_action" model="ir.actions.act_window">
+        <field name="name">Pipeline</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('type', '=', 'opportunity')]</field>
+        <field name="context">{}</field>
+    </record>
+<!--    Inherited CRM Form view for Solar Renewable Energy-->
+    <record id="crm_lead_view_form" model="ir.ui.view">
+        <field name="name">crm.lead.view.form.inherit.odoo.renewable.energy</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_create_site_inspection" string="Create Site Inspection" type="object"
+                        help="Assign site inspection task for users"
+                        class="oe_highlight" invisible="type == 'lead' or not active or site_inspection_id"/>
+                <button name="action_create_ren_order" string="Create Ren Order" type="object"
+                        help="Create Renewable Order for the lead"
+                        class="oe_highlight" invisible="type == 'lead' or not active or ren_order_id"/>
+            </xpath>
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="sale_quotation_id"/>
+            </xpath>
+            <xpath expr="//button[@name='action_show_potential_duplicates']" position="after">
+                <button name="action_view_map" type="object" class="oe_stat_button" icon="fa-map-marker"
+                        invisible="not latitude or not longitude">
+                    <span class="o_stat_text">
+                        <span class="o_stat_text">Site Location</span>
+                    </span>
+                </button>
+                <button name="action_view_site_inspection" type="object" class="oe_stat_button" icon="fa-search"
+                        invisible="not site_inspection_id"
+                >
+                    <span class="o_stat_text">
+                        <field name="site_inspection_count" widget="statinfo" string="Site Inspection"/>
+                    </span>
+                </button>
+                <button name="action_view_ren_order" type="object" class="oe_stat_button" icon="fa-shopping-cart"
+                        invisible="not ren_order_id"
+                >
+                    <span class="o_stat_text">
+                        <field name="ren_order_count" widget="statinfo" string="Ren Order"/>
+                    </span>
+                </button>
+            </xpath>
+            <xpath expr="//page[@name='internal_notes']" position="after">
+                <page string="Solar Requirements" name="solar_info">
+                    <group>
+                        <group>
+                            <field name="service_type_id"/>
+                            <field name="customer_category_id"/>
+
+                        </group>
+                        <group>
+                            <field name="contract_demand_id"/>
+                            <field name="site_inspection_id" readonly="1"/>
+                            <field name="ren_order_id"/>
+                        </group>
+                    </group>
+                    <group string="Electricity Details">
+                        <group>
+                            <field name="connection_type"/>
+                            <field name="existing_supply_volt"/>
+                        </group>
+                        <group>
+                            <field name="consumer_no"/>
+                            <field name="monthly_electricity_bill"/>
+                        </group>
+                    </group>
+                    <group string="Site Address">
+                        <group>
+                            <field name="site_usage"/>
+                            <field name="property_type_id"/>
+                            <field name="age_of_property"/>
+                        </group>
+                        <group>
+                            <span class="o_form_label o_td_label">
+                                Address
+                            </span>
+                            <div class="oe_address">
+                                <field name="site_street1" placeholder="Street 1"/>
+                                <field name="site_street2" placeholder="Street 2"/>
+                                <field name="site_city" placeholder="City"/>
+                                <field name="site_state_id" placeholder="State"
+                                       domain="[('country_id', '=', site_country_id)]"/>
+                                <field name="site_country_id" placeholder="Country"/>
+                            </div>
+                        </group>
+                    </group>
+                    <group string="Site Location">
+                        <group>
+                            <field name="latitude"/>
+                        </group>
+                        <group>
+                            <field name="longitude"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,140 @@
+<odoo>
+    <!--    Action for Site Inspection-->
+    <record id="renewable_site_inspections_action" model="ir.actions.act_window">
+        <field name="name">Site Inspections</field>
+        <field name="res_model">site.inspection</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--    Tree view for Site Inspection-->
+    <record id="site_inspection_view_tree" model="ir.ui.view">
+        <field name="name">site.inspection.view.tree</field>
+        <field name="model">site.inspection</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="inspection_state"/>
+            </tree>
+        </field>
+    </record>
+    <!--    Form view for Site Inspection-->
+    <record id="site_inspection_view_form" model="ir.ui.view">
+        <field name="name">site.inspection.view.form</field>
+        <field name="model">site.inspection</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="inspection_state" widget="statusbar"
+                           statusbar_visible="new,in_progress,completed,cancelled"/>
+                    <button name="action_set_in_progress"
+                            type="object"
+                            string="Set In Progress"
+                            class="oe_highlight"
+                            invisible="inspection_state != 'new'"/>
+                    <button name="action_set_completed"
+                            type="object"
+                            string="Completed"
+                            class="oe_highlight"
+                            invisible="inspection_state != 'in_progress'"/>
+                    <button name="action_cancel"
+                            type="object"
+                            string="Cancel"
+                            class="oe_highlight btn-danger"
+                    />
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_map" type="object" class="oe_stat_button" icon="fa-map-marker"
+                                invisible="not latitude or not longitude">
+                            <span class="o_stat_text">
+                                <span class="o_stat_text">Site Location</span>
+                            </span>
+                        </button>
+                    </div>
+                    <h1>
+                        <field name="name"/>
+                    </h1>
+                    <group string="CUSTOMER DETAILS">
+                        <group>
+                            <field name="crm_lead_id"/>
+                            <field name="partner_id"/>
+                            <field name="email"/>
+                            <field name="phone"/>
+                        </group>
+                        <group>
+                            <field name="customer_category_id"/>
+                            <field name="service_type_id"/>
+                            <field name="contract_demand_id"/>
+                        </group>
+                    </group>
+                    <group string="ELECTRICITY DETAILS">
+                        <group>
+                            <field name="connection_type"/>
+                            <field name="existing_supply_volt"/>
+                        </group>
+                        <group>
+                            <field name="consumer_no"/>
+                            <field name="monthly_electricity_bill"/>
+                        </group>
+                    </group>
+                    <group string="SITE INFORMATION">
+                        <group>
+                            <field name="site_usage"/>
+                            <field name="property_type_id"/>
+                            <field name="age_of_property"/>
+                        </group>
+                        <group>
+                            <span class="o_form_label o_td_label">
+                                Address
+                            </span>
+                            <div class="oe_address">
+                                <field name="site_street1" placeholder="Street 1"/>
+                                <field name="site_street2" placeholder="Street 2"/>
+                                <field name="site_city" placeholder="City"/>
+                                <field name="site_state_id" placeholder="State"
+                                       domain="[('country_id', '=', site_country_id)]"/>
+                                <field name="site_country_id" placeholder="Country"/>
+                            </div>
+                        </group>
+                    </group>
+                    <group string="SITE LOCATION">
+                        <group>
+                            <field name="latitude"/>
+                        </group>
+                        <group>
+                            <field name="longitude"/>
+                        </group>
+                    </group>
+                    <group string="SURVEY TEAM DETAILS">
+                        <group>
+                            <field name="survey_team_id"/>
+                            <field name="survey_team_member_id"/>
+                        </group>
+                        <group>
+                            <field name="date_of_inspection"/>
+                            <field name="user_id"/>
+                            <field name="company_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Site Survey Images">
+                            <field name="survey_images_ids" widget="many2many_binary"/>/>
+                        </page>
+                        <page string="Site Checklist">
+                            <field name="site_checklist_ids" widget="one2many_list">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="is_checked"/>
+                                    <field name="name"/>
+                                    <field name="description"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Site Remarks">
+                            <field name="site_remark"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

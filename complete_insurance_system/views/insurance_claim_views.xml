@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Tree view definition for insurance claims -->
+    <record id="insurance_claim_view_tree" model="ir.ui.view">
+        <field name="name">insurance.claim.view.tree</field>
+        <field name="model">insurance.claim</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="claim_no"/>
+                <field name="policy_holder_id"/>
+                <field name="insurance_id"/>
+                <field name="claim_amount"/>
+                <field name="claim_date"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Form view definition for insurance claims -->
+    <record id="insurance_claim_view_form" model="ir.ui.view">
+        <field name="name">insurance.claim.view.form</field>
+        <field name="model">insurance.claim</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar" options="{'clickable': '1'}"/>
+                    <button name="action_submit" string="Submit" type="object"
+                            class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_approved" string="Approved" type="object"
+                            class="oe_highlight" invisible="state != 'submitted'"/>
+                    <button name="action_rejected" string="Rejected" type="object"
+                            class="oe_highlight" invisible="state != 'submitted'"/>
+                    <field name="invoice_count" invisible="1"/>
+                    <button name="action_claim_settlement_amount" string="Claim Settlement Amount" type="object"
+                            class="oe_highlight" invisible="state != 'approved' or invoice_count in [1]"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_claim_invoice" type="object" class="oe_stat_button"
+                                icon="fa-pencil-square-o" string="Invoices" invisible="invoice_count in [0]">
+                            <field name="invoice_count" widget="statinfo" string="Claim Invoice"/>
+                        </button>
+                    </div>
+                    <h1>
+                        <field name="claim_no"/>
+                    </h1>
+                    <group>
+                        <group string="INSURANCE POLICY DETAILS">
+                            <field name="insurance_id"/>
+                            <field name="insurance_policy_id"/>
+                        </group>
+                        <group string="CLAIM APPROVAL DATE">
+                            <field name="claim_date"/>
+                        </group>
+                    </group>
+                    <group string="POLICY HOLDER DETAILS">
+                        <group>
+                            <field name="policy_holder_id"/>
+                            <field name="dob"/>
+                        </group>
+                        <group>
+                            <field name="gender"/>
+                            <field name="age"/>
+                            <field name="email"/>
+                            <field name="phone"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="AGENT DETAILS">
+                            <field name="agent_required"/>
+                            <field name="agent_id"/>
+                        </group>
+                        <group string="POLICY PROVIDER">
+                            <field name="policy_provider_id"/>
+                            <field name="manager_id"/>
+                        </group>
+                    </group>
+                    <group string="INSURANCE CLAIM DETAILS">
+                        <field name="policy_amount"/>
+                        <field name="claim_amount"/>
+                        <field name="invoice_id"/>
+                    </group>
+                    <notebook>
+                        <page string="Reason for claim Application">
+                            <field name="claim_reason_id" string="Claim reason"/>
+                        </page>
+                        <page string="Claim Documents">
+                            <field name="claim_documents_ids">
+                                <tree string="Documents" create="0" delete="0">
+                                    <field name="document_type"/>
+                                    <field name="document_attachment_id"/>
+                                </tree>
+                                <form string="Document">
+                                    <group>
+                                        <field name="document_type"/>
+                                        <field name="document_attachment_id"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Terms and Conditions">
+                            <field name="terms_condition"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+      <!-- Kanban View for insurance claim -->
+    <record id="insurance_claim_view_kanban" model="ir.ui.view">
+        <field name="name">insurance.claim.view.kanban</field>
+        <field name="model">insurance.claim</field>
+        <field name="arch" type="xml">
+            <kanban class="o_res_insurance_kanban">
+                <field name="claim_no"/>
+                <field name="insurance_id"/>
+                <field name="policy_holder_id"/>
+                <field name="claim_date"/>
+                <field name="claim_amount"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_card">
+                                <div class="oe_kanban_card_header">
+                                    <strong>
+                                        <field name="claim_no"/>
+                                    </strong>
+                                </div>
+                                <div class="oe_kanban_card_body">
+                                    <div>
+                                        <strong>Policy Holder:</strong> <field name="policy_holder_id"/>
+                                    </div>
+                                    <div>
+                                        <strong>Insurance:</strong> <field name="insurance_id"/>
+                                    </div>
+                                    <div>
+                                        <strong>Date:</strong> <field name="claim_date"/>
+                                    </div>
+                                    <div>
+                                        <strong> Claim Amount:</strong> <field name="claim_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    </div>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                        <field name="state"
+                                            widget="label_selection"
+                                            options="{'classes': {'draft': 'info', 'submitted': 'default', 'approved': 'success','rejected': 'light'}}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Calendar View for res.insurance -->
+    <record id="insurance_claim_view_calendar" model="ir.ui.view">
+        <field name="name">insurance.claim.view.calendar</field>
+        <field name="model">insurance.claim</field>
+        <field name="arch" type="xml">
+            <calendar string="Claim" color="state" date_start="claim_date">
+                <field name="claim_no"/>
+                <field name="policy_holder_id"/>
+                <field name="insurance_policy_id"/>
+                <field name="insurance_policy_id"/>
+                <field name="claim_amount"/>
+            </calendar>
+        </field>
+    </record>
+
+
+    <!-- Action window to display insurance claims in tree and form views -->
+    <record id="insurance_claim_action" model="ir.actions.act_window">
+        <field name="name">Claims</field>
+        <field name="res_model">insurance.claim</field>
+        <field name="view_mode">kanban,tree,form,calendar</field>
+    </record>
+    <menuitem id="claim_menu"
+              name="Claim"
+              action="insurance_claim_action"
+              parent="insurance_management_menu_root"
+              sequence="5" groups="complete_insurance_system.group_insurance_manager"/>
+</odoo>

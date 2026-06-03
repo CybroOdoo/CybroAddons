@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Action for Subcontract QA Task-->
+    <record id="renewable_subcontract_qa_task_action" model="ir.actions.act_window">
+        <field name="name">Subcontract QA Team Task</field>
+        <field name="res_model">subcontract.quality.assurance.team.task</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="context">{'group_by': 'qa_stage'}</field>
+    </record>
+    <!--    Kanban view for Subcontract QA Task-->
+    <record id="subcontract_quality_assurance_team_task_view_kanban" model="ir.ui.view">
+        <field name="name">subcontract.quality.assurance.team.task.view.kanban</field>
+        <field name="model">subcontract.quality.assurance.team.task</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="qa_stage">
+                <field name="qa_stage"/>
+                <field name="customer_id"/>
+                <field name="priority"/>
+                <field name="qa_subcontractor_id"/>
+                <field name="qa_start_date"/>
+                <field name="qa_end_date"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="oe_kanban_card">
+                                    <div>
+                                        <b>
+                                            <field name="name"/>
+                                        </b>
+                                    </div>
+                                    <div class="text-muted">
+                                        <field name="customer_id" widget="res_partner_many2one"/>
+                                    </div>
+                                    <div class="text-muted">
+                                        <strong>QA Subcontractor:</strong>
+                                        <field name="qa_subcontractor_id"/>
+                                    </div>
+                                    <div class="text-muted" t-if="record.qa_start_date.raw_value">
+                                        <strong>Start Date:</strong>
+                                        <field name="qa_start_date"/>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <field name="priority" widget="priority"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!--    Form view for Subcontract QA Team Task-->
+    <record id="subcontract_quality_assurance_team_task_view_form" model="ir.ui.view">
+        <field name="name">subcontract.quality.assurance.team.task.view.form</field>
+        <field name="model">subcontract.quality.assurance.team.task</field>
+        <field name="arch" type="xml">
+            <form string="Subcontract QA Team Task">
+                <header>
+                    <field name="qa_stage" widget="statusbar" statusbar_visible="new,in_progress,completed"/>
+                    <button name="action_in_progress" type="object" string="In Progress" class="oe_highlight"
+                            invisible="qa_stage != 'new'"/>
+                    <button name="action_completed" type="object" string="Completed" class="oe_highlight"
+                            invisible="qa_stage != 'in_progress'"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="ORDER DETAILS">
+                            <field name="name"/>
+                            <field name="customer_id"/>
+                            <field name="priority"/>
+                        </group>
+                        <group string="SUBCONTRACTOR DETAILS">
+                            <field name="qa_subcontractor_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="TASK DETAILS">
+                            <group>
+                                <field name="qa_start_date"/>
+                                <field name="qa_end_date"/>
+                            </group>
+                            <group>
+                                <field name="qa_period"/>
+                                <field name="qa_allocated_time"/>
+                            </group>
+                        </group>
+                    </group>
+                    <group string="SITE DETAILS">
+                        <group>
+                            <field name="site_usage"/>
+                            <field name="property_type_id"/>
+                            <field name="age_of_property"/>
+                        </group>
+                        <group>
+                            <field name="latitude"/>
+                            <field name="longitude"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

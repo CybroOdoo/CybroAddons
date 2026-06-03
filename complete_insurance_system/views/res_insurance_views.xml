@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View for res.insurance -->
+    <record id="res_insurance_view_form" model="ir.ui.view">
+        <field name="name">res.insurance.view.form</field>
+        <field name="model">res.insurance</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <!-- Header buttons for various actions -->
+                    <button name="action_confirm_policy" type="object" string="Confirm Policy" class="oe_highlight"
+                    invisible="state != 'new'"/>
+                    <field name="is_invoice" invisible="1"/>
+                    <field name="insurance_fixed_invoice_count" invisible="1"/>
+                    <button name="action_commission_invoice" string="Create Commission Invoice" type="object"
+                            class="oe_highlight" invisible=" not agent_required or  state != 'confirmed' or is_invoice"/>
+                    <button name="action_create_installment_invoice" string="Create Installment Invoice" type="object"
+                            class="oe_highlight"  invisible="payment_type != 'installment' or (state != 'confirmed' and state != 'running')"/>
+                    <field name="insurance_fixed_invoice_count" invisible="1"/>
+                    <button name="action_create_fixed_invoice" string="Create Total Invoice" type="object" class="oe_highlight"
+                            invisible="payment_type != 'fixed' or state != 'confirmed' or insurance_fixed_invoice_count in [1]"/>
+                    <button name="action_create_claim" string="Create Claim" type="object"
+                            class="oe_highlight" groups="complete_insurance_system.group_insurance_manager" invisible="state != 'running'"/>
+                    <button name="action_insurance_expired" string="Expired" type="object"
+                            class="oe_highlight"  invisible="state != 'running'"/>
+                    <field name="state" widget="statusbar" options="{'clickable':'1'}"/>
+                </header>
+                <sheet>
+                    <!-- Buttons for viewing invoices -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_commission_invoice" type="object" class="oe_stat_button"
+                                icon="fa-pencil-square-o" string="Invoice" invisible="invoice_count in [0]">
+                            <field name="invoice_count" widget="statinfo" string="Commission Invoice"/>
+                        </button>
+                        <button name="action_view_fixed_invoice" type="object" class="oe_stat_button" icon="fa-file-text-o"
+                                invisible="insurance_fixed_invoice_count in [0]">
+                            <field name="insurance_fixed_invoice_count" widget="statinfo" string="Insurance Invoices"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="insurance_no" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group string="POLICY HOLDER DETAILS">
+                        <group>
+                            <field name="policy_holder_id"/>
+                            <field name="gender"/>
+                            <field name="dob"/>
+                            <field name="age"/>
+                        </group>
+                        <group>
+                            <field name="email"/>
+                            <field name="phone"/>
+                        </group>
+                    </group>
+                    <group string="POLICY DETAILS">
+                        <group>
+                            <field name="insurance_policy_id"/>
+                            <field name="policy_category_id"/>
+                            <field name="insurance_for_id"/>
+                            <field name="policy_provider_id"/>
+                        </group>
+                        <group>
+                            <field name="issue_date"/>
+                            <field name="expiry_date"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="policy_amount"/>
+                            <field name="manager_id" widget="many2one_avatar_user"/>
+                        </group>
+                    </group>
+                    <group string="AGENT DETAILS">
+                        <group>
+                            <field name="agent_required"/>
+                            <field name="agent_id" invisible="not agent_required"/>
+                            <field name="agent_phone" invisible="not agent_required"/>
+                        </group>
+                        <group invisible="not agent_required">
+                            <field name="commission_type" widget="radio" options="{'horizontal': true}"/>
+                            <field name="fixed_amount" invisible="commission_type != 'fixed'"/>
+                            <field name="commission_percentage"  invisible="commission_type != 'percentage'"/>
+                            <field name="percentage_amount" invisible="commission_type != 'percentage'"/>
+                            <field name="commission_invoice_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Payment Details" invisible="state == 'new'">
+                            <group>
+                                <group string="PAYMENT TYPE">
+                                    <field name="payment_type" widget="radio" options="{'horizontal': true}"/>
+                                </group>
+                                <group string="PAYMENT DETAILS">
+                                    <field name="total_policy_amount"/>
+                                    <field name="policy_duration" invisible="payment_type != 'installment'"/>
+                                    <field name="amount_installment" invisible="payment_type != 'installment'"/>
+                                    <field name="amount_remaining" invisible="payment_type != 'installment'"/>
+                                </group>
+                            </group>
+                            <group string="INSTALLMENT INVOICES" invisible="payment_type != 'installment'">
+                                <field name="invoice_ids"/>
+                            </group>
+                        </page>
+                        <page string="Policy Description">
+                            <group>
+                                <field name="policy_description"/>
+                            </group>
+                        </page>
+                        <page string="Terms Conditions">
+                            <group>
+                                <field name="terms_condition"/>
+                            </group>
+                        </page>
+                        <page string="Related Documents">
+                            <field name="document_ids">
+                                <tree delete="0" create="0">
+                                    <field name="document_type"/>
+                                    <field name="document_attachment_id" filename="document_filename" required="True"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Insurance Nominee">
+                            <field name="insurance_nominee_line_ids">
+                                <tree editable="bottom">
+                                    <field name="nominee_id" width="50%"/>
+                                    <field name="relation_with_policy_holder_id" width="40%"/>
+                                    <field name="dob" width="40%"/>
+                                    <field name="age" width="20%"/>
+                                    <field name="percentage" widget="percentage"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree View for res.insurance -->
+    <record id="res_insurance_view_tree" model="ir.ui.view">
+        <field name="name">res.insurance.view.tree</field>
+        <field name="model">res.insurance</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="insurance_no"/>
+                <field name="policy_holder_id"/>
+                <field name="policy_category_id"/>
+                <field name="insurance_policy_id"/>
+                <field name="issue_date"/>
+                <field name="expiry_date"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+       <!-- Kanban View for res.insurance -->
+    <record id="res_insurance_view_kanban" model="ir.ui.view">
+        <field name="name">res.insurance.view.kanban</field>
+        <field name="model">res.insurance</field>
+        <field name="arch" type="xml">
+            <kanban class="o_res_insurance_kanban">
+                <field name="insurance_no"/>
+                <field name="policy_holder_id"/>
+                <field name="policy_category_id"/>
+                <field name="insurance_policy_id"/>
+                <field name="policy_amount"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_card">
+                                <div class="oe_kanban_card_header">
+                                    <strong>
+                                        <field name="insurance_no"/>
+                                    </strong>
+                                </div>
+                                <div class="oe_kanban_card_body">
+                                    <div>
+                                        <strong>Policy Holder:</strong> <field name="policy_holder_id"/>
+                                    </div>
+                                    <div>
+                                        <strong>Policy:</strong> <field name="insurance_policy_id"/>
+                                    </div>
+                                    <div>
+                                        <strong>Policy Category:</strong> <field name="policy_category_id"/>
+                                    </div>
+                                    <div>
+                                        <strong>Amount:</strong> <field name="policy_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    </div>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                        <field name="state"
+                                            widget="label_selection"
+                                            options="{'classes': {'new': 'info', 'confirmed': 'default', 'running': 'success','expired': 'light'}}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!-- Calendar View for res.insurance -->
+    <record id="res_insurance_view_calendar" model="ir.ui.view">
+        <field name="name">res.insurance.view.calendar</field>
+        <field name="model">res.insurance</field>
+        <field name="arch" type="xml">
+            <calendar string="Insurance Policies" color="state" date_start="issue_date" date_stop="expiry_date">
+                <field name="insurance_no"/>
+                <field name="policy_holder_id"/>
+                <field name="policy_category_id"/>
+                <field name="insurance_policy_id"/>
+                <field name="state"/>
+                <field name="policy_amount"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- Action for res.insurance -->
+    <record id="res_insurance_action" model="ir.actions.act_window">
+        <field name="name">Insurance</field>
+        <field name="res_model">res.insurance</field>
+        <field name="view_mode">tree,form,kanban,calendar</field>
+    </record>
+
+    <!-- Action for Insurance Dashboard -->
+    <record id="action_insurance_dashboard" model="ir.actions.client">
+        <field name="name">Insurance Dashboard</field>
+        <field name="tag">insurance_dashboard_tag</field>
+    </record>
+        <!-- Menu for Insurance Management -->
+
+    <menuitem id="insurance_management_menu_root"
+              name="Insurance"
+              web_icon="complete_insurance_system,static/description/icon.png"
+              sequence="1">
+        <!-- Menu for Insurance dashboard -->
+        <menuitem name="Insurance Dashboard"
+                  id="insurance_dashboard"
+                  sequence="-1"
+                  action="action_insurance_dashboard"
+                  groups="complete_insurance_system.group_insurance_manager"/>
+        <!-- Menu for Insurance View -->
+        <menuitem id="insurance_menu"
+                  name="Insurances"
+                  action="res_insurance_action"
+                  sequence="2"
+                  groups="complete_insurance_system.group_insurance_manager,complete_insurance_system.group_insurance_user"/>
+    </menuitem>
+</odoo>

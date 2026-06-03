@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Template for dashboard of  Advanced insurance management -->
+<templates>
+    <t t-name="complete_insurance_system.InsuranceDashboard">
+        <style>
+            .dashboard-container {
+                max-height: calc(100vh - 100px);
+                overflow-y: auto;
+                padding: 20px;
+            }
+            .dashboard-card {
+                border-radius: 10px;
+                transition: all 0.3s ease;
+                height: 120px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .dashboard-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            }
+            .card-body {
+                display: flex;
+                align-items: center;
+                padding: 15px;
+            }
+            .icon-container {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-right: 15px;
+            }
+            .icon-container i {
+                font-size: 24px;
+                color: white;
+            }
+            .stat-content {
+                flex-grow: 1;
+            }
+            .stat-count {
+                font-size: 1.8rem;
+                font-weight: bold;
+                margin-bottom: 0.25rem;
+            }
+            .stat-title {
+                font-size: 1rem;
+                color: #666;
+            }
+            .section-title {
+                margin-bottom: 1rem;
+                color: #333;
+                font-weight: 600;
+            }
+            .bg-light-blue { background-color: #e6f3ff; }
+            .bg-light-purple { background-color: #f0e6ff; }
+            .bg-light-yellow { background-color: #fff9e6; }
+            .bg-light-pink { background-color: #ffe6e6; }
+            .bg-light-green { background-color: #e6fff0; }
+            .bg-light-cyan { background-color: #e6ffff; }
+            .bg-blue { background-color: #4d94ff; }
+            .bg-purple { background-color: #9966ff; }
+            .bg-yellow { background-color: #ffc107; }
+            .bg-pink { background-color: #ff6b6b; }
+            .bg-green { background-color: #00cc66; }
+            .bg-cyan { background-color: #00cccc; }
+        </style>
+        <div class="dashboard-container">
+            <h4 class="section-title">Insurance Details</h4>
+            <div class="row">
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card dashboard-card bg-light-blue" t-on-click="totalInsurance">
+                        <div class="card-body">
+                            <div class="icon-container bg-blue">
+                                <i class="fa fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-count" id="total"/>
+                                <div class="stat-title">Total</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card dashboard-card bg-light-purple" t-on-click="newInsurance">
+                        <div class="card-body">
+                            <div class="icon-container bg-purple">
+                                <i class="fa fa-plus-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-count" id="new"/>
+                                <div class="stat-title">New</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card dashboard-card bg-light-yellow" t-on-click="runningInsurance">
+                        <div class="card-body">
+                            <div class="icon-container bg-yellow">
+                                <i class="fa fa-refresh"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-count" id="running"/>
+                                <div class="stat-title">Running</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card dashboard-card bg-light-pink" t-on-click="expiredInsurance">
+                        <div class="card-body">
+                            <div class="icon-container bg-pink">
+                                <i class="fa fa-times-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-count" id="expired"/>
+                                <div class="stat-title">Expired</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h4 class="section-title">Claim Details</h4>
+            <div class="row">
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card dashboard-card bg-light-blue" t-on-click="totalClaim">
+                        <div class="card-body">
+                            <div class="icon-container bg-blue">
+                                <i class="fa fa-file-text-o"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-count" id="total_claim"/>
+                                <div class="stat-title">Total</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card dashboard-card bg-light-yellow" t-on-click="submitClaim">
+                        <div class="card-body">
+                            <div class="icon-container bg-yellow">
+                                <i class="fa fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-count" id="submit"/>
+                                <div class="stat-title">Submit</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card dashboard-card bg-light-green" t-on-click="approveClaim">
+                        <div class="card-body">
+                            <div class="icon-container bg-green">
+                                <i class="fa fa-thumbs-up"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-count" id="approved"/>
+                                <div class="stat-title">Approve</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card dashboard-card bg-light-pink" t-on-click="rejectedClaim">
+                        <div class="card-body">
+                            <div class="icon-container bg-pink">
+                                <i class="fa fa-thumbs-down"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-count" id="rejected"/>
+                                <div class="stat-title">Reject</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h4 class="section-title">Other Stats</h4>
+            <div class="row">
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card dashboard-card bg-light-blue" t-on-click="Agent">
+                        <div class="card-body">
+                            <div class="icon-container bg-blue">
+                                <i class="fa fa-user-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-count" id="agent"/>
+                                <div class="stat-title">Agents</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card dashboard-card bg-light-cyan" t-on-click="Categories">
+                        <div class="card-body">
+                            <div class="icon-container bg-cyan">
+                                <i class="fa fa-list-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-count" id="categories"/>
+                                <div class="stat-title">Categories</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card dashboard-card bg-light-purple" t-on-click="subCategories">
+                        <div class="card-body">
+                            <div class="icon-container bg-purple">
+                                <i class="fa fa-sitemap"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-count" id="sub_categories"/>
+                                <div class="stat-title">Sub Categories</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card dashboard-card bg-light-green" t-on-click="insurancePolicy">
+                        <div class="card-body">
+                            <div class="icon-container bg-green">
+                                <i class="fa fa-shield"/>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-count" id="insurance_policy"/>
+                                <div class="stat-title">Insurance Policy</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="shadow-sm border m-2 p-4 bg-white">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h3 style="color:black;">Customer Gender</h3>
+                        </div>
+                        <canvas t-ref="test"/>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="shadow-sm border m-2 p-4 bg-white">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h3 style="color:black;">Insurance Policy</h3>
+                        </div>
+                        <canvas t-ref="insurance_policy"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

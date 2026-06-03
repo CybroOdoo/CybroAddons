@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <t t-name="solar_renewable_energy.RenewableEnergyDashboard">
+        <xpath expr="." position="inside">
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        </xpath>
+
+        <!-- Main Container -->
+        <div class="primary-container">
+
+            <!-- REN Order Details Section -->
+            <div class="ren-order-details-container">
+                <h3>REN Order Details</h3>
+                <hr/>
+                <div class="ren-order-tile-container">
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openTreeView('ren.order', 'Total Ren Orders', [])"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View Total Ren Orders">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-solar-energy-96.png"
+                             class="tile-icon"
+                             alt="Solar Energy Icon"/>
+                        <strong>Total Ren Orders</strong>
+                        <span t-ref="ren_order_count" class="tile-count">0</span>
+                    </div>
+
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openTreeView('purchase.order', 'Material Orders', [['ren_order_id', '!=', false]])"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View Material Orders">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-delivery-96.png"
+                             class="tile-icon"
+                             alt="Delivery Icon"/>
+                        <strong>Material Orders</strong>
+                        <span t-ref="material_order_count" class="tile-count">0</span>
+                    </div>
+
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openTreeView('stock.picking', 'Materials Arrived', [['purchase_id.ren_order_id', '!=', false],['picking_type_id.code', '=', 'incoming'],['state', '=', 'done']])"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View Materials Arrived">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-shipped-96.png"
+                             class="tile-icon"
+                             alt="Shipped Icon"/>
+                        <strong>Materials Arrived</strong>
+                        <span t-ref="material_arrived_count" class="tile-count">0</span>
+                    </div>
+
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openTreeView('maintenance.request', 'Maintenance Requests', [['ren_order_id', '!=', false]])"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View Maintenance Requests">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-maintenance-96.png"
+                             class="tile-icon"
+                             alt="Maintenance Icon"/>
+                        <strong>Maintenance Request</strong>
+                        <span t-ref="maintenance_request_count" class="tile-count">0</span>
+                    </div>
+
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openTreeView('sale.order', 'Sale Orders', [['ren_order_id', '!=', false]])"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View Sale Orders">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-shopping-cart-96.png"
+                             class="tile-icon"
+                             alt="Shopping Cart Icon"/>
+                        <strong>Sale Order</strong>
+                        <span t-ref="sale_order_count" class="tile-count">0</span>
+                    </div>
+
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openTreeView('ren.order', 'Completed Orders', [['order_status', '=', 'completed']])"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View Completed Orders">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-task-completed-96.png"
+                             class="tile-icon"
+                             alt="Task Completed Icon"/>
+                        <strong>Order Completed</strong>
+                        <span t-ref="order_completed_count" class="tile-count">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Site Inspection Details Section -->
+            <div class="site-inspection-details-container">
+                <h3>Site Inspection Details</h3>
+                <hr/>
+                <div class="site-inspection-tile-container">
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openTreeView('site.inspection', 'New Inspections', [['inspection_state', '=', 'new']])"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View New Inspections">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-search-96.png"
+                             class="tile-icon"
+                             alt="Search Icon"/>
+                        <strong>New</strong>
+                        <span t-ref="inspection_new_count" class="tile-count">0</span>
+                    </div>
+
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openTreeView('site.inspection', 'In Progress Inspections', [['inspection_state', '=', 'in_progress']])"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View In Progress Inspections">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-sand-watch-96.png"
+                             class="tile-icon"
+                             alt="Sand Watch Icon"/>
+                        <strong>In Progress</strong>
+                        <span t-ref="inspection_in_progress_count" class="tile-count">0</span>
+                    </div>
+
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openTreeView('site.inspection', 'Completed Inspections', [['inspection_state', '=', 'completed']])"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View Completed Inspections">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-realtime-96.png"
+                             class="tile-icon"
+                             alt="Realtime Icon"/>
+                        <strong>Completed</strong>
+                        <span t-ref="inspection_completed_count" class="tile-count">0</span>
+                    </div>
+
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openTreeView('site.inspection', 'Cancelled Inspections', [['inspection_state', '=', 'cancelled']])"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View Cancelled Inspections">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-cancel-96.png"
+                             class="tile-icon"
+                             alt="Cancel Icon"/>
+                        <strong>Cancelled</strong>
+                        <span t-ref="inspection_cancelled_count" class="tile-count">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub Contract Details Section -->
+            <div class="sub-contract-details-container">
+                <div class="sub-contract-task-container">
+                    <h3>Sub Contract Details</h3>
+                    <select t-ref="subcontract_filter"
+                            name="sub_contract_task"
+                            id="sub-contract-task"
+                            t-on-change="onChangerRenderSubcontract"
+                            aria-label="Select Sub Contract Task">
+                        <option value="installation" selected="1">Installation</option>
+                        <option value="quality_assurance">Quality Assurance</option>
+                    </select>
+                </div>
+                <hr/>
+                <div class="sub-contract-tile-container">
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openSubcontractTreeView('new')"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View New Sub Contracts">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-handshake-96.png"
+                             class="tile-icon"
+                             alt="Handshake Icon"/>
+                        <strong>New</strong>
+                        <span t-ref="subcontract_new_count" class="tile-count">0</span>
+                    </div>
+
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openSubcontractTreeView('in_progress')"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View In Progress Sub Contracts">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-sand-watch-96.png"
+                             class="tile-icon"
+                             alt="Sand Watch Icon"/>
+                        <strong>In Progress</strong>
+                        <span t-ref="subcontract_in_progress_count" class="tile-count">0</span>
+                    </div>
+
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openSubcontractTreeView('completed')"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View Completed Sub Contracts">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-realtime-96.png"
+                             class="tile-icon"
+                             alt="Realtime Icon"/>
+                        <strong>Completed</strong>
+                        <span t-ref="subcontract_completed_count" class="tile-count">0</span>
+                    </div>
+
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openSubcontractTreeView('cancelled')"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View Cancelled Sub Contracts">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-cancel-96.png"
+                             class="tile-icon"
+                             alt="Cancel Icon"/>
+                        <strong>Cancelled</strong>
+                        <span t-ref="subcontract_cancelled_count" class="tile-count">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Internal Team Details Section -->
+            <div class="internal-team-details-container">
+                <div class="internal-team-task-container">
+                    <h3>Internal Team Details</h3>
+                    <select t-ref="internal_filter"
+                            name="internal_team_task"
+                            id="internal-team-task"
+                            t-on-change="onChangeRenderInternal"
+                            aria-label="Select Internal Team Task">
+                        <option value="installation" selected="1">Installation</option>
+                        <option value="quality_assurance">Quality Assurance</option>
+                    </select>
+                </div>
+                <hr/>
+                <div class="internal-team-tile-container">
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openInternalTreeView('new')"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View New Internal Team Tasks">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-workers-96.png"
+                             class="tile-icon"
+                             alt="Workers Icon"/>
+                        <strong>New</strong>
+                        <span t-ref="internal_new_count" class="tile-count">0</span>
+                    </div>
+
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openInternalTreeView('in_progress')"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View In Progress Internal Team Tasks">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-sand-watch-96.png"
+                             class="tile-icon"
+                             alt="Sand Watch Icon"/>
+                        <strong>In Progress</strong>
+                        <span t-ref="internal_in_progress_count" class="tile-count">0</span>
+                    </div>
+
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openInternalTreeView('completed')"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View Completed Internal Team Tasks">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-realtime-96.png"
+                             class="tile-icon"
+                             alt="Realtime Icon"/>
+                        <strong>Completed</strong>
+                        <span t-ref="internal_completed_count" class="tile-count">0</span>
+                    </div>
+
+                    <div class="tile clickable-tile"
+                         t-on-click="() => this.openInternalTreeView('cancelled')"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View Cancelled Internal Team Tasks">
+                        <img src="solar_renewable_energy/static/description/assets/icons/icons8-cancel-96.png"
+                             class="tile-icon"
+                             alt="Cancel Icon"/>
+                        <strong>Cancelled</strong>
+                        <span t-ref="internal_cancelled_count" class="tile-count">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Category Chart Section -->
+            <div class="canvas-customer-category-container">
+                <h3>Customer Category Details</h3>
+                <hr/>
+                <div class="canvas-customer-category-graph-container">
+                    <canvas id="canvas_customer_category_task"
+                            t-ref="customer_category_graph"
+                            role="img"
+                            aria-label="Customer Category Chart"/>
+                </div>
+            </div>
+
+            <!-- Team Task Chart Section -->
+            <div class="canvas-team-task-container">
+                <h3>Team Task Details</h3>
+                <hr/>
+                <canvas id="canvas_team_task"
+                        t-ref="team_task_graph"
+                        role="img"
+                        aria-label="Team Task Chart"/>
+            </div>
+
+            <!-- CRM Lead Chart Section -->
+            <div class="canvas-crm-lead-container">
+                <h3>CRM Lead Details</h3>
+                <hr/>
+                <canvas id="canvas_crm_lead_status"
+                        t-ref="crm_lead_status"
+                        role="img"
+                        aria-label="CRM Lead Status Chart"/>
+            </div>
+
+        </div>
+    </t>
+</templates>

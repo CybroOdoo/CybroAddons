@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Search View for Maintenance -->
+    <record id="res_maintenance_view_search" model="ir.ui.view">
+        <field name="name">res.maintenance.view.search</field>
+        <field name="model">res.maintenance</field>
+        <field name="arch" type="xml">
+            <search>
+                <!-- Fields displayed in the search view -->
+                <field name="maintenance_no"/>
+                <field name="type"/>
+                <field name="date"/>
+                <field name="state"/>
+                <!-- Grouping options -->
+                <group expand="1" string="Group By">
+                    <filter string="State" name="state" context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Tree View for Maintenance -->
+    <record id="res_maintenance_view_tree" model="ir.ui.view">
+        <field name="name">res.maintenance.view.tree</field>
+        <field name="model">res.maintenance</field>
+        <field name="arch" type="xml">
+            <tree string="Maintenance">
+                <!-- Fields displayed in the tree view -->
+                <field name="maintenance_no"/>
+                <field name="type"/>
+                <field name="date"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Form View for Maintenance -->
+    <record id="res_maintenance_view_form" model="ir.ui.view">
+        <field name="name">res.maintenance.view.form</field>
+        <field name="model">res.maintenance</field>
+        <field name="arch" type="xml">
+            <form string="Maintenance">
+                <header>
+                    <!-- Status Bar for Maintenance State -->
+                    <field name="state" widget="statusbar" options="{'clickable':'1'}"/>
+                    <field name="is_invoice" invisible="1"/>
+                    <!-- Button to create invoice -->
+                    <button name="action_create_invoice" string="Create Invoice" type="object" class="oe_highlight"
+                            invisible=" state != 'in-progress' or is_invoice"/>
+                </header>
+                <sheet>
+                    <!-- Buttons for viewing invoices -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoice" type="object" class="oe_stat_button"
+                                icon="fa-pencil-square-o" string="Invoices" invisible="invoice_count in [0]">
+                            <field name="invoice_count" widget="statinfo" string="Invoices"/>
+                        </button>
+                    </div>
+                    <!-- Ribbon indicating payment status -->
+                    <field name="payment_ribbon" invisible='1'/>
+                    <widget name="web_ribbon" title="Paid" bg_color="text-bg-success"
+                            invisible="payment_ribbon != 'paid'"/>
+                    <!-- Unique identifier for maintenance -->
+                    <field name="maintenance_no" readonly="True" style="font-size:50px;color:black;"/>
+                    <group string="MAINTENANCE DETAILS">
+                        <group>
+                            <field name="type"/>
+                            <field name="employee_id"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="supplier_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <!-- Page for listing maintenance services -->
+                        <page string="Maintenance Services" name="maintenance_line_ids">
+                            <field name="maintenance_line_ids">
+                                <tree editable="bottom">
+                                    <!-- Fields for each maintenance service line -->
+                                    <field name="product_id"/>
+                                    <field name="description"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_price"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="subtotal"/>
+                                </tree>
+                            </field>
+                            <!-- Group for displaying total cost -->
+                            <group>
+                                <div style="margin-left:980px;" string="Total">
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="maintenance_total"/>
+                                </div>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <!-- Chatter for communication -->
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!-- Action for Maintenance -->
+    <record id="res_maintenance_action" model="ir.actions.act_window">
+        <field name="name">Maintenance</field>
+        <field name="res_model">res.maintenance</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!-- Menu Item for Maintenance -->
+    <menuitem id="res_maintenance_menu" name="Maintenance" action="res_maintenance_action"
+              parent="veterinary_management_menu_root" sequence="10"/>
+</odoo>

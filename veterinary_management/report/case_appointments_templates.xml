@@ -1,0 +1,211 @@
+<odoo>
+    <!--  Pdf template of Case Appointment Report -->
+    <template id="patient_report_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <div class="company-name mt-2">
+                    <div>My Company (San Francisco)</div>
+                </div>
+                <div class="report mt-2">
+                    <style>
+                        .report-header {
+                            padding-top:2px;
+                            display: flex;
+                            justify-content: flex-end;
+                            align-items: flex-start;
+                            margin-top: 20px;
+                        }
+                        .header-right {
+                            text-align: right;
+                        }
+                        .company-name {
+                            text-align: center;
+                            margin-bottom: 10px;
+                        }
+                        .report-title {
+                            text-align: left;
+                            font-size: 20px;
+                            font-weight: bold;
+                        }
+                        .section {
+                            margin-bottom: 20px;
+                        }
+                        .section-header {
+                            font-weight: bold;
+                            font-size: 16px;
+                            border-bottom: 1px solid #ddd;
+                            padding-bottom: 10px;
+                            margin-bottom: 10px;
+                        }
+                        .section-content {
+                            padding-left: 10px;
+                        }
+                        .table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+                        .table th, .table td {
+                            border: 1px solid #ddd;
+                            padding: 8px;
+                            text-align: left;
+                        }
+                        .table th {
+                            background-color: #f2f2f2;
+                        }
+                    </style>
+                    <div class="report-header">
+                        <div class="header-right">
+                            <div><strong>Customer</strong>: <t t-esc="doc.owner_id.name or ''"/></div>
+                            <div><strong>Patient</strong>: <t t-esc="doc.patient_id.name or ''"/></div>
+                            <div><strong>Case no</strong>: <t t-esc="doc.case_no or ''"/></div>
+                            <div><strong>Appointment Date</strong>: <t t-esc="doc.appointment_date or ''"/></div>
+                        </div>
+                    </div>
+                    <div class="section" style="margin-top:20px;">
+                      <div class="section-content" style="display: flex; flex-direction: row; align-items: center;">
+                        <div>
+                            <strong>Disease Name:</strong>
+                            <span>
+                                <t t-foreach="doc.disease_name_ids" t-as="disease" t-join=", ">
+                                    <t t-esc="disease.name or ''"/>,
+                                </t>
+                            </span>
+                        </div>
+                        <div style="margin-left: 20px;">
+                             <strong>Description:</strong>
+                            <span><t t-esc="doc.disease_desc or ''"/></span>
+                        </div>
+                    </div>
+                    </div>
+                    <t t-if="doc.treatment">
+                        <div class="section">
+                            <div class="section-header">Treatment</div>
+                            <div class="section-content">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Treatment</th>
+                                            <th>Precautions</th>
+                                            <th>Charge</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="doc.treatment_line_ids" t-as="treatment">
+                                            <tr>
+                                                <td><t t-esc="treatment.description or ''"/></td>
+                                                <td><t t-esc="treatment.precaution or ''"/></td>
+                                                <td><t t-esc="treatment.charges or ''"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </t>
+                    <div class="section">
+                        <div class="section-header">Medical Report</div>
+                        <div class="section-content">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Report</th>
+                                        <th>Date</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="doc.medical_report_line_ids" t-as="report">
+                                        <tr>
+                                            <td><t t-esc="report.report_id.name or ''"/></td>
+                                            <td><t t-esc="report.date or ''"/></td>
+                                            <td><t t-esc="report.price or ''"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <t t-if="doc.is_admit">
+                        <div class="section">
+                            <div class="section-header">Admit Details</div>
+                            <div class="section-content">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Room No</th>
+                                            <th>Admit Date</th>
+                                            <th>Discharge Date</th>
+                                            <th>Total Hour</th>
+                                            <th>Total Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><t t-esc="doc.room_id.name or ''"/></td>
+                                            <td><t t-esc="doc.admit_date or ''"/></td>
+                                            <td><t t-esc="doc.discharge_date or ''"/></td>
+                                            <td><t t-esc="doc.total_hours or ''"/></td>
+                                            <td><t t-esc="doc.total_amount or ''"/></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-if="doc.vaccination">
+                        <div class="section">
+                            <div class="section-header">Vaccination</div>
+                            <div class="section-content">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Vaccine</th>
+                                            <th>Vaccination date</th>
+                                            <th>Description</th>
+                                            <th>Charges</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="doc.procedure_vaccination_history_line_ids" t-as="vaccine">
+                                            <tr>
+                                                <td><t t-esc="vaccine.vaccine_id.name or ''"/></td>
+                                                <td><t t-esc="vaccine.vaccination_date or ''"/></td>
+                                                <td><t t-esc="vaccine.description or ''"/></td>
+                                                <td><t t-esc="vaccine.charge or ''"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </t>
+                    <div class="section">
+                        <div class="section-header">Medical Bill</div>
+                        <div class="section-content">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Invoice For</th>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="doc.medical_bill_line_ids" t-as="bill">
+                                        <tr>
+                                            <td><t t-esc="bill.invoice_for or ''"/></td>
+                                            <td><t t-esc="bill.date or ''"/></td>
+                                            <td><t t-esc="bill.description or ''"/></td>
+                                            <td><t t-esc="bill.amount or ''"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

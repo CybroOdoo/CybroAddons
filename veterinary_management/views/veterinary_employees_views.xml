@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Tree View for Doctors -->
+    <record id="veterinary_employees_view_tree" model="ir.ui.view">
+        <field name="name">veterinary.employees.view.tree</field>
+        <field name="model">veterinary.employees</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="staff"/>
+                <field name="phone"/>
+                <field name="email"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Form View for Doctors -->
+    <record id="veterinary_employees_view_form" model="ir.ui.view">
+        <field name="name">veterinary.employees.view.form</field>
+        <field name="model">veterinary.employees</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <!-- Buttons for Case and Surgery Records -->
+                    <div name="button_box" position="inside">
+                        <button name="action_get_case_record" class="oe_stat_button"
+                                type="object" icon="fa-users">
+                            <field string="Cases" name="case_count" widget="statinfo"/>
+                        </button>
+                        <button name="action_get_today_case_record" class="oe_stat_button"
+                                type="object" icon="fa-users">
+                            <field string=" Today Cases" name="today_case_count" widget="statinfo"/>
+                        </button>
+                        <button name="action_get_surgery_record" class="oe_stat_button"
+                                type="object" icon="fa-user-md">
+                            <field string="Surgery" name="surgery_count" widget="statinfo"/>
+                        </button>
+                        <button name="action_get_today_surgery_record" class="oe_stat_button"
+                                type="object" icon="fa-user-md">
+                            <field string="Today Surgery" name="today_surgery_count" widget="statinfo"/>
+                        </button>
+                    </div>
+
+                    <!-- Doctor Photo -->
+                    <field name="photo" widget="image" class="oe_avatar"/>
+
+                    <!-- Basic Information -->
+                    <group>
+                        <group>
+                            <field name="name" style="font-size:30px;"/>
+                            <field name="staff" widget="radio" options="{'horizontal': true}"/>
+                        </group>
+                    </group>
+
+                    <!-- Personal Information -->
+                    <group string="PERSONAL INFORMATION">
+                        <group>
+                            <field name="related_partner_id" context="{'show_address': 1}"
+                                   options='{"always_reload": True}'/>
+                            <field name="gender"/>
+                            <field name="birth_date"/>
+                            <field name="phone"/>
+                            <field name="email"/>
+                        </group>
+                        <group>
+                            <field name="degrees"/>
+                            <field name="license_number" invisible=" staff != 'doctor'"/>
+                            <field name="specialization_ids" widget="many2many_tags"
+                                   options="{'no_create_edit': True}" invisible=" staff != 'doctor'"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="consultancy_charges" invisible=" staff != 'doctor'"/>
+                            <field name="consultancy_type" invisible=" staff != 'doctor'"/>
+                            <field name="appointment_duration" invisible=" staff != 'doctor'"/>
+                        </group>
+                    </group>
+                    <!-- Availability -->
+                    <group string="AVAILABILITY">
+                        <group>
+                            <field name="sunday" widget="checkbox"/>
+                            <field name="monday" widget="checkbox"/>
+                            <field name="tuesday" widget="checkbox"/>
+                            <field name="wednesday" widget="checkbox"/>
+                        </group>
+                        <group>
+                            <field name="thursday" widget="checkbox"/>
+                            <field name="friday" widget="checkbox"/>
+                            <field name="saturday" widget="checkbox"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Action for Doctors -->
+    <record id="veterinary_employees_action" model="ir.actions.act_window">
+        <field name="name">Staff</field>
+        <field name="res_model">veterinary.employees</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!-- Menu Item for Doctors -->
+    <menuitem id="doctor_menu" name="Employees" action="veterinary_employees_action"
+              parent="configuration_types_menu" sequence="8"/>
+</odoo>

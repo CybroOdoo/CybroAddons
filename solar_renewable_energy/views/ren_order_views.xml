@@ -1,0 +1,386 @@
+<odoo>
+    <!--    Action for  Ren Orders-->
+    <record id="renewable_ren_orders_action" model="ir.actions.act_window">
+        <field name="name">Ren Order</field>
+        <field name="res_model">ren.order</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--    Tree view for Ren Order-->
+    <record id="ren_order_view_tree" model="ir.ui.view">
+        <field name="name">ren.order.tree</field>
+        <field name="model">ren.order</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="order_status"/>
+            </tree>
+        </field>
+    </record>
+    <!--    Form view for Ren Order-->
+    <record id="ren_order_view_form" model="ir.ui.view">
+        <field name="name">ren.order.form</field>
+        <field name="model">ren.order</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="order_status" widget="statusbar"
+                           statusbar_visible="new,material_order,material_arrived,project_installation,qa_check,completed,cancelled"/>
+                    <button name="action_material_order"
+                            type="object"
+                            string="Material Order"
+                            class="oe_highlight"
+                            invisible="not order_status=='new'"
+                    />
+                    <button name="action_material_arrived"
+                            type="object"
+                            string="Material Arrived"
+                            class="oe_highlight"
+                            invisible="not order_status=='material_order'"
+                    />
+                    <button name="action_project_installation"
+                            type="object"
+                            string="Project Installation"
+                            class="oe_highlight"
+                            invisible="not order_status=='material_arrived'"
+                    />
+                    <button name="action_qa_check"
+                            type="object"
+                            string="QA Check"
+                            class="oe_highlight"
+                            invisible="not order_status=='project_installation'"
+                    />
+                    <button name="action_completed"
+                            type="object"
+                            string="Completed"
+                            class="oe_highlight"
+                            invisible="not order_status=='qa_check'"
+                    />
+                    <button name="action_cancel"
+                            type="object"
+                            string="Cancel"
+                            class="oe_highlight btn-danger"
+                    />
+                    <button name="action_maintenance_request"
+                            type="object"
+                            string="Maintenance Request"
+                            icon="fa-wrench"
+                            class="oe_highlight"
+                            invisible="not order_status=='completed'"
+                    />
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_map" type="object" class="oe_stat_button" icon="fa-map-marker"
+                                invisible="not latitude or not longitude">
+                            <span class="o_stat_text">
+                                <span class="o_stat_text">Site Location</span>
+                            </span>
+                        </button>
+                        <button name="action_view_purchases" type="object" class="oe_stat_button" icon="fa-credit-card"
+                        >
+                            <span class="o_stat_text">
+                                <field name="purchase_count" widget="statinfo" string="Purchase"/>
+                            </span>
+                        </button>
+                        <button name="action_view_receipt" type="object" class="oe_stat_button" icon="fa-truck"
+                        >
+                            <span class="o_stat_text">
+                                <field name="receipt_count" widget="statinfo" string="Receipt"/>
+                            </span>
+                        </button>
+                        <button name="action_view_installation_task" type="object" class="oe_stat_button"
+                                icon="fa-th-list"
+                                invisible="order_status in ['new','material_order','material_arrived']"
+                        >
+                            <span class="o_stat_text">
+                                <field name="installation_task_count" widget="statinfo" string="Installation"/>
+                            </span>
+                        </button>
+                        <button name="action_view_qa_task" type="object" class="oe_stat_button"
+                                icon="fa-th-list"
+                                invisible="order_status in ['new','material_order','material_arrived','project_installation']"
+                        >
+                            <span class="o_stat_text">
+                                <field name="qa_task_count" widget="statinfo" string="Quality Assurance"/>
+                            </span>
+                        </button>
+                        <button name="action_view_delivery" type="object" class="oe_stat_button" icon="fa-truck"
+                        >
+                            <span class="o_stat_text">
+                                <field name="delivery_count" widget="statinfo" string="Delivery"/>
+                            </span>
+                        </button>
+                    </div>
+                    <h1>
+                        <field name="name"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="crm_lead_id"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="date_of_order"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="CUSTOMER DETAILS">
+                            <field name="partner_id"/>
+                            <field name="email"/>
+                            <field name="phone"/>
+                        </group>
+                        <group string="ADDITIONAL INFORMATION">
+                            <field name="company_id"/>
+                            <field name="sales_person_id"/>
+                            <field name="priority" widget="priority"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="ORDER DETAILS">
+                            <field name="sale_order_id"/>
+                            <field name="sale_order_amount"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Site Details">
+                            <group string="SOLAR REQUIREMENTS">
+                                <group>
+                                    <field name="service_type_id"/>
+                                    <field name="contract_demand_id"/>
+                                </group>
+                                <group>
+                                    <field name="service_description"/>
+                                </group>
+                            </group>
+                            <group string="SITE INFORMATION">
+                                <group>
+                                    <field name="site_usage"/>
+                                    <field name="property_type_id"/>
+                                    <field name="age_of_property"/>
+                                </group>
+                                <group>
+                                    <div class="oe_address">
+                                        <field name="site_street1" placeholder="Street 1"/>
+                                        <field name="site_street2" placeholder="Street 2"/>
+                                        <field name="site_city" placeholder="City"/>
+                                        <field name="site_state_id" placeholder="State"
+                                               domain="[('country_id', '=', site_country_id)]"/>
+                                        <field name="site_country_id" placeholder="Country"/>
+                                    </div>
+                                </group>
+                            </group>
+                            <group string="SITE LOCATION">
+                                <group>
+                                    <field name="latitude"/>
+                                </group>
+                                <group>
+                                    <field name="longitude"/>
+                                </group>
+                            </group>
+                            <group string="SITE CHECKLIST">
+                                <field name="site_checklist_line_ids">
+                                    <tree editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="is_checked"/>
+                                        <field name="name"/>
+                                        <field name="description"/>
+                                    </tree>
+                                </field>
+                            </group>
+                        </page>
+                        <page string="Materials of Project">
+                            <group string="BILL OF MATERIAL DETAILS">
+                                <group>
+                                    <field name="bom_type" widget="radio"/>
+                                </group>
+                                <group>
+                                    <field name="bom_id"/>
+                                    <field name="equipment_id"/>
+                                    <field name="project_material_cost"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group>
+                                    <field name="new_bom_line_ids"
+                                           invisible="bom_type == 'existing'">
+                                        <tree editable="bottom">
+                                            <field name="product_id"/>
+                                            <field name="product_qty"/>
+                                            <field name="product_uom_id"/>
+                                        </tree>
+                                    </field>
+                                    <field name="existing_bom_line_ids"
+                                           invisible="bom_type == 'new'">
+                                        <tree>
+                                            <field name="product_id"/>
+                                            <field name="product_qty"/>
+                                            <field name="product_uom_id"/>
+                                        </tree>
+                                    </field>
+                                </group>
+                            </group>
+                            <group string="PRODUCT ORDER DETAILS">
+                                <field name="create_purchase_order"/>
+                                <field name="vendor_id" invisible="not create_purchase_order"/>
+                            </group>
+                            <button name="action_create_purchase_order" string="Create Purchase Order"
+                                    type="object"
+                                    help="Create Purchase order for the vendor."
+                                    class="oe_highlight"
+                                    invisible="not create_purchase_order"/>
+                        </page>
+                        <page string="Project Installation"
+                              invisible="order_status in ['new','material_order','material_arrived']">
+                            <group string="PROJECT INSTALLATION DETAILS">
+                                <group>
+                                    <field name="installation_type" widget="radio"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="PROJECT INTERNAL" invisible="installation_type=='sub_contract'">
+                                    <field name="installation_team_id"/>
+                                    <field name="installation_team_member_ids" widget="many2many_tags"/>
+                                </group>
+                                <group string="SUBCONTRACTOR TEAM" invisible="installation_type=='internal'">
+                                    <field name="subcontractor_id" widget="selection"/>
+                                </group>
+                                <group string="DATE OF INSTALLATION">
+                                    <group>
+                                        <field name="installation_start_date"/>
+                                        <field name="total_days"/>
+                                        <field name="installation_time"/>
+                                        <field name="price_per_hour"/>
+                                        <field name="total_installation_amount"/>
+                                    </group>
+                                    <group>
+                                        <field name="installation_end_date"/>
+                                    </group>
+                                </group>
+                            </group>
+                            <div>
+                                <button name="action_create_installation_task" string="Create Installation Task"
+                                        type="object"
+                                        help="Create Installation task for the order."
+                                        class="oe_highlight oe_button"
+                                />
+                                <span class="oe_separator" style="margin: 0 10px;"/>
+                                <button name="action_create_delivery_order" string="Create Delivery Order"
+                                        type="object"
+                                        help="Create Delivery order for the customer."
+                                        class="oe_highlight oe_button"
+                                />
+                            </div>
+                        </page>
+                        <page string="QA Inspection Team"
+                              invisible="order_status in ['new','material_order','material_arrived','project_installation']">
+                            <group string="QUALITY ASSURANCE BY">
+                                <group>
+                                    <field name="qa_type" widget="radio"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="SUBCONTRACT" invisible="qa_type=='internal'">
+                                    <group>
+                                        <field name="qa_subcontractor_id" widget="selection"/>
+                                    </group>
+                                </group>
+                                <group string="PROJECT INTERNAL TEAM" invisible="qa_type=='sub_contract'">
+                                    <field name="qa_team_id"/>
+                                    <field name="qa_team_member_ids" widget="many2many_tags"/>
+                                </group>
+                                <group string="DATE OF INSTALLATION">
+                                    <group>
+                                        <field name="qa_start_date"/>
+                                        <field name="qa_period"/>
+                                        <field name="qa_allocated_time"/>
+                                        <field name="qa_charge"/>
+                                    </group>
+                                    <group>
+                                        <field name="qa_end_date"/>
+                                    </group>
+                                </group>
+                            </group>
+                            <button name="action_create_qa_task" string="Create QA Task"
+                                    type="object"
+                                    help="Create QA task for the order."
+                                    class="oe_highlight"
+                            />
+                        </page>
+
+                        <page string="Accounting">
+                            <table class="table table-success table-striped-columns">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="w-40">Sales</th>
+                                        <th>Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div>Sales Amount</div>
+                                            <div class="fw-bold">
+                                                <field name="sales_amount" widget="monetary"
+                                                       options="{'currency_field': 'currency_id'}"/>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>Project Material Cost</div>
+                                            <div class="fw-bold">
+                                                <field name="project_material_cost" widget="monetary"
+                                                       options="{'currency_field': 'currency_id'}"/>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <div>Installation Cost</div>
+                                            <div class="fw-bold">
+                                                <field name="total_installation_amount" widget="monetary"
+                                                       options="{'currency_field': 'currency_id'}"/>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <div>Quality Assurance Cost</div>
+                                            <div class="fw-bold">
+                                                <field name="qa_charge" widget="monetary"
+                                                       options="{'currency_field': 'currency_id'}"/>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="bg-light-green">
+                                            <div>Total</div>
+                                            <div class="fw-bold">
+                                                <field name="sales_amount" widget="monetary"
+                                                       options="{'currency_field': 'currency_id'}"/>
+                                            </div>
+                                        </td>
+                                        <td class="bg-light-red">
+                                            <div>Total</div>
+                                            <div class="fw-bold">
+                                                <field name="total_cost" widget="monetary"
+                                                       options="{'currency_field': 'currency_id'}"/>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="bg-light p-2">
+                                <div>Total Profit &amp; Loss</div>
+                                <div class="fw-bold">
+                                    <field name="total_profit_loss" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                </div>
+                            </div>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>
