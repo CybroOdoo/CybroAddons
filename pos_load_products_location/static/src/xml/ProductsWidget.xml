@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <!--  Inherit the 'ProductsWidget' template to display products based on the Stock location -->
+    <t t-name="ProductsWidget" t-inherit="point_of_sale.ProductsWidget"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[@t-if='productsToDisplay.length != 0 and pos.posHasValidProduct()']" position="replace">
+            <div t-if="productsToDisplay.length != 0 and pos.posHasValidProduct()" t-attf-class="product-list {{this.pos.productListViewMode}} p-1">
+                <t t-foreach="productsToDisplay" t-as="product" t-key="product.id">
+                     <t t-if="this.pos.product_list_by_location and this.pos.product_list_by_location.includes(product.id)">
+                         <ProductCard
+                                 class="pos.productViewMode"
+                                 name="product.display_name"
+                                 productId="product.id"
+                                 price="product.getFormattedUnitPrice()"
+                                 imageUrl="pos.show_product_images and product.getImageUrl()"
+                                 onClick="() =>this.pos.addProductToCurrentOrder(product)"
+                                 productInfo="true"
+                                 onProductInfoClick="() => this.onProductInfoClick(product)"
+                         />
+                     </t>
+                </t>
+            </div>
+        </xpath>
+    </t>
+</templates>
