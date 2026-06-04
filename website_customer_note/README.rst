@@ -2,10 +2,9 @@
     :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 
-Website Customer Note
-=====================
+"Website Customer Note "
+=========================================================
 Add Customer Note On eCommerce Website Payment Screen And It Will Display On Correspondig Sale Order Form .
-
 Configuration
 =============
 * No additional configurations needed

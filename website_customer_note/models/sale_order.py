@@ -21,8 +21,7 @@
 #############################################################################
 from odoo import api, fields, models
 
-
-class SaleOrder(models.Model):
+class SaleOrderInherited(models.Model):
     _inherit = 'sale.order'
 
     customer_note = fields.Text(string="Customer Note")
