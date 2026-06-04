@@ -44,7 +44,7 @@ class ProjectReport(models.TransientModel):
 
     def print_project_report_pdf(self):
         """ Action for printing pdf report."""
-        active_record = self._context['active_id']
+        active_record = self.env.context.get('active_id')
         record = self.env['project.project'].browse(active_record)
         data = {
             'ids': self.ids,
@@ -60,7 +60,7 @@ class ProjectReport(models.TransientModel):
 
     def print_project_report_xls(self):
         """ Action for printing xls report."""
-        active_record = self._context['active_id']
+        active_record = self.env.context.get('active_id')
         record = self.env['project.project'].browse(active_record)
         data = {
             'ids': self.ids,
