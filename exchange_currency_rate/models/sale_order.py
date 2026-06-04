@@ -21,7 +21,6 @@
 ################################################################################
 from odoo import api, fields, models
 
-
 class SaleOrder(models.Model):
     """This class extends the base 'sale.order' model to introduce a
     new field, 'is_exchange',which allows users to manually apply an exchange
@@ -31,28 +30,20 @@ class SaleOrder(models.Model):
 
     company_currency_id = fields.Many2one(
         string='Company Currency',
-        related='company_id.currency_id', readonly=True,
-        help='Store the Company Currency'
+        related='company_id.currency_id', readonly=True,help='Store the Company Currency'
     )
 
     is_exchange = fields.Boolean(string='Apply Manual Currency',
-                                 compute="_compute_is_exchange",
-                                 inverse="_inverse_is_exchange",
-                                 store=True,
                                  help='Enable the boolean field to display '
                                       'rate field')
-    rate = fields.Float(string='Rate', help='specify the currency rate',
-                        default=1)
+    rate = fields.Float(string='Rate', help='specify the currency rate',default=1)
 
-    @api.depends('company_id', 'currency_id')
-    def _compute_is_exchange(self):
+    @api.constrains('company_currency_id', 'currency_id')
+    def _onchange_different_currency(self):
         """ When the Currency is changed back to company currency, the boolean field is disabled """
-        for order in self:
-            if order.company_currency_id == order.currency_id:
-                order.is_exchange = False
-
-    def _inverse_is_exchange(self):
-        pass
+        if self.company_currency_id == self.currency_id:
+            if self.is_exchange:
+                self.is_exchange = False
 
     @api.onchange('is_exchange')
     def _onchange_is_exchange(self):
