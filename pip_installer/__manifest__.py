@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Pip Installer',
-    'version': '17.0.1.0.1',
+    'version': '17.0.1.0.2',
     'category': 'Extra Tools',
     'summary': 'Execute all terminal pip commands',
     'description': """This module enables to execute all terminal 
@@ -32,6 +32,7 @@
     'website': 'https://www.cybrosys.com',
     'depends': ['base'],
     'data': [
+        'security/security_groups.xml',
         'security/ir.model.access.csv',
         'wizard/pip_install_views.xml',
         'wizard/import_message_views.xml',
