@@ -38,8 +38,11 @@ class ChooseDeliveryPackage(models.TransientModel):
         This method customizes the package creation and updates the package
         type and shipping weight for each package.
         :return: True if the action is successful"""
-        picking_move_lines = self.picking_id.move_line_ids
-        quantity_move_line_ids = picking_move_lines.filtered(
+        move_lines = self.move_line_ids
+        if self.env.context.get('all_move_line_ids'):
+            move_lines |= self.env['stock.move.line'].browse(
+                self.env.context['all_move_line_ids'])
+        quantity_move_line_ids = move_lines.filtered(
             lambda ml:
             float_compare(ml.quantity, 0.0, precision_rounding=ml.product_uom_id.rounding) > 0 and
             not ml.result_package_id
@@ -49,12 +52,18 @@ class ChooseDeliveryPackage(models.TransientModel):
             move_line_ids = quantity_move_line_ids
         if self.env.context.get('move_lines_to_pack_ids', False):
             move_line_ids = move_line_ids.filtered(lambda ml: ml.id in self.env.context['move_lines_to_pack_ids'])
-        delivery_packages = self.picking_id._put_in_pack(move_line_ids)
+        move_line_ids.with_context(
+            **self._get_put_in_pack_context()
+        ).action_put_in_pack(
+            package_id=self.result_package_id.id,
+            package_type_id=self.package_type_id.id,
+        )
+        delivery_packages = move_line_ids.result_package_id
         # Loop through each package and write shipping weight and package type
         # on 'stock_quant_package' if needed
         for package in delivery_packages:
-            if self.delivery_package_type_id:
+            if self.package_type_id:
                 package.write(
-                    {'package_type_id': self.delivery_package_type_id.id})
+                    {'package_type_id': self.package_type_id.id})
             if self.shipping_weight:
                 package.write({'shipping_weight': self.shipping_weight})

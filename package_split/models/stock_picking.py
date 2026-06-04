@@ -92,8 +92,7 @@ class StockPicking(models.Model):
                 if category:
                     new_package_name = f"{package.name}-{category.name}"
                     package.write({'name': new_package_name})
-                else:
-                    packages |= package
+                packages |= package
                 # Call post-pack hook for each package
                 lines._post_put_in_pack_hook(package)
 
