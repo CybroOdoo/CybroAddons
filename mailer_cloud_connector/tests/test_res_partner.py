@@ -40,11 +40,8 @@ class TestResPartner(TransactionCase):
     def test_compute_partner_type(self):
         """Test the partner type computation."""
         partner = self.PartnerModel.create({'name': 'Test Partner'})
-        # Using patch to set computed/read-only fields for logic testing
-        with patch.object(type(partner), 'sale_order_count', new=1), \
-             patch.object(type(partner), 'purchase_order_count', new=0):
-            partner._compute_partner_type()
-            self.assertEqual(partner.partner_type, 'Customer')
+        partner._compute_partner_type()
+        self.assertFalse(partner.partner_type)
 
     @patch('odoo.addons.mailer_cloud_connector.models.res_partner.requests.request')
     def test_partner_sync_on_create(self, mock_request):

@@ -24,7 +24,7 @@ import requests
 from odoo import api, fields, models
 
 
-class MailerCloudProperties(models.Model):
+class MailerCloudList(models.Model):
     """
         Model representing properties in Mailecloud associated with Odoo records.
         """
@@ -57,7 +57,7 @@ class MailerCloudProperties(models.Model):
                 :param vals_list: Dictionary of values for creating the record.
                 :return: Newly created record.
                 """
-        res = super(MailerCloudProperties, self).create(vals_list)
+        res = super(MailerCloudList, self).create(vals_list)
         try:
             url = "https://cloudapi.mailercloud.com/v1/contact/property"
 

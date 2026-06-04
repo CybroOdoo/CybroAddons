@@ -32,7 +32,7 @@ class TestMailerCloudProperties(TransactionCase):
             'active': True
         })
 
-    @patch('odoo.addons.mailer_cloud_connector.models.mailer_cloud_propeties.requests.request')
+    @patch('odoo.addons.mailer_cloud_connector.models.mailer_cloud_properties.requests.request')
     def test_property_sync_on_create(self, mock_request):
         """Test that creating a property triggers a sync call."""
         mock_response = MagicMock()

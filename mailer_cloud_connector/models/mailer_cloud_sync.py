@@ -82,6 +82,8 @@ class MailerCloudApiSync(models.Model):
 
             :raises: ValidationError if there is an issue with the API connection or synchronization process.
             """
+        self.get_properties()
+
         self.write({'contact_mapping_ids': [(5, 0, 0)]})
         try:
             url = "https://cloudapi.mailercloud.com/v1/client/plan"
@@ -192,8 +194,8 @@ class MailerCloudApiSync(models.Model):
                             type_name = 'date'
                         elif record['field_type'] == 'Textarea':
                             type_name = 'textarea'
-                        self.env.cr.execute("""INSERT INTO mailer_cloud_properties(
-                        mailer_cloud,name,type,authorization_id)VALUES(%s,%s,%s,%s)""",(
+                        res=self.env.cr.execute("""INSERT INTO mailer_cloud_properties(
+                        mailer_cloud,name,type,authorization_id)VALUES(%s,%s,%s,%s)""" ,(
                             record['id'], record['field_value'], type_name, self.id))
             elif response.status_code == 400:
                 raise ValidationError(response.json()['error']['message'])

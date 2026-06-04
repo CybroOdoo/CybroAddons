@@ -31,7 +31,7 @@ This module helps to connect the odoo to the mailercloud and to synchronize the 
     'website': 'https://www.cybrosys.com',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
-    'depends': ['base', 'purchase'],
+    'depends': ['base'],
     'data': [
         'security/ir.model.access.csv',
         'data/property_data.xml',
@@ -43,7 +43,7 @@ This module helps to connect the odoo to the mailercloud and to synchronize the 
             'mailer_cloud_connector/static/src/scss/style.scss',
         ]
     },
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,

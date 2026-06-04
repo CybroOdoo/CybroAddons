@@ -45,14 +45,16 @@ class ResPartner(models.Model):
         """
             Compute method to determine the 'partner_type' based on specific criteria.
 
-            This method computes the 'partner_type' field based on certain conditions or criteria.
+        This method computes the 'partner_type' field based on certain conditions or criteria.
             """
         for rec in self:
-            if rec.sale_order_count > 0 and rec.purchase_order_count > 0:
+            sale_order_count = rec.sale_order_count if 'sale_order_count' in rec._fields else 0
+            purchase_order_count = rec.purchase_order_count if 'purchase_order_count' in rec._fields else 0
+            if sale_order_count > 0 and purchase_order_count > 0:
                 rec.partner_type = "Vendor and Customer"
-            elif rec.sale_order_count > 0:
+            elif sale_order_count > 0:
                 rec.partner_type = "Customer"
-            elif rec.purchase_order_count > 0:
+            elif purchase_order_count > 0:
                 rec.partner_type = "Vendor"
             else:
                 rec.partner_type = None
