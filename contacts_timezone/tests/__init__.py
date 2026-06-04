@@ -19,30 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-{
-    'name': 'Contacts Timezone',
-    'version': '16.0.1.0.0',
-    'category': 'Contact',
-    'summary': 'Display a contacts local time and time zone based on their address.',
-    'description': """This module helps to get access to contact's local time and timezone using the address values in the partner form.""",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
-    'depends': ['contacts'],
-    'data': [
-        'views/res_partner_views.xml',
-    ],
-    'images': [
-        'static/description/banner.jpg',
-        'static/description/icon.png',
-    ],
-    'external_dependencies': {
-        'python': ['geopy','timezonefinder'],
-    },
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
-
+from . import test_res_partner
