@@ -20,7 +20,7 @@
 #
 #############################################################################
 from collections import defaultdict
-from odoo import models, _
+from odoo import models
 from odoo.exceptions import UserError
 
 
@@ -37,7 +37,9 @@ def _prepare_datas(env, data):
         Product = env['product.product'].with_context(
             display_default_code=False)
     else:
-        raise UserError(_('Product model not defined, Please contact your administrator.'))
+        raise UserError(env._(
+            'Product model not defined, Please contact your administrator.'
+        ))
 
     total = 0
     quantity_by_product = defaultdict(list)
