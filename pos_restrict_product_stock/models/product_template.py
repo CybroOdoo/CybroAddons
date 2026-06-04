@@ -20,13 +20,12 @@
 #############################################################################
 from odoo import models
 
-class ProductProduct(models.Model):
+class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
     def _load_pos_data_fields(self, config_id):
-
         """Extend to include qty_available and virtual_available in POS data fields."""
-        fields = super(ProductProduct, self)._load_pos_data_fields(config_id)
+        fields = super(ProductTemplate, self)._load_pos_data_fields(config_id)
         if 'qty_available' not in fields:
             fields.append('qty_available')
 

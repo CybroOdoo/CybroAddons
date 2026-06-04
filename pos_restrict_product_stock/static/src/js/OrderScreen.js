@@ -31,7 +31,7 @@ patch(PosStore.prototype, {
                 })
              }
              else {
-                return super.pay(); // No restrictions, proceed with payment
+                return super.pay();
              }
     }
 })

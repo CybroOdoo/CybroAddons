@@ -5,4 +5,7 @@
 ##### ADD
 - Initial Commit for Display Stock in POS | Restrict Out-of-Stock Products in POS
 
-
+#### 01.06.2026
+#### Version 19.0.1.1.0
+#### UPDATE
+- Fixed the issue where restrict popup was not appearing for product variants.
