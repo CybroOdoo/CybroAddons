@@ -20,6 +20,7 @@
 #
 ################################################################################
 import odoo
+import socket
 from odoo import http
 from odoo.addons.web.controllers import home
 from odoo.addons.web.controllers.utils import ensure_db
@@ -67,10 +68,12 @@ class Home(home.Home):
         except odoo.exceptions.AccessDenied:
             values['databases'] = None
         if request.httprequest.method == 'POST':
-            ip_address = request.httprequest.environ['REMOTE_ADDR']
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            ip_address=s.getsockname()[0]
+            s.close()
             user_rec = request.env['res.users'].sudo().search(
                 [('login', '=', request.params['login'])])
-
             is_auth = True
             if user_rec and user_rec.allowed_ip_ids:
                 ip_list = user_rec.allowed_ip_ids.mapped('ip_address')

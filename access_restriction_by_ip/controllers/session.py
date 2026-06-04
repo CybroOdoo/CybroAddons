@@ -19,8 +19,8 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
-
 import odoo
+import socket
 from odoo.addons.web.controllers.session import Session
 from odoo import http
 from odoo.exceptions import AccessError
@@ -45,7 +45,10 @@ class AccessRestrict(Session):
                 env = request.env
             credential = {'login': login, 'password': password, 'type': 'password'}
             auth_info = request.session.authenticate(env, credential)
-            ip_address = request.httprequest.environ['REMOTE_ADDR']
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            ip_address=s.getsockname()[0]
+            s.close()
             user = request.env['res.users'].sudo().browse(auth_info['uid']).exists()
             if user and user.allowed_ip_ids:
                 ip_list = set(user.allowed_ip_ids.mapped('ip_address'))
