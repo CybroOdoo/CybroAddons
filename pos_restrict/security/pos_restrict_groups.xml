@@ -28,4 +28,52 @@
         <field name="groups"
                eval="[(4,ref('point_of_sale.group_pos_manager'))]"/>
     </record>
+    <record id="payment_user" model="ir.rule">
+        <field name="name">Payments User</field>
+        <field name="model_id" ref="point_of_sale.model_pos_payment"/>
+        <field name="domain_force">[('pos_order_id.config_id','in',user.allowed_pos.ids)]</field>
+        <field name="groups" eval="[(4,ref('point_of_sale.group_pos_user'))]"/>
+    </record>
+    <record id="payment_manager" model="ir.rule">
+        <field name="name">Payments Manager</field>
+        <field name="model_id" ref="point_of_sale.model_pos_payment"/>
+        <field name="domain_force">[]</field>
+        <field name="groups" eval="[(4,ref('point_of_sale.group_pos_manager'))]"/>
+    </record>
+    <record id="report_order_user" model="ir.rule">
+        <field name="name">Report Orders User</field>
+        <field name="model_id" ref="point_of_sale.model_report_pos_order"/>
+        <field name="domain_force">[('config_id','in',user.allowed_pos.ids)]</field>
+        <field name="groups" eval="[(4,ref('point_of_sale.group_pos_user'))]"/>
+    </record>
+    <record id="report_order_manager" model="ir.rule">
+        <field name="name">Report Orders Manager</field>
+        <field name="model_id" ref="point_of_sale.model_report_pos_order"/>
+        <field name="domain_force">[]</field>
+        <field name="groups" eval="[(4,ref('point_of_sale.group_pos_manager'))]"/>
+    </record>
+    <record id="product_template_restrict" model="ir.rule">
+        <field name="name">Product Template Restrict</field>
+        <field name="model_id" ref="product.model_product_template"/>
+        <field name="domain_force">[(1, '=', 1)] if user.has_unlimited_pos else ['|', ('available_in_pos', '=', False), ('pos_categ_ids', 'in', user.allowed_pos_category_ids.ids)]</field>
+        <field name="groups" eval="[(4,ref('point_of_sale.group_pos_user'))]"/>
+    </record>
+    <record id="product_template_manager_restrict" model="ir.rule">
+        <field name="name">Product Template Manager Restrict</field>
+        <field name="model_id" ref="product.model_product_template"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4,ref('point_of_sale.group_pos_manager'))]"/>
+    </record>
+    <record id="product_product_restrict" model="ir.rule">
+        <field name="name">Product Product Restrict</field>
+        <field name="model_id" ref="product.model_product_product"/>
+        <field name="domain_force">[(1, '=', 1)] if user.has_unlimited_pos else ['|', ('available_in_pos', '=', False), ('pos_categ_ids', 'in', user.allowed_pos_category_ids.ids)]</field>
+        <field name="groups" eval="[(4,ref('point_of_sale.group_pos_user'))]"/>
+    </record>
+    <record id="product_product_manager_restrict" model="ir.rule">
+        <field name="name">Product Product Manager Restrict</field>
+        <field name="model_id" ref="product.model_product_product"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4,ref('point_of_sale.group_pos_manager'))]"/>
+    </record>
 </odoo>

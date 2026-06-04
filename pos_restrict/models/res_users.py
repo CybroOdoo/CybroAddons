@@ -19,7 +19,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class ResUsers(models.Model):
@@ -33,3 +33,19 @@ class ResUsers(models.Model):
     )
     show_users = fields.Boolean(string="Show users of pos", default=True,
                    help='Show users in dashboard for pos administrators only')
+    allowed_pos_category_ids = fields.Many2many(
+        'pos.category', compute='_compute_allowed_pos_categories')
+    has_unlimited_pos = fields.Boolean(compute='_compute_allowed_pos_categories')
+
+    @api.depends('allowed_pos', 'allowed_pos.limit_categories', 'allowed_pos.iface_available_categ_ids')
+    def _compute_allowed_pos_categories(self):
+        for user in self:
+            categories = self.env['pos.category']
+            has_unlimited = False
+            for pos in user.allowed_pos:
+                if not pos.limit_categories:
+                    has_unlimited = True
+                    break
+                categories |= pos.iface_available_categ_ids
+            user.allowed_pos_category_ids = categories
+            user.has_unlimited_pos = has_unlimited

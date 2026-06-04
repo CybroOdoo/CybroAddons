@@ -20,7 +20,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class PosConfig(models.Model):
@@ -35,12 +35,11 @@ class PosConfig(models.Model):
         compute='_compute_users_allowed'
     )
 
+    @api.depends('users_allowed')
     def _compute_users_allowed(self):
-        # computes the allowed users in pos
         for this in self:
-            # checks is show_users is ticked in user settings
             if this.env.user.show_users:
                 this.users_allowed = self.env['res.users'].search(
                     [('allowed_pos', '=', this.id)])
             else:
-                this.users_allowed = None
+                this.users_allowed = self.env['res.users']

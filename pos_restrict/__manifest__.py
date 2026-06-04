@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'POS User Restrict',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Point of Sale',
     'summary': """Restricts User access to pos and orders.""",
     'description': """This module helps restrict user access to PoS and orders
