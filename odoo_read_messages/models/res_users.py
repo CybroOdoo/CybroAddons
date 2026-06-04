@@ -19,7 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+
+from odoo import api, fields, models, _
 
 
 class ResUsers(models.Model):
@@ -28,7 +29,10 @@ class ResUsers(models.Model):
 
     def action_read_messages(self):
         """Read all Messages"""
-        partner_id = self.env.user.partner_id.id
+        # Use self.partner_id (the user the method is called on), not
+        # self.env.user which resolves to the ORM environment's user (superuser
+        # in test contexts) and causes partner_id mismatches.
+        partner_id = self.partner_id.id
         # Cancel exception notifications
         exception_notifications = self.env['mail.notification'].sudo().search([
             ('notification_status', '=', 'exception'),
@@ -40,12 +44,13 @@ class ResUsers(models.Model):
             ('is_read', '=', False)
         ])
         unread_notifications.write({'is_read': True})
-        # Reading the messages from the channels.
-        channel_members = self.env['mail.channel.member'].search([
-            ('partner_id', '=', self.env.user.partner_id.id)
+        # Reading the messages from the channels; sudo() bypasses record rules
+        # that could silently filter members or block writes.
+        channel_members = self.env['mail.channel.member'].sudo().search([
+            ('partner_id', '=', partner_id)
         ])
         # Fetch the latest message
-        latest_message = self.env['mail.message'].search([
+        latest_message = self.env['mail.message'].sudo().search([
             ('model', '=', 'mail.channel'),
             ('message_type', 'not in', ['notification', 'user_notification']),
             ('id', '>', max(channel_members.mapped('seen_message_id.id') or [0]))
