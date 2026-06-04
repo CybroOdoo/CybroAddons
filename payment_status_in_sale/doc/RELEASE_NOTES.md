@@ -14,3 +14,8 @@
 #### Version 16.0.1.0.2
 ##### BUG_FIX
 - Resolved the module issue where the amount due was incorrectly displayed for credit notes by mapping it to the amount_residual field in account.move.
+
+#### 04.06.2026
+#### Version 16.0.1.0.3
+##### BUG_FIX
+- Resolved the module issue where the payment status were not visible in form view.

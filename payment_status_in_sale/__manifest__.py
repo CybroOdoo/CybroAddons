@@ -22,7 +22,7 @@
 ################################################################################
 {
     'name': 'Sale Order Payment Status',
-    'version': '16.0.1.0.2',
+    'version': '16.0.1.0.3',
     'category': 'Sales',
     'summary': 'Sale order payment status,payment details and amount due',
     'description': """This module used to get the information regarding invoice
