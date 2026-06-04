@@ -16,9 +16,6 @@
 #
 #    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
 #    (AGPL v3) along with this program.
-#
-#
-#
 ###############################################################################
 from odoo import api, models
 
