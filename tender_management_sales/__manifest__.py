@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Tender Management Sales',
-    'version': "16.0.1.0.0",
+    'version': "16.0.1.0.1",
     'summary': 'Tender Management in Sales and Option to Compare Orders',
     'description': """Tender Management in Sales and Option to Compare Orders""",
     'category': 'Sale',

@@ -126,6 +126,8 @@ class SaleTender(models.Model):
                                   default=lambda
                                       self: self.env.company.currency_id.id,help="Currency")
 
+    exclusive = fields.Selection(related='type_id.exclusive', string='Exclusive', store=False, help="Tender Type")
+
 
 class SaleTender_idLine(models.Model):
     """Creating the model to store the lines in the tender."""
