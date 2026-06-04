@@ -1,5 +1,13 @@
 ## Module <pip_installer>
 
+#### 03.06.2026
+
+#### Version 19.0.1.0.2
+
+#### UPDATE
+
+- Removed `shell=True` from the pip execution path.
+
 #### 02.06.2026
 
 #### Version 19.0.1.0.1

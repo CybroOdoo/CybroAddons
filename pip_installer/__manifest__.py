@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Pip Installer',
-    'version': '19.0.1.0.1',
+    'version': '19.0.1.0.2',
     'category': 'Extra Tools',
     'summary': 'Execute all terminal pip commands',
     'description': """This module enables to execute all terminal 
