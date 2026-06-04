@@ -23,8 +23,8 @@ Credits
 -------
 * Developers: (V16) Ajmunnisa KP,
               (V17) Aysha Shalin,
-              (V18) Javid A, Contact: odoo@cybrosys.com,
-              (V19) Anjali VP
+              (V18) Javid A,
+              (V19) Anjali VP Contact: odoo@cybrosys.com,
 
 Contacts
 --------

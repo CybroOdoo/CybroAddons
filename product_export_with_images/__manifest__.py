@@ -21,7 +21,7 @@
 ###############################################################################
 {
     "name": "Export Product Images",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "Warehouse",
     "summary": """To export product details along with the product images.""",
     "description": "The allowed users can download the product details "
