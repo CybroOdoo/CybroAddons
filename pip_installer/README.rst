@@ -5,11 +5,13 @@
 Pip Installer
 =============
 * Pip Installer Module for Odoo 15
+* Access is restricted to the ``Pip Installer Administrator`` group.
 
 Installation
 ============
 - www.odoo.com/documentation/15.0/setup/install.html
 - Install our custom addon
+- Assign users to the ``Pip Installer Administrator`` group before use
 
 License
 -------
@@ -22,7 +24,7 @@ Company
 
 Credits
 -------
-* Developer : (V15) Mruthul Raj
+* Developer : (V15) Mruthul Raj, Vishnuraj P
   Contact: odoo@cybrosys.com
 
 Contacts
