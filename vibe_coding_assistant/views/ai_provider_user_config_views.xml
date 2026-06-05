@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── ai.provider.user.config list view ────────────────────────────── -->
+    <record id="view_ai_provider_user_config_list" model="ir.ui.view">
+        <field name="name">ai.provider.user.config.list</field>
+        <field name="model">ai.provider.user.config</field>
+        <field name="arch" type="xml">
+            <list decoration-success="is_active" decoration-muted="not is_active">
+                <field name="provider_id"/>
+                <field name="selected_model"/>
+                <field name="last_test_state"
+                       widget="badge"
+                       decoration-success="last_test_state == 'success'"
+                       decoration-danger="last_test_state == 'failed'"
+                       decoration-info="last_test_state == 'untested'"/>
+                <field name="is_active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── ai.provider.user.config form view ────────────────────────────── -->
+    <record id="view_ai_provider_user_config_form" model="ir.ui.view">
+        <field name="name">ai.provider.user.config.form</field>
+        <field name="model">ai.provider.user.config</field>
+        <field name="arch" type="xml">
+            <form>
+                <!-- ── Header: actions + connection-test status bar ─────── -->
+                <header>
+                    <!-- Test Connection: shown when there's something to test -->
+                    <button name="action_test_connection"
+                            type="object"
+                            string="Test Connection"
+                            class="btn-primary"
+                            icon="fa-plug"
+                            invisible="not api_key or not selected_model"/>
+
+                    <!-- Activate: hidden when already active -->
+                    <button name="action_activate"
+                            type="object"
+                            string="Activate"
+                            class="btn-success"
+                            icon="fa-check-circle"
+                            invisible="is_active or not api_key"
+                            help="Make this the provider used when generating modules."/>
+
+                    <!-- Deactivate: only when active -->
+                    <button name="action_deactivate"
+                            type="object"
+                            string="Deactivate"
+                            invisible="not is_active"/>
+
+                    <!-- Status bar — pinned to the right -->
+                    <field name="last_test_state"
+                           widget="statusbar"
+                           statusbar_visible="untested,success,failed"/>
+                </header>
+
+                <sheet>
+                    <!-- Active ribbon -->
+                    <widget name="web_ribbon"
+                            title="Active"
+                            bg_color="bg-success"
+                            invisible="not is_active"/>
+
+                    <!-- Title row -->
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="True"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Provider">
+                            <field name="provider_id"/>
+                            <field name="selected_model"
+                                   placeholder="e.g. gemini-2.0-flash"/>
+                        </group>
+                        <group string="Credentials">
+                            <field name="api_key"
+                                   widget="password"
+                                   placeholder="Paste your API key here"/>
+                            <field name="last_test_date" readonly="True"
+                                   invisible="last_test_state == 'untested'"/>
+                            <field name="last_test_message" readonly="True"
+                                   invisible="last_test_state == 'untested'"/>
+                        </group>
+                    </group>
+
+                    <!-- Last test result banner -->
+                    <div class="alert alert-success mt-2" role="alert"
+                         invisible="last_test_state != 'success'">
+                        <i class="fa fa-check-circle me-1"/>
+                        <strong>Connection OK.</strong>
+                        You can now activate this configuration and start generating modules.
+                    </div>
+                    <div class="alert alert-danger mt-2" role="alert"
+                         invisible="last_test_state != 'failed'">
+                        <i class="fa fa-times-circle me-1"/>
+                        <strong>Connection failed.</strong>
+                        <field name="last_test_message" readonly="True" nolabel="True"/>
+                    </div>
+
+                    <!-- Token usage statistics -->
+                    <group string="Token Usage" invisible="tokens_used_total == 0">
+                        <group>
+                            <field name="tokens_conversation_count"/>
+                            <field name="tokens_used_input"/>
+                            <field name="tokens_used_output"/>
+                        </group>
+                        <group>
+                            <field name="tokens_used_total"
+                                   class="o_vibe_tokens_total"/>
+                        </group>
+                    </group>
+
+                    <!-- Available models hint -->
+                    <group string="Available Models for Selected Provider"
+                           invisible="not provider_id">
+                        <field name="available_models_hint"
+                               nolabel="True"
+                               class="o_vibe_monospace_hint"/>
+                    </group>
+
+                    <!-- Help banner -->
+                    <div class="alert alert-info mt-2" role="alert">
+                        <strong>Getting a free Gemini key:</strong>
+                        Visit
+                        <a href="https://aistudio.google.com/apikey" target="_blank">
+                            https://aistudio.google.com/apikey
+                        </a>
+                        and click <em>Create API key</em>.
+                        The <code>gemini-2.0-flash</code> model is on the free tier.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

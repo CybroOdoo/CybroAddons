@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="vibe_coding_assistant.CodeViewer">
+        <div class="o_vibe_code_viewer">
+
+            <!-- No file selected -->
+            <t t-if="!activePath">
+                <div class="o_vibe_code_empty">
+                    <i class="fa fa-arrow-left me-1"/>
+                    Select a file from the tree to view its contents.
+                </div>
+            </t>
+
+            <!-- Loading -->
+            <t t-elif="isLoading">
+                <div class="o_vibe_code_empty">
+                    <i class="fa fa-spinner fa-spin me-1"/>Loading…
+                </div>
+            </t>
+
+            <!-- File missing — the validation banner pointed to a file the AI
+                 didn't generate (e.g. a missing security/ir.model.access.csv).
+                 Show a helpful explanation instead of an empty viewer. -->
+            <t t-elif="isMissing">
+                <div class="o_vibe_code_missing">
+                    <div class="o_vibe_code_missing_icon">
+                        <i class="fa fa-file-o"/>
+                        <i class="fa fa-times-circle o_vibe_code_missing_overlay"/>
+                    </div>
+                    <h5 class="o_vibe_code_missing_title">File not generated</h5>
+                    <p class="o_vibe_code_missing_path">
+                        <code t-esc="activePath"/>
+                    </p>
+                    <p class="o_vibe_code_missing_help">
+                        This file was flagged by validation but the AI didn't include it
+                        in the generated module. You can either rephrase the prompt and
+                        regenerate, or download the module and add the file manually.
+                    </p>
+                    <t t-if="fileErrors.length">
+                        <div class="o_vibe_code_missing_errors">
+                            <div class="o_vibe_code_missing_errors_title">
+                                <i class="fa fa-exclamation-triangle me-2"/>
+                                Why this file is needed:
+                            </div>
+                            <t t-foreach="fileErrors" t-as="err" t-key="err_index">
+                                <div class="o_vibe_code_missing_error_item">
+                                    <i class="fa fa-circle me-2"/>
+                                    <span t-esc="err.message"/>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+            </t>
+
+            <!-- File contents -->
+            <t t-else="">
+                <!-- Header: path on left, action buttons on right -->
+                <div class="o_vibe_code_header">
+                    <span class="o_vibe_code_header_left">
+                        <i class="fa fa-file-code-o me-1 text-muted"/>
+                        <span class="text-muted" t-esc="activePath"/>
+                        <t t-if="isModified">
+                            <span class="o_vibe_code_modified_badge"
+                                  title="Hand-edited since generation">
+                                <i class="fa fa-pencil me-1"/>Modified
+                            </span>
+                        </t>
+                    </span>
+                    <span class="o_vibe_code_header_right">
+                        <t t-if="!state.editing">
+                            <button class="btn btn-sm btn-outline-secondary o_vibe_code_btn"
+                                    t-on-click="onEdit"
+                                    t-att-disabled="!canEdit">
+                                <i class="fa fa-pencil me-1"/>Edit
+                            </button>
+                        </t>
+                        <t t-else="">
+                            <button class="btn btn-sm btn-outline-secondary o_vibe_code_btn"
+                                    t-on-click="onCancel"
+                                    t-att-disabled="state.saving">
+                                Cancel
+                            </button>
+                            <button class="btn btn-sm btn-primary o_vibe_code_btn"
+                                    t-on-click="onSave"
+                                    t-att-disabled="state.saving or !hasUnsavedChanges"
+                                    title="Save (Ctrl+S)">
+                                <t t-if="state.saving">
+                                    <i class="fa fa-spinner fa-spin me-1"/>Saving…
+                                </t>
+                                <t t-else="">
+                                    <i class="fa fa-check me-1"/>Save
+                                </t>
+                            </button>
+                        </t>
+                    </span>
+                </div>
+
+                <!-- View mode: line-numbered table -->
+                <t t-if="!state.editing">
+                    <!-- File-level error banner — shows when this specific
+                         file has validation errors. Lets the user see the
+                         issues even without opening the validation panel. -->
+                    <t t-if="fileErrors.length">
+                        <div class="o_vibe_code_file_errors">
+                            <div class="o_vibe_code_file_errors_title">
+                                <i class="fa fa-exclamation-triangle me-2"/>
+                                <t t-esc="fileErrors.length"/>
+                                <t t-if="fileErrors.length === 1"> validation error in this file</t>
+                                <t t-else=""> validation errors in this file</t>
+                            </div>
+                            <t t-foreach="fileErrors" t-as="err" t-key="err_index">
+                                <div class="o_vibe_code_file_error_item">
+                                    <t t-if="err.line">
+                                        <span class="o_vibe_code_file_error_line">
+                                            line <t t-esc="err.line"/>
+                                        </span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="o_vibe_code_file_error_line">file</span>
+                                    </t>
+                                    <span t-esc="err.message"/>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+
+                    <div class="o_vibe_code_scroll" t-ref="codeScroll">
+                        <table class="o_vibe_code_table">
+                            <tbody>
+                                <t t-foreach="lines" t-as="line" t-key="line.num">
+                                    <tr t-att-class="{
+                                            'o_vibe_code_line': true,
+                                            'o_vibe_code_line_error': line.hasError,
+                                            'o_vibe_code_line_flash': line.isFlashing,
+                                        }"
+                                        t-att-data-line-num="line.num"
+                                        t-att-title="line.errorMsg or ''">
+                                        <td class="o_vibe_line_num">
+                                            <t t-if="line.hasError">
+                                                <i class="fa fa-exclamation-circle text-danger me-1"
+                                                   t-att-title="line.errorMsg"/>
+                                            </t>
+                                            <t t-esc="line.num"/>
+                                        </td>
+                                        <td class="o_vibe_line_content">
+                                            <t t-if="line.text">
+                                                <t t-esc="line.text"/>
+                                            </t>
+                                            <t t-else=""> </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+
+                <!-- Edit mode: plain textarea -->
+                <t t-else="">
+                    <div class="o_vibe_code_editor_wrap">
+                        <textarea
+                            class="o_vibe_code_editor"
+                            t-ref="textarea"
+                            t-model="state.draft"
+                            t-on-keydown="onKeydown"
+                            spellcheck="false"
+                            autocomplete="off"
+                            autocorrect="off"
+                            autocapitalize="off"
+                            t-att-disabled="state.saving"/>
+                        <div class="o_vibe_code_editor_hint">
+                            <i class="fa fa-info-circle me-1"/>
+                            Editing as plain text. Press
+                            <kbd>Ctrl+S</kbd> to save, <kbd>Esc</kbd> to cancel.
+                            Validation will re-run on save.
+                        </div>
+                    </div>
+                </t>
+            </t>
+
+        </div>
+    </t>
+
+</templates>

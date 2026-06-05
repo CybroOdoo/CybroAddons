@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="vibe_coding_assistant.MessageThread">
+        <div class="o_vibe_messages" t-ref="thread">
+
+            <!-- Conversation-wide token totals header -->
+            <t t-if="conversationTotals and conversationTotals.tokens_total">
+                <div class="o_vibe_tokens_strip">
+                    <div class="o_vibe_tokens_strip_item">
+                        <i class="fa fa-bolt me-1 text-warning"/>
+                        <strong t-esc="formatTokens(conversationTotals.tokens_total)"/>
+                        <span class="o_vibe_tokens_strip_label">tokens this chat</span>
+                    </div>
+                    <div class="o_vibe_tokens_strip_split">
+                        <span class="o_vibe_tokens_chip o_vibe_tokens_chip_in">
+                            ↓ <t t-esc="formatTokens(conversationTotals.tokens_input_total)"/> in
+                        </span>
+                        <span class="o_vibe_tokens_chip o_vibe_tokens_chip_out">
+                            ↑ <t t-esc="formatTokens(conversationTotals.tokens_output_total)"/> out
+                        </span>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Empty state -->
+            <t t-if="!hasConversation and !isSending">
+                <div class="o_vibe_empty_state">
+
+                    <!-- Hero -->
+                    <div class="o_vibe_hero">
+                        <div class="o_vibe_hero_icon">
+                            <i class="fa fa-magic"/>
+                        </div>
+                        <h3 class="o_vibe_hero_title">Vibe Coding Assistant</h3>
+                        <p class="o_vibe_hero_subtitle">
+                            Describe an Odoo module in plain English. The AI will
+                            generate the code, ready to download and install.
+                        </p>
+                    </div>
+
+                    <!-- Category card grid -->
+                    <t t-if="templatesByCategory.length">
+                        <div class="o_vibe_hero_label">Start with a template</div>
+                        <div class="o_vibe_tpl_grid">
+                            <t t-foreach="templatesByCategory" t-as="group" t-key="group.category">
+                                <div t-att-class="'o_vibe_tpl_card o_vibe_cat_' + group.category">
+                                    <div class="o_vibe_tpl_card_header">
+                                        <span class="o_vibe_tpl_card_icon">
+                                            <i t-att-class="categoryIcon(group.category)"/>
+                                        </span>
+                                        <span class="o_vibe_tpl_card_label" t-esc="group.label"/>
+                                    </div>
+                                    <div class="o_vibe_tpl_chips">
+                                        <t t-foreach="group.items" t-as="tpl" t-key="tpl.id">
+                                            <button class="o_vibe_tpl_chip"
+                                                    t-att-title="tpl.description or tpl.name"
+                                                    t-on-click="() => this.onChipClick(tpl)">
+                                                <span t-esc="tpl.name"/>
+                                            </button>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+
+                    <div class="o_vibe_hero_footer">
+                        <i class="fa fa-keyboard-o me-2"/>
+                        Or type your own request below
+                    </div>
+                </div>
+            </t>
+
+            <!-- Message bubbles -->
+            <t t-foreach="messages" t-as="msg" t-key="msg.id">
+
+                <!-- If the assistant message has a generated module, render
+                     the rich card as a stand-alone block instead of inside
+                     a chat bubble (so it can be wider and more informative). -->
+                <t t-if="msg.role === 'assistant' and msg.generated_module_id">
+
+                    <!-- Optional intro line above the card -->
+                    <t t-if="msg.content and msg.content.trim()">
+                        <div class="o_vibe_msg o_vibe_msg_assistant">
+                            <div class="o_vibe_msg_bubble"><span t-esc="msg.content"/></div>
+                        </div>
+                    </t>
+
+                    <!-- Rich module card -->
+                    <div class="o_vibe_module_card_v2">
+
+                        <!-- Header strip -->
+                        <div class="o_vibe_mc_header">
+                            <div class="o_vibe_mc_header_left">
+                                <div class="o_vibe_mc_icon">
+                                    <i class="fa fa-cube"/>
+                                </div>
+                                <div class="o_vibe_mc_title">
+                                    <div class="o_vibe_mc_name"
+                                         t-esc="msg.generated_module_name or 'Module'"/>
+                                    <div class="o_vibe_mc_technical">
+                                        <code t-esc="msg.generated_module_technical_name or '—'"/>
+                                        <span class="o_vibe_mc_sep">·</span>
+                                        <span>v<t t-esc="msg.generated_module_version or '?'"/></span>
+                                        <t t-if="(msg.generated_module_revision or 0) > 1">
+                                            <span class="o_vibe_mc_sep">·</span>
+                                            <span class="o_vibe_mc_revision_badge"
+                                                  title="Refinement revision">
+                                                <i class="fa fa-refresh me-1"/>rev
+                                                <t t-esc="msg.generated_module_revision"/>
+                                            </span>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="o_vibe_mc_header_right">
+                                <t t-if="msg.validation_state === 'valid'">
+                                    <span class="badge bg-success o_vibe_mc_badge">
+                                        <i class="fa fa-check-circle me-1"/>Valid
+                                    </span>
+                                </t>
+                                <t t-elif="msg.validation_state === 'invalid'">
+                                    <span class="badge bg-warning text-dark o_vibe_mc_badge">
+                                        <i class="fa fa-exclamation-triangle me-1"/>
+                                        <t t-esc="msg.validation_error_count or 0"/> error<t t-if="(msg.validation_error_count or 0) !== 1">s</t>
+                                    </span>
+                                </t>
+                                <t t-elif="msg.validation_state === 'pending'">
+                                    <span class="badge bg-secondary o_vibe_mc_badge">Pending</span>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- Summary line (full-width, optional) -->
+                        <t t-if="msg.generated_module_summary">
+                            <div class="o_vibe_mc_summary"
+                                 t-esc="msg.generated_module_summary"/>
+                        </t>
+
+                        <!-- Metadata grid -->
+                        <div class="o_vibe_mc_meta">
+                            <div class="o_vibe_mc_meta_item">
+                                <div class="o_vibe_mc_meta_label">Category</div>
+                                <div class="o_vibe_mc_meta_value"
+                                     t-esc="msg.generated_module_category or '—'"/>
+                            </div>
+                            <div class="o_vibe_mc_meta_item">
+                                <div class="o_vibe_mc_meta_label">Files</div>
+                                <div class="o_vibe_mc_meta_value">
+                                    <t t-esc="msg.generated_module_file_count or 0"/>
+                                </div>
+                            </div>
+                            <div class="o_vibe_mc_meta_item">
+                                <div class="o_vibe_mc_meta_label">Depends on</div>
+                                <div class="o_vibe_mc_meta_value o_vibe_mc_deps">
+                                    <t t-if="msg.generated_module_depends and msg.generated_module_depends.length">
+                                        <t t-foreach="msg.generated_module_depends"
+                                           t-as="dep"
+                                           t-key="dep">
+                                            <code class="o_vibe_mc_dep_chip" t-esc="dep"/>
+                                        </t>
+                                    </t>
+                                    <t t-else="">—</t>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action buttons -->
+                        <div class="o_vibe_mc_actions">
+                            <button class="btn btn-outline-secondary o_vibe_mc_btn"
+                                    t-on-click="() => this.onViewModule(msg.generated_module_id)">
+                                <i class="fa fa-folder-open me-2"/>View Files
+                            </button>
+                            <a class="btn btn-success o_vibe_mc_btn o_vibe_mc_btn_primary"
+                               t-att-href="downloadUrl(msg.generated_module_id)">
+                                <i class="fa fa-download me-2"/>Download Module
+                            </a>
+                        </div>
+
+                        <!-- Token usage footer -->
+                        <t t-if="msg.tokens_used">
+                            <div class="o_vibe_mc_tokens">
+                                <i class="fa fa-bolt me-1"/>
+                                <strong t-esc="formatTokens(msg.tokens_used)"/> tokens
+                                <span class="o_vibe_mc_tokens_split">
+                                    (<t t-esc="formatTokens(msg.tokens_input)"/> in,
+                                    <t t-esc="formatTokens(msg.tokens_output)"/> out)
+                                </span>
+                            </div>
+                        </t>
+
+                    </div>
+
+                </t>
+
+                <!-- Otherwise: regular message bubble -->
+                <t t-else="">
+                    <div t-att-class="'o_vibe_msg o_vibe_msg_' + msg.role">
+                        <div class="o_vibe_msg_bubble">
+                            <span t-esc="msg.content"/>
+                            <!-- Inline token counter for assistant replies -->
+                            <t t-if="msg.role === 'assistant' and msg.tokens_used">
+                                <div class="o_vibe_msg_tokens">
+                                    <i class="fa fa-bolt me-1"/>
+                                    <t t-esc="formatTokens(msg.tokens_used)"/> tokens
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+
+            </t>
+
+            <!-- Typing indicator: phased status + elapsed time + token estimate -->
+            <t t-if="isSending">
+                <div class="o_vibe_msg o_vibe_msg_assistant">
+                    <div class="o_vibe_msg_bubble o_vibe_progress_bubble">
+                        <div class="o_vibe_progress_row">
+                            <span class="o_vibe_progress_phase">
+                                <i t-att-class="progressIcon + ' me-2'"/>
+                                <span t-esc="progressLabel"/>
+                            </span>
+                            <span class="o_vibe_progress_meta">
+                                <span class="o_vibe_progress_time"
+                                      t-esc="progressElapsed"/>
+                                <t t-if="progressTokenEstimate">
+                                    <span class="o_vibe_progress_dot">·</span>
+                                    <span class="o_vibe_progress_tokens">
+                                        ~<t t-esc="progressTokenEstimate"/> tokens
+                                    </span>
+                                </t>
+                            </span>
+                        </div>
+                        <div class="o_vibe_typing mt-1">
+                            <span class="o_vibe_dot"/>
+                            <span class="o_vibe_dot"/>
+                            <span class="o_vibe_dot"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Top-level application menu ──────────────────────────────────── -->
+    <menuitem id="menu_vibe_root"
+              name="Vibe Coding Assistant"
+              sequence="80"
+              web_icon="vibe_coding_assistant,static/description/icon.png"
+              groups="vibe_coding_assistant.group_vibe_coder"/>
+
+    <!-- ── Chat client action (Phase 3) ─────────────────────────────────── -->
+    <record id="action_vibe_chat" model="ir.actions.client">
+        <field name="name">Vibe Coding Assistant</field>
+        <field name="tag">vibe_coding_assistant.chat_page</field>
+    </record>
+
+    <menuitem id="menu_vibe_chat"
+              parent="menu_vibe_root"
+              name="AI Chat"
+              action="action_vibe_chat"
+              sequence="10"/>
+
+    <!-- ── Per-user AI config ───────────────────────────────────────────── -->
+    <record id="action_my_ai_config" model="ir.actions.act_window">
+        <field name="name">My AI Settings</field>
+        <field name="res_model">ai.provider.user.config</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('user_id', '=', uid)]</field>
+        <field name="context">{'default_user_id': uid}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No AI provider configured yet!
+            </p>
+            <p>
+                Add your API key to start generating Odoo modules with AI.
+                Get a free Gemini key at
+                <a href="https://aistudio.google.com/apikey" target="_blank">
+                    aistudio.google.com/apikey
+                </a>.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_my_ai_config"
+              parent="menu_vibe_root"
+              name="My AI Settings"
+              action="action_my_ai_config"
+              sequence="20"/>
+
+    <!-- ── Provider catalog ─────────────────────────────────────────────── -->
+    <record id="action_ai_providers" model="ir.actions.act_window">
+        <field name="name">AI Providers</field>
+        <field name="res_model">ai.provider</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- The sub-menus below inherit the root menu's Vibe Coder gate. Vibe
+         Coder is the single full-access group, so every member sees the full
+         feature (providers, prompt templates, analytics) — no extra tier. -->
+    <menuitem id="menu_ai_providers"
+              parent="menu_vibe_root"
+              name="Providers"
+              action="action_ai_providers"
+              sequence="30"/>
+
+    <!-- ── Prompt templates ─────────────────────────────────────────────── -->
+    <menuitem id="menu_vibe_prompt_templates"
+              parent="menu_vibe_root"
+              name="Prompt Templates"
+              action="action_vibe_prompt_template"
+              sequence="40"/>
+
+    <!-- ── Analytics dashboard ──────────────────────────────────────────── -->
+    <menuitem id="menu_vibe_dashboard"
+              parent="menu_vibe_root"
+              name="Analytics Dashboard"
+              action="action_vibe_dashboard"
+              sequence="50"/>
+
+</odoo>

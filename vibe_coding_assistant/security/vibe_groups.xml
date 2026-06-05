@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Loaded BEFORE ir.model.access.csv (see __manifest__.py) so the group
+        below exists when the ACL rows and menus reference it.
+
+        noupdate is left at the default (0) so the group_system implication is
+        (re)applied on module upgrade as well as first install.
+    -->
+
+    <!-- Settings > Users category that the privilege is filed under -->
+    <record id="module_category_vibe_coding" model="ir.module.category">
+        <field name="name">Vibe Coding Assistant</field>
+        <field name="description">Access to the AI-powered Odoo module generator.</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- Odoo 19: res.groups.category_id was removed; a group is now filed under
+         a res.groups.privilege, which carries the ir.module.category. -->
+    <record id="privilege_vibe_coding" model="res.groups.privilege">
+        <field name="name">Vibe Coding Assistant</field>
+        <field name="category_id" ref="module_category_vibe_coding"/>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- The single group that gates the whole feature. -->
+    <record id="group_vibe_coder" model="res.groups">
+        <field name="name">Vibe Coder</field>
+        <field name="privilege_id" ref="privilege_vibe_coding"/>
+        <!-- Members are internal users: imply the base employee group so
+             assigning Vibe Coder is enough to use the backend. -->
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">Users in this group can open the Vibe Coding Assistant
+            and generate Odoo modules with AI. Without it, the application menu
+            and all of its models are hidden.</field>
+    </record>
+
+    <!-- Make every Settings administrator a Vibe Coder by default. Adding the
+         implication propagates the group to all existing and future members
+         of base.group_system, so admins get access out of the box. -->
+    <record id="base.group_system" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_vibe_coder'))]"/>
+    </record>
+
+</odoo>
