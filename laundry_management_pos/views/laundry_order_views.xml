@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Inherits the laundry order form view  also the id inherits from
+    the dependent module Laundry_management-->
+    <record id="laundry_order_form_view" model="ir.ui.view">
+        <field name="name">laundry.order.view.form.inherit.laundry.management.pos</field>
+        <field name="inherit_id" ref="laundry_management.laundry_order_view_form"/>
+        <field name="model">laundry.order</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_date']" position="before">
+                <field name="pos_reference"
+                       invisible="is_invoiced == False"/>
+            </xpath>
+            <xpath expr="//field[@name='pos_reference']" position="before">
+                <field name="is_invoiced" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line_ids']/list/field[@name='extra_work_ids']"
+                   position="after">
+                <field name="tax_ids" widget="many2many_tags"/>
+            </xpath>
+            <xpath expr="//button[@name='action_create_invoice']" position="attributes">
+                <attribute name="invisible">state == 'done'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="before">
+                <field name="pos_order_id"
+                      invisible="is_invoiced ==  False"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

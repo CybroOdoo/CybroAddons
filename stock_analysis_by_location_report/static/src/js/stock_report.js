@@ -1,0 +1,21 @@
+/** @odoo-module */
+/**XLSX HandlerThis handler is responsible for generating XLSX reports.
+It sends a request to the server to generate the report in XLSX format and
+downloads the generated file.@param {Object} action - The action object
+containing the report details.@returns {Promise} - A promise that resolves
+when the report generation is complete.*/
+
+import { registry } from "@web/core/registry";
+import { BlockUI } from "@web/core/ui/block_ui";
+import { download } from "@web/core/network/download";
+
+registry.category("ir.actions.report handlers").add("xlsx", async function (action) {
+   if (action.report_type === 'xlsx') {
+        BlockUI;
+         await download({
+         url: '/report_excel',
+         data: action.data,
+         complete: () => unblockUI,
+         error: (error) => self.call('crash_manager', 'rpc_error', error),
+         });
+   }});

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--    Inherited the Order Receipt for dding laundry details-->
+    <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('pos-receipt')]/OrderWidget"  position="before">
+            <t t-if="this.env.services.pos.get_order().get_partner()">
+            <t t-if="this.env.services.pos.get_order().get_partner().name">
+                <t t-esc="this.env.services.pos.get_order().get_partner().name"/>
+            </t>
+            <br/>
+            <t t-if="this.env.services.pos.get_order().get_partner().street">
+                <t t-esc="this.env.services.pos.get_order().get_partner().street"/>
+            </t>
+            <br/>
+            <t t-if="this.env.services.pos.get_order().get_partner().state_id">
+                <t t-esc="this.env.services.pos.get_order().get_partner().state_id[1]"/>
+            </t>
+            <br/>
+            <t t-if="this.env.services.pos.get_order().get_partner().country_id">
+                <t t-esc="this.env.services.pos.get_order().get_partner().country_id[1]"/>
+            </t>
+            </t>
+        </xpath>
+    </t>
+    <t t-inherit="point_of_sale.ReceiptHeader" t-inherit-mode="extension" owl="1">
+        <xpath expr="//img[hasclass('pos-receipt-logo')]" position="replace"/>
+        <xpath expr="//div[hasclass('pos-receipt-contact')]" position="replace">
+           <span class="pos-receipt-center-align">
+               <h2 >Laundry Service</h2>
+              <div> <t t-esc="props.data.company.name"/></div>
+               <div t-if="props.data.cashier" class="cashier">
+                <div>------------------------------------------</div>
+                <div>Laundry Person <t t-esc="props.data.cashier" /></div>
+            </div>
+           </span>
+        </xpath>
+    </t>
+</templates>

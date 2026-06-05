@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Extension for orderline to show laundry selection icon -->
+    <t t-name="Orderline" t-inherit="point_of_sale.Orderline"
+       t-inherit-mode="extension" owl="1">
+
+        <xpath expr="//li[hasclass('price-per-unit')]" position="inside">
+
+            <!-- Hide everything inside this condition while printing receipt -->
+            <span class="orderline-laundry"
+                  t-if="pos.config.orderline_washing_type">
+
+                <!-- Icon shown when washing_type exists -->
+                <i t-on-click="click" t-if="line.washing_type and this.env.services.pos.mainScreen.component.name == 'ProductScreen'"
+                   class="oe_link_icon fa fa-user oe_icon oe_green text-success"
+                   role="img"/>
+
+                <!-- Icon shown when no washing_type exists -->
+                <i t-on-click="click" t-if="!line.washing_type and this.env.services.pos.mainScreen.component.name == 'ProductScreen'"
+                   class="oe_link_icon fa fa-user-plus oe_icon oe_red text-danger"
+                   role="img"/>
+
+
+                <!-- Show washing type text -->
+                <t t-if="line.washing_type">
+                    <t t-esc="line.washing_type"/>
+                </t>
+
+                <!-- Remove icon -->
+                <i t-on-click="remove_laundry"
+               t-if="line.washing_type and this.env.services.pos.mainScreen.component.name == 'ProductScreen'"
+               class="oe_link_icon fa fa-remove oe_icon oe_red text-danger"
+               role="img"/>
+                </span>
+
+        </xpath>
+
+        <!-- Product image -->
+        <xpath expr="//div[hasclass('product-name')]/span" position="before">
+            <span class="orderline-product-img">
+                <img t-attf-src="/web/image?model=product.product&amp;field=image_128&amp;id={{line.product_id}}&amp;unique=1"
+                     style="padding: 5px; height: 55px;"/>
+            </span>
+        </xpath>
+
+    </t>
+
+        <!-- Extension for adding a Washing Service button to the POS ControlButtons -->
+        <t t-name="point_of_sale.WashingButton" t-inherit="point_of_sale.ControlButtons" t-inherit-mode="extension">
+        <xpath expr="//div/OrderlineNoteButton" position="before">
+        <button class="control-button btn btn-light rounded-0 fw-bolder"
+                t-on-click="() => this.onWashingClick()" t-if="pos.config.orderline_washing_type">
+            <i class="fa fa-shopping-basket" role="img" aria-label="Laundry Service" title="Laundry Service"/>
+            <span/>
+            <span>Laundry Service</span>
+        </button>
+        </xpath>
+        </t>
+
+</templates>
