@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<template>
+    <!-- Legal Case DashBoard template-->
+    <t t-name="LegalCaseDashBoard">
+        <div class="o_control_panel">
+            <div class="row mb-2">
+                <div class="col-md-9"/>
+                <div class="col-md-3">
+                    <div class="row">
+                        <div class="col-4">
+                            <select id="stage_wise" t-model="state.stage"
+                                    class="form-select ms-2 ml-4"
+                                    name="stage_wise_filter"
+                                    t-on-change="_onChangeStageFilter">
+                                <option value="" selected="selected">
+                                    Select Stages
+                                </option>
+                                <option id="draft" value="draft">Draft</option>
+                                <option id="in_progress" value="in_progress">In
+                                    Progress
+                                </option>
+                                <option id="invoiced" value="invoiced">
+                                    Invoiced
+                                </option>
+                                <option id="won" value="won">Won</option>
+                                <option id="lost" value="lost">Lost</option>
+                                <option id="cancel" value="cancel">Cancel
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <select t-ref="lawyer_wise" t-model="state.lawyer"
+                                    class="form-select ms-2 ml-4"
+                                    name="lawyer_wise_filter"
+                                    t-on-change="_onChangeStageFilter">
+                                <option value="admin" selected="selected">Select
+                                    Lawyers
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <select id="month_wise" t-model="state.month"
+                                    class="form-select ms-2 ml-4"
+                                    name="date_range"
+                                    t-on-change="_onChangeStageFilter">
+                                <option id="1" value="" selected="selected">Select
+                                    Month
+                                </option>
+                                <option id="2" value="last_month">Last Month
+                                </option>
+                                <option id="3" value="last_6_months">Last 6
+                                    Months
+                                </option>
+                                <option id="4" value="last_12_months">Last 12
+                                    months
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-scroll-container">
+            <div class="container-fluid mt-2">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="row">
+                            <div id='total_case' class="col-md-6 mt-4" t-ref="total_case"
+                                 t-on-click="_onClickTotalCase">
+                                <div class="dbox dashboard-box">
+                                    <div class="row">
+                                        <div class="col-md-12 mt-5">
+                                            <img src="/legal_case_management_dashboard/static/src/image/brief_case.png"
+                                                 style="height:60px" alt="Cases Icon"/>
+                                        </div>
+                                        <div class="col-md-12 mt-3">
+                                            <span class="dbox__count case_count"
+                                                  id="total_cases">
+                                                    <t t-esc="this.state.case_count"/>
+                                            </span>
+                                            <br/>
+                                            <span class="dbox__title">Cases</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id='total_invoiced' class="col-md-6 mt-4">
+                                <div class="dbox dashboard-box">
+                                    <div class="row">
+                                        <div class="col-md-12 mt-5">
+                                            <img src="/legal_case_management_dashboard/static/src/image/dollar_img.png"
+                                                 style="height:60px;opacity: 0.8;" alt="Invoices Icon"/>
+                                        </div>
+                                        <div class="col-md-12 mt-3">
+                                            <span class="dbox__count total_invoices"
+                                                  id="total_invoices">
+                                                <t t-esc="this.state.invoice_count"/>
+                                            </span>
+                                            <br/>
+                                            <span class="dbox__title text-fluid">
+                                                Amount Invoiced
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id='total_trials' class="col-md-6 mt-4"
+                                 t-on-click="_onClickTotalTrials">
+                                <div class="dbox dashboard-box">
+                                    <div class="row">
+                                        <div class="col-md-12 mt-5">
+                                            <img src="/legal_case_management_dashboard/static/src/image/img_trial.png"
+                                                 style="height:60px" alt="Trials Icon"/>
+                                        </div>
+                                        <div class="col-md-12 mt-3">
+                                            <span class="dbox__count"
+                                                  id="trials_count">
+                                                <t t-esc="this.state.trials_count"/>
+                                            </span>
+                                            <br/>
+                                            <span class="dbox__title">Trials</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id='total_evidences' class="col-md-6 mt-4"
+                                 t-on-click="_onClickTotalEvidences">
+                                <div class="dbox dashboard-box">
+                                    <div class="row">
+                                        <div class="col-md-12 mt-5">
+                                            <img src="/legal_case_management_dashboard/static/src/image/evidence-img.png"
+                                                 style="height:60px" alt="Evidences Icon"/>
+                                        </div>
+                                        <div class="col-md-12 mt-3">
+                                            <span class="dbox__count"
+                                                  id="evidences_count">
+                                                <t t-esc="this.state.evidences_count"/>
+                                            </span>
+                                            <br/>
+                                            <span class="dbox__title">Evidences
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id='total_lawyers' class="col-md-6 mt-4"
+                                 t-on-click="_onClickTotalLawyers">
+                                <div class="dbox dashboard-box">
+                                    <div class="row">
+                                        <div class="col-md-12 mt-5">
+                                            <img src="/legal_case_management_dashboard/static/src/image/lawyer_img.png"
+                                                 style="height:60px;opacity: 0.8;" alt="Lawyers Icon"/>
+                                        </div>
+                                        <div class="col-md-12 mt-3">
+                                            <span class="dbox__count"
+                                                  id="lawyers_count">
+                                                <t t-esc="this.state.lawyers_count"/>
+                                            </span>
+                                            <br/>
+                                            <span class="dbox__title">Lawyers</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id='total_clients' class="col-md-6 mt-4"
+                                 t-on-click="_onClickTotalClients">
+                                <div class="dbox dashboard-box">
+                                    <div class="row">
+                                        <div class="col-md-12 mt-5">
+                                            <img src="/legal_case_management_dashboard/static/src/image/client.jpg"
+                                                 style="height:60px;opacity: 0.8;" alt="Clients Icon"/>
+                                        </div>
+                                        <div class="col-md-12 mt-3">
+                                            <span class="dbox__count"
+                                                  id="clients_count">
+                                                <t t-esc="this.state.clients_count"/>
+                                            </span>
+                                            <br/>
+                                            <span class="dbox__title">Clients</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="row">
+                            <div class="col-md-5 mt-4">
+                                <div class="card-shadow dashboard-card">
+                                    <h3 class="text-center">
+                                        <b>Cases in Different Category</b>
+                                    </h3>
+                                    <hr/>
+                                    <div class="ml-1 img-fluid chart-container" id="pie_chart"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-7 mt-4">
+                                <div class="card-shadow dashboard-card">
+                                    <h3 class="text-center">
+                                        <b>Income in Last One Year</b>
+                                    </h3>
+                                    <hr/>
+                                    <div class="ml-1 img-fluid chart-container" id="mygraph"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-5 mt-4">
+                                <div class="card-shadow dashboard-card">
+                                    <h3 class="text-center">
+                                        <b>Most Paid Ten Cases</b>
+                                    </h3>
+                                    <hr/>
+                                    <div class="ml-1 chart-container" id="donut_chart"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-7 mt-4">
+                                <div class="card-shadow dashboard-card">
+                                    <h3 class="text-center">
+                                        <b>Cases in Different Stages</b>
+                                    </h3>
+                                    <hr/>
+                                    <div class="ml-1 chart-container" id="column_graph"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</template>

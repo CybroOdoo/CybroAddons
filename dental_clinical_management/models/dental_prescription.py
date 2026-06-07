@@ -1,0 +1,210 @@
+# -*- coding: utf-8 -*-
+################################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU AFFERO
+#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
+#
+#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
+#    (AGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+from odoo import api, fields, models, _
+from odoo.exceptions import UserError
+
+
+class DentalPrescription(models.Model):
+    """Prescription of patient from the dental clinic"""
+    _name = 'dental.prescription'
+    _description = "Dental Prescription"
+    _inherit = ['mail.thread']
+    _rec_name = "sequence_no"
+
+    sequence_no = fields.Char(string='Sequence No', required=True,
+                              readonly=True, default=lambda self: _('New'),
+                              help="Sequence number of the dental prescription")
+    appointment_ids = fields.Many2many('dental.appointment',
+                                       string="Appointment",
+                                       compute="_compute_appointment_ids",
+                                       help="All appointments created")
+    appointment_id = fields.Many2one('dental.appointment',
+                                     string="Appointment",
+                                     domain="[('id','in',appointment_ids)]",
+                                     required=True,
+                                     help="All appointments created")
+    patient_id = fields.Many2one('res.partner', related="appointment_id.patient_id",
+                                 string="Patient",
+                                 store=True,
+                                 help="name of the patient")
+    token_no = fields.Integer(related="appointment_id.token_no",
+                              string="Token Number",
+                              help="Token number of the patient")
+    treatment_id = fields.Many2one('dental.treatment',
+                                   string="Treatment",
+                                   help="Name of the treatment done for patient")
+    cost = fields.Float(related="treatment_id.cost",
+                        string="Treatment Cost",
+                        help="Cost of treatment")
+    currency_id = fields.Many2one('res.currency', 'Currency',
+                                  default=lambda self: self.env.user.company_id.currency_id,
+                                  required=True,
+                                  help="To add the currency type in cost")
+    prescribed_doctor_id = fields.Many2one('hr.employee', related="appointment_id.doctor_id",
+                                           string='Prescribed Doctor',
+                                           store=True,
+                                           help="Doctor who is prescribed")
+    prescription_date = fields.Date(related="appointment_id.date",
+                                    string='Prescription Date',
+                                    store=True,
+                                    help="Date of the prescription")
+    state = fields.Selection([('new', 'New'),
+                              ('done', 'Prescribed'),
+                              ('invoiced', 'Invoiced')],
+                             default="new",
+                             string="state",
+                             help="state of the appointment")
+    medicine_ids = fields.One2many('dental.prescription_lines',
+                                   'prescription_id',
+                                   string="Medicine",
+                                   help="medicines")
+    invoice_data_id = fields.Many2one(comodel_name="account.move", string="Invoice Data",
+                                      help="Invoice Data")
+    grand_total = fields.Float(compute="_compute_grand_total",
+                               string="Grand Total",
+                               help="Get the grand total amount")
+
+
+    @api.depends('appointment_id')
+    def _compute_appointment_ids(self):
+        """Computes and assigns the `appointment_ids` field for each record.
+        This method searches for all `dental.appointment` records that have
+        a state of `new` and a date equal to today's date. It then updates
+        the `appointment_ids` field of each `DentalPrescription` record
+        with the IDs of these found appointments."""
+        for rec in self:
+            rec.appointment_ids = self.env['dental.appointment'].search(
+                [('state', '=', 'new'), ('date', '=', fields.Date.today())]).ids
+
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Create prescription records with auto-generated sequence numbers"""
+        for vals in vals_list:
+            if not vals.get('sequence_no') or vals.get('sequence_no') == _('New'):
+                vals['sequence_no'] = self.env['ir.sequence'].next_by_code(
+                    'dental.prescriptions') or _('New')
+        return super(DentalPrescription, self).create(vals_list)
+
+    def action_prescribed(self):
+        """Marks the prescription and its associated appointment as `done`.
+        This method updates the state of both the DentalPrescription instance
+        and its linked dental.appointment instance to `done`, indicating that
+        the prescription has been finalized and the appointment has been completed.
+        """
+        self.state = 'done'
+        self.appointment_id.state = 'done'
+
+    def create_invoice(self):
+        """Create an invoice based on the patient invoice and manage stock moves for medicines."""
+        self.ensure_one()
+        medicine_moves = []
+        for rec in self.medicine_ids:
+            product_id = self.env['product.product'].search([
+                ('product_tmpl_id', '=', rec.medicament_id.id)], limit=1)
+            if product_id and product_id.type == 'product':  # Only stockable products
+                medicine_moves.append({
+                    'product_id': product_id,
+                    'quantity': rec.quantity,
+                })
+
+        invoice_vals = {
+            'move_type': 'out_invoice',
+            'partner_id': self.patient_id.id,
+            'invoice_line_ids': [
+                fields.Command.create({
+                    'name': self.treatment_id.name,
+                    'quantity': 1,
+                    'price_unit': self.cost,
+                })
+            ]
+        }
+        invoice = self.env['account.move'].create(invoice_vals)
+
+        for rec in self.medicine_ids:
+            product_id = self.env['product.product'].search([
+                ('product_tmpl_id', '=', rec.medicament_id.id)], limit=1)
+            if product_id:
+                invoice.write({
+                    'invoice_line_ids': [(0, 0, {
+                        'product_id': product_id.id,
+                        'name': rec.display_name,
+                        'quantity': rec.quantity,
+                        'price_unit': rec.price,
+                    })]
+                })
+        invoice.action_post()
+
+        if medicine_moves:
+            warehouse = self.env['stock.warehouse'].search([('company_id', '=', self.env.company.id)], limit=1)
+            if not warehouse:
+                raise UserError(_('No warehouse found for the company. Please configure a warehouse.'))
+            source_location = warehouse.lot_stock_id  # Clinic's stock location
+            customer_location = self.env.ref('stock.stock_location_customers')  # Customer location
+
+            for move in medicine_moves:
+                self.env['stock.move'].create({
+                    'name': f'Prescription {self.sequence_no}',
+                    'product_id': move['product_id'].id,
+                    'product_uom_qty': move['quantity'],
+                    'quantity': move['quantity'],
+                    'product_uom': move['product_id'].uom_id.id,
+                    'location_id': source_location.id,
+                    'location_dest_id': customer_location.id,
+                    'state': 'done',
+                })
+
+        self.invoice_data_id = invoice.id
+        self.state = 'invoiced'
+
+        return {
+            'name': _('Customer Invoice'),
+            'view_mode': 'form',
+            'view_id': self.env.ref('account.view_move_form').id,
+            'res_model': 'account.move',
+            'context': "{'move_type':'out_invoice'}",
+            'type': 'ir.actions.act_window',
+            'res_id': self.invoice_data_id.id,
+        }
+
+    def action_view_invoice(self):
+        """Invoice view"""
+        return {
+            'name': _('Customer Invoice'),
+            'view_mode': 'form',
+            'view_id': self.env.ref('account.view_move_form').id,
+            'res_model': 'account.move',
+            'context': "{'move_type':'out_invoice'}",
+            'type': 'ir.actions.act_window',
+            'res_id': self.invoice_data_id.id,
+        }
+
+    def _compute_grand_total(self):
+        """Computes the grand total cost of the dental prescription.
+
+        This method initializes the grand total with the cost of the treatment
+        and then iterates over all the prescribed medicines, adding their total
+        cost to the grand total. The grand total is stored in the `grand_total`
+        field of the `DentalPrescription` model."""
+        self.grand_total = self.cost
+        for rec in self.medicine_ids:
+            self.grand_total += rec.total
