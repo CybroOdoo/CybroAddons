@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--    Hotel Room tree view-->
+    <record id="hotel_room_view_tree" model="ir.ui.view">
+        <field name="name">hotel.room.view.tree</field>
+        <field name="model">hotel.room</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="room_type"/>
+                <field name="floor_id"/>
+                <field name="list_price"/>
+                <field name="status"/>
+            </list>
+        </field>
+    </record>
+    <!--    Hotel Room form view-->
+    <record id="hotel_room_view_form" model="ir.ui.view">
+        <field name="name">hotel.room.view.form</field>
+        <field name="model">hotel.room</field>
+        <field name="arch" type="xml">
+            <form string="Hotel Room">
+                <header>
+                    <field name="status" widget="statusbar" readonly="1"/>
+                </header>
+                <sheet>
+                    <field name="room_image" widget="image"
+                           class="oe_avatar"
+                           options="{'preview_image': 'room_image'}"/>
+                    <div class="oe_title">
+                        <label for="name" string="Name"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                        <h2>
+                            <field name="is_room_avail" invisible="1"/>
+                        </h2>
+                    </div>
+                    <notebook>
+                        <page name="information_hotel_room"
+                              string="Information">
+                            <group>
+                                <group>
+                                    <field name="floor_id" string="Floor"/>
+                                    <field name="user_id" select="2"
+                                           string="Room Manager"/>
+                                    <field name="taxes_ids"
+                                           widget="many2many_tags"
+                                           string="Customer Taxes"/>
+                                </group>
+                                <group>
+                                    <field name="room_type"/>
+                                    <field name="list_price" widget="monetary"
+                                           string="Rent"/>
+                                    <field name="num_person"/>
+                                    <field name="uom_id" invisible="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Amenities">
+                            <group>
+                                <field name="room_amenities_ids"
+                                       widget="many2many_tags"
+                                       string="Room Amenities"/>
+                            </group>
+                        </page>
+                        <page string="Descriptions">
+                            <separator string="Description"/>
+                            <field name="description" colspan="4" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!--    Hotel Room menu action-->
+    <record id="hotel_room_action" model="ir.actions.act_window">
+        <field name="name">Rooms</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">hotel.room</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'default_is_room_avail':True}</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                No Rooms found ! Let's create one
+            </p>
+        </field>
+    </record>
+    <!--Room Menu-->
+    <menuitem id="hotel_room_menu"
+              name="Room"
+              action="hotel_room_action"
+              parent="hotel_config_menu"
+              sequence="20"/>
+</odoo>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--
+        This action is responsible for opening a window view that allows users to
+        manage and add multiple followers dynamically. The action is linked to the
+        "multi.follower" model, and provides both tree and form views for managing
+        records. It also includes a help message guiding users to add followers via
+        the dynamic action.
+    -->
+    <record id="multi_follower_action" model="ir.actions.act_window">
+        <field name="name">Multi Follower</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">multi.follower</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to add the followers dynamic action
+            </p>
+        </field>
+    </record>
+    <!--
+        This form view is designed for the "multi.follower" model, allowing users to manage
+        follower actions. The form contains buttons to create or remove actions based on
+        the "enabled_value" field. The visibility of these buttons changes depending on
+        the state of "enabled_value," controlling which actions can be performed.
+
+        - The "Create Action" button is visible when "enabled_value" is true, while the
+          "Remove Action" button is shown when it is false.
+        - The "states" field uses a status bar widget, showing the progression of the
+          record through its various stages: 'draft' and 'running'.
+        - Certain fields become read-only when the state is 'running' to prevent changes
+          while the action is active.
+
+        This form provides a flexible interface for dynamically managing follower actions
+        and their associated data.
+    -->
+    <record id="multi_follower_view_form" model="ir.ui.view">
+        <field name="name">multi.follower.view.form</field>
+        <field name="model">multi.follower</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="enabled_value" invisible="1"/>
+                    <button name="action_create" string="Create Action"
+                            type="object" class="btn-primary"
+                            invisible="not enabled_value"/>
+                    <button name="action_unlink" string="Remove Action"
+                            type="object" class="btn-primary"
+                            invisible="enabled_value"/>
+                    <field name="states" widget="statusbar"
+                           statusbar_visible="draft,running"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="action_name"
+                               readonly="states == 'running'"/>
+                        <field name="created_action_names" invisible="1"/>
+                        <field name="applied_to_ids" widget="many2many_tags"
+                               readonly="states == 'running'"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

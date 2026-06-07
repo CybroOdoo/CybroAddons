@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherits the Room Booking form view to integrate POS-related features
+     such as POS invoice stat button and POS Orders tab with order details and total amount -->
+    <record id="room_booking_view_form_inherit_hotel_pos" model="ir.ui.view">
+        <field name="name">room.booking.view.form.inherit.hotel.pos</field>
+        <field name="model">room.booking</field>
+        <field name="inherit_id" ref="hotel_management_odoo.room_booking_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <!-- Add any header buttons if needed -->
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_pos_invoices" type="object" class="oe_stat_button" icon="fa-file-text-o" invisible="pos_invoice_count == 0">
+                    <field name="pos_invoice_count" widget="statinfo" string="POS Inv..."/>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <field name="has_pos_orders" invisible="1"/>
+                <page string="POS Orders" name="pos_orders" invisible="not has_pos_orders">
+                    <field name="pos_order_line_ids" readonly="1">
+                        <list>
+                            <field name="pos_order_id" string="Order Ref"/>
+                            <field name="session_id"/>
+                            <field name="date_order"/>
+                            <field name="pos_reference" string="Receipt Number"/>
+                            <field name="partner_id"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="amount_total" sum="Total POS Amount"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state in ('paid', 'invoiced', 'done')" decoration-warning="state == 'cancel'"/>
+                        </list>
+                    </field>
+                    <group class="oe_subtotal_footer oe_right">
+                        <field name="amount_total_pos" widget="monetary"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

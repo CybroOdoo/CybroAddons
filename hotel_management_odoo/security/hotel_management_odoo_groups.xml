@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Hotel Access Categories-->
+    <record id="module_category_hotel_management" model="ir.module.category">
+        <field name="name">Hotel Management</field>
+        <field name="description">Hotel Access Groups</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <!--    Hotel Access Privileges-->
+    <record id="privilege_maintenance" model="res.groups.privilege">
+        <field name="name">Maintenance</field>
+        <field name="category_id" ref="module_category_hotel_management"/>
+    </record>
+
+    <record id="privilege_reception" model="res.groups.privilege">
+        <field name="name">Reception</field>
+        <field name="category_id" ref="module_category_hotel_management"/>
+    </record>
+
+    <record id="privilege_cleaning" model="res.groups.privilege">
+        <field name="name">Cleaning</field>
+        <field name="category_id" ref="module_category_hotel_management"/>
+    </record>
+
+    <record id="privilege_admin" model="res.groups.privilege">
+        <field name="name">Admin</field>
+        <field name="category_id" ref="module_category_hotel_management"/>
+    </record>
+
+    <!--    Maintenance Team User groups-->
+    <record id="maintenance_team_group_user" model="res.groups">
+        <field name="name">Maintenance Team User</field>
+        <field name="privilege_id" ref="privilege_maintenance"/>
+    </record>
+
+    <!--    Maintenance Team Leader group-->
+    <record id="maintenance_team_group_leader" model="res.groups">
+        <field name="name">Maintenance Team Leader</field>
+        <field name="privilege_id" ref="privilege_maintenance"/>
+        <field name="implied_ids" eval="[Command.link(ref('maintenance_team_group_user'))]"/>
+    </record>
+
+    <!--    Reception groups-->
+    <record id="hotel_group_reception" model="res.groups">
+        <field name="name">Receptionist</field>
+        <field name="privilege_id" ref="privilege_reception"/>
+    </record>
+
+    <!--    Cleaning Team User group-->
+    <record id="cleaning_team_group_user" model="res.groups">
+        <field name="name">Cleaning Team User</field>
+        <field name="privilege_id" ref="privilege_cleaning"/>
+    </record>
+
+    <!--    Cleaning Team Head group-->
+    <record id="cleaning_team_group_head" model="res.groups">
+        <field name="name">Cleaning Team Head</field>
+        <field name="privilege_id" ref="privilege_cleaning"/>
+        <field name="implied_ids" eval="[Command.link(ref('cleaning_team_group_user'))]"/>
+    </record>
+
+    <!--Hotel Admin group-->
+    <record id="hotel_group_admin" model="res.groups">
+        <field name="name">Admin</field>
+        <field name="privilege_id" ref="privilege_admin"/>
+        <field name="implied_ids"
+               eval="[Command.link(ref('maintenance_team_group_leader')),
+                       Command.link(ref('cleaning_team_group_head')),
+                       Command.link(ref('hotel_group_reception'))]"/>
+    </record>
+</odoo>
