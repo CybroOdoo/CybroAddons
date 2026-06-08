@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- This template is used for hiding price from shop grid and list view-->
+    <template id="shop_hide_price" inherit_id="website_sale.products_item">
+        <xpath expr="//div[hasclass('product_price')]" position="attributes">
+            <attribute name="t-if">not product.price_call</attribute>
+        </xpath>
+    </template>
+
+    <!-- This template hides price and add-to-cart when Call for Price is active,
+         but still renders wishlist, share buttons, and terms. -->
+    <template id="shop_product_hide_price" inherit_id="website_sale.product">
+        <!-- Hide the standard form when Call for Price is active -->
+        <xpath expr="//div[@id='o_wsale_product_details_content']//form" position="attributes">
+            <attribute name="t-if">product._is_add_to_cart_possible() and not product.price_call</attribute>
+        </xpath>
+
+        <!-- Inject Call for Price UI before the form -->
+        <xpath expr="//div[@id='o_wsale_product_details_content']//form" position="before">
+            <t t-if="product.price_call">
+                <!-- Product Title -->
+                <t t-call="website_sale.product_title"/>
+
+                <!-- Success alert -->
+                <div class="alert alert-success mt-3" id="alert_message" style="display:none">
+                    Thank you for your information, we will get back to you as soon as possible.
+                </div>
+
+                <!-- Call for Price button -->
+                <div class="my-3">
+                    <a role="button" class="btn btn-primary"
+                       href="#"
+                       data-bs-toggle="modal"
+                       data-bs-target="#call_for_price">
+                        Call for Price
+                    </a>
+                </div>
+
+                <!-- Wishlist link -->
+                <div class="mb-2">
+                    <a href="#"
+                       class="o_add_wishlist text-decoration-none small text-muted"
+                       t-att-data-product-template-id="product.id"
+                       t-att-data-product-product-id="product_variant.id">
+                        <i class="fa fa-heart-o me-1"/>
+                        Add to wishlist
+                    </a>
+                </div>
+
+                <!-- Terms and shipping info -->
+                <t t-call="website_sale.product_terms_and_conditions"/>
+
+                <!-- Social share buttons -->
+                <div class="d-flex gap-2 mt-3">
+                    <a t-attf-href="https://www.facebook.com/sharer/sharer.php?u={{request.httprequest.url}}"
+                       target="_blank" class="btn btn-outline-secondary btn-sm" title="Facebook">
+                        <i class="fa fa-facebook"/>
+                    </a>
+                    <a t-attf-href="https://twitter.com/intent/tweet?url={{request.httprequest.url}}"
+                       target="_blank" class="btn btn-outline-secondary btn-sm" title="Twitter/X">
+                        <i class="fa fa-twitter"/>
+                    </a>
+                    <a t-attf-href="https://www.linkedin.com/sharing/share-offsite/?url={{request.httprequest.url}}"
+                       target="_blank" class="btn btn-outline-secondary btn-sm" title="LinkedIn">
+                        <i class="fa fa-linkedin"/>
+                    </a>
+                    <a t-attf-href="https://pinterest.com/pin/create/button/?url={{request.httprequest.url}}&amp;description={{product.name}}"
+                       target="_blank" class="btn btn-outline-secondary btn-sm" title="Pinterest">
+                        <i class="fa fa-pinterest"/>
+                    </a>
+                    <a t-attf-href="mailto:?subject={{product.name}}&amp;body={{request.httprequest.url}}"
+                       class="btn btn-outline-secondary btn-sm" title="Email">
+                        <i class="fa fa-envelope"/>
+                    </a>
+                </div>
+
+            </t>
+        </xpath>
+
+        <!-- Call for Price Modal -->
+        <xpath expr="//div[@id='wrap']" position="inside">
+            <t t-if="product.price_call">
+                <div id="call_for_price" class="modal fade" tabindex="-1" role="dialog" style="z-index: 1055;">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Call For Price</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"/>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="product_id" id="product_id" t-att-value="product.id"/>
+                                <div class="mb-3 row">
+                                    <label for="first_name" class="col-sm-4 col-form-label">First Name:</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" name="first_name" id="first_name" required="required"/>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="last_name" class="col-sm-4 col-form-label">Last Name:</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" name="last_name" id="last_name"/>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="email" class="col-sm-4 col-form-label">Email:</label>
+                                    <div class="col-sm-8">
+                                        <input type="email" class="form-control" name="email" id="email" required="required"/>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="phone" class="col-sm-4 col-form-label">Contact No.:</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="phone" name="phone" required="required"/>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="quantity" class="col-sm-4 col-form-label">Quantity:</label>
+                                    <div class="col-sm-8">
+                                        <input type="number" class="form-control" name="quantity" id="quantity" value="1"/>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="message" class="col-sm-4 col-form-label">Message:</label>
+                                    <div class="col-sm-8">
+                                        <textarea class="form-control" name="message" id="message" rows="3"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button id="send_btn" type="button" class="btn btn-primary">Send</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Inject out-of-stock message for hidden variants -->
+    <template id="website_hide_variants_message" inherit_id="website_sale.cta_wrapper" name="Hide Variant Out-of-Stock Message">
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="before">
+            <div id="website_hide_variants_msg" class="alert d-none w-100 mb-2"
+                style="background-color:#fefce6; border:1px solid #e8d500; color:#7d6608; border-radius:4px; padding: 10px 16px;">
+                This Product is Out-of-stock.
+            </div>
+        </xpath>
+    </template>
+</odoo>

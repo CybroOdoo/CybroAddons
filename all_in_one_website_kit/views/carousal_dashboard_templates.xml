@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+<!--    Carousel Dashboard template-->
+    <template id="carousal_dashboard" inherit_id="website.snippets"
+              name="Carousal Dashboard">
+        <!-- Register the 'Insta Feed' as a new snippet group category -->
+        <xpath expr="//t[@id='installed_snippets_hook']" position="before">
+            <t snippet-group="insta_feed"
+               t-snippet="website.s_snippet_group"
+               string="Insta Feed"
+               t-thumbnail="/all_in_one_website_kit/static/src/images/carousel.png"/>
+        </xpath>
+        <!-- Register the actual snippet inside the social section using snippet_google_map_hook anchor -->
+        <xpath expr="//t[@id='snippet_google_map_hook']" position="before">
+            <t t-snippet="all_in_one_website_kit.s_carousel_template"
+               string="Insta Feed"
+               group="insta_feed"
+               t-thumbnail="/all_in_one_website_kit/static/src/images/carousel.png">
+                <keywords>instagram, social media, feed, insta</keywords>
+            </t>
+        </xpath>
+    </template>
+    <template id="s_carousel_template" name="Insta Feed">
+        <section class="s_carousel_template pt80 pb80 o_cc o_cc1"
+                 data-snippet="s_carousel_template"
+                 data-name="Insta Feed">
+            <div class="container">
+                <!-- Header -->
+                <div class="text-center mb-5">
+                    <div class="d-flex align-items-center gap-3 justify-content-center mb-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                             style="width:44px;height:44px;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);">
+                            <i class="fa fa-instagram text-white" style="font-size:22px;"/>
+                        </div>
+                        <h2 class="mb-0 fw-bold">Follow Us On Instagram</h2>
+                    </div>
+                    <p class="text-muted mb-0">See our latest posts</p>
+                </div>
+                <!-- Placeholder photo grid -->
+                <div class="row g-3">
+                    <div class="col-4">
+                        <div class="rounded-3 overflow-hidden position-relative" style="aspect-ratio:1/1;background:linear-gradient(135deg,#f3a 0%,#a6c 100%);"/>
+                    </div>
+                    <div class="col-4">
+                        <div class="rounded-3 overflow-hidden position-relative" style="aspect-ratio:1/1;background:linear-gradient(135deg,#4fc 0%,#08f 100%);"/>
+                    </div>
+                    <div class="col-4">
+                        <div class="rounded-3 overflow-hidden position-relative" style="aspect-ratio:1/1;background:linear-gradient(135deg,#fa0 0%,#f50 100%);"/>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+    <template id="s_carousel_inner_items" name="Instagram Feed Grid">
+        <div class="container">
+            <h2 class="text-center mb-4">Follow Us On Instagram</h2>
+            <div class="row g-3">
+                <t t-foreach="latest_products" t-as="product">
+                    <div t-attf-class="col-12 col-sm-6 col-md-#{int(12 / events_per_slide)}">
+                        <a t-attf-href="https://www.instagram.com/{{product.profile_id.username}}/" 
+                           class="d-block overflow-hidden rounded shadow-sm position-relative"
+                           style="aspect-ratio: 1/1;"
+                           target="_blank">
+                            <img class="w-100 h-100 object-fit-cover"
+                                 loading="lazy"
+                                 t-attf-src="data:image/jpg;base64,{{ product.post_image }}"
+                                 t-attf-alt="Instagram post from {{product.profile_id.username}}"/>
+                            <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-0 hover-bg-opacity-25 transition-all"></div>
+                        </a>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </template>
+<!--    Carousel items template-->
+    <template id="s_carousel_template_items">
+        <div class="container py-4">
+            <div class="carousel slide" t-att-id="uniqueId" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <t t-foreach="objects" t-as="latest_products">
+                        <div t-attf-class="carousel-item #{'' if latest_products_index else 'active'}">
+                            <t t-call="all_in_one_website_kit.s_carousel_inner_items"/>
+                        </div>
+                    </t>
+                </div>
+                <button class="carousel-control-prev" type="button" 
+                        t-att-data-bs-target="'#' + uniqueId" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" 
+                        t-att-data-bs-target="'#' + uniqueId" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </template>
+</odoo>
