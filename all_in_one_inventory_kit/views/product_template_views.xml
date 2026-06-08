@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Adds brand to group by option-->
+    <record id="product_template_search_view" model="ir.ui.view">
+        <field name="name">product.template.view.search.inherit.all.in.one.inventory.kit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="Brand" name="Brand"
+                        context="{'group_by':'brand_id'}"/>
+            </xpath>
+        </field>
+    </record>
+    <!--    Product template view form -->
+    <record id="product_template_only_form_view" model="ir.ui.view">
+        <field name="name">product.template.view.form.inherit.all.in.one.inventory.kit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='categ_id']" position="after">
+                <field name="brand_id"/>
+                <field name="cw_uom_id"
+                       invisible="catch_weight_ok == False" required="catch_weight_ok == True"/>
+                <label for="average_cw_qty"
+                       invisible="catch_weight_ok ==False" required="catch_weight_ok == True"/>
+                <div name="average_cw_qty" class="o_row"
+                     invisible="catch_weight_ok == False" required="catch_weight_ok == True">
+                    <field name="average_cw_qty" class="oe_inline"/>
+                </div>
+            </xpath>
+            <xpath expr="//div[@name='options']" position="inside">
+                <span class="d-inline-block">
+                    <field name="catch_weight_ok"/>
+                    <label class="o_form_label" for="catch_weight_ok">
+                        Is Catch Weight
+                        <sup class="text-info p-1">?</sup>
+                    </label>
+                </span>
+            </xpath>
+            <xpath expr="//field[@name='uom_id']" position="after">
+                <field name="cw_category_id" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+<!--    <record id="product_template_form_view_stock_location" model="ir.ui.view">-->
+<!--        <field name="name">product.template.form.stock.location.all.in.one.inventory.kit</field>-->
+<!--        <field name="model">product.template</field>-->
+<!--        <field name="inherit_id" ref="product.product_template_form_view"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <xpath expr="//page[@name='inventory']" position="inside">-->
+<!--                <separator string="Stock By Location"/>-->
+<!--                <button name="action_get_wo_description" type="object"-->
+<!--                        string="Print" icon="fa-print"-->
+<!--                        class="btn btn-secondary mb-2"/>-->
+<!--                <field name="product_stock_location_ids" nolabel="1">-->
+<!--                    <list string="Stock By Location" edit="0" create="0" delete="0">-->
+<!--                        <field name="location_id" string="Location"/>-->
+<!--                        <field name="quantity" string="Quantity"/>-->
+<!--                        <field name="virtual_available" string="Forecasted Quantity"/>-->
+<!--                        <field name="incoming_qty" string="Incoming"/>-->
+<!--                        <field name="outgoing_qty" string="Outgoing"/>-->
+<!--                    </list>-->
+<!--                </field>-->
+<!--            </xpath>-->
+<!--        </field>-->
+<!--    </record>-->
+</odoo>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Add UOM selection dropdown to the product page -->
+    <template id="website_product_customization_product"
+              inherit_id="website_sale.product"
+              name="Website Product Multi Uom">
+        <xpath expr="//div[@id='product_details']//t[@name='variant_info']" position="after">
+            <t t-if="not product.uom_ids">
+                <div class="o_uom_dropdown dropdown" style="margin-right:10px;width:136px;text-align:center;">
+                    <t t-set="current_uom" t-value="product.uom_id"/>
+                    <select class="form-control" id="o_uom_dropdown"
+                            t-att-data="product.id">
+                        <option t-att-value="product.uom_id.id"
+                                t-att-selected="current_uom.id == product.uom_id.id">
+                            <t t-esc="product.uom_id.name"/>
+                        </option>
+                        <t t-foreach="product.uom_id.related_uom_ids"
+                           t-as="uom">
+                            <option t-att-value="uom.id"
+                                    t-att-selected="current_uom.id == uom.id">
+                                <t t-esc="uom.name"/>
+                            </option>
+                        </t>
+                    </select>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Update Cart Lines to show UOM and ensure item independence -->
+    <template id="website_sale_inherit_cart_lines"
+              inherit_id="website_sale.cart_lines">
+        <!-- Update data-product-id on the line container so Odoo's JS treats different UOMs as distinct items -->
+        <xpath expr="//div[hasclass('o_cart_product')]" position="attributes">
+            <attribute name="t-attf-data-product-id">#{line.product_id and line.product_id.id}_#{line.product_uom_id and line.product_uom_id.id}</attribute>
+        </xpath>
+
+        <!-- Show UOM label below the product name/description -->
+        <xpath expr="//t[@t-call='website_sale.cart_line_description_following_lines']" position="after">
+             <div class="small text-muted mb-1 o_wsale_uom_label">
+                UOM = <span t-esc="line.product_uom_id.name"/>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Update Quantity Selector inputs to use the combined product+uom key as product-id -->
+    <template id="website_sale_inherit_cart_lines_quantity"
+              inherit_id="website_sale.cart_lines_quantity">
+        <xpath expr="//input[hasclass('js_quantity')]" position="attributes">
+            <attribute name="t-attf-data-product-id">#{line.product_id.id}_#{line.product_uom_id.id}</attribute>
+        </xpath>
+    </template>
+</odoo>

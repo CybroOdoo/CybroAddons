@@ -23,4 +23,3 @@ from . import auth_outh_provider
 from . import hr_job
 from . import linkedin_comments
 from . import res_config_settings
-from . import mechanize_op

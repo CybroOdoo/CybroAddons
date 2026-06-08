@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="labour_supply_single_form"
+              name="Labour Supply Request Modern">
+        <t t-call="website.layout">
+
+            <div class="container">
+
+                <div class="card shadow-sm lab-card">
+
+                    <div class="card-body p-5">
+
+                        <h3 class="lab-title mb-4">Labour Supply Request</h3>
+
+                        <t t-if="error">
+                            <div class="alert alert-danger">
+                                <t t-esc="error"/>
+                            </div>
+                        </t>
+
+                        <form method="POST" action="/labour_supply/submit_all">
+                            <input type="hidden" name="csrf_token"
+                                   t-att-value="request.csrf_token()"/>
+
+                            <!-- Header Section -->
+                            <div class="mb-4">
+                                <div class="lab-section-title">General Details
+                                </div>
+
+                                <div class="row gy-3">
+
+                                    <div class="col-md-6">
+                                        <label>Customer *</label>
+                                        <select name="customer_id"
+                                                class="form-control rounded-pill">
+                                            <t t-foreach="customers" t-as="c">
+                                                <option t-att-value="c.id">
+                                                    <t t-esc="c.name"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label>Contract From *</label>
+                                        <input type="date" name="req_from_date"
+                                               class="form-control rounded-pill"/>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label>Contract To *</label>
+                                        <input type="date" name="req_to_date"
+                                               class="form-control rounded-pill"/>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- Skills -->
+                            <div class="mb-3">
+                                <div class="lab-section-title">Skill
+                                    Requirements
+                                </div>
+
+                                <div id="skill_container">
+
+                                    <div class="lab-box skill_row">
+
+                                        <div class="row gy-2">
+
+                                            <div class="col-md-4">
+                                                <label>Skill</label>
+                                                <select name="skill_id"
+                                                        class="form-control rounded-pill">
+                                                    <t t-foreach="skills"
+                                                       t-as="s">
+                                                        <option t-att-value="s.id">
+                                                            <t t-esc="s.name"/>
+                                                        </option>
+                                                    </t>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <label>From</label>
+                                                <input type="date"
+                                                       name="line_from_date"
+                                                       class="form-control rounded-pill"/>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <label>To</label>
+                                                <input type="date"
+                                                       name="line_to_date"
+                                                       class="form-control rounded-pill"/>
+                                            </div>
+
+                                            <div class="col-md-2">
+                                                <label>Qty</label>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input type="number"
+                                                           name="line_qty"
+                                                           class="form-control rounded-pill lab-qty"
+                                                           min="1"
+                                                           value="1"/>
+
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-danger lab-del-btn remove_row"
+                                                            title="Remove">
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                <button type="button" id="add_row"
+                                        class="btn lab-add mt-2">
+                                    + Add Requirement
+                                </button>
+
+                            </div>
+
+                            <div class="text-center mt-4">
+                                <button class="btn btn-submit">
+                                    Submit Request
+                                </button>
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function(){
+
+                let container = document.getElementById("skill_container");
+                let addBtn = document.getElementById("add_row");
+
+                addBtn.onclick = function(){
+                let copy =
+                container.querySelector(".skill_row").cloneNode(true);
+                container.appendChild(copy);
+                }
+
+                document.addEventListener("click", function(e){
+                if(e.target.classList.contains("remove_row")){
+                if(document.querySelectorAll(".skill_row").length > 1)
+                e.target.closest(".skill_row").remove();
+                }
+                });
+
+                });
+            </script>
+
+        </t>
+    </template>
+
+    <template id="tmp_form_success" name="Labour Supply Request Submitted">
+        <t t-call="website.layout">
+
+            <section class="container my-5">
+
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+
+                        <div class="card shadow-sm border-0 text-center p-5">
+
+                            <div class="mb-3">
+                                <span class="fa fa-check-circle"
+                                      style="font-size:60px; color:#28a745;"></span>
+                            </div>
+
+                            <h3 class="mb-3">
+                                Labour Request Submitted
+                            </h3>
+
+                            <p class="text-muted mb-4">
+                                Your labour supply request has been generated
+                                successfully.
+                                <br/>
+                                Our team will review it and get back to you
+                                shortly.
+                            </p>
+
+                            <a href="/labour_supply"
+                               class="btn btn-primary rounded-pill px-4"
+                               style="background:#76485a; border:none;">
+                                Go Back
+                            </a>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </section>
+
+        </t>
+    </template>
+</odoo>
