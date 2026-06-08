@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <!-- Customize stock availability messages for out-of-stock and low-stock products -->
+    <t t-name="website_product_stock_information.product_availability"
+       t-inherit="website_sale_stock.product_availability" t-inherit-mode="extension">
+        <xpath expr="//div[@id='out_of_stock_message']" position="replace">
+            <div id="out_of_stock_message" class="mb-3">
+                <t t-if="!allow_out_of_stock_order">
+                    <t t-if="has_out_of_stock_message">
+                        <t t-out="out_of_stock_message"/>
+                    </t>
+                    <t t-elif="show_availability">
+                        <div class="text-danger fw-bold">
+                            <i class="fa fa-times me-1"/>
+                            Out of Stock
+                        </div>
+                    </t>
+                </t>
+            </div>
+        </xpath>
+        <xpath expr="//div[@id='threshold_message']" position="replace">
+            <t t-if="free_qty &gt; 0 and free_qty &lt;= available_threshold and show_availability">
+                <div id="threshold_message"
+                     t-attf-class="availability_message_#{product_template} my-2 text-warning fw-bold">
+                    Only
+                    <t t-out="formatQuantity(free_qty)"/>
+                    Units left in stock.
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>
