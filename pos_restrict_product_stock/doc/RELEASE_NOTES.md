@@ -10,3 +10,8 @@
 #### Update
 - Service products and products measured in weight using “To Weigh In Scale” are now excluded from 
 restricts stock availability check in POS.
+
+#### 06.06.2026
+#### Version 18.0.1.1.1
+#### Update
+- Fixed the issue where restriction popup was not appearing for product variants.
