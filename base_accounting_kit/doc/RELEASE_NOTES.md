@@ -59,3 +59,8 @@
 #### Version 18.0.5.0.8
 #### FIX
 - Fixed the issues in the controller while printing the xlsx report.
+
+#### 04.06.2026
+#### Version 18.0.5.0.9
+#### FIX
+- Fixed the issues in the invoice and payment status on reconciliation

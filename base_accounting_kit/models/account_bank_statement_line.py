@@ -19,6 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+import json
 from odoo import api, fields, models
 from odoo.http import request
 
@@ -76,9 +77,30 @@ class AccountBankStatementLine(models.Model):
         return move_record_values
 
     def button_validation(self, async_action=False):
-        """Ensure the current recordset holds a single record and mark it as reconciled."""
+        """Ensure the current recordset holds a single record and mark it as reconciled.
+        Also perform the financial reconciliation for the matched lines."""
         self.ensure_one()
         self.is_reconciled = True
+        if self.lines_widget_json:
+            line_data = self.lines_widget_json
+            if isinstance(line_data, str):
+                line_data = json.loads(line_data)
+            target_line_id = line_data.get('id')
+            if target_line_id:
+                target_line = self.env['account.move.line'].browse(target_line_id)
+                st_line_move_lines = self.move_id.line_ids.filtered(
+                    lambda l: l.account_id == self.journal_id.suspense_account_id
+                              and not l.reconciled
+                )
+                if not st_line_move_lines:
+                    st_line_move_lines = self.move_id.line_ids.filtered(
+                        lambda l: l.account_id == self.journal_id.default_account_id
+                                  and not l.reconciled
+                    )
+                if st_line_move_lines and target_line:
+                    st_line_move_lines.account_id = target_line.account_id
+                    (st_line_move_lines | target_line).reconcile()
+
         return {
             'type': 'ir.actions.client',
             'tag': 'reload',

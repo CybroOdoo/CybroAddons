@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models, _
+from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
 
@@ -111,7 +111,7 @@ class AccountPayment(models.Model):
     def open_payment_matching_screen(self):
         """Open reconciliation view for customers/suppliers"""
         move_line_id = False
-        for move_line in self.line_ids:
+        for move_line in self.move_id.line_ids:
             if move_line.account_id.reconcile:
                 move_line_id = move_line.id
                 break
@@ -198,3 +198,14 @@ class AccountPayment(models.Model):
     def unmark_as_sent(self):
         """Updates the is_move_sent value of the payment model"""
         self.write({'is_sent': False})
+
+    @api.depends('move_id.line_ids.amount_residual', 'move_id.line_ids.amount_residual_currency', 'move_id.line_ids.account_id', 'state', 'reconciled_statement_line_ids')
+    def _compute_reconciliation_status(self):
+        """Override to ensure is_matched is False until bank reconciliation"""
+        super()._compute_reconciliation_status()
+        for pay in self:
+            if pay.journal_id.type in ('bank', 'cash'):
+                if not pay.reconciled_statement_line_ids:
+                    pay.is_matched = False
+                else:
+                    pay.is_matched = True
